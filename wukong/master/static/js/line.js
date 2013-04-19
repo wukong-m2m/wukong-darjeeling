@@ -13,12 +13,12 @@ Line.prototype.draw=function(canvas) {
 	var size = this.source.getSize();
 	var signal_idx = this.source.findSignalPos(this.signal);
 	var action_idx = this.dest.findActionPos(this.action);
-	var x1 = loc[0]+size[0]+30-205;
-	var y1 = loc[1]+10-FBP_CANVAS_TOP+signal_idx*15;
+	var x1 = loc[0]+size[0]-205;
+	var y1 = loc[1]-FBP_CANVAS_TOP+signal_idx*15+15/2+20;
 	loc = this.dest.getPosition();
 	size = this.dest.getSize();
-	var x2 = loc[0]-30-205;
-	var y2 = loc[1]+10-FBP_CANVAS_TOP+action_idx*15;
+	var x2 = loc[0]-205;
+	var y2 = loc[1]-FBP_CANVAS_TOP+action_idx*15+15/2+20;
 
 	canvas.drawLine({
 		strokeStyle: "#000",

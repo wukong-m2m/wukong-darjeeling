@@ -28,9 +28,11 @@ Block.prototype.init=function() {
 	this.reaction_time = 1;
 	this.signals=[];
 	this.actions=[];
+	this.slots=[];
 	this.sigProper=[];
 	this.actProper=[];
 	this.monitorProper=[];
+	this.numSlot = 0;
 	Block_count++;
 	Block.widgets.push(this);
 }
@@ -108,25 +110,25 @@ Block.prototype.draw=function() {
 	var size = this.getSize();
 	this.div.empty();
     this.div.append('<span style="font-family:"Trebuchet MS", Helvetica, sans-serif; font-size: 20pt; word-wrap: break-word;">' + this.type.replace('_', ' ') + '</span>');
-	for(i=0;i<this.signals.length;i++) {
-//	for(var key in this.signals){
+	for(i=0;i<this.slots.length;i++) {
 		this.div.append('<div class=signal id=signal_'+this.id+'_'+i+'>');
-		$('#signal_'+this.id+'_'+i).css('position','absolute').css('width',60).css('height',30).css('left',size[0]).css('top',i*30);
-		$('#signal_'+this.id+'_'+i).html(this.signals[i].name.replace('_', ' '));
-//		$('#signal_'+this.id+'_'+i).html(key.replace('_', ' '));
-//		i= i+1;
-	}
-	for(i=0;i<this.actions.length;i++) {
-//	i=0;
-//	for(var key in this.actions){
-		this.div.append('<div class=signal id=action_'+this.id+'_'+i+'>');
-		$('#action_'+this.id+'_'+i).css('position','absolute').css('width',60).css('height',30).css('left',-60).css('top',i*30);
-		$('#action_'+this.id+'_'+i).html(this.actions[i].name.replace('_', ' '));
-//		$('#action_'+this.id+'_'+i).html(key.replace('_', ' '));
-//		i= i+1;
+		$('#signal_'+this.id+'_'+i).css('position','absolute').css('width',100).css('height',15).css('left',0).css('top',i*15+20);
+		$('#signal_'+this.id+'_'+i).html(this.slots[i].name.replace('_', ' '));
 	}
 }
 Block.prototype.addSignal=function(con) {
+	var i;
+
+	for(i=0;i<this.slots.length;i++) {
+		if (this.slots[i].name == con.name) {
+			con.index = this.slots[i].index;
+			break;
+		}
+	}
+	if (i == this.slots.length) {
+		this.slots.push(con);
+		con.index = this.slots.length-1;
+	}
 	this.signals.push(con);
 //	this.signals[con]=type;
 }
@@ -134,6 +136,18 @@ Block.prototype.getSignals=function() {
 	return this.signals;
 }
 Block.prototype.addAction=function(con) {
+	var i;
+
+	for(i=0;i<this.slots.length;i++) {
+		if (this.slots[i].name == con.name) {
+			con.index = this.slots[i].index;
+			break;
+		}
+	}
+	if (i == this.slots.length) {
+		this.slots.push(con);
+		con.index = this.slots.length-1;
+	}
 	this.actions.push(con);
 //	this.actions[con]=type;
 }
@@ -144,7 +158,7 @@ Block.prototype.findSignalPos=function(s) {
 
 	for(i=0;i<this.signals.length;i++) {
 		if (this.signals[i].name == s)
-			return i;
+			return this.signals[i].index;
 	}
 	return -1;
 }
@@ -153,7 +167,7 @@ Block.prototype.findActionPos=function(s) {
 
 	for(i=0;i<this.actions.length;i++) {
 		if (this.actions[i].name == s)
-			return i;
+			return this.signals[i].index;
 	}
 	return -1;
 }

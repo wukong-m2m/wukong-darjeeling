@@ -646,11 +646,13 @@ function FBP_toXML(gnodes,glines)
 function Signal(name)
 {
     this.name = name;
+	this.index = 0;
 }
 
 function Action(name)
 {
     this.name = name;
+	this.index = 0;
 }
 
 
