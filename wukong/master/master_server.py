@@ -121,6 +121,10 @@ def getPropertyValuesOfApp(mapping_results, property_names):
 
   return properties_json
 
+class idemain(tornado.web.RequestHandler):
+  def get(self):
+    self.content_type='text/html'
+    self.render('templates/ide.html')
 # List all uploaded applications
 class main(tornado.web.RequestHandler):
   def get(self):
@@ -535,6 +539,17 @@ class nodes(tornado.web.RequestHandler):
         self.content_type = 'application/json'
         self.write({'status':1, 'mesg': 'Cannot set location, please try again.'})
 
+class WuLibrary(tornado.web.RequestHandler):	
+  def get(self):
+  	self.content_type = 'application/xml'
+	try:
+		f = open('../ComponentDefinitions/WuKongStandardLibrary.xml')
+		xml = f.read()
+		f.close()
+	except:
+		self.write('<error>1</error>')
+	self.write(xml)
+
 class tree(tornado.web.RequestHandler):	
   def post(self):
     global location_tree
@@ -598,6 +613,7 @@ settings = dict(
 ioloop = tornado.ioloop.IOLoop.instance()
 wukong = tornado.web.Application([
   (r"/", main),
+  (r"/ide", idemain),
   (r"/main", main),
   (r"/testrtt/exclude", exclude_testrtt),
   (r"/testrtt/include", include_testrtt),
@@ -619,7 +635,8 @@ wukong = tornado.web.Application([
   (r"/applications/([a-fA-F\d]{32})/fbp/load", load_fbp),
   (r"/loc_tree", tree),
   (r"/loc_tree/save", save_tree),
-  (r"/loc_tree/land_mark", add_landmark)
+  (r"/loc_tree/land_mark", add_landmark),
+  (r"/componentxml",WuLibrary)
 ], IP, **settings)
 
 if __name__ == "__main__":
