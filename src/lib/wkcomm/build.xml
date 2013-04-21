@@ -9,5 +9,5 @@
 	<!-- include the library build template -->
 	<import file="../lib.xml"/>
 
-	<property name="public-headerfile" value="wkcomm.h"/>
+	<property name="public-headerfile" value="*.h"/>
 </project>

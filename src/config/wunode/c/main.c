@@ -38,7 +38,7 @@
 #include "jlib_base.h"
 #include "jlib_darjeeling3.h"
 #include "jlib_uart.h"
-#include "jlib_wkcomm.h"
+//#include "jlib_wkcomm.h"
 #include "jlib_wkpf.h"
 #include "jlib_wkreprog.h"
 
@@ -50,27 +50,32 @@ extern unsigned char di_app_infusion_archive_data[];
 unsigned char mem[HEAPSIZE];
 
 #include "avr.h"
+#include "wifi.h"
+
+
+WIFI_SETTING wifi_setting = { "home321",       /* SSID */
+                        "0123456789" ,        /* WPA/WPA2 passphrase */
+                        "192.168.2.5" ,   /* IP address */
+                        "255.255.255.0" ,   /* subnet mask */
+                        "192.168.2.222"   ,   /* Gateway IP */
+                      };
 
 int main()
 {
-	// initialise serial port
-	avr_serialInit(115200);
+core_init();
+uart_init(0, 9600);
+uart_write_byte(0, 's');
+  SOCKET s1;
 
-	dj_named_native_handler handlers[] = {
-			{ "base", &base_native_handler },
-			{ "darjeeling3", &darjeeling3_native_handler },
-			{ "uart", &uart_native_handler },
-			{ "wkcomm", &wkcomm_native_handler },
-			{ "wkpf", &wkpf_native_handler },
-			{ "wkreprog", &wkreprog_native_handler },
-		};
-	uint16_t length = sizeof(handlers)/ sizeof(handlers[0]);
+  if(!wifi_init(&wifi_setting))
+  {uart_write_byte(0, 'i');}
 
-	dj_vm_main(mem, HEAPSIZE, (dj_di_pointer)di_lib_infusions_archive_data, (dj_di_pointer)di_app_infusion_archive_data, handlers, length);
+  s1=wifi_client_connect("192.168.2.8", "80");
+  if(s1==INVALID_SOCKET)
+  {uart_write_byte(0, 'c');}
+  
+  //wifi_sendData(s1,"GET / HTTP/1.0\r\n\r\n",18);
 
-	// Listen to the radio
-	while(true)
-		dj_hook_call(dj_vm_pollingHook, NULL);
 
 	return 0;
 }
