@@ -28,7 +28,7 @@ WuIDE.prototype.parseXML = function() {
 		var name = $(val).attr('name');
 		var id = $(val).attr('id');
 		var virtual = $(val).attr('virtual');
-		var type = $(val).attr('hard');
+		var type = $(val).attr('type');
 		var properties = $(val).find('property');
 		var prop = [];
 		$.each(properties, function(j, val) {
@@ -38,7 +38,7 @@ WuIDE.prototype.parseXML = function() {
 			var def = $(val).attr('default');
 			prop.push({name:pname, datatype:datatype, access:access, default:def});
 		});
-		self.classes.push({name:name, id:id, virtual:virtual,type:type});
+		self.classes.push({name:name, id:id, virtual:virtual,type:type,properties:prop});
 	});
 	self.types=[];
 	$.each(types,function(i,v) {
@@ -53,6 +53,35 @@ WuIDE.prototype.parseXML = function() {
 			self.types.push({name:name,type:type,enums:enumlist});
 		}
 	});
+}
+
+WuIDE.prototype.toXML = function() {
+	var xml = '<WuKong>\n';
+	var i;
+	var self=this;
+
+	for(i=0;i<self.types.length;i++) {
+		xml = xml + '    <WuTypedef name="'+self.types[i].name+'" type="enum">\n';
+		for(j=0;j<this.types[i].enums.length;j++) {
+			xml = xml + '        <enum value="'+self.types[i].enums[j].name+'"/>\n';
+		}
+		xml = xml + '    </WuTypedef>\n';
+	}
+	for(i=0;i<self.classes.length;i++) {
+		xml = xml + '    <WuClass name="'+self.classes[i].name+'" id="'+self.classes[i].id+'" virtual="'+self.classes[i].virtual+'" type="'+self.classes[i].type+'">\n';
+		for(j=0;j<this.classes[i].properties.length;j++) {
+			
+			xml = xml + '        <property name="'+self.classes[i].properties[j].name+'" ';
+			xml = xml + 'access="'+self.classes[i].properties[j].access+'" ';
+			xml = xml + 'datatype="'+self.classes[i].properties[j].datatype+'" ';
+			if (self.classes[i].properties[j].default)
+				xml = xml + 'default="'+self.classes[i].properties[j].default+'" ';
+			xml = xml + ' />\n';
+		}
+		xml = xml + '    </WuClass>\n';
+	}
+	xml = xml + '</WuKong>\n';
+	alert(xml);
 }
 
 WuIDE.prototype.initUI = function() {
@@ -90,6 +119,9 @@ WuIDE.prototype.load = function() {
 	$('#addtype').click(function() {
 		self.types.push({type:'enum',name:'New Type',enums:[]});
 		self.load();
+	});
+	$('#saveall').click(function() {
+		self.toXML();
 	});
 		
 	
