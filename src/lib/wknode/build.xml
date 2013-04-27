@@ -4,7 +4,8 @@
 	<property name="name" value="wknode"/>
 	
 	<!-- list of libraries this library depends on -->
-	<property name="lib-depends" value="base"/>
+	<property name="lib-c-depends" value=""/>
+	<property name="lib-java-depends" value="base"/>
 	
 	<!-- include the library build template -->
 	<import file="../lib.xml"/>

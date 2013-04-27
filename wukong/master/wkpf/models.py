@@ -162,6 +162,10 @@ class WuType:
     def find(cls, id):
         return WuType.where(id=id)
 
+    @classmethod
+    def findByName(cls, name):
+        return WuType.where(name=name)
+
     def __init__(self, name, type, values, identity=None):
         self.name = name
         self.type = type
@@ -340,6 +344,10 @@ class WuClass:
     def find(cls, id):
         return WuClass.where(id=id)
 
+    @classmethod
+    def findByName(cls, name):
+        return WuClass.where(name=name)
+
     def __init__(self, id, name, virtual, type, properties=[], node_id=None, identity=None):
         self.id = id
         self.name = name
@@ -476,7 +484,7 @@ class WuObject:
         self.identity = identity
         # a list of tuples with property name and default value 
         self.properties_with_default_values = properties_with_default_values
-        self.hasLocalWuClass = False
+        self.hasLocalNativeWuClass = False
 
     def __repr__(self):
         return 'WuObject#(\n\tnode_id="%s",\n\tport_number=%d,\n\twuclass="%r",\n\tdefault_properties=%r)' % (self.node_id, self.port_number, self.wuclass, self.properties_with_default_values)

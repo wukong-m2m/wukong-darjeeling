@@ -4,6 +4,8 @@
 
 #ifdef ENABLE_WUCLASS_LIGHT_SENSOR
 
+void wuclass_light_sensor_setup(wuobject_t *wuobject) {}
+
 void wuclass_light_sensor_update(wuobject_t *wuobject) {
   // Pieced together from IntelDemoLightSensorV1.java, Adc.java and native_avr.c
 
@@ -23,7 +25,7 @@ void wuclass_light_sensor_update(wuobject_t *wuobject) {
   ADCSRA |= _BV(ADSC);                  // Start conversion
   while(!(ADCSRA & _BV(ADIF)));         // wait for conversion complete
   ADCSRA |= _BV(ADIF);                  // clear ADCIF
-  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(LightSensor): Sensed light value: %d\n", ADCH);
+  DEBUG_LOG(DBG_WKCOMM, "WKPFUPDATE(LightSensor): Sensed light value: %d\n", ADCH);
   wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_LIGHT_SENSOR_CURRENT_VALUE, ADCH);
 }
 

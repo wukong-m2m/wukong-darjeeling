@@ -4,7 +4,8 @@
 	<property name="name" value="darjeeling3"/>
 	
 	<!-- list of libraries this library depends on -->
-	<property name="lib-depends" value="base"/>
+	<property name="lib-c-depends" value="vm"/>
+	<property name="lib-java-depends" value="base"/>
 	
 	<!-- include the library build template -->
 	<import file="../lib.xml"/>

@@ -5,7 +5,8 @@
 	<property name="name" value="wkpftest"/>
 	
 	<!-- list of libraries this library depends on -->
-	<property name="lib-depends" value="base, darjeeling2, uart, wkcomm, wkpf"/>
+	<!-- Only list Java libraries here -->
+	<property name="lib-depends" value="base, wkpf_virtual"/>
 	
 	<!-- include the library build template -->
 	<import file="../app.xml"/>

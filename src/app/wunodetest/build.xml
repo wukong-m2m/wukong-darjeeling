@@ -5,6 +5,7 @@
 	<property name="name" value="wunodetest"/>
 	
 	<!-- list of libraries this library depends on -->
+	<!-- Only list Java libraries here -->
 	<property name="lib-depends" value="base, wknode"/>
 	
 	<!-- include the library build template -->

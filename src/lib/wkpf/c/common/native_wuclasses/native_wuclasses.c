@@ -25,7 +25,7 @@ uint8_t wkpf_native_wuclasses_init() {
   if (retval != WKPF_OK)
     return retval;
 
-  DEBUG_LOG(DBG_WKPF, "Running wkpf native init for node id: %x\n", wkcomm_get_node_id());
+  DEBUG_LOG(DBG_WKPF, "WKPF: (INIT) Running wkpf native init for node id: %x\n", wkcomm_get_node_id());
 
   if (wkpf_config_get_feature_enabled(WPKF_FEATURE_LIGHT_SENSOR)) {
     wkpf_register_wuclass(&wuclass_light_sensor);

@@ -145,12 +145,13 @@ class WuProperty:
 
 # Now both WuClass and WuObject have node id attribute, because each could represent at different stages of mapping process
 class WuClass:
-    def __init__(self, name, id, properties, virtual, soft, node_id=None):
+    def __init__(self, name, id, properties, virtual, soft, privateCData, node_id=None):
         self._name = name  # WuClass's name
         self._id = id      # an integer for class' id
         self._properties = properties  # a dict of WuProperty objects accessed thru the prop's name
         self._virtual = virtual    # a boolean for virtual or native
         self._soft = soft  # a boolean for soft or hard
+        self._privateCData = privateCData # an optional data type, used if the wuclass needs to store some private data in the C implementation (Java should use instance variables instead)
         self_node_id = node_id
 
     def __iter__(self):
@@ -202,6 +203,9 @@ class WuClass:
     def getCUpdateName(self):
         return self.getCName() + "_update"
 
+    def getCSetupName(self):
+        return self.getCName() + "_setup"
+
     def getCConstName(self):
         return "WKPF_" + self.getJavaConstName()
 
@@ -228,6 +232,15 @@ class WuClass:
 
     def setNodeId(self, id):
         self._node_id = id
+
+    def getPrivateCData(self):
+      return self._privateCData
+
+    def hasPrivateCData(self):
+      return self._privateCData != ''
+
+    def getPrivateCDataGetFunction(self):
+      return '''%s *%s_getPrivateData(wuobject_t *wuobject)''' % (self._privateCData, self.getCName())
 
 # Now both WuClass and WuObject have node id attribute, because each could represent at different stages of mapping process
 # The wuClass in WuObject is just for reference only, the node_id shouldn't be used
@@ -325,6 +338,70 @@ class WuObject:
 
 class CodeGen:
     @staticmethod
+    def generateNativeWuclasses(logger, component_string, project_dir):
+        # By catlikethief 2013.04.11
+        # Try to generate native_wuclasses.c by parsing another xml file
+        vm_dir = os.path.join('src', 'lib', 'wkpf', 'c', 'common', 'native_wuclasses')
+
+        native_wuclasses_filename = 'native_wuclasses.c'
+        native_wuclasses_path = os.path.join(project_dir, vm_dir, native_wuclasses_filename)
+        native_wuclasses = open(native_wuclasses_path, 'w')
+
+        header_lines = ['#include <debug.h>\n',
+        '#include "wkcomm.h"\n',
+        '#include "wkpf_config.h"\n',
+        '#include "wkpf_wuclasses.h"\n',
+        '#include "native_wuclasses.h"\n',
+        '#include "GENERATEDwuclass_generic.h"\n'
+        ]
+        register_function = '''
+uint8_t wkpf_register_wuclass_and_create_wuobject(wuclass_t *wuclass, uint8_t port_number) {
+  wkpf_register_wuclass(wuclass);
+  uint8_t retval = wkpf_create_wuobject(wuclass->wuclass_id, port_number, 0);
+  if (retval != WKPF_OK)
+    return retval;
+  return WKPF_OK;
+}'''
+        init_function_lines = ['''
+
+uint8_t wkpf_native_wuclasses_init() {
+  uint8_t retval;
+
+  retval = wkpf_register_wuclass_and_create_wuobject(&wuclass_generic, 0); // Always create wuobject for generic wuclass at port 0
+  if (retval != WKPF_OK)
+    return retval;
+
+  DEBUG_LOG(DBG_WKPF, "WKPF: (INIT) Running wkpf native init for node id: %x\\n", wkcomm_get_node_id());
+
+'''     ]
+
+        dom = parseString(component_string)
+
+        wuclasses_list = []
+        wuclasses = dom.getElementsByTagName("WuClass")
+        for wuclass in wuclasses:
+            wuclass_name = wuclass.getAttribute('name').lower()
+            header_lines.append('#include "GENERATEDwuclass_%s.h"\n' % wuclass_name)
+            init_function_lines.append('''
+  wkpf_register_wuclass(&wuclass_%s);
+  if (retval != WKPF_OK)
+    return retval;
+''' % wuclass_name)
+
+
+        init_function_lines.append('''
+  return WKPF_OK;
+}'''    )
+
+        native_wuclasses.writelines(header_lines)
+        native_wuclasses.write(register_function)
+        native_wuclasses.writelines(init_function_lines)
+
+
+        native_wuclasses.close()
+
+
+    @staticmethod
     def generate(logger, component_string, project_dir):
         global_vm_dir = os.path.join('src', 'lib', 'wkpf', 'c', 'common')
         vm_dir = os.path.join('src', 'lib', 'wkpf', 'c', 'common', 'native_wuclasses')
@@ -398,9 +475,8 @@ class CodeGen:
               propName = prop.getAttribute('name')
 
               wuclassProperties[propName] = WuProperty(wuclassName, propName, i, wuTypes[propType], prop.getAttribute('access')) 
-
-          wuClass = WuClass(wuclassName, wuclassId, wuclassProperties, True if wuclass.getAttribute('virtual').lower() == 'true' else False, True if wuclass.getAttribute('type').lower() == 'soft' else False)
-
+          privateCData = wuclass.getAttribute('privateCData')
+          wuClass = WuClass(wuclassName, wuclassId, wuclassProperties, True if wuclass.getAttribute('virtual').lower() == 'true' else False, True if wuclass.getAttribute('type').lower() == 'soft' else False, privateCData)
 
           # Native header
           wuclass_native_header_path = os.path.join(project_dir, vm_dir, wuClass.getCFileName() + '.h')
@@ -477,29 +553,36 @@ class CodeGen:
           # Generate C header for each native component implementation
           wuclass_native_header_lines.append('''
           #include "native_wuclasses.h"
+          #include "native_wuclasses_privatedatatypes.h"
 
           #ifndef %sH
           #define %sH
 
           extern wuclass_t %s;
 
+          %s
+
           #endif
           ''' % (
                   wuClass.getCDefineName(),
                   wuClass.getCDefineName(),
-                  wuClass.getCName()
+                  wuClass.getCName(),
+                  "extern " + wuClass.getPrivateCDataGetFunction() + ";" if wuClass.hasPrivateCData() else ''
                 ))
 
           # Generate C implementation for each native component implementation
           wuclass_native_impl_lines.append('''
           #include "native_wuclasses.h"
+          #include "native_wuclasses_privatedatatypes.h"
 
           #ifdef ENABLE_%s
 
           extern void %s(wuobject_t *wuobject);
+          extern void %s(wuobject_t *wuobject);
 
           ''' % (
                   wuClass.getCDefineName(),
+                  wuClass.getCSetupName(),
                   wuClass.getCUpdateName(),
                 ))
 
@@ -522,7 +605,9 @@ class CodeGen:
           wuclass_t %s = {
             %s,
             %s,
+            %s,
             %d,
+            %s,
             NULL,
             {
             %s
@@ -530,9 +615,19 @@ class CodeGen:
           };
           ''' % (wuClass.getCName(), 
                 wuClass.getCConstName(),
+                wuClass.getCSetupName(),
                 wuClass.getCUpdateName(),
                 len(wuClass.getProperties()),
+                "sizeof(%s)" % (wuClass.getPrivateCData()) if wuClass.hasPrivateCData() else "0", 
                 wuclass_native_impl_properties_lines))
+
+          if wuClass.hasPrivateCData():
+            wuclass_native_impl_lines.append('''
+              %s {
+                return (%s *)wkpf_get_private_wuobject_data(wuobject);
+              }
+            ''' %(wuClass.getPrivateCDataGetFunction(),
+                  wuClass.getPrivateCData()))
 
           wuclass_native_impl_lines.append('''
           #endif
@@ -646,6 +741,10 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
 
     print options, args
+
+    # xmlfile = '../../../wukong/ComponentDefinitions/EnabledWuClasses.xml'
+    # if os.path.exists(xmlfile) and options.project_dir:
+    #     CodeGen.generateNativeWuclasses(logging.getLogger(), open(xmlfile).read(), options.project_dir)
 
     if os.path.exists(options.component_file) and options.project_dir:
         CodeGen.generate(logging.getLogger(), open(options.component_file).read(), options.project_dir)

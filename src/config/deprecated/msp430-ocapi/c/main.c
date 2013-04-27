@@ -86,7 +86,7 @@ int main(int argc,char* argv[])
 	
 	// pre-allocate an OutOfMemoryError object
 	obj = dj_vm_createSysLibObject(vm, BASE_CDEF_java_lang_OutOfMemoryError);
-	dj_mem_setPanicExceptionObject(obj);
+	vm_mem_setPanicExceptionObject(obj);
 
 	// start the main execution loop
 	while (dj_vm_countLiveThreads(vm)>0)

@@ -4,8 +4,12 @@
 	<property name="name" value="wkpf"/>
 	
 	<!-- list of libraries this library depends on -->
-	<property name="lib-depends" value="base, wkcomm"/>
-	
+	<property name="lib-c-depends" value="wkcomm"/>
+	<property name="lib-java-depends" value=""/>
+
+	<!-- just export all header files for now, since wkpf_virtual needs many of them -->	
+	<property name="public-headerfile" value="*.h"/>
+
 	<!-- include the library build template -->
 	<import file="../lib.xml"/>
 
@@ -21,5 +25,7 @@
 			  <include name="**/GENERATED*"/>
 			</fileset>
 		</delete>
+		<delete dir="${build}"/>
+		<delete dir="${doc}"/>
 	</target>
 </project>

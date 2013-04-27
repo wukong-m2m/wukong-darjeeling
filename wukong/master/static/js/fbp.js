@@ -319,6 +319,43 @@ function FBP_parseXMLPage(comps)
         meta.h = c.attr("h");
         meta.id = c.attr("instanceId");
         meta.type = c.attr("type");
+        
+        meta.actProper = {};
+        var properties = c.find("actionProperty");
+        if(properties.length > 0) {
+            var attrs = properties[0].attributes;
+            if(attrs) {
+                for(j=0;j<attrs.length;j++) {
+                    var attr = attrs[j];
+                    meta.actProper[attr.name] = attr.value;
+                }
+            }
+        }
+
+        meta.sigProper = {};
+        var properties = c.find("signalProperty");
+        if(properties.length > 0) {
+            var attrs = properties[0].attributes;
+            if(attrs) {
+                for(j=0;j<attrs.length;j++) {
+                    var attr = attrs[j];
+                    meta.sigProper[attr.name] = attr.value;
+                }
+            }
+        }
+
+        meta.monitorProper = {};
+        var properties = c.find("monitorProperty");
+        if(properties.length > 0) {
+            var attrs = properties[0].attributes;
+            if(attrs) {
+                for(j=0;j<attrs.length;j++) {
+                    var attr = attrs[j];
+                    meta.monitorProper[attr.name] = attr.value;
+                }
+            }
+        }
+
         loc = c.find("location");
         if (loc.length > 0) {
             meta.location = loc.attr("requirement");

@@ -1,14 +1,10 @@
 #include "heap.h"
 #include "debug.h"
-#include "array.h"
 #include "wkpf_wuclasses.h"
 #include "wkpf_wuobjects.h"
 
 extern wuclass_t *wuclasses_list;
 extern wuobject_t *wuobjects_list;
-extern dj_int_array *wkpf_links_store;
-extern dj_ref_array *wkpf_component_map_store;
-
 
 void wkpf_markRootSet(void *data) {
 #ifdef DARJEELING_DEBUG
@@ -34,14 +30,6 @@ void wkpf_markRootSet(void *data) {
 		// WuObject also containts a pointer to the wuclass, but that's already been taken care of above.
 		wuobject = wuobject->next;
 	}
-
-	// Links
-	if (wkpf_links_store)
-		dj_mem_setChunkColor(wkpf_links_store, TCM_GRAY);
-
-	// Component map
-	if (wkpf_component_map_store)
-		dj_mem_setChunkColor(wkpf_component_map_store, TCM_GRAY);
 }
 
 void wkpf_updatePointers(void *data) {
@@ -77,17 +65,5 @@ void wkpf_updatePointers(void *data) {
 		*wuobject = dj_mem_getUpdatedPointer(*wuobject);
 		// Continue from the previously stored next pointer, since we can't access the wuobject itself anymore
 		wuobject = next;
-	}
-
-	// Links
-	if (wkpf_links_store) {
-		DEBUG_LOG(DBG_WKPFGC, "WKPF: (GC) Updating pointer for link table from %p to %p\n", wkpf_links_store, dj_mem_getUpdatedPointer(wkpf_links_store));
-		wkpf_links_store = dj_mem_getUpdatedPointer(wkpf_links_store); // Then update the pointer to this wuclass
-	}
-
-	// Component map
-	if (wkpf_component_map_store) {
-		DEBUG_LOG(DBG_WKPFGC, "WKPF: (GC) Updating pointer for component map from %p to %p\n", wkpf_component_map_store, dj_mem_getUpdatedPointer(wkpf_component_map_store));
-		wkpf_component_map_store = dj_mem_getUpdatedPointer(wkpf_component_map_store); // Then update the pointer to this wuclass
 	}
 }

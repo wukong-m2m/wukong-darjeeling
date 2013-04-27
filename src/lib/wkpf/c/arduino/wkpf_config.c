@@ -60,13 +60,13 @@ bool wkpf_config_get_feature_enabled(uint8_t feature) {
           && get_feature_enabled(feature) > 0;
 }
 
-address_t wkpf_config_get_master_node_id() {
-  return (address_t)load_master_node_id();
+wkcomm_address_t wkpf_config_get_master_node_id() {
+  return (wkcomm_address_t)load_master_node_id();
 }
 
-void wkpf_config_set_master_node_id(address_t node_id) {
-  if (sizeof(address_t) != 1) {
-    // Bit crude: just enter an endless loop when address_t is changed to a bigger datatype because that means we need to change this function as well.
+void wkpf_config_set_master_node_id(wkcomm_address_t node_id) {
+  if (sizeof(wkcomm_address_t) != 1) {
+    // Bit crude: just enter an endless loop when wkcomm_address_t is changed to a bigger datatype because that means we need to change this function as well.
     // This way uploading new code won't work (as long as we call this when receiving NVMCOMM_CMD_REPRG_OPEN) until this function is fixed.
     // The alternative would be hard to find bugs when one byte of the node_id is lost.
     while(1);

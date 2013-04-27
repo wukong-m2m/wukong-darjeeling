@@ -18,8 +18,9 @@
 		TODO: resolve this, this is to avoid recomputing cc-include-paths in this file 
 		if there is a way that we can import a property from another ant file,
 		this can be replaced	
-	-->
 	<import file="${platformpath}/../lib/lib.xml"/>
+		Commented out, see compile-c target below. -->
+	<property name="build" value="${platformtargetpath}/build/"/>
 	<!-- source directory -->
 	<property name="src" value="${platformtargetpath}/c"/>
 	<property name="objectfiles" value="${platformtargetpath}/build/${configuration}/o"/>
@@ -39,9 +40,14 @@
 					<pathelement path="${platformpath}/../platform/${platform}/c"/>
 					<pathelement path="${platformpath}/../architecture/${architecture}/c"/>
 					<pathelement path="${platformpath}/../config/${configuration}/c"/>
-					<pathelement path="${platformpath}/../vm/c"/>
+					<pathelement path="${platformpath}/../core/c"/>
 					<path refid="platform-includes"/>
-					<path><filelist files="${cc-include-paths}" dir="/"/></path>
+					<!-- cc-include-paths was imported from lib.xml before, which was
+					     causing a confusing contains-java-code message.
+					     Our current platforms seem to compile fine without it though,
+					     and it seems cleaner not to have the platform depend on specific
+					     libraries. Still leaving this line here for now, just in case. -->
+					<!-- <path><filelist files="${cc-include-paths}" dir="/"/></path> -->
 				</includepath>
 		
 				<!-- input files -->

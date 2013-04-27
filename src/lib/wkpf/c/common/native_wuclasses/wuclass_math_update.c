@@ -3,6 +3,8 @@
 
 #ifdef ENABLE_WUCLASS_MATH
 
+void wuclass_math_setup(wuobject_t *wuobject) {}
+
 void wuclass_math_update(wuobject_t *wuobject) {
   int16_t input1;
   int16_t input2;

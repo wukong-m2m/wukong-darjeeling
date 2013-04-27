@@ -19,9 +19,9 @@ bool wkpf_config_get_feature_enabled(uint8_t feature) {
 	return true;
 }
 
-address_t wkpf_config_get_master_node_id() {
+wkcomm_address_t wkpf_config_get_master_node_id() {
 	return 1;
 }
 
-void wkpf_config_set_master_node_id(address_t node_id) {
+void wkpf_config_set_master_node_id(wkcomm_address_t node_id) {
 }

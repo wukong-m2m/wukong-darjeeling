@@ -64,22 +64,26 @@ Block.prototype.serialize=function(obj) {
 	obj.location = this.location;
 	obj.group_size = this.group_size;
 	obj.reaction_time = this.reaction_time;
-	obj.actions = {};
-	obj.signals = {};
-	actlist= this.getActions();
+	obj.actions = this.actProper;
+	obj.signals = this.sigProper;
+	obj.monitor = this.monitorProper;
+	/*
+	actlist = this.getActions();
 	for(l=0;l<this.actProper.length;l++){
+		obj.ac
 		act = actlist[l];
-		obj.actions[act.name] = this.actProper[l];
+		obj.actions[act.name] = this.actProper[act.name];
 	}
 	for(l=0;l<this.monitorProper.length;l++){
 		act = actlist[l];
-		obj.monitor[act.name] = this.monitorProper[l];
+		obj.monitor[act.name] = this.monitorProper[act.name];
 	}
 	siglist = this.getSignals();
 	for(l=0;l<this.sigProper.length;l++) {
 		sig = siglist[l];
-		obj.signals[sig.name] = this.sigProper[l];
+		obj.signals[sig.name] = this.sigProper[sig.name];
 	}
+	*/
 	return obj;
 }
 Block.restore=function(a) {
@@ -91,6 +95,10 @@ Block.restore=function(a) {
 	n.location = a.location;
 	n.group_size = a.group_size;
 	n.reaction_time = a.reaction_time;
+    n.actProper = a.actProper;
+    n.sigProper = a.sigProper;
+    n.monitorProper = a.monitorProper;
+
 	// Call the restore of the derived class in the future
 	return n;
 }
@@ -204,7 +212,7 @@ Block.prototype.attach=function(parent) {
     		$('#propertyeditor_action').append(act.name);
 //    		if(act.type=="boolean"){
 	    		$('#propertyeditor_action').append('<input type=text id=a'+act.name+'></input><br>');
-	    		$('#a'+act.name).val(self.actProper[i]);
+	    		$('#a'+act.name).val(self.actProper[act.name]);
 //	    	}else{
 //	    		$('#propertyeditor_action').append('<select id=a'+act.name+'></select><br>');
 //    			for(j=0;j++;j<2){
@@ -213,7 +221,11 @@ Block.prototype.attach=function(parent) {
 //	    		$('#a'+act.name).val(self.actProper[i]);
 //	    	}
 			$('#propertyeditor_monitor').append(act.name+'<input type=checkbox id=m'+act.name+'></input><br>');
-			$('#m'+act.name).val(self.monitorProper[i]);
+			try {
+				$('#m'+act.name).val(self.monitorProper[act.name]);
+			} catch (e){
+
+			}
 
 		}
 		var _siglist = Block.current.getSignals();
@@ -221,7 +233,12 @@ Block.prototype.attach=function(parent) {
     		var sig = _siglist[i];
     		$('#propertyeditor_signal').append(sig.name);
     		$('#propertyeditor_signal').append('<input type=text id=s'+sig.name+'></input><br>');
-    		$('#s'+sig.name).val(self.sigProper[i]);
+    		try {
+    			$('#s'+sig.name).val(self.sigProper[sig.name]);
+    		} catch (e) {
+
+    		}
+    		
 		}
 
 		$('#propertyeditor').dialog({
@@ -232,12 +249,12 @@ Block.prototype.attach=function(parent) {
 					self.reaction_time = $('#propertyeditor_reactiontime').spinner("value");
 					for(i=0;i<_siglist.length;i++){
 						sig = _siglist[i];
-						self.sigProper[i]=$('#s'+sig.name).val();
+						self.sigProper[sig.name]=$('#s'+sig.name).val();
 					}
 					for(i=0;i<_actlist.length;i++){
 						act = _actlist[i];
-						self.actProper[i]=$('#a'+act.name).val();
-						self.monitorProper[i]=$('#m'+act.name).val();
+						self.actProper[act.name]=$('#a'+act.name).val();
+						self.monitorProper[act.name]=$('#m'+act.name).val();
 					}
 					$('#propertyeditor').dialog("close");
 				},

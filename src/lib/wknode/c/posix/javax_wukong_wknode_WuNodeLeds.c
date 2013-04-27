@@ -8,7 +8,3 @@ void javax_wukong_wknode_WuNodeLeds_void__setLed_int_boolean()
 
 	printf("Turning LED %d %s\n", nr, on ? "on" : "off");
 }
-
-void javax_wukong_wknode_WuNodeLeds_void__init()
-{
-}

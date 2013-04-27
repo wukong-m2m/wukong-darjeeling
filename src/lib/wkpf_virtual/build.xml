@@ -1,0 +1,13 @@
+<project default="all">
+
+	<!-- set the name of the library -->
+	<property name="name" value="wkpf_virtual"/>
+	
+	<!-- list of libraries this library depends on -->
+	<property name="lib-c-depends" value="vm, wkcomm, wkpf"/>
+	<property name="lib-java-depends" value="base"/>
+	
+	<!-- include the library build template -->
+	<import file="../lib.xml"/>
+
+</project>

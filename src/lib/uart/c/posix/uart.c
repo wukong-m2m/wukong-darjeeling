@@ -9,7 +9,7 @@
 extern char* posix_uart_filenames[4]; // Should be filled from main.c
 int uart_fd[4] = {0, 0, 0, 0};
 
-void uart_init(uint8_t uart, uint32_t baudrate) {
+void uart_inituart(uint8_t uart, uint32_t baudrate) {
 	if(posix_uart_filenames[uart] == NULL) {
 		printf("Uart %d not specified\n", uart);
 		abort();

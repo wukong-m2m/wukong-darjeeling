@@ -8,10 +8,4 @@ public class WuNodeLeds
 	public static final byte LED4 = 3;
 
     public static native void setLed(int led, boolean state);
-    private static native void _init();
-
-	static
-	{
-		_init();
-	}
 }

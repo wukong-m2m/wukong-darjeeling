@@ -5,6 +5,9 @@ from models import *
 from globals import *
 from configuration import *
 
+# MUST MATCH THE SIZE DEFINED IN wkcomm.h
+WKCOMM_MESSAGE_PAYLOAD_SIZE=40
+
 # routing services here
 class Communication:
     _communication = None
@@ -203,7 +206,7 @@ class Communication:
                   return x
                 new_properties_with_node_infos = map(anew, new_properties_with_node_infos)
                 wuclass = WuClass(wuclass_component.id, wuclass_component.name,
-                        wuclass_component.virtual, wuclass_component.type,
+                        isVirtual, wuclass_component.type,
                         new_properties_with_node_infos, destination)
                 wuclass.save()
             else:
@@ -330,7 +333,7 @@ class Communication:
       return ret
 
     def reprogramInfusion(self, destination, filename):
-      MESSAGESIZE = 30
+      REPRG_CHUNK_SIZE = WKCOMM_MESSAGE_PAYLOAD_SIZE - 2 # -2 bytes for the position
 
       bytecode = []
       with open(filename, "rb") as f:
@@ -362,8 +365,8 @@ class Communication:
       pos = 0
       while not pos == len(bytecode):
         payload_pos = [pos%256, pos/256]
-        payload_data = bytecode[pos:pos+MESSAGESIZE]
-        print "Uploading bytes", pos, "to", pos+MESSAGESIZE, "of", len(bytecode)
+        payload_data = bytecode[pos:pos+REPRG_CHUNK_SIZE]
+        print "Uploading bytes", pos, "to", pos+REPRG_CHUNK_SIZE, "of", len(bytecode)
         print pos/pagesize, (pos+len(payload_data))/pagesize, "of pagesize", pagesize
         if pos/pagesize == (pos+len(payload_data))/pagesize:
           self.zwave.send(destination, pynvc.REPRG_DJ_WRITE, payload_pos+payload_data, [])

@@ -139,7 +139,7 @@ void avr_serialPrint(char * str)
 }
 void avr_serialVPrint(char * format, va_list arg)
 {
-	char temp[128];
+	static char temp[128];
 	vsnprintf(temp, 128, format, arg);
 	avr_serialPrint(temp);
 }

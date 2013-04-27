@@ -1,0 +1,22 @@
+<project default="all">
+	<target name="lib-specific-pre">
+		<subant target="create-infusion">
+			<!-- passing architecture flag to prevent Ant from complaining about redefining the compile task
+			     (didn't matter anyway, since we're only running the create-infusion task) -->
+			<property name="architecture" value="${architecture}"/>
+			<fileset includes="build.xml" dir="../base"/>
+		</subant>
+	</target>
+
+	<!-- set the name of the library -->
+	<property name="name" value="vm"/>
+	
+	<!-- list of libraries this library depends on -->
+	<property name="lib-c-depends" value=""/>
+	<property name="lib-java-depends" value=""/>
+
+	<!-- include the library build template -->
+	<import file="../lib.xml"/>
+
+	<property name="public-headerfile" value="*.h"/>
+</project>

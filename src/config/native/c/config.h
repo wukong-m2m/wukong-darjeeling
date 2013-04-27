@@ -36,7 +36,7 @@ typedef int64_t dj_time_t;
 // #define ALIGN_16
 
 /* Please see common/debug.h */
-#define DARJEELING_DEBUG
+// #define DARJEELING_DEBUG
 // #define DARJEELING_DEBUG_FRAME
 // #define DARJEELING_DEBUG_MEM_TRACE
 // #define DARJEELING_DEBUG_TRACE
@@ -49,14 +49,19 @@ typedef int64_t dj_time_t;
 // #define DBG_WKPFUPDATE true
 #define DBG_WKCOMM true
 #define DBG_WKREPROG true
-// #define DBG_ZWAVETRACE true
+#define DBG_ZWAVETRACE true
 
 #define DARJEELING_PRINTF printf
 
 #define DARJEELING_PGMSPACE_MACRO
 #define IS_SIMULATOR
 
-// Radios
+// Routing: choose 1
+#define ROUTING_USE_NONE
+// #define ROUTING_USE_DSDV
+// #define ROUTING_USE_WUKONG
+
+// Radios: choose as many as the routing protocol allows (max 1 for routing_none)
 #define RADIO_USE_ZWAVE
 // #define RADIO_USE_XBEE
 

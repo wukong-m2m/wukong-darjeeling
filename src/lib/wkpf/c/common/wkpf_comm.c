@@ -1,7 +1,8 @@
 #include "wkcomm.h"
 #include "panic.h"
 #include "debug.h"
-#include "execution.h"
+#include "core.h"
+
 #include "wkpf.h"
 #include "wkpf_comm.h"
 #include "wkpf_config.h"
@@ -9,7 +10,7 @@
 #include "wkpf_wuobjects.h"
 #include "wkpf_properties.h"
 
-uint8_t send_message(address_t dest_node_id, uint8_t command, uint8_t *payload, uint8_t length) {
+uint8_t send_message(wkcomm_address_t dest_node_id, uint8_t command, uint8_t *payload, uint8_t length) {
 	// Print some debug info
 #ifdef DEBUG
 	DEBUG_LOG(DBG_WKPF, "WKPF: sending property set command to %d:", dest_node_id);
@@ -35,7 +36,7 @@ uint8_t send_message(address_t dest_node_id, uint8_t command, uint8_t *payload, 
 	}
 }
 
-uint8_t wkpf_send_set_property_int16(address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, int16_t value) {
+uint8_t wkpf_send_set_property_int16(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, int16_t value) {
 	uint8_t message_buffer[7];
 	message_buffer[0] = port_number;
 	message_buffer[1] = (uint8_t)(wuclass_id >> 8);
@@ -47,7 +48,7 @@ uint8_t wkpf_send_set_property_int16(address_t dest_node_id, uint8_t port_number
 	return send_message(dest_node_id, WKPF_COMM_CMD_WRITE_PROPERTY, message_buffer, 7);
 }
 
-uint8_t wkpf_send_set_property_boolean(address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, bool value) {
+uint8_t wkpf_send_set_property_boolean(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, bool value) {
 	uint8_t message_buffer[6];
 	message_buffer[0] = port_number;
 	message_buffer[1] = (uint8_t)(wuclass_id >> 8);
@@ -58,7 +59,7 @@ uint8_t wkpf_send_set_property_boolean(address_t dest_node_id, uint8_t port_numb
 	return send_message(dest_node_id, WKPF_COMM_CMD_WRITE_PROPERTY, message_buffer, 6);
 }
 
-uint8_t wkpf_send_set_property_refresh_rate(address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, wkpf_refresh_rate_t value) {
+uint8_t wkpf_send_set_property_refresh_rate(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, wkpf_refresh_rate_t value) {
 	uint8_t message_buffer[7];
 	message_buffer[0] = port_number;
 	message_buffer[1] = (uint8_t)(wuclass_id >> 8);
@@ -70,7 +71,7 @@ uint8_t wkpf_send_set_property_refresh_rate(address_t dest_node_id, uint8_t port
 	return send_message(dest_node_id, WKPF_COMM_CMD_WRITE_PROPERTY, message_buffer, 7);
 }
 
-uint8_t wkpf_send_request_property_init(address_t dest_node_id, uint8_t port_number, uint8_t property_number) {
+uint8_t wkpf_send_request_property_init(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number) {
 	uint8_t message_buffer[2];
 	message_buffer[0] = port_number;
 	message_buffer[1] = property_number;
@@ -78,7 +79,7 @@ uint8_t wkpf_send_request_property_init(address_t dest_node_id, uint8_t port_num
 }
 
 
-//void wkpf_comm_handle_message(address_t src, uint8_t nvmcomm_command, uint8_t *payload, uint8_t response_size, uint8_t response_cmd) {
+//void wkpf_comm_handle_message(wkcomm_address_t src, uint8_t nvmcomm_command, uint8_t *payload, uint8_t response_size, uint8_t response_cmd) {
 void wkpf_comm_handle_message(void *data) {
 	wkcomm_received_msg *msg = (wkcomm_received_msg *)data;
 	uint8_t *payload = msg->payload;
@@ -99,7 +100,7 @@ void wkpf_comm_handle_message(void *data) {
 			uint8_t requested_offset = payload[0];
 
 			// Read the EEPROM
-			uint8_t length = wkpf_config_get_part_of_location_string((char *)payload, requested_offset, WKCOMM_MESSAGE_SIZE);
+			uint8_t length = wkpf_config_get_part_of_location_string((char *)payload, requested_offset, WKCOMM_MESSAGE_PAYLOAD_SIZE);
 
 			DEBUG_LOG(DBG_WKPF, "WKPF_COMM_CMD_GET_LOCATION: Reading %d bytes at offset %d\n", length, requested_offset);
 

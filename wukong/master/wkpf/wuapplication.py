@@ -288,7 +288,7 @@ class WuApplication:
 
       # Build the Java code
       self.info('==Compressing application code to bytecode format')
-      pp = Popen('cd %s/..; ant clean; ant master-create-deploy-archive' % (JAVA_OUTPUT_DIR), shell=True, stdout=PIPE, stderr=PIPE)
+      pp = Popen('cd %s/..; ant clean; ant' % (JAVA_OUTPUT_DIR), shell=True, stdout=PIPE, stderr=PIPE)
       self.returnCode = None
       (infomsg,errmsg) = pp.communicate()
 

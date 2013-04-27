@@ -1,0 +1,1 @@
+void darjeeling3_init(void) {}

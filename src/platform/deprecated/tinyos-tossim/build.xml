@@ -78,7 +78,7 @@
 			<arg value="-I${tinyosbuildpath}/../../lib/base/build"/>
 			<arg value="-I${tinyosbuildpath}/../../lib/darjeeling/build"/>
 			
-			<arg value="-I${tinyosbuildpath}/../../vm/c/"/>
+			<arg value="-I${tinyosbuildpath}/../../core/c/"/>
 			<arg value="-I${tinyos-c-src}"/>
 			<arg value="-I${nesc-src}"/>
 		</exec>

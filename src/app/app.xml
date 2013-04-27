@@ -1,5 +1,4 @@
 <project name="app" default="all">
-
 	<!-- Obtain absolute paths to the app directory, and the home directory of the application being built -->
 	<dirname property="apppath" file="${ant.file.app}"/>	
 	<dirname property="buildtargetpath" file="${ant.file}"/>
@@ -13,6 +12,7 @@
 
 	<!-- Include taskdef for the Infuser tool -->
 	<import file="${apppath}/../taskdefs.xml"/>
+	<import file="${apppath}/../djarchive_filetypes.xml"/>
 		
 	<!-- We must not compile against the JRE libraries, but use out own base library instead (contains java.lang, among other things) -->
 	<property name="bootclasspath" value="${apppath}/../lib/base/build/base.jar"/>
@@ -35,8 +35,28 @@
 	</pathconvert>
 	
 	<!-- Meta-target -->
-	<target name="all" depends="compile-java, package, infuse"/>
-	
+	<target name="all" depends="process-lib-depends, create-jar, create-infusion, make-djarchive"/>
+
+	<!-- create infusions for dependencies -->
+	<target name="process-lib-depends">
+		<pathconvert property="lib-depends-buildfiles" pathsep=" ">
+			<filelist dir="/" files="${lib-depends}"/>
+			<regexpmapper from="\${file.separator}(.*)" to="\1/build.xml"/>
+		</pathconvert>
+		<foreach list="${lib-depends-buildfiles}" target="do-process-lib-depends" param="single_libbuildfile" delimiter=" "/>
+	</target>
+	<target name="do-process-lib-depends">
+		<echo message="calling build-java-only in ${single_libbuildfile}"/>
+		<subant target="build-java-only">
+			<fileset includes="${single_libbuildfile}" dir="${apppath}/../lib/"/>
+		</subant>
+	</target>
+
+	<!-- WuKong specific: add some binary data containing the link table and 
+	     component map to the end of the infusion -->
+	<target name="make-djarchive">
+		<djarchive dest="${build}/${name}.dja" mode="create" src="${build}/${name}.di" filetype="${djarchive_type_app_infusion}"/>
+	</target>
 	
 	<apply executable="ls">
 		<filelist files="${javac-classpath}" dir="${apppath}/../lib/"/>
@@ -44,6 +64,7 @@
 
 	<!-- compile the java sources -->
 	<target name="compile-java">
+		<echo message="classpath ${javac-classpath}"/>
 		<mkdir dir="${classes}"/>
 		<javac
 			srcdir="${java-src}"
@@ -64,15 +85,15 @@
 	</target>
 
 	<!-- package the code into a single .jar file -->
-	<target name="package" depends="compile-java"> 
+	<target name="create-jar" depends="compile-java"> 
 		<mkdir dir="${build}"/>
 		<jar destfile="${jar}"> 
 			<fileset dir="${classes}"><include name="**/*.class"/></fileset>
 		</jar>
 	</target>
 
-	<!-- infuse the java code -->
-	<target name="infuse" depends="compile-java"> 
+	<!-- create infusion for the java code -->
+	<target name="create-infusion" depends="compile-java"> 
 		<infuser
 			name="${name}"
 			infusionfile="${build}/${name}.di"

@@ -3,6 +3,8 @@
 
 #ifdef ENABLE_WUCLASS_LOGICAL
 
+void wuclass_logical_setup(wuobject_t *wuobject) {}
+
 void wuclass_logical_update(wuobject_t *wuobject) {
   bool input1;
   bool input2;

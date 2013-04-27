@@ -6,6 +6,8 @@
 
 #ifdef ENABLE_WUCLASS_TEMPERATURE_HUMIDITY_SENSOR
 
+void wuclass_temperature_humidity_sensor_setup(wuobject_t *wuobject) {}
+
 void wuclass_temperature_humidity_sensor_update(wuobject_t *wuobject) {
     sbi(TCCR0B, CS01);
     sbi(TCCR0B, CS00);	

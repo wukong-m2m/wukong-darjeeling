@@ -39,4 +39,7 @@ extern void wkpf_schedule_next_update_for_wuobject(wuobject_t *wuobject);
 extern wuobject_property_t* wkpf_get_property(wuobject_t *wuobject, uint8_t property_number);
 extern bool wkpf_get_next_dirty_property(wuobject_t **dirty_wuobject, uint8_t *dirty_property_number);
 
+// Access to private data
+extern void *wkpf_get_private_wuobject_data(wuobject_t *wuobject);
+
 #endif // WKPF_WUOBJECTSH

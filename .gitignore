@@ -19,9 +19,11 @@ programflash.data
 darjeeling.sublime-project
 darjeeling.sublime-workspace
 WKDeploy.java
+WKDeploy.xml
 wukong/apps
 master.cfg
 src/config/native/config.txt
+src/config/wunode/build.xml
 stk500boot.eep
 stk500boot.elf
 stk500boot.lss

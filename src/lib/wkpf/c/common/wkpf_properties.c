@@ -122,7 +122,7 @@ uint8_t wkpf_property_needs_initialisation_push(wuobject_t *wuobject, uint8_t pr
 				// Otherwise (the property's value is already available), immediately schedule it to be propagated
 				property->status = (PROPERTY_STATUS_NEEDS_PUSH | PROPERTY_STATUS_FORCE_NEXT_PUSH);
 			}
-			DEBUG_LOG(DBG_WKPF, "WKPF: wkpf_property_needs_initialisation_push: (port 0x%x, property %d): status %x\n", wuobject->port_number, property_number, property->status);
+			DEBUG_LOG(DBG_WKPF, "WKPF: wkpf_property_needs_initialisation_push: (port 0x%x, property %d): status %d\n", wuobject->port_number, property_number, property->status);
 			return WKPF_OK;
 	}
 	return WKPF_ERR_SHOULDNT_HAPPEN;
@@ -146,7 +146,7 @@ void wkpf_propagating_dirty_property_failed(wuobject_property_t *property) {
 	uint8_t timer_bit_value = ((dj_timer_getTimeMillis() >> timer_bit_number) + 1) & 1; // Add one to flip bit 
 	uint8_t new_status = (property->status & 0xF0) | (failure_count << 1) | timer_bit_value;
 	property->status = new_status;
-	DEBUG_LOG(DBG_WKPF, "WKPF: wkpf_propagating_dirty_property_failed!!!!! new status %x\n", new_status);
+	DEBUG_LOG(DBG_WKPF, "WKPF: wkpf_propagating_dirty_property_failed!!!!! new status %d\n", new_status);
 }
 
 void wkpf_propagating_dirty_property_succeeded(wuobject_property_t *property) {

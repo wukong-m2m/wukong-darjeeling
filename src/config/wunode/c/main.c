@@ -18,12 +18,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Darjeeling.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
-#include <stdlib.h>
-#include <stdio.h>
-
-#include <avr/pgmspace.h>
-#include <avr/io.h>
 
 #include "debug.h"
 #include "vm.h"
@@ -34,15 +28,7 @@
 #include "djtimer.h"
 #include "execution.h"
 #include "hooks.h"
-
-#include "jlib_base.h"
-#include "jlib_darjeeling3.h"
-#include "jlib_uart.h"
-//#include "jlib_wkcomm.h"
-#include "jlib_wkpf.h"
-#include "jlib_wkreprog.h"
-
-#include "pointerwidth.h"
+#include "core.h"
 
 extern unsigned char di_lib_infusions_archive_data[];
 extern unsigned char di_app_infusion_archive_data[];
@@ -50,32 +36,22 @@ extern unsigned char di_app_infusion_archive_data[];
 unsigned char mem[HEAPSIZE];
 
 #include "avr.h"
-#include "wifi.h"
 
-
-WIFI_SETTING wifi_setting = { "home321",       /* SSID */
-                        "0123456789" ,        /* WPA/WPA2 passphrase */
-                        "192.168.2.5" ,   /* IP address */
-                        "255.255.255.0" ,   /* subnet mask */
-                        "192.168.2.222"   ,   /* Gateway IP */
-                      };
+// From GENERATEDlibinit.c, which is generated during build based on the libraries in this config's libs.
+extern dj_named_native_handler java_library_native_handlers[];
+extern uint8_t java_library_native_handlers_length;
 
 int main()
 {
-core_init();
-uart_init(0, 9600);
-uart_write_byte(0, 's');
-  SOCKET s1;
+	// initialise serial port
+	avr_serialInit(115200);
 
-  if(!wifi_init(&wifi_setting))
-  {uart_write_byte(0, 'i');}
+	core_init(mem, HEAPSIZE);
+	dj_vm_main((dj_di_pointer)di_lib_infusions_archive_data, (dj_di_pointer)di_app_infusion_archive_data, java_library_native_handlers, java_library_native_handlers_length);
 
-  s1=wifi_client_connect("192.168.2.8", "80");
-  if(s1==INVALID_SOCKET)
-  {uart_write_byte(0, 'c');}
-  
-  //wifi_sendData(s1,"GET / HTTP/1.0\r\n\r\n",18);
-
+	// Listen to the radio
+	while(true)
+		dj_hook_call(dj_core_pollingHook, NULL);
 
 	return 0;
 }

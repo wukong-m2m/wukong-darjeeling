@@ -6,7 +6,7 @@
 const uint8_t P3SEL_ENABLE_UART[UART_COUNT] = {, BIT6+BIT7};
 const uint8_t ME1_ENABLE_UART[UART_COUNT] = {, UTXE1+URXE1};
 
-void uart_init(uint8_t uart, uint32_t baudrate) {
+void uart_inituart(uint8_t uart, uint32_t baudrate) {
 	if (uart==0) {
 		P3SEL |= BIT4+BIT5; // Configure pins for UART use (instead of GPIO)
 		ME1 |= UTXE0+URXE0; // Enable RX and TX on the UART

@@ -5,7 +5,7 @@
 #include "types.h"
 #include "wkreprog_impl.h"
 
-extern char** posix_argv;
+#include "posix_utils.h"
 
 uint8_t *wkreprog_impl_buffer;
 int wkreprog_impl_pos;

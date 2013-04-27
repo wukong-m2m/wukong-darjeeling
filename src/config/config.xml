@@ -1,6 +1,5 @@
 <!-- Project template for Darjeeling configurations -->
 <project name="config">
-
 	<property name="executable" value="darjeeling.elf"/>
 	<property name="outputfile" value="darjeeling.a"/>
 	<property name="lib_infusionarchive" value="lib_infusions.dja"/>
@@ -13,12 +12,14 @@
 	
 	<!-- Import taskdefs.xml and compiler.xml relative to where config.xml is (imports GCC build stuff mostly) -->
 	<import file="${configpath}/../taskdefs.xml"/>
+	<import file="${configpath}/../djarchive_filetypes.xml"/>
 	<import file="${configpath}/../architecture/${architecture}/compiler.xml"/>
 	<import file="${configpath}/../platform/${platform}/platform.xml"/>
 	
 	<!-- source directory where the main.c resides -->
 	<property name="c-src" value="${configtargetpath}/c"/>
 	<property name="temp" value="${configtargetpath}/build"/>
+	<property name="generatedLibInit" value="GENERATEDlibinit.c"/>
 
 	<!-- Construct a list of .a files to include (relative to the lib directory) based on a list of 
 	libraries (ie 'base, darjeeling' -> 'base/build/base.a, darjeeling/build/darjeeling.a') -->
@@ -46,13 +47,16 @@
 
 	<!-- Meta-targets -->
 	<target name="all" depends="executable"/>
-	<target name="executable" depends="compile-libs, compile-apps, compile-vm, compile-platform, unpack, compile-main, packdi, repack, link"/>
-	<target name="lib" depends="compile-libs, compile-apps, compile-vm, compile-platform, unpack, compile-main, repack"/>
+	<target name="executable" depends="compile-libs, compile-apps, compile-core, compile-platform, unpack, compile-main, packdi, repack, link"/>
+	<target name="lib" depends="compile-libs, compile-apps, compile-core, compile-platform, unpack, compile-main, repack"/>
 	
 	<!-- Compile libraries -->
 	<target name="compile-libs">
+		<foreach list="${libbuildfiles}" target="do-compile-lib" param="single_libbuildfile" delimiter=" "/>
+	</target>
+	<target name="do-compile-lib">
 		<subant inheritall="true">
-			<fileset includes="${libbuildfiles}" dir="${configpath}/../lib/"/>
+			<fileset includes="${single_libbuildfile}" dir="${configpath}/../lib/"/>
 		</subant>
 	</target>
 
@@ -63,10 +67,10 @@
 		</subant>
 	</target>
 	
-	<!-- Compile the VM -->
-	<target name="compile-vm">
+	<!-- Compile the core C files -->
+	<target name="compile-core">
 		<subant inheritall="true">
-			<fileset includes="build.xml" dir="${configpath}/../vm/"/>
+			<fileset includes="build.xml" dir="${configpath}/../core/"/>
 		</subant>
 	</target>
 	
@@ -81,9 +85,20 @@
 		<define name="AUTOSTART_ENABLE"/>
 		<define name="CONTIKI_PLATFORM" value="native"/>
 	</defineset-->
+
+	<!-- Generate a file containing calls to <libname>_init functions for each library,
+	     as well as the list of native handlers for libraries containing Java code -->
+	<target name="generate-lib-init">
+		<generatelibinit
+			dest="${c-src}/../build/${generatedLibInit}"
+			libDir="${configpath}/../lib"
+			libraries="${libs}"
+		/>
+	</target>
 	
 	<!-- Compile the main.c for this configuration -->
-	<target name="compile-main">
+	<target name="compile-main" depends="generate-lib-init">
+		<echo message="${c-src}"/>
 		<mkdir dir="${temp}/main/"/>
 		<platform-compile objectfiles="${temp}/main/">
 			<compile-elements>
@@ -95,51 +110,55 @@
 					<pathelement path="${configpath}/../architecture/${architecture}/c"/>
 					<pathelement path="${configpath}/../platform/${platform}/c"/>
 					<pathelement path="${configpath}/../config/${configuration}/c"/>
-					<pathelement path="${configpath}/../vm/c"/>
+					<pathelement path="${configpath}/../core/c"/>
 					<pathelement path="."/>
 					<path refid="platform-includes"/>	
 					<path><filelist files="${libincludes}" dir="${configpath}/../lib/"/></path>
 				</includepath>
 		
 				<!-- input files -->
-				<fileset dir="${c-src}">
-					<include name="**/*.c"/>
+				<fileset dir="${c-src}/..">
+					<include name="c/**/*.c"/>
+					<include name="build/${generatedLibInit}"/>
 				</fileset>
 				
 			</compile-elements>
 		</platform-compile>
 	</target>
 
-	<!-- Packs neccesairy .di files (libraries and applications) into a single archive using ar. Then it uses objcopy to create a .o file for 
-	inclusion in the final executable -->
+	<!-- Packs neccesairy .di files (libraries and applications) into a single archive using djarchive. Then it uses objcopy to create a .o file for inclusion in the final executable -->
 	<target name="packdi" depends="compile-main">
 		<mkdir dir="${temp}/infusions"/>
 	
 		<!-- Construct a list of library .di files based on a comma separated list of libraries (ie 'base, darjeeling') -->
-		<pathconvert property="dilibs" pathsep=" ">
+		<pathconvert property="dilibs-all" pathsep=" ">
 			<filelist dir="/" files="${libs}"/>
-            <regexpmapper from="\${file.separator}(.*)" to="/../lib/\1/build/\1.di"/>
-			<map from="" to="${configpath}"/>
+            <regexpmapper from="\${file.separator}(.*)" to="\1/build/\1.di"/>
+		</pathconvert>
+		<!-- Some libraries don't contain Java code, so they won't have an infusion. Filter only the existing infusions. -->
+		<pathconvert property="dilibs-exist" pathsep=" ">
+			<fileset dir="${configpath}/../lib/" includes="${dilibs-all}"/>
 		</pathconvert>
 
-		<!-- Construct a list of application .di files based on a comma separated list of applications (ie 'blink, hello world') -->
+		<!-- Construct a list of application .dja files based on a comma separated list of applications (ie 'blink, hello world') -->
+		<!-- Note: This is old code that doesn't work well with the current dja setup. -->
+		<!--       We can only support a single application for now. -->
 		<pathconvert property="diapps" pathsep=" ">
 			<filelist dir="/" files="${apps}"/>
-			<regexpmapper from="\${file.separator}(.*)" to="/../app/\1/build/\1.di"/>
+			<regexpmapper from="\${file.separator}(.*)" to="/../app/\1/build/\1.dja"/>
             <map from="" to="${configpath}"/>
 		</pathconvert>
 		
-		<!-- Archive the files using darjeeling archive task -->
 		<delete file="${lib_infusionarchive}"/>
 		<delete file="${app_infusionarchive}"/>
-		<djarchive dest="${lib_infusionarchive}" libInfusions="${dilibs}" />
-		<djarchive dest="${app_infusionarchive}" libInfusions="${diapps}" />
+		<djarchive dest="${lib_infusionarchive}" src="${dilibs-exist}" filetype="${djarchive_type_lib_infusion}" mode="create"/>
+		<copy file="${diapps}" tofile="${app_infusionarchive}"/>
 
 		<!-- Use objcopy to turn the archive into an elf file so it can be linked into the final executable -->
 		<platform-objcopy inputfile="${lib_infusionarchive}" outputfile="${temp}/infusions/lib_infusions.o" arrayname="di_lib_infusions_archive"/>
 		<platform-objcopy inputfile="${app_infusionarchive}" outputfile="${temp}/infusions/app_infusions.o" arrayname="di_app_infusion_archive"/>
 	</target>
-		
+
 	<!-- Unpack the static libraries for the different libraries and the VM into the build directory -->
 	<target name="unpack">
 		<delete dir="${temp}"/>
@@ -147,7 +166,7 @@
 		<apply executable="${ar}" parallel="false" dir="${temp}/unpack">
 			<arg value="x"/>
 			<fileset includes="${nativelibs}" dir="${configpath}/../lib/"/>
-			<fileset includes="vm.a" dir="${configpath}/../vm/build/${configuration}/"/>
+			<fileset includes="vm.a" dir="${configpath}/../core/build/${configuration}/"/>
 			<fileset includes="platform.a" dir="${configpath}/../platform/${platform}/build/${configuration}"/>
 		</apply>
 	</target>
@@ -175,10 +194,10 @@
 	<!-- Clean the build dir, the VM, and the libraries this configuration depends on -->
 	<target name="clean">
 		<subant target="clean" inheritall="true">
-			<fileset includes="${libbuildfiles}" dir="${configpath}/../lib/"/>
-			<fileset includes="${appbuildfiles}" dir="${configpath}/../app/"/>
-			<fileset includes="build.xml" dir="${configpath}/../vm/"/>
-			<fileset includes="build.xml" dir="${configpath}/../platform/${platform}"/>
+			<fileset includes="*/build.xml" dir="${configpath}/../lib/"/>
+			<fileset includes="*/build.xml" dir="${configpath}/../app/"/>
+			<fileset includes="*/build.xml" dir="${configpath}/../platform/"/>
+			<fileset includes="build.xml" dir="${configpath}/../core/"/>
 		</subant>
 		<delete dir="./build"/>
 		<delete file="history.xml"/>
