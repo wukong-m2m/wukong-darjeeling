@@ -4,6 +4,8 @@
 
 #include "types.h"
 #include "routing.h"
+#include "debug.h"
+
 
 // routing_none doesn't contain any routing protocol, but will just forward messages to the radio layer.
 // Therefore, only 1 radio is allowed at a time.
@@ -34,6 +36,29 @@ wkcomm_address_t addr_xbee_to_wkcomm(radio_xbee_address_t xbee_addr) {
 }
 #endif // RADIO_USE_XBEE
 
+#ifdef RADIO_USE_WIFI
+#include "../radios/radio_wifi.h"
+#include <stdlib.h>
+uint32_t wifi_table[WIFI_TABLE_SIZE];
+
+radio_wifi_address_t addr_wkcomm_to_wifi(wkcomm_address_t wkcomm_addr) {
+    wifi_table[0]=ipstr_to_uint32("192.168.2.8");//write ip here just for test
+    char ipstr[16]={0};
+    char portstr[6]={0};
+    ipuint32_to_str(wifi_table[wkcomm_addr], &ipstr[0]);
+    itoa(WIFI_LISTEN_PORT,portstr,10);
+
+    SOCKET s1=radio_wifi_client_connect( ipstr, portstr );
+    if(s1 == INVALID_SOCKET) { 
+	DEBUG_LOG(DBG_WKCOMM, "Wi-fi connect to server/client error"); 
+    }
+    return (radio_wifi_address_t)s1;
+}
+wkcomm_address_t addr_wifi_to_wkcomm(radio_wifi_address_t wifi_addr) {
+	return (wkcomm_address_t)wifi_addr;
+}
+#endif // RADIO_USE_WIFI
+
 
 // SENDING
 uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
@@ -42,6 +67,9 @@ uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
 	#endif
 	#ifdef RADIO_USE_XBEE
 		return radio_xbee_send(addr_wkcomm_to_xbee(dest), payload, length);
+	#endif
+	#ifdef RADIO_USE_WIFI
+		return radio_wifi_send(addr_wkcomm_to_wifi(dest), payload, length);
 	#endif
 	return 0;
 }
@@ -64,6 +92,12 @@ void routing_handle_xbee_message(radio_xbee_address_t xbee_addr, uint8_t *payloa
 }
 #endif // RADIO_USE_XBEE
 
+#ifdef RADIO_USE_WIFI
+void routing_handle_wifi_message(SOCKET wifi_addr, uint8_t *payload, uint8_t length) {
+	wkcomm_handle_message(addr_wifi_to_wkcomm(wifi_addr), payload, length);
+}
+#endif // RADIO_USE_WIFI
+
 
 // MY NODE ID
 // Get my own node id
@@ -74,6 +108,9 @@ wkcomm_address_t routing_get_node_id() {
 	#endif
 	#ifdef RADIO_USE_XBEE
 		return addr_xbee_to_wkcomm(radio_xbee_get_node_id());
+	#endif
+	#ifdef RADIO_USE_WIFI
+		return addr_wifi_to_wkcomm(radio_wifi_get_node_id());
 	#endif
 	return 1; // Just return 1 if we have no radios at all.
 }
@@ -86,6 +123,10 @@ void routing_init() {
 	#endif
 	#ifdef RADIO_USE_XBEE
 		radio_xbee_init();
+	#endif
+	#ifdef RADIO_USE_WIFI
+		if(radio_wifi_init() != WIFI_SUCCESS)
+		{	DEBUG_LOG(DBG_WKCOMM, "Wi-Fi initalize error");	}
 	#endif
 }
 
@@ -100,6 +141,9 @@ void routing_poll() {
 	#endif
 	#ifdef RADIO_USE_XBEE
 		radio_xbee_poll();
+	#endif
+	#ifdef RADIO_USE_WIFI
+		radio_wifi_poll();
 	#endif
 }
 
