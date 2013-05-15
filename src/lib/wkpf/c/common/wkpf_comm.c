@@ -158,8 +158,10 @@ void wkpf_comm_handle_message(void *data) {
 		break;
 		case WKPF_COMM_CMD_GET_WUCLASS_LIST: {
 			uint8_t number_of_wuclasses = wkpf_get_number_of_wuclasses();
+			if (number_of_wuclasses > 9) // TODONR: i<9 is temporary to keep the length within MESSAGE_SIZE, but we should have a protocol that sends multiple messages
+				number_of_wuclasses = 9;
 			payload[0] = number_of_wuclasses;
-			for (uint8_t i=0; i<number_of_wuclasses && i<9; i++) { // TODONR: i<9 is temporary to keep the length within MESSAGE_SIZE, but we should have a protocol that sends multiple messages
+			for (uint8_t i=0; i<number_of_wuclasses; i++) {
 				wuclass_t *wuclass;
 				wkpf_get_wuclass_by_index(i, &wuclass);
 				payload[3*i + 1] = (uint8_t)(wuclass->wuclass_id >> 8);
@@ -172,8 +174,10 @@ void wkpf_comm_handle_message(void *data) {
 		break;
 		case WKPF_COMM_CMD_GET_WUOBJECT_LIST: {
 			uint8_t number_of_wuobjects = wkpf_get_number_of_wuobjects();
+			if (number_of_wuobjects > 9) // TODONR: i<9 is temporary to keep the length within MESSAGE_SIZE, but we should have a protocol that sends multiple messages
+				number_of_wuobjects = 9;
 			payload[0] = number_of_wuobjects;
-			for (uint8_t i=0; i<number_of_wuobjects && i<9; i++) { // TODONR: i<9 is temporary to keep the length within MESSAGE_SIZE, but we should have a protocol that sends multiple messages
+			for (uint8_t i=0; i<number_of_wuobjects; i++) {
 				wuobject_t *wuobject;
 				wkpf_get_wuobject_by_index(i, &wuobject);
 				payload[3*i + 1] = (uint8_t)(wuobject->port_number);

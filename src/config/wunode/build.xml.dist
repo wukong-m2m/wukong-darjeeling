@@ -16,6 +16,8 @@
 	<property name="mcu" value="atmega2560"/>
 	<property name="app-archive-size" value="4096"/>
 
+	<property name="enabled_wuclasses" value="enabled_wuclasses.xml"/>
+	
 	<!-- Import the rest from config.xml (magic) -->
 	<import file="../config.xml"/>
 

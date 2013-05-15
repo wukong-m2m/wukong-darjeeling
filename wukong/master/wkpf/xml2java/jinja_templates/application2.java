@@ -22,9 +22,9 @@ public class WKDeploy {
         {%- endfor %}
 
 
-        WKPF.appInitLinkTableAndComponentMap();
+        WKPF.appLoadInitLinkTableAndComponentMap();
         createVirtualWuObjects();
-        WKPF.appInitLocalObjectAndInitValues();
+        WKPF.appInitCreateLocalObjectAndInitValues();
 
         while(true){
             VirtualWuObject wuobject = WKPF.select();

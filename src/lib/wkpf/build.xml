@@ -15,7 +15,7 @@
 
 	<target name="lib-specific-pre">
 		<exec executable="../../../wukong/master/wkpf/codegen.py">
-			<arg line="-i ../../../wukong/ComponentDefinitions/WuKongStandardLibrary.xml -p ../../.. -u ../../.."/>
+			<arg line="-i ../../../wukong/ComponentDefinitions/WuKongStandardLibrary.xml -p ../../.. -u ../../.. -e ${configtargetpath}/${enabled_wuclasses}"/>
 		</exec>
 	</target>
 

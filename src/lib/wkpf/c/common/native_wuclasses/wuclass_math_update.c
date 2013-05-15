@@ -1,11 +1,11 @@
 #include "debug.h"
 #include "native_wuclasses.h"
 
-#ifdef ENABLE_WUCLASS_MATH
+#ifdef ENABLE_WUCLASS_MATH_OP
 
-void wuclass_math_setup(wuobject_t *wuobject) {}
+void wuclass_math_op_setup(wuobject_t *wuobject) {}
 
-void wuclass_math_update(wuobject_t *wuobject) {
+void wuclass_math_op_update(wuobject_t *wuobject) {
   int16_t input1;
   int16_t input2;
   int16_t input3;
@@ -20,7 +20,7 @@ void wuclass_math_update(wuobject_t *wuobject) {
   wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_MATH_OP_INPUT4, &input4);
   wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_MATH_OP_OPERATOR, &op);
 
-  if(op==WKPF_ENUM_MATH_OP_OPERATOR_MAX) {
+  if(op==WKPF_ENUM_MATH_OPERATOR_MAX) {
 		if ( (input1>=input2) && (input1>=input3) && (input1>=input4))
 			output=input1;
 		else if ( (input2>=input1) && (input2>=input3) && (input2>=input4))
@@ -30,7 +30,7 @@ void wuclass_math_update(wuobject_t *wuobject) {
 		else if ( (input4>=input1) && (input4>=input2) && (input4>=input3))
 			output=input4;
 		remainder=0;
-  } else if(op==WKPF_ENUM_MATH_OP_OPERATOR_MIN) {
+  } else if(op==WKPF_ENUM_MATH_OPERATOR_MIN) {
 	  	if ( (input1<=input2) && (input1<=input3) && (input1<=input4))
 			output=input1;
 		else if ( (input2<=input1) && (input2<=input3) && (input2<=input4))
@@ -40,19 +40,19 @@ void wuclass_math_update(wuobject_t *wuobject) {
 		else if ( (input4<=input1) && (input4<=input2) && (input4<=input3))
 			output=input4;
 		remainder=0;
-  } else if(op==WKPF_ENUM_MATH_OP_OPERATOR_AVG) {
+  } else if(op==WKPF_ENUM_MATH_OPERATOR_AVG) {
 		output=(input1+input2+input3+input4)/4;
 		remainder=0;
-  } else if(op==WKPF_ENUM_MATH_OP_OPERATOR_ADD) {
+  } else if(op==WKPF_ENUM_MATH_OPERATOR_ADD) {
 		output=input1+input2+input3+input4;
 		remainder=0;
-  } else if(op==WKPF_ENUM_MATH_OP_OPERATOR_SUB) {	// input1-input2
+  } else if(op==WKPF_ENUM_MATH_OPERATOR_SUB) {	// input1-input2
 		output=input1-input2;
 		remainder=0;
-  } else if(op==WKPF_ENUM_MATH_OP_OPERATOR_MULTIPLY) {
+  } else if(op==WKPF_ENUM_MATH_OPERATOR_MULTIPLY) {
 		output=input1*input2*input3*input4;
 		remainder=0;
-  } else if(op==WKPF_ENUM_MATH_OP_OPERATOR_DIVIDE) {	// input1/input2
+  } else if(op==WKPF_ENUM_MATH_OPERATOR_DIVIDE) {	// input1/input2
 		if(input2==0)
 			DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(math): divide by 0 Error ");
 	    output=input1/input2;

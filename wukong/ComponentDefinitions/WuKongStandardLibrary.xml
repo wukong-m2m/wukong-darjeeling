@@ -34,9 +34,9 @@
         <property name="output" datatype="boolean" access="readonly" default="false" />
     </WuClass>
 
-    <WuClass name="Temperature_Sensor" id="2" virtual="false" type="hard">
+    <!--WuClass name="Temperature_Sensor" id="2" virtual="false" type="hard">
         <property name="current_temperature" datatype="short" access="readonly" />
-    </WuClass>
+    </WuClass-->
 
     <WuClass name="Logical" id="11" virtual="true" type="soft">
         <property name="input1" datatype="boolean" access="writeonly" />
@@ -98,43 +98,44 @@
         <property name="refresh_rate" datatype="refresh_rate" access="readwrite" default="10" />
     </WuClass>
 
-    <WuClass name="Sound_Sensor" id="7" virtual="false" type="hard">
+    <!--WuClass name="Sound_Sensor" id="7" virtual="false" type="hard">
         <property name="current_value" datatype="short" access="readonly" />
         <property name="refresh_rate" datatype="refresh_rate" access="readwrite"/>
-    </WuClass>
+    </WuClass-->
 
-    <WuClass name="PIR_Sensor" id="8" virtual="false" type="hard">
+    <!--WuClass name="PIR_Sensor" id="8" virtual="false" type="hard">
         <property name="current_value" datatype="short" access="readonly" />
         <property name="refresh_rate" datatype="refresh_rate" access="readwrite"/>
-    </WuClass>
+    </WuClass-->
 
     <WuClass name="Light_Actuator" id="4" virtual="false" type="hard">
         <property name="on_off" datatype="boolean" access="readwrite" default="false" />
     </WuClass>
 
-    <WuClass name="Occupancy_Sensor" id="0x1005" virtual="true" type="soft">
+    <!--WuClass name="Occupancy_Sensor" id="0x1005" virtual="true" type="soft">
         <property name="occupied" datatype="boolean" access="readwrite" />
-    </WuClass>
+    </WuClass-->
 
-    <WuClass name="And_Gate" id="6" virtual="true" type="soft">
+    <!--WuClass name="And_Gate" id="6" virtual="true" type="soft">
         <property name="input1" datatype="boolean" access="writeonly" />
         <property name="input2" datatype="boolean" access="writeonly" />
         <property name="output" datatype="boolean" access="readonly" />
-    </WuClass>
+    </WuClass-->
     
-    <WuClass name="If_short" id="12" virtual="true" type="soft">
+    <!--WuClass name="If_short" id="12" virtual="true" type="soft">
         <property name="condition" datatype="boolean" access="writeonly" />
         <property name="if_true" datatype="short" access="writeonly" />
         <property name="if_false" datatype="short" access="writeonly" />
         <property name="output" datatype="short" access="readonly" />
-    </WuClass>
+    </WuClass-->
 
-    <WuClass name="If_boolean" id="13" virtual="true" type="soft">
+    <!--WuClass name="If_boolean" id="13" virtual="true" type="soft">
         <property name="condition" datatype="boolean" access="writeonly" />
         <property name="if_true" datatype="boolean" access="writeonly" />
         <property name="if_false" datatype="boolean" access="writeonly" />
         <property name="output" datatype="boolean" access="readonly" />
-    </WuClass>
+    </WuClass-->
+
     <WuClass name="LED" id="9" virtual="false" type="hard" privateCData="bool">
         <property name="refresh_rate" datatype="refresh_rate" access="readwrite" default="1000" />
         <property name="port1" datatype="boolean" access="readwrite" default="true" />
@@ -142,9 +143,19 @@
         <property name="port3" datatype="boolean" access="readwrite" default="true" />
         <property name="port4" datatype="boolean" access="readwrite" default="false" />
     </WuClass>
+
+    <WuClass name="Gh_Sensor" id="16" virtual="false" type="soft">
+        <property name="enable" datatype="boolean" access="readwrite" default="true" />
+        <property name="refresh_rate" datatype="refresh_rate" access="readwrite" default="2000" />
+    </WuClass>
+
+    <WuClass name="Gh_Test" id="17" virtual="false" type="soft">
+        <property name="enable" datatype="boolean" access="readwrite" default="true" />
+        <property name="refresh_rate" datatype="refresh_rate" access="readwrite" default="2000" />
+    </WuClass>
     <!-- Just for testing -->
-    <WuClass name="Null" id="45" virtual="true" type="soft">
+    <!--WuClass name="Null" id="45" virtual="true" type="soft">
         <property name="null" datatype="short" access="readwrite" />
         <property name="refresh_rate" datatype="refresh_rate" access="readwrite" default="10" />
-    </WuClass>
+    </WuClass-->
 </WuKong>

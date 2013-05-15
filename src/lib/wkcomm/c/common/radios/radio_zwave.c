@@ -69,10 +69,15 @@ uint8_t last_node = 0;
 uint8_t ack_got = 0;
 int zwsend_ack_got = 0;
 uint8_t wait_CAN_NAK = 1;
-uint8_t zwave_learn_on = 0;
 uint8_t zwave_learn_block = 0;
-uint32_t zwave_learn_startT;
-uint8_t zwave_learn_mode = 0;
+uint32_t zwave_time_learn_start;
+uint8_t zwave_mode = 0;
+bool zwave_btn_is_push = false;
+bool zwave_btn_is_release = false;
+bool zwave_learn_on = false;
+uint32_t zwave_time_btn_interrupt =0;
+uint32_t zwave_time_btn_push =0;
+uint32_t zwave_time_btn_release =0;
 // uint32_t expire;  // The expire time of the last command
 // End variables from original nvmcomm_zwave.c
 
@@ -82,10 +87,47 @@ int SerialAPI_request(unsigned char *buf, int len);
 int ZW_sendData(uint8_t id, uint8_t *in, uint8_t len, uint8_t txoptions);
 void Zwave_receive(int processmessages);
 void radio_zwave_learn();
+void radio_zwave_reset();
 
 void radio_zwave_poll(void) {
-    if (zwave_learn_mode == 1)
-        radio_zwave_learn();
+    if(zwave_mode==0 || zwave_learn_on)//normal mode or is learning
+    {
+	    if( (EIMSK&0x01) ==0 )//INT0 is disable
+	    {
+		    if( (dj_timer_getTimeMillis()-zwave_time_btn_interrupt)>100 )//wait 100ms for button debounce, enable interrupt again
+		    {
+			    EIFR |=_BV(0);//clear INT0 flag
+			    EIMSK |=_BV(0);//enable INT0
+		    }
+	    }
+	    if( zwave_btn_is_release==true )
+	    {
+		    if( (zwave_time_btn_release-zwave_time_btn_push)<5000 )//push btn <5s go to learning mode
+		    {
+			    if(zwave_learn_on)//push btn in learning mode -> stop learning
+				    zwave_time_learn_start=0;//timeout stop learning
+			    else//push btn in normal mode -> start learning
+				    zwave_mode=1;
+		    }				
+		    else//push btn >5s go to reset mode
+		    {
+			    zwave_mode=2;
+		    }
+		    zwave_btn_is_release=false;
+	    }
+    }
+    if(zwave_mode==1)//learning mode
+    {
+	    DEBUG_LOG(DBG_ZWAVETRACE,"start zwave learn !!!!!!!!!");
+	    radio_zwave_learn();//finish will set zwave mode=0
+	    zwave_mode=0;
+    }
+    else if(zwave_mode==2)//reset mode
+    {
+	    DEBUG_LOG(DBG_ZWAVETRACE,"start zwave reset !!!!!!!!!");
+	    radio_zwave_reset();
+	    zwave_mode=0;
+    }
     if (uart_available(ZWAVE_UART, 0))
     {    
         DEBUG_LOG(DBG_ZWAVETRACE, "data_available\n");
@@ -278,21 +320,40 @@ void Zwave_receive(int processmessages) {
                     }
                     zwave_learn_on=0;
                     zwave_learn_block=0;
-                    zwave_learn_mode=0;
+                    zwave_mode=0;
                 }
             }
         }
     }
+}
+void radio_zwave_reset() {
+    unsigned char b[10];
+    int k;
+
+    b[0] = 1;
+    b[1] = 4;
+    b[2] = 0;
+    b[3] = 0x42;
+    b[4] = seq;
+    b[5] = 0xff^4^0^0x42^seq;
+    seq++;
+    for(k=0;k<7;k++)
+    {
+        uart_write_byte(ZWAVE_UART, b[k]);
+    }
+    zwave_mode=0;
+    DEBUG_LOG(DBG_ZWAVETRACE,"reset complete!!!!!!!!!!");
+
 }
 
 void radio_zwave_learn() {
     unsigned char b[10];
     unsigned char onoff=1;
     int k;    
-    if(zwave_learn_on==0)
+    if(zwave_learn_on==false)
     {
-        zwave_learn_startT=dj_timer_getTimeMillis();
-        zwave_learn_on=1;
+        zwave_time_learn_start=dj_timer_getTimeMillis();
+        zwave_learn_on=true;
         b[0] = 1;
         b[1] = 5;
         b[2] = 0;
@@ -307,8 +368,8 @@ void radio_zwave_learn() {
             uart_write_byte(ZWAVE_UART, b[k]);
         }
     }
-    //DEBUG_LOG(DBG_WKCOMM, "current:"DBG32" start:"DBG32", zwave_learn_block:%d: ", dj_timer_getTimeMillis(), zwave_learn_startT, zwave_learn_block);
-    if(dj_timer_getTimeMillis()-zwave_learn_startT>10000 && !zwave_learn_block) { //time out learn off
+    //DEBUG_LOG(DBG_WKCOMM, "current:"DBG32" start:"DBG32", zwave_learn_block:%d: ", dj_timer_getTimeMillis(), zwave_time_learn_start, zwave_learn_block);
+    if(dj_timer_getTimeMillis()-zwave_time_learn_start>10000 && !zwave_learn_block) { //time out learn off
         // DEBUG_LOG(DBG_WKCOMM, "turn off!!!!!!!!!!!!!!!!");
         onoff=0;
         b[0] = 1;
@@ -323,9 +384,9 @@ void radio_zwave_learn() {
         {
             uart_write_byte(ZWAVE_UART, b[k]);
         }  
-        zwave_learn_on=0;
+        zwave_learn_on=false;
         zwave_learn_block=0;
-        zwave_learn_mode=0;
+        zwave_mode=0;
     }
 }
 
