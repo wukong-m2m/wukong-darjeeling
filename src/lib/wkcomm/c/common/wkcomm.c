@@ -83,7 +83,7 @@ void wkcomm_handle_message(wkcomm_address_t addr, uint8_t *payload, uint8_t leng
 #ifdef DARJEELING_DEBUG
 	DEBUG_LOG(DBG_WKCOMM, "Handling command %d from %d, length %d:\n", payload[0], addr, length);
 	for (int8_t i=0; i<length; ++i) {
-		DEBUG_LOG(DBG_WKCOMM, " %d", payload[i]);
+		DEBUG_LOG(DBG_WKCOMM, " %c", payload[i]);
 	}
 	DEBUG_LOG(DBG_WKCOMM, "\n");
 #endif // DARJEELING_DEBUG

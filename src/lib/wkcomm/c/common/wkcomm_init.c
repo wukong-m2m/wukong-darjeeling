@@ -2,10 +2,11 @@
 #include "core.h"
 #include "wkcomm.h"
 #include "routing/routing.h"
+#include "debug.h"
 
 dj_hook wkcomm_pollingHook;
 
-void wkcomm_init() {
+void wkcomm_init() {	
 	wkcomm_pollingHook.function = wkcomm_poll;
 	dj_hook_add(&dj_core_pollingHook, &wkcomm_pollingHook);
 	routing_init();
