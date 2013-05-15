@@ -46,8 +46,8 @@ uint16_t wkpf_number_of_components = 0; // To be set when we load the map
 #define WKPF_COMPONENT_ADDRESS(i)							((dj_di_pointer)(wkpf_component_map_store + dj_di_getU16(wkpf_component_map_store + 2 + 2*i)))
 #define WKPF_NUMBER_OF_ENDPOINTS(i)							(dj_di_getU8(WKPF_COMPONENT_ADDRESS(i)))
 #define WKPF_COMPONENT_WUCLASS_ID(i)						(dj_di_getU8(WKPF_COMPONENT_ADDRESS(i) + 1))
-#define WKPF_COMPONENT_ENDPOINT_NODE_ID(i, j)				(dj_di_getU8(WKPF_COMPONENT_ADDRESS(i) + 3 + 2*j))
-#define WKPF_COMPONENT_ENDPOINT_PORT(i, j)					(dj_di_getU8(WKPF_COMPONENT_ADDRESS(i) + 3 + 2*j + 1))
+#define WKPF_COMPONENT_ENDPOINT_NODE_ID(i, j)				(dj_di_getU16(WKPF_COMPONENT_ADDRESS(i) + 3 + 3*j))
+#define WKPF_COMPONENT_ENDPOINT_PORT(i, j)					(dj_di_getU8(WKPF_COMPONENT_ADDRESS(i) + 3 + 3*j + 2))
 #define WKPF_COMPONENT_LEADER_ENDPOINT_NODE_ID(i)			(WKPF_COMPONENT_ENDPOINT_NODE_ID(i, 0))
 #define WKPF_COMPONENT_LEADER_ENDPOINT_PORT(i)				(WKPF_COMPONENT_ENDPOINT_PORT(i, 0))
 

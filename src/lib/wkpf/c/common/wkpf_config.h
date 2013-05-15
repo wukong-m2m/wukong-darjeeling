@@ -27,4 +27,7 @@ extern bool wkpf_config_get_feature_enabled(uint8_t feature);
 extern wkcomm_address_t wkpf_config_get_master_node_id();
 extern void wkpf_config_set_master_node_id(wkcomm_address_t node_id);
 
+extern wkcomm_address_t wkpf_config_get_gid();
+extern void wkpf_config_set_gid(wkcomm_address_t gid);
+
 #endif // WKPF_CONFIG_H

@@ -5,7 +5,7 @@
 #include "types.h"
 #include "routing.h"
 #include "debug.h"
-
+#include "../../../wkpf/c/common/wkpf_config.h"
 
 // routing_none doesn't contain any routing protocol, but will just forward messages to the radio layer.
 // Therefore, only 1 radio is allowed at a time.
@@ -19,7 +19,9 @@
 #ifdef RADIO_USE_ZWAVE
 #include "../radios/radio_zwave.h"
 radio_zwave_address_t addr_wkcomm_to_zwave(wkcomm_address_t wkcomm_addr) {
-    return (radio_zwave_address_t)wkcomm_addr;
+	// ZWave address is only 8 bits. To translate wkcomm address to zwave, just ignore the higher 8 bits
+	// (so effectively using routing_none we can still only use 256 nodes)
+    return (radio_zwave_address_t)(wkcomm_addr & 0xFF);
 }
 wkcomm_address_t addr_zwave_to_wkcomm(radio_zwave_address_t zwave_addr) {
 	return (wkcomm_address_t)zwave_addr;
@@ -29,7 +31,9 @@ wkcomm_address_t addr_zwave_to_wkcomm(radio_zwave_address_t zwave_addr) {
 #ifdef RADIO_USE_XBEE
 #include "../radios/radio_xbee.h"
 radio_xbee_address_t addr_wkcomm_to_xbee(wkcomm_address_t wkcomm_addr) {
-    return (radio_xbee_address_t)wkcomm_addr;
+	// XBee address is only 8 bits. To translate wkcomm address to xbee, just ignore the higher 8 bits
+	// (so effectively using routing_none we can still only use 256 nodes)
+    return (radio_xbee_address_t)(wkcomm_addr & 0xFF);
 }
 wkcomm_address_t addr_xbee_to_wkcomm(radio_xbee_address_t xbee_addr) {
 	return (wkcomm_address_t)xbee_addr;
@@ -82,6 +86,20 @@ uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
 	// should be sent up to wkcomm.
 #ifdef RADIO_USE_ZWAVE
 void routing_handle_zwave_message(radio_zwave_address_t zwave_addr, uint8_t *payload, uint8_t length) {
+	if(payload[0]==0 && payload[1]==0 && payload[2]==0 && payload[3]==1 && payload[4]==0xff && payload[5]==1) //gid reply message
+	{
+		wkcomm_address_t new_gid= (payload[6]<<8) + (payload[7]);
+		wkpf_config_set_gid(new_gid);
+	
+		uint8_t buffer[6]={0};
+		buffer[1] = 0x01;
+		buffer[2] = payload[6];
+		buffer[3] = payload[7];
+		buffer[4] = 0xff;
+		buffer[5] = 0x02;
+		radio_zwave_send(addr_wkcomm_to_zwave(1), buffer, 6);
+	}
+
 	wkcomm_handle_message(addr_zwave_to_wkcomm(zwave_addr), payload, length);
 }
 #endif // RADIO_USE_ZWAVE
@@ -94,6 +112,7 @@ void routing_handle_xbee_message(radio_xbee_address_t xbee_addr, uint8_t *payloa
 
 #ifdef RADIO_USE_WIFI
 void routing_handle_wifi_message(SOCKET wifi_addr, uint8_t *payload, uint8_t length) {
+
 	wkcomm_handle_message(addr_wifi_to_wkcomm(wifi_addr), payload, length);
 }
 #endif // RADIO_USE_WIFI
@@ -120,6 +139,14 @@ wkcomm_address_t routing_get_node_id() {
 void routing_init() {
 	#ifdef RADIO_USE_ZWAVE
 		radio_zwave_init();
+
+		/*if(wkpf_config_get_gid()==0)//if no GID, initalize GID
+		{
+			uint8_t buffer[6]={0};
+			buffer[1]=0x01;
+			buffer[4]=0xff;
+			radio_zwave_send(addr_wkcomm_to_zwave(1), buffer, 6);
+		}	*/	
 	#endif
 	#ifdef RADIO_USE_XBEE
 		radio_xbee_init();

@@ -146,7 +146,7 @@ class Generator:
                 if property.datatype == 'short' or property.datatype == 'int' or property.datatype == 'refresh_rate':
                     initvalue.attrib['value'] = str(property.value)
                 elif property.datatype == 'boolean':
-                    initvalue.attrib['value'] = '1' if property.value else '0'
+                    initvalue.attrib['value'] = '1' if property.value == 'true'else '0'
                 else: # Enum
                     enumtype = WuType.findByName(property.datatype)[0]
                     enumvalues = [x.value.upper() for x in enumtype.values]

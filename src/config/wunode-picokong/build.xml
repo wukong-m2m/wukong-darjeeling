@@ -28,7 +28,7 @@
 
 	<target name="avrdude" depends="executable">
 		<exec executable="avrdude">
-			<arg line="-p atmega2560 -P /dev/cu.usbserial-A9CNZHXH -c stk500v2 -U flash:w:darjeeling.ihex -U eeprom:w:darjeeling_eeprom.ihex"/>
+			<arg line="-p atmega2560 -P /dev/tty.usbserial-A501IW20 -c stk500v2 -U flash:w:darjeeling.ihex -U eeprom:w:darjeeling_eeprom.ihex"/>
 		</exec>
 	</target>
 

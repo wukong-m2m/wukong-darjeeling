@@ -7,6 +7,11 @@
 wuclass_t *wuclasses_list = NULL;
 
 void wkpf_register_wuclass(wuclass_t *wuclass) {
+	wuclass_t *dummy;
+  if (wkpf_get_wuclass_by_id(wuclass->wuclass_id, &dummy) == WKPF_OK) {
+  	DEBUG_LOG(DBG_WKPF, "WKPF: Skipping wuclass %d: already registered!", wuclass->wuclass_id);
+  	return;
+  }
   DEBUG_LOG(DBG_WKPF, "WKPF: Registering wuclass id %d at index %d\n", wuclass->wuclass_id, wkpf_get_number_of_wuclasses());
   wuclass->next = wuclasses_list;
   wuclasses_list = wuclass;
@@ -19,7 +24,7 @@ uint8_t wkpf_get_wuclass_by_id(uint16_t wuclass_id, wuclass_t **wuclass) {
 			return WKPF_OK;
 		*wuclass = (*wuclass)->next;
 	}
-	DEBUG_LOG(DBG_WKPF, "WKPF: No wuclass with id %d found: FAILED\n", wuclass_id);
+	DEBUG_LOG(DBG_WKPF, "WKPF: No wuclass with id %d found.\n", wuclass_id);
 	return WKPF_ERR_WUCLASS_NOT_FOUND;
 }
 

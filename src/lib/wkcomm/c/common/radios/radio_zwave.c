@@ -56,12 +56,36 @@ uint8_t radio_zwave_receive_buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+4+3]; // 4 for Zw
 uint8_t state;        // Current state
 uint8_t seq;          // Sequence number which is used to match the callback function
 
+// Begin variables from original nvmcomm_zwave.c
+// u16_t g_seq = 0;
+uint8_t len;          // Length of the returned radio_zwave_receive_buffer
+uint8_t type;         // 0: request 1: response 2: timeout
+uint8_t cmd;          // the serial api command number of the current radio_zwave_receive_buffer
+// 4 bytes protocol overhead (see Zwave_receive),
+// 1 byte for the command, which is the first byte in the message.
+uint8_t payload_length;  // Length of the radio_zwave_receive_buffer while reading a packet
+// TODO: used?
+uint8_t last_node = 0;
+uint8_t ack_got = 0;
+int zwsend_ack_got = 0;
+uint8_t wait_CAN_NAK = 1;
+uint8_t zwave_learn_on = 0;
+uint8_t zwave_learn_block = 0;
+uint32_t zwave_learn_startT;
+uint8_t zwave_learn_mode = 0;
+// uint32_t expire;  // The expire time of the last command
+// End variables from original nvmcomm_zwave.c
+
+
 // Low level ZWave functions originally from testrtt.c
 int SerialAPI_request(unsigned char *buf, int len);
 int ZW_sendData(uint8_t id, uint8_t *in, uint8_t len, uint8_t txoptions);
 void Zwave_receive(int processmessages);
+void radio_zwave_learn();
 
 void radio_zwave_poll(void) {
+    if (zwave_learn_mode == 1)
+        radio_zwave_learn();
     if (uart_available(ZWAVE_UART, 0))
     {    
         DEBUG_LOG(DBG_ZWAVETRACE, "data_available\n");
@@ -69,6 +93,7 @@ void radio_zwave_poll(void) {
     }
 }
 
+extern void radio_zwave_platform_dependent_init(void); // from radio_zwave_platform_dependent.c
 void radio_zwave_init(void) {
     uart_inituart(ZWAVE_UART, ZWAVE_UART_BAUDRATE);
 
@@ -110,7 +135,8 @@ void radio_zwave_init(void) {
             previous_received_address = radio_zwave_my_address;
         }
     }
-    DEBUG_LOG(DBG_WKCOMM, "My Zwave node_id: %x\n", radio_zwave_my_address);
+    DEBUG_LOG(DBG_WKCOMM, "My Zwave node_id: %d\n", radio_zwave_my_address);
+    radio_zwave_platform_dependent_init();
 }
 
 radio_zwave_address_t radio_zwave_get_node_id() {
@@ -139,25 +165,6 @@ uint8_t radio_zwave_send(radio_zwave_address_t zwave_addr, uint8_t *payload, uin
 
 
 ///// Below is the original code from nvmcomm_zwave.c
-
-
-// u16_t g_seq = 0;
-uint8_t len;          // Length of the returned radio_zwave_receive_buffer
-uint8_t type;         // 0: request 1: response 2: timeout
-uint8_t cmd;          // the serial api command number of the current radio_zwave_receive_buffer
-// 4 bytes protocol overhead (see Zwave_receive),
-// 1 byte for the command, which is the first byte in the message.
-uint8_t payload_length;  // Length of the radio_zwave_receive_buffer while reading a packet
-// TODO: used?
-uint8_t last_node = 0;
-uint8_t ack_got = 0;
-int zwsend_ack_got = 0;
-uint8_t wait_CAN_NAK = 1;
-uint8_t zwave_learn_on = 0;
-uint8_t zwave_learn_block = 0;
-uint32_t zwave_learn_startT;
-uint8_t zwave_learn_mode;
-// uint32_t expire;  // The expire time of the last command
 
 
 int ZW_GetRoutingInformation(uint8_t id);
@@ -278,7 +285,7 @@ void Zwave_receive(int processmessages) {
     }
 }
 
-void nvmcomm_zwave_learn() {
+void radio_zwave_learn() {
     unsigned char b[10];
     unsigned char onoff=1;
     int k;    

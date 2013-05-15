@@ -20,8 +20,9 @@
 #ifdef RADIO_USE_ZWAVE
 #include "../radios/radio_zwave.h"
 radio_zwave_address_t addr_wkcomm_to_zwave(wkcomm_address_t wkcomm_addr) {
-    // return (radio_zwave_address_t)wkcomm_addr;
-    return 1;
+	// ZWave address is only 8 bits. To translate wkcomm address to zwave, just ignore the higher 8 bits
+	// (so effectively using routing_none we can still only use 256 nodes)
+    return (radio_zwave_address_t)(wkcomm_addr & 0xFF);
 }
 wkcomm_address_t addr_zwave_to_wkcomm(radio_zwave_address_t zwave_addr) {
 	return (wkcomm_address_t)zwave_addr;
@@ -31,12 +32,13 @@ wkcomm_address_t addr_zwave_to_wkcomm(radio_zwave_address_t zwave_addr) {
 #ifdef RADIO_USE_XBEE
 #include "../radios/radio_xbee.h"
 radio_xbee_address_t addr_wkcomm_to_xbee(wkcomm_address_t wkcomm_addr) {
-    return (radio_xbee_address_t)wkcomm_addr;
+	// XBee address is only 8 bits. To translate wkcomm address to xbee, just ignore the higher 8 bits
+	// (so effectively using routing_none we can still only use 256 nodes)
+    return (radio_xbee_address_t)(wkcomm_addr & 0xFF);
 }
 wkcomm_address_t addr_xbee_to_wkcomm(radio_xbee_address_t xbee_addr) {
 	return (wkcomm_address_t)xbee_addr;
 }
-
 #endif // RADIO_USE_XBEE
 
 

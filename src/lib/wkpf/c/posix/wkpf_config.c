@@ -11,6 +11,7 @@ typedef struct features_t {
 	bool feature_enabled[WKPF_NUMBER_OF_FEATURES];
 	char location[LOCATION_MAX_LENGTH];
 	wkcomm_address_t master_node_id;
+	wkcomm_address_t gid;
 } features_t;
 
 features_t features;
@@ -19,6 +20,7 @@ bool features_loaded = false;
 #define CONFIG_FILE_NAME "config.txt"
 #define CONFIG_FILE_LOCATION_STRING "Location (in raw bytes on the next line):\n"
 #define CONFIG_FILE_MASTER_ID_STRING "Master: %d\n"
+#define CONFIG_FILE_GID_STRING "Gid: %d\n"
 #define CONFIG_FILE_ENABLED_FEATURE_STRING "Feature: %d %d\n"
 
 bool prefix(const char *pre, const char *str) {
@@ -32,6 +34,7 @@ void save_features_data() {
 		abort();
 	}		
 	fprintf(fp, CONFIG_FILE_MASTER_ID_STRING, features.master_node_id);
+	fprintf(fp, CONFIG_FILE_GID_STRING, features.gid);
 	fprintf(fp, CONFIG_FILE_LOCATION_STRING);
 	for (int i=0; i<LOCATION_MAX_LENGTH; i++)
 		fputc(features.location[i], fp);
@@ -70,6 +73,18 @@ void load_features_data() {
 				}
 				features.master_node_id = master_node_id;
 				DEBUG_LOG(DBG_WKPF, "CONFIG: master id = %d\n", features.master_node_id);
+        	} else if (prefix("Gid", line)) {
+				int gid;
+				if (!sscanf(line, CONFIG_FILE_GID_STRING, &gid)) {
+					printf("Gid in %s not in expected format, aborting...\n", CONFIG_FILE_NAME);
+					abort();
+				}
+				if (gid > 255) {
+					printf("Gid in %s too large (%d), aborting...\n", CONFIG_FILE_NAME, gid);
+					abort();
+				}
+				features.gid = gid;
+				DEBUG_LOG(DBG_WKPF, "CONFIG: gid = %d\n", features.gid);
 			} else if (prefix("Feature", line)) {
 				int feature;
 				int is_enabled;
@@ -160,3 +175,22 @@ void wkpf_config_set_master_node_id(wkcomm_address_t node_id) {
 	
 	save_features_data();
 }
+
+wkcomm_address_t wkpf_config_get_gid() {
+	if (!features_loaded)
+		load_features_data();
+
+	return features.gid;
+}
+
+void wkpf_config_set_gid(wkcomm_address_t gid) {
+	if (!features_loaded)
+		load_features_data();
+
+	features.gid = gid;
+	
+	save_features_data();
+}
+
+
+

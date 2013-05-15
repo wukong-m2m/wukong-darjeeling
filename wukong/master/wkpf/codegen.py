@@ -165,25 +165,10 @@ class WuClass:
         return "WuClass %s (id=%d, virt=%s, soft=%s) prop:%s" % (self._name, self._id,str(self._virtual),str(self._soft),str(self._properties))
 
     def getPropertyByName(self, name):
-        if name in self._properties:
-            return self._properties[name]
+        for property in self._properties:
+            if property.getName() == name:
+                return property
         return None
-
-    def setPropertyByName(self, name, property):
-        if name in self._properties:
-            self._properties[name] = property
-            return True
-        return False
-    
-    def getPropertyValueByName(self, name):
-        if name in self._properties:
-            return prop.getCurrentValue()
-        return None
-            
-    def setPropertyValueByName(self, name, value):
-        if name in self._properties:
-            prop =  self._properties[name]
-            prop.setCurrentValue(value)
             
     def getJavaGenClassName(self):
         return "GENERATEDVirtual" + Convert.to_java(self._name) + "WuObject"
@@ -331,9 +316,6 @@ class WuObject:
     def getProperties(self):
         return self._wuClass.getProperties()
 
-    def setProperties(self, properties):
-        for property in properties:
-            self._wuClass.setPropertyByName(property.getName(), property)
 
 
 class CodeGen:
@@ -469,12 +451,14 @@ uint8_t wkpf_native_wuclasses_init() {
           logger.info("Parsing WuClass %s" % (wuclass.getAttribute('name')))
           wuclassName = wuclass.getAttribute('name')
           wuclassId = int(wuclass.getAttribute('id'),0)
-          wuclassProperties = {}
+          wuclassProperties = []
+          #wuclassProperties = {}
           for i, prop in enumerate(wuclass.getElementsByTagName('property')):
               propType = prop.getAttribute('datatype')
               propName = prop.getAttribute('name')
 
-              wuclassProperties[propName] = WuProperty(wuclassName, propName, i, wuTypes[propType], prop.getAttribute('access')) 
+              wuclassProperties.append(WuProperty(wuclassName, propName, i, wuTypes[propType], prop.getAttribute('access')) )
+              #wuclassProperties[propName] = WuProperty(wuclassName, propName, i, wuTypes[propType], prop.getAttribute('access')) 
           privateCData = wuclass.getAttribute('privateCData')
           wuClass = WuClass(wuclassName, wuclassId, wuclassProperties, True if wuclass.getAttribute('virtual').lower() == 'true' else False, True if wuclass.getAttribute('type').lower() == 'soft' else False, privateCData)
 
@@ -502,7 +486,7 @@ uint8_t wkpf_native_wuclasses_init() {
           # Generate global constants definition for Java
           global_virtual_constants_lines.append("public static final short " + wuClass.getJavaConstName() + " = %s;\n" % (wuClass.getId()))
 
-          for indprop, property in enumerate(wuClass.getProperties().values()):
+          for indprop, property in enumerate(wuClass.getProperties()):
             global_vm_header_lines.append("#define " + property.getCConstName() + " " + str(indprop) + "\n")
 
             global_virtual_constants_lines.append("public static final byte " + property.getJavaConstName() + " = " + str(indprop) + ";\n")
@@ -523,7 +507,7 @@ uint8_t wkpf_native_wuclasses_init() {
               public static byte[] properties = new byte[] {
             ''' % (wuClass.getJavaGenClassName()))
 
-            for ind, property in enumerate(wuClass.getProperties().values()):
+            for ind, property in enumerate(wuClass.getProperties()):
               datatype = property.getDataType()
               access = property.getAccess()
 
@@ -543,7 +527,7 @@ uint8_t wkpf_native_wuclasses_init() {
               };
             ''')
 
-            for propind, property in enumerate(wuClass.getProperties().values()):
+            for propind, property in enumerate(wuClass.getProperties()):
               wuclass_virtual_super_lines.append("protected static final byte %s = %d;\n" % (property.getJavaName(), propind))
 
             wuclass_virtual_super_lines.append('''
@@ -587,7 +571,7 @@ uint8_t wkpf_native_wuclasses_init() {
                 ))
 
           wuclass_native_impl_properties_lines = ''
-          for ind, property in enumerate(wuClass.getProperties().values()):
+          for ind, property in enumerate(wuClass.getProperties()):
             datatype = property.getDataType()
             access = property.getAccess()
 

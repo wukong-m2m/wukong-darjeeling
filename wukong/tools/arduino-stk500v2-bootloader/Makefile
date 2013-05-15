@@ -593,7 +593,7 @@ darjeeling_flash_page.hex:
 	avr-objcopy -j .reprogram_flash_page --change-section-address .reprogram_flash_page=0x3F000 -O ihex darjeeling_flash_page.o darjeeling_flash_page.hex
 
 upload_bootloader: mega2560 darjeeling_flash_page.hex
-	$(AVRDUDE) -p atmega2560 -P usb -c usbtiny -e    -U lock:w:0x3F:m -U efuse:w:0xFD:m -U hfuse:w:0xD8:m -U lfuse:w:0xFF:m # Erase and set bits so we can write to NRWW section
-	$(AVRDUDE) -p atmega2560 -P usb -c usbtiny -D -V -U flash:w:stk500boot_v2_mega2560.hex:i # Flash the Arduino bootloader. Don't erase. Don't verify until we figure out what's wrong with TINYusbISP reading flash memory, since it will fail anyway.
-	$(AVRDUDE) -p atmega2560 -P usb -c usbtiny -D -V -U flash:w:darjeeling_flash_page.hex:i # Add our own code in the NRWW section. Don't erase. Don't verify until we figure out what's wrong with TINYusbISP reading flash memory, since it will fail anyway.
-	$(AVRDUDE) -p atmega2560 -P usb -c usbtiny       -U lock:w:0x0F:m -U hfuse:w:0x10:m # Restore lock and hfuse to Arduino default setting + Enable JTAG by clearing/programming OCDEN and JTAGEN bits
+	$(AVRDUDE) -p atmega2560 -P usb -c usbasp -e    -U lock:w:0x3F:m -U efuse:w:0xFD:m -U hfuse:w:0xD8:m -U lfuse:w:0xFF:m # Erase and set bits so we can write to NRWW section
+	$(AVRDUDE) -p atmega2560 -P usb -c usbasp -D -V -U flash:w:stk500boot_v2_mega2560.hex:i # Flash the Arduino bootloader. Don't erase. Don't verify until we figure out what's wrong with TINYusbISP reading flash memory, since it will fail anyway.
+	$(AVRDUDE) -p atmega2560 -P usb -c usbasp -D -V -U flash:w:darjeeling_flash_page.hex:i # Add our own code in the NRWW section. Don't erase. Don't verify until we figure out what's wrong with TINYusbISP reading flash memory, since it will fail anyway.
+	$(AVRDUDE) -p atmega2560 -P usb -c usbasp       -U lock:w:0x0F:m -U hfuse:w:0x10:m # Restore lock and hfuse to Arduino default setting + Enable JTAG by clearing/programming OCDEN and JTAGEN bits
