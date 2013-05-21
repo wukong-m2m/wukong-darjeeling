@@ -38,6 +38,11 @@ APPMSG_R                     = 0x81
 
 GROUP_NOTIFY_NODE_FAILURE    = 0x71
 
+GID_MSG                      = 0xFF
+GID_REQUEST                  = 0x00
+GID_OFFER                    = 0x01
+GID_ACK                      = 0x02
+
 #WKPF message types here
 WKPF_GET_WUCLASS_LIST        = 0x90
 WKPF_GET_WUCLASS_LIST_R      = 0x91

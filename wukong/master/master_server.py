@@ -13,6 +13,7 @@ import traceback
 import StringIO
 import shutil, errno
 import datetime
+import signal
 
 import wkpf.wusignal
 from wkpf.wuapplication import WuApplication
@@ -48,6 +49,7 @@ routingTable = {}
 def setup_signal_handler_greenlet():
   logging.info('setting up signal handler')
   gevent.spawn(wusignal.signal_handler)
+  getComm()
 def allowed_file(filename):
   return '.' in filename and \
       filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
@@ -107,7 +109,7 @@ def update_applications():
       applications.append(load_app_from_dir(app_dir))
       application_basenames = [os.path.basename(app.dir) for app in applications]
 
-# deprecated
+""" deprecated
 def getPropertyValuesOfApp(mapping_results, property_names):
   properties_json = []
 
@@ -120,6 +122,7 @@ def getPropertyValuesOfApp(mapping_results, property_names):
         properties_json.append({'name': name, 'value': value, 'wuclassname': wuproperty.wuclass.name})
 
   return properties_json
+"""
 
 # List all uploaded applications
 class main(tornado.web.RequestHandler):
@@ -623,15 +626,16 @@ wukong = tornado.web.Application([
 ], IP, **settings)
 
 if __name__ == "__main__":
-  logging.info("WuKong starting up...")
+  logging.info("WuKong Master starting up...")
   setup_signal_handler_greenlet()
   if os.path.exists('standardlibrary.db'):
     os.remove('standardlibrary.db') 
-  Parser.parseLibrary(COMPONENTXML_PATH)
-  update_applications()
-  import_wuXML()
-  make_FBP()
+  #Parser.parseLibrary(COMPONENTXML_PATH)
+  #update_applications()
+  #import_wuXML()
+  #make_FBP()
   wukong.listen(MASTER_PORT)
+  logging.info('Master listen on port %s',MASTER_PORT) 
   ioloop.start()
 else: # so it could be called from test or other external libraries
   logging.info("WuKong starting up in tests...")
