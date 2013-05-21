@@ -100,12 +100,12 @@ void javax_wukong_wkpf_WKPF_void_setPropertyBoolean_javax_wukong_wkpf_VirtualWuO
 	}
 }
 
-void javax_wukong_wkpf_WKPF_void_appInitLinkTableAndComponentMap() {
+void javax_wukong_wkpf_WKPF_void_appLoadInitLinkTableAndComponentMap() {
 	dj_vm *vm = dj_exec_getVM();
 	wkpf_initLinkTableAndComponentMap(vm->di_app_infusion_archive_data);
 }
 
-void javax_wukong_wkpf_WKPF_void_appInitLocalObjectAndInitValues() {
+void javax_wukong_wkpf_WKPF_void_appInitCreateLocalObjectAndInitValues() {
 	dj_vm *vm = dj_exec_getVM();
 	wkpf_initLocalObjectAndInitValues(vm->di_app_infusion_archive_data);
 }

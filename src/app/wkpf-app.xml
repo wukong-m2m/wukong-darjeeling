@@ -9,7 +9,14 @@
 			dest="${build}/${name}"/>
 	</target>
 
-	<target name="wkpf-all" depends="all, create-wkpftables">
+	<target name="generate-virtual-baseclasses">
+		<!-- TODO: make codegen more specific. here we only need to generate the Java base classes, in the wkpf lib we only need to generate code for the native classes. -->
+		<exec executable="../../../wukong/master/wkpf/codegen.py">
+			<arg line="-i ../../../wukong/ComponentDefinitions/WuKongStandardLibrary.xml -p ../../.. -u ../../.. -e ${configtargetpath}/${enabled_wuclasses}"/>
+		</exec>
+	</target>
+
+	<target name="wkpf-all" depends="generate-virtual-baseclasses, all, create-wkpftables">
 		<djarchive dest="${build}/${name}.dja" mode="append" src="${build}/${name}.wkpf_linktable" filetype="${djarchive_type_wkpf_link_table}"/>
 		<djarchive dest="${build}/${name}.dja" mode="append" src="${build}/${name}.wkpf_componentmap" filetype="${djarchive_type_wkpf_component_map}"/>
 		<djarchive dest="${build}/${name}.dja" mode="append" src="${build}/${name}.wkpf_initvalues" filetype="${djarchive_type_wkpf_initvalues}"/>

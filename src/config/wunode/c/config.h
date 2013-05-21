@@ -34,7 +34,7 @@ typedef unsigned long long int dj_time_t;
 #define ALIGN_16
 
 /* Please see common/debug.h */
-// #define DARJEELING_DEBUG
+ #define DARJEELING_DEBUG
 // #define DARJEELING_DEBUG_FRAME
 // #define DARJEELING_DEBUG_MEM_TRACE
 // #define DARJEELING_DEBUG_TRACE
@@ -48,6 +48,7 @@ typedef unsigned long long int dj_time_t;
 // #define DBG_WKCOMM true
 // #define DBG_WKREPROG true
 // #define DBG_ZWAVETRACE true
+#define DBG_WKPFGH true
 
 void avr_serialPrintf(char * format, ...);
 #define DARJEELING_PRINTF avr_serialPrintf

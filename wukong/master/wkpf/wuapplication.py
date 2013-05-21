@@ -9,7 +9,6 @@ from xml.parsers.expat import ExpatError
 import simplejson as json
 import logging, logging.handlers, wukonghandler
 from wkpfcomm import *
-from codegen import CodeGen
 from xml2java.generator import Generator
 from threading import Thread
 from subprocess import Popen, PIPE, STDOUT
@@ -219,10 +218,6 @@ class WuApplication:
               self.wuLinks.append( WuLink(fromWuObject, fromPropertyId, toWuObject, toPropertyId) )
           '''
 
-  def generateCode(self):
-      # special case: for now, it should be passing parsed WuClass objects
-      CodeGen.generate(self, open(COMPONENTXML_PATH).read(), ROOT_PATH)
-
   def generateJava(self):
       Generator.generate(self.name, self.changesets)
 
@@ -254,17 +249,6 @@ class WuApplication:
 
       self.status = "Generating java library code"
       gevent.sleep(0)
-
-      # CodeGen
-      self.info('==Generating necessary files for wukong')
-      try:
-        self.generateCode()
-      except Exception as e:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        traceback.print_exception(exc_type, exc_value, exc_traceback,
-                                      limit=2, file=sys.stdout)
-        self.error(e)
-        return False
 
       self.status = "Generating java application"
       gevent.sleep(0)

@@ -264,8 +264,18 @@ uint8_t wkpf_create_local_wuobjects_from_app_tables() {
 				if (wkpf_error_code != WKPF_OK)
 					return wkpf_error_code;
 				if (WKPF_IS_VIRTUAL_WUCLASS(wuclass)) {
-					// This will happen for virtual wuclasses since the class won't be registered until after WKPF.appInit exits.
+					// These will be created in Java.
 					continue;
+				}
+				wuobject_t *wuobject;
+				if (wkpf_get_wuobject_by_port(WKPF_COMPONENT_ENDPOINT_PORT(i, j), &wuobject) != WKPF_ERR_WUOBJECT_NOT_FOUND) {
+					// There's already an object here. This is the case for hard wuobjects that have
+					// their instance created in native_wuclasses_init.
+					// In that case we can skip it here, but let's check the wuclass id just to be safe
+					if (wuobject->wuclass == wuclass)
+						continue; // Ok, this is just a hardware component, so we don't need to create it
+					else
+						return WKPF_ERR_PORT_IN_USE; // This is bad: the port is already in use by an object of different type
 				}
 				wkpf_error_code = wkpf_create_wuobject(wuclass->wuclass_id, WKPF_COMPONENT_ENDPOINT_PORT(i, j), NULL);
 				if (wkpf_error_code != WKPF_OK)

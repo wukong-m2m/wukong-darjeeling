@@ -373,36 +373,34 @@ class CodeGen:
         native_wuclasses = open(native_wuclasses_path, 'w')
 
         header_lines = ['#include <debug.h>\n',
-        '#include "wkcomm.h"\n',
-        '#include "wkpf_wuclasses.h"\n',
-        '#include "native_wuclasses.h"\n',
-        '#include "GENERATEDwuclass_generic.h"\n'
+            '#include "wkcomm.h"\n',
+            '#include "wkpf_wuclasses.h"\n',
+            '#include "native_wuclasses.h"\n'
         ]
         register_function = '''
-uint8_t wkpf_register_wuclass_and_create_wuobject(wuclass_t *wuclass, uint8_t port_number) {
-  wkpf_register_wuclass(wuclass);
-  uint8_t retval = wkpf_create_wuobject(wuclass->wuclass_id, port_number, 0);
-  if (retval != WKPF_OK)
-    return retval;
-  return WKPF_OK;
-}'''
+
+        uint8_t wkpf_register_wuclass_and_create_wuobject(wuclass_t *wuclass, uint8_t port_number) {
+          wkpf_register_wuclass(wuclass);
+          uint8_t retval = wkpf_create_wuobject(wuclass->wuclass_id, port_number, 0);
+          if (retval != WKPF_OK)
+            return retval;
+          return WKPF_OK;
+        }'''
         init_function_lines = ['''
 
-uint8_t wkpf_native_wuclasses_init() {
-  uint8_t retval;
+        uint8_t wkpf_native_wuclasses_init() {
+          uint8_t retval;
 
-  retval = wkpf_register_wuclass_and_create_wuobject(&wuclass_generic, 0); // Always create wuobject for generic wuclass at port 0
-  if (retval != WKPF_OK)
-    return retval;
 
-  DEBUG_LOG(DBG_WKPF, "WKPF: (INIT) Running wkpf native init for node id: %x\\n", wkcomm_get_node_id());
+          DEBUG_LOG(DBG_WKPF, "WKPF: (INIT) Running wkpf native init for node id: %x\\n", wkcomm_get_node_id());
 
-'''     ]
+        ''']
 
         dom = parseString(open(enabled_wuclasses_filename).read())
 
         wuclasses_list = []
         enabled_wuclasses = dom.getElementsByTagName("WuClass")
+        portCnt = 1
         for wuclass_element in enabled_wuclasses:
             wuclass_name = wuclass_element.getAttribute('name')
             tmp = [wuclass for wuclass in wuclasses if wuclass.getName() == wuclass_name]
@@ -411,16 +409,27 @@ uint8_t wkpf_native_wuclasses_init() {
                 sys.exit(1)
             wuclass = tmp[0]
             header_lines.append('#include "%s.h"\n' % wuclass.getCFileName())
-            init_function_lines.append('''
-  wkpf_register_wuclass(&%s);
-  if (retval != WKPF_OK)
-    return retval;
-''' % wuclass.getCName())
+            s = ''
+            if wuclass.isSoft():
+                s = '''
+                  wkpf_register_wuclass(&%s);
+                ''' % wuclass.getCName()
+            else:
+                s = '''
+                  retval = wkpf_register_wuclass_and_create_wuobject(&%s, %d);
+                  if (retval != WKPF_OK)
+                    return retval;
+                ''' % (wuclass.getCName(), portCnt)
+                portCnt += 1
+                assert portCnt < 256, 'number of wuobject exceeds 256'
+                
+
+            init_function_lines.append(s)
 
 
         init_function_lines.append('''
-  return WKPF_OK;
-}'''    )
+            return WKPF_OK;
+        }''')
 
         native_wuclasses.writelines(header_lines)
         native_wuclasses.write(register_function)
