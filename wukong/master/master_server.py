@@ -79,6 +79,7 @@ def rebuildTree(nodes):
 def setup_signal_handler_greenlet():
   logging.info('setting up signal handler')
   gevent.spawn(wusignal.signal_handler)
+  getComm()
 def allowed_file(filename):
   return '.' in filename and \
       filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
@@ -134,7 +135,7 @@ def update_applications():
       wkpf.globals.applications.append(load_app_from_dir(app_dir))
       application_basenames = [os.path.basename(app.dir) for app in wkpf.globals.applications]
 
-# deprecated
+""" deprecated
 def getPropertyValuesOfApp(mapping_results, property_names):
   properties_json = []
 
@@ -147,6 +148,7 @@ def getPropertyValuesOfApp(mapping_results, property_names):
         properties_json.append({'name': name, 'value': value, 'wuclassname': wuproperty.wuclass.name})
 
   return properties_json
+"""
 
 class idemain(tornado.web.RequestHandler):
   def get(self):
