@@ -251,6 +251,7 @@ class ZwaveAgent(TransportAgent):
             try:
                 src, reply = pyzwave.receive(timeout_msec)
                 if src and reply:
+                    print "receive: Got message", src, reply
                     # with seq number
                     deliver = new_deliver(src, reply[0], reply[1:])
                     messages.put_nowait(deliver)
@@ -337,7 +338,7 @@ class BrokerAgent:
         return cls._broker_agent
 
     def __init__(self):
-        self.gid_server = GIDService()
+        #self.gid_server = GIDService()
         gevent.spawn(self.run)
         print 'BrokerAgent init [OK]'
 
@@ -371,9 +372,9 @@ class BrokerAgent:
                     if deliver.command == pynvc.GROUP_NOTIFY_NODE_FAILURE:
                         print "reconfiguration message received"
                         wusignal.signal_reconfig()
-                    elif self.gid_server.isGIDdeliver(deliver):
+                    elif GIDService.init().isGIDdeliver(deliver):
                         print "GID configuration message received"
-                        self.gid_server.handleGIDPacket(deliver)
+                        GIDService.init().handleGIDPacket(deliver)
                     else:
                         print "what?"
                 else:
@@ -383,6 +384,13 @@ class BrokerAgent:
             gevent.sleep(0)
 
 class GIDService:
+    _gid_server = None
+    @classmethod
+    def init(cls):
+        if not cls._gid_server:
+            cls._gid_server = GIDService()
+        return cls._gid_server
+
     def __init__(self):
         self.gid_null = 0x0000
         self.gid_master = 0x0001
@@ -401,16 +409,17 @@ class GIDService:
 
         if self.isGIDRequestPacket(packet):
             client_lid = packet.destination
-            print "GIDService: got GID REQUEST from" + client_lid
+            print "GIDService: got GID REQUEST from %d" % client_lid
             gid = self.reserveGID(client_lid)
             if not gid: 
                 no_error = False
-            payload = self.getGIDPayload(self.gid_null,self.gid_master,pynvc.GID_MSG,pynvc.GID_OFFER,gid)
+            tmp_msg = [pynvc.GID_OFFER] + self.getTwoBytesListFromInt16(gid)
+            payload = self.getGIDPayload(self.getTwoBytesListFromInt16(self.gid_null), self.getTwoBytesListFromInt16(self.gid_master), pynvc.GID_MSG, tmp_msg)
             print "GIDService: reply with GID OFFER", payload
         elif self.isGIDACKPacket(packet):
             client_lid = packet.destination
             client_gid = self.getGIDSourceAddressFromPacket(packet)
-            print "GIDService: got GID ACK from" + client_lid + " GID = " + client_gid
+            print "GIDService: got GID ACK from %d GID = %d" % (client_lid, client_gid)
             self.allocateGID(client_lid, client_gid)
             no_error = False
         else:
@@ -418,17 +427,26 @@ class GIDService:
             no_error = False
 
         def cb(reply):
-            print "GIDService: GID packet send callback: " + reply
+            print "GIDService: GID packet send callback: ", reply
         def error_cb():
             print "GIDService: GID packet send error callback"
 
         if no_error: 
-            getZwaveAgent.defersend(client_lid, payload[0], payload[1:], [], cb, error_cb)
+            #getZwaveAgent().deferSend(client_lid, payload[0], payload[1:], [], cb, error_cb)
+            defer = new_defer(cb, 
+                error_cb,
+                None, 
+                [], 
+                new_message(client_lid, payload[0], payload[1:]), int(round(time.time() * 1000)) + 10000)
+            tasks.put_nowait(defer)
 
         master_available()
 
+    def getTwoBytesListFromInt16(self, integer):
+        return [(integer>>8 & 0xFF), (integer & 0xFF)]
+
     def loadAvailableGIDs(self):
-        gids = self.database.keys()
+        gids = map(lambda x: int(x), self.database.keys())
         # exclude GID = 1 (Master) and 0 (NULL)
         return [i for i in xrange(self.gid_max,1,-1) if i not in gids]
 
@@ -444,9 +462,11 @@ class GIDService:
 
         gid = self.avail_list.pop()
         self.reserve_list.append((lid,gid))
+        print self.reserve_list
         return gid
 
     def allocateGID(self, lid, gid):
+        print self.reserve_list
         if (lid, gid) not in self.reserve_list:
             print "GIDService Error: client lid = %d, gid = %d not reserved" % (lid,gid)
             return None
@@ -455,15 +475,18 @@ class GIDService:
             return None
         self.reserve_list.remove((lid, gid))
         self.database[gid] = lid
+        print "GIDService: Successfully assign GID %d to LID %d" % (gid, lid)
 
     def getGIDMessageTypeFromPacket(self, packet):
         return packet.payload[4]
 
     def getGIDSourceAddressFromPacket(self, packet):
-        return packet.payload[1:3]
+        hbyte = packet.payload[1] & 0xFF
+        lbyte = packet.payload[2] & 0xFF
+        return (((hbyte) << 8) | lbyte)
 
     def getGIDPayload(self, destination, source, gid_message_type, extra):
-        return list(destination) + list(source) + [gid_message_type] + list(extra)
+        return destination + source + [gid_message_type] + extra
 
     def isGIDdeliver(self, deliver):
         return deliver.payload[3] == pynvc.GID_MSG
