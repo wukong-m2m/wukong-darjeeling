@@ -13,6 +13,7 @@ import wusignal
 import time
 from configuration import *
 from globals import *
+from array import array
 
 import pynvc # for message constants
 import pyzwave
@@ -397,7 +398,9 @@ class GIDService:
         self.gid_bits = 16
         self.gid_max = 2**self.gid_bits - 1
         self.database = dbdict.DBDict("gid.db")
-        self.avail_list = self.loadAvailableGIDs()
+        self.avail_num = 0
+        self.avail_bitset = None
+        self.loadAvailableGIDs()
         self.reserve_list = []
         print 'GIDService: init [OK]'
 
@@ -409,8 +412,9 @@ class GIDService:
 
         if self.isGIDRequestPacket(packet):
             client_lid = packet.destination
+            client_gid = self.getGIDSourceAddressFromPacket(packet)
             print "GIDService: got GID REQUEST from %d" % client_lid
-            gid = self.reserveGID(client_lid)
+            gid = self.reserveGID(client_lid, client_gid)
             if not gid: 
                 no_error = False
             tmp_msg = [pynvc.GID_OFFER] + self.getTwoBytesListFromInt16(gid)
@@ -445,28 +449,77 @@ class GIDService:
     def getTwoBytesListFromInt16(self, integer):
         return [(integer>>8 & 0xFF), (integer & 0xFF)]
 
+    '''
+    Bit manipulation functions are used for managing available gids (max 2**16)
+    '''
+    def getByteAndBitIndexes(self, index):
+        byte_ind = int(index / 8)
+        bit_ind = index - byte_ind * 8
+        return byte_ind, bit_ind
+
+    def testBit(self, index):
+        byte_ind, bit_ind = self.getByteAndBitIndexes(index)
+        return (ord(self.avail_bitset[byte_ind]) >> bit_ind) & 0x1
+
+    def setBit(self, index):
+        byte_ind, bit_ind = self.getByteAndBitIndexes(index)
+        self.avail_bitset = self.avail_bitset[0:byte_ind] + chr(ord(self.avail_bitset[byte_ind]) | (0x1 << bit_ind)) + self.avail_bitset[byte_ind+1:]
+        self.avail_num += 1
+
+    def clearBit(self, index):
+        byte_ind, bit_ind = self.getByteAndBitIndexes(index)
+        self.avail_bitset = self.avail_bitset[0:byte_ind] + chr(ord(self.avail_bitset[byte_ind]) & (~(0x1 << bit_ind))) + self.avail_bitset[byte_ind+1:]
+        self.avail_num -= 1
+
+    def popSetBit(self):
+        for i in range(len(self.avail_bitset)):
+            byte = self.avail_bitset[i]
+            if byte is not "\x00":
+                byte = ord(byte)
+                for j in range(8):
+                    if byte & 1:
+                        ret = i*8 + j
+                        self.clearBit(ret)
+                        return ret
+                    byte >>= 1
+        return None
+
     def loadAvailableGIDs(self):
         gids = map(lambda x: int(x), self.database.keys())
         # exclude GID = 1 (Master) and 0 (NULL)
-        return [i for i in xrange(self.gid_max,1,-1) if i not in gids]
-
-    def reserveGID(self, lid):
-        if len(self.avail_list) == 0:
+        #return [i for i in xrange(self.gid_max,1,-1) if i not in gids]
+        byte_num = 1 if self.gid_bits <= 3 else (self.gid_bits - 3)
+        self.avail_bitset = '\xFF' * (byte_num)
+        self.clearBit(0)
+        self.clearBit(1)
+        self.avail_num = self.gid_max + 1 - 2
+        for i in xrange(2,self.gid_max+1):
+            if i in gids:
+                self.clearBit(i)
+    '''
+    GID Packet handling sub-functions
+    '''
+    def reserveGID(self, lid, gid):
+        if self.avail_num == 0:
             if len(self.reserve_list) == 0:
                 print "GIDService Warning: No Available GID"
                 return None
             print "GIDService Warning: Canceling reserved GID"
             for rlid, rgid in self.reserve_list:
-                self.avail_list.append(rgid)
+                self.setBit(gid)
             self.reserve_list = []
+        
+        if (not self.testBit(gid)) and self.database[gid] == lid:
+            return gid
 
-        gid = self.avail_list.pop()
+        gid = self.popSetBit()
+        gevent.sleep(0)
         self.reserve_list.append((lid,gid))
-        print self.reserve_list
+        #print self.reserve_list
         return gid
 
     def allocateGID(self, lid, gid):
-        print self.reserve_list
+        #print self.reserve_list
         if (lid, gid) not in self.reserve_list:
             print "GIDService Error: client lid = %d, gid = %d not reserved" % (lid,gid)
             return None
