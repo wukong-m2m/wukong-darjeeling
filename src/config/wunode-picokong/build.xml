@@ -3,7 +3,7 @@
 	<!-- include native code for libraries -->
 	<!-- note that libraries should come after libraries they depend on
 		 (wkcomm first, the wkpf), or else loading the archive will fail -->
-	<property name="libs" value="uart, wkcomm, wkpf, wkreprog"/>
+	<property name="libs" value="uart, wkcomm, wkreprog, wkpf"/>
 
 	<!-- Compile these applications -->
 	<property name="apps" value="wkdeploy"/>
@@ -20,6 +20,9 @@
 
 	<!-- Import the rest from config.xml (magic) -->
 	<import file="../config.xml"/>
+
+	<!-- Import settings like the USB port the programmer is connected to -->
+	<import file="../../settings.xml"/>
 	
 	<!-- convenience targets to launch avrdude or avarice -->
 	<target name="avrdude-jtag" depends="executable">
@@ -30,7 +33,7 @@
 
 	<target name="avrdude" depends="executable">
 		<exec executable="avrdude">
-			<arg line="-p atmega2560 -P /dev/tty.usbserial-A501IW20 -c stk500v2 -U flash:w:darjeeling.ihex -U eeprom:w:darjeeling_eeprom.ihex"/>
+			<arg line="-p atmega2560 -P ${avrdude-programmer} -c stk500v2 -U flash:w:darjeeling.ihex -U eeprom:w:darjeeling_eeprom.ihex"/>
 		</exec>
 	</target>
 

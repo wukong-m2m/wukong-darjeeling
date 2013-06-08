@@ -17,8 +17,8 @@ void wkreprog_comm_handle_message(void *data) {
 	switch (msg->command) {
 		case WKREPROG_COMM_CMD_REPROG_OPEN: {
 			DEBUG_LOG(DBG_WKREPROG, "Initialise reprogramming.\n");
-			uint16_t size_to_upload = (uint16_t)payload[0] + (((uint16_t)payload[1]) << 8);
-			if (wkreprog_impl_open(size_to_upload)) {
+			// uint16_t size_to_upload = (uint16_t)payload[0] + (((uint16_t)payload[1]) << 8);
+			if (wkreprog_impl_open(0)) {
 				// TODONR: DEBUG_LOG(DBG_WKREPROG, "Setting master address to %x", src);
 			    // wkpf_config_set_master_node_id(src);
 				DEBUG_LOG(DBG_WKREPROG, "Going to runlevel RUNLEVEL_REPROGRAMMING.\n");

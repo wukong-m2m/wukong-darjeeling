@@ -85,6 +85,11 @@
 
     <WuClass name="Numeric_Controller" id="3" virtual="false" type="hard">
         <property name="output" datatype="short" access="readwrite" default="200" />
+        <property name="refresh_rate" datatype="refresh_rate" access="readwrite" default="1000" />
+        <property name="max_output_value" datatype="short" access="readwrite" default="1024" />
+        <property name="min_output_value" datatype="short" access="readwrite" default="0" />
+        <property name="max_device_value" datatype="short" access="readwrite" default="255" />
+        <property name="min_device_value" datatype="short" access="readwrite" default="0" />
     </WuClass>
 
     <WuClass name="Light_Sensor" id="5" virtual="false" type="hard">
@@ -144,7 +149,7 @@
         <property name="port4" datatype="boolean" access="readwrite" default="false" />
     </WuClass>
 
-    <WuClass name="Gh_Sensor" id="16" virtual="false" type="soft">
+    <WuClass name="Gh_Sensor" id="16" virtual="false" type="hard" privateCData="bool">
         <property name="enable" datatype="boolean" access="readwrite" default="true" />
         <property name="refresh_rate" datatype="refresh_rate" access="readwrite" default="2000" />
     </WuClass>

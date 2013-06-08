@@ -38,7 +38,7 @@ int main(int argc,char* argv[])
 	posix_parse_command_line(argc, argv);
 
 	// Read the lib and app infusion archives from file
-	char* di_app_infusion_archive_data = posix_load_infusion_archive("app_infusion.dja");
+	di_app_archive = posix_load_infusion_archive("app_infusion.dja");
 
 	// initialise memory manager
 	void *mem = malloc(HEAPSIZE);
@@ -46,7 +46,7 @@ int main(int argc,char* argv[])
 
 	core_init(mem, HEAPSIZE);
 	dj_exec_setRunlevel(RUNLEVEL_RUNNING);
-	wkpf_picokong((dj_di_pointer)di_app_infusion_archive_data);
+	wkpf_picokong(di_app_archive);
 
 	return 0;
 }

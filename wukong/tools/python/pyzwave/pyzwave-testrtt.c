@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #ifdef _WIN32
 //#include <windows.h>
@@ -2861,22 +2862,27 @@ void dumpInitData()
         printf("Timer is not available\n");
     len=zdata[2];
     //init_data_buf, init_data_buf_ptr added for node discovery Sen 12.8.8
+    printf("Node ids:\n");
     int init_data_buf_ptr=1;
     for(i=0;i<len;i++) {
+        bool printed = false;
         int mask = 1,j;
-        printf("%03d: ",i*8);
+        //printf("%03d: ",i*8);
         for(j=0;j<8;j++) {
             if (zdata[3+i]&mask){
-                printf("X");
+                //printf("X");
+                printed = true;
+                printf("%d ", i*8+j+1);
                 init_data_buf[init_data_buf_ptr]=i*8+j+1;
                 init_data_buf_ptr+=1;
             }
             else{
-                printf(" ");
+                //printf(" ");
             }
             mask <<=1;
         }
-        printf("\n");
+        if(printed)
+          printf("\n");
     }
     init_data_buf[0]=init_data_buf_ptr-1;	//init_data_buf[0] stores the number of nodes(including self) in zwave
 }

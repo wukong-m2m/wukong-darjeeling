@@ -27,22 +27,27 @@
 #include "vmthread.h"
 #include "djtimer.h"
 #include "execution.h"
+#include "djarchive.h"
 #include "hooks.h"
 #include "core.h"
 
-extern unsigned char di_lib_infusions_archive_data[];
-extern unsigned char di_app_infusion_archive_data[];
-
-unsigned char mem[HEAPSIZE];
-
 #include "avr.h"
+
+extern const unsigned char di_lib_infusions_archive_data[];
+extern const unsigned char di_app_infusion_archive_data[];
 
 // From GENERATEDlibinit.c, which is generated during build based on the libraries in this config's libs.
 extern dj_named_native_handler java_library_native_handlers[];
 extern uint8_t java_library_native_handlers_length;
 
+
+unsigned char mem[HEAPSIZE];
+
 int main()
 {
+	// Declared in djarchive.c so that the reprogramming code can find it.
+	di_app_archive = (dj_di_pointer)di_app_infusion_archive_data;
+
 	// initialise serial port
 	avr_serialInit(115200);
 

@@ -25,19 +25,13 @@
 #include "djtimer.h"
 #include "hooks.h"
 #include "core.h"
+#include "djarchive.h"
 #include "wkpf_main.h"
 
 #include "avr.h"
 
-extern unsigned char di_lib_infusions_archive_data[];
-extern unsigned char di_app_infusion_archive_data[];
 
 unsigned char mem[HEAPSIZE];
-
-
-// From GENERATEDlibinit.c, which is generated during build based on the libraries in this config's libs.
-extern dj_named_native_handler java_library_native_handlers[];
-extern uint8_t java_library_native_handlers_length;
 
 int main()
 {

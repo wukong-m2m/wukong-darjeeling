@@ -11,7 +11,7 @@ uint16_t wkreprog_impl_get_page_size() {
 	return 0;
 }
 
-bool wkreprog_impl_open(uint16_t size_to_upload) {
+bool wkreprog_impl_open(uint16_t start_write_position) {
 	dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
 	return false;
 }

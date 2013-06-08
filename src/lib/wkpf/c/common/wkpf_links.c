@@ -4,6 +4,7 @@
 #include "djarchive.h"
 #include "panic.h"
 #include "wkcomm.h"
+#include "wkreprog.h"
 #include "wkpf.h"
 #include "wkpf_wuobjects.h"
 #include "wkpf_properties.h"
@@ -335,4 +336,52 @@ uint8_t wkpf_process_initvalues_list(dj_di_pointer initvalues) {
 	return WKPF_OK;
 }
 
+// Updates the current value of this property to be an initvalue
+// (if it exists in the initvalue list in the first place)
+void wkpf_update_initvalue_in_flash(wuobject_t *wuobject, uint8_t object_property_number) {
+	// !!!!!!!!!!!!
+	// Note that this will only work as long as the format in the table is the same
+	// as in memory. Since WuKong message format and the native and wunode platforms
+	// are both little endian, this works fine for now.
+	// If we add a big endian platform, the value in the table would still be little
+	// endian since it needs to be platform independent. But the value in memory would
+	// be big endian, so we need to do a conversion here before storing it back in the
+	// table.
+	// !!!!!!!!!!!!
+
+	// Find initvalues file
+	int filenumber = -1;
+	for (int i=0; i<dj_archive_number_of_files(di_app_archive); i++) {
+		if (dj_archive_filetype(dj_archive_get_file(di_app_archive, i))==DJ_FILETYPE_WKPF_INITVALUES_TABLE) {
+			filenumber = i;
+			break;
+		}
+	}
+	// Find component id for wuobject
+	uint16_t object_component_id;
+	wkpf_get_component_id(wuobject->port_number, &object_component_id);
+
+	dj_di_pointer initvalues = dj_archive_get_file(di_app_archive, filenumber);
+	uint16_t offset = 0;
+
+	uint16_t number_of_initvalues = dj_di_getU16(initvalues+offset);
+	offset += 2; // Skip number of values
+	for (uint16_t i=0; i<number_of_initvalues; i++) {
+		uint16_t value_component_id = dj_di_getU16(initvalues+offset);
+		offset += 2;
+		uint8_t value_property_number = dj_di_getU8(initvalues+offset);
+		offset += 1;
+		uint8_t value_size = dj_di_getU8(initvalues+offset);
+		offset += 1;
+		if (object_component_id == value_component_id
+				&& object_property_number == value_property_number) {
+			wuobject_property_t *property = wkpf_get_property(wuobject, value_property_number);
+			wkreprog_open(filenumber, offset);
+			wkreprog_write(value_size, property->value);
+			wkreprog_close();
+			return;
+		}
+		offset += value_size;		
+	}
+}
 

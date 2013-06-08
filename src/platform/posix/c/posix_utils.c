@@ -59,7 +59,7 @@ void posix_parse_command_line(int argc,char* argv[]) {
 	}
 }
 
-char* posix_load_infusion_archive(char *filename) {
+dj_di_pointer posix_load_infusion_archive(char *filename) {
 	FILE *fp = fopen(filename, "r");
 	if (!fp) {
 		printf("Unable to open the program flash file %s.\n", filename);
@@ -82,7 +82,7 @@ char* posix_load_infusion_archive(char *filename) {
 	fread(di_archive_data, sizeof(char), length, fp); // Skip 4 bytes that contain the archive length
 	fclose(fp);
 
-	return di_archive_data;
+	return (dj_di_pointer)di_archive_data;
 }
 
 

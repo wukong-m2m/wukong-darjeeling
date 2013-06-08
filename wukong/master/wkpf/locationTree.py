@@ -425,7 +425,7 @@ class LocationTree:
         self.totalSensorCount = self.totalSensorCount +1
         return True
     
-    def getNodeInfoById (self, Id): #return None on failure
+    def getNodeInfoById(self, Id): #return None on failure
         curNode = self.root
         while curNode != None and (Id in curNode.idSet):
             found = False

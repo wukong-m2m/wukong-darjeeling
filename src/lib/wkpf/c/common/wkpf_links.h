@@ -15,4 +15,10 @@ uint8_t wkpf_load_component_to_wuobject_map(dj_di_pointer map);
 uint8_t wkpf_create_local_wuobjects_from_app_tables();
 uint8_t wkpf_process_initvalues_list(dj_di_pointer initvalues);
 
+// Updates the current value of this property to be an initvalue
+// (if it exists in the initvalue list in the first place,
+// if there's no initvalue, this function won't create an entry,
+// so it's a noop in that case)
+void wkpf_update_initvalue_in_flash(wuobject_t *wuobject, uint8_t object_property_number);
+
 #endif // WKPF_LINKSH

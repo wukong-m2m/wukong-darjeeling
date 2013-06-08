@@ -38,20 +38,23 @@
 extern dj_named_native_handler java_library_native_handlers[];
 extern uint8_t java_library_native_handlers_length;
 
+// di_app_archive is defined in djarchive.c
+dj_di_pointer di_lib_archive;
+
 int main(int argc,char* argv[])
 {
 	posix_parse_command_line(argc, argv);
 
 	// Read the lib and app infusion archives from file
-	char* di_lib_infusions_archive_data = posix_load_infusion_archive("lib_infusions.dja");
-	char* di_app_infusion_archive_data = posix_load_infusion_archive("app_infusion.dja");
+	di_lib_archive = posix_load_infusion_archive("lib_infusions.dja");
+	di_app_archive = posix_load_infusion_archive("app_infusion.dja");
 
 	// initialise memory manager
 	void *mem = malloc(HEAPSIZE);
 	ref_t_base_address = (char*)mem - 42;
 
 	core_init(mem, HEAPSIZE);
-	dj_vm_main((dj_di_pointer)di_lib_infusions_archive_data, (dj_di_pointer)di_app_infusion_archive_data, java_library_native_handlers, java_library_native_handlers_length);
+	dj_vm_main(di_lib_archive, di_app_archive, java_library_native_handlers, java_library_native_handlers_length);
 
 	// Listen to the radio
 	while(true)

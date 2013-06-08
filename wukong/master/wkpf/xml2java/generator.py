@@ -101,8 +101,8 @@ class Generator:
 
             for property in properties:
                 if property.name in component_properties:
-                    if component_property[property.name].strip() != "":
-                        property.value = component_property[property.name]
+                    if component_properties[property.name].strip() != "":
+                        property.value = component_properties[property.name]
             return [p for p in properties if p.access!='readonly']
 
         # TODO: this should be in a higher level place somewhere.

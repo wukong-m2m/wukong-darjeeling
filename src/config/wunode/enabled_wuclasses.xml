@@ -3,4 +3,5 @@
     <WuClass name="Light_Sensor" />
     <WuClass name="Light_Actuator" />
     <WuClass name="Numeric_Controller" />
+    <WuClass name="Gh_Sensor" />
 </WuKong>

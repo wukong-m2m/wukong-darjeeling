@@ -1,6 +1,6 @@
 import sys, os, traceback, time, re, copy
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from models import WuClass, WuObject, WuComponent, WuLink, WuType, WuProperty
+from models import WuClassDef, WuComponent, WuLink
 from mapper import firstCandidate
 from locationTree import *
 from locationParser import *
@@ -125,7 +125,7 @@ class WuApplication:
       for index, componentTag in enumerate(self.applicationDom.getElementsByTagName('component')):
           # make sure application component is found in wuClassDef component list
           try:
-              assert componentTag.getAttribute('type').lower() in [x.name.lower() for x in WuClass.all()]
+              assert componentTag.getAttribute('type').lower() in [x.name.lower() for x in WuClassDef.all()]
           except Exception as e:
             logging.error('unknown types for component found while parsing application')
             return #TODO: need to handle this
@@ -196,12 +196,12 @@ class WuApplication:
       # links
       for linkTag in self.applicationDom.getElementsByTagName('link'):
           from_component_index = componentInstanceMap[linkTag.parentNode.getAttribute('instanceId')].index
-          properties = WuClass.where(name=linkTag.parentNode.getAttribute('type'))[0].properties
+          properties = WuClassDef.where(name=linkTag.parentNode.getAttribute('type'))[0].properties
           from_property_id = [property for property in properties if linkTag.getAttribute('fromProperty').lower() == property.name.lower()][0].id
           
           to_component_index = componentInstanceMap[linkTag.getAttribute('toInstanceId')].index
           
-          to_wuclass = WuClass.where(name=componentInstanceMap[linkTag.getAttribute('toInstanceId')].type)[0]
+          to_wuclass = WuClassDef.where(name=componentInstanceMap[linkTag.getAttribute('toInstanceId')].type)[0]
           properties = to_wuclass.properties
           to_property_id = [property for property in properties if linkTag.getAttribute('toProperty').lower() == property.name.lower()][0].id
 

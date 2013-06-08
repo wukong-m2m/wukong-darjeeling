@@ -52,7 +52,7 @@ class DeferredQueue:
             if defer.timeout < int(round(time.time() * 1000)):
                 print 'remove timeouted defer', defer
                 # call error cb
-                defer.error_cb()
+                defer.error_cb(None)
                 del self.queue[key]
 
     def find_defer(self, deliver):
@@ -107,7 +107,7 @@ class TransportAgent:
 
     # could be overridden 
     def verify(self, allowed_replies):
-        return lambda deliver, defer: (deliver.command in allowed_replies and deliver.command != pynvc.WKPF_ERROR_R) and (deliver.payload != None and deliver.payload[0:2]==defer.message.payload[0:2])
+        return lambda deliver, defer: (deliver.command in allowed_replies) and (deliver.payload != None and deliver.payload[0:2]==defer.message.payload[0:2])
 
 
     # to be run in a greenlet thread, context switching with handler
@@ -143,8 +143,8 @@ class ZwaveAgent(TransportAgent):
         def callback(reply):
             cb(reply)
 
-        def error_callback():
-            error_cb()
+        def error_callback(reply):
+            error_cb(reply)
 
         defer = new_defer(callback, 
                 error_callback,
@@ -160,8 +160,8 @@ class ZwaveAgent(TransportAgent):
         def callback(reply):
             result.set(reply)
 
-        def error_callback():
-            result.set(None)
+        def error_callback(reply):
+            result.set(reply)
 
 
         defer = new_defer(callback, 
@@ -363,7 +363,10 @@ class BrokerAgent:
 
             if defer_id and defer:
                 # call callback
-                defer.callback(deliver)
+                if deliver.command == pynvc.WKPF_ERROR_R:
+                    defer.error_cb(deliver)
+                else:
+                    defer.callback(deliver)
 
                 # remove it
                 getDeferredQueue().remove_defer(defer_id)
