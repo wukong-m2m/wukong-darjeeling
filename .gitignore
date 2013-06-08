@@ -41,4 +41,6 @@ darjeeling_flash_page.o
 darjeeling_flash_page.hex
 wkdeploy.dja
 standardlibrary.db
+gid.db
 fbp.html
+wukong/tools/testrtt/testrtt
