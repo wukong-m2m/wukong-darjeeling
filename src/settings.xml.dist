@@ -1,0 +1,3 @@
+<project name="settings">
+	<property name="avrdude-programmer" value="/dev/cu.usbserial-A9CNZHXH"/>
+</project>

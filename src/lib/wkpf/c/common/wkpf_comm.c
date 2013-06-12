@@ -10,7 +10,7 @@
 #include "wkpf_wuobjects.h"
 #include "wkpf_properties.h"
 
-uint8_t send_message(address_t dest_node_id, uint8_t command, uint8_t *payload, uint8_t length) {
+uint8_t send_message(wkcomm_address_t dest_node_id, uint8_t command, uint8_t *payload, uint8_t length) {
 	// Print some debug info
 #ifdef DEBUG
 	DEBUG_LOG(DBG_WKPF, "WKPF: sending property set command to %d:", dest_node_id);
@@ -36,7 +36,7 @@ uint8_t send_message(address_t dest_node_id, uint8_t command, uint8_t *payload, 
 	}
 }
 
-uint8_t wkpf_send_set_property_int16(address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, int16_t value) {
+uint8_t wkpf_send_set_property_int16(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, int16_t value) {
 	uint8_t message_buffer[7];
 	message_buffer[0] = port_number;
 	message_buffer[1] = (uint8_t)(wuclass_id >> 8);
@@ -48,7 +48,7 @@ uint8_t wkpf_send_set_property_int16(address_t dest_node_id, uint8_t port_number
 	return send_message(dest_node_id, WKPF_COMM_CMD_WRITE_PROPERTY, message_buffer, 7);
 }
 
-uint8_t wkpf_send_set_property_boolean(address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, bool value) {
+uint8_t wkpf_send_set_property_boolean(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, bool value) {
 	uint8_t message_buffer[6];
 	message_buffer[0] = port_number;
 	message_buffer[1] = (uint8_t)(wuclass_id >> 8);
@@ -59,7 +59,7 @@ uint8_t wkpf_send_set_property_boolean(address_t dest_node_id, uint8_t port_numb
 	return send_message(dest_node_id, WKPF_COMM_CMD_WRITE_PROPERTY, message_buffer, 6);
 }
 
-uint8_t wkpf_send_set_property_refresh_rate(address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, wkpf_refresh_rate_t value) {
+uint8_t wkpf_send_set_property_refresh_rate(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, wkpf_refresh_rate_t value) {
 	uint8_t message_buffer[7];
 	message_buffer[0] = port_number;
 	message_buffer[1] = (uint8_t)(wuclass_id >> 8);
@@ -71,7 +71,7 @@ uint8_t wkpf_send_set_property_refresh_rate(address_t dest_node_id, uint8_t port
 	return send_message(dest_node_id, WKPF_COMM_CMD_WRITE_PROPERTY, message_buffer, 7);
 }
 
-uint8_t wkpf_send_request_property_init(address_t dest_node_id, uint8_t port_number, uint8_t property_number) {
+uint8_t wkpf_send_request_property_init(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number) {
 	uint8_t message_buffer[2];
 	message_buffer[0] = port_number;
 	message_buffer[1] = property_number;
@@ -79,7 +79,7 @@ uint8_t wkpf_send_request_property_init(address_t dest_node_id, uint8_t port_num
 }
 
 
-//void wkpf_comm_handle_message(address_t src, uint8_t nvmcomm_command, uint8_t *payload, uint8_t response_size, uint8_t response_cmd) {
+//void wkpf_comm_handle_message(wkcomm_address_t src, uint8_t nvmcomm_command, uint8_t *payload, uint8_t response_size, uint8_t response_cmd) {
 void wkpf_comm_handle_message(void *data) {
 	wkcomm_received_msg *msg = (wkcomm_received_msg *)data;
 	uint8_t *payload = msg->payload;
@@ -100,7 +100,7 @@ void wkpf_comm_handle_message(void *data) {
 			uint8_t requested_offset = payload[0];
 
 			// Read the EEPROM
-			uint8_t length = wkpf_config_get_part_of_location_string((char *)payload, requested_offset, WKCOMM_MESSAGE_SIZE);
+			uint8_t length = wkpf_config_get_part_of_location_string((char *)payload, requested_offset, WKCOMM_MESSAGE_PAYLOAD_SIZE);
 
 			DEBUG_LOG(DBG_WKPF, "WKPF_COMM_CMD_GET_LOCATION: Reading %d bytes at offset %d\n", length, requested_offset);
 
@@ -158,8 +158,10 @@ void wkpf_comm_handle_message(void *data) {
 		break;
 		case WKPF_COMM_CMD_GET_WUCLASS_LIST: {
 			uint8_t number_of_wuclasses = wkpf_get_number_of_wuclasses();
+			if (number_of_wuclasses > 9) // TODONR: i<9 is temporary to keep the length within MESSAGE_SIZE, but we should have a protocol that sends multiple messages
+				number_of_wuclasses = 9;
 			payload[0] = number_of_wuclasses;
-			for (uint8_t i=0; i<number_of_wuclasses && i<9; i++) { // TODONR: i<9 is temporary to keep the length within MESSAGE_SIZE, but we should have a protocol that sends multiple messages
+			for (uint8_t i=0; i<number_of_wuclasses; i++) {
 				wuclass_t *wuclass;
 				wkpf_get_wuclass_by_index(i, &wuclass);
 				payload[3*i + 1] = (uint8_t)(wuclass->wuclass_id >> 8);
@@ -172,8 +174,10 @@ void wkpf_comm_handle_message(void *data) {
 		break;
 		case WKPF_COMM_CMD_GET_WUOBJECT_LIST: {
 			uint8_t number_of_wuobjects = wkpf_get_number_of_wuobjects();
+			if (number_of_wuobjects > 9) // TODONR: i<9 is temporary to keep the length within MESSAGE_SIZE, but we should have a protocol that sends multiple messages
+				number_of_wuobjects = 9;
 			payload[0] = number_of_wuobjects;
-			for (uint8_t i=0; i<number_of_wuobjects && i<9; i++) { // TODONR: i<9 is temporary to keep the length within MESSAGE_SIZE, but we should have a protocol that sends multiple messages
+			for (uint8_t i=0; i<number_of_wuobjects; i++) {
 				wuobject_t *wuobject;
 				wkpf_get_wuobject_by_index(i, &wuobject);
 				payload[3*i + 1] = (uint8_t)(wuobject->port_number);

@@ -20,6 +20,9 @@
 #define dj_archive_filesize(file) (dj_di_getU32(file-3))
 #define dj_archive_filetype(file) (dj_di_getU8(file-1))
 
+// Contains the application archive. To be provided by main.c for each platform.
+extern dj_di_pointer di_app_archive;
+
 uint8_t dj_archive_number_of_files(dj_di_pointer archive);
 dj_di_pointer dj_archive_get_file(dj_di_pointer archive, uint8_t filenumber);
 

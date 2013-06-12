@@ -4,7 +4,7 @@
 	<property name="name" value="wkpf"/>
 	
 	<!-- list of libraries this library depends on -->
-	<property name="lib-c-depends" value="wkcomm"/>
+	<property name="lib-c-depends" value="wkcomm, wkreprog"/>
 	<property name="lib-java-depends" value=""/>
 
 	<!-- just export all header files for now, since wkpf_virtual needs many of them -->	
@@ -14,8 +14,9 @@
 	<import file="../lib.xml"/>
 
 	<target name="lib-specific-pre">
+		<!-- TODO: make codegen more specific. here we only need to generate code for the native classes, in the wkdeploy app we only need to generate Java base classes. -->
 		<exec executable="../../../wukong/master/wkpf/codegen.py">
-			<arg line="-i ../../../wukong/ComponentDefinitions/WuKongStandardLibrary.xml -p ../../.. -u ../../.."/>
+			<arg line="-i ../../../wukong/ComponentDefinitions/WuKongStandardLibrary.xml -p ../../.. -u ../../.. -e ${configtargetpath}/${enabled_wuclasses}"/>
 		</exec>
 	</target>
 

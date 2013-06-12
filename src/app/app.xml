@@ -35,7 +35,7 @@
 	</pathconvert>
 	
 	<!-- Meta-target -->
-	<target name="all" depends="process-lib-depends, create-jar, create-infusion, create-wkpftables, make-djarchive, add-wkpftables"/>
+	<target name="all" depends="process-lib-depends, create-jar, create-infusion, make-djarchive"/>
 
 	<!-- create infusions for dependencies -->
 	<target name="process-lib-depends">
@@ -54,22 +54,8 @@
 
 	<!-- WuKong specific: add some binary data containing the link table and 
 	     component map to the end of the infusion -->
-	<target name="create-wkpftables" if="wkpftable">
-		<wkpftable
-			src="${java-src}/${wkpftable}"
-			dest="${build}/${name}"/>
-	</target>
-
-	<!-- WuKong specific: add some binary data containing the link table and 
-	     component map to the end of the infusion -->
 	<target name="make-djarchive">
 		<djarchive dest="${build}/${name}.dja" mode="create" src="${build}/${name}.di" filetype="${djarchive_type_app_infusion}"/>
-	</target>
-
-	<target name="add-wkpftables" if="wkpftable">
-		<djarchive dest="${build}/${name}.dja" mode="append" src="${build}/${name}.wkpf_linktable" filetype="${djarchive_type_wkpf_link_table}"/>
-		<djarchive dest="${build}/${name}.dja" mode="append" src="${build}/${name}.wkpf_componentmap" filetype="${djarchive_type_wkpf_component_map}"/>
-		<djarchive dest="${build}/${name}.dja" mode="append" src="${build}/${name}.wkpf_initvalues" filetype="${djarchive_type_wkpf_initvalues}"/>
 	</target>
 	
 	<apply executable="ls">

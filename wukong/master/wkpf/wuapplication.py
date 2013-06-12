@@ -1,6 +1,6 @@
 import sys, os, traceback, time, re, copy
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from models import WuClass, WuObject, WuComponent, WuLink, WuType, WuProperty
+from models import WuClassDef, WuComponent, WuLink
 from mapper import firstCandidate
 from locationTree import *
 from locationParser import *
@@ -9,7 +9,6 @@ from xml.parsers.expat import ExpatError
 import simplejson as json
 import logging, logging.handlers, wukonghandler
 from wkpfcomm import *
-from codegen import CodeGen
 from xml2java.generator import Generator
 from threading import Thread
 from subprocess import Popen, PIPE, STDOUT
@@ -126,7 +125,7 @@ class WuApplication:
       for index, componentTag in enumerate(self.applicationDom.getElementsByTagName('component')):
           # make sure application component is found in wuClassDef component list
           try:
-              assert componentTag.getAttribute('type').lower() in [x.name.lower() for x in WuClass.all()]
+              assert componentTag.getAttribute('type').lower() in [x.name.lower() for x in WuClassDef.all()]
           except Exception as e:
             logging.error('unknown types for component found while parsing application')
             return #TODO: need to handle this
@@ -197,12 +196,12 @@ class WuApplication:
       # links
       for linkTag in self.applicationDom.getElementsByTagName('link'):
           from_component_index = componentInstanceMap[linkTag.parentNode.getAttribute('instanceId')].index
-          properties = WuClass.where(name=linkTag.parentNode.getAttribute('type'))[0].properties
+          properties = WuClassDef.where(name=linkTag.parentNode.getAttribute('type'))[0].properties
           from_property_id = [property for property in properties if linkTag.getAttribute('fromProperty').lower() == property.name.lower()][0].id
           
           to_component_index = componentInstanceMap[linkTag.getAttribute('toInstanceId')].index
           
-          to_wuclass = WuClass.where(name=componentInstanceMap[linkTag.getAttribute('toInstanceId')].type)[0]
+          to_wuclass = WuClassDef.where(name=componentInstanceMap[linkTag.getAttribute('toInstanceId')].type)[0]
           properties = to_wuclass.properties
           to_property_id = [property for property in properties if linkTag.getAttribute('toProperty').lower() == property.name.lower()][0].id
 
@@ -218,10 +217,6 @@ class WuApplication:
               linkSet.append(hash_value)
               self.wuLinks.append( WuLink(fromWuObject, fromPropertyId, toWuObject, toPropertyId) )
           '''
-
-  def generateCode(self):
-      # special case: for now, it should be passing parsed WuClass objects
-      CodeGen.generate(self, open(COMPONENTXML_PATH).read(), ROOT_PATH)
 
   def generateJava(self):
       Generator.generate(self.name, self.changesets)
@@ -254,17 +249,6 @@ class WuApplication:
 
       self.status = "Generating java library code"
       gevent.sleep(0)
-
-      # CodeGen
-      self.info('==Generating necessary files for wukong')
-      try:
-        self.generateCode()
-      except Exception as e:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        traceback.print_exception(exc_type, exc_value, exc_traceback,
-                                      limit=2, file=sys.stdout)
-        self.error(e)
-        return False
 
       self.status = "Generating java application"
       gevent.sleep(0)

@@ -29,112 +29,36 @@
 #include "core.h"
 #include "types.h"
 #include "vm.h"
-#include "heap.h"
-#include "execution.h"
-#include "config.h"
 #include "hooks.h"
 #include "djarchive.h"
 
-#include "pointerwidth.h"
-char * ref_t_base_address;
-
-// TODONR: this is necessary for the functions in ProgramFlash in java
-//         Doesn't seem to work now, butjust leave it here until
-//         we decide to remove or finish it.
-FILE * progflashFile;
-char** posix_argv;
-char* posix_uart_filenames[4];
-
-void parse_uart_arg(char *arg) {
-	int uart = arg[0];
-	uart -= '0';
-	if (uart < 0 || uart > 3 || arg[1]!='=') {
-		printf("option -u/--uart format: <uart>=<file>, where <uart> is 0, 1, 2, or 3 and <file> is the device to connect to thise uart.\n");
-		abort();
-	}
-	posix_uart_filenames[uart] = arg+2;
-	printf("Uart %d at %s\n", uart, posix_uart_filenames[uart]);
-}
-
-void parse_command_line(int argc,char* argv[]) {
-	int c;
-	while (1) {
-		static struct option long_options[] = {
-			{"uart",    required_argument, 0, 'u'},
-			{0, 0, 0, 0}
-		};
-
-		/* getopt_long stores the option index here. */
-		int option_index = 0;
-
-		c = getopt_long (argc, argv, "u:",
-		    long_options, &option_index);
-
-		/* Detect the end of the options. */
-		if (c == -1)
-			break;
-
-		switch (c) {
-			case 'u':
-				parse_uart_arg(optarg);
-			break;
-
-			default:
-				abort ();
-		}
-	}
-}
-
-
-char* load_infusion_archive(char *filename) {
-	FILE *fp = fopen(filename, "r");
-	if (!fp) {
-		printf("Unable to open the program flash file %s.\n", filename);
-		exit(1);
-	}
-
-	// Determine the size of the archive
-	fseek(fp, 0, SEEK_END);
-	size_t length = ftell(fp);
-
-	// Allocate memory for the archive
-	char* di_archive_data = malloc(length+4);
-	if (!di_archive_data) {
-		printf("Unable to allocate memory to load the program flash file.\n");
-		exit(1);
-	}
-
-	// Read the file into memory
-	rewind(fp);
-	fread(di_archive_data, sizeof(char), length, fp); // Skip 4 bytes that contain the archive length
-	fclose(fp);
-
-	return di_archive_data;
-}
+#include "posix_utils.h"
 
 // From GENERATEDlibinit.c, which is generated during build based on the libraries in this config's libs.
 extern dj_named_native_handler java_library_native_handlers[];
 extern uint8_t java_library_native_handlers_length;
 
+// di_app_archive is defined in djarchive.c
+dj_di_pointer di_lib_archive;
+
 int main(int argc,char* argv[])
 {
-	parse_command_line(argc, argv);
-	posix_argv = argv;
+	posix_parse_command_line(argc, argv);
 
 	// Read the lib and app infusion archives from file
-	char* di_lib_infusions_archive_data = load_infusion_archive("lib_infusions.dja");
-	char* di_app_infusion_archive_data = load_infusion_archive("app_infusion.dja");
+	di_lib_archive = posix_load_infusion_archive("lib_infusions.dja");
+	di_app_archive = posix_load_infusion_archive("app_infusion.dja");
 
 	// initialise memory manager
 	void *mem = malloc(HEAPSIZE);
 	ref_t_base_address = (char*)mem - 42;
 
 	core_init(mem, HEAPSIZE);
-	dj_vm_main((dj_di_pointer)di_lib_infusions_archive_data, (dj_di_pointer)di_app_infusion_archive_data, java_library_native_handlers, java_library_native_handlers_length);
+	dj_vm_main(di_lib_archive, di_app_archive, java_library_native_handlers, java_library_native_handlers_length);
 
 	// Listen to the radio
 	while(true)
-		dj_hook_call(dj_vm_pollingHook, NULL);
+		dj_hook_call(dj_core_pollingHook, NULL);
 
 	return 0;
 }

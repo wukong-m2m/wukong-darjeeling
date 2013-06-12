@@ -69,6 +69,104 @@ def sortCandidates(wuObjects):
     for candidates in wuObjects:
       sorted(candidates, key=lambda node: nodeScores[node[0]], reverse=True)
 
+
+def first_of(changesets, network_info, last_changesets):
+
+  if not changesets:
+    return None, last_changesets
+
+  if len(changesets.components) != len(last_changesets.components):
+    raise Exception("[ERROR] components size doesn't match")
+
+  l_type = lambda c: c.type
+  if set(map(l_type, changesets.components)) != set(map(l_type,
+    last_changesets.components)):
+    raise Exception("[ERROR] components doesn't match")
+
+  for component in changesets.components:
+    locationquery = component.location
+    candidatesize = component.group_size
+
+    if candidatesize == 0:
+      continue
+
+    # filter by location
+    if not locationquery in network_info:
+      print '[WARNING] No nodes in this region', locationquery, 'for component', component.type, 'skipping...'
+      continue
+
+    candidates = network_info[locationquery] # WuNodes
+
+    if len(candidates) < candidatesize:
+      print '[WARNING] There is not enough nodes/candidates for component %s in region %s' % (component.type, locationquery)
+
+    candidates = sorted(candidates, key=lambda candidate:
+        candidate.energy, reverse=True)
+
+    # Limit to candidatesize
+    candidates = candidates[:candidatesize]
+
+    wuobjects = []
+    for node in candidates:
+      wuobjects += node.wuobjects()
+
+    component.instances = wuobjects
+    
+    if len(component.instances) == 0:
+      raise Exception('[ERROR] No avilable match could be found for component %s' % (component))
+
+  print 'mapped application', changesets
+
+  # Commands
+  # format:
+  # [
+  #   wuproperty object
+  #   ...
+  # ]
+  commands = []
+  last_changesets.components.sort(key=lambda x: x.location)
+  changesets.components.sort(key=lambda x: x.location)
+  zipped = zip(last_changesets.components, changesets.components)
+  for pair in zipped:
+    region_before = set([x.wuclass_identity for x in pair[0].instances])
+    region_after = set([x.wuclass_identity for x in pair[1].instances])
+
+    # First case, turning state on
+    on_wuclass_identities = region_after - region_before
+    for identity in on_wuclass_identities:
+      wuclass = WuClass.find(identity=identity)
+      if not wuclass:
+        raise Exception('invalid wuclass identity' % (identity))
+      wuobject = WuObject.find(wuclass_identity=identity)
+      if not wuobject:
+        raise Exception('no wuobject for wuclass idenity' % (identity))
+      # Getting the first property, assuming property number is 0
+      # And assuming the property we get has datatype 'boolean'
+      wupropertydef = WuPropertyDef.find(number=0, wuclass_id=wuclass.wuclassdef().id)
+      wuproperty = WuProperty.find(wuobject_identity=wuobject.identity,
+          wupropertydef_identity=wupropertydef.identity)
+      wuproperty.value = True
+      commands.append(wuproperty)
+
+    # Second case, turning state off
+    off_wuclass_identities = region_before - region_after
+    for identity in off_wuclass_identities:
+      wuclass = WuClass.find(identity=identity)
+      if not wuclass:
+        raise Exception('invalid wuclass identity' % (identity))
+      wuobject = WuObject.find(wuclass_identity=identity)
+      # Getting the first property, assuming property number is 0
+      # And assuming the property we get has datatype 'boolean'
+      wupropertydef = WuPropertyDef.find(number=0, wuclass_id=wuclass.wuclassdef().id)
+      wuproperty = WuProperty.find(wuobject_identity=wuobject.identity,
+          wupropertydef_identity=wupropertydef.identity)
+      wuproperty.value = False
+      commands.append(wuproperty)
+
+  return commands, changesets
+
+
+
 def firstCandidate(logger, changesets, routingTable, locTree):
     #input: nodes, WuObjects, WuLinks, WuClassDefsm, wuObjects is a list of wuobject list corresponding to group mapping
     #output: assign node id to WuObjects

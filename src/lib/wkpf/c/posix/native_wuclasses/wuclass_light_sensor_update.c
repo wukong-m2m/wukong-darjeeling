@@ -3,6 +3,8 @@
 
 #ifdef ENABLE_WUCLASS_LIGHT_SENSOR
 
+void wuclass_light_sensor_setup(wuobject_t *wuobject) {}
+
 void wuclass_light_sensor_update(wuobject_t *wuobject) {
 	// Rotate through values 0 to 255 in steps of 10
 	int16_t value;

@@ -76,13 +76,12 @@ uint8_t wkpf_create_wuobject(uint16_t wuclass_id, uint8_t port_number, dj_object
 	wuobject->port_number = port_number;
 	wuobject->java_instance_reference = java_instance_reference;
 	wuobject->need_to_call_update = false;
-	if (retval != WKPF_OK)
-		return retval;
-	// Run update function once to initialise properties.
-	wkpf_set_need_to_call_update_for_wuobject(wuobject);
-
 	wuobject->next = wuobjects_list;
 	wuobjects_list = wuobject;
+
+	if (!WKPF_IS_VIRTUAL_WUCLASS(wuclass))
+		wuclass->setup(wuobject);
+
 	DEBUG_LOG(DBG_WKPF, "WKPF: Created wuobject for wuclass id %d at port %d\n", wuclass_id, port_number);
 	return WKPF_OK;
 }

@@ -342,10 +342,10 @@ if __name__ == "__main__":
     loc1 = u"universal/Boli_Building/3F/N_Corridor/Room318@(8,1,3)"
     loc2 = u"universal/Boli_Building/2F/South_Corridor/Room318@(4,4,4)"
     loc3 = u"universal/Boli_Building/3F/South_Corridor/Room318@(2,6,8)"
-    senNd0 = SensorNode(Node(0, loc0))
-    senNd1 = SensorNode(Node(1, loc1))
-    senNd2 = SensorNode(Node(2, loc2))
-    senNd3 = SensorNode(Node(3, loc3))
+    senNd0 = SensorNode(WuNode.create(0, loc0))
+    senNd1 = SensorNode(WuNode.create(1, loc1))
+    senNd2 = SensorNode(WuNode.create(2, loc2))
+    senNd3 = SensorNode(WuNode.create(3, loc3))
     locTree.addSensor(senNd0)
     locTree.addSensor(senNd1)
     locTree.addSensor(senNd2)

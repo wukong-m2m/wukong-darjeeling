@@ -1,5 +1,4 @@
-<project default="all">
-
+<project default="wkpf-all">
 
 	<!-- set the name of the library -->
 	<property name="name" value="wkdeploy"/>
@@ -11,7 +10,7 @@
 	<property name="wkpftable" value="WKDeploy.xml"/>
 
 	<!-- include the library build template -->
-	<import file="../app.xml"/>
+	<import file="../wkpf-app.xml"/>
 
 	<!-- additional java path to include -->
 	<property name="app-sourcepath" value="${apppath}/../../wukong"/>

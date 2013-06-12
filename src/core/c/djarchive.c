@@ -1,5 +1,8 @@
 #include "djarchive.h"
 
+// this should be set in main.c
+dj_di_pointer di_app_archive;
+
 uint8_t dj_archive_number_of_files(dj_di_pointer archive) {
 	uint8_t count = 0;
 	uint32_t size;

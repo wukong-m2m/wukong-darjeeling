@@ -16,6 +16,8 @@
 #include "wkpf_properties.h"
 #include "wkpf_links.h"
 #include "wkpf_comm.h"
+#include "wkpf_main.h"
+#include "wkpf_virtual_wuclasses.h"
 
 uint8_t wkpf_error_code = WKPF_OK;
 
@@ -98,75 +100,28 @@ void javax_wukong_wkpf_WKPF_void_setPropertyBoolean_javax_wukong_wkpf_VirtualWuO
 	}
 }
 
-void javax_wukong_wkpf_WKPF_void_appInitLinkTableAndComponentMap() {
-	bool found_linktable = false, found_componentmap = false;
+void javax_wukong_wkpf_WKPF_void_appLoadInitLinkTableAndComponentMap() {
 	dj_vm *vm = dj_exec_getVM();
-	dj_di_pointer archive = vm->di_app_infusion_archive_data;
-	for (uint8_t i=0; i<dj_archive_number_of_files(archive); i++) {
-		dj_di_pointer file = dj_archive_get_file(archive, i);
-		if (dj_archive_filetype(file) == DJ_FILETYPE_WKPF_LINK_TABLE) {
-			DEBUG_LOG(DBG_WKPF, "WKPF: (INIT) Loading link table....\n");
-			wkpf_load_links(file);
-			found_linktable = true;
-		}
-		if (dj_archive_filetype(file) == DJ_FILETYPE_WKPF_COMPONENT_MAP) {
-			DEBUG_LOG(DBG_WKPF, "WKPF: (INIT) Loading component map....\n");
-			wkpf_load_component_to_wuobject_map(file);
-			found_componentmap = true;
-		}
-	}
-	if (!found_linktable || !found_componentmap)
-		dj_panic(WKPF_PANIC_MISSING_BINARY_FILE);
+	wkpf_initLinkTableAndComponentMap(vm->di_app_infusion_archive_data);
 }
 
-void javax_wukong_wkpf_WKPF_void_appInitLocalObjectAndInitValues() {
-	bool found_initvalues = false;
-
-	DEBUG_LOG(DBG_WKPF, "WKPF: (INIT) Creating local native wuobjects....\n");
-	wkpf_error_code = wkpf_create_local_wuobjects_from_app_tables();
-	if (wkpf_error_code != WKPF_OK)
-		dj_panic(WKPF_PANIC_ERROR_CREATING_LOCAL_OBJECTS);
-
+void javax_wukong_wkpf_WKPF_void_appInitCreateLocalObjectAndInitValues() {
 	dj_vm *vm = dj_exec_getVM();
-	dj_di_pointer archive = vm->di_app_infusion_archive_data;
-	for (uint8_t i=0; i<dj_archive_number_of_files(archive); i++) {
-		dj_di_pointer file = dj_archive_get_file(archive, i);
-		if (dj_archive_filetype(file) == DJ_FILETYPE_WKPF_INITVALUES_TABLE) {
-			DEBUG_LOG(DBG_WKPF, "WKPF: (INIT) Processing initvalues....\n");
-			wkpf_process_initvalues_list(file);
-			found_initvalues = true;
-		}
-	}
-	if (!found_initvalues)
-		dj_panic(WKPF_PANIC_MISSING_BINARY_FILE);
+	wkpf_initLocalObjectAndInitValues(vm->di_app_infusion_archive_data);
 }
 
 void javax_wukong_wkpf_WKPF_javax_wukong_wkpf_VirtualWuObject_select() {
-	wuobject_t *wuobject;
-	while(true) {
-		// Process any incoming messages
-		dj_hook_call(dj_vm_pollingHook, NULL);
-		// // TODONR: implement group stuff
-		// #ifdef NVM_USE_GROUP
-		// 	// Send out a heartbeat message if it's due, and check for failed nodes.
-		// 	group_heartbeat();
-		// #endif // NVM_USE_GROUP
-		if (dj_exec_getRunlevel() == RUNLEVEL_RUNNING) {
-			// Propagate any dirty properties
-			wkpf_propagate_dirty_properties();
-			// Check if any wuobjects need updates
-			if(wkpf_get_next_wuobject_to_update(&wuobject)) { // Will call update() for native profiles directly, and return true for virtual profiles requiring an update.
-				dj_exec_stackPushRef(VOIDP_TO_REF(wuobject->java_instance_reference));
-				DEBUG_LOG(DBG_WKPF, "WKPF: WKPF.select returning wuclass at port %x.\n", wuobject->port_number);
-				return;
-			}
-		}
-	}
+	// Will call update() for native profiles directly,
+	// and return only true for virtual profiles requiring an update.
+	wuobject_t *wuobject = wkpf_mainloop();
+	dj_exec_stackPushRef(VOIDP_TO_REF(wuobject->java_instance_reference));
+	DEBUG_LOG(DBG_WKPF, "WKPF: WKPF.select returning wuclass at port %x.\n", wuobject->port_number);
+	return;
 }
 
 void javax_wukong_wkpf_WKPF_byte_getPortNumberForComponent_short() {
 	uint16_t component_id = (uint16_t)dj_exec_stackPopShort();
-	address_t node_id;
+	wkcomm_address_t node_id;
 	uint8_t port_number;
 	wkpf_error_code = wkpf_get_node_and_port_for_component(component_id, &node_id, &port_number);
 	dj_exec_stackPushShort(port_number);
@@ -174,7 +129,7 @@ void javax_wukong_wkpf_WKPF_byte_getPortNumberForComponent_short() {
 
 void javax_wukong_wkpf_WKPF_boolean_isLocalComponent_short() {
 	uint16_t component_id = (int16_t)dj_exec_stackPopShort();
-	address_t node_id;
+	wkcomm_address_t node_id;
 	uint8_t port_number;
 	wkpf_error_code = wkpf_get_node_and_port_for_component(component_id, &node_id, &port_number);
 	dj_exec_stackPushShort(wkpf_error_code == WKPF_OK && node_id == wkcomm_get_node_id());

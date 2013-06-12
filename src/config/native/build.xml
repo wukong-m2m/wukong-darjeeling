@@ -3,7 +3,7 @@
 	<!-- include native code for libraries -->
 	<!-- note that libraries should come after libraries they depend on
 		 (wkcomm first, the wkpf), or else loading the archive will fail -->
-	<property name="libs" value="vm, base, darjeeling3, uart, wkcomm, wkpf, wkpf_virtual, wkreprog"/>
+	<property name="libs" value="vm, base, darjeeling3, uart, wkcomm, wkreprog, wkpf, wkpf_virtual"/>
 
 	<!-- Compile these applications -->
 	<property name="apps" value="wkdeploy"/>
@@ -14,6 +14,8 @@
 	<property name="configuration" value="native"/>
 
 	<property name="app-archive-size" value="4096"/>
+
+	<property name="enabled_wuclasses" value="enabled_wuclasses.xml"/>
 
 	<!-- Import the rest from config.xml (magic) -->
 	<import file="../config.xml"/>	

@@ -6,11 +6,13 @@
 
 #ifdef ENABLE_WUCLASS_TEMPERATURE_HUMIDITY_SENSOR
 
+void wuclass_temperature_humidity_sensor_setup(wuobject_t *wuobject) {}
+
 void wuclass_temperature_humidity_sensor_update(wuobject_t *wuobject) {
     sbi(TCCR0B, CS01);
     sbi(TCCR0B, CS00);	
     sbi(TIMSK0, TOIE0);    
-    SHT1x(10,11);
+    SHT1x(5,6);
     
     int temperature, temperatureRaw, humidityRaw, humidity;
     temperatureRaw=readTemperatureRaw();

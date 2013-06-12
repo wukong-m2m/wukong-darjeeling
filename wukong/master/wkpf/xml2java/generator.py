@@ -101,8 +101,8 @@ class Generator:
 
             for property in properties:
                 if property.name in component_properties:
-                    if component_property[property.name].strip() != "":
-                        property.value = component_property[property.name]
+                    if component_properties[property.name].strip() != "":
+                        property.value = component_properties[property.name]
             return [p for p in properties if p.access!='readonly']
 
         # TODO: this should be in a higher level place somewhere.
@@ -146,7 +146,7 @@ class Generator:
                 if property.datatype == 'short' or property.datatype == 'int' or property.datatype == 'refresh_rate':
                     initvalue.attrib['value'] = str(property.value)
                 elif property.datatype == 'boolean':
-                    initvalue.attrib['value'] = '1' if property.value else '0'
+                    initvalue.attrib['value'] = '1' if property.value == 'true'else '0'
                 else: # Enum
                     enumtype = WuType.findByName(property.datatype)[0]
                     enumvalues = [x.value.upper() for x in enumtype.values]

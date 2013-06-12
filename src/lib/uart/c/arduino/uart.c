@@ -20,7 +20,7 @@
 #define UART_COUNT 4
 #define UART_BUFFER_SIZE  (1<<(UART_BUFFER_BITS))
 #define UART_BUFFER_MASK  ((UART_BUFFER_SIZE)-1)
-#define UART_BUFFER_BITS 5       // Old comment from NanoVM: "32 bytes buffer (min. req for loader)" Not sure if we can lower this, since we're not using their bootloader
+#define UART_BUFFER_BITS 6       // Old comment from NanoVM: "32 bytes buffer (min. req for loader)" Not sure if we can lower this, since we're not using their bootloader
 
 volatile uint8_t *UBRRH[] = { &UBRR0H, &UBRR1H, &UBRR2H, &UBRR3H };
 volatile uint8_t *UBRRL[] = { &UBRR0L, &UBRR1L, &UBRR2L, &UBRR3L };

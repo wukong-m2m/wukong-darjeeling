@@ -3,6 +3,8 @@
 
 #ifdef ENABLE_WUCLASS_CONDITION_SELECTOR_SHORT
 
+void wuclass_condition_selector_short_setup(wuobject_t *wuobject) {}
+
 void wuclass_condition_selector_short_update(wuobject_t *wuobject) {
 
   int16_t input;

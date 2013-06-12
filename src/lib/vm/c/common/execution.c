@@ -1175,7 +1175,7 @@ int dj_exec_run(int nrOpcodes)
 	int64_t ltemp1, ltemp2;
 	ref_t rtemp1, rtemp2, rtemp3;
 
-	dj_hook_call(dj_vm_pollingHook, NULL);
+	dj_hook_call(dj_core_pollingHook, NULL);
 
 	while (nrOpcodesLeft > 0 && dj_exec_runlevel == RUNLEVEL_RUNNING) {
 		nrOpcodesLeft--;

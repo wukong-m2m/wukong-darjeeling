@@ -3,6 +3,8 @@
 
 #ifdef ENABLE_WUCLASS_THRESHOLD
 
+void wuclass_threshold_setup(wuobject_t *wuobject) {}
+
 void wuclass_threshold_update(wuobject_t *wuobject) {
   int16_t operator;
   int16_t threshold;

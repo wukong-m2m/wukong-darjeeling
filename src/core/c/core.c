@@ -8,7 +8,7 @@
 uint8_t dj_exec_runlevel;
 
 // For libraries that need frequent polling. Currently just for radios, but maybe there are other uses. Should be fast.
-dj_hook *dj_vm_pollingHook = NULL;
+dj_hook *dj_core_pollingHook = NULL;
 
 extern void dj_libraries_init(); // Generated during build based on the included libraries
 

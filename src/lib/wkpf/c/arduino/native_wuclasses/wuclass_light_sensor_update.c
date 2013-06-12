@@ -4,6 +4,8 @@
 
 #ifdef ENABLE_WUCLASS_LIGHT_SENSOR
 
+void wuclass_light_sensor_setup(wuobject_t *wuobject) {}
+
 void wuclass_light_sensor_update(wuobject_t *wuobject) {
   // Pieced together from IntelDemoLightSensorV1.java, Adc.java and native_avr.c
 

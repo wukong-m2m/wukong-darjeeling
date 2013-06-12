@@ -5,6 +5,8 @@
 
 int16_t delay_count_boolean=0;
 
+void wuclass_loop_delay_boolean_setup(wuobject_t *wuobject) {}
+
 void wuclass_loop_delay_boolean_update(wuobject_t *wuobject) {
   bool input;
   bool output;

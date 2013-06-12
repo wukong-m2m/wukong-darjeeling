@@ -3,7 +3,7 @@
 	<!-- include native code for libraries -->
 	<!-- note that libraries should come after libraries they depend on
 		 (wkcomm first, the wkpf), or else loading the archive will fail -->
-	<property name="libs" value="vm, base, darjeeling3, uart, wkcomm, wkpf, wkpf_virtual, wkreprog"/>
+	<property name="libs" value="vm, base, darjeeling3, uart, wkcomm, wkreprog, wkpf, wkpf_virtual"/>
 
 	<!-- Compile these applications -->
 	<property name="apps" value="helloworld"/>
@@ -16,19 +16,36 @@
 	<property name="mcu" value="atmega2560"/>
 	<property name="app-archive-size" value="4096"/>
 
+	<property name="enabled_wuclasses" value="enabled_wuclasses.xml"/>
+
 	<!-- Import the rest from config.xml (magic) -->
 	<import file="../config.xml"/>
-	
+
+	<!-- Import settings like the USB port the programmer is connected to -->
+	<import file="../../settings.xml"/>
+
 	<!-- convenience targets to launch avrdude or avarice -->
 	<target name="avrdude-jtag" depends="executable">
 		<exec executable="avrdude">
-			<arg line="-p atmega2560 -P usb -c dragon_jtag -U flash:w:darjeeling.ihex -U eeprom:w:darjeeling_eeprom.ihex"/>
+			<arg line="-p atmega2560 -P usb -c dragon_jtag -U flash:w:darjeeling.ihex"/>
 		</exec>
 	</target>
 
 	<target name="avrdude" depends="executable">
 		<exec executable="avrdude">
-			<arg line="-p atmega2560 -P /dev/cu.usbserial-A9CNZHXH -c stk500v2 -U flash:w:darjeeling.ihex -U eeprom:w:darjeeling_eeprom.ihex"/>
+			<arg line="-p atmega2560 -P ${avrdude-programmer} -c stk500v2 -U flash:w:darjeeling.ihex"/>
+		</exec>
+	</target>
+
+	<target name="avrdude-only">
+		<exec executable="avrdude">
+			<arg line="-p atmega2560 -P ${avrdude-programmer} -c stk500v2 -U flash:w:darjeeling.ihex"/>
+		</exec>
+	</target>
+
+	<target name="avrdude-eeprom" depends="executable">
+		<exec executable="avrdude">
+			<arg line="-p atmega2560 -P ${avrdude-programmer} -c stk500v2 -U flash:w:darjeeling.ihex -U eeprom:w:darjeeling_eeprom.ihex"/>
 		</exec>
 	</target>
 
@@ -37,5 +54,4 @@
 			<arg line="-g -j usb -B 4000000 :4242"/>
 		</exec>
 	</target>
-
 </project>

@@ -9,7 +9,7 @@
 #define RUNLEVEL_PANIC             3 // All runlevels higher than this, as defined in panic.h, are panic runlevels.
 
 // For libraries that need frequent polling. Currently just for radios, but maybe there are other uses. Should be fast.
-extern dj_hook *dj_vm_pollingHook;
+extern dj_hook *dj_core_pollingHook;
 
 extern uint8_t dj_exec_runlevel;
 #define dj_exec_setRunlevel(runlevel)			(dj_exec_runlevel = runlevel)

@@ -1,0 +1,30 @@
+<project name="wkpf-app" default="wkpf-all">
+	<!-- adds some wukong specific targets on top of the normal app.xml -->
+	<import file="app.xml"/>
+
+	<target name="create-wkpftables" if="wkpftable">
+		<mkdir dir="${build}"/>
+		<wkpftable
+			src="${java-src}/${wkpftable}"
+			dest="${build}/${name}"/>
+	</target>
+
+	<target name="generate-virtual-baseclasses">
+		<!-- TODO: make codegen more specific. here we only need to generate the Java base classes, in the wkpf lib we only need to generate code for the native classes. -->
+		<exec executable="../../../wukong/master/wkpf/codegen.py">
+			<arg line="-i ../../../wukong/ComponentDefinitions/WuKongStandardLibrary.xml -p ../../.. -u ../../.. -e ${configtargetpath}/${enabled_wuclasses}"/>
+		</exec>
+	</target>
+
+	<target name="wkpf-all" depends="generate-virtual-baseclasses, all, create-wkpftables">
+		<djarchive dest="${build}/${name}.dja" mode="append" src="${build}/${name}.wkpf_linktable" filetype="${djarchive_type_wkpf_link_table}"/>
+		<djarchive dest="${build}/${name}.dja" mode="append" src="${build}/${name}.wkpf_componentmap" filetype="${djarchive_type_wkpf_component_map}"/>
+		<djarchive dest="${build}/${name}.dja" mode="append" src="${build}/${name}.wkpf_initvalues" filetype="${djarchive_type_wkpf_initvalues}"/>
+	</target>
+
+	<target name="wkpf-tables-only" depends="create-wkpftables">
+		<djarchive dest="${build}/${name}.dja" mode="create" src="${build}/${name}.wkpf_linktable" filetype="${djarchive_type_wkpf_link_table}"/>
+		<djarchive dest="${build}/${name}.dja" mode="append" src="${build}/${name}.wkpf_componentmap" filetype="${djarchive_type_wkpf_component_map}"/>
+		<djarchive dest="${build}/${name}.dja" mode="append" src="${build}/${name}.wkpf_initvalues" filetype="${djarchive_type_wkpf_initvalues}"/>
+	</target>
+</project>

@@ -5,6 +5,8 @@
 
 int16_t delay_count_short=0;
 
+void wuclass_loop_delay_short_setup(wuobject_t *wuobject) {}
+
 void wuclass_loop_delay_short_update(wuobject_t *wuobject) {
   int16_t input;
   int16_t output;

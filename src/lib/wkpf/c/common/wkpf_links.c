@@ -4,6 +4,7 @@
 #include "djarchive.h"
 #include "panic.h"
 #include "wkcomm.h"
+#include "wkreprog.h"
 #include "wkpf.h"
 #include "wkpf_wuobjects.h"
 #include "wkpf_properties.h"
@@ -46,8 +47,8 @@ uint16_t wkpf_number_of_components = 0; // To be set when we load the map
 #define WKPF_COMPONENT_ADDRESS(i)							((dj_di_pointer)(wkpf_component_map_store + dj_di_getU16(wkpf_component_map_store + 2 + 2*i)))
 #define WKPF_NUMBER_OF_ENDPOINTS(i)							(dj_di_getU8(WKPF_COMPONENT_ADDRESS(i)))
 #define WKPF_COMPONENT_WUCLASS_ID(i)						(dj_di_getU8(WKPF_COMPONENT_ADDRESS(i) + 1))
-#define WKPF_COMPONENT_ENDPOINT_NODE_ID(i, j)				(dj_di_getU8(WKPF_COMPONENT_ADDRESS(i) + 3 + 2*j))
-#define WKPF_COMPONENT_ENDPOINT_PORT(i, j)					(dj_di_getU8(WKPF_COMPONENT_ADDRESS(i) + 3 + 2*j + 1))
+#define WKPF_COMPONENT_ENDPOINT_NODE_ID(i, j)				(dj_di_getU16(WKPF_COMPONENT_ADDRESS(i) + 3 + 3*j))
+#define WKPF_COMPONENT_ENDPOINT_PORT(i, j)					(dj_di_getU8(WKPF_COMPONENT_ADDRESS(i) + 3 + 3*j + 2))
 #define WKPF_COMPONENT_LEADER_ENDPOINT_NODE_ID(i)			(WKPF_COMPONENT_ENDPOINT_NODE_ID(i, 0))
 #define WKPF_COMPONENT_LEADER_ENDPOINT_PORT(i)				(WKPF_COMPONENT_ENDPOINT_PORT(i, 0))
 
@@ -94,7 +95,7 @@ uint8_t wkpf_pull_property(uint8_t port_number, uint8_t property_number) {
 				&& WKPF_LINK_DEST_COMPONENT_ID(i) == component_id) {
 			uint16_t src_component_id = WKPF_LINK_SRC_COMPONENT_ID(i);
 			uint8_t src_property_number = WKPF_LINK_SRC_PROPERTY(i);
-			address_t src_endpoint_node_id;
+			wkcomm_address_t src_endpoint_node_id;
 			if ((src_endpoint_node_id = WKPF_COMPONENT_LEADER_ENDPOINT_NODE_ID(src_component_id)) != wkcomm_get_node_id()) {
 				uint8_t src_endpoint_port = WKPF_COMPONENT_LEADER_ENDPOINT_PORT(src_component_id);
 				// Properties with local sources will be initialised eventually, so we only need to send a message
@@ -124,7 +125,7 @@ uint8_t wkpf_propagate_property(wuobject_t *wuobject, uint8_t property_number, v
 			uint16_t dest_component_id = WKPF_LINK_DEST_COMPONENT_ID(i);
 			uint8_t dest_property_number = WKPF_LINK_DEST_PROPERTY(i);
 			uint16_t dest_wuclass_id = WKPF_LINK_DEST_WUCLASS_ID(i);
-			address_t dest_node_id = WKPF_COMPONENT_LEADER_ENDPOINT_NODE_ID(dest_component_id);
+			wkcomm_address_t dest_node_id = WKPF_COMPONENT_LEADER_ENDPOINT_NODE_ID(dest_component_id);
 			uint8_t dest_port_number = WKPF_COMPONENT_LEADER_ENDPOINT_PORT(dest_component_id);
 			if (dest_node_id == wkcomm_get_node_id()) {
 				// Local
@@ -183,7 +184,7 @@ uint8_t wkpf_propagate_dirty_properties() {
 }
 
 // TODONR: proper definition for this function.
-uint8_t wkpf_get_node_and_port_for_component(uint16_t component_id, address_t *node_id, uint8_t *port_number) {
+uint8_t wkpf_get_node_and_port_for_component(uint16_t component_id, wkcomm_address_t *node_id, uint8_t *port_number) {
 	if (component_id > wkpf_number_of_components)
 		return WKPF_ERR_COMPONENT_NOT_FOUND;
 	*node_id = WKPF_COMPONENT_ENDPOINT_NODE_ID(component_id, 0);
@@ -191,7 +192,7 @@ uint8_t wkpf_get_node_and_port_for_component(uint16_t component_id, address_t *n
 	return WKPF_OK;
 }
 
-bool wkpf_node_is_leader(uint16_t component_id, address_t node_id) {
+bool wkpf_node_is_leader(uint16_t component_id, wkcomm_address_t node_id) {
 	return WKPF_COMPONENT_LEADER_ENDPOINT_NODE_ID(component_id) == node_id;
 }
 
@@ -264,8 +265,18 @@ uint8_t wkpf_create_local_wuobjects_from_app_tables() {
 				if (wkpf_error_code != WKPF_OK)
 					return wkpf_error_code;
 				if (WKPF_IS_VIRTUAL_WUCLASS(wuclass)) {
-					// This will happen for virtual wuclasses since the class won't be registered until after WKPF.appInit exits.
+					// These will be created in Java.
 					continue;
+				}
+				wuobject_t *wuobject;
+				if (wkpf_get_wuobject_by_port(WKPF_COMPONENT_ENDPOINT_PORT(i, j), &wuobject) != WKPF_ERR_WUOBJECT_NOT_FOUND) {
+					// There's already an object here. This is the case for hard wuobjects that have
+					// their instance created in native_wuclasses_init.
+					// In that case we can skip it here, but let's check the wuclass id just to be safe
+					if (wuobject->wuclass == wuclass)
+						continue; // Ok, this is just a hardware component, so we don't need to create it
+					else
+						return WKPF_ERR_PORT_IN_USE; // This is bad: the port is already in use by an object of different type
 				}
 				wkpf_error_code = wkpf_create_wuobject(wuclass->wuclass_id, WKPF_COMPONENT_ENDPOINT_PORT(i, j), NULL);
 				if (wkpf_error_code != WKPF_OK)
@@ -325,4 +336,52 @@ uint8_t wkpf_process_initvalues_list(dj_di_pointer initvalues) {
 	return WKPF_OK;
 }
 
+// Updates the current value of this property to be an initvalue
+// (if it exists in the initvalue list in the first place)
+void wkpf_update_initvalue_in_flash(wuobject_t *wuobject, uint8_t object_property_number) {
+	// !!!!!!!!!!!!
+	// Note that this will only work as long as the format in the table is the same
+	// as in memory. Since WuKong message format and the native and wunode platforms
+	// are both little endian, this works fine for now.
+	// If we add a big endian platform, the value in the table would still be little
+	// endian since it needs to be platform independent. But the value in memory would
+	// be big endian, so we need to do a conversion here before storing it back in the
+	// table.
+	// !!!!!!!!!!!!
+
+	// Find initvalues file
+	int filenumber = -1;
+	for (int i=0; i<dj_archive_number_of_files(di_app_archive); i++) {
+		if (dj_archive_filetype(dj_archive_get_file(di_app_archive, i))==DJ_FILETYPE_WKPF_INITVALUES_TABLE) {
+			filenumber = i;
+			break;
+		}
+	}
+	// Find component id for wuobject
+	uint16_t object_component_id;
+	wkpf_get_component_id(wuobject->port_number, &object_component_id);
+
+	dj_di_pointer initvalues = dj_archive_get_file(di_app_archive, filenumber);
+	uint16_t offset = 0;
+
+	uint16_t number_of_initvalues = dj_di_getU16(initvalues+offset);
+	offset += 2; // Skip number of values
+	for (uint16_t i=0; i<number_of_initvalues; i++) {
+		uint16_t value_component_id = dj_di_getU16(initvalues+offset);
+		offset += 2;
+		uint8_t value_property_number = dj_di_getU8(initvalues+offset);
+		offset += 1;
+		uint8_t value_size = dj_di_getU8(initvalues+offset);
+		offset += 1;
+		if (object_component_id == value_component_id
+				&& object_property_number == value_property_number) {
+			wuobject_property_t *property = wkpf_get_property(wuobject, value_property_number);
+			wkreprog_open(filenumber, offset);
+			wkreprog_write(value_size, property->value);
+			wkreprog_close();
+			return;
+		}
+		offset += value_size;		
+	}
+}
 

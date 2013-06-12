@@ -5,6 +5,13 @@ from models import *
 from globals import *
 from configuration import *
 
+# MUST MATCH THE SIZE DEFINED IN wkcomm.h
+WKCOMM_MESSAGE_PAYLOAD_SIZE=40
+
+WKPF_PROPERTY_TYPE_SHORT         = 0
+WKPF_PROPERTY_TYPE_BOOLEAN       = 1
+WKPF_PROPERTY_TYPE_REFRESH_RATE  = 2
+
 # routing services here
 class Communication:
     _communication = None
@@ -77,6 +84,7 @@ class Communication:
       print 'getNodeInfo of node id', destination
 
       location = self.getLocation(destination)
+      node = WuNode.create(destination, location)
       gevent.sleep(0) # give other greenlets some air to breath
 
       wuClasses = self.getWuClassList(destination)
@@ -85,8 +93,6 @@ class Communication:
       wuObjects = self.getWuObjectList(destination)
       gevent.sleep(0)
 
-      node = Node(destination, location, wuClasses, wuObjects)
-      node.save()
       return node
 
     def getLocation(self, destination):
@@ -190,29 +196,41 @@ class Communication:
       wuclasses = []
       reply = reply.payload[3:]
       while len(reply) > 1:
-        wuClassId = (reply[0] <<8) + reply[1]
-        isVirtual = True if reply[2] == 1 else False
+        wuclass_id = (reply[0] <<8) + reply[1]
+        virtual = reply[2] == 1
+
+        wuclassdef_query = WuClassDef.where(id=wuclass_id)
+        node_query = WuNode.where(id=destination)
+
+        if not node_query:
+          print 'Unknown node id', destination
+          break
+
+        node = node_query[0]
+
+        if not wuclassdef_query:
+          print 'Unknown wuclass id', wuclass_id
+          break
+
+        wuclassdef = wuclassdef_query[0]
+
+        wuclass_query = WuClass.where(node_identity=node.identity,
+            wuclassdef_identity=wuclassdef.identity)
+
         wuclass = None
-        wuclass_query = WuClass.where(node_id=destination, id=wuClassId)
+        wuclass_query = None
+        wuclassdef = None
+
+        # Create one
         if not wuclass_query:
-            wuclass_component = WuClass.where(id=wuClassId)[0]
-            if wuclass_component:
-                new_properties_with_node_infos = copy.deepcopy(wuclass_component.properties)
-                def anew(x):
-                  x.identity = None # so they will be saved with new row ids
-                  return x
-                new_properties_with_node_infos = map(anew, new_properties_with_node_infos)
-                wuclass = WuClass(wuclass_component.id, wuclass_component.name,
-                        isVirtual, wuclass_component.type,
-                        new_properties_with_node_infos, destination)
-                wuclass.save()
-            else:
-                print 'Unknown wuclass id', wuClassId
+          wuclass = WuClass.create(wuclassdef, node, virtual)
+          # No need to recreate property definitions, as they are already
+          # created when parsing XML
         else:
-            wuclass = wuclass_query[0]
+          wuclass = wuclass_query[0]
 
         if wuclass:
-            wuclasses.append(wuclass)
+          wuclasses.append(wuclass)
         reply = reply[3:]
       return wuclasses
 
@@ -236,36 +254,55 @@ class Communication:
       wuobjects = []
       reply = reply.payload[3:]
       while len(reply) > 1:
-        wuClassId = (reply[1] <<8) + reply[2]
+        wuclass_id = (reply[1] <<8) + reply[2]
         port_number = reply[0]
+        node_query = WuNode.where(id=destination)
+        wuclassdef_query = WuClassDef.where(id=wuclass_id)
+
+        if not node_query:
+          print 'Unknown node id', destination
+          break
+
+        if not wuclassdef_query:
+          print 'Unknown wuclass id', wuclass_id
+          break
+
+        node = node_query[0]
+        wuclass_query = WuClass.where(node_identity=node.identity,
+            wuclassdef_identity=wuclassdef.identity)
+
         wuobject = None
-        wuobject_query = WuObject.where(node_id=destination, wuclass_id=wuClassId)
-        if wuobject_query == []:
-            wuclass_query = WuClass.where(id=wuClassId, node_id=destination)
-            if len(wuclass_query) > 0:
-                wuclass = wuclass_query[0]
-                wuobject = WuObject(destination, port_number, wuclass)
-                wuobject.save()
-            else:
-                print 'Unknown wuclass id', wuClassId
-        else:
-            # might need to update
+
+        if wuclass_query:
+          wuclass = wuclass_query[0]
+          wuobject_query = WuObject.where(wuclass_identity=wuclass.identity)
+
+          # Create one
+          if not wuobject_query:
+            wuobject = WuObject.create(port_number, wuclass)
+          else:
             wuobject = wuobject_query[0]
-            wuobject.port_number = port_number
-            wuobject.save()
 
         if wuobject:
             wuobjects.append(wuobject)
         reply = reply[3:]
       return wuobjects
 
-    def getProperty(self, wuobject, propertyNumber):
+    # Only used by inspector
+    def getProperty(self, wuproperty):
       print 'getProperty'
 
-      reply = self.zwave.send(wuobject.node_id, 
+      wuobject = wuproperty.wuobject()
+      wuclass = wuobject.wuclass()
+      wunode = wuobject.wunode()
+      value = wuproperty.value
+      datatype = wuproperty.datatype
+      number = wuproperty.number
+
+      reply = self.zwave.send(wunode.id, 
               pynvc.WKPF_READ_PROPERTY,
-              [wuobject.port_number, wuobject.wuclass.id/256, 
-                    wuobject.wuclass.id%256, propertyNumber], 
+              [wuobject.port_number, wuclass.id/256, 
+                    wuclass.id%256, number], 
               [pynvc.WKPF_READ_PROPERTY_R, pynvc.WKPF_ERROR_R])
 
 
@@ -281,38 +318,58 @@ class Communication:
 
       datatype = reply[7]
       status = reply[8]
-      if datatype == DATATYPE_BOOLEAN:
+      if datatype == WKPF_PROPERTY_TYPE_BOOLEAN:
         value = reply[9] != 0
-      elif datatype == DATATYPE_INT16 or datatype == DATATYPE_REFRESH_RATE:
+      elif datatype == WKPF_PROPERTY_TYPE_SHORT or datatype == WKPF_PROPERTY_TYPE_REFRESH_RATE:
         value = (reply[9] <<8) + reply[10]
       else:
         value = None
       return (value, datatype, status)
 
-    def setProperty(self, wuobject, propertyNumber, datatype, value):
+    def setProperty(self, wuproperty):
       print 'setProperty'
       master_busy()
 
-      if datatype == DATATYPE_BOOLEAN:
-        payload=[wuobject.port_number, wuobject.wuclass.id/256,
-        wuobject.wuclass.id%256, propertyNumber, datatype, 1 if value else 0]
+      wuobject = wuproperty.wuobject()
+      wuclassdef = wuobject.wuclass().wuclassdef()
+      wunode = wuobject.wunode()
+      value = wuproperty.value
+      datatype = wuproperty.datatype
+      number = wuproperty.wupropertydef().number
 
-      elif datatype == DATATYPE_INT16 or datatype == DATATYPE_REFRESH_RATE:
-        payload=[wuobject.port_number, wuobject.wuclass.id/256,
-        wuobject.wuclass.id%256, propertyNumber, datatype, value/256, value%256]
+      if datatype == 'boolean':
+        datatype = WKPF_PROPERTY_TYPE_BOOLEAN
 
-      reply = self.zwave.send(wuobject.node_id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])
+      elif datatype == 'short':
+        datatype = WKPF_PROPERTY_TYPE_SHORT
+
+      elif datatype == 'refresh_rate':
+        datatype = WKPF_PROPERTY_TYPE_REFRESH_RATE
+
+      if datatype == WKPF_PROPERTY_TYPE_BOOLEAN:
+        payload=[wuobject.port_number, wuclassdef.id/256,
+        wuclassdef.id%256, number, datatype, 1 if value else 0]
+
+      elif datatype == WKPF_PROPERTY_TYPE_SHORT or datatype == WKPF_PROPERTY_TYPE_REFRESH_RATE:
+        payload=[wuobject.port_number, wuclassdef.id/256,
+        wuclassdef.id%256, number, datatype, value/256, value%256]
+
+      reply = self.zwave.send(wunode.id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])
+      print 'getting reply from send command'
 
 
       master_available()
       if reply == None:
+        print 'no reply received'
         return None
 
       if reply.command == pynvc.WKPF_ERROR_R:
         print "WKPF RETURNED ERROR ", reply.payload
         return None
       master_available()
-      return value
+
+      print 'reply received'
+      return reply
 
     def reprogram(self, destination, filename, retry=1):
       master_busy()
@@ -330,7 +387,7 @@ class Communication:
       return ret
 
     def reprogramInfusion(self, destination, filename):
-      MESSAGESIZE = 30
+      REPRG_CHUNK_SIZE = WKCOMM_MESSAGE_PAYLOAD_SIZE - 2 # -2 bytes for the position
 
       bytecode = []
       with open(filename, "rb") as f:
@@ -362,8 +419,8 @@ class Communication:
       pos = 0
       while not pos == len(bytecode):
         payload_pos = [pos%256, pos/256]
-        payload_data = bytecode[pos:pos+MESSAGESIZE]
-        print "Uploading bytes", pos, "to", pos+MESSAGESIZE, "of", len(bytecode)
+        payload_data = bytecode[pos:pos+REPRG_CHUNK_SIZE]
+        print "Uploading bytes", pos, "to", pos+REPRG_CHUNK_SIZE, "of", len(bytecode)
         print pos/pagesize, (pos+len(payload_data))/pagesize, "of pagesize", pagesize
         if pos/pagesize == (pos+len(payload_data))/pagesize:
           self.zwave.send(destination, pynvc.REPRG_DJ_WRITE, payload_pos+payload_data, [])
@@ -479,8 +536,3 @@ class Communication:
 
 def getComm():
   return Communication.init()
-
-#print getWuClassList(3)
-#print getWuObjectList(3)
-#print getProperty(WuObject(nodeId=3, portNumber=4, wuClassId=4), 0)
-#print setProperty(WuObject(nodeId=3, portNumber=1, wuClassId=3), 0, DATATYPE_INT16, 255)
