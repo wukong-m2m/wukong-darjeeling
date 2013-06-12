@@ -550,6 +550,17 @@ class WuLibrary(tornado.web.RequestHandler):
 		self.write('<error>1</error>')
 	self.write(xml)
 
+class EnabledWuClass(tornado.web.RequestHandler):	
+  def get(self):
+  	self.content_type = 'application/xml'
+	try:
+		f = open('../../src/config/wunode/enabled_wuclasses.xml')
+		xml = f.read()
+		f.close()
+	except:
+		self.write('<error>1</error>')
+	self.write(xml)
+
 class tree(tornado.web.RequestHandler):	
   def post(self):
     global location_tree
@@ -636,7 +647,8 @@ wukong = tornado.web.Application([
   (r"/loc_tree", tree),
   (r"/loc_tree/save", save_tree),
   (r"/loc_tree/land_mark", add_landmark),
-  (r"/componentxml",WuLibrary)
+  (r"/componentxml",WuLibrary),
+  (r"/enablexml",EnabledWuClass)
 ], IP, **settings)
 
 if __name__ == "__main__":

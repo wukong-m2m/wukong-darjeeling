@@ -10,12 +10,27 @@ function WuIDE()
     var self = this;
 	$.get('/componentxml',function(r) {
 		self.xml = $.parseXML(r);
-		self.classes = $(self.xml).find('WuClass');
-		self.types = $(self.xml).find('WuTypedef');
 		self.parseXML();
-		self.load();
+		self.parseEnableXML();
 	});
 	this.initUI();
+}
+
+WuIDE.prototype.parseEnableXML = function() {
+	var self = this;
+	$.get('/enablexml',function(r) {
+		var xml = $.parseXML(r);
+		var classes = $(xml).find('WuClass');
+		$.each(classes, function(i,val) {
+			for(i=0;i<self.classes.length;i++) {
+				if (self.classes[i].name == $(val).attr('name')) {
+					self.classes[i].enabled = true;
+					return;
+				}
+			}
+		});
+		self.load();
+	});
 }
 
 WuIDE.prototype.parseXML = function() {
@@ -38,7 +53,7 @@ WuIDE.prototype.parseXML = function() {
 			var def = $(val).attr('default');
 			prop.push({name:pname, datatype:datatype, access:access, default:def});
 		});
-		self.classes.push({name:name, id:id, virtual:virtual,type:type,properties:prop});
+		self.classes.push({name:name, id:id, virtual:virtual,type:type,properties:prop,enabled:false});
 	});
 	self.types=[];
 	$.each(types,function(i,v) {
@@ -130,13 +145,34 @@ WuIDE.prototype.load = function() {
 			'tr._class': {
 				'class <- classes': {
 					'td._name':'class.name',
-					'button._edit@id':'class.id'
+					'._enable@checked': function(arg) {
+						return self.classes[arg.pos].enabled;
+					},
+					'button._edit@id': function (arg) {
+						return 'class'+self.classes[arg.pos].id;
+					}
 				}
 			}
 		});
 	}
 	$('#classes').render(data,this.classListTemplate);
+	$.each(self.classes,function(i,val) {
+		self.installClassEditor(val);
+	});
+	$('#class_list').show();
+	$('#class_editor').hide();
 }
+
+WuIDE.prototype.installClassEditor=function(val) {
+	var self = this;
+	$('#class'+val.id).click(function() {
+		var cls = new WuClass(val);
+		cls.render('#class_editor');
+		$('#class_list').hide();
+		$('#class_editor').show();
+	});
+}
+
 
 WuIDE.prototype.installTypeEditor=function(i) {
 	var self = this;
@@ -235,4 +271,86 @@ WuIDE.prototype.editType = function(i) {
 	$('#type_list').hide();
 	this.refreshEnumList(item,i);
 	$('#type_editor_name').val(this.types[i].name);
+}
+
+
+
+function WuClass(val)
+{
+	this.val = val;
+}
+
+WuClass.prototype.render=function(id) {
+	var self = this;
+	var datatype='<option val=b>Boolean</option>';
+	datatype = datatype + '<option val=s>Short</option>';
+
+
+	if (WuClass.propertyTemplate == null) {
+		WuClass.propertyTemplate = $(id).compile({
+			'tr._property': {
+				'p <- properties': {
+					'.@id': function(arg) {
+						return 'property'+arg.pos;
+					},
+					'._name@value': 'p.name',
+					'._datatype': function(arg) {
+						return datatype;
+					},
+					'._default': function(arg) {
+						if (self.val[arg.pos].default)
+							return self.val[arg.pos].default;
+						else
+							return '';
+					}
+				}
+			}
+		});
+	}
+	$(id).empty();
+	$(id).render(self.val, WuClass.propertyTemplate);
+	$.each(self.val.properties,function(i,val) {
+		if (val.datatype == 'boolean')
+			$('#property'+i+' ._datatype').val('Boolean');
+		else if (val.datatype == 'short')
+			$('#property'+i+' ._datatype').val('Short');
+		if (val.access == 'writeonly') 
+			$('#property'+i+' ._access').val('Write Only');
+		else if (val.access == 'readwrite')
+			$('#property'+i+' ._access').val('Read/Write');
+		else if (val.access == 'readonly')
+			$('#property'+i+' ._access').val('Read Only');
+	});
+	$('#class_editor_name').val(this.val.name);
+	$('#class_editor_id').val(this.val.id);
+	if (this.val.virtual == 'true')
+		$('#class_editor_virtual').val('y');
+	else 
+		$('#class_editor_virtual').val('n');
+	if (this.val.type == 'hard')
+		$('#class_editor_type').val('h');
+	else 
+		$('#class_editor_type').val('s');
+	$('#class_editor_done').unbind().click(function() {
+		$('#class_editor').hide();
+		$('#class_list').show();
+	});
+	$('#class_editor_edit').click(function() {
+		var code = {lang:$('#class_editor_lang').val(), code:'xxxx'};
+		TextEditor.load(code);
+	});
+}
+
+
+var TextEditor = new Object();
+
+TextEditor.load=function(self) {
+	$('#texteditor').show();
+	$('#class_editor').hide();
+	$('#texteditor_done').unbind().click(function() {
+		$('#texteditor').hide();
+		$('#class_editor').show();
+		self.code = _cp.getCode();
+	});
+	editor.edit(self.code,self.lang);
 }
