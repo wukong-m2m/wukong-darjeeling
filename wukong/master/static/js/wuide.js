@@ -102,6 +102,15 @@ WuIDE.prototype.toXML = function() {
 WuIDE.prototype.initUI = function() {
 	var root = $('#client');
 	$('#menu').tabs();
+	$('#serialport_sel').click(function() {
+		$.get('/serialport',function(r) {
+			$('#serialport').empty();
+			var list = $.parseJSON(r);
+			$.each(list,function(i,val) {
+				$('#serialport').append('<option val=port'+i+'>'+val+'</option>');
+			});
+		});
+	});
 }
 
 

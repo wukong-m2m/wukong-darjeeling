@@ -2,6 +2,8 @@
 # author: Penn Su
 from gevent import monkey; monkey.patch_all()
 import gevent
+import serial
+import platform
 import os, sys, zipfile, re, time
 import tornado.ioloop, tornado.web
 import tornado.template as template
@@ -13,6 +15,7 @@ import traceback
 import StringIO
 import shutil, errno
 import datetime
+import glob
 
 import wkpf.wusignal
 from wkpf.wuapplication import WuApplication
@@ -559,6 +562,36 @@ class WuLibrary(tornado.web.RequestHandler):
 		self.write('<error>1</error>')
 	self.write('')
 
+class SerialPort(tornado.web.RequestHandler):
+  def get(self):
+	self.content_type = 'application/json'
+	system_name = platform.system()
+	if system_name == "Windows":
+		available = []
+		for i in range(256):
+			try:
+				s = serial.Serial(i)
+				available.append(i)
+				s.close()
+			except:
+				pass
+		self.write(json.dumps(available))
+		return
+	if system_name == "Darwin":
+		list = self.write(str(glob.glob('/dev/tty*') + glob.glob('/dev/cu*')))
+	else:
+		print 'xxxxx'
+		list = glob.glob('/dev/ttyS*') + glob.glob('/dev/ttyUSB*') + glob.glob('/dev/ttyACM*')
+	available=[]
+	for l in list:
+		try:
+			s = serial.Serial(l)
+			available.append(l)
+			s.close()
+		except:
+			pass
+	self.write(json.dumps(available))
+
 class EnabledWuClass(tornado.web.RequestHandler):	
   def get(self):
   	self.content_type = 'application/xml'
@@ -705,6 +738,7 @@ wukong = tornado.web.Application([
   (r"/loc_tree/land_mark", add_landmark),
   (r"/componentxml",WuLibrary),
   (r"/wuclasssource",WuClassSource),
+  (r"/serialport",SerialPort),
   (r"/enablexml",EnabledWuClass)
 ], IP, **settings)
 
