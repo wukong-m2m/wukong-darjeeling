@@ -151,7 +151,7 @@ WuIDE.prototype.load = function() {
 		var xml = '<WuKong>\n';
 		$.each(self.classes,function(i,val) {
 			if (val.enabled)
-				xml = xml + '    <Wuclass name="'+val.name+'" />\n';
+				xml = xml + '    <WuClass name="'+val.name+'" />\n';
 		});
 		xml = xml + '</WuKong>';
 		$.post('/enablexml', {xml:xml});
@@ -339,6 +339,39 @@ WuClass.prototype.installPropertyFunction=function(i,val) {
 	});
 }
 
+WuClass.prototype.updateClass=function() {
+	var self=this;
+	self.val.name = $('#class_editor_name').val();
+	self.val.id = $('#class_editor_id').val();
+	if ($('#class_editor_virtual').val() == 'y') {
+		self.val.virtual = true;
+	} else {
+		self.val.virtual = false;
+	}
+	if ($('#class_editor_type').val() == 'h') {
+		self.val.type = 'hard';
+	} else {
+		self.val.type = 'soft';
+	}
+	$.each(self.val.properties,function(i,v) {
+		v.name = $('#property'+i+' ._name').val();
+		v.datatype = $('#property'+i+' ._datatype').val();
+		if (v.datatype == 'Short')
+			v.datatype = 'short';
+		else if (v.datatype == 'Boolean')
+			v.datatype = 'boolean';
+
+		v.access = $('#property'+i+' ._access').val();
+		if (v.access == 'Write Only')
+			v.access = 'writeonly';
+		else if (v.access == 'Read/Write')
+			v.access = 'readwrite';
+		else if (v.access == 'Read Only')
+			v.access = 'readonly';
+
+		v.default = $('#property'+i+' ._default').val();
+	});
+}
 WuClass.prototype.render=function(id) {
 	var self = this;
 	var datatype='<option val=b>Boolean</option>';
@@ -397,18 +430,7 @@ WuClass.prototype.render=function(id) {
 	$('#class_editor_done').unbind().click(function() {
 		$('#class_editor').hide();
 		$('#class_list').show();
-		self.val.name = $('#class_editor_name').val();
-		self.val.id = $('#class_editor_id').val();
-		if ($('#class_editor_virtual').val() == 'y') {
-			self.val.virtual = true;
-		} else {
-			self.val.virtual = false;
-		}
-		if ($('#class_editor_type').val() == 'h') {
-			self.val.type = 'hard';
-		} else {
-			self.val.type = 'soft';
-		}
+		self.updateClass();
 		ide.load();
 		$('#classes').show();
 	});
@@ -420,7 +442,8 @@ WuClass.prototype.render=function(id) {
 		});
 	});
 	$('#addprop').unbind().click(function() {
-		self.val.properties.push({name:'myname',access:'readwrite',datatype:'boolean',default:''});
+		self.val.properties.push({id:self.val.properties.length,name:'myname',access:'readwrite',datatype:'boolean',default:''});
+		self.updateClass();
 		self.render('#class_editor');
 		$('#class_editor').show();
 

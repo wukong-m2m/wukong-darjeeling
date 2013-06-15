@@ -555,7 +555,7 @@ class WuLibrary(tornado.web.RequestHandler):
   def post(self):
 	xml = self.get_argument('xml')
 	try:
-		f = open('/tmp/a.xml','w')
+		f = open('../ComponentDefinitions/WuKongStandardLibrary.xml','w')
 		xml = f.write(xml)
 		f.close()
 	except:
