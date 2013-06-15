@@ -96,7 +96,7 @@ WuIDE.prototype.toXML = function() {
 		xml = xml + '    </WuClass>\n';
 	}
 	xml = xml + '</WuKong>\n';
-	alert(xml);
+	return xml;
 }
 
 WuIDE.prototype.initUI = function() {
@@ -131,12 +131,14 @@ WuIDE.prototype.load = function() {
 	$.each(self.types,function(i,val) {
 		self.installTypeEditor(i);
 	});
-	$('#addtype').click(function() {
+	$('#addtype').unbind().click(function() {
 		self.types.push({type:'enum',name:'New Type',enums:[]});
 		self.load();
 	});
-	$('#saveall').click(function() {
-		self.toXML();
+	$('#saveall').unbind().click(function() {
+		var xml = self.toXML();
+		data = {xml:xml};
+		$.post('/componentxml', data);
 	});
 		
 	
@@ -150,12 +152,20 @@ WuIDE.prototype.load = function() {
 					},
 					'button._edit@id': function (arg) {
 						return 'class'+self.classes[arg.pos].id;
+					},
+					'button._del@id': function (arg) {
+						return 'delclass'+self.classes[arg.pos].id;
 					}
 				}
 			}
 		});
 	}
 	$('#classes').render(data,this.classListTemplate);
+	$('#addclass').unbind().click(function() {
+		self.classes.push({enabled:false, name:'New Class', type:'soft', virtual:true, properties:[]});
+		self.load();
+		$('#classes').show();
+	});
 	$.each(self.classes,function(i,val) {
 		self.installClassEditor(val);
 	});
@@ -170,6 +180,17 @@ WuIDE.prototype.installClassEditor=function(val) {
 		cls.render('#class_editor');
 		$('#class_list').hide();
 		$('#class_editor').show();
+	});
+	$('#delclass'+val.id).click(function() {
+		var classes=[];
+		$.each(self.classes, function(i,v) {
+			if (v.id != val.id) {
+				classes.push(v);
+			}
+		});
+		self.classes = classes;
+		self.load();
+		$('#classes').show();
 	});
 }
 
@@ -279,6 +300,19 @@ function WuClass(val)
 {
 	this.val = val;
 }
+WuClass.prototype.installPropertyFunction=function(i,val) {
+	var self = this;
+	$('#propdel'+i).click(function() {
+		properties=[];
+		$.each(self.val.properties, function(i,v) {
+			if (v.name != val.name)
+				properties.push(v);
+		});
+		self.val.properties = properties;
+		self.render('#class_editor');
+		$('#class_editor').show();
+	});
+}
 
 WuClass.prototype.render=function(id) {
 	var self = this;
@@ -302,6 +336,9 @@ WuClass.prototype.render=function(id) {
 							return self.val[arg.pos].default;
 						else
 							return '';
+					},
+					'._del@id': function(arg) {
+						return 'propdel'+arg.pos;
 					}
 				}
 			}
@@ -320,10 +357,11 @@ WuClass.prototype.render=function(id) {
 			$('#property'+i+' ._access').val('Read/Write');
 		else if (val.access == 'readonly')
 			$('#property'+i+' ._access').val('Read Only');
+		self.installPropertyFunction(i,val);
 	});
 	$('#class_editor_name').val(this.val.name);
 	$('#class_editor_id').val(this.val.id);
-	if (this.val.virtual == 'true')
+	if (this.val.virtual == true)
 		$('#class_editor_virtual').val('y');
 	else 
 		$('#class_editor_virtual').val('n');
@@ -334,10 +372,33 @@ WuClass.prototype.render=function(id) {
 	$('#class_editor_done').unbind().click(function() {
 		$('#class_editor').hide();
 		$('#class_list').show();
+		self.val.name = $('#class_editor_name').val();
+		self.val.id = $('#class_editor_id').val();
+		if ($('#class_editor_virtual').val() == 'y') {
+			self.val.virtual = true;
+		} else {
+			self.val.virtual = false;
+		}
+		if ($('#class_editor_type').val() == 'h') {
+			self.val.type = 'hard';
+		} else {
+			self.val.type = 'soft';
+		}
+		ide.load();
+		$('#classes').show();
 	});
 	$('#class_editor_edit').click(function() {
-		var code = {lang:$('#class_editor_lang').val(), code:'xxxx'};
-		TextEditor.load(code);
+		var name = 'wuclass_'+self.val.name.toLowerCase()+'_update'
+		$.get('/wuclasssource?src='+name+'&type='+$('#class_editor_lang').val(),function(r) {
+			var code = {lang:$('#class_editor_lang').val(), code:r, name:name};
+			TextEditor.load(code);
+		});
+	});
+	$('#addprop').unbind().click(function() {
+		self.val.properties.push({name:'myname',access:'readwrite',datatype:'boolean',default:''});
+		self.render('#class_editor');
+		$('#class_editor').show();
+
 	});
 }
 
@@ -349,8 +410,22 @@ TextEditor.load=function(self) {
 	$('#class_editor').hide();
 	$('#texteditor_done').unbind().click(function() {
 		$('#texteditor').hide();
+		$('#editor').remove();
 		$('#class_editor').show();
-		self.code = _cp.getCode();
+		var arg={name:TextEditor.source.name, type:TextEditor.source.lang,content: TextEditor.editor.getValue()};
+		$.post('/wuclasssource', arg,function () {
+		});
 	});
-	editor.edit(self.code,self.lang);
+	$('#editor').remove();
+	$('#texteditor').append('<div id=editor style="width:800px;height:800px"></div>');
+	$('#editor').text(self.code);
+	var ed = ace.edit('editor');
+	ed.setTheme("ace/theme/twilight");
+	if (self.lang == 'C') {
+		ed.getSession().setMode('ace/mode/c_cpp');
+	} else if (self.lang == 'Java') {
+		ed.getSession().setMode('ace/mode/java');
+	}
+	TextEditor.editor = ed;
+	TextEditor.source = self;
 }

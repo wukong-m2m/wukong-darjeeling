@@ -549,6 +549,15 @@ class WuLibrary(tornado.web.RequestHandler):
 	except:
 		self.write('<error>1</error>')
 	self.write(xml)
+  def post(self):
+	xml = self.get_argument('xml')
+	try:
+		f = open('/tmp/a.xml','w')
+		xml = f.write(xml)
+		f.close()
+	except:
+		self.write('<error>1</error>')
+	self.write('')
 
 class EnabledWuClass(tornado.web.RequestHandler):	
   def get(self):
@@ -560,6 +569,53 @@ class EnabledWuClass(tornado.web.RequestHandler):
 	except:
 		self.write('<error>1</error>')
 	self.write(xml)
+
+class WuClassSource(tornado.web.RequestHandler):	
+  def get(self):
+  	self.content_type = 'text/plain'
+	try:
+		type = self.get_argument('type')
+		if type == 'C':
+			name = self.get_argument('src')+'.c'
+		elif type == 'JAVA':
+			name = self.get_argument('src')+'.java'
+		f = open(self.findPath(name))
+		cont = f.read()
+		f.close()
+	except:
+		self.write(traceback.format_exc())
+		return
+	self.write(cont)
+  def post(self):
+	try:
+		print 'xxx'
+		name = self.get_argument('name')
+		type = self.get_argument('type')
+		if type == 'C':
+			name = name + '.c'
+		elif type == 'Java':
+			name = name + '.java'
+		print 'name=',name
+		f = open(self.findPath(name),'w')
+		f.write(self.get_argument('content'))
+		f.close()
+		self.write('OK')
+	except:
+		self.write('Error')
+		print traceback.format_exc()
+	
+  def findPath(self,p):
+	name = '../../src/lib/wkpf/c/arduino/native_wuclasses/'+p
+	if os.path.isfile(name):
+		return name
+	name = '../../src/lib/wkpf/c/common/native_wuclasses/'+p
+	if os.path.isfile(name):
+		return name
+	name = p
+	print 'yyyyy'
+	return name
+	
+	
 
 class tree(tornado.web.RequestHandler):	
   def post(self):
@@ -648,6 +704,7 @@ wukong = tornado.web.Application([
   (r"/loc_tree/save", save_tree),
   (r"/loc_tree/land_mark", add_landmark),
   (r"/componentxml",WuLibrary),
+  (r"/wuclasssource",WuClassSource),
   (r"/enablexml",EnabledWuClass)
 ], IP, **settings)
 
