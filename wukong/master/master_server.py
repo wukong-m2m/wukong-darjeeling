@@ -602,6 +602,14 @@ class EnabledWuClass(tornado.web.RequestHandler):
 	except:
 		self.write('<error>1</error>')
 	self.write(xml)
+  def post(self):
+	try:
+		f = open('../../src/config/wunode/enabled_wuclasses.xml','w')
+		xml = self.get_argument('xml')
+		f.write(xml)
+		f.close()
+	except:
+		pass
 
 class WuClassSource(tornado.web.RequestHandler):	
   def get(self):

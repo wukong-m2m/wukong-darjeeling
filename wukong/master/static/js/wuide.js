@@ -148,6 +148,13 @@ WuIDE.prototype.load = function() {
 		var xml = self.toXML();
 		data = {xml:xml};
 		$.post('/componentxml', data);
+		var xml = '<WuKong>\n';
+		$.each(self.classes,function(i,val) {
+			if (val.enabled)
+				xml = xml + '    <Wuclass name="'+val.name+'" />\n';
+		});
+		xml = xml + '</WuKong>';
+		$.post('/enablexml', {xml:xml});
 	});
 		
 	
@@ -164,6 +171,9 @@ WuIDE.prototype.load = function() {
 					},
 					'button._del@id': function (arg) {
 						return 'delclass'+self.classes[arg.pos].id;
+					},
+					'._enable@id': function(arg) {
+						return 'class_check'+self.classes[arg.pos].id;
 					}
 				}
 			}
@@ -189,6 +199,12 @@ WuIDE.prototype.installClassEditor=function(val) {
 		cls.render('#class_editor');
 		$('#class_list').hide();
 		$('#class_editor').show();
+	});
+	$('#class_check'+val.id).change(function() {
+		if ($('#class_check'+val.id).attr('checked'))
+			val.enabled = true;
+		else
+			val.enabled = false;
 	});
 	$('#delclass'+val.id).click(function() {
 		var classes=[];
