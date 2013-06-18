@@ -713,6 +713,27 @@ class add_landmark(tornado.web.RequestHandler):
     self.content_type = 'application/json'
     self.write({'status':0})
 
+class Build(tornado.web.RequestHandler):  
+  def get(self):
+    self.content_type = 'text/plain'
+    os.system('cd ../../src/config/wunode; ant')
+    self.write('ok')
+
+class Upload(tornado.web.RequestHandler):  
+  def get(self):
+    self.content_type = 'text/plain'
+    port = self.get_argument("port")
+
+    f = open("../../src/settings.xml","w")
+    s = '<project name="settings">' + '\n' + \
+      '\t<property name="avrdude-programmer" value="' + port + '"/>' + '\n' + \
+      '</project>'
+    f.write(s)
+    f.close()
+    
+    os.system('cd ../../src/config/wunode; ant avrdude-only')
+    self.write('ok')
+
 settings = dict(
   static_path=os.path.join(os.path.dirname(__file__), "static"),
   debug=True
@@ -747,7 +768,9 @@ wukong = tornado.web.Application([
   (r"/componentxml",WuLibrary),
   (r"/wuclasssource",WuClassSource),
   (r"/serialport",SerialPort),
-  (r"/enablexml",EnabledWuClass)
+  (r"/enablexml",EnabledWuClass),
+  (r"/build",Build),
+  (r"/upload",Upload)
 ], IP, **settings)
 
 if __name__ == "__main__":
