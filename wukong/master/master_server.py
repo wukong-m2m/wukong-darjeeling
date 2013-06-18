@@ -578,7 +578,7 @@ class SerialPort(tornado.web.RequestHandler):
 		self.write(json.dumps(available))
 		return
 	if system_name == "Darwin":
-		list = self.write(str(glob.glob('/dev/tty*') + glob.glob('/dev/cu*')))
+		list = glob.glob('/dev/tty.*') + glob.glob('/dev/cu.*')
 	else:
 		print 'xxxxx'
 		list = glob.glob('/dev/ttyS*') + glob.glob('/dev/ttyUSB*') + glob.glob('/dev/ttyACM*')
