@@ -111,6 +111,18 @@ WuIDE.prototype.initUI = function() {
 			});
 		});
 	});
+
+	$('#build').click(function() {
+		$.get('/build', function() {
+
+		})
+	});
+
+	$('#upload').click(function() {
+		$.get('/upload', {port: $('#serialport :selected').text()}, function() {
+
+		})
+	});	
 }
 
 
