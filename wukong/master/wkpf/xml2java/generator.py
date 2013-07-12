@@ -29,7 +29,7 @@ class Generator:
             return str(node.id)
 
         def wuobjectinjava(wuobject):
-            return ', '.join([str(wuobject.node_id),
+            return ', '.join([str(wuobject.wunode().id),
                             str(wuobject.port_number)])
             
         def linkinjava(link):
@@ -53,11 +53,11 @@ class Generator:
 
         def propertyconstname(property):
             print 'propertyconstname'
-            return "PROPERTY_" + Convert.to_constant(property.wuclass.name) + "_" + Convert.to_constant(property.name)
+            return "PROPERTY_" + Convert.to_constant(property.wuobject().wuclass().wuclassdef().name) + "_" + Convert.to_constant(property.wupropertydef().name)
 
         # doesn't really matter to check since basic types are being take care of in application.java
         def propertyconstantvalue(property):
-            wutype = WuType.where(name=property.datatype)
+            wutype = WuTypeDef.where(name=property.datatype)
             if wutype:
                 return wutype[0].type.upper() + '_' + Convert.to_constant(property.datatype) + "_" + Convert.to_constant(property.value)
             else:
@@ -66,13 +66,13 @@ class Generator:
         def generateProperties(wuclass_properties, component_properties):
             properties = []
             for property in wuclass_properties:
-                if property.value.strip() != "" and (not property.name in [x.name for x in properties]):
+                if property.value.strip() != "" and (not property.wupropertydef().name in [x.wupropertydef().name for x in properties]):
                     properties.append(property)
 
             for property in properties:
-                if property.name in component_properties:
-                    if component_properties[property.name].strip() != "":
-                        property.value = component_properties[property.name]
+                if property.wupropertydef().name in component_properties:
+                    if component_properties[property.wupropertydef().name].strip() != "":
+                        property.value = component_properties[property.wupropertydef().name]
             return properties
 
         # Generate the Java code
@@ -96,14 +96,14 @@ class Generator:
         def generateProperties(wuclass_properties, component_properties):
             properties = []
             for property in wuclass_properties:
-                if property.value.strip() != "" and (not property.name in [x.name for x in properties]):
+                if property.value.strip() != "" and (not property.wupropertydef().name in [x.wupropertydef().name for x in properties]):
                     properties.append(property)
 
             for property in properties:
-                if property.name in component_properties:
-                    if component_properties[property.name].strip() != "":
-                        property.value = component_properties[property.name]
-            return [p for p in properties if p.access!='readonly']
+                if property.wupropertydef().name in component_properties:
+                    if component_properties[property.wupropertydef().name].strip() != "":
+                        property.value = component_properties[property.wupropertydef().name]
+            return [p for p in properties if p.wupropertydef().access!='readonly']
 
         # TODO: this should be in a higher level place somewhere.
         # TODO: is 'int' really a datatype? It was used in application2.java so keeping it here for now. should check if it can go later.
@@ -125,20 +125,20 @@ class Generator:
         for component in changesets.components:
             component_element = ElementTree.SubElement(components, 'component')
             component_element.attrib['id'] = str(component_index)
-            component_wuclass = WuClass.findByName(component.type)[0]
+            component_wuclass = WuClassDef.find(name=component.type)
             component_element.attrib['wuclassId'] = str(component_wuclass.id)
             component_index += 1
             for endpoint in component.instances:
                 endpoint_element = ElementTree.SubElement(component_element, 'endpoint')
-                endpoint_element.attrib['node'] = str(endpoint.node_id)
+                endpoint_element.attrib['node'] = str(endpoint.wunode().id)
                 endpoint_element.attrib['port'] = str(endpoint.port_number)
         component_index = 0
         for component in changesets.components:
             wuobject = component.instances[0]
-            for property in generateProperties(wuobject.wuclass.properties, wuobject.properties_with_default_values):
+            for property in generateProperties(wuobject.wuproperties(), component.properties_with_default_values):
                 initvalue = ElementTree.SubElement(initvalues, 'initvalue')
                 initvalue.attrib['componentId'] = str(component_index)
-                initvalue.attrib['propertyNumber'] = str(property.id)
+                initvalue.attrib['propertyNumber'] = str(property.wupropertydef().number)
                 if property.datatype in datatype_sizes: # Basic type
                     initvalue.attrib['valueSize'] = str(datatype_sizes[property.datatype])
                 else: # Enum
@@ -148,8 +148,8 @@ class Generator:
                 elif property.datatype == 'boolean':
                     initvalue.attrib['value'] = '1' if property.value == 'true'else '0'
                 else: # Enum
-                    enumtype = WuType.findByName(property.datatype)[0]
-                    enumvalues = [x.value.upper() for x in enumtype.values]
+                    enumtype = WuTypeDef.find(name=property.datatype)
+                    enumvalues = [wuvalue.value.upper() for wuvalue in enumtype.wuvalues()]
                     print enumtype
                     print enumvalues
                     initvalue.attrib['value'] = str(enumvalues.index(property.value.upper())) # Translate the string representation to an integer

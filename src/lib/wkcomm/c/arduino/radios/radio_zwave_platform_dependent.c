@@ -23,38 +23,49 @@ void radio_zwave_platform_dependent_init(void) {
 
 }
 
+void radio_zwave_platform_dependent_poll(void) {
+    if( (EIMSK&0x01) ==0 )//INT0 is disable
+    {
+	    if( (dj_timer_getTimeMillis()-zwave_time_btn_interrupt)>100 )//wait 100ms for button debounce, enable interrupt again
+	    {
+		    EIFR |=_BV(0);//clear INT0 flag
+		    EIMSK |=_BV(0);//enable INT0
+	    }
+    }
+}
+
 ISR(INT0_vect)
 {
     EIMSK &=~_BV(0);//disable INT0
     //DEBUG_LOG(DBG_ZWAVETRACE,"is_push %d,PIND=%d",zwave_btn_is_push,PIND);
     if(zwave_btn_is_push==false)
     {
-	//DEBUG_LOG(DBG_ZWAVETRACE,"=======push=========\n");
-	if( (PIND&0x01) !=0 )//INT0=pins[3] bit0, 0=button push, otherwise is noise
-	{
-		EIMSK |=_BV(0);//enable INT0
-	}
-	else
-	{
-		zwave_time_btn_interrupt=dj_timer_getTimeMillis();
-		zwave_time_btn_push=dj_timer_getTimeMillis();
-		zwave_btn_is_push=true;
-	}
+		//DEBUG_LOG(DBG_ZWAVETRACE,"=======push=========\n");
+		if( (PIND&0x01) !=0 )//INT0=pins[3] bit0, 0=button push, otherwise is noise
+		{
+			EIMSK |=_BV(0);//enable INT0
+		}
+		else
+		{
+			zwave_time_btn_interrupt=dj_timer_getTimeMillis();
+			zwave_time_btn_push=dj_timer_getTimeMillis();
+			zwave_btn_is_push=true;
+		}
     }
     else
     {
-	//DEBUG_LOG(DBG_ZWAVETRACE,"=====release=========\n");
-	if( (PIND&0x01) ==0 )//INT0=pins[3] bit0, 0=button push, otherwise is noise
-	{
-		EIMSK |=_BV(0);//enable INT0
-	}
-	else
-	{
-		zwave_time_btn_interrupt=dj_timer_getTimeMillis();
-		zwave_time_btn_release=dj_timer_getTimeMillis();
-		zwave_btn_is_push=false;
-		zwave_btn_is_release=true;
-	}
+		//DEBUG_LOG(DBG_ZWAVETRACE,"=====release=========\n");
+		if( (PIND&0x01) ==0 )//INT0=pins[3] bit0, 0=button push, otherwise is noise
+		{
+			EIMSK |=_BV(0);//enable INT0
+		}
+		else
+		{
+			zwave_time_btn_interrupt=dj_timer_getTimeMillis();
+			zwave_time_btn_release=dj_timer_getTimeMillis();
+			zwave_btn_is_push=false;
+			zwave_btn_is_release=true;
+		}
     }
 }
 

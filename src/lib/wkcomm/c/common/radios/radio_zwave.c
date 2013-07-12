@@ -89,17 +89,11 @@ void Zwave_receive(int processmessages);
 void radio_zwave_learn();
 void radio_zwave_reset();
 
+extern void radio_zwave_platform_dependent_poll();
 void radio_zwave_poll(void) {
     if(zwave_mode==0 || zwave_learn_on)//normal mode or is learning
     {
-	    if( (EIMSK&0x01) ==0 )//INT0 is disable
-	    {
-		    if( (dj_timer_getTimeMillis()-zwave_time_btn_interrupt)>100 )//wait 100ms for button debounce, enable interrupt again
-		    {
-			    EIFR |=_BV(0);//clear INT0 flag
-			    EIMSK |=_BV(0);//enable INT0
-		    }
-	    }
+        radio_zwave_platform_dependent_poll();
 	    if( zwave_btn_is_release==true )
 	    {
 		    if( (zwave_time_btn_release-zwave_time_btn_push)<5000 )//push btn <5s go to learning mode

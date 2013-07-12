@@ -12,13 +12,13 @@
             {% for property in properties_json %}
             <tr>
                 <td>
-                    {{ property.wuclass.node_id }}
+                    {{ property.wuobject().wunode().id }}
                 </td>
                 <td>
-                    {{ property.wuclass.name }}
+                    {{ property.wupropertydef().wuclassdef().name }}
                 </td>
                 <td>
-                    {{ property.name }}
+                    {{ property.wupropertydef().name }}
                 </td>
                 <td>
                     {{ property.value }}

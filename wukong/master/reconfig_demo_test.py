@@ -117,3 +117,7 @@ commands, last_changesets = first_of(new_changesets, network_info, last_changese
 #print "commands", commands
 
 demo.deploy(commands)
+
+#network_info = retrieve_fake_network_info()
+
+#demo.reflect_on_actual_deployed_network_status(last_changesets, network_info)

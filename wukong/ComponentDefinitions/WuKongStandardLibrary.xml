@@ -141,6 +141,13 @@
         <property name="output" datatype="boolean" access="readonly" />
     </WuClass-->
 
+    <WuClass name="Binary_Sensor" id="10" virtual="false" type="hard" privateCData="short">
+        <property name="refresh_rate" datatype="refresh_rate" access="readwrite" default="1000" />
+        <property name="current_value" datatype="boolean" access="readwrite" default="false" />
+        <property name="status" datatype="boolean" access="readwrite" default="false" />
+        <property name="debounce" datatype="short" access="readwrite" default="2000" />
+    </WuClass>
+
     <WuClass name="LED" id="9" virtual="false" type="hard" privateCData="bool">
         <property name="refresh_rate" datatype="refresh_rate" access="readwrite" default="1000" />
         <property name="port1" datatype="boolean" access="readwrite" default="true" />

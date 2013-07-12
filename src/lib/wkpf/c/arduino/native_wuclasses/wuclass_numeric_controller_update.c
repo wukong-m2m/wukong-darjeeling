@@ -33,7 +33,7 @@ void wuclass_numeric_controller_update(wuobject_t *wuobject) {
   result = ADCH;
   result = (double)result * ((double)max-(double)min) / ((double)device_max-(double)device_min);
   DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Numeric Sensor): Sensed value: %d, converted value:%d\n", ADCH, result);
-  wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_LIGHT_SENSOR_CURRENT_VALUE, ADCH);
+  wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_NUMERIC_CONTROLLER_OUTPUT, ADCH);
   
   //DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(NumericController): NOP\n");
 }

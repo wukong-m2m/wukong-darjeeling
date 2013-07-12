@@ -91,6 +91,9 @@
 #ifndef DBG_WKREPROG
 #define DBG_WKREPROG 0
 #endif
+#ifndef DBG_WKPFGH
+#define DBG_WKPFGH 0
+#endif
 
 #ifndef DARJEELING_DEBUG
 

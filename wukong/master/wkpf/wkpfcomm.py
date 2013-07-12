@@ -199,38 +199,28 @@ class Communication:
         wuclass_id = (reply[0] <<8) + reply[1]
         virtual = reply[2] == 1
 
-        wuclassdef_query = WuClassDef.where(id=wuclass_id)
-        node_query = WuNode.where(id=destination)
+        node = WuNode.find(id=destination)
 
-        if not node_query:
+        if not node:
           print 'Unknown node id', destination
           break
 
-        node = node_query[0]
+        wuclassdef = WuClassDef.find(id=wuclass_id)
 
-        if not wuclassdef_query:
+        if not wuclassdef:
           print 'Unknown wuclass id', wuclass_id
           break
 
-        wuclassdef = wuclassdef_query[0]
-
-        wuclass_query = WuClass.where(node_identity=node.identity,
+        wuclass = WuClass.find(node_identity=node.identity,
             wuclassdef_identity=wuclassdef.identity)
 
-        wuclass = None
-        wuclass_query = None
-        wuclassdef = None
-
         # Create one
-        if not wuclass_query:
+        if not wuclass:
           wuclass = WuClass.create(wuclassdef, node, virtual)
           # No need to recreate property definitions, as they are already
           # created when parsing XML
-        else:
-          wuclass = wuclass_query[0]
 
-        if wuclass:
-          wuclasses.append(wuclass)
+        wuclasses.append(wuclass)
         reply = reply[3:]
       return wuclasses
 
@@ -256,35 +246,32 @@ class Communication:
       while len(reply) > 1:
         wuclass_id = (reply[1] <<8) + reply[2]
         port_number = reply[0]
-        node_query = WuNode.where(id=destination)
-        wuclassdef_query = WuClassDef.where(id=wuclass_id)
+        node = WuNode.find(id=destination)
 
-        if not node_query:
+        if not node:
           print 'Unknown node id', destination
           break
 
-        if not wuclassdef_query:
+        wuclassdef = WuClassDef.find(id=wuclass_id)
+
+        if not wuclassdef:
           print 'Unknown wuclass id', wuclass_id
           break
 
-        node = node_query[0]
-        wuclass_query = WuClass.where(node_identity=node.identity,
+        wuclass = WuClass.find(node_identity=node.identity,
             wuclassdef_identity=wuclassdef.identity)
 
-        wuobject = None
+        if not wuclass:
+          print 'Unknown wuclass, should call getWuClassList before WuObjectList'
+          break
 
-        if wuclass_query:
-          wuclass = wuclass_query[0]
-          wuobject_query = WuObject.where(wuclass_identity=wuclass.identity)
+        wuobject = WuObject.find(wuclass_identity=wuclass.identity)
 
-          # Create one
-          if not wuobject_query:
-            wuobject = WuObject.create(port_number, wuclass)
-          else:
-            wuobject = wuobject_query[0]
+        # Create one
+        if not wuobject:
+          wuobject = WuObject.create(port_number, wuclass)
 
-        if wuobject:
-            wuobjects.append(wuobject)
+        wuobjects.append(wuobject)
         reply = reply[3:]
       return wuobjects
 

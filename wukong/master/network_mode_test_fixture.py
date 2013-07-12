@@ -1,3 +1,4 @@
+#!/usr/local/bin/python
 from wkpf.wuapplication import ChangeSets
 from wkpf.wkpfcomm import getComm
 from wkpf.wkpfcomm import WKPF_PROPERTY_TYPE_SHORT, WKPF_PROPERTY_TYPE_BOOLEAN, WKPF_PROPERTY_TYPE_REFRESH_RATE
@@ -107,6 +108,8 @@ def fake_network_info(mode):
     nodes.append(fake_node(46, '12', 10.0))
     nodes.append(fake_node(23, '8', 5.0))
     nodes.append(fake_node(39, '8', 6.0))
+  elif mode == 4:
+    nodes.append(fake_node(43, '7', 929.0))
   else:
     pass
 
@@ -116,4 +119,3 @@ def fake_network_info(mode):
   print 'network', network_info_data
 
   return network_info_data
-

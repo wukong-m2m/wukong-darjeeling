@@ -15,8 +15,8 @@ public class WKDeploy {
         // Register virtual WuClasses (just register all for now, maybe change this per node later)
         {%- for component in changesets.components %}
             {% for wuobject in component.instances %}
-                {% if not wuobject.hasLocalNativeWuClass %}
-        WKPF.registerWuClass(GENERATEDWKPF.{{ wuobject.wuclass|wuclassconstname }}, {{ wuobject.wuclass|wuclassgenclassname }}.properties);
+                {% if wuobject.wuclass().virtual %}
+        WKPF.registerWuClass(GENERATEDWKPF.{{ wuobject.wuclass().wuclassdef()|wuclassconstname }}, {{ wuobject.wuclass().wuclassdef()|wuclassgenclassname }}.properties);
                 {% endif %}
             {% endfor %}
         {%- endfor %}
@@ -38,10 +38,10 @@ public class WKDeploy {
         //all WuClasses from the same group has the same instanceIndex and wuclass
         {%- for component in changesets.components %}
             {% for wuobject in component.instances %}
-                {% if not wuobject.hasLocalNativeWuClass %}
+                {% if wuobject.wuclass().virtual %}
         if (WKPF.isLocalComponent((short){{ component.index }})) {
-            VirtualWuObject wuclassInstance{{ wuobject.wuclass|wuclassname }} = new {{ wuobject.wuclass|wuclassvirtualclassname }}();
-            WKPF.createWuObject((short)GENERATEDWKPF.{{ wuobject.wuclass|wuclassconstname }}, WKPF.getPortNumberForComponent((short){{ component.index }}), wuclassInstance{{ wuobject.wuclass|wuclassname }});
+            VirtualWuObject wuclassInstance{{ wuobject.wuclass().wuclassdef()|wuclassname }} = new {{ wuobject.wuclass().wuclassdef()|wuclassvirtualclassname }}();
+            WKPF.createWuObject((short)GENERATEDWKPF.{{ wuobject.wuclass().wuclassdef()|wuclassconstname }}, WKPF.getPortNumberForComponent((short){{ component.index }}), wuclassInstance{{ wuobject.wuclass().wuclassdef()|wuclassname }});
         }
                 {% endif %}
             {% endfor %}

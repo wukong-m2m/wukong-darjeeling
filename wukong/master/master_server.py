@@ -327,11 +327,11 @@ class map_application(tornado.web.RequestHandler):
         for ind, wuobj in enumerate(component.instances):
           if ind == 0:
             ret.append({'leader': True, 'instanceId': component.index,
-                    'name': wuobj.wuclass.name, 'nodeId': wuobj.node_id,
+                    'name': wuobj.wuclass().wuclassdef().name, 'nodeId': wuobj.wunode().id,
                     'portNumber': wuobj.port_number})
           else:
             ret.append({'leader': False, 'instanceId': component.index, 'name':
-                    wuobj.wuclass.name, 'nodeId': wuobj.node_id, 'portNumber':
+                    wuobj.wuclass().wuclassdef().name, 'nodeId': wuobj.wunode().id, 'portNumber':
                     wuobj.port_number})
 
       self.content_type = 'application/json'

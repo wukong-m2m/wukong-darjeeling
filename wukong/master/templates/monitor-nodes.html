@@ -23,7 +23,7 @@
                 {% end %}
             </td>
             <td>
-                {{ len(node_info.wuclasses) }} WuClasses and {{ len(node_info.wuobjects) }} WuObjects
+                {{ len(node_info.wuclasses()) }} WuClasses and {{ len(node_info.wuobjects()) }} WuObjects
                 <a role=button id=node{{ node_info.id }} data-toggle=modal href='#myModal' class='btn more'>Classes/Objects list</button>
             </td>
         </tr>

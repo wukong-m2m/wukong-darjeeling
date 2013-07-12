@@ -1,9 +1,9 @@
 <h4>WuClasses:</h4>\
 <ul>\
-    {% for wuclass in node_info.wuclasses %}<li>Class Id: {{ wuclass.id }} Class Name: {{ wuclass.name }}</li>\{% end %}
+    {% for wuclass in node_info.wuclasses() %}<li>Class Id: {{ wuclass.wuclassdef().id }} Class Name: {{ wuclass.wuclassdef().name }}</li>\{% end %}
 </ul>\
 
 <h4>WuObjects:</h4>\
 <ul>\
-    {% for wuobject in node_info.wuobjects %}<li>Class Name: {{ wuobject.wuclass.name }} Port Number: {{ wuobject.port_number }}</li>\{% end %}
+    {% for wuobject in node_info.wuobjects() %}<li>Class Name: {{ wuobject.wuclass().wuclassdef().name }} Port Number: {{ wuobject.port_number }}</li>\{% end %}
 </ul>\

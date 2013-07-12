@@ -48,13 +48,13 @@ class DeferredQueue:
     def removeTimeoutDefer(self):
         for key, defer in self.queue.items():
             if defer.timeout < int(round(time.time() * 1000)):
-                print 'remove timeouted defer', defer
+                #print 'remove timeouted defer', defer
                 # call error cb
                 defer.error_cb(None)
                 del self.queue[key]
 
     def find_defer(self, deliver):
-        print 'finding defer for message in queue', self.queue
+        #print 'finding defer for message in queue', self.queue
         for defer_id, defer in self.queue.items():
             if defer.verify(deliver, defer):
                 print 'found'
@@ -71,9 +71,9 @@ class DeferredQueue:
         return queue_id
 
     def remove_defer(self, defer_id):
-        print 'remove_defer'
+        #print 'remove_defer'
         if defer_id in self.queue:
-            print 'removing defer', self.queue[defer_id]
+            #print 'removing defer', self.queue[defer_id]
             del self.queue[defer_id]
             return defer_id
         else:
@@ -266,10 +266,10 @@ class ZwaveAgent(TransportAgent):
     def handler(self):
         while 1:
             defer = tasks.get()
-            print 'handler: getting defer from task queue'
+            #print 'handler: getting defer from task queue'
 
             if defer.message.command == "discovery":
-                print 'handler: processing discovery request'
+                #print 'handler: processing discovery request'
                 nodes = pyzwave.discover()
                 gateway_id = nodes[0]
                 total_nodes = nodes[1]
@@ -281,7 +281,7 @@ class ZwaveAgent(TransportAgent):
                     pass # sometimes gateway_id is not in the list
                 defer.callback(discovered_nodes)
             elif defer.message.command == "routing":
-                print 'handler: processing routing request'
+                #print 'handler: processing routing request'
                 routing = {}
                 nodes = pyzwave.discover()
                 gateway_id = nodes[0]
@@ -298,7 +298,7 @@ class ZwaveAgent(TransportAgent):
                         pass
                 defer.callback(routing)
             else:
-                print 'handler: processing send request'
+                #print 'handler: processing send request'
                 retries = 1
                 destination = defer.message.destination
                 command = defer.message.command
@@ -311,7 +311,7 @@ class ZwaveAgent(TransportAgent):
 
                 while retries > 0:
                     try:
-                        print "handler: sending message from defer"
+                        #print "handler: sending message from defer"
                         pyzwave.send(destination, [0x88, command] + payload)
 
                         break

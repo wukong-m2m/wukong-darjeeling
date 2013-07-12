@@ -70,6 +70,8 @@ def sortCandidates(wuObjects):
       sorted(candidates, key=lambda node: nodeScores[node[0]], reverse=True)
 
 
+# Filling changesets with wuobjects, and assign new changesets to last_changesets
+# Return commands (a diff between changesets and last_changesets)
 def first_of(changesets, network_info, last_changesets):
 
   if not changesets:
@@ -115,7 +117,7 @@ def first_of(changesets, network_info, last_changesets):
     if len(component.instances) == 0:
       raise Exception('[ERROR] No avilable match could be found for component %s' % (component))
 
-  print 'mapped application', changesets
+  #print 'mapped application', changesets
 
   # Commands
   # format:
@@ -124,43 +126,55 @@ def first_of(changesets, network_info, last_changesets):
   #   ...
   # ]
   commands = []
-  last_changesets.components.sort(key=lambda x: x.location)
-  changesets.components.sort(key=lambda x: x.location)
-  zipped = zip(last_changesets.components, changesets.components)
+  a_list = sorted(last_changesets.components, key=lambda x: x.location)
+  b_list = sorted(changesets.components, key=lambda x: x.location)
+  zipped = zip(a_list, b_list)
   for pair in zipped:
-    region_before = set([x.wuclass_identity for x in pair[0].instances])
-    region_after = set([x.wuclass_identity for x in pair[1].instances])
+    print pair
+    region_before = set([x.identity for x in pair[0].instances])
+    region_after = set([x.identity for x in pair[1].instances])
 
     # First case, turning state on
-    on_wuclass_identities = region_after - region_before
-    for identity in on_wuclass_identities:
-      wuclass = WuClass.find(identity=identity)
-      if not wuclass:
-        raise Exception('invalid wuclass identity' % (identity))
-      wuobject = WuObject.find(wuclass_identity=identity)
+    on_identities = region_after - region_before
+    print 'on', on_identities
+    for identity in on_identities:
+      #wuclass = WuClass.find(identity=identity)
+      #if not wuclass:
+        #raise Exception('invalid wuclass identity' % (identity))
+      wuobject = WuObject.find(identity=identity)
       if not wuobject:
         raise Exception('no wuobject for wuclass idenity' % (identity))
       # Getting the first property, assuming property number is 0
       # And assuming the property we get has datatype 'boolean'
-      wupropertydef = WuPropertyDef.find(number=0, wuclass_id=wuclass.wuclassdef().id)
-      wuproperty = WuProperty.find(wuobject_identity=wuobject.identity,
-          wupropertydef_identity=wupropertydef.identity)
+      #wupropertydef = WuPropertyDef.find(number=0, wuclass_id=wuclass.wuclassdef().id)
+      #wuproperty = WuProperty.find(wuobject_identity=wuobject.identity,
+          #wupropertydef_identity=wupropertydef.identity)
+      wuproperty = wuobject.wuproperties()[0]
       wuproperty.value = True
+      print 'property', wuproperty
+      print 'property node', wuproperty.wuobject().wunode()
       commands.append(wuproperty)
 
+    region_before = set([x.identity for x in pair[0].instances])
+    region_after = set([x.identity for x in pair[1].instances])
+
     # Second case, turning state off
-    off_wuclass_identities = region_before - region_after
-    for identity in off_wuclass_identities:
-      wuclass = WuClass.find(identity=identity)
-      if not wuclass:
-        raise Exception('invalid wuclass identity' % (identity))
+    off_identities = region_before - region_after
+    print 'off', off_identities
+    for identity in off_identities:
+      #wuclass = WuClass.find(identity=identity)
+      #if not wuclass:
+        #raise Exception('invalid wuclass identity' % (identity))
       wuobject = WuObject.find(wuclass_identity=identity)
       # Getting the first property, assuming property number is 0
       # And assuming the property we get has datatype 'boolean'
-      wupropertydef = WuPropertyDef.find(number=0, wuclass_id=wuclass.wuclassdef().id)
-      wuproperty = WuProperty.find(wuobject_identity=wuobject.identity,
-          wupropertydef_identity=wupropertydef.identity)
+      #wupropertydef = WuPropertyDef.find(number=0, wuclass_id=wuclass.wuclassdef().id)
+      #wuproperty = WuProperty.find(wuobject_identity=wuobject.identity,
+          #wupropertydef_identity=wupropertydef.identity)
+      wuproperty = wuobject.wuproperties()[0]
       wuproperty.value = False
+      print 'property', wuproperty
+      print 'property node', wuproperty.wuobject().wunode()
       commands.append(wuproperty)
 
   return commands, changesets
@@ -208,17 +222,15 @@ def firstCandidate(logger, changesets, routingTable, locTree):
         # construct wuobjects, instances of component
         for candidate in candidates:
             node = locTree.getNodeInfoById(candidate)
-            wuclass = WuClass.where(name=component.type)[0]
-            if wuclass.type.lower() == 'hard':
+            wuclassdef = WuClassDef.find(name=component.type)
+            if wuclassdef.type.lower() == 'hard':
                 # only native implementation
-                if wuclass.id in [x.id for x in node.wuclasses]:
+                if wuclassdef.id in [x.wuclassdef().id for x in node.wuclasses()]:
                     # has wuclass for native implementation
-                    if wuclass.id in [x.wuclass.id for x in node.wuobjects]:
+                    if wuclassdef.id in [x.wuclass().wuclassdef().id for x in node.wuobjects()]:
                         # use existing wuobject
-                        for wuobject in node.wuobjects:
-                            if wuobject.wuclass.id == wuclass.id:
-                                wuobject.properties_with_default_values = component.properties_with_default_values
-                                wuobject.save()
+                        for wuobject in node.wuobjects():
+                            if wuobject.wuclass().wuclassdef().id == wuclassdef.id:
                                 component.instances.append(wuobject)
                                 break
                     else:
@@ -226,23 +238,19 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                         sensorNode = locTree.sensor_dict[node.id]
                         sensorNode.initPortList(forceInit = False)
                         port_number = sensorNode.reserveNextPort()
-                        wuclass_alternate = wuclass
-                        for wuclass_node in node.wuclasses:
-                            if wuclass_node.id == wuclass.id:
-                                wuclass_alternate = wuclass_node
-                        wuobject = WuObject(node.id, port_number, wuclass_alternate)
-                        wuobject.properties_with_default_values = component.properties_with_default_values
+                        for wuclass in node.wuclasses():
+                            if wuclass.wuclassdef().id == wuclassdef.id:
+                                wuobject = WuObject(port_number, wuclass)
                         wuobject.save()
                         component.instances.append(wuobject)
             else:
                 # prefer native implementation
-                if wuclass.id in [x.id for x in node.wuclasses]:
+                if wuclassdef.id in [x.wuclassdef().id for x in node.wuclasses()]:
                     # has wuclass for native implementation
-                    if wuclass.id in [x.wuclass.id for x in node.wuobjects]:
+                    if wuclassdef.id in [x.wuclass().wuclassdef().id for x in node.wuobjects()]:
                         # use existing wuobject
-                        for wuobject in node.wuobjects:
-                            if wuobject.wuclass.id == wuclass.id:
-                                wuobject.properties_with_default_values = component.properties_with_default_values
+                        for wuobject in node.wuobjects():
+                            if wuobject.wuclass().wuclassdef().id == wuclassdef.id:
                                 wuobject.save()
                                 component.instances.append(wuobject)
                                 break
@@ -251,21 +259,17 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                         sensorNode = locTree.sensor_dict[node.id]
                         sensorNode.initPortList(forceInit = False)
                         port_number = sensorNode.reserveNextPort()
-                        wuclass_alternate = wuclass
-                        for wuclass_node in node.wuclasses:
-                            if wuclass_node.id == wuclass.id:
-                                wuclass_alternate = wuclass_node
-                        wuobject = WuObject(node.id, port_number, wuclass_alternate)
-                        wuobject.properties_with_default_values = component.properties_with_default_values
+                        for wuclass in node.wuclasses():
+                            if wuclass.wuclassdef().id == wuclassdef.id:
+                                wuobject = WuObject.create(port_number, wuclass)
                         wuobject.save()
                         component.instances.append(wuobject)
                 else:
                     # no wuclass for native implementation
-                    if wuclass.id in [x.wuclass.id for x in node.wuobjects]:
+                    if wuclassdef.id in [x.wuclass().wuclassdef().id for x in node.wuobjects()]:
                         # use existing virtual wuobject
-                        for wuobject in node.wuobjects:
-                            if wuobject.wuclass.id == wuclass.id:
-                                wuobject.properties_with_default_values = component.properties_with_default_values
+                        for wuobject in node.wuobjects():
+                            if wuobject.wuclass().wuclassdef().id == wuclassdef.id:
                                 wuobject.save()
                                 component.instances.append(wuobject)
                                 break
@@ -274,20 +278,15 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                         sensorNode = locTree.sensor_dict[node.id]
                         sensorNode.initPortList(forceInit = False)
                         port_number = sensorNode.reserveNextPort()
-                        wuclass_alternate = wuclass # node_id is not important, just a placeholder
-                        wuobject = WuObject(node.id, port_number, wuclass_alternate)
-                        wuobject.properties_with_default_values = component.properties_with_default_values
+                        wuclass = WuClass.find(wuclassdef_identity=wuclassdef.identity)
+                        if not wuclass:
+                          wuclass = WuClass.create(wuclassdef, node, True)
+                        wuobject = WuObject.create(port_number, wuclass)
                         wuobject.save()
                         component.instances.append(wuobject)
 
         def prefer_hard(wuobject):
-            node = locTree.getNodeInfoById(wuobject.node_id)
-            wuclass = WuClass.where(name=component.type)[0]
-            print 'sort prefer wuobject of wuclass %d in node %d' % (wuobject.wuclass.id, node.id) if wuobject.wuclass.id in [x.id for x in node.wuclasses] else 'sort not prefer'
-            if wuobject.wuclass.id in [x.id for x in node.wuclasses if not x.virtual]:
-                wuobject.hasLocalNativeWuClass = True
-
-            return wuobject.wuclass.id in [x.id for x in node.wuclasses]
+            return not wuobject.wuclass().virtual
 
         component.instances = sorted(component.instances, key=prefer_hard, reverse=True)
         
@@ -306,18 +305,18 @@ def firstCandidate(logger, changesets, routingTable, locTree):
     allcandidates = set()
     for component in changesets.components:
         for wuobject in component.instances:
-            allcandidates.add(wuobject.node_id)
+            allcandidates.add(wuobject.wunode().id)
     allcandidates = list(allcandidates)
-    allcandidates = map(lambda x: Node.where(id=x)[0], allcandidates)
-    constructHeartbeatGroups(changesets.heartbeatgroups, routingTable, allcandidates)
-    determinePeriodForHeartbeatGroups(changesets.components, changesets.heartbeatgroups)
+    allcandidates = map(lambda x: WuNode.find(id=x), allcandidates)
+    # constructHeartbeatGroups(changesets.heartbeatgroups, routingTable, allcandidates)
+    # determinePeriodForHeartbeatGroups(changesets.components, changesets.heartbeatgroups)
     logging.info('heartbeatGroups constructed, periods assigned')
     logging.info(changesets.heartbeatgroups)
 
     #delete and roll back all reservation during mapping after mapping is done, next mapping will overwritten the current one
     for component in changesets.components:
         for wuobj in component.instances:
-            senNd = locTree.getSensorById(wuobj.node_id)
+            senNd = locTree.getSensorById(wuobj.wunode().id)
             for j in senNd.temp_port_list:
                 senNd.port_list.remove(j)
             senNd.temp_port_list = []
