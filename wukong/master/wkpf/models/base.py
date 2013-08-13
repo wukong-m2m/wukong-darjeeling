@@ -141,11 +141,6 @@ class Definition:
     return not result
 
   @classmethod
-  def connect(recv):
-    ready = signal('update')
-    ready.connect(recv)
-
-  @classmethod
   def all(cls):
     return cls.where()
 
@@ -208,5 +203,3 @@ class Definition:
     self.__class__.c.execute(query_str, t)
     self.__class__.conn.commit()
     self.identity = self.__class__.c.lastrowid
-    ready = signal('update')
-    ready.send(self)
