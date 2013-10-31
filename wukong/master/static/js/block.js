@@ -168,7 +168,7 @@ Block.prototype.findActionPos=function(s) {
 
 	for(i=0;i<this.actions.length;i++) {
 		if (this.actions[i].name == s)
-			return this.signals[i].index;
+			return this.actions[i].index;
 	}
 	return -1;
 }

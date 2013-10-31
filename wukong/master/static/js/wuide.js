@@ -158,6 +158,7 @@ WuIDE.prototype.initUI = function() {
 			$('#log').val(data).animate({scrollTop:$("#log")[0].scrollHeight - $("#log").height()});
 			if (self.timer)
 				clearTimeout(self.timer);
+			self.bulidDone = false;
 			self.refreshBuild();
 		})
 	});
@@ -173,6 +174,7 @@ WuIDE.prototype.initUI = function() {
 			$('#log').val(data).animate({scrollTop:$("#log")[0].scrollHeight - $("#log").height()});
 			if (self.timer)
 				clearTimeout(self.timer)
+			self.uploadDone = false;
 			self.refreshUpload();
 		})
 	});	
@@ -182,13 +184,22 @@ WuIDE.prototype.initUI = function() {
 
 WuIDE.prototype.refreshBuild = function() {
 	var self=this;
+	
+	if(self.buildDone) {
+		return;
+	}
+
 	self.timer = setTimeout(function () {
 		self.refreshBuild();
 	},1000);
-	$.get('/build', {cmd:'start'}, function(data) {
+	
+	$.get('/build', {cmd:'poll'}, function(data) {
 		if (data != '') {
-			if (self.data != data)
+			if (self.data != data) {
 				$('#log').val(data).animate({scrollTop:$("#log")[0].scrollHeight - $("#log").height()});
+			} else {
+				self.buildDone = true;
+			}
 			self.data = data;
 		}
 	});
@@ -197,13 +208,22 @@ WuIDE.prototype.refreshBuild = function() {
 
 WuIDE.prototype.refreshUpload = function() {
 	var self=this;
+
+	if(self.uploadDone) {
+		return;
+	}
+
 	self.timer = setTimeout(function () {
 	    self.refreshUpload();
 	},1000);
+
 	$.get('/upload', {cmd:'poll'}, function(data) {
 		if (data != '') {
-			if (self.data != data)
+			if (self.data != data) {
 				$('#log').val(data).animate({scrollTop:$("#log")[0].scrollHeight - $("#log").height()});
+			} else {
+				self.uploadDone = true;
+			}
 			self.data = data;
 		}
 	});
