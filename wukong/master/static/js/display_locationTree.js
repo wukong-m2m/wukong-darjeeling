@@ -501,7 +501,6 @@ function generate_tree(rt, node_class) {
           }
         }
     html_tree += '</td><td valign="top">';
-    alert(html_tree);
     return html_tree;
 }
 

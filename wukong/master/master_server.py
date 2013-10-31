@@ -509,6 +509,7 @@ class testrtt(tornado.web.RequestHandler):
 
     comm = getComm()
     node_infos = comm.getAllNodeInfos()
+    print node_infos
     rebuildTree(node_infos)
     testrtt = template.Loader(os.getcwd()).load('templates/testrtt.html').generate(log=['Please press the buttons to add/remove nodes.'], node_infos=node_infos, set_location=True, default_location = LOCATION_ROOT)
     self.content_type = 'application/json'
@@ -519,6 +520,7 @@ class refresh_nodes(tornado.web.RequestHandler):
     global node_infos
     node_infos = getComm().getActiveNodeInfos(False)
     rebuildTree(node_infos)
+    print ("node_infos in refresh nodes:",node_infos)
     #furniture data loaded from fake data for purpose of 
     #getComm().getRoutingInformation()
     # default is false

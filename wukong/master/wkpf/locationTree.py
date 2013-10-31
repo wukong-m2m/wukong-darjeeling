@@ -3,7 +3,7 @@
 import logging
 import json
 import ast
-import numpy
+#import numpy
 import math
 
 MAX_LIFE = 1
@@ -91,7 +91,12 @@ class LocationTreeNode:
         #distance to self is always 0
         self.distanceModifier = {} #stores a list of distance between children, default 0, used for distance between sensors in different children.
         self.idSet = set([]) #all sensor ids contained in this Node and its children nodes
-        
+        '''    obsolete requires numpy
+            def transformToLocal(self, vect):
+                A = numpy.matrix(self.transMatrix)
+                inverseA = A.I
+                return tuple((vect*inverseA).tolist()[0])
+        '''
     def getLandmarkList(self):
         lmlst = []
         for landmk in self.landmarkLst:
@@ -141,12 +146,7 @@ class LocationTreeNode:
             for j in range(3):
                 newVec[i] = newVec[i]+ self.transMatrix[i][j]*vect[j]
         return tuple(newVec)
-    
-    def transformToLocal(self, vect):
-        A = numpy.matrix(self.transMatrix)
-        inverseA = A.I
-        return tuple((vect*inverseA).tolist()[0])
-        
+
     #originalPnt is a tuple of 3, e.g.(0,1,2)
     def setOriginalPnt (self, originalPoint):
         self.originalPnt = originalPoint

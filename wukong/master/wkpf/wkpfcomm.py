@@ -61,12 +61,12 @@ class Communication:
       return filter(lambda info: info.id in node_ids, self.getAllNodeInfos())
 
     def getAllNodeInfos(self, force=False):
-#      if self.all_node_infos == [] or force:
+      if self.all_node_infos == [] or force:
         print '[wkpfcomm] getting all nodes from discovery'
         self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
-#      else:
- #       print '[wkpfcomm] getting all nodes from cache'
-        return copy.deepcopy(self.all_node_infos)
+      else:
+        print '[wkpfcomm] getting all nodes from cache'
+      return copy.deepcopy(self.all_node_infos)
 
     def getRoutingInformation(self):
       if self.routing == None:
