@@ -14,9 +14,9 @@
         <div class="span12">
             <div class=tabbable>
                 <ul class="nav nav-tabs">
-                    <li class="active"><a href="#fbp" data-toggle="tab">FBP editor</a></li>
+                    <li class="active"><a href="#fbp" data-toggle="tab">Application Editor</a></li>
                     <li class="disabled"  style="display:none"><a href="#policy" data-toggle="tab">User policy editor</a></li>
-                    <li><a href="#deploy" data-toggle="tab">Deployment</a></li>
+                    <li><a id="deployment-tab" href="#deploy" data-toggle="tab">Deployment</a></li>
                 </ul>
                 <div class=tab-content>
                     <div class="tab-pane active" id="fbp">
@@ -29,7 +29,7 @@
 
                         <div class=tabbable>
                             <ul class="nav nav-pills">
-                                <li><a id="nodes-btn" href="#nodes" data-toggle="tab">Discover</a></li>
+                                <li><a id="nodes-btn" href="#nodes" data-toggle="tab">Current Nodes</a></li>
                                 <li><a id="mapping_results-btn" href="#mapping_results" data-toggle="tab">Map</a></li>
                                 <!-- deployment.js will reveal deploy-btn depending on mapping result -->
                                 <li style="display: none;"><a id="deploy-btn" href="#deploy_results" data-toggle="tab">Deploy</a></li>

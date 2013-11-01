@@ -3,7 +3,8 @@
 import logging
 import json
 import ast
-import numpy
+#import numpy
+import math
 
 MAX_LIFE = 1
 class LandmarkNode:
@@ -90,16 +91,38 @@ class LocationTreeNode:
         #distance to self is always 0
         self.distanceModifier = {} #stores a list of distance between children, default 0, used for distance between sensors in different children.
         self.idSet = set([]) #all sensor ids contained in this Node and its children nodes
-
+        '''    obsolete requires numpy
+            def transformToLocal(self, vect):
+                A = numpy.matrix(self.transMatrix)
+                inverseA = A.I
+                return tuple((vect*inverseA).tolist()[0])
+        '''
+    def getLandmarkList(self):
+        lmlst = []
+        for landmk in self.landmarkLst:
+            lmlst.append([landmk.name,str(landmk.coord)])
+        return lmlst
+        
     def distanceModifierToString(self):
         tmpDict = {}
-        ret_str = ''
+        ret_str = '{'
         for child in self.children:
             tmpDict[child.id] = child.name
-        print self.distanceModifier
         for k in self.distanceModifier.keys():
-            print k
-            ret_str += '(' + str(tmpDict[k[0]]) +', '+ str(tmpDict[k[1]]) + '):' + str(self.distanceModifier[k]) +'\n'
+            ret_str += '"(' + str(tmpDict[k[0]]) +', '+ str(tmpDict[k[1]]) + ')":' + str(self.distanceModifier[k]) +', '
+        if len(ret_str)>1 and ret_str[-2] ==',':
+            ret_str = ret_str[:-2]
+        ret_str +='}'
+        return ret_str
+    
+    def distanceModifierIdToString(self):
+        tmpDict = {}
+        ret_str = '{'
+        for k in self.distanceModifier.keys():
+            ret_str += '"[' + str(k[0]) +', '+ str(k[1]) + ']":' + str(self.distanceModifier[k]) +', '
+        if len(ret_str)>1 and ret_str[-2] ==',':
+            ret_str = ret_str[:-2]
+        ret_str +='}'
         return ret_str
             
     #set local Global Size Direction from strings
@@ -123,12 +146,7 @@ class LocationTreeNode:
             for j in range(3):
                 newVec[i] = newVec[i]+ self.transMatrix[i][j]*vect[j]
         return tuple(newVec)
-    
-    def transformToLocal(self, vect):
-        A = numpy.matrix(self.transMatrix)
-        inverseA = A.I
-        return tuple((vect*inverseA).tolist()[0])
-        
+
     #originalPnt is a tuple of 3, e.g.(0,1,2)
     def setOriginalPnt (self, originalPoint):
         self.originalPnt = originalPoint
@@ -157,29 +175,46 @@ class LocationTreeNode:
            
     #obj could be sensor or landmark 
     def calcDistance(self, sensor, obj):
-        sensorGlobalCoord = (0,0,0)
-        objGlobalCoord = (0,0,0)
-        for i in range(3):
-            for j in range(3):
-                sensorGlobalCoord[i] += self.transMatrix[i][j]*sensor.coord[j]
-                objGlobalCoord[i] += self.transMatrix[i][j]*obj.coord[j]
-        modifier = (sensorGlobalCoord[0]-objGlobalCoord[0])**2+(sensorGlobalCoord[1]-objGlobalCoord[1])**2+(sensorGlobalCoord[2]-objGlobalCoord[2])**2
+#        sensorGlobalCoord = (0,0,0)
+#        objGlobalCoord = (0,0,0)
+#        for i in range(3):
+#            for j in range(3):
+#                sensorGlobalCoord[i] += self.transMatrix[i][j]*sensor.coord[j]
+#                objGlobalCoord[i] += self.transMatrix[i][j]*obj.coord[j]
+ #       modifier = (sensorGlobalCoord[0]-objGlobalCoord[0])**2+(sensorGlobalCoord[1]-objGlobalCoord[1])**2+(sensorGlobalCoord[2]-objGlobalCoord[2])**2
+        #if in same room, Euclid distance
         pos2 = sensor.locationTreeNode
         snrId = sensor.nodeInfo.id
         pos1 = obj.locationTreeNode
+        distance = 0
+        if pos1.id == pos2.id:
+            for i in range(3):
+                distance = distance + (sensor.coord[i] - obj.coord[i])**2
+            distance = math.sqrt(distance)
+            return distance
+        
+        #if in different rooms
+        distance1, distance2 = 0, 0
+        for i in range(3):
+            distance1 = distance1 + sensor.coord[i]**2
+            distance2 = distance2 + obj.coord[i]**2
+        distance1 = math.sqrt(distance1)
+        distance2 = math.sqrt(distance2)
+        distance = distance1 + distance2
+       
         curPos = pos1
         while snrId not in curPos.idSet:
             try:
-                modifier = modifier +self.distanceModifier[(pos1.id,curPos.id)]
-            except KeyError:
-                modifier = modifier
+                distance = distance +self.distanceModifier[(pos1.id,curPos.id)]
+            except KeyError:    #default barrier between different nodes of different layer is 1000
+                distance = distance+0
             pos1 = curPos
             curPos = curPos.parent
         try:
-            modifier = modifier +curPos.distanceModifier[(pos1.id,pos2.id)]
-        except KeyError:
-            modifier = modifier
-        return modifier
+            distance = distance +curPos.distanceModifier[(pos1.id,pos2.id)]
+        except KeyError:     #default barrier between different nodes of the same layer is 0
+            distance = distance+1000
+        return distance
         
     def addDistanceModifier(self, id1, id2, distance):
         found = 0
@@ -275,15 +310,19 @@ class LocationTreeNode:
         
     def addLandmark(self, landmarkNode):
         if landmarkNode not in self.landmarkLst:
-            if landmarkNode.name not in [landmark.name for landmark in self.landmarkLst]:
-                self.landmarkLst.append(landmarkNode)
-                landmarkNode.locationTreeNode = self
-                return True
+            for existingLandmarkNd in self.landmarkLst:
+                if existingLandmarkNd.name == landmarkNode.name:
+                    self.landmarkLst.remove(existingLandmarkNd)
+                    del existingLandmarkNd
+                    break
+            self.landmarkLst.append(landmarkNode)
+            landmarkNode.locationTreeNode = self
+            return True
         return False
     
     def delLandmark (self, landmarkId):
         for landmarkNd in self.landmarkLst:
-            if landmarkId == landmarkNd.id:
+            if landmarkId == landmarkNd.name:
                 self.landmarkLst.remove(landmarkNd)
                 del landmarkNd
                 return True
@@ -333,8 +372,8 @@ class LocationTreeNode:
                 tmpLst.append(sensor.nodeInfo.id)
         tmpLst = set(tmpLst)
         for child in locTreeNode.children:
-            tmpLst = tmpLst | child.getAllAliveNodeIds()
-        return tmpLst
+            tmpLst = tmpLst | set(child.getAllAliveNodeIds())
+        return list(tmpLst)
     
     def getAllNodeInfos(self):
         ret_val = []
@@ -463,18 +502,24 @@ class LocationTree:
     
     def delLandmark(self, landmarkId, locationStr):
       
-        logging.info("Node",landmarkId," not in location tree, deletion ignored")
+        logging.info("Node"+str(landmarkId)+" not in location tree, deletion ignored")
         locTreeNode = self.findLocation(self.root, locationStr)
-        locTreeNode.delLandmark(landmarkId)
+        #print locTreeNode, "in dellandmark"
+        rt_val = False
+        if locTreeNode:
+            print ("found loctreeNode for dellandmark", landmarkId)
+            rt_val = locTreeNode.delLandmark(landmarkId)
+            print ("dellandmark returns", rt_val)
+        return rt_val
         #delete unnecessary branches in the tree (del branches with no sensor node)
-        while locTreeNode.sensorCnt == 0 and len(locTreeNode.landmarkLst)==0:
-            pa = locTreeNode.parent
-            if pa != None:
-                pa.delChild(locTreeNode)
-            else: #root of the tree
-                break
-            del locTreeNode
-            locTreeNode = pa
+  #      while locTreeNode.sensorCnt == 0 and len(locTreeNode.landmarkLst)==0:
+  #          pa = locTreeNode.parent
+  #          if pa != None:
+  #              pa.delChild(locTreeNode)
+  #          else: #root of the tree
+  #              break
+  #          del locTreeNode
+  #          locTreeNode = pa
     
     #save tree structure and landmarks
     def saveTree(self, filename="../ComponentDefinitions/landmarks.txt"):

@@ -240,7 +240,7 @@ if __name__ == "__main__":
     locTree.addSensor(senNd2)
     locTree.addSensor(senNd3)
     locTree.printTree(locTree.root, 0)
-    query = u"universal/Boli_Building/#nearest(4,4,4)"
+    query = u"universal/Boli_Building/#closest(4,4,4)"
     locURLHandler = LocationURL(query, locTree)
     locURLHandler.parseURL()
 #   print locURLHandler.locationTreeNode.sensorLst

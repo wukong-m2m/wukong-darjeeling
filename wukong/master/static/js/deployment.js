@@ -1,6 +1,9 @@
 
 
 $(function() {
+    $('#deployment-tab').click(function () {
+        $('a#nodes-btn').click();
+    });
     $('a#nodes-btn').click(function(e) {
         console.log('refresh nodes');
         $(this).tab('show');

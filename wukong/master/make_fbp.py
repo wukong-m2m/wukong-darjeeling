@@ -64,11 +64,11 @@ def addEnd():
                 '\t\t'+'<input type=text id=fileloader_file></input>'+'\n'+
                 '\t\t'+'</div>'+'\n'+
                 '\t\t'+'<div id=propertyeditor>'+'\n'+
-                '\t\t'+'<div> Location </div>'+'\n'+
+                '\t\t'+'<div> Location Policy</div>'+'\n'+
                 '\t\t'+'<input type=text id=propertyeditor_location></input>'+'\n'+
-                '<div id=propertyeditor_loc>Hierarchical Location: <input type=text id=propertyeditor_location_hierarchy></input>'+
+                '<div id=propertyeditor_loc>Location: <input type=text id=propertyeditor_location_hierarchy size=35></input>'+
                 '<button class="chooseLocNode" for="propertyeditor_location_hierarchy">Choose Tree Node</button><br>'+
-                'Function: <input type=text id=propertyeditor_location_function></input></div>'+
+                'Function: <input type=text id=propertyeditor_location_function size=35></input></div>'+
                 '\t\t'+'</div>'+'\n'+
                 '\t\t'+'<div id="progress"><div id="compile_status"></div>'+'\n'+
                 '\t\t'+'<div id="normal"></div><div id="critical_error"></div>'+'\n'+

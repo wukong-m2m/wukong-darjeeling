@@ -1,13 +1,14 @@
 <script type="text/javascript" src="/static/js/testrtt.js"></script>
 
+
 <div id='wrapper'>
     <div class=row-fluid>
         <div class="span12">
             <div class=tabbable>
                 <ul class="nav nav-pills">
-                    <li class="active"><a href="#testrtt" data-toggle="tab">Adding/Removing Nodes</a></li>
-                    <li><a href="#nodes" data-toggle="tab">Node location</a></li>
-                    <li><a id="location_editor_tab" href="#location_editor" data-toggle="tab">Location Editor</a></li>
+                    <li class="active"><a href="#testrtt" data-toggle="tab">+/- ZWave Nodes</a></li>
+                    <li><a href="#nodes" data-toggle="tab">Node Location</a></li>
+                    <li><a id="location_editor_tab" href="#location_editor" data-toggle="tab">Distance Editor</a></li>
                 </ul>
                 <div class=tab-content>
                     <div class="tab-pane" id="nodes">
@@ -25,9 +26,10 @@
                         </pre>
                     </div>
                     <div class="tab-pane" id="location_editor">
-                      {% include "display_locationTree.html" %}
+                      
                     </div>
                 </div>
+                {% include "display_locationTree.html" %} 
             </div>
         </div>
     </div>

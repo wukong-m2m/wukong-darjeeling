@@ -4,7 +4,9 @@
         <tr>
             <th>#</th>
             <th>Location</th>
-            <th>Status</th>
+            <th align="center">WuClass</th>
+            <th align="center">WuObject</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -13,18 +15,25 @@
             <td id="nodeId">
                 {{ node_info.id }}
             </td>
-            <td>
+            <td style="width:550px">
                 {% if set_location %}
                 <div class="input-append">
-                    <input class="span2" type="text" value="{{ node_info.location }}"> <button type="button" class="btn set-location">Set Location</button>
+                    <input id="set-location-input" class="span2" type="text" style="width:300px" value="{{ node_info.location }}"> 
+                    <button type="button" class="btn chooseLocNodeFromAll" for="set-location-input">Find Location</button>
+                    <button type="button" class="btn set-location">Set Location</button>
                 </div>
                 {% else %}
                 {{ node_info.location }}
                 {% end %}
             </td>
+            <td style="width:100px" align="center">
+                {{ len(node_info.wuclasses()) }}
+            </td>
+            <td style="width:100px" align="center">
+                {{ len(node_info.wuobjects()) }} 
+            </td>
             <td>
-                {{ len(node_info.wuclasses()) }} WuClasses and {{ len(node_info.wuobjects()) }} WuObjects
-                <a role=button id=node{{ node_info.id }} data-toggle=modal href='#myModal' class='btn more'>Classes/Objects list</button>
+              <a role=button id=node{{ node_info.id }} data-toggle=modal href='#myModal' class='btn more'>Details</button>
             </td>
         </tr>
         {% end %}
@@ -88,12 +97,10 @@
 
         {% for node_info in node_infos %}
 
-        var more = "{% include 'node-more.html' %}";
-
         $('#node{{ node_info.id }}').click(function(e) {
             e.preventDefault();
             $('#myModal .modal-header').html('<h1>Node Info</h1>');
-            $('#myModal .modal-body').html(more);
+            $('#myModal .modal-body').html("{% include 'node-more.html' %}");
         });
 
         {% end %}

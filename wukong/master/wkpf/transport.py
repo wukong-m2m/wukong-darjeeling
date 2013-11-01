@@ -372,7 +372,8 @@ class MockAgent(TransportAgent):
                 new_message(destination, command, self.getNextSequenceNumberAsPrefixPayload() + payload), int(round(time.time() * 1000)) + 10000)
         tasks.put_nowait(defer)
         return defer
-
+    def getDeviceType(self,node):   #mock only wudevice, not sure what does the 3 fields do though, feel free to change it if you understand it
+        return (None, 0xff, None)
     def send(self, destination, command, payload, allowed_replies):
         result = AsyncResult()
 

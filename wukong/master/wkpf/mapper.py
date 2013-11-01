@@ -95,11 +95,11 @@ def firstCandidate(logger, changesets, routingTable, locTree):
         print component
         try:
             candidates, rating = locParser.parse(component.location)
-            print "candidates", candidates
+            print "candidates", candidates, rating
         except:
             #no mapping result
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            msg = 'Cannot find match for location query "'+ component.location+'" for wuclass "'+ component.type+ '", so we will invalid the query and pick all by default.' 
+            msg = 'Cannot find match for location query "'+ component.location+'" of wuclass "'+ component.type+ '", we will invalid the query and pick all by default.' 
             logger.errorMappingStatus(msg)
             set_wukong_status(msg)
             candidates = locTree.root.getAllAliveNodeIds()

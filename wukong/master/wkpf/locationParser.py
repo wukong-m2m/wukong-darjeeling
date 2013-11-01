@@ -10,6 +10,7 @@ from configuration import *
 from models import *
 from locationTree import *
 from pyparsing import *
+import math
 '''
 #BNF Rules:
 <Number> ::= [0-9] | [0-9] <Number>
@@ -36,15 +37,37 @@ class LocationParser:
         #print "argument in evalAnd:"+str(argument)
         if len(argument)==1:
             return self.evaluate(locTreeNode, argument[0])
-        return self.evaluate(locTreeNode, argument[0]).intersection(self.evaluate(locTreeNode, argument[1]))
+        nd_lst1,score_lst1 = self.evaluate(locTreeNode, argument[0])
+        nd_lst2, score_lst2 = self.evaluate(locTreeNode, argument[1])
+        if score_lst1[0] == score_lst1[-1]: #scores are the same, we assume score_lst1 to be express the order, so switch with score_lst2
+            nd_lst1, nd_lst2 = nd_lst2, nd_lst1
+            score_lst1, score_lst2 = score_lst2, score_lst1
+        new_nd_lst, new_score_lst = [],[]
+        count = 0;
+        for nd_id in nd_lst1:
+            if nd_id in nd_lst2:
+                new_nd_lst.append(nd_id)
+                new_score_lst.append(score_lst1[count])
+            count = count + 1
+        return new_nd_lst, new_score_lst
 
-    def evaluateOr(self, locTreeNode, argument):
+        #TODO: fix this. the correctness is to be doubted
+    def evaluateOr(self, locTreeNode, argument): 
         if len(argument)==1:
             return self.evaluate(locTreeNode, argument[0])
-        return self.evaluate(argument[0]).union(self.evaluate(locTreeNode, argument[1]))
+        nd_lst1,score_lst1 = self.evaluate(locTreeNode, argument[0])
+        nd_lst2, score_lst2 = self.evaluate(locTreeNode, argument[1])
+        return list(nd_lst1)+list(nd_lst2), list(score_lst1)+list(score_lst2)           #not correct, TODO: fix the logic here.....
 
     def evaluateNegate(self, locTreeNode, argument):
-        return locTreeNode.idSet - self.evaluate(locTreeNode, argument[0])
+        nd_lst,score_lst = self.evaluate(locTreeNode, argument[0])
+        if score_lst[0] == score_lst[-1]: #scores are the same,no closest, farthest like functions
+            ret_lst = list(locTreeNode.idSet-set(nd_lst))
+            return ret_lst, [0]*len(ret_lst)
+        #different scores, do reverse
+        nd_lst.reverse()
+        score_lst.reverse()
+        return nd_lst, score_lst
         
     def evaluateFunction(self, locTreeNode, argument):
         arglst = argument[1:]
@@ -61,28 +84,31 @@ class LocationParser:
        # print "argument: "+str(argument)
         locTreeNode = argument[0]
         if len(argument)<2:     #if no functions after URL, shortcut for URL#getAll()
-            return locTreeNode.getAllAliveNodeIds()
+            allNodes = locTreeNode.getAllAliveNodeIds()
+            return allNodes, [0]*len(allNodes)
         return self.evaluate(locTreeNode, argument[1])
         
     def evaluate(self, locTreeNode, argument):
-       # print 'name: '+argument.getName()+" "+str(argument)
+        #print 'name: '+argument.getName()+" "+str(argument)
         return self._funct_dict[argument.getName()](self, locTreeNode, argument)
         
     #different functions
     
-    def isID(locationTreeNode, id):
+    def use(locationTreeNode, id):
         id = int(id)
         if id in locationTreeNode.getAllNodes():
-            return set([id])
-        return set([])
+            return [id],[0]
+        return [], []
         
     def getAll(locationTreeNode):
-        return locationTreeNode.getAllAliveNodeIds()
+        allnodes = locationTreeNode.getAllAliveNodeIds()
+        return allnodes,[0]*len(allnodes)
         
-    def range(locationTreeNode, dist, x, y=None,z=None):
+    def range1(locationTreeNode, dist, x, y=None,z=None):
         ret_val = set([])
         dist = float(dist)
         obj = None
+        
         try:            #case one, coordinates are given
             x = float(x)
             y = float(y)
@@ -91,7 +117,9 @@ class LocationParser:
             landMarks = locationTreeNode.findLandmarksByName(x)
             # Assume we use the first landmark of the same name
             if landMarks ==None or len(landMarks)==0:   #no such landmark of the name
-                return ret_val
+                landMarks = locationTreeNode.getSensorById(x) #try WuNode ID
+                if landMarks ==None or len(landMarks)==0:
+                    return node_lst,dist_lst
             x = landMarks[0].coord[0]
             y = landMarks[0].coord[1]
             z = landMarks[0].coord[2]
@@ -99,31 +127,39 @@ class LocationParser:
         idLst = list(locationTreeNode.idSet)
         for sensorId in idLst:
             sensorNd = locationTreeNode.getSensorById(sensorId)
-            dist = (sensorNd.coord[0]-x)**2+(sensorNd.coord[1]-y)**2+(sensorNd.coord[2]-z)**2
+            distance = 0
             if obj!=None:
-                dist = self.calcDistance(sensorNd, obj)
-            if dist <= dist**2:
+                distance = locationTreeNode.calcDistance(sensorNd, obj)
+            else:
+                distance = math.sqrt((sensorNd.coord[0]-x)**2+(sensorNd.coord[1]-y)**2+(sensorNd.coord[2]-z)**2)
+            if distance <= dist:
                 #print sensorNd.coord[0],sensorNd.coord[1],sensorNd.coord[2]
                 ret_val.add(sensorNd.nodeInfo.id)
-        return ret_val,[1]*len(ret_val)
+        return ret_val,[0]*len(ret_val)
 
     #return the closest 'count' nodes from idset(or location treenode is idset=None) to x,y,z(or x)
     def closest(locationTreeNode, x, y=None,z=None, count=-1, idLst=None):
+        #print "inside closest"
         node_lst = []       #list of nodes to be returned
         dist_lst = []       #list of nodes' distances in the node_list
         obj = None
-        try:            #case one, coordinates are given
+        targetLocationNode = None
+        try:            #case one, coordinates are given. works only if locationTreeNode is direct father of sensors
             x = float(x)
             y = float(y)
             z = float(z)
+            targetLocationNode = locationTreeNode
         except ValueError:  #case 2, the name of a landmark is given, x would be the landmarkName
             landMarks = locationTreeNode.findLandmarksByName(x)
             # Assume we use the first landmark of the same name
             if landMarks ==None or len(landMarks)==0:   #no such landmark of the name
-                return node_lst
+                landMarks = locationTreeNode.getSensorById(x) #try WuNode ID
+                if landMarks ==None or len(landMarks)==0:
+                    return node_lst, dist_lst
             x = landMarks[0].coord[0]
             y = landMarks[0].coord[1]
             z = landMarks[0].coord[2]
+            targetLocationNode = landMarks[0].locationTreeNode
             obj = landMarks[0]
 
         if count ==-1:
@@ -136,10 +172,10 @@ class LocationParser:
             sensorNd = locationTreeNode.getSensorById(sensorId)
             if sensorNd == None:
                 continue
-            
-            dist = (sensorNd.coord[0]-x)**2+(sensorNd.coord[1]-y)**2+(sensorNd.coord[2]-z)**2
+            dist = math.sqrt((sensorNd.coord[0]-x)**2+(sensorNd.coord[1]-y)**2+(sensorNd.coord[2]-z)**2) #inside one room
             if obj!=None:
-                dist = self.calcDistance(sensorNd, obj)
+                if sensorNd.locationTreeNode.id != obj.locationTreeNode.id: 
+                    dist = locationTreeNode.calcDistance(sensorNd, obj) #inside different rooms
             if dist >= largest_dist:
                 if len(node_lst)<count:
                     #print sensorNd.coord[0],sensorNd.coord[1],sensorNd.coord[2]
@@ -159,8 +195,16 @@ class LocationParser:
         return node_lst, dist_lst
 
     def farthest(locationTreeNode, x, y=None,z=None, count=-1, idLst=None):
-        node_lst, dist_lst = LocationParser.__dict__["closest"](locationTreeNode, x, y,z, count, idLst)        
-        return node_lst.reverse(), dist_lst.reverse()
+        node_lst, dist_lst = LocationParser.__dict__["closest"](locationTreeNode, x, y,z, -1, idLst)
+        node_lst.reverse()
+        dist_lst.reverse()
+        #print "node_lst:", node_lst
+        if count == -1:
+            count = 65535
+        if len(node_lst) >count:
+            node_lst = node_lst[:count]
+            dist_lst = dist_lst[:count]
+        return node_lst, dist_lst
     
     #sort nodes according to their distance to center
     def findCenter(locationTreeNode, count=-1, idLst=None):
@@ -187,11 +231,11 @@ class LocationParser:
                     obj.coord[2]-obj.size[2]/2<=landMarkNode.coord[2]<=obj.coord[2]+obj.size[2]/2):
                     retLst.append(sensorId)
                     break
-        return set(retLst)
+        return retLst
     
-    #notusing
+    #not using
     def outside(locationTreeNode, landMarkName):
-        return locationTreeNode.idSet - inside(locationTreeNode, landMarkName)
+        return list(locationTreeNode.idSet - inside(locationTreeNode, landMarkName))
     
     #not using
     def tangent(locationTreeNode, landMarkName):
@@ -218,7 +262,7 @@ class LocationParser:
                 if checkPoint >=1:
                     retLst.append(sensorId)
                     break
-        return set(retLst)
+        return retLst
     
     #not using
     #dimension --0 for x, 1 for y, 2 for z, 
@@ -246,7 +290,7 @@ class LocationParser:
                 if checkPoint ==3:
                     retLst.append(sensorId)
                     break
-        return set(retLst)
+        return retLst
         
     #not using
     def back(locationTreeNode, landMarkName, dimension):
@@ -271,7 +315,7 @@ class LocationParser:
                 if checkPoint ==3:
                     retLst.append(sensorId)
                     break
-        return set(retLst)
+        return sretLst
     
     #not using
     def above(locationTreeNode, landMarkName):
@@ -284,12 +328,12 @@ class LocationParser:
         for ndInfo in locationTreeNode.getAllNodeInfos():
             if classId in [x.id for x in ndInfo.wuclasses]:
                 retLst.append(ndInfo.nodeId)
-        return retLst
+        return retLst, [0]*len(retLst)
                 
     _funct_dict = {
             u"specification":evaluateSpec,u"function":evaluateFunction,
             u"not":evaluateNegate, u"and":evaluateAnd, u"or": evaluateOr, 
-            u"range":range, u"isID":isID, u"getAll":getAll, u"hasClass":hasClass,
+            u"range":range1, u"use":use, u"getAll":getAll, u"hasClass":hasClass,
             u"inside":inside, u"outside":outside, u"tangent":tangent, 
             u"above":above, u"below":below,u"front":front, u"back":back,
             u"closest": closest, u"farthest":farthest, u"findCenter":findCenter}
@@ -335,7 +379,7 @@ class LocationParser:
         specification = (Group(path + POND + opOr *(0,1))).setResultsName(u"specification") ^ Group(path).setResultsName(u"specification")
         location_def = path + AT +coordinate   #not used, because this file is for specificaiton parser
         try:
-            print "location string to evaluate:" + str
+            print "location string to evaluate is:" + str
             if str == "" or str == "/":
                 str = "/"+ LOCATION_ROOT
             if len(str)>1 and str[0]!='/':
@@ -343,13 +387,15 @@ class LocationParser:
             if str.index(LOCATION_ROOT) != 1:
                 str = '/' + LOCATION_ROOT + str
             result =  specification.parseString(str, True)
-            print "parse result: ", result
-            return self.evaluate(None, result[0])
+            ret =  self.evaluate(None, result[0])
+            print "location parser returns",ret
+            return ret
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            print "location string" + str + "doesn't match anything"
+            print "location string '" + str + "' doesn't match anything"
             print traceback.print_exception(exc_type, exc_value, exc_traceback,
                                           limit=2, file=sys.stdout)
+            log.info (  traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
             raise
 
 if __name__ == "__main__":
@@ -373,7 +419,7 @@ if __name__ == "__main__":
     locTree.printTree(locTree.root, 0)
     query = u"/universal/Boli_Building#above(window)"
     query2=u"/universal/Boli_Building#findCenter()"
-    func = u"nearest(4,4,4)"
+    func = u"closest(4,4,4)"
     locParser = LocationParser( locTree)
     result = locParser.parse(query2)
     print "parser result", result

@@ -56,6 +56,7 @@ $(function() {
         e.preventDefault();
         $(this).tab('show');
         $.post('/loc_tree', function(data) {
+            $('#location_editor').empty();
             display_tree('#location_editor',data);
             $('#location_editor').append(data.node);
             document.body.dataset.installer_mode = "true";               
