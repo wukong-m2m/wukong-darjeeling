@@ -32,6 +32,7 @@ function WuIDE(user)
 {
     var self = this;
 	this.is_user = user;
+	this.updateTimeout = 5;
 	if (user) {
 		$.get('/componentxmluser?appid='+appid,function(r) {
 			self.xml = $.parseXML(r);
@@ -196,9 +197,12 @@ WuIDE.prototype.refreshBuild = function() {
 	$.get('/build', {cmd:'poll'}, function(data) {
 		if (data != '') {
 			if (self.data != data) {
+				self.updateTimeout=5;
 				$('#log').val(data).animate({scrollTop:$("#log")[0].scrollHeight - $("#log").height()});
 			} else {
-				self.buildDone = true;
+				if (self.updateTimeout <= 0)
+					self.buildDone = true;
+				self.updateTimeout--;
 			}
 			self.data = data;
 		}
@@ -220,9 +224,12 @@ WuIDE.prototype.refreshUpload = function() {
 	$.get('/upload', {cmd:'poll'}, function(data) {
 		if (data != '') {
 			if (self.data != data) {
+				self.updateTimeout=5;
 				$('#log').val(data).animate({scrollTop:$("#log")[0].scrollHeight - $("#log").height()});
 			} else {
-				self.uploadDone = true;
+				if (self.updateTimeout <= 0)
+					self.uploadDone = true;
+				self.updateTimeout--;
 			}
 			self.data = data;
 		}
