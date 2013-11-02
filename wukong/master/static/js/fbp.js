@@ -675,8 +675,15 @@ function FBP_importBlock()
 	
 	$('#content').append('<div id=diaimport></div>');
 	var pages = '<select id="diaimport_page">';
+	var init=false;
 	$.each(g_pages,function(title,val) {
-		pages = pages + '<option val="'+title+'">'+title+'</option>';
+		if (title == g_current_page) return;
+		if (init == false) {
+			pages = pages + '<option selected val="'+title+'">'+title+'</option>';
+			init = true;
+		} else {
+			pages = pages + '<option val="'+title+'">'+title+'</option>';
+		}
 	});
 	pages = pages + '</select>';
 	$('#diaimport').append('<div>Import component from other page</div>'+pages+'<select id="diaimport_comp"></select>');
@@ -686,9 +693,10 @@ function FBP_importBlock()
 		list.empty();
 		var nodes = g_pages[sel].nodes;
 		for(i=0;i<nodes.length;i++) {
-			list.append('<option val="'+nodes[i].id+'">'+nodes[i].id+'</option>');
+			list.append('<option val="'+nodes[i].id+'">'+nodes[i].id+','+nodes[i].type+','+nodes[i].location+'</option>');
 		}
 	});
+	$('#diaimport_page').trigger("change");
 
 	$('#diaimport').dialog({
 		autoOpen:true, 
@@ -697,7 +705,7 @@ function FBP_importBlock()
 		buttons: {
 			'Import': function() {
 				var page = $('#diaimport_page option:selected').val();
-				var comp = $('#diaimport_comp option:selected').val();
+				var comp = $('#diaimport_comp option:selected').val().split(',')[0];
 				var nodes = g_pages[page].nodes;
 				for(i=0;i<nodes.length;i++) {
 					if (nodes[i].id == comp) break;
