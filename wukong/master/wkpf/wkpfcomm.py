@@ -111,8 +111,8 @@ class Communication:
         wuclassdef = WuClassDef.find(id=4)    # Light_Actuator
 
         if not wuclassdef:
-          print '[wkpfcomm] Unknown wuclass id', wuclass_id
-          return none
+          print '[wkpfcomm] Unknown device type', generic
+          return None
 
         wuobject = WuObject.find(node_identity=node.identity,
             wuclassdef_identity=wuclassdef.identity)
