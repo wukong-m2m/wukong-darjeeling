@@ -672,7 +672,7 @@ function Action(name)
 
 function FBP_importBlock()
 {
-	
+	$('#diaimport').remove();
 	$('#content').append('<div id=diaimport></div>');
 	var pages = '<select id="diaimport_page">';
 	var init=false;
@@ -716,6 +716,7 @@ function FBP_importBlock()
 				var meta = g_pages[page].nodes[i];
 				if (meta == null) {
 					alert('internal error');
+					return;
 				}
 				var block = Block.restore(meta);
 				block.attach($('#content'));
