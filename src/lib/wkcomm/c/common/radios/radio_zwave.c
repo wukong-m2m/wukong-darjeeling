@@ -96,6 +96,7 @@ void radio_zwave_learn();
 void radio_zwave_reset();
 
 extern void radio_zwave_platform_dependent_poll();
+uint8_t zwave_led=0;
 void radio_zwave_poll(void) {
     if(zwave_mode==0 || zwave_learn_on)//normal mode or is learning
     {
@@ -119,6 +120,7 @@ void radio_zwave_poll(void) {
     if(zwave_mode==1)//learning mode
     {
 	    DEBUG_LOG(DBG_ZWAVETRACE,"start zwave learn !!!!!!!!!");
+		PORTK &=~_BV(1);
 	    radio_zwave_learn();//finish will set zwave mode=0
 	    zwave_mode=0;
 		
@@ -345,6 +347,7 @@ void Zwave_receive(int processmessages) {
                     zwave_learn_on=0;
                     zwave_learn_block=0;
                     zwave_mode=0;
+					PORTK |=_BV(1);
                 }
             }
         }
@@ -382,14 +385,14 @@ void radio_zwave_set_node_info(uint8_t devmask,uint8_t generic, uint8_t specific
     b[6] = specific;
     b[7] = 0;
     b[8] = seq;
-    b[9] = 0xff^7^0^0x3^devmask^generic^specific^0^seq;
+    b[9] = 0xff^8^0^0x3^devmask^generic^specific^0^seq;
     seq++;
     for(k=0;k<10;k++)
     {
         uart_write_byte(ZWAVE_UART, b[k]);
     }
     zwave_mode=0;
-    DEBUG_LOG(true,"set node info!!!!!!!!!!");
+    DEBUG_LOG(true,"set node info!!!!!!!!!! %d %d %d",devmask,generic,specific);
 
 }
 
