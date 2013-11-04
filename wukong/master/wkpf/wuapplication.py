@@ -165,8 +165,18 @@ class WuApplication:
   def parseApplication(self):
       componentInstanceMap = {}
       application_hashed_name = self.applicationDom.getElementsByTagName('application')[0].getAttribute('name')
+
+      # Remove the duplicated components between pages
+      components = self.applicationDom.getElementsByTagName('component')
+      temp = []
+      ids = {}
+      for c in components:
+        ID = c.getAttribute('instanceId')
+        if ids.has_key(ID) == False:
+          temp.append(c)
+          ids[ID] = 1
       # TODO: parse application XML to generate WuClasses, WuObjects and WuLinks
-      for index, componentTag in enumerate(self.applicationDom.getElementsByTagName('component')):
+      for index, componentTag in enumerate(temp):
           # make sure application component is found in wuClassDef component list
           try:
               assert componentTag.getAttribute('type').lower() in [x.name.lower() for x in WuClassDef.all()]
