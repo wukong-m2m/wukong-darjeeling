@@ -487,9 +487,21 @@ function FBP_updatePage()
 {
 	var nodes = [];
 	var lines=[];
+	var i,k;
+
 	for(i=0;i<g_nodes.length;i++) {
 		meta={};
 		g_nodes[i].serialize(meta);
+		// Update copied of the same component in all pages
+		for(p in g_pages) {
+			if (p == g_current_page) continue;
+			var gnodes = g_pages[p].nodes;
+			for(k=0;k < gnodes.length;k++) {
+				if (gnodes[k].id == meta.id) {
+					Block.copyData(gnodes[k], meta);
+				}
+			}
+		}
 		nodes.push(meta);
 	}
 	for(i=0;i<g_lines.length;i++) {
