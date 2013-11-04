@@ -287,26 +287,30 @@ WuIDE.prototype.load = function() {
 		self.load();
 	});
 	$('#saveall').unbind().click(function() {
-		var xml = self.toXML();
-		data = {xml:xml};
-		if (ide.is_user) {
-			$.post('/componentxmluser?appid='+appid, data);
-		} else {
-			$.post('/componentxml', data);
-			var xml = '<WuKong>\n';
-			$.each(self.classes,function(i,val) {
-				if (val.enabled) {
-					xml = xml + '    <WuClass name="'+val.name+'"';
-					if (val.appCanCreateInstances)
-						xml = xml + ' appCanCreateInstances="'+val.appCanCreateInstances+'"';
-					if (val.createInstancesAtStartup)
-						xml = xml + ' createInstancesAtStartup="'+val.createInstancesAtStartup+'"';
-					xml = xml +' />\n';
-				}
-			});
-			xml = xml + '</WuKong>';
-			$.post('/enablexml', {xml:xml});
-		}
+		$('#class_editor_done').trigger('click');
+		$('#typeeditdone').trigger('click');
+		setTimeout(function() {
+			var xml = self.toXML();
+			data = {xml:xml};
+			if (ide.is_user) {
+				$.post('/componentxmluser?appid='+appid, data);
+			} else {
+				$.post('/componentxml', data);
+				var xml = '<WuKong>\n';
+				$.each(self.classes,function(i,val) {
+					if (val.enabled) {
+						xml = xml + '    <WuClass name="'+val.name+'"';
+						if (val.appCanCreateInstances)
+							xml = xml + ' appCanCreateInstances="'+val.appCanCreateInstances+'"';
+						if (val.createInstancesAtStartup)
+							xml = xml + ' createInstancesAtStartup="'+val.createInstancesAtStartup+'"';
+						xml = xml +' />\n';
+					}
+				});
+				xml = xml + '</WuKong>';
+				$.post('/enablexml', {xml:xml});
+			}
+		},500);
 	});
 		
 	
