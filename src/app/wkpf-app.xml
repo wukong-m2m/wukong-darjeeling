@@ -10,6 +10,9 @@
 	</target>
 
 	<target name="generate-virtual-baseclasses">
+		<delete>
+			<fileset dir="../../../wukong/javax/wukong/virtualwuclasses" includes="GENERATED*"/>
+		</delete>
 		<exec executable="../../../wukong/master/wkpf/codegen.py">
 			<!-- we only need to generate the Java part here, C should be generated from lib/wkpf/build.xml -->
 			<arg line="--input_xml ../../../wukong/ComponentDefinitions/WuKongStandardLibrary.xml --java_package javax.wukong.virtualwuclasses --java_constants_dir ../../../wukong/javax/wukong/virtualwuclasses --java_virtualclasses_dir ../../../wukong/javax/wukong/virtualwuclasses"/>
@@ -20,6 +23,9 @@
 		<if>
 			<available file="${java-src}/${wkpf-app-specific-componentxml}"/>
 			<then>
+				<delete>
+					<fileset dir="../../../wukong/javax/wukong/virtualwuclasses" includes="GENERATED*"/>
+				</delete>
 				<exec executable="../../../wukong/master/wkpf/codegen.py">
 					<arg line="--input_xml ${java-src}/${wkpf-app-specific-componentxml} --java_virtualclasses_dir ${java-src}"/>
 				</exec>

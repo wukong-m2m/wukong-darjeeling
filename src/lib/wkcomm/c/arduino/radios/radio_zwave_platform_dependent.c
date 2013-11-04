@@ -20,10 +20,37 @@ void radio_zwave_platform_dependent_init(void) {
 
     DDRD &= ~_BV(0); 
     PORTD |= _BV(0);	//pull high
+	DDRG &= ~_BV(5);
+	PORTG |= _BV(5);
 
 }
 
+static uint32_t zwave_pg5_press=0;
+static uint32_t zwave_led_time=0;
 void radio_zwave_platform_dependent_poll(void) {
+	if (zwave_pg5_press==0) {
+		if ((PING&_BV(5))==0) {
+			zwave_pg5_press = dj_timer_getTimeMillis();
+			zwave_time_btn_push=dj_timer_getTimeMillis();
+			zwave_btn_is_push = true;
+		}
+	} else {
+		if ((PING&_BV(5))) {
+			if (dj_timer_getTimeMillis() > zwave_pg5_press + 100) {
+				zwave_btn_is_release = 1;
+				zwave_time_btn_release=dj_timer_getTimeMillis();
+				zwave_pg5_press = 0;
+				zwave_btn_is_push=false;
+				zwave_btn_is_release=true;
+				zwave_led_time = zwave_time_btn_release;
+				PORTK &= ~_BV(0);
+			}
+		}
+	}
+	if ( zwave_led_time > 0 && dj_timer_getTimeMillis() > zwave_led_time) {
+		PORTK |= _BV(0);
+		zwave_led_time = 0;
+	}
     if( (EIMSK&0x01) ==0 )//INT0 is disable
     {
 	    if( (dj_timer_getTimeMillis()-zwave_time_btn_interrupt)>100 )//wait 100ms for button debounce, enable interrupt again
@@ -37,6 +64,7 @@ void radio_zwave_platform_dependent_poll(void) {
 ISR(INT0_vect)
 {
     EIMSK &=~_BV(0);//disable INT0
+	if (zwave_pg5_press) return;
     //DEBUG_LOG(DBG_ZWAVETRACE,"is_push %d,PIND=%d",zwave_btn_is_push,PIND);
     if(zwave_btn_is_push==false)
     {
@@ -65,6 +93,8 @@ ISR(INT0_vect)
 			zwave_time_btn_release=dj_timer_getTimeMillis();
 			zwave_btn_is_push=false;
 			zwave_btn_is_release=true;
+			PORTK |= _BV(0);
+			zwave_led_time = zwave_time_btn_release + 500;
 		}
     }
 }

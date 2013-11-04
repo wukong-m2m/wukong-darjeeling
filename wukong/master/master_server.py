@@ -21,6 +21,12 @@ import datetime
 import glob
 import copy
 
+try:
+  import pyzwave
+except:
+  print "Please install the pyzwave module in the wukong/tools/python/pyzwave by using"
+  print "cd ../tools/python/pyzwave; sudo python setup.py install"
+  sys.exit(-1)
 import wkpf.wusignal
 from wkpf.wuapplication import WuApplication
 from wkpf.parser import *
@@ -31,6 +37,14 @@ import wkpf.globals
 from configuration import *
 
 import tornado.options
+
+try:
+   m = pyzwave.getDeviceType
+except:
+  print "Please reinstall the pyzwave module in the wukong/tools/python/pyzwave by using"
+  print "cd ../tools/python/pyzwave; sudo python setup.py install"
+  sys.exit(-1)
+
 tornado.options.parse_command_line()
 #tornado.options.enable_pretty_logging()
 
