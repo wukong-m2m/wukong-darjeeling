@@ -14,6 +14,9 @@
 	<import file="../lib.xml"/>
 
 	<target name="lib-specific-pre">
+		<delete>
+			<fileset dir="../../../src/lib/wkpf/c/common/native_wuclasses" includes="GENERATED*"/>
+		</delete>
 		<exec executable="../../../wukong/master/wkpf/codegen.py">
 			<!-- we only need to generate the C part here, Java should be generated from wkpf-app.xml -->
 			<arg line="--input_xml ../../../wukong/ComponentDefinitions/WuKongStandardLibrary.xml --c_dir ../../../src/lib/wkpf/c/common/native_wuclasses --enabled_xml ${configtargetpath}/${enabled_wuclasses}"/>
