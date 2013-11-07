@@ -8,7 +8,6 @@
 ZWAVE_GATEWAY_IP=192.168.2.1
 
 
-
 ###[master]
 #nanovmtool executable
 ROOT = ../../
@@ -21,21 +20,11 @@ LOCATION_ROOT = WuKong
 
 SIMULATION = false
 
-###[makefile]
-#type of device
-DEVICE = atmega2560
-
-#WuClass to be written into WuDevice
-DEFAULT_CLASS = AdcDemo
-#DEFAULT_CLASS = TestWKPF
-#DEFAULT_CLASS = DefaultWKPF
-#DEFAULT_CLASS = HAScenario1
+DEPLOY_PLATFORM = avr_mega2560
 
 # Default do discovery, unless overridden by a commandline parameter, in which case this gets ignored
-DISCOVERY_FLAGS=-D
+#DISCOVERY_FLAGS=-D
 
 # port number for Wukong Master
 MASTER_PORT = 5000
 
-# port number for WuDevice
-PORT = /dev/tty.usbmodemfa1311
