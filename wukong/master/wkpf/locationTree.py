@@ -270,7 +270,13 @@ class LocationTreeNode:
             logging.error("error! distance modifier does not exist for " +str(ids)+" in "+ self.id)
             return False
         return True
-            
+    
+    def findChildByName(self, name):
+        for child in self.children:
+            if child.name == name:
+                return child
+        return None
+        
     def addChild(self, name):
         tmp = LocationTreeNode (name, self)
         self.children.append(tmp)
