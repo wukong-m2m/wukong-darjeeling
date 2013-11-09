@@ -8,9 +8,10 @@ config = ConfigObj(CONFIG_PATH)
 ZWAVE_GATEWAY_IP = config.get('ZWAVE_GATEWAY_IP', '')
 MASTER_PORT = int(config.get('MASTER_PORT', 80))
 
-LOCATION_ROOT = config.get('LOCATION_ROOT', 'universal')
+LOCATION_ROOT = config.get('LOCATION_ROOT', 'WuKong')
 
-DEPLOY_PLATFORMS = ['avr_mega2560']
+DEPLOY_PLATFORMS = []
+DEPLOY_PLATFORMS.append(config.get('DEPLOY_PLATFORM', 'avr_mega2560'))
 
 SIMULATION = config.get('SIMULATION', 'false')
 

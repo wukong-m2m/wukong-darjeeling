@@ -825,8 +825,34 @@ class sensor_info(tornado.web.RequestHandler):
             self.write({'status':0,'message':'find landmark id '+str(lm_id), 'location':landmk.location,'size':landmk.size, 'direction':landmk.direction})
         else:
             self.write({'status':1, 'message':'failed in finding '+sensor_id+" in node"+ str(node_id)})
-    
-    
+
+class edit_loc_tree(tornado.web.RequestHandler):
+    def post(self):
+        operation = self.get_argument("operation")
+        parent_id = self.get_argument("parent_id")
+        child_name = self.get_argument("child_name")
+        size = self.get_argument("size")
+        paNode = wkpf.globals.location_tree.findLocationById(int(parent_id))
+        if paNode != None:
+            if operation == "0": #add a new location
+                paNode.addChild(child_name)
+                print ("add child", child_name)
+                self.write({'status':0,'message':'successfully add child '+child_name })
+                return
+            elif operation == "1": #delete a location
+                childNode = paNode.findChildByName(child_name)
+                if childNode != None:
+                    paNode.delChild(childNode)
+                    self.write({'status':0,'message':'successfully delete child '+child_name })
+                    return
+                else:
+                    self.write({'status':1,'message': child_name +'not found' })
+                    return
+        else:
+            self.write({'status':1,'message':'parentNode does not exist in location tree :('})
+            return
+                
+
 class tree_modifier(tornado.web.RequestHandler):
   def put(self, mode):
     start_id = self.get_argument("start")
@@ -839,7 +865,7 @@ class tree_modifier(tornado.web.RequestHandler):
                 self.write({'status':0,'message':'adding distance modifier between '+str(start_id) +'and'+str(end_id)+'to node'+str(int(start_id)//100)})
                 return
             else:
-                self.write({'status':1,'message':'adding faild due to not able to find common direct father of the two nodes'})
+                self.write({'status':1,'message':'adding failed due to not able to find common direct father of the two nodes'})
                 return
         elif int(mode) == 1:        #deleting modifier between siblings
             if paNode.delDistanceModifier(int(start_id), int(end_id), int(distance)):
@@ -981,6 +1007,7 @@ wukong = tornado.web.Application([
   (r"/applications/([a-fA-F\d]{32})/fbp/save", save_fbp),
   (r"/applications/([a-fA-F\d]{32})/fbp/load", load_fbp),
   (r"/loc_tree/nodes/([0-9]*)", loc_tree),
+  (r"/loc_tree/edit", edit_loc_tree),
   (r"/loc_tree/nodes/([0-9]*)/(\w+)", sensor_info),
   (r"/loc_tree", loc_tree),
   (r"/loc_tree/modifier/([0-9]*)", tree_modifier),

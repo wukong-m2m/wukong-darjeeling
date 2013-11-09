@@ -46,6 +46,10 @@ $(document).ready(function() {
     $('#toolbar_save').click(function() {
         FBP_save();
     });
+    toolbar.append('<td valign="top"><button id=toolbar_deletepage>Delete Page</button></td>');
+    $('#toolbar_deletepage').click(function() {
+        FBP_deletePage();
+    });
 	toolbar.append('<td valign=top><select id=pagelist></select></td>');
     toolbar.append('</tr></table>');
 
@@ -90,6 +94,25 @@ $(document).ready(function() {
     $('#progress').dialog({autoOpen:false, modal:true, width:'50%', height:'300'});
 });
 
+function FBP_deletePage()
+{
+	var name='';
+	var i=0;
+
+	$.each(g_pages,function(k,v) {
+		i = i + 1;
+		if (name == '' && k != g_current_page)
+			name = k;
+	});
+	if (i > 1) {
+		g_disable_page_update = true;
+		delete g_pages[g_current_page];
+		g_current_page = name;
+		FBP_initPage();
+		FBP_renderPage(g_pages[g_current_page]);
+		g_disable_page_update = false;
+	}
+}
 
 function FBP_editComponent()
 {
@@ -432,7 +455,10 @@ function FBP_initPage()
 	$('#pagelist').empty();
 	$('#pagelist').append('<option value="newpage">New Page...</option>');
 	$.each(g_pages, function(title,page) {
-		$('#pagelist').append('<option value="'+title+'">'+title+'</option>');
+		if (title == g_current_page) 
+			$('#pagelist').append('<option selected value="'+title+'">'+title+'</option>');
+		else
+			$('#pagelist').append('<option value="'+title+'">'+title+'</option>');
 	});
 	$('#pagelist').change(function() {
 		if (g_disable_page_update) {
@@ -487,9 +513,21 @@ function FBP_updatePage()
 {
 	var nodes = [];
 	var lines=[];
+	var i,k;
+
 	for(i=0;i<g_nodes.length;i++) {
 		meta={};
 		g_nodes[i].serialize(meta);
+		// Update copied of the same component in all pages
+		for(p in g_pages) {
+			if (p == g_current_page) continue;
+			var gnodes = g_pages[p].nodes;
+			for(k=0;k < gnodes.length;k++) {
+				if (gnodes[k].id == meta.id) {
+					Block.copyData(gnodes[k], meta);
+				}
+			}
+		}
 		nodes.push(meta);
 	}
 	for(i=0;i<g_lines.length;i++) {
@@ -672,7 +710,7 @@ function Action(name)
 
 function FBP_importBlock()
 {
-	
+	$('#diaimport').remove();
 	$('#content').append('<div id=diaimport></div>');
 	var pages = '<select id="diaimport_page">';
 	var init=false;
@@ -716,6 +754,7 @@ function FBP_importBlock()
 				var meta = g_pages[page].nodes[i];
 				if (meta == null) {
 					alert('internal error');
+					return;
 				}
 				var block = Block.restore(meta);
 				block.attach($('#content'));

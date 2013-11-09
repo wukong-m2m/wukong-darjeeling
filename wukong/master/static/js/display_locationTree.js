@@ -17,7 +17,7 @@ $("#addLandmark").click(function () {
 	    		display_tree("#content",data);
 	    		$('#content').append(data.node);
 			});
-            if (data.status === 1) {
+            if (data.status === '1') {
                 alert(data.mesg);
             }
         }
@@ -41,7 +41,7 @@ $("#changeLandmarkBtn").click(function () {
 	    		display_tree("#content",data);
 	    		$('#content').append(data.node);
 			});
-            if (data.status === 1) {
+            if (data.status === '1') {
                 alert(data.mesg);
             }
         }
@@ -60,7 +60,7 @@ $("#delLandmarkBtn").click(function(){
             //data = JSON.parse(data);
             //display update
             
-            if (data.status == 1) {
+            if (data.status == '1') {
                 alert(data.msg);
             } else{
                 $.post('/loc_tree', function(data) {
@@ -136,6 +136,48 @@ $("#changeModifierBtn").click(function(){
             }
         });
 });
+
+$("#addLocationBtn").click(function(){
+    //add node, operation == 0
+    var child_name = $('#child_loc_name').val(),
+        parent_id = document.body.dataset.locTreeNodeId;
+        $.ajax({
+            url:'/loc_tree/edit',
+            data: {operation: 0, parent_id: parent_id, child_name:child_name, size:0},
+            type:'POST',
+            success: function(data) {
+                if (data.status == '1') {
+                    alert(data.msg);
+                } else{
+                    $.post('/loc_tree', function(data) {
+          	    		display_tree("#location_editor", data);
+                      	$('#location_editor').append(data.node);
+          			});
+                }
+            }
+        });
+});
+
+$("#delLocationBtn").click(function(){
+        var child_name = $('#child_loc_name').val(),
+          parent_id = document.body.dataset.locTreeNodeId;
+        $.ajax({
+              url:'/loc_tree/edit',
+              data: {operation: 1, parent_id: parent_id, child_name:child_name, size:0},
+              type:'POST',
+              success: function(data) {
+                  if (data.status == '1') {
+                      alert(data.msg);
+                  } else{
+                      $.post('/loc_tree', function(data) {
+          	    		display_tree("#location_editor", data);
+                      	$('#location_editor').append(data.node);
+          			});
+                  }
+              }
+        });
+});
+
 $('.sensor_node_btn').click(function(){
    //dialog_content not using now
     dialog_content = '<button id="openLandmarkEditor">Add/Del Landmark</button>'+
@@ -263,6 +305,7 @@ $('.locTreeNode').dblclick(function locTreeNodeHandler(){
                        'Existing Distance Barriers: '+ data.distanceModifierByName + '<br>';
             footer_content = '<button id="addModifier">Add Distance</button>  &nbsp;' +
                              '<button id="showEditDistanceDialog">Edit Distance</button>  &nbsp;' +
+                             '<button id="showEditLocationDialog">Edit Child Location</button>  &nbsp;' +
                              '<button class="dialogCloseButton" data-dismiss="modal" aria-hidden="true">Confirm</button>'
             
             $('#dispTreeNodeInfoFooter').html(footer_content);
@@ -296,6 +339,11 @@ $('.locTreeNode').dblclick(function locTreeNodeHandler(){
                 });
                 $("#editDistanceDialog").draggable();
                 $("#editDistanceDialog").show();
+                
+            });
+            $('#showEditLocationDialog').click( function () {               
+                $("#edit_child_location_dialog").draggable();
+                $("#edit_child_location_dialog").show();
                 
             });
             $('.dialogCloseButton').click(function(){

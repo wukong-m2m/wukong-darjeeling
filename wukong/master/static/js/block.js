@@ -54,6 +54,16 @@ Block.factory=function(type) {
 		return new Block();
 }
 
+Block.copyData=function(dest,src) {
+	dest.location = src.location;
+	dest.group_size = src.group_size;
+	dest.reaction_time = src.reaction_time;
+	dest.signals = src.signals;
+	dest.monitor = src.monitor;
+	dest.sigProper = src.signals;
+	dest.monitorProper = src.monitor;
+}
+
 Block.prototype.serialize=function(obj) {
 	obj.id = this.id;
 	var pos = this.getPosition();
@@ -196,7 +206,10 @@ Block.prototype.attach=function(parent) {
 	var self = this;
 	this.div.click(function() {
 		if (Block.current) {
-			Block.current.div.resizable("destroy");
+			try {
+				Block.current.div.resizable("destroy");
+			} catch(e) {
+			}
 			Block.current.setFocus(false);
 		}
 		self.div.resizable();
