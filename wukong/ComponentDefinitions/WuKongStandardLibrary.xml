@@ -144,4 +144,10 @@
         <property name="input" access="writeonly" datatype="boolean"  />
         <property name="ouput" access="readonly" datatype="boolean"  />
     </WuClass>
+    <WuClass name="Slider" id="15" virtual="false" type="hard">
+        <property name="low_value" access="readwrite" datatype="short" default="0"/>
+        <property name="high_value" access="readwrite" datatype="short" default="255"/>
+        <property name="output" access="readwrite" datatype="short" default="255"/>
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
+    </WuClass>
 </WuKong>
