@@ -18,8 +18,13 @@ void wuclass_pir_sensor_update(wuobject_t *wuobject) {
   ADCSRA |= _BV(ADSC);                  // Start conversion
   while(!(ADCSRA & _BV(ADIF)));         // wait for conversion complete
   ADCSRA |= _BV(ADIF);                  // clear ADCIF
-  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(PirSensor): Sensed pir value: %d\n", ADCH);
-  wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PIR_SENSOR_CURRENT_VALUE, ADCH);
+  bool showup = false;
+  if(ADCH == 255) {
+    showup = true;
+    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(PirSensor): Sensed pir value: true\n");
+  }else
+    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(PirSensor): Sensed pir value: false\n");
+  wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PIR_SENSOR_CURRENT_VALUE, showup);
 }
 
 #endif
