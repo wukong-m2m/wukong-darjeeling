@@ -150,7 +150,7 @@
         <property name="output" access="readwrite" datatype="short" default="0"/>
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
     </WuClass>
-    <WuClass name="Magnetic_Sensor" id="16" virtual="false" type="hard">
+    <WuClass name="Magnetic_Sensor" id="17" virtual="false" type="hard">
         <property name="output" access="readonly" datatype="boolean" default="false"/>
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
     </WuClass>
