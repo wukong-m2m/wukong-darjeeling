@@ -24,7 +24,7 @@ void wuclass_pir_sensor_update(wuobject_t *wuobject) {
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(PirSensor): Sensed pir value: true\n");
   }else
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(PirSensor): Sensed pir value: false\n");
-  wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PIR_SENSOR_CURRENT_VALUE, showup);
+  wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_PIR_SENSOR_CURRENT_VALUE, showup);
 }
 
 #endif
