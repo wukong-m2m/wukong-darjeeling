@@ -154,4 +154,7 @@
         <property name="output" access="readonly" datatype="boolean" default="false"/>
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
     </WuClass>
+    <WuClass name="Fan" id="18" virtual="false" type="hard">
+        <property name="on_off" access="readwrite" datatype="boolean" default="false"/>
+    </WuClass>
 </WuKong>
