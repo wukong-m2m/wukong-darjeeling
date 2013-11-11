@@ -20,6 +20,7 @@ import shutil, errno
 import datetime
 import glob
 import copy
+import fcntl, termios, struct
 
 try:
   import pyzwave
@@ -956,8 +957,13 @@ class Upload(tornado.web.RequestHandler):
         '</project>'
       f.write(s)
       f.close()
+      s = open(port)
+      dtr = struct.pack('I', termios.TIOCM_DTR)
+      fcntl.ioctl(s, termios.TIOCMBIS, dtr)
+      fcntl.ioctl(s, termios.TIOCMBIC, dtr)
+      s.close()
       
-      command = '(cd ../../src/config/wunode; ant avrdude 2>&1 | cat> tmp)&'
+      command = 'killall avrdude;(cd ../../src/config/wunode; ant avrdude 2>&1 | cat> tmp)&'
       os.system(command)
       log='start'
     elif cmd == 'poll':
