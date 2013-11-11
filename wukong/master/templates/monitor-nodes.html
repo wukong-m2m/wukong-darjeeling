@@ -73,8 +73,8 @@
         $('.set-location').click(function() {
             var nodeId = $.trim($(this).closest('tr').find('#nodeId').text());
             console.log(nodeId);
-            console.log($(this).prev().val());
-            var tmp_loc = $(this).prev().val();
+            console.log($(this).prev().prev().val());
+            var tmp_loc = $(this).prev().prev().val();
             
             if(tmp_loc==""){
               tmp_loc = '/'+'{{ default_location }}'+'#(0,0,0)'
