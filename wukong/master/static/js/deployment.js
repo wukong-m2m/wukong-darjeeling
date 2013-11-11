@@ -65,6 +65,7 @@ $(function() {
     $('a#deploy-btn').click(function(e) {
         e.preventDefault();
         $(this).tab('show');
+		$('#deploy-progress').html('Start Deploy....');
         $.post('/applications/' + current_application + '/deploy', function(data) {
             // Already an object
             console.log('deploy signal set');
@@ -73,7 +74,9 @@ $(function() {
             } else {
                 // Print deploy status to #deploy-progress
                 // Starts a new polling to deploy-progress
-                application_polling(current_application, '#deploy-progress', 'deploy_status');
+				setTimeout(function() {
+	                application_polling(current_application, '#deploy-progress', 'deploy_status');
+				},3000);
                 //$('#deploy_results').dialog({modal: true, autoOpen: true, width: 600, height: 300}).dialog('open').bind('dialogclose', function(event, ui) {
                     //$('#deploy_results').dialog("close");
                 //});
