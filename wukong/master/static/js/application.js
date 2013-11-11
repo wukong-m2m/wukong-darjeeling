@@ -29,6 +29,7 @@ function init()
         $('#locationTree').parent().removeClass('active');
         $('#designer').parent().removeClass('active');
         window.options.repeat = false;
+		$('#content').html('<H1>Please wait, the node editor is loading now...</H1>');
         $.get('/testrtt', function(data) {
             if (data.status == '1') {
                 alert(data.mesg);
