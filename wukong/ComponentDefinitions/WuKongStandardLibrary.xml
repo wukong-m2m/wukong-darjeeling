@@ -95,8 +95,8 @@
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate"  />
     </WuClass>
     <WuClass name="PIR_Sensor" id="8" virtual="false" type="hard">
-        <property name="current_value" access="readonly" datatype="short"  />
-        <property name="refresh_rate" access="readwrite" datatype="refresh_rate"  />
+        <property name="current_value" access="readonly" datatype="boolean"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="10" />
     </WuClass>
     <WuClass name="Light_Actuator" id="4" virtual="false" type="hard">
         <property name="on_off" access="readwrite" datatype="boolean" default="false"  />
@@ -143,5 +143,18 @@
     <WuClass name="Not_gate" id="43" virtual="true" type="soft" privateCData="bool">
         <property name="input" access="writeonly" datatype="boolean"  />
         <property name="ouput" access="readonly" datatype="boolean"  />
+    </WuClass>
+    <WuClass name="Slider" id="15" virtual="false" type="hard">
+        <property name="low_value" access="readwrite" datatype="short" default="0"/>
+        <property name="high_value" access="readwrite" datatype="short" default="255"/>
+        <property name="output" access="readwrite" datatype="short" default="0"/>
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
+    </WuClass>
+    <WuClass name="Magnetic_Sensor" id="17" virtual="false" type="hard">
+        <property name="output" access="readonly" datatype="boolean" default="false"/>
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
+    </WuClass>
+    <WuClass name="Fan" id="18" virtual="false" type="hard">
+        <property name="on_off" access="readwrite" datatype="boolean" default="false"/>
     </WuClass>
 </WuKong>
