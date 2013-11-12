@@ -34,9 +34,9 @@ $(function() {
 
     $('#stop').click(function() {
         console.log('stop');
-        $('#log').html('<h4>The basestation is stopped from adding/deleting devices.</h4>');
+        $('#log').html('<h4>Refreshing the node information</h4>');
         $.post('/testrtt/stop', function(data) {
-            $('#log').append('<pre>' + data.logs + '</pre>');
+            $('#log').html('<pre>' + data.logs + '</pre>');
         });
     });
 

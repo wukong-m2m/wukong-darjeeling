@@ -68,6 +68,26 @@ class Communication:
         print '[wkpfcomm] getting all nodes from cache'
       return copy.deepcopy(self.all_node_infos)
 
+    def updateAllNodeInfos(self):
+      nodelist = self.getNodeIds()
+      newlist=[]
+      for ID in nodelist:
+        ID = int(ID)
+        found = False
+        for info in self.all_node_infos:
+          print [info.id,ID]
+          if info.id == ID:
+            found = True
+            newlist.append(info)
+            break
+        if found == False:
+          newlist.append(self.getNodeInfo(ID))
+      print [newlist]
+
+      self.all_node_infos = newlist
+
+      return copy.deepcopy(self.all_node_infos)
+
     def getRoutingInformation(self):
       if self.routing == None:
         self.routing = self.zwave.routing()
