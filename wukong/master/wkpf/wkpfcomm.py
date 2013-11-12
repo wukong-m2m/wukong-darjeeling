@@ -325,7 +325,7 @@ class Communication:
         while len(reply) > 1:
           port_number = reply[0]
           wuclass_id = (reply[1] <<8) + reply[2]
-          virtual = reply[3]
+          virtual = bool(int(reply[3]))
           node = WuNode.find(id=destination)
 
           if not node:

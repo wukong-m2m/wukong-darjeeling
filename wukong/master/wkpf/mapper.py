@@ -154,7 +154,7 @@ def firstCandidate(logger, changesets, routingTable, locTree):
             else:
               pass
 
-
+        component.instances = sorted(component.instances, key=lambda wuObject: wuObject.virtual, reverse=False)
         # limit to min candidate if possible
         component.instances = component.instances[:component.group_size]
 
