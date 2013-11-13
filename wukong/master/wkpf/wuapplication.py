@@ -73,6 +73,8 @@ class WuApplication:
 
   def clearDeployStatus(self):
     self.deploy_status = []
+    self.deploy_ops = ''
+    print 'clear deploy status.........'
 
   # signal to client to stop polling
   def stopDeployStatus(self):

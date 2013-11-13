@@ -22,6 +22,7 @@ void radio_zwave_platform_dependent_init(void) {
     PORTD |= _BV(0);	//pull high
 	DDRG &= ~_BV(5);
 	PORTG |= _BV(5);
+	PORTK = 0xf;
 
 }
 
@@ -33,6 +34,8 @@ void radio_zwave_platform_dependent_poll(void) {
 			zwave_pg5_press = dj_timer_getTimeMillis();
 			zwave_time_btn_push=dj_timer_getTimeMillis();
 			zwave_btn_is_push = true;
+			PORTK &= ~_BV(0);
+			DEBUG_LOG(true,"PG5 is pressed");
 		}
 	} else {
 		if ((PING&_BV(5))) {
