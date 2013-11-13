@@ -18,8 +18,8 @@
             <td style="width:550px">
                 {% if set_location %}
                 <div class="input-append">
-                    <input id="set-location-input" class="span2" type="text" style="width:300px" value="{{ node_info.location }}"> 
-                    <button type="button" class="btn chooseLocNodeFromAll" for="set-location-input">Find Location</button>
+                    <input id="set-location-input{{node_info.id}}" class="span2" type="text" style="width:300px" value="{{ node_info.location }}"> 
+                    <button type="button" class="btn chooseLocNodeFromAll" for="set-location-input{{node_info.id}}">Find Location</button>
                     <button type="button" class="btn set-location">Set Location</button>
                 </div>
                 {% else %}

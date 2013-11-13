@@ -122,37 +122,43 @@ def firstCandidate(logger, changesets, routingTable, locTree):
         for candidate in candidates:
             wuclassdef = WuClassDef.find(name=component.type)
             node = locTree.getNodeInfoById(candidate)
-            if wuclassdef.id in [wuobject.wuclassdef().id for wuobject in node.wuobjects()]:
-              # use existing wuobject
-              for wuobject in sorted(node.wuobjects(), key=lambda wuobject: wuobject.virtual):
-                if wuobject.wuclassdef().id == wuclassdef.id:
-                  component.instances.append(wuobject)
-                  break
-            elif wuclassdef.id in [wuclass.wuclassdef().id for wuclass in node.wuclasses()]:
-              # create a new wuobject from existing wuclasses published from node (could be virtual)
-              sensorNode = locTree.sensor_dict[node.id]
-              sensorNode.initPortList(forceInit = False)
-              port_number = sensorNode.reserveNextPort()
-              for wuclass in sorted(node.wuclasses(), key=lambda wuclass: wuclass.virtual):
-                if wuclass.wuclassdef().id == wuclassdef.id:
-                  wuobject = WuObject.new(wuclass.wuclassdef(), node, port_number)
-                  # don't save to db
-                  component.instances.append(wuobject)
-                  break
-            elif node.type != 'native' and node.type != 'picokong':
-              # create a new virtual wuobject where the node 
-              # doesn't have the wuclass for it
-              sensorNode = locTree.sensor_dict[node.id]
-              sensorNode.initPortList(forceInit = False)
-              port_number = sensorNode.reserveNextPort()
-              wuobject = WuObject.new(wuclassdef, node, port_number, True)
-              # don't save to db
-              component.instances.append(wuobject)
+            has_wuobjects = [wuobject for wuobject in node.wuobjects() if wuobject.wuclassdef().id == wuclassdef.id]
+            has_wuclasses = [wuclass for wuclass in node.wuclasses() if wuclass.wuclassdef().id == wuclassdef.id]
 
-              # TODO: looks like this will always return true for mapping
-              # regardless of whether java impl exist
+            # virtual wuobject should be recreated instead of reuse
+            if len(has_wuobjects) > 0 and not has_wuobjects[0].virtual:
+                # assuming there is no duplicated wuobjects on node
+                the_wuobject = has_wuobjects[0]
+                # use existing wuobject
+                component.instances.append(the_wuobject)
+                pass # pass on to the next candidates
+
+            # virtual wuclasses should be recreated instead of reuse
+            elif len(has_wuclasses) > 0 and not has_wuclasses[0].virtual:
+                # assuming there is no duplicated wuclasses on node
+                the_wuclass = has_wuclasses[0]
+                # create a new wuobject from existing wuclasses published from node (could be virtual)
+                sensorNode = locTree.sensor_dict[node.id]
+                sensorNode.initPortList(forceInit = False)
+                port_number = sensorNode.reserveNextPort()
+                wuobject = WuObject.new(the_wuclass.wuclassdef(), node, port_number)
+                # don't save to db yet
+                component.instances.append(wuobject)
+                pass # pass on to the next candidates
+            elif node.type != 'native' and node.type != 'picokong':
+                # create a new virtual wuobject where the node 
+                # doesn't have the wuclass for it
+                sensorNode = locTree.sensor_dict[node.id]
+                sensorNode.initPortList(forceInit = False)
+                port_number = sensorNode.reserveNextPort()
+                wuobject = WuObject.new(wuclassdef, node, port_number, True)
+                # don't save to db
+                component.instances.append(wuobject)
+
+                # TODO: looks like this will always return true for mapping
+                # regardless of whether java impl exist
             else:
-              pass
+                pass # pass on to the next candidates
 
         component.instances = sorted(component.instances, key=lambda wuObject: wuObject.virtual, reverse=False)
         # limit to min candidate if possible
