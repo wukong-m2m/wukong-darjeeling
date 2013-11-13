@@ -132,7 +132,9 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                 # use existing wuobject
                 component.instances.append(the_wuobject)
                 pass # pass on to the next candidates
-            elif len(has_wuclasses) > 0:
+
+            # virtual wuclasses should be recreated instead of reuse
+            elif len(has_wuclasses) > 0 and not has_wuclasses[0].virtual:
                 # assuming there is no duplicated wuclasses on node
                 the_wuclass = has_wuclasses[0]
                 # create a new wuobject from existing wuclasses published from node (could be virtual)
