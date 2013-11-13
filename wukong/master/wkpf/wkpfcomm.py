@@ -290,7 +290,7 @@ class Communication:
               wuclass = WuClass.create(wuclassdef, node, virtual)
               # No need to recreate property definitions, as they are already
               # created when parsing XML
-            else
+            else:
               # update virtuality
               wuclass.virtual = virtual
             wuclasses.append(wuclass)
