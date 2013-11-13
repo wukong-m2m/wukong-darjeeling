@@ -123,14 +123,14 @@ def firstCandidate(logger, changesets, routingTable, locTree):
             wuclassdef = WuClassDef.find(name=component.type)
             node = locTree.getNodeInfoById(candidate)
             has_wuobjects = [wuobject for wuobject in node.wuobjects() if wuobject.wuclassdef().id == wuclassdef.id]
-            has_wuclasses = [wuclass.wuclassdef().id for wuclass in node.wuclasses() if wuclass.wuclassdef().id == wuclassdef.id]
+            has_wuclasses = [wuclass for wuclass in node.wuclasses() if wuclass.wuclassdef().id == wuclassdef.id]
 
             # virtual wuobject should be recreated instead of reuse
             if len(has_wuobjects) > 0 and not has_wuobjects[0].virtual:
                 # assuming there is no duplicated wuobjects on node
                 the_wuobject = has_wuobjects[0]
                 # use existing wuobject
-                component.instances.append(wuobject)
+                component.instances.append(the_wuobject)
                 pass # pass on to the next candidates
             elif len(has_wuclasses) > 0:
                 # assuming there is no duplicated wuclasses on node
