@@ -12,10 +12,10 @@ public class VirtualOrGateWuObject extends GENERATEDVirtualOrGateWuObject {
         boolean in2 = WKPF.getPropertyBoolean(this, INPUT2);
         if (in1 || in2) {
             WKPF.setPropertyBoolean(this, OUTPUT, true);
-            System.out.println("WKPFUPDATE(ANDGate):and gate -> TRUE");
+            System.out.println("WKPFUPDATE(OrGate):or gate -> TRUE");
         } else {
             WKPF.setPropertyBoolean(this, OUTPUT, false);
-            System.out.println("WKPFUPDATE(ANDGate):and gate -> FALSE");
+            System.out.println("WKPFUPDATE(OrGate):or gate -> FALSE");
         }
 	}
 }
