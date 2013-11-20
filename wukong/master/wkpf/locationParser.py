@@ -380,7 +380,7 @@ class LocationParser:
         location_def = path + AT +coordinate   #not used, because this file is for specificaiton parser
         try:
             print "location string to evaluate is:" + str
-            if str == "" or str == "/":
+            if str == "#" or str == "/#":
                 str = "/"+ LOCATION_ROOT
             if len(str)>1 and str[0]!='/':
                 str = '/'+str
