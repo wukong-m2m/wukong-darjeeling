@@ -146,7 +146,7 @@ void radio_zwave_init(void) {
     DEBUG_LOG(DBG_WKCOMM, "Sending NAK\n");
     uart_write_byte(ZWAVE_UART, ZWAVE_NAK);
     DEBUG_LOG(DBG_WKCOMM, "Clearing leftovers\n");
-    while (uart_available(ZWAVE_UART, 0)) {
+    while (uart_available(ZWAVE_UART, 150)) {
         uart_read_byte(ZWAVE_UART);
     }
 
@@ -171,7 +171,8 @@ void radio_zwave_init(void) {
     while(!radio_zwave_my_address_loaded) {
         while(!radio_zwave_my_address_loaded && retries-->0) {
             SerialAPI_request(buf, 2);
-            radio_zwave_poll();
+            if (uart_available(ZWAVE_UART, 150))
+                radio_zwave_poll();
         }
         if(!radio_zwave_my_address_loaded) // Can't read address -> panic
             dj_panic(WKCOMM_PANIC_INIT_FAILED);
