@@ -10,8 +10,6 @@
 #define set_input(portdir, pin) portdir &= ~(1<<pin)
 #define set_output(portdir, pin) portdir |= (1<<pin)
 
-#ifdef ENABLE_WUCLASS_LED
-
 void wuclass_led_setup(wuobject_t *wuobject) {
     set_output(DDRK, 0);
     set_output(DDRK, 1);
@@ -57,5 +55,3 @@ void wuclass_led_update(wuobject_t *wuobject) {
     else
         set_led(3, false);
 }
-
-#endif // ENABLE_WUCLASS_LED

@@ -7,8 +7,6 @@
 #define output_high(port, pin) port |= (1<<pin)
 #define input_get(port, pin) ((port & (1 << pin)) != 0)
 
-#ifdef ENABLE_WUCLASS_MAGNETIC_SENSOR
-
 void wuclass_magnetic_sensor_setup(wuobject_t *wuobject) {
   DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MagneticSensor): setup\n");
   set_input(DDRE, 3);
@@ -20,5 +18,3 @@ void wuclass_magnetic_sensor_update(wuobject_t *wuobject) {
   DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MagneticSensor): Sensed binary value: %d\n", currentValue);  
   wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_MAGNETIC_SENSOR_OUTPUT, currentValue);  
 }
-
-#endif // ENABLE_WUCLASS_MAGNETIC_SENSOR

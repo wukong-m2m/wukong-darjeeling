@@ -4,8 +4,6 @@
 #include "temperature_humidity_sensor/SHT1x.h"
 #include "temperature_humidity_sensor/SHT1x.c"
 
-#ifdef ENABLE_WUCLASS_TEMPERATURE_HUMIDITY_SENSOR
-
 void wuclass_temperature_humidity_sensor_setup(wuobject_t *wuobject) {}
 
 void wuclass_temperature_humidity_sensor_update(wuobject_t *wuobject) {
@@ -27,5 +25,3 @@ void wuclass_temperature_humidity_sensor_update(wuobject_t *wuobject) {
     wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_TEMPERATURE_HUMIDITY_SENSOR_CURRENT_VALUE_TEMPERATURE, temperature);
     wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_TEMPERATURE_HUMIDITY_SENSOR_CURRENT_VALUE_HUMIDITY, humidity);
 }
-
-#endif // ENABLE_WUCLASS_TEMPERATURE_HUMIDITY_SENSOR

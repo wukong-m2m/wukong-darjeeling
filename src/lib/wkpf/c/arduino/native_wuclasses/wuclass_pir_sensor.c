@@ -2,8 +2,6 @@
 #include "../../common/native_wuclasses/native_wuclasses.h"
 #include <avr/io.h>
 
-#ifdef ENABLE_WUCLASS_PIR_SENSOR
-
 void wuclass_pir_sensor_setup(wuobject_t *wuobject) {}
 
 void wuclass_pir_sensor_update(wuobject_t *wuobject) {
@@ -26,5 +24,3 @@ void wuclass_pir_sensor_update(wuobject_t *wuobject) {
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(PirSensor): Sensed pir value (%d): false\n", ADCH);
   wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_PIR_SENSOR_CURRENT_VALUE, showup);
 }
-
-#endif

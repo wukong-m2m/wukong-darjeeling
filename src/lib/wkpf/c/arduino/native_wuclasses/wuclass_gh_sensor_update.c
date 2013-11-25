@@ -7,8 +7,6 @@
 #include "../../common/native_wuclasses/GENERATEDwuclass_gh_sensor.h"
 #include "../../common/wkpf_links.h"
 
-#ifdef ENABLE_WUCLASS_GH_SENSOR
-
 int counter;
 uint8_t state, wid, returnWid;
 bool setWid, enable;
@@ -78,5 +76,3 @@ void wuclass_gh_sensor_update(wuobject_t *wuobject) {
     else
       	DEBUG_LOG(DBG_WKPFGH, "didn't get response from GH device\n");
 }
-
-#endif

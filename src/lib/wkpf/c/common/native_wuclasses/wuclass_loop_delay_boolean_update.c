@@ -1,8 +1,6 @@
 #include "debug.h"
 #include "native_wuclasses.h"
 
-#ifdef ENABLE_WUCLASS_LOOP_DELAY_BOOLEAN
-
 int16_t delay_count_boolean=0;
 bool over_bool=false; 
 
@@ -25,6 +23,3 @@ void wuclass_loop_delay_boolean_update(wuobject_t *wuobject) {
 	  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(loop_delay): Native loop_delay: delay %d, now count to %d\n", delay, delay_count_boolean);
   }
 }
-
-
-#endif

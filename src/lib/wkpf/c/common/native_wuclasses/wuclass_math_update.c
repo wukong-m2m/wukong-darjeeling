@@ -1,8 +1,6 @@
 #include "debug.h"
 #include "native_wuclasses.h"
 
-#ifdef ENABLE_WUCLASS_MATH_OP
-
 void wuclass_math_op_setup(wuobject_t *wuobject) {}
 
 void wuclass_math_op_update(wuobject_t *wuobject) {
@@ -63,5 +61,3 @@ void wuclass_math_op_update(wuobject_t *wuobject) {
 	wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_MATH_OP_REMAINDER, remainder);
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(math): Native math: input1 %x input2 %x input3 %x input4 %x operator %x-> output %x remainder %x\n", input1, input2, input3, input4, op, output, remainder);
 }
-
-#endif

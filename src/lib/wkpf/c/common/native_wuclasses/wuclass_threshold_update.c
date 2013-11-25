@@ -1,8 +1,6 @@
 #include "debug.h"
 #include "native_wuclasses.h"
 
-#ifdef ENABLE_WUCLASS_THRESHOLD
-
 void wuclass_threshold_setup(wuobject_t *wuobject) {}
 
 void wuclass_threshold_update(wuobject_t *wuobject) {
@@ -25,5 +23,3 @@ void wuclass_threshold_update(wuobject_t *wuobject) {
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Threshold): operator %x thr %x value %x -> FALSE\n", operator, threshold, value);
   }
 }
-
-#endif // ENABLE_WUCLASS_THRESHOLD
