@@ -44,12 +44,12 @@ uint8_t wkpf_call_adaptor(wkcomm_address_t dest_node_id, uint16_t wuclass_id, ui
 	uint8_t buf[6];
 	uint8_t r;
 
-	DEBUG_LOG(true, "Send value %d to node %d\n", value, dest_node_id);
+	DEBUG_LOG(DBG_WKPF, "Send value %d to node %d\n", value, dest_node_id);
 	buf[0] = 0x20;		// COMMAND_CLASS_BASIC
 	buf[1] = 1;			// BASIC_SET
 	buf[2] = value;		// level
 	r =  wkcomm_send_raw(dest_node_id,buf,3);
-	DEBUG_LOG(true,"send raw done\n");
+	DEBUG_LOG(DBG_WKPF,"send raw done\n");
 	return r;
 
 }

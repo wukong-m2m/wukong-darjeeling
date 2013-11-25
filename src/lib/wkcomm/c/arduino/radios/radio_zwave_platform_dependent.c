@@ -35,7 +35,7 @@ void radio_zwave_platform_dependent_poll(void) {
 			zwave_time_btn_push=dj_timer_getTimeMillis();
 			zwave_btn_is_push = true;
 			PORTK &= ~_BV(0);
-			DEBUG_LOG(true,"PG5 is pressed");
+			DEBUG_LOG(DBG_WKCOMM,"PG5 is pressed");
 		}
 	} else {
 		if ((PING&_BV(5))) {

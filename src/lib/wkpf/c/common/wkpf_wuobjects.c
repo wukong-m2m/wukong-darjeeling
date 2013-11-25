@@ -204,13 +204,13 @@ bool wkpf_get_next_wuobject_to_update(wuobject_t **virtual_wuobject) {
 			if (WKPF_IS_NATIVE_WUOBJECT(wuobject)) { // For native wuobjects: call update() directly
 				// Mark wuobject as safe just in case the wuclass does something to trigger GC
 				dj_mem_addSafePointer((void**)&wuobject);
-				DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE: Update native wuobject at port %d\n", wuobject->port_number);
+				DEBUG_LOG(DBG_WKPF, "WKPF: Update native wuobject at port %d\n", wuobject->port_number);
 				wuobject->wuclass->update(wuobject);
 				dj_mem_removeSafePointer((void**)&wuobject);
 			} else { // For virtual wuobject: return it so WKPF.select() can return it to Java
 				*virtual_wuobject = wuobject;
 				last_updated_wuobject_index = current_index;
-				DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE: Update virtual wuobject at port %d\n", wuobject->port_number);
+				DEBUG_LOG(DBG_WKPF, "WKPF: Update virtual wuobject at port %d\n", wuobject->port_number);
 				return true;
 			}
 		}
@@ -227,7 +227,7 @@ void wkpf_schedule_next_update_for_wuobject(wuobject_t *wuobject) {
 				wuobject->next_scheduled_update = 0;
 			else
 				wuobject->next_scheduled_update = dj_timer_getTimeMillis() + refresh_rate;
-			DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE: Scheduled next update for object at port %d. Refresh rate:%d Current time:%lu Next update at:%lu\n", wuobject->port_number, refresh_rate, (unsigned long)dj_timer_getTimeMillis(), (unsigned long)wuobject->next_scheduled_update);
+			DEBUG_LOG(DBG_WKPF, "WKPF: Scheduled next update for object at port %d. Refresh rate:%d Current time:%lu Next update at:%lu\n", wuobject->port_number, refresh_rate, (unsigned long)dj_timer_getTimeMillis(), (unsigned long)wuobject->next_scheduled_update);
 			return;
 		}
 	}
