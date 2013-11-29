@@ -148,6 +148,9 @@ def firstCandidate(logger, changesets, routingTable, locTree):
             elif node.type != 'native' and node.type != 'picokong':
                 # create a new virtual wuobject where the node 
                 # doesn't have the wuclass for it
+                # TODO: should check for existance of virtual impl
+                # as indicated by the virtual attribute 
+                # (will be changed to a more appropriate name later)
                 sensorNode = locTree.sensor_dict[node.id]
                 sensorNode.initPortList(forceInit = False)
                 port_number = sensorNode.reserveNextPort()
