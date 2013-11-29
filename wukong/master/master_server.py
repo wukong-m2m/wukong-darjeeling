@@ -151,28 +151,25 @@ def getPropertyValuesOfApp(mapping_results, property_names):
 class idemain(tornado.web.RequestHandler):
   def get(self):
     self.content_type='text/html'
-    self.render('templates/ide.html')
-# List all uploaded applications
-class main(tornado.web.RequestHandler):
+    self.render('static/ide.html', connected=wkpf.globals.connected)
+
+class index(tornado.web.RequestHandler):
   def get(self):
     getComm()
-    self.render('templates/application.html', connected=wkpf.globals.connected)
+    self.render('static/index.html', connected=wkpf.globals.connected)
 
-class list_applications(tornado.web.RequestHandler):
+class applications(tornado.web.RequestHandler):
+  # display a list of applications or a specific application
   def get(self):
-    self.render('templates/index.html', applications=wkpf.globals.applications)
-
-  def post(self):
     update_applications()
     apps = sorted([application.config() for application in wkpf.globals.applications], key=lambda k: k['app_name'])
     self.content_type = 'application/json'
     self.write(json.dumps(apps))
 
-# Returns a form to upload new application
-class new_application(tornado.web.RequestHandler):
+  # creates an application
   def post(self):
     #self.redirect('/applications/'+str(applications[-1].id), permanent=True)
-    #self.render('templates/upload.html')
+    #self.render('static/upload.html')
     try:
       try:
         app_name = self.get_argument('app_name')
@@ -200,7 +197,7 @@ class new_application(tornado.web.RequestHandler):
       app.saveConfig()
 
       self.content_type = 'application/json'
-      self.write({'status':0, 'app': app.config()})
+      self.write(app.config())
     except Exception as e:
       exc_type, exc_value, exc_traceback = sys.exc_info()
       print traceback.print_exception(exc_type, exc_value, exc_traceback,
@@ -208,55 +205,38 @@ class new_application(tornado.web.RequestHandler):
       self.content_type = 'application/json'
       self.write({'status':1, 'mesg':'Cannot create application'})
 
-class rename_application(tornado.web.RequestHandler):
-  def put(self, app_id):
-    app_ind = getAppIndex(app_id)
-    if app_ind == None:
-      self.content_type = 'application/json'
-      self.write({'status':1, 'mesg': 'Cannot find the application'})
-    else:
-      try:
-        wkpf.globals.applications[app_ind].app_name = self.get_argument('value', '')
-        wkpf.globals.applications[app_ind].saveConfig()
-        self.content_type = 'application/json'
-        self.write({'status':0})
-      except Exception as e:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        print traceback.print_exception(exc_type, exc_value, exc_traceback,
-                                      limit=2, file=sys.stdout)
-        self.set_status(400)
-        self.content_type = 'application/json'
-        self.write({'status':1, 'mesg': 'Cannot save application'})
-
 class application(tornado.web.RequestHandler):
-  # topbar info
+  # Display a specific application
   def get(self, app_id):
+    global node_infos
     app_ind = getAppIndex(app_id)
     if app_ind == None:
+      # I don't care
       self.content_type = 'application/json'
       self.write({'status':1, 'mesg': 'Cannot find the application'})
     else:
-      title = ""
-      if self.get_argument('title'):
-        title = self.get_argument('title')
-      app = wkpf.globals.applications[app_ind].config()
-      topbar = template.Loader(os.getcwd()).load('templates/topbar.html').generate(application=wkpf.globals.applications[app_ind], title=title, default_location=LOCATION_ROOT)
-      self.content_type = 'application/json'
-      self.write({'status':0, 'app': app, 'topbar': topbar})
+      # deployment.js will call refresh_node eventually, rebuild location tree there
+      wkpf.globals.set_active_application_index(app_ind)
+      deployment = template.Loader(os.getcwd()).load('static/deployment.html').generate(
+              app=wkpf.globals.applications[app_ind],
+              app_id=app_id, node_infos=node_infos,
+              logs=wkpf.globals.applications[app_ind].logs(),
+              changesets=wkpf.globals.applications[app_ind].changesets, 
+              set_location=False, 
+              default_location=LOCATION_ROOT)
+      self.content_type = 'text/html'
+      self.write(deployment)
 
-  # Display a specific application
+  # for fbp.js
   def post(self, app_id):
     app_ind = getAppIndex(app_id)
     if app_ind == None:
       self.content_type = 'application/json'
       self.write({'status':1, 'mesg': 'Cannot find the application'})
     else:
-      # active application
-      wkpf.globals.set_active_application_index(app_ind)
       app = wkpf.globals.applications[app_ind].config()
-      topbar = template.Loader(os.getcwd()).load('templates/topbar.html').generate(application=wkpf.globals.applications[app_ind], title="Flow Based Programming")
       self.content_type = 'application/json'
-      self.write({'status':0, 'app': app, 'topbar': topbar})
+      self.write({'app': app})
 
   # Update a specific application
   def put(self, app_id):
@@ -292,6 +272,26 @@ class application(tornado.web.RequestHandler):
         self.content_type = 'application/json'
         self.write({'status':1, 'mesg': 'Cannot delete application'})
 
+class rename_application(tornado.web.RequestHandler):
+  def put(self, app_id):
+    app_ind = getAppIndex(app_id)
+    if app_ind == None:
+      self.content_type = 'application/json'
+      self.write({'status':1, 'mesg': 'Cannot find the application'})
+    else:
+      try:
+        wkpf.globals.applications[app_ind].app_name = self.get_argument('value', '')
+        wkpf.globals.applications[app_ind].saveConfig()
+        self.content_type = 'application/json'
+        self.write({'status':0})
+      except Exception as e:
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        print traceback.print_exception(exc_type, exc_value, exc_traceback,
+                                      limit=2, file=sys.stdout)
+        self.set_status(400)
+        self.content_type = 'application/json'
+        self.write({'status':1, 'mesg': 'Cannot save application'})
+
 class reset_application(tornado.web.RequestHandler):
   def post(self, app_id):
     app_ind = getAppIndex(app_id)
@@ -306,24 +306,6 @@ class reset_application(tornado.web.RequestHandler):
       self.write({'status':0, 'version': wkpf.globals.applications[app_ind].version})
 
 class deploy_application(tornado.web.RequestHandler):
-  def get(self, app_id):
-    global node_infos
-    app_ind = getAppIndex(app_id)
-    if app_ind == None:
-      self.content_type = 'application/json'
-      self.write({'status':1, 'mesg': 'Cannot find the application'})
-    else:
-      # deployment.js will call refresh_node eventually, rebuild location tree there
-      deployment = template.Loader(os.getcwd()).load('templates/deployment.html').generate(
-              app=wkpf.globals.applications[app_ind],
-              app_id=app_id, node_infos=node_infos,
-              logs=wkpf.globals.applications[app_ind].logs(),
-              changesets=wkpf.globals.applications[app_ind].changesets, 
-              set_location=False, 
-              default_location=LOCATION_ROOT)
-      self.content_type = 'application/json'
-      self.write({'status':0, 'page': deployment})
-
   def post(self, app_id):
     app_ind = getAppIndex(app_id)
 
@@ -403,7 +385,7 @@ class monitor_application(tornado.web.RequestHandler):
       properties_json = WuProperty.all() # for now
       #properties_json = getPropertyValuesOfApp(applications[app_ind].mapping_results, [property.getName() for wuobject in applications[app_ind].mapping_results.values() for property in wuobject])
 
-      monitor = template.Loader(os.getcwd()).load('templates/monitor.html').generate(app=wkpf.globals.applications[app_ind], logs=wkpf.globals.applications[app_ind].logs(), properties_json=properties_json)
+      monitor = template.Loader(os.getcwd()).load('static/monitor.html').generate(app=wkpf.globals.applications[app_ind], logs=wkpf.globals.applications[app_ind].logs(), properties_json=properties_json)
       self.content_type = 'application/json'
       self.write({'status':0, 'page': monitor})
 
@@ -466,7 +448,7 @@ class save_fbp(tornado.web.RequestHandler):
 
 class load_fbp(tornado.web.RequestHandler):
   def get(self, app_id):
-    self.render('templates/fbp.html')
+    self.render('static/fbp.html')
 
   def post(self, app_id):
     app_ind = getAppIndex(app_id)
@@ -527,9 +509,10 @@ class testrtt(tornado.web.RequestHandler):
     node_infos = comm.getAllNodeInfos()
     print node_infos
     rebuildTree(node_infos)
-    testrtt = template.Loader(os.getcwd()).load('templates/testrtt.html').generate(log=['Please press the buttons to add/remove nodes.'], node_infos=node_infos, set_location=True, default_location = LOCATION_ROOT)
-    self.content_type = 'application/json'
-    self.write({'status':0, 'testrtt':testrtt})
+    #testrtt = template.Loader(os.getcwd()).load('static/testrtt.html').generate(log=['Please press the buttons to add/remove nodes.'], node_infos=node_infos, set_location=True, default_location = LOCATION_ROOT)
+    #self.content_type = 'application/json'
+    #self.write({'status':0, 'testrtt':testrtt})
+    self.render('static/testrtt.html', log=['Please press the buttons to add/remove nodes.'], node_infos=node_infos, set_location=True, default_location = LOCATION_ROOT, connected=wkpf.globals.connected)
 
 class refresh_nodes(tornado.web.RequestHandler):
   def post(self):
@@ -542,7 +525,7 @@ class refresh_nodes(tornado.web.RequestHandler):
     # default is false
     set_location = self.get_argument('set_location', False)
 
-    nodes = template.Loader(os.getcwd()).load('templates/monitor-nodes.html').generate(node_infos=node_infos, set_location=set_location, default_location=LOCATION_ROOT)
+    nodes = template.Loader(os.getcwd()).load('static/monitor-nodes.html').generate(node_infos=node_infos, set_location=set_location, default_location=LOCATION_ROOT)
 
     self.content_type = 'application/json'
     self.write({'status':0, 'nodes': nodes})
@@ -712,9 +695,9 @@ class WuClassSource(tornado.web.RequestHandler):
         traceback.print_exc()
         # We may use jinja2 here
         if type == "C":
-          f = open('templates/wuclass.tmpl.c')
+          f = open('static/wuclass.tmpl.c')
         else:
-          f = open('templates/wuclass.tmpl.java')
+          f = open('static/wuclass.tmpl.java')
 
         template = Template(f.read())
         f.close()
@@ -771,7 +754,7 @@ class loc_tree(tornado.web.RequestHandler):
   def post(self):
     global node_infos
       
-    addloc = template.Loader(os.getcwd()).load('templates/display_locationTree.html').generate(node_infos=node_infos)
+    addloc = template.Loader(os.getcwd()).load('static/display_locationTree.html').generate(node_infos=node_infos, connected=wkpf.globals.connected)
     wkpf.globals.location_tree.printTree()
     disploc = wkpf.globals.location_tree.getJson()
 
@@ -991,9 +974,8 @@ settings = dict(
 
 ioloop = tornado.ioloop.IOLoop.instance()
 wukong = tornado.web.Application([
-  (r"/", main),
+  (r"/", index),
   (r"/ide", idemain),
-  (r"/main", main),
   (r"/testrtt/exclude", exclude_testrtt),
   (r"/testrtt/include", include_testrtt),
   (r"/testrtt/stop", stop_testrtt),
@@ -1001,15 +983,14 @@ wukong = tornado.web.Application([
   (r"/testrtt", testrtt),
   (r"/nodes/([0-9]*)", nodes),
   (r"/nodes/refresh", refresh_nodes),
-  (r"/applications", list_applications),
-  (r"/applications/new", new_application),
-  (r"/applications/([a-fA-F\d]{32})", application),
+  (r"/applications", applications), # responsible for listing and adding application
+  (r"/applications/([a-fA-F\d]{32})", application), # responsible for application specific actions (deploy page, update attributes, delete, etc)
+  (r"/applications/([a-fA-F\d]{32})/deploy", deploy_application), # post for deploying
+  (r"/applications/([a-fA-F\d]{32})/deploy/map", map_application),
   (r"/applications/([a-fA-F\d]{32})/rename", rename_application),
   (r"/applications/([a-fA-F\d]{32})/reset", reset_application),
   (r"/applications/([a-fA-F\d]{32})/properties", properties_application),
   (r"/applications/([a-fA-F\d]{32})/poll", poll),
-  (r"/applications/([a-fA-F\d]{32})/deploy", deploy_application),
-  (r"/applications/([a-fA-F\d]{32})/deploy/map", map_application),
   (r"/applications/([a-fA-F\d]{32})/monitor", monitor_application),
   (r"/applications/([a-fA-F\d]{32})/fbp/save", save_fbp),
   (r"/applications/([a-fA-F\d]{32})/fbp/load", load_fbp),
