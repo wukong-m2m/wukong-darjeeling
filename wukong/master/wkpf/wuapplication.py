@@ -393,6 +393,7 @@ class WuApplication:
         node = WuNode.find(id=node_id)
         print "Deploy to node %d type %s"% (node_id, node.type)
         if node.type == 'native': continue
+        if node.type == 'master': VirtualNode.init().deploy(self.changeSets)
         remaining_ids.remove(node_id)
         self.logDeployStatus("Deploying to node %d, remaining %s" % (node_id, str(remaining_ids)))
         retries = 3

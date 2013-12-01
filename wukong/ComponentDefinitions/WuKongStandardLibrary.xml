@@ -160,7 +160,7 @@
         <property name="input" access="writeonly" datatype="boolean"  />
         <property name="ouput" access="readonly" datatype="boolean"  />
     </WuClass>
-    <WuClass name="M-CHESS" id="434" virtual="" type="soft">
-        <property name="mode" access="readonly" datatype="string"  />
+    <WuClass name="M-CHESS" id="434" virtual="true" type="soft">
+        <property name="mode" access="readonly" datatype="short"  />
     </WuClass>
 </WuKong>

@@ -147,6 +147,28 @@ class ZwaveAgent(TransportAgent):
         tasks.put_nowait(defer)
         return defer
 
+    def send_raw(self, destination, payload):
+        result = AsyncResult()
+
+        def callback(reply):
+            result.set(reply)
+
+        def error_callback(reply):
+            result.set(reply)
+
+        defer = new_defer(callback, 
+                error_callback,
+                self.verify([]), 
+                [], 
+                new_message(destination, "raw", payload),
+                int(round(time.time() * 1000)) + 10000)
+        tasks.put_nowait(defer)
+
+        message = result.get() # blocking
+
+        # received ack from Agent
+        return message
+
     def send(self, destination, command, payload, allowed_replies):
         result = AsyncResult()
 
@@ -291,6 +313,7 @@ class ZwaveAgent(TransportAgent):
                     discovered_nodes.remove(gateway_id)
                 except ValueError:
                     pass # sometimes gateway_id is not in the list
+                discovered_nodes.insert(0, gateway_id)
                 defer.callback(discovered_nodes)
             elif defer.message.command == "routing":
                 #print 'handler: processing routing request'
@@ -328,7 +351,10 @@ class ZwaveAgent(TransportAgent):
                 while retries > 0:
                     try:
                         #print "handler: sending message from defer"
-                        pyzwave.send(destination, [0x88, command] + payload)
+                        if command == "raw":
+                            pyzwave.send(destination, payload)
+                        else:
+                            pyzwave.send(destination, [0x88, command] + payload)
 
                         break
                     except Exception as e:

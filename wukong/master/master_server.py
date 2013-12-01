@@ -33,6 +33,7 @@ from wkpf.wuapplication import WuApplication
 from wkpf.parser import *
 from wkpf.wkpfcomm import *
 from wkpf.util import *
+from wkpf.virtualNode import *
 
 import wkpf.globals
 from configuration import *
@@ -338,7 +339,9 @@ class map_application(tornado.web.RequestHandler):
       rebuildTree(node_infos)
 
       # Map with location tree info (discovery), this will produce mapping_results
-      mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, getComm().getRoutingInformation())
+      #mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, getComm().getRoutingInformation())
+      # routing table is useless now
+      mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, None)
 
       ret = []
       for component in wkpf.globals.applications[app_ind].changesets.components:
@@ -1017,6 +1020,7 @@ Parser.parseLibrary(COMPONENTXML_PATH)
 update_applications()
 import_wuXML()
 make_FBP()
+VirtualNode.init()
 wukong.listen(MASTER_PORT)
 if __name__ == "__main__":
   ioloop.start()

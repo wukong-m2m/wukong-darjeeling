@@ -3,6 +3,7 @@ import sys, time, copy
 from transport import *
 from locationTree import *
 from models import *
+from virtualNode import *
 from globals import *
 from configuration import *
 import simulator
@@ -60,10 +61,16 @@ class Communication:
     def getNodeInfos(self, node_ids):
       return filter(lambda info: info.id in node_ids, self.getAllNodeInfos())
 
+    def gen_virtual_node(self, id):
+      return WuNode.create(id, "Local", type='master')
+
     def getAllNodeInfos(self, force=False):
       if self.all_node_infos == [] or force:
         print '[wkpfcomm] getting all nodes from discovery'
-        self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
+        node_ids = self.getNodeIds()
+        nodeInfo = self.gen_virtual_node(node_ids[0])
+        node_ids = node_ids[1:-1]
+        self.all_node_infos = [nodeInfo] + [self.getNodeInfo(int(destination)) for destination in node_ids]
       else:
         print '[wkpfcomm] getting all nodes from cache'
       return copy.deepcopy(self.all_node_infos)
@@ -241,6 +248,16 @@ class Communication:
 
       #set_wukong_status("Discovery: Requesting wuclass list from node %d" % (destination))
 
+      node = WuNode.find(id=destination)
+      if node and node.type == 'master':
+        for wuclassdef in VirtualNode.getWuClassDefs():
+          wuclass = WuClass.find(node_identity=node.identity,
+              wuclassdef_identity=wuclassdef.identity)
+          if not wuclass:
+            wuclass = WuClass.create(wuclassdef, node, True)
+          node.wuclasses.append(wuclass)
+        return 
+
       wuclasses = []
       total_number_of_messages = None
       message_number = 0
@@ -303,6 +320,16 @@ class Communication:
       print '[wkpfcomm] getWuObjectList'
 
       #set_wukong_status("Discovery: Requesting wuobject list from node %d" % (destination))
+
+      node = WuNode.find(id=destination)
+      if node and node.type == 'master':
+        for index, wuclassdef in enumerate(VirtualNode.getWuClassDefs()):
+          wuobject = WuObject.find(node_identity=node.identity,
+              wuclassdef_identity=wuclassdef.identity)
+          if not wuobject:
+            wuobject = WuObject.create(wuclassdef, node, index+1, True)
+          node.wuobjects.append(wuobject)
+        return 
 
       wuobjects = []
       total_number_of_messages = None
