@@ -146,6 +146,31 @@ class Communication:
         node = WuNode.find(id=destination)
         if not node:
           node = WuNode.create(destination, "Gateway",type='gateway')
+      elif generic == 17:
+        # Create an dimmer object
+        node = WuNode.find(id=destination)
+        if not node:
+          node = WuNode.create(destination, 'WuKong',type='native')
+        wuclassdef = WuClassDef.find(id=44)    # Light_Actuator
+
+        if not wuclassdef:
+          print '[wkpfcomm] Unknown device type', generic
+          return None
+
+        wuobjects = WuObject.where(node_identity=node.identity,
+            wuclassdef_identity=wuclassdef.identity)
+
+        # Create one
+        if not wuobjects:
+          # FIXME: This is a simple hack for the demo. We need to investigate the device more by using
+          # the multichannel command to get the number of instances.
+          # In addition, the wuobject generation code here should be splited into two parts, we should multiple nodeinfo
+          # each of them represent one instace with proper device type information so that we can reuse the
+          # multi instance code between differnt radios. For now , we try to make it work with three channel dimmer.
+          wuobject = WuObject.create(wuclassdef, node, WuObject.ZWAVE_DIMMER_PORT1)
+          wuobject = WuObject.create(wuclassdef, node, WuObject.ZWAVE_DIMMER_PORT2)
+          wuobject = WuObject.create(wuclassdef, node, WuObject.ZWAVE_DIMMER_PORT3)
+
       else:
         # Create a virtual wuclass for non wukong device. We support switch only now. 
         # We may support others in the future.
@@ -166,7 +191,7 @@ class Communication:
           # 0x100 is a mgic number. When we see this in the code generator, 
           # we will generate ZWave command table to implement the wuclass by
           # using the Z-Wave command.
-          wuobject = WuObject.create(wuclassdef, node, WuObject.ZWAVE_SWITCH_PORT)
+          wuobject = WuObject.create(wuclassdef, node, WuObject.ZWAVE_SWITCH_PORT1)
 
 
       return node

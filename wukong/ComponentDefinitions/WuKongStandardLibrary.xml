@@ -160,7 +160,11 @@
         <property name="input" access="writeonly" datatype="boolean"  />
         <property name="ouput" access="readonly" datatype="boolean"  />
     </WuClass>
-    <WuClass name="MCHESS" id="434" virtual="true" type="soft">
+    <WuClass name="MCHESS" id="434" virtual="false" type="soft">
         <property name="mode" access="readonly" datatype="short"  />
+    </WuClass>
+    <WuClass name="Dimmer" id="44" virtual="false" type="hard">
+        <property name="on_off" access="readwrite" datatype="boolean" default="false"  />
+        <property name="level" access="readwrite" datatype="short" default="99"  />
     </WuClass>
 </WuKong>

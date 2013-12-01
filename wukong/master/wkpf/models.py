@@ -467,7 +467,19 @@ class WuObject(Definition):
 
   # Maintaining an ordered list for save function
   columns = ['identity', 'wuclassdef_identity', 'node_identity', 'port_number', 'virtual']
-  ZWAVE_SWITCH_PORT = 64
+  ZWAVE_SWITCH_PORT1 = 64
+  ZWAVE_SWITCH_PORT2 = 65
+  ZWAVE_SWITCH_PORT3 = 66
+  ZWAVE_SWITCH_PORT4 = 67
+  ZWAVE_DIMMER_PORT1 = 70
+  ZWAVE_DIMMER_PORT2 = 71
+  ZWAVE_DIMMER_PORT3 = 72
+  ZWAVE_DIMMER_PORT4 = 73
+  ZWAVE_CURTAIN_PORT1 = 73
+  ZWAVE_CURTAIN_PORT2 = 74
+  ZWAVE_CURTAIN_PORT3 = 75
+  ZWAVE_CURTAIN_PORT4 = 76
+
 
   @classmethod
   def new(cls, wuclassdef, node, port_number, virtual=False):
