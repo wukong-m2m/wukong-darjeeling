@@ -563,15 +563,13 @@ class nodes(tornado.web.RequestHandler):
       return
     if location:
       comm = getComm()
-      if comm.setLocation(int(nodeId), location):
-        # update our knowledge too
-        for info in comm.getActiveNodeInfos():
-          if info.id == int(nodeId):
-            info.location = location
-            info.save()
-            senNd = SensorNode(info)
-            print (info.location)
-            wkpf.globals.location_tree.addSensor(senNd)
+      info = WuNode.find(id=int(nodeId))
+      if info.type != 'wudevice' or comm.setLocation(int(nodeId), location):
+        info.location = location
+        info.save()
+        senNd = SensorNode(info)
+        print (info.location)
+        wkpf.globals.location_tree.addSensor(senNd)
         wkpf.globals.location_tree.printTree()
         self.content_type = 'application/json'
         self.write({'status':0})

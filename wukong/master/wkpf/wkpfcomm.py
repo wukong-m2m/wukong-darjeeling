@@ -28,6 +28,7 @@ class Communication:
       self.all_node_infos = []
       self.broker = getAgent()
       self.device_type = None
+      VirtualNode.init().setComm(self)
       try:
         if SIMULATION == "true":
           raise KeyboardInterrupt
@@ -62,14 +63,22 @@ class Communication:
       return filter(lambda info: info.id in node_ids, self.getAllNodeInfos())
 
     def gen_virtual_node(self, id):
-      return WuNode.create(id, "Local", type='master')
+      node = WuNode.find(id=id)
+      if not node:
+        node = WuNode.create(id, "Local", type='master')
+      #self.getWuClassList(id)
+      #gevent.sleep(0)
+
+      self.getWuObjectList(id)
+      gevent.sleep(0)
+      return node
 
     def getAllNodeInfos(self, force=False):
       if self.all_node_infos == [] or force:
         print '[wkpfcomm] getting all nodes from discovery'
         node_ids = self.getNodeIds()
         nodeInfo = self.gen_virtual_node(node_ids[0])
-        node_ids = node_ids[1:-1]
+        node_ids = node_ids[1:]
         self.all_node_infos = [nodeInfo] + [self.getNodeInfo(int(destination)) for destination in node_ids]
       else:
         print '[wkpfcomm] getting all nodes from cache'
@@ -116,12 +125,14 @@ class Communication:
       print '[wkpfcomm] getNodeInfo of node id', destination
 
       (basic,generic,specific) = self.getDeviceType(destination)
-      #print "basic=", basic
-      #print "generic=", generic
-      #print "specific=", specific
+      print "basic=", basic
+      print "generic=", generic
+      print "specific=", specific
       if generic == 0xff:
         location = self.getLocation(destination)
-        node = WuNode.create(destination, location)
+        node = WuNode.find(id=destination)
+        if not node:
+          node = WuNode.create(destination, location)
         gevent.sleep(0) # give other greenlets some air to breath
 
         wuClasses = self.getWuClassList(destination)
@@ -131,10 +142,16 @@ class Communication:
         wuObjects = self.getWuObjectList(destination)
         print '[wkpfcomm] get %d wuobjects' % (len(wuObjects))
         gevent.sleep(0)
+      elif generic == 0x2:
+        node = WuNode.find(id=destination)
+        if not node:
+          node = WuNode.create(destination, "Gateway",type='gateway')
       else:
         # Create a virtual wuclass for non wukong device. We support switch only now. 
         # We may support others in the future.
-        node = WuNode.create(destination, 'WuKong',type='native')
+        node = WuNode.find(id=destination)
+        if not node:
+          node = WuNode.create(destination, 'WuKong',type='native')
         wuclassdef = WuClassDef.find(id=4)    # Light_Actuator
 
         if not wuclassdef:
@@ -248,17 +265,17 @@ class Communication:
 
       #set_wukong_status("Discovery: Requesting wuclass list from node %d" % (destination))
 
+      wuclasses = []
       node = WuNode.find(id=destination)
       if node and node.type == 'master':
         for wuclassdef in VirtualNode.getWuClassDefs():
           wuclass = WuClass.find(node_identity=node.identity,
               wuclassdef_identity=wuclassdef.identity)
           if not wuclass:
-            wuclass = WuClass.create(wuclassdef, node, True)
-          node.wuclasses.append(wuclass)
-        return 
+            wuclass = WuClass.create(wuclassdef, node, False)
+          wuclasses.append(wuclass)
+        return wuclasses 
 
-      wuclasses = []
       total_number_of_messages = None
       message_number = 0
       if SIMULATION == "true":
@@ -321,17 +338,18 @@ class Communication:
 
       #set_wukong_status("Discovery: Requesting wuobject list from node %d" % (destination))
 
+      wuobjects = []
       node = WuNode.find(id=destination)
       if node and node.type == 'master':
+        print "master",node
         for index, wuclassdef in enumerate(VirtualNode.getWuClassDefs()):
           wuobject = WuObject.find(node_identity=node.identity,
               wuclassdef_identity=wuclassdef.identity)
           if not wuobject:
-            wuobject = WuObject.create(wuclassdef, node, index+1, True)
-          node.wuobjects.append(wuobject)
-        return 
+            wuobject = WuObject.create(wuclassdef, node, index+1, False)
+          wuobjects.append(wuobject)
+        return wuobjects
 
-      wuobjects = []
       total_number_of_messages = None
       message_number = 0
       if SIMULATION == "true":

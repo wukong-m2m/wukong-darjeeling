@@ -1,5 +1,5 @@
 import gevent
-from wkpf.wkpfcomm import *
+from models import *
 
 class VirtualNode:
   @classmethod
@@ -16,6 +16,8 @@ class VirtualNode:
   def __init__(self):
     self.changesets = None
     gevent.spawn(self.run)
+  def setComm(self,comm):
+    self.comm = comm
 
   def deploy(self, changesets):
     self.changesets = changesets
@@ -30,9 +32,9 @@ class VirtualNode:
             indexes.append(ind)
 
         for link in [link for link in self.changesets.links if link.from_component_index in indexes]:
-          setProperty(link.to_property_id, self.changesets.components[link.to_component_index], 0)
+          self.setProperty(link.to_property_id, self.changesets.components[link.to_component_index], 0)
           gevent.sleep(1) # sleep for 1 sec
-          setProperty(link.to_property_id, self.changesets.components[link.to_component_index], 255)
+          self.setProperty(link.to_property_id, self.changesets.components[link.to_component_index], 255)
           gevent.sleep(1) # sleep for 1 sec
       else:
         gevent.sleep(1) # sleep for 1 sec
@@ -45,4 +47,6 @@ class VirtualNode:
     if node.type == 'wudevice':
       pass
     elif node.type == 'native':
-      reply = getComm().zwave.send_raw(node.id, [0x20, 0x01, value,])
+      reply = self.comm.zwave.send_raw(node.id, [0x20, 0x01, value,])
+      #reply = self.comm.zwave.send_raw(node.id, [0x60,0x0d,0x1,0x2,0x20, 0x01, value,])
+      #reply = self.comm.zwave.send_raw(node.id, [0x60,0x0d,0x1,0x3,0x20, 0x01, value,])

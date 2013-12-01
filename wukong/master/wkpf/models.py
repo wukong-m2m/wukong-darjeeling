@@ -14,8 +14,8 @@ def global_conn():
 def bootstrap_database():
     print 'bootstraping database'
     global connection
-    #connection = sqlite3.connect("standardlibrary.db")
-    connection = sqlite3.connect(":memory:", check_same_thread = False)
+    connection = sqlite3.connect("standardlibrary.db")
+    #connection = sqlite3.connect(":memory:", check_same_thread = False)
     c = connection.cursor()
 
     # Network info
