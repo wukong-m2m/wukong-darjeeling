@@ -109,6 +109,17 @@ uint8_t wkpf_send_request_property_init(wkcomm_address_t dest_node_id, uint8_t p
 	return send_message(dest_node_id, WKPF_COMM_CMD_REQUEST_PROPERTY_INIT, message_buffer, 2);
 }
 
+uint8_t wkpf_send_probe(wkcomm_address_t dest_node_id, char *message, uint8_t len) {
+	uint8_t message_buffer[5];
+	
+	message_buffer[0] = len;
+	message_buffer[1] = message[0];
+	message_buffer[2] = message[1];
+	message_buffer[3] = message[2];
+	message_buffer[4] = message[3];
+
+	return send_message(dest_node_id, WKPF_COMM_CMD_PROBE, message_buffer, len+1);
+}
 
 //void wkpf_comm_handle_message(wkcomm_address_t src, uint8_t nvmcomm_command, uint8_t *payload, uint8_t response_size, uint8_t response_cmd) {
 void wkpf_comm_handle_message(void *data) {
@@ -116,6 +127,8 @@ void wkpf_comm_handle_message(void *data) {
 	uint8_t *payload = msg->payload;
 	uint8_t response_size = 0, response_cmd = 0;
 	uint8_t retval;
+
+	DEBUG_LOG(DBG_WKPF, "WKPF_handle_message: Get command from %d", msg->src);
 
 	if (dj_exec_getRunlevel() == RUNLEVEL_REPROGRAMMING)
 		return;
@@ -371,6 +384,31 @@ void wkpf_comm_handle_message(void *data) {
 				response_size = 4;
 				response_cmd = WKPF_COMM_CMD_REQUEST_PROPERTY_INIT_R;                
 			}
+		}
+		break;
+		case WKPF_COMM_CMD_PROBE: {
+
+			// uint8_t written_offset = payload[0];
+			// uint8_t length = payload[1];
+			uint8_t length = payload[0];
+			DEBUG_LOG(true, "WKPF_COMM_CMD_Probe: get probe length:%d", length);
+			
+			int i = 0 ;
+			for( i = 0; i < length; i++ ){ 
+				DEBUG_LOG(true, "get %c", payload[1+i]);
+			}
+			// Read the EEPROM
+			retval = WKPF_OK;
+			wkpf_send_probe(5, (char *)payload+1, 4);
+
+			// Send response
+			if (retval == WKPF_OK) {
+				response_cmd = WKPF_COMM_CMD_PROBE_R;
+			} else {
+				response_cmd = WKPF_COMM_CMD_ERROR_R;
+			}
+			payload[0] = retval;       
+			response_size = 1;
 		}
 		break;
 	}

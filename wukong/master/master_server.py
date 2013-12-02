@@ -965,6 +965,20 @@ class Upload(tornado.web.RequestHandler):
 
     self.write(log)
 
+class Probe(tornado.web.RequestHandler):
+  def get(self):
+    self.content_type = 'text/plain'
+    #global node_infos
+
+    node_id = self.get_argument("node_id")
+    comm = getComm() 
+    print str(comm.sendProbe(int(node_id), "fuck"))
+    #comm = getComm()
+    #node_infos = comm.getAllNodeInfos()
+    #print node_infos
+    
+    self.write({'status':0,'message':'probing'})
+ 
 
 
 settings = dict(
@@ -1008,7 +1022,8 @@ wukong = tornado.web.Application([
   (r"/serialport",SerialPort),
   (r"/enablexml",EnabledWuClass),
   (r"/build",Build),
-  (r"/upload",Upload)
+  (r"/upload",Upload),
+  (r"/applications/probe", Probe) 
 ], IP, **settings)
 
 logging.info("Starting up...")

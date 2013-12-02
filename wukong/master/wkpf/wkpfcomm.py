@@ -182,6 +182,22 @@ class Communication:
           location += ''.join([chr(byte) for byte in reply.payload[2:]])
       
       return location[0:length] # The node currently send a bit too much, so we have to truncate the string to the length we need
+    # mom, I am here 
+    def sendProbe(self, destination, message): 
+      print '[wkpfcomm] sending probe to ', destination
+
+      messagestring = [len(message)] + [int(ord(char)) for char in message]
+      reply = self.zwave.send(destination, pynvc.WKPF_PROBE, messagestring, [pynvc.WKPF_PROBE_R, pynvc.WKPF_ERROR_R])
+
+      if reply == None:
+        return False
+
+      if reply.command == pynvc.WKPF_ERROR_R:
+        print "[wkpfcomm] WKPF RETURNED ERROR ", reply.command
+        return False
+
+      #print '[wkpfcomm] ' + reply
+      return True
 
     def setLocation(self, destination, location):
       print '[wkpfcomm] setLocation', destination

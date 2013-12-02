@@ -58,6 +58,9 @@ WKPF_GET_FEATURES_R          = 0x9F
 WKPF_SET_FEATURE             = 0xA0
 WKPF_SET_FEATURE_R           = 0xA1
 WKPF_ERROR_R                 = 0xAF
+WKPF_PROBE                   = 0xB0
+WKPF_PROBE_R                 = 0xB1
+
 
 DEBUG_TRACE_PART             = 0xB0
 DEBUG_TRACE_FINAL            = 0xB2
