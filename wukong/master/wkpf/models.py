@@ -143,7 +143,7 @@ class WuNode:
     return None
   
   @classmethod
-  def saveNodes(cls, filename="../nodes.txt"):#for debug now, will expand to support reconstructing nodes from the dump ---- Sen
+  def saveNodes(cls, filename="../LocalData/nodes.txt"):#for debug now, will expand to support reconstructing nodes from the dump ---- Sen
       
     fin = open(filename,"w")
     for nd in WuNode.node_dict.values():
