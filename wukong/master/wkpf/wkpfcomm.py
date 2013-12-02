@@ -66,10 +66,16 @@ class Communication:
       node = WuNode.find(id=id)
       if not node:
         node = WuNode.create(id, "Local", type='master')
-      #self.getWuClassList(id)
-      #gevent.sleep(0)
 
-      self.getWuObjectList(id)
+      # create only wuobjects for mapping
+      if node:
+        for index, wuclassdef in enumerate(VirtualNode.getWuClassDefs()):
+          wuobject = WuObject.find(node_identity=node.identity,
+              wuclassdef_identity=wuclassdef.identity)
+          if not wuobject:
+            wuobject = WuObject.create(wuclassdef, node, index+1, False)
+
+      #self.getWuObjectList(id)
       gevent.sleep(0)
       return node
 
@@ -79,7 +85,7 @@ class Communication:
         node_ids = self.getNodeIds()
         nodeInfo = self.gen_virtual_node(node_ids[0])
         node_ids = node_ids[1:]
-        self.all_node_infos = [nodeInfo] + [self.getNodeInfo(int(destination)) for destination in node_ids]
+        self.all_node_infos = [nodeInfo] + [self.getNodeInfo(int(destination)) for destination in node_ids if self.getNodeInfo(int(destination))]
       else:
         print '[wkpfcomm] getting all nodes from cache'
       return copy.deepcopy(self.all_node_infos)
@@ -172,26 +178,30 @@ class Communication:
           wuobject = WuObject.create(wuclassdef, node, WuObject.ZWAVE_DIMMER_PORT3)
 
       else:
+	# FIXME: We shouldn't be doing duck typing for wudevices since we could detect
+	# devices other than light dimmers
+	return None
+
         # Create a virtual wuclass for non wukong device. We support switch only now. 
         # We may support others in the future.
-        node = WuNode.find(id=destination)
-        if not node:
-          node = WuNode.create(destination, 'WuKong',type='native')
-        wuclassdef = WuClassDef.find(id=4)    # Light_Actuator
-
-        if not wuclassdef:
-          print '[wkpfcomm] Unknown device type', generic
-          return None
-
-        wuobject = WuObject.find(node_identity=node.identity,
-            wuclassdef_identity=wuclassdef.identity)
-
-        # Create one
-        if not wuobject:
-          # 0x100 is a mgic number. When we see this in the code generator, 
-          # we will generate ZWave command table to implement the wuclass by
-          # using the Z-Wave command.
-          wuobject = WuObject.create(wuclassdef, node, WuObject.ZWAVE_SWITCH_PORT1)
+#        node = WuNode.find(id=destination)
+#        if not node:
+#          node = WuNode.create(destination, 'WuKong',type='native')
+#        wuclassdef = WuClassDef.find(id=4)    # Light_Actuator
+#
+#        if not wuclassdef:
+#          print '[wkpfcomm] Unknown device type', generic
+#          return None
+#
+#        wuobject = WuObject.find(node_identity=node.identity,
+#            wuclassdef_identity=wuclassdef.identity)
+#
+#        # Create one
+#        if not wuobject:
+#          # 0x100 is a mgic number. When we see this in the code generator, 
+#          # we will generate ZWave command table to implement the wuclass by
+#          # using the Z-Wave command.
+#          wuobject = WuObject.create(wuclassdef, node, WuObject.ZWAVE_SWITCH_PORT1)
 
 
       return node
@@ -291,16 +301,6 @@ class Communication:
       #set_wukong_status("Discovery: Requesting wuclass list from node %d" % (destination))
 
       wuclasses = []
-      node = WuNode.find(id=destination)
-      if node and node.type == 'master':
-        for wuclassdef in VirtualNode.getWuClassDefs():
-          wuclass = WuClass.find(node_identity=node.identity,
-              wuclassdef_identity=wuclassdef.identity)
-          if not wuclass:
-            wuclass = WuClass.create(wuclassdef, node, False)
-          wuclasses.append(wuclass)
-        return wuclasses 
-
       total_number_of_messages = None
       message_number = 0
       if SIMULATION == "true":
@@ -364,17 +364,6 @@ class Communication:
       #set_wukong_status("Discovery: Requesting wuobject list from node %d" % (destination))
 
       wuobjects = []
-      node = WuNode.find(id=destination)
-      if node and node.type == 'master':
-        print "master",node
-        for index, wuclassdef in enumerate(VirtualNode.getWuClassDefs()):
-          wuobject = WuObject.find(node_identity=node.identity,
-              wuclassdef_identity=wuclassdef.identity)
-          if not wuobject:
-            wuobject = WuObject.create(wuclassdef, node, index+1, False)
-          wuobjects.append(wuobject)
-        return wuobjects
-
       total_number_of_messages = None
       message_number = 0
       if SIMULATION == "true":
