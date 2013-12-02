@@ -1,8 +1,6 @@
 #include "debug.h"
 #include "native_wuclasses.h"
 
-#ifdef ENABLE_WUCLASS_LOGICAL
-
 void wuclass_logical_setup(wuobject_t *wuobject) {}
 
 void wuclass_logical_update(wuobject_t *wuobject) {
@@ -30,5 +28,3 @@ void wuclass_logical_update(wuobject_t *wuobject) {
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(logical): Native logical: input1 %x input2 %x input3 %x input4 %x operator %x-> FALSE\n", input1, input2, input3, input4, op);
   }
 }
-
-#endif

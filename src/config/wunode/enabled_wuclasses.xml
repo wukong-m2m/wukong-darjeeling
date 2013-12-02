@@ -3,4 +3,5 @@
     <WuClass name="Light_Sensor" appCanCreateInstances="false" createInstancesAtStartup="1" />
     <WuClass name="Light_Actuator" appCanCreateInstances="false" createInstancesAtStartup="1" />
     <WuClass name="Numeric_Controller" appCanCreateInstances="false" createInstancesAtStartup="1" />
+    <WuClass name="Temperature_Humidity_Sensor" appCanCreateInstances="false" createInstancesAtStartup="1" />
 </WuKong>

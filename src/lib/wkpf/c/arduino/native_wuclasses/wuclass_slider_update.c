@@ -2,8 +2,6 @@
 #include "../../common/native_wuclasses/native_wuclasses.h"
 #include <avr/io.h>
 
-#ifdef ENABLE_WUCLASS_SLIDER
-
 void wuclass_slider_setup(wuobject_t *wuobject) {}
 
 void wuclass_slider_update(wuobject_t *wuobject) {
@@ -56,5 +54,3 @@ void wuclass_slider_update(wuobject_t *wuobject) {
 // ADC CHANNEL 13, value for channel variable: 37
 // ADC CHANNEL 14, value for channel variable: 38
 // ADC CHANNEL 15, value for channel variable: 39
-
-#endif // ENABLE_WUCLASS_SLIDER

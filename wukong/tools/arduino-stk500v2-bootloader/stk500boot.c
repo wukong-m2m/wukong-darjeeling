@@ -305,7 +305,7 @@ LICENSE:
 #else
 	typedef uint16_t address_t;
 #endif
-
+int garbage_char=0;
 /*
  * function prototypes
  */
@@ -397,16 +397,19 @@ static unsigned char recchar(void)
 	return UART_DATA_REG;
 }
 
-#define	MAX_TIME_COUNT	(F_CPU >> 1)
+//#define	MAX_TIME_COUNT	(F_CPU>>1)
+#define	MAX_TIME_COUNT	(20000)
 //*****************************************************************************
 static unsigned char recchar_timeout(void)
 {
-uint32_t count = 0;
+	uint32_t count = 0;
 
 	while (!(UART_STATUS_REG & (1 << UART_RECEIVE_COMPLETE)))
 	{
 		// wait for data
 		count++;
+		if ((count % 1000)==0)
+			PORTK ^= 1;
 		if (count > MAX_TIME_COUNT)
 		{
 		unsigned int	data;
@@ -415,6 +418,11 @@ uint32_t count = 0;
 		#else
 			data	=	pgm_read_word_near(0);	//*	get the first word of the user program
 		#endif
+			UART_STATUS_REG	&=	0xfd;
+			boot_rww_enable();				// enable application section
+			PORTK ^= 8;
+			PROGLED_PORT	&=	~(1<<PROGLED_PIN);	// turn LED off
+
 			if (data != 0xffff)					//*	make sure its valid before jumping to it.
 			{
 				asm volatile(
@@ -423,6 +431,7 @@ uint32_t count = 0;
 						"ijmp	\n\t"
 						);
 			}
+
 			count	=	0;
 		}
 	}
@@ -473,6 +482,9 @@ int main(void)
 	PROGLED_DDR		|=	(1<<PROGLED_PIN);
 //	PROGLED_PORT	&=	~(1<<PROGLED_PIN);	// active low LED ON
 	PROGLED_PORT	|=	(1<<PROGLED_PIN);	// active high LED ON
+	DDRK |= 0xf;
+	PORTK = 0;
+	
 
 #ifdef _DEBUG_WITH_LEDS_
 	for (ii=0; ii<3; ii++)
@@ -523,9 +535,10 @@ int main(void)
 			if (boot_timer > boot_timeout)
 			{
 				boot_state	=	1; // (after ++ -> boot_state=2 bootloader timeout, jump to main 0x00000 )
+				PORTK=1;
 			}
 		#ifdef BLINK_LED_WHILE_WAITING
-			if ((boot_timer % 7000) == 0)
+			if ((boot_timer % 1000) == 0)
 			{
 				//*	toggle the LED
 				PROGLED_PORT	^=	(1<<PROGLED_PIN);	// turn LED ON
@@ -539,6 +552,7 @@ int main(void)
 	if (boot_state==1)
 	{
 		//*	main loop
+		PORTK=3;
 		while (!isLeave)
 		{
 			/*
@@ -556,6 +570,7 @@ int main(void)
 				{
 				//	c	=	recchar();
 					c	=	recchar_timeout();
+					PORTK^=4;
 				}
 
 			#ifdef ENABLE_MONITOR
@@ -584,6 +599,12 @@ int main(void)
 						{
 							msgParseState	=	ST_GET_SEQ_NUM;
 							checksum		=	MESSAGE_START^0;
+						} else {
+							garbage_char++;
+							if (garbage_char > 100) {
+								isLeave = 1;
+								msgParseState = ST_PROCESS;
+							}
 						}
 						break;
 
@@ -646,7 +667,6 @@ int main(void)
 						break;
 				}	//	switch
 			}	//	while(msgParseState)
-
 			/*
 			 * Now process the STK500 commands, see Atmel Appnote AVR068
 			 */
@@ -998,6 +1018,7 @@ int main(void)
 	}
 	PROGLED_PORT	&=	~(1<<PROGLED_PIN);	// turn LED off
 #endif
+	PORTK=0xf;
 
 #ifdef _DEBUG_SERIAL_
 	sendchar('j');

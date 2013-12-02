@@ -7,13 +7,10 @@
 #define output_high(port, pin) port |= (1<<pin)
 #define input_get(port, pin) ((port & (1 << pin)) != 0)
 
-#ifdef ENABLE_WUCLASS_BINARY_SENSOR
-
 #define DEBOUNCE_THREASHOLD 500
 
 void wuclass_binary_sensor_setup(wuobject_t *wuobject) {
-  //DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(BinarySensor): setup\n");
-  DEBUG_LOG(true, "WKPFUPDATE(BinarySensor): setup\n");
+  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(BinarySensor): setup\n");
   set_input(DDRE, 3);
   output_high(PINE, 3);
 }
@@ -33,8 +30,7 @@ void wuclass_binary_sensor_update(wuobject_t *wuobject) {
 
   int debounce;
   wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_BINARY_SENSOR_DEBOUNCE, &debounce);
-  
-  DEBUG_LOG(true, "WKPFUPDATE(BinarySensor): Sensed binary value: %d %d %d %d %x\n", currentValue, *delay, debounce, status, PINE);  
+  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(BinarySensor): Sensed binary value: %d %d %d %d %x\n", currentValue, *delay, debounce, status, PINE);  
 #if 0
   if(debounce < DEBOUNCE_THREASHOLD) { // busy waiting for short debounce
       wkpf_internal_read_property_boolean(wuobject, WKPF_PROPERTY_BINARY_SENSOR_CURRENT_VALUE, &currentValue);
@@ -60,11 +56,7 @@ void wuclass_binary_sensor_update(wuobject_t *wuobject) {
   }
 #endif
 
-  //DEBUG_LOG(DBG_WKCOMM, "WKPFUPDATE(BinarySensor): Sensed binary value hihihihihi: %d\n", currentValue);
-  DEBUG_LOG(true, "WKPFUPDATE(BinarySensor): Sensed binary value hihihihihi: %d\n", currentValue);
-  wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_BINARY_SENSOR_CURRENT_VALUE, currentValue);
-  DEBUG_LOG(true, "done %d\n", currentValue);
+  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(BinarySensor): Sensed binary value hihihihihi: %d\n", currentValue);
+  DEBUG_LOG(DBG_WKPFUPDATE, "done %d\n", currentValue);
   
 }
-
-#endif // ENABLE_WUCLASS_BINARY_SENSOR

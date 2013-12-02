@@ -2,8 +2,6 @@
 #include "../../common/native_wuclasses/native_wuclasses.h"
 #include <avr/io.h>
 
-#ifdef ENABLE_WUCLASS_FAN
-
 void wuclass_fan_setup(wuobject_t *wuobject) {}
 
 void wuclass_fan_update(wuobject_t *wuobject) {
@@ -19,5 +17,3 @@ void wuclass_fan_update(wuobject_t *wuobject) {
     PORTH &= ~_BV(4);
   DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Fan): Setting fan to: %x\n", onOff);
 }
-
-#endif // ENABLE_WUCLASS_FAN

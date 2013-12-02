@@ -1,8 +1,6 @@
 #include "debug.h"
 #include "native_wuclasses.h"
 
-#ifdef ENABLE_WUCLASS_CONDITION_SELECTOR_BOOLEAN
-
 void wuclass_condition_selector_boolean_setup(wuobject_t *wuobject) {}
 
 void wuclass_condition_selector_boolean_update(wuobject_t *wuobject) {
@@ -24,5 +22,3 @@ void wuclass_condition_selector_boolean_update(wuobject_t *wuobject) {
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(condition_selector_boolean): Native condition_selector_boolean: input %x control %x\n", input, control);
   }
 }
-
-#endif
