@@ -51,7 +51,7 @@ class WuApplication:
     self.templateDir = templateDir
     self.componentXml = componentXml
     self.wuComponents = {}
-    self.wuLinks = {}
+    self.wuLinkList = {}
     self.instanceIds = []
 
     self.changesets = ChangeSets([], [], [])
@@ -230,16 +230,18 @@ class WuApplication:
           from_component_id = linkTag.parentNode.getAttribute('instanceId')
           from_component = componentInstanceMap[from_component_id]
           from_property = linkTag.getAttribute('fromProperty').lower() 
+          from_property_id = WuObjectFactory.wuclassdefsbyname[from_component.type].properties[from_property].id
           to_component_id = linkTag.getAttribute('toInstanceId')
           to_component = componentInstanceMap[to_component_id]
           to_property =  linkTag.getAttribute('toProperty').lower() 
+          to_property_id = WuObjectFactory.wuclassdefsbyname[to_component.type].properties[to_property].id
 
 
           
-          hash_value = (int(fromInstanceId)*100+int(fromPropertyId))*100000+int(toInstanceId)*100+int(toPropertyId)
+          hash_value = (int(from_component_id)*100+int(from_property_id))*100000+int(to_component_id)*100+int(to_property_id)
           if hash_value not in self.wuLinkList:
-            link = WuLink(from_component_index, from_property_id, 
-                    to_component_index, to_property_id)
+            link = WuLink(from_component_id, from_property_id, 
+                    to_component_id, to_property_id)
             self.wuLinkList[hash_value] = link
             self.changesets.links.append(link)
           

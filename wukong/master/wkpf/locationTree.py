@@ -47,7 +47,7 @@ class SensorNode:
     def initPortList(self, forceInit = True):
         if len(self.port_list)!=0 and forceInit == False:
             return
-        for wuObj in self.nodeInfo.wuobjects():
+        for wuObj in self.nodeInfo.wuobjects.values():
             self.port_list.append(wuObj.port_number)
         self.port_list.sort()
     def reserveNextPort(self):      #reserve a port from 0 ~ 127
