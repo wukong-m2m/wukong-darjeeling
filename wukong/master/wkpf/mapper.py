@@ -143,6 +143,21 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                 print "appending vitual for", node.id
                 component.instances.append(wuobject)
                 pass # pass on to the next candidates
+            elif node.type != 'native' and node.type != 'picokong':
+                # create a new virtual wuobject where the node 
+                # doesn't have the wuclass for it
+                # TODO: should check for existance of virtual impl
+                # as indicated by the virtual attribute 
+                # (will be changed to a more appropriate name later)
+                sensorNode = locTree.sensor_dict[node.id]
+                sensorNode.initPortList(forceInit = False)
+                port_number = sensorNode.reserveNextPort()
+                wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number, True)
+                # don't save to db
+                component.instances.append(wuobject)
+
+                # TODO: looks like this will always return true for mapping
+                # regardless of whether java impl exist
             else:
                 pass # pass on to the next candidates
         print component.instances[0].wunode.id

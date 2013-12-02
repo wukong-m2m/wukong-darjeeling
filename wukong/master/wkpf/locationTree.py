@@ -536,7 +536,7 @@ class LocationTree:
         fin.write( "Landmarks:\n" + landmark_str)
         fin.close()
     
-    def loadTree(self, filename="../ComponentDefinitions/landmarks.txt"):
+    def loadTree(self, filename="../LocalData/landmarks.txt"):
         fout = open(filename, "r")
         content = fout.read()
         location_strs,landmark_strs = content.split("Landmarks:")
