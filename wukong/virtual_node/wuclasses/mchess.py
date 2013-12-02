@@ -51,7 +51,7 @@ class MCHESS:
 		for i in range(len(modes)):
 			location = locations[i]
 
-			for link in links.to():
+			for link in links.outdegrees():
 				compoment = link.compoment
 				property = link.property
 
