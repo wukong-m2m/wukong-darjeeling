@@ -43,7 +43,7 @@ class VirtualNodeProperty:
     return self.value
 
 
-class VirtalNodeLink:
+class VirtualNodeLink:
   def __init__(self, component, property):
     self.component = component
     self.property = property # the linked property
@@ -159,7 +159,7 @@ class VirtualNode:
         to_component = findComponentFromIndex(self.components, link.to_component_index)
 
         # FIXME: Assuming one to many (so MCHESS to many light wuobjects)
-	from_dirty_properties = [property for property in self.wuobjects[from_component.instances[0]].properties if property.dirty]
+        from_dirty_properties = [property for property in self.wuobjects[from_component.instances[0]].properties if property.dirty]
         for dirty_property in from_dirty_properties:
           if link.from_property_id == dirty_property.number:
             for instance in to_component.instances:
