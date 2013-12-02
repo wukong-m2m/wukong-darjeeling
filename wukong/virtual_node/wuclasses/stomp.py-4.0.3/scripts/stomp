@@ -1,0 +1,9 @@
+#! /usr/bin/env python
+
+import os
+import stomp
+import sys
+
+stomp_path = os.path.dirname(stomp.__file__)
+
+os.system('python %s %s' % (stomp_path, ' '.join(sys.argv)))
