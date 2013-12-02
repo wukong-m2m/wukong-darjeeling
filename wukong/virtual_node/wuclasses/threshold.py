@@ -4,7 +4,7 @@ GT=1
 LTE = 2
 GTE = 3
 
-class Threshold: 
+class Threshold(VirtualNodeWuClass): 
 	def __init__(self):
 		pass
 	
