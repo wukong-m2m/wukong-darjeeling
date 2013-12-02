@@ -30,7 +30,7 @@ except:
   sys.exit(-1)
 import wkpf.wusignal
 from wkpf.wuapplication import WuApplication
-from wkpf.parser import *
+from wkpf.wuclasslibraryparser import *
 from wkpf.wkpfcomm import *
 from wkpf.util import *
 
@@ -70,7 +70,7 @@ def rebuildTree(nodes):
   nodes_clone = copy.deepcopy(nodes)
   wkpf.globals.location_tree = LocationTree(LOCATION_ROOT)
   wkpf.globals.location_tree.buildTree(nodes_clone)
-  flag = os.path.exists("../ComponentDefinitions/landmarks.txt")
+  flag = os.path.exists("../LocalData/landmarks.txt")
   if(flag):
       wkpf.globals.location_tree.loadTree()
   wkpf.globals.location_tree.printTree()
@@ -133,20 +133,6 @@ def update_applications():
       logging.info('%s' % (dirname))
       wkpf.globals.applications.append(load_app_from_dir(app_dir))
       application_basenames = [os.path.basename(app.dir) for app in wkpf.globals.applications]
-
-# deprecated
-def getPropertyValuesOfApp(mapping_results, property_names):
-  properties_json = []
-
-  comm = getComm()
-  for wuobject in mapping_results.values():
-    for name in property_names:
-      if name in wuobject:
-        wuproperty = wuobject.getPropertyByName(name)
-        (value, datatype, status) = comm.getProperty(wuobject, int(wuproperty.getId()))
-        properties_json.append({'name': name, 'value': value, 'wuclassname': wuproperty.wuclass.name})
-
-  return properties_json
 
 class idemain(tornado.web.RequestHandler):
   def get(self):
@@ -372,7 +358,7 @@ class map_application(tornado.web.RequestHandler):
           wuobj_hash = {
             'instanceId': component.index,
             'name': component.type,
-            'nodeId': wuobj.wunode().id,
+            'nodeId': wuobj.wunode.id,
             'portNumber': wuobj.port_number,
             'virtual': wuobj.virtual
           }
@@ -890,12 +876,12 @@ class save_landmark(tornado.web.RequestHandler):
         
 class load_landmark(tornado.web.RequestHandler):
     def post(self):
-        flag = os.path.exists("../ComponentDefinitions/landmarks.txt")
+        flag = os.path.exists("../LocalData/landmarks.txt")
         if(flag):
             wkpf.globals.location_tree.loadTree()
             self.write({'message':'Load Successfully!'})
         else:
-            self.write({'message':'"../ComponentDefinitions/landmarks.txt" does not exist '})
+            self.write({'message':'"../LocalData/landmarks.txt" does not exist '})
         
 class add_landmark(tornado.web.RequestHandler):
   def put(self):
@@ -1032,7 +1018,7 @@ wukong = tornado.web.Application([
 
 logging.info("Starting up...")
 setup_signal_handler_greenlet()
-Parser.parseLibrary(COMPONENTXML_PATH)
+WuClassLibraryParser.read(COMPONENTXML_PATH)
 update_applications()
 import_wuXML()
 make_FBP()
