@@ -41,26 +41,25 @@ class MCHESS:
 		time.sleep(5)
 
 	def update(self, properties, links):
-		locations = ['1', '2', '3', '4']
+    dim_levels = {'L1': 0, 'L2': 0, 'R1': 0, 'R2': 0}
 		
 		modeStr = self.listener.mode
 		modes = modeStr.split(',')
 		print modes
+		dim_levels['L1'] = int(modes[0])
+		dim_levels['L2'] = int(modes[1])
+		dim_levels['R1'] = int(modes[2])
+		dim_levels['R2'] = int(modes[3])
 
 		
-		for i in range(len(modes)):
-			location = locations[i]
+    for link in links.outdegrees():
+      compoment = link.compoment
+      property = link.property
 
-			for link in links.outdegrees():
-				compoment = link.compoment
-				property = link.property
+      if compoment.name == 'Dimmer' and compoment.location in dim_levels:
+        if property.name == 'level':
+          property.set(dim_levels[component.location])
 
-				if compoment.name == 'Dimmer' and compoment.location == location:
-					if property.name == 'level':
-						property.set(123)
-
-			
-			
 
 
 
