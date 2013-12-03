@@ -338,7 +338,7 @@ class map_application(tornado.web.RequestHandler):
     else:
       platforms = ['avr_mega2560']
       # TODO: need platforms from fbp
-      node_infos = getComm().getActiveNodeInfos()
+      #node_infos = getComm().getActiveNodeInfos()
       rebuildTree(node_infos)
 
       # Map with location tree info (discovery), this will produce mapping_results
