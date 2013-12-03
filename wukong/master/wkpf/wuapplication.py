@@ -50,6 +50,9 @@ class WuApplication:
     self.destinationDir = outputDir
     self.templateDir = templateDir
     self.componentXml = componentXml
+    self.wuComponents = {}
+    self.wuLinkList = {}
+    self.instanceIds = []
 
     self.changesets = ChangeSets([], [], [])
 
@@ -168,21 +171,16 @@ class WuApplication:
       componentInstanceMap = {}
       application_hashed_name = self.applicationDom.getElementsByTagName('application')[0].getAttribute('name')
 
-      # Remove the duplicated components between pages
       components = self.applicationDom.getElementsByTagName('component')
-      temp = []
-      ids = {}
-      for c in components:
-        ID = c.getAttribute('instanceId')
-        if ids.has_key(ID) == False:
-          temp.append(c)
-          ids[ID] = 1
-      # TODO: parse application XML to generate WuClasses, WuObjects and WuLinks
-      for index, componentTag in enumerate(temp):
+      self.instanceIds = []
+
+      # parse application XML to generate WuClasses, WuObjects and WuLinks
+      for componentTag in components:
           # make sure application component is found in wuClassDef component list
           try:
-              assert componentTag.getAttribute('type').lower() in [x.name.lower() for x in WuClassDef.all()]
+              assert componentTag.getAttribute('type') in WuObjectFactory.wuclassdefsbyname.keys()
           except Exception as e:
+
             logging.error('unknown types for component found while parsing application')
             return #TODO: need to handle this
 
@@ -191,7 +189,7 @@ class WuApplication:
           if componentTag.getElementsByTagName('location'):
             location = componentTag.getElementsByTagName('location')[0].getAttribute('requirement')
           else:
-            location = LOCATION_ROOT
+            location = '/'+LOCATION_ROOT
 
           if componentTag.getElementsByTagName('group_size'):
             group_size = int(componentTag.getElementsByTagName('group_size')[0].getAttribute('requirement'))
@@ -203,88 +201,50 @@ class WuApplication:
           else:
             reaction_time = 2.0
 
-          action_attributes = {}
+          properties = {}
           # set default output property values for components in application
           for propertyTag in componentTag.getElementsByTagName('actionProperty'):
             for attr in propertyTag.attributes.values():
-              action_attributes[attr.name] = attr.value
+              properties[attr.name] = attr.value.strip()
 
-          signal_attributes = {}
           # set default input property values for components in application
           for propertyTag in componentTag.getElementsByTagName('signalProperty'):
             for attr in propertyTag.attributes.values():
-              signal_attributes[attr.name] = attr.value
-          final_attributes = dict(action_attributes.items()
-              + signal_attributes.items())
+              properties[attr.name] = attr.value.strip()
+          index = componentTag.getAttribute('instanceId')
+          if index in self.instanceIds:  #wucomponent already appears in other pages, merge property requirement, suppose location etc are the same
+            self.wuComponents[index].properties = dict(self.wuComponents[index].properties.items() + properties.items())
+          else:
+            component = WuComponent(index, location, group_size, reaction_time, type,
+                  application_hashed_name, properties)
+            componentInstanceMap[componentTag.getAttribute('instanceId')] = component
+            self.wuComponents[componentTag.getAttribute('instanceId')] = component
+            self.changesets.components.append(component)
+            self.instanceIds.append(index)
 
-          properties_with_default_values = {}
-          for x, y in final_attributes.items():
-            if y.strip() != "":
-              properties_with_default_values[x] = y
-
-          component = WuComponent(index, location, group_size, reaction_time, type,
-                  application_hashed_name, properties_with_default_values)
-          componentInstanceMap[componentTag.getAttribute('instanceId')] = component
-          self.changesets.components.append(component)
-
-                      
-          ''' deprecated
-          queries = []
-          for locationQuery in componentTag.getElementsByTagName('location'):
-              queries.append(locationQuery.getAttribute('requirement'))
-          if len(queries) ==0:
-              queries.append ('')
-          elif len (queries) > 1:
-              logging.error('input file violating the assumption there is one location requirement per component in application.xml')
-          # nodeId is not used here, portNumber is generated later
-          '''
-
-          ''' deprecated
-          #TODO: for each component, there is a list of wuObjs (length depending on group_size)
-          # Instance id is only for mapping temporarily (since there could be
-          # duplicate wuobjects)
-          self.wuObjects[wuObj.getInstanceId()] = [wuObj]
-          '''
-
-          ''' deprecated
-          self.FTComponentPolicy[str(wuObj.getWuClassId())] = {'level': None,
-            'reaction': None}
-
-          #FTComponentPolicy
-          #assume there is one group_size requirement per component
-          for groupSizeQuery in componentTag.getElementsByTagName('group_size'):
-              self.FTComponentPolicy[str(wuObj.getWuClassId())]['level'] = int(groupSizeQuery.getAttribute('requirement'))
-          #assume there is one reaction_time requirement per component
-          for reactionTimeQuery in componentTag.getElementsByTagName('reaction_time'):
-              self.FTComponentPolicy[str(wuObj.getWuClassId())]['reaction'] = int(reactionTimeQuery.getAttribute('requirement'))
-          '''
 
       #assumption: at most 99 properties for each instance, at most 999 instances
       linkSet = []  #store hashed result of links to avoid duplicated links: (fromInstanceId*100+fromProperty)*100000+toInstanceId*100+toProperty
       # links
       for linkTag in self.applicationDom.getElementsByTagName('link'):
-          from_component_index = componentInstanceMap[linkTag.parentNode.getAttribute('instanceId')].index
-          properties = WuClassDef.where(name=linkTag.parentNode.getAttribute('type'))[0].wupropertydefs()
-          from_property_id = [property for property in properties if linkTag.getAttribute('fromProperty').lower() == property.name.lower()][0].number
+          from_component_id = linkTag.parentNode.getAttribute('instanceId')
+          from_component = componentInstanceMap[from_component_id]
+          from_property = linkTag.getAttribute('fromProperty').lower() 
+          from_property_id = WuObjectFactory.wuclassdefsbyname[from_component.type].properties[from_property].id
+          to_component_id = linkTag.getAttribute('toInstanceId')
+          to_component = componentInstanceMap[to_component_id]
+          to_property =  linkTag.getAttribute('toProperty').lower() 
+          to_property_id = WuObjectFactory.wuclassdefsbyname[to_component.type].properties[to_property].id
+
+
           
-          to_component_index = componentInstanceMap[linkTag.getAttribute('toInstanceId')].index
+          hash_value = (int(from_component_id)*100+int(from_property_id))*100000+int(to_component_id)*100+int(to_property_id)
+          if hash_value not in self.wuLinkList:
+            link = WuLink(from_component_id, from_property_id, 
+                    to_component_id, to_property_id)
+            self.wuLinkList[hash_value] = link
+            self.changesets.links.append(link)
           
-          to_wuclass = WuClassDef.where(name=componentInstanceMap[linkTag.getAttribute('toInstanceId')].type)[0]
-          properties = to_wuclass.wupropertydefs()
-          to_property_id = [property for property in properties if linkTag.getAttribute('toProperty').lower() == property.name.lower()][0].number
-
-          to_wuclass_id = to_wuclass.id
-
-          link = WuLink(from_component_index, from_property_id, 
-                  to_component_index, to_property_id, to_wuclass_id)
-          self.changesets.links.append(link)
-
-          '''
-          hash_value = (int(fromInstanceId)*100+int(fromPropertyId))*100000+int(toInstanceId)*100+int(toPropertyId)
-          if hash_value not in linkSet:
-              linkSet.append(hash_value)
-              self.wuLinks.append( WuLink(fromWuObject, fromPropertyId, toWuObject, toPropertyId) )
-          '''
 
   def cleanAndCopyJava(self):
     # clean up the directory
@@ -329,7 +289,7 @@ class WuApplication:
 
   def deploy_with_discovery(self,*args):
     #node_ids = [info.id for info in getComm().getActiveNodeInfos(force=False)]
-    node_ids = set([x.wunode().id for component in self.changesets.components for x in component.instances])
+    node_ids = set([x.wunode.id for component in self.changesets.components for x in component.instances])
     self.deploy(node_ids,*args)
 
   def deploy(self, destination_ids, platforms):
@@ -360,7 +320,7 @@ class WuApplication:
       except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_traceback,
-                                      limit=2, file=sys.stdout)
+                                      limit=9, file=sys.stdout)
         self.errorDeployStatus("An error has encountered while generating java application! Backtrace is shown below:")
         self.errorDeployStatus(exc_traceback)
         return False
@@ -390,9 +350,10 @@ class WuApplication:
       gevent.sleep(0)
 
       for node_id in destination_ids:
-        node = WuNode.find(id=node_id)
+        node = WuNode.node_dict[node_id]
         print "Deploy to node %d type %s"% (node_id, node.type)
-        if node.type == 'native': continue
+        if node.type == 'native': #We need to review the logic here ---- Sen
+          continue
         remaining_ids.remove(node_id)
         self.logDeployStatus("Deploying to node %d, remaining %s" % (node_id, str(remaining_ids)))
         retries = 3
