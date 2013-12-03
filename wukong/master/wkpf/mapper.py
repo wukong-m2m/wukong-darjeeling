@@ -152,7 +152,7 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                 sensorNode = locTree.sensor_dict[node.id]
                 sensorNode.initPortList(forceInit = False)
                 port_number = sensorNode.reserveNextPort()
-                wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number, True)
+                wuobject = WuObject.new(wuclassdef, node, port_number, True)
                 # don't save to db
                 component.instances.append(wuobject)
 
