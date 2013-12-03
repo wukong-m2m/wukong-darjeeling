@@ -1,54 +1,26 @@
+import sys, os
 import gevent
-import imp
 from models import *
+from virtualNodeWuClass import *
 
-# The base class for user programmed python wuclass
-class VirtualNodeWuClass:
-  def __init__(self, port_number, node_id):
-    self.port_number = port_number
-    self.properties = VirtualNodeProperties()
-    self.node_id = node_id
+# Helper method
+def findComponentFromIndex(components, index):
+  for search in components:
+    if search.index == index:
+      return search
 
-class VirtualNodeProperties:
-  def __init__(self, properties=[]):
-    self.properties = properties
+  return None
 
-  def __iter__(self):
-    for elem in self.properties:
-      yield elem
-
-  def get(key):
-    for property in self.properties:
-      if property.key == key:
-        return property.get()
-
-  def set(key, value):
-    for property in self.properties:
-      if property.key == key:
-        return property.set(value)
+def keyFromInstance(instance):
+  return (instance.port_number, instance.wunode().id, instance.wuclassdef().id)
 
 
-class VirtualNodeProperty:
-  def __init__(self, key, number):
-    self.number = number # the number from WuPropertyDef in models.py
-    self.key = key
-    self.dirty = false
-    self.value = None
-
-  # FIXME: will have to add type checking
-  def set(self, value):
-    self.dirty = true
-    self.value = value
-
-  def get(self):
-    return self.value
 
 
 class VirtualNodeLink:
   def __init__(self, component, property):
     self.component = component
     self.property = property # the linked property
-
 
 # the parsed WuLinks of reference WuComponent for virtual node wuclasses
 # FIXME: find a better way to set reference component
@@ -59,24 +31,28 @@ class VirtualNodeLinks:
     self.component = component # reference component 
 
   def outdegrees(self):
-    outdegress = []
+    outdegrees = []
     for link in self.links:
-      if link.from_component_index == component.index:
-        outdegress_component = link.outdegress_component_index
-        outdegress_instances = outdegress_component.instances # all mapped wuobjects
-        for instance in outdegress_instances:
-          outdegress.append(VirtualNodeLink(outdegress_component, VirtualNode().getPropertiesOfInstance(instance)))
-    return outdegress
+      if link.from_component_index == self.component.index:
+        outdegrees_component = findComponentFromIndex(self.components, link.to_component_index)
+        outdegrees_instances = outdegrees_component.instances # all mapped wuobjects
+        for instance in outdegrees_instances:
+          wuclassdef = WuClassDef.find(name=outdegrees_component.type)
+          wupropertydef = WuPropertyDef.find(wuclass_id=wuclassdef.id, number=link.to_property_id)
+          outdegrees.append(VirtualNodeLink(outdegrees_component, VirtualNode.init().getPropertiesOfInstance(instance).getProperty(wupropertydef.name)))
+    return outdegrees
 
   def indegrees(self):
-    indegress = []
+    indegrees = []
     for link in self.links:
       if link.to_component_index == component.index:
-        indegress_component = link.indegress_component_index
-        indegress_instances = indegress_component.instances # all mapped wuobjects
+        indegrees_component = findComponentFromIndex(self.components, link.from_component_index)
+        indegrees_instances = indegrees_component.instances # all mapped wuobjects
         for instance in indegress_instances:
-          indegress.append(VirtualNodeLink(indegress_component, VirtualNode().getPropertiesOfInstance(instance)))
-    return indegress
+          wuclassdef = WuClassDef.find(name=indegrees_component.type)
+          wupropertydef = WuPropertyDef.find(wuclass_id=wuclassdef.id, number=link.from_property_id)
+          indegrees.append(VirtualNodeLink(indegrees_component, VirtualNode.init().getPropertiesOfInstance(instance).getProperty(wupropertydef.name)))
+    return indegrees
 
 
 
@@ -94,11 +70,26 @@ class VirtualNode:
     return cls._virtualNode
 
   def __init__(self):
+    print 'VirtualNode __init__'
     self.wuobjects = {}
-    self.component = []
+    self.components = []
     self.links = []
     self.changesets = None
-    imp.load_source('virtualNWuClass', '../virtual_node/wuclasses')
+
+    '''
+    import imp
+    from os import listdir
+    from os.path import isfile, join
+    mypath = '../virtual_node/wuclasses'
+    for py in [f for f in listdir(mypath) if isfile(join(mypath, f))]:
+      print py
+      print os.path.abspath(join(mypath, py))
+      if py.endswith('py'):
+        py_mod = imp.load_source(py, os.path.abspath(join(mypath, py)))
+        print py_mod
+        from py import *
+    '''
+    print 'VirtualNode imp load_source'
     gevent.spawn(self.run)
 
   def setComm(self,comm):
@@ -106,21 +97,35 @@ class VirtualNode:
 
   # Create real in memory wuobjects (not the wuobjects in models for mapping)
   def initializeWuObjects(self, changesets):
-    self.wuobjects = {}
+    print 'initializing WuObjects'
     for component in changesets.components:
       for instance in component.instances:
         wuclassdef = instance.wuclassdef()
         if wuclassdef.name and wuclassdef.id:
           # metaprogramming
           # eval is not secure, but we can be pretty sure that security is not on our priority list for now
-          wuobject = eval(wuclassdef.name)()
-          wuobject.node_id = instance.wunode().id
-          wuobject.port_number = instance.port_number
-          wuobject.properties = VirtualNodeProperties([VirtualNodeProperty(wpds.name, wpds.number) for wpds in wuclassdef.wupropertydefs()])
-          self.wuobjects[instance] = wuobject
+          properties = VirtualNodeProperties([VirtualNodeProperty(wpds.name, wpds.number) for wpds in wuclassdef.wupropertydefs()])
+
+          # set default values
+          for propertydef in wuclassdef.wupropertydefs():
+            value = propertydef.default_value
+            # FIXME: hard code datatype
+            if propertydef.name == 'level':
+              value = int(propertydef.default_value)
+            if value == 'true':
+              value = True
+            if value == 'false':
+              value = False
+            properties.set(propertydef.name, value)
+
+          wuobject = eval(wuclassdef.name)(instance.port_number, instance.wunode().id, properties)
+          print 'putting instance ', keyFromInstance(instance)
+          self.wuobjects[keyFromInstance(instance)] = wuobject
 
   def setupWuObjects(self):
+    print 'setuping WuObjects'
     for wuobject in self.wuobjects.values():
+      print 'setup WuObject', wuobject
       wuobject.setup()
 
   def deploy(self, changesets):
@@ -131,22 +136,17 @@ class VirtualNode:
     self.setupWuObjects()
 
   def updateWuObjects(self):
-    for wuobject in self.wuobjects.values():
-      wuclassdef = WuClassDef.find(name=wuobject.__class__.__name__)
-      for search in self.components:
-        if search.type == wuclassdef.name:
-          component = search
-      wuobject.update(wuobject.properties, VirtualNodeLinks(self.components, self.links, component))
-
-  def findComponentFromIndex(components, index):
-    for search in components:
-      if search.index == index:
-        return search
-
-    return None
+    if self.changesets and self.components:
+      for wuobject in self.wuobjects.values():
+        wuclassdef = WuClassDef.find(name=wuobject.__class__.__name__)
+        for search in self.components:
+          if search.type == wuclassdef.name:
+            component = search
+        wuobject.update(self, wuobject.properties, VirtualNodeLinks(self.components, self.links, component))
+        gevent.sleep(0.01)
 
   def propagateLinks(self):
-    if self.changesets:
+    if self.changesets and self.components:
       # Get all component indexes where they are on virtual node
       indexes = []
       for ind, component in enumerate(self.changesets.components):
@@ -161,14 +161,15 @@ class VirtualNode:
         to_component = findComponentFromIndex(self.components, link.to_component_index)
 
         # FIXME: Assuming one to many (so MCHESS to many light wuobjects)
-        from_dirty_properties = [property for property in self.wuobjects[from_component.instances[0]].properties if property.dirty]
-        for dirty_property in from_dirty_properties:
-          if link.from_property_id == dirty_property.number:
-            for instance in to_component.instances:
-              node = instance.wunode() # WuNode
-              self.pushProperty(node, instance, link.to_property_id, dirty_property.value)
-              dirty_property.dirty = false
-              gevent.sleep(0.01)
+        if keyFromInstance(from_component.instances[0]) in self.wuobjects:
+          from_dirty_properties = [property for property in self.wuobjects[keyFromInstance(from_component.instances[0])].properties if property.dirty]
+          for dirty_property in from_dirty_properties:
+            if link.from_property_id == dirty_property.number:
+              for instance in to_component.instances:
+                node = instance.wunode() # WuNode
+                self.pushProperty(node, instance, link.to_property_id, dirty_property.value)
+                dirty_property.dirty = False
+                gevent.sleep(0.01)
         
           
         #testing
@@ -179,18 +180,30 @@ class VirtualNode:
     
   def run(self):
     while 1:
-      # update all wuobjects to update properties, sense or actuate
-      self.updateWuObjects()
+      if self.changesets and self.components:
+        # update all wuobjects to update properties, sense or actuate
+        self.updateWuObjects()
 
-      # propagate changed properties to other properties based on the links
-      self.propagateLinks()
+        # propagate changed properties to other properties based on the links
+        self.propagateLinks()
       gevent.sleep(1) # sleep for 1 sec
 
   def getPropertiesOfInstance(self, instance):
-    return self.wuobjects[instance].properties
+    print 'getPropertiesOfInstance', self.wuobjects
+    return self.wuobjects[keyFromInstance(instance)].properties
 
 
   #Will push dirty properties to local or remote node
   #Not used in this demo
   def pushProperty(self, node, instance, property_id, value):
     pass
+
+sys.path.append(os.path.abspath('../virtual_node'))
+from wuclasses import *
+
+
+if __name__ == '__main__':
+  VirtualNode.init()
+  print Threshold(1, 1)
+  print MCHESS(1, 1)
+  print Dimmer(1, 1)
