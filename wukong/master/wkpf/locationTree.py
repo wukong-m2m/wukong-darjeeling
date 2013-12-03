@@ -91,7 +91,6 @@ class LocationTreeNode:
         #distance to self is always 0
         self.distanceModifier = {} #stores a list of distance between children, default 0, used for distance between sensors in different children.
         self.idSet = set([]) #all sensor ids contained in this Node and its children nodes
-  
         '''    obsolete requires numpy
             def transformToLocal(self, vect):
                 A = numpy.matrix(self.transMatrix)
@@ -529,7 +528,7 @@ class LocationTree:
   #          locTreeNode = pa
     
     #save tree structure and landmarks
-    def saveTree(self, filename="../LocalData/landmarks.txt"):
+    def saveTree(self, filename="../ComponentDefinitions/landmarks.txt"):
         landmark_str =""
         fin = open(filename,"w")
         landmark_str += self.__saveTreeNode(self.root, fin)

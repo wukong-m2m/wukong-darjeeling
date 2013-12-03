@@ -120,27 +120,29 @@ def firstCandidate(logger, changesets, routingTable, locTree):
 
         # construct wuobjects, instances of component
         for candidate in candidates:
-            wuclassdef = WuObjectFactory.wuclassdefsbyname[component.type]
+            wuclassdef = WuClassDef.find(name=component.type)
             node = locTree.getNodeInfoById(candidate)
-            available_wuobjects = [wuobject for wuobject in node.wuobjects.values() if wuobject.wuclassdef.id == wuclassdef.id]
-            has_wuclass = wuclassdef.id in node.wuclasses.keys()
+            has_wuobjects = [wuobject for wuobject in node.wuobjects() if wuobject.wuclassdef().id == wuclassdef.id]
+            has_wuclasses = [wuclass for wuclass in node.wuclasses() if wuclass.wuclassdef().id == wuclassdef.id]
 
-
-            if len(available_wuobjects) > 0 and not available_wuobjects[0].virtual:
-                # assuming there is no duplicated wuobjects on node, This is a bug, should be fixed later --- Sen
-                the_wuobject = available_wuobjects[0]
+            # virtual wuobject should be recreated instead of reuse
+            if len(has_wuobjects) > 0 and not has_wuobjects[0].virtual:
+                # assuming there is no duplicated wuobjects on node
+                the_wuobject = has_wuobjects[0]
                 # use existing wuobject
-                print "appending native for", node.id, the_wuobject.wunode.location
                 component.instances.append(the_wuobject)
                 pass # pass on to the next candidates
 
             # virtual wuclasses should be recreated instead of reuse
-            elif has_wuclass:
+            elif len(has_wuclasses) > 0 and not has_wuclasses[0].virtual:
+                # assuming there is no duplicated wuclasses on node
+                the_wuclass = has_wuclasses[0]
                 # create a new wuobject from existing wuclasses published from node (could be virtual)
+                sensorNode = locTree.sensor_dict[node.id]
                 sensorNode.initPortList(forceInit = False)
                 port_number = sensorNode.reserveNextPort()
-                wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number,True)
-                print "appending vitual for", node.id
+                wuobject = WuObject.new(the_wuclass.wuclassdef(), node, port_number)
+                # don't save to db yet
                 component.instances.append(wuobject)
                 pass # pass on to the next candidates
             elif node.type != 'native' and node.type != 'picokong':
@@ -160,18 +162,11 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                 # regardless of whether java impl exist
             else:
                 pass # pass on to the next candidates
-        print component.instances[0].wunode.id
-        print ([inst.wunode.id for inst in component.instances])
-        #this is ignoring ordering of policies, eg. location policy, should be fixed or replaced by other algorithm later--- Sen
+
         component.instances = sorted(component.instances, key=lambda wuObject: wuObject.virtual, reverse=False)
         # limit to min candidate if possible
-        # here is a bug if there are not enough elements in instances list   ---Sen
         component.instances = component.instances[:component.group_size]
-        print ([inst.wunode.id for inst in component.instances])
-        for inst in component.instances[component.group_size:]:     #roll back unused virtual wuclasses created in previous step
-          if inst.virtual:
-            WuObjectFactory.remove(inst.wunode, inst.port_number)
-        print ([inst.wunode.id for inst in component.instances])
+
         if len(component.instances) == 0:
           logger.errorMappingStatus('No avilable match could be found for component %s' % (component))
           return False

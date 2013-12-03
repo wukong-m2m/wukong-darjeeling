@@ -1,26 +1,26 @@
 {# needed the \\ because this is treated as a multiline string #} \
 <h4>WuClasses:</h4> \
 <ul> \
-  {% for wuclass_id in node_info.wuclasses %} \
+  {% for wuclass in node_info.wuclasses() %} \
   <li> \
     <p> \
-      Class Id: {{ wuclass_id }} \
+      Class Id: {{ wuclass.wuclassdef().id }} \
     </p> \
     <p> \
-      Class Name: {{ node_info.wuclasses[wuclass_id].name }} \
+      Class Name: {{ wuclass.wuclassdef().name }} \
     </p> \
   </li> \
   {% end %} \
 </ul> \
 <h4>WuObjects:</h4> \
 <ul> \
-  {% for port_number in node_info.wuobjects %} \
+  {% for wuobject in node_info.wuobjects() %} \
   <li> \
     <p> \
-      Class Name: {{ node_info.wuobjects[port_number].wuclassdef.name }} \
+      Class Name: {{ wuobject.wuclassdef().name }} \
     </p> \
     </p> \
-      Port Number: {{ port_number }} \
+      Port Number: {{ wuobject.port_number }} \
     </p> \
   </li> \
   {% end %} \

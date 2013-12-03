@@ -27,10 +27,10 @@
                 {% end %}
             </td>
             <td style="width:100px" align="center">
-                {{ len(node_info.wuclasses) }}
+                {{ len(node_info.wuclasses()) }}
             </td>
             <td style="width:100px" align="center">
-                {{ len(node_info.wuobjects) }} 
+                {{ len(node_info.wuobjects()) }} 
             </td>
             <td>
               <a role=button id=node{{ node_info.id }} data-toggle=modal href='#myModal' class='btn more'>Details</button>

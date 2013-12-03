@@ -8,7 +8,6 @@ class MockDiscovery:
     def __init__(self):
         self.dom = xml.dom.minidom.parse(MOCK_XML);
     def discovery(self):
-        self.dom = xml.dom.minidom.parse(MOCK_XML);
         nodes = self.dom.getElementsByTagName("Node")
         nodeList = []
         for node in nodes:
@@ -29,7 +28,7 @@ class MockDiscovery:
         return location
         
     def mockWuClassList(self, nodeId):
-        wuclasses = {}
+        wuclasses = []
         nodes = self.dom.getElementsByTagName("Node")
         found = False;
         for node in nodes:
@@ -46,15 +45,24 @@ class MockDiscovery:
                                 publish = wuclass.getAttribute("publish")
                                 virtual = True if wuclass.getAttribute("virtual")=="true" else False
                                 if publish == "true":
-                                    wunode = WuNode.findById(nodeId)
-                                    try:
-                                      wuclassdef = WuObjectFactory.wuclassdefsbyid[wuclass_id]
+                                    node = WuNode.find(id=nodeId)
+                                    if not node:
+                                      print '[wkpfcomm] Unknown node id', nodeId
+                                      break
 
-                                    except KeyError:
+                                    wuclassdef = WuClassDef.find(id=wuclass_id)
+
+                                    if not wuclassdef:
                                       print '[wkpfcomm] Unknown wuclass id', wuclass_id
                                       break
 
-                                    wuclasses[wuclass_id] = wuclassdef
+                                    wuclass = WuClass.find(node_identity=node.identity,
+                                        wuclassdef_identity=wuclassdef.identity)
+
+                                    if not wuclass:
+                                      wuclass = WuClass.create(wuclassdef, node, virtual)
+
+                                    wuclasses.append(wuclass)
                             found =  True;
                             break
                         if found:
@@ -63,7 +71,7 @@ class MockDiscovery:
                 break
         return wuclasses
     def mockWuObjectList(self, nodeId):
-        wuobjects = {}
+        wuobjects = []
         nodes = self.dom.getElementsByTagName("Node")
         found = False;
         for node in nodes:
@@ -78,18 +86,17 @@ class MockDiscovery:
                                     continue
                                 port_number = int(wuobj.getAttribute("port"), 0)
                                 wuclass_id = int(wuobj.getAttribute("id"), 0)
-                                virtual = False
-                                wunode = WuNode.findById(nodeId)
-                                try:
-                                  wuclassdef = WuObjectFactory.wuclassdefsbyid[wuclass_id]
-                                except KeyError:
+                                node = WuNode.find(id=nodeId)
+                                if not node:
+                                  print '[wkpfcomm] Unknown node id', nodeId
+                                wuclassdef = WuClassDef.find(id=wuclass_id)
+                                if not wuclassdef:
                                   print '[wkpfcomm] Unknown wuclass id', wuclass_id
-                                  break
-                                if (not wunode) or (port_number not in wunode.wuobjects.keys()) or wunode.wuobjects[port_number].wuclassdef != wuclassdef:
-                                  wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, port_number, virtual)
-                                else:
-                                  wuobject = wunode.wuobjects[port_number]
-                                wuobjects[port_number] = wuobject
+                                wuobject = WuObject.find(node_identity=node.identity,
+                                    wuclassdef_identity=wuclassdef.identity)
+                                if not wuobject:
+                                  wuobject = WuObject.create(wuclassdef, node, port_number)
+                                wuobjects.append(wuobject)
                             found =  True;
                             break
                         if found:
