@@ -1,4 +1,5 @@
 import gevent
+import imp
 from models import *
 
 # The base class for user programmed python wuclass
@@ -97,6 +98,7 @@ class VirtualNode:
     self.component = []
     self.links = []
     self.changesets = None
+    imp.load_source('virtualNWuClass', '../virtual_node/wuclasses')
     gevent.spawn(self.run)
 
   def setComm(self,comm):
