@@ -3,12 +3,11 @@
 </script>
 <script type="text/javascript" src="/static/js/deployment.js"></script>
 
-<script>
-  $.fn.editable.defaults.ajaxOptions = {type: "PUT"};
-  $('#app_name').editable({send: 'always'});
-</script>
-
-<h1>Application: <a href="" id="app_name" data-type="text" data-url="/applications/{{ app.id }}/rename" data-title="Application Name">{{ app.app_name }}</a></h1>
+<!-- optional, displays current wukong master status (e.g. mapping) -->
+<!-- could use polling to update in real time -->
+<div class="wukong-status">
+  <h1 id="msg"></h1>
+</div>
 
 <div id='wrapper'>
     <div class=row-fluid>

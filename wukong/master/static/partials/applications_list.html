@@ -1,8 +1,0 @@
-<table class="table table-hover">
-  <tbody>
-    <tr ng-repeat="app in apps | orderBy: 'app_name'">
-      <td class=appname><a href="#/a/{{app.id}}"><b><i>{{app.app_name}}</i></b></a></td>
-      <td class=appact><button class=close ng-click="remove(app)">&times;</button></td>
-    </tr>
-  </tbody>
-</table>

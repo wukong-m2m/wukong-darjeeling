@@ -77,6 +77,10 @@ body > table {
 }
 
 .appact {
-    /*min-width:112px;*/
+    min-width:112px;
+    padding: 10px;
+}
+
+#topbar {
     padding: 10px;
 }
