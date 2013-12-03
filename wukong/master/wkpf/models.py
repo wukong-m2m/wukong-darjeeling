@@ -102,7 +102,7 @@ class WuTypeDef:
   #values is a list of values
   def __init__(self, name, type,values=None):
       self.name = name
-      self.type = type
+      self.wutype = type
       self.values = values
       if self.values == None:
         self.values = []
