@@ -110,14 +110,14 @@ class VirtualNode:
     for component in changesets.components:
       for instance in component.instances:
         wuclassdef = instance.wuclassdef()
-	if wuclassdef.name and wuclassdef.id:
-    # metaprogramming
-    # eval is not secure, but we can be pretty sure that security is not on our priority list for now
-    wuobject = eval(wuclassdef.name)()
-    wuobject.node_id = instance.wunode().id
-    wuobject.port_number = instance.port_number
-    wuobject.properties = VirtualNodeProperties([VirtualNodeProperty(wpds.name, wpds.number) for wpds in wuclassdef.wupropertydefs()])
-    self.wuobjects[instance] = wuobject
+        if wuclassdef.name and wuclassdef.id:
+          # metaprogramming
+          # eval is not secure, but we can be pretty sure that security is not on our priority list for now
+          wuobject = eval(wuclassdef.name)()
+          wuobject.node_id = instance.wunode().id
+          wuobject.port_number = instance.port_number
+          wuobject.properties = VirtualNodeProperties([VirtualNodeProperty(wpds.name, wpds.number) for wpds in wuclassdef.wupropertydefs()])
+          self.wuobjects[instance] = wuobject
 
   def setupWuObjects(self):
     for wuobject in self.wuobjects.values():
