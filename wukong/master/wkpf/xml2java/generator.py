@@ -91,12 +91,17 @@ class Generator:
 
     @staticmethod
     def generateTablesXML(name, changesets):
-        def generateProperties(wuobject_properties, component_properties):
+        def generateProperties(wuobject_properties, component):
             properties = wuobject_properties
+            component_properties = component.properties
 
             for property in properties:
-                if property.name in component_properties:
+                if property.name in component_properties and len(component_properties[property.name].strip())>0:
                     property.value = component_properties[property.name]
+                else:   #if no value given, use default value of property
+                    default_val = WuObjectFactory.wuclassdefsbyname[component.type].properties[property.name].value
+                    if len(default_val) >0:
+                        property.value = default_val
             return [p for p in properties if p.access!='readonly']
 
         # TODO: this should be in a higher level place somewhere.
@@ -129,7 +134,7 @@ class Generator:
         component_index = 0
         for component in changesets.components:
             wuobject = component.instances[0]
-            for property in generateProperties(wuobject.properties.values(), component.properties_with_default_values):
+            for property in generateProperties(wuobject.properties.values(), component):
                 initvalue = ElementTree.SubElement(initvalues, 'initvalue')
                 initvalue.attrib['componentId'] = str(component_index)
                 initvalue.attrib['propertyNumber'] = str(property.id)
@@ -140,6 +145,7 @@ class Generator:
                     
                 if property.wutype.wutype == 'short' or property.wutype.wutype == 'int' or property.wutype.wutype == 'refresh_rate':
                     initvalue.attrib['value'] = str(property.value)
+                    print "property.value",property.name, property.value
                 elif property.wutype.wutype == 'boolean':
                     initvalue.attrib['value'] = '1' if property.value == 'true'else '0'
                 else: # Enum

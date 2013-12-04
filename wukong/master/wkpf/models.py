@@ -5,16 +5,16 @@ import copy
 
 class WuComponent:
   def __init__(self, component_index, location, group_size, reaction_time,
-          type, application_hashed_name, properties_with_default_values=None):
+          type, application_hashed_name, properties=None):
     self.index = component_index
     self.location = location
     self.group_size = group_size # int
     self.reaction_time = reaction_time # float
     self.type = type # wuclass name
     self.application_hashed_name = application_hashed_name
-    self.properties_with_default_values = properties_with_default_values
-    if self.properties_with_default_values == None:
-      self.properties_with_default_values = []
+    self.properties = properties  #properties without default values
+    if self.properties == None:
+      self.properties = []
 
     self.instances = [] # WuObjects allocated on various Nodes after mapping
     self.heartbeatgroups = []

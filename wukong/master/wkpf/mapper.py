@@ -76,7 +76,7 @@ def sortCandidates(wuObjects):
 #      {'index': 0, 'reaction_time': 1.0, 'group_size': 1, 'application_hashed_name': u'f92ea1839dc16d7396db358365da7066', 'heartbeatgroups': [], 'instances': [
 #    WuObject(
 #      {'node_identity': 1, 'wuproperty_cache': [], 'wuclassdef_identity': 11, 'virtual': 0, 'port_number': 0, 'identity': 1}
-#    )], 'location': 'WuKong', 'properties_with_default_values': {}, 'type': u'Light_Sensor'}
+#    )], 'location': 'WuKong', 'properties': {}, 'type': u'Light_Sensor'}
 #    )], links=[], heartbeatgroups=[])
 #############################
 
