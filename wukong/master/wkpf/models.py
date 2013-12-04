@@ -24,8 +24,10 @@ class WuLink:
           to_component, to_property_name):
     self.from_component = from_component
     self.from_property_name = from_property_name
+    self.from_property = WuObjectFactory.wuclassdefsbyname[from_component.type].properties[from_property_name]
     self.to_component = to_component
     self.to_property_name = to_property_name
+    self.to_property = WuObjectFactory.wuclassdefsbyname[to_component.type].properties[to_property_name]
 
 
 ########### in db #####################

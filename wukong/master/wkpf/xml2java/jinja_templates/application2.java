@@ -16,7 +16,7 @@ public class WKDeploy {
         {%- for component in changesets.components %}
             {% for wuobject in component.instances %}
                 {% if wuobject.virtual %}
-        WKPF.registerWuClass((short){{ wuobject.wuclassdef()|wuclassid }}, {{ wuobject.wuclassdef()|wuclassgenclassname }}.properties);
+        WKPF.registerWuClass((short){{ wuobject.wuclassdef|wuclassid }}, {{ wuobject.wuclassdef|wuclassgenclassname }}.properties);
                 {% endif %}
             {% endfor %}
         {%- endfor %}
@@ -41,8 +41,8 @@ public class WKDeploy {
                 // If wuclass is not on nodes and has to create a virtual wuobject
                 {% if wuobject.virtual %}
         if (WKPF.isLocalComponent((short){{ component.index }})) {
-            VirtualWuObject wuclassInstance{{ wuobject.wuclassdef()|wuclassname }} = new {{ wuobject.wuclassdef()|wuclassvirtualclassname }}();
-            WKPF.createWuObject((short){{ wuobject.wuclassdef()|wuclassid }}, WKPF.getPortNumberForComponent((short){{ component.index }}), wuclassInstance{{ wuobject.wuclassdef()|wuclassname }});
+            VirtualWuObject wuclassInstance{{ wuobject.wuclassdef|wuclassname }} = new {{ wuobject.wuclassdef|wuclassvirtualclassname }}();
+            WKPF.createWuObject((short){{ wuobject.wuclassdef|wuclassid }}, WKPF.getPortNumberForComponent((short){{ component.index }}), wuclassInstance{{ wuobject.wuclassdef|wuclassname }});
         }
                 {% endif %}
             {% endfor %}

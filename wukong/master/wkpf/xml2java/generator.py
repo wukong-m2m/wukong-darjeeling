@@ -116,10 +116,10 @@ class Generator:
         initvalues = ElementTree.SubElement(root, 'initvalues')
         for link in changesets.links:
             link_element = ElementTree.SubElement(links, 'link')
-            link_element.attrib['fromComponent'] = str(link.from_component_index)
-            link_element.attrib['fromProperty'] = str(link.from_property_id)
-            link_element.attrib['toComponent'] = str(link.to_component_index)
-            link_element.attrib['toProperty'] = str(link.to_property_id)
+            link_element.attrib['fromComponent'] = str(link.from_component.index)
+            link_element.attrib['fromProperty'] = str(link.from_property.id)
+            link_element.attrib['toComponent'] = str(link.to_component.index)
+            link_element.attrib['toProperty'] = str(link.to_property.id)
         component_index = 0
         for component in changesets.components:
             component_element = ElementTree.SubElement(components, 'component')
@@ -145,12 +145,11 @@ class Generator:
                     
                 if property.wutype.wutype == 'short' or property.wutype.wutype == 'int' or property.wutype.wutype == 'refresh_rate':
                     initvalue.attrib['value'] = str(property.value)
-                    print "property.value",property.name, property.value
                 elif property.wutype.wutype == 'boolean':
                     initvalue.attrib['value'] = '1' if property.value == 'true'else '0'
                 else: # Enum
-                    enumtype = WuObjectFactory.wutypedefs[property.name]
-                    enumvalues = [wuvalue.value.upper() for wuvalue in enumtype.values]
+                    enumtype = property.wutype
+                    enumvalues = [wuvalue.upper() for wuvalue in enumtype.values]
                     initvalue.attrib['value'] = str(enumvalues.index(property.value.upper())) # Translate the string representation to an integer
             component_index += 1
         tree.write(os.path.join(JAVA_OUTPUT_DIR, "WKDeploy.xml"))
