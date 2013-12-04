@@ -196,7 +196,7 @@ class WuApplication:
           if componentTag.getElementsByTagName('group_size'):
             group_size = int(componentTag.getElementsByTagName('group_size')[0].getAttribute('requirement'))
           else:
-            group_size = 1
+            group_size = 0 # meaning all possible
 
           if componentTag.getElementsByTagName('reaction_time'):
             reaction_time = float(componentTag.getElementsByTagName('reaction_time')[0].getAttribute('requirement'))

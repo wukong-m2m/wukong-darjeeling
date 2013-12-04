@@ -165,7 +165,8 @@ def firstCandidate(logger, changesets, routingTable, locTree):
 
         component.instances = sorted(component.instances, key=lambda wuObject: wuObject.virtual, reverse=False)
         # limit to min candidate if possible
-        component.instances = component.instances[:component.group_size]
+        if component.group_size:
+          component.instances = component.instances[:component.group_size]
 
         if len(component.instances) == 0:
           logger.errorMappingStatus('No avilable match could be found for component %s' % (component))
