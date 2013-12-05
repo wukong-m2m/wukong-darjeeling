@@ -522,7 +522,7 @@ class testrtt(tornado.web.RequestHandler):
 class refresh_nodes(tornado.web.RequestHandler):
   def post(self):
     global node_infos
-    node_infos = getComm().getActiveNodeInfos(False)
+    node_infos = getComm().getActiveNodeInfos(True)
     rebuildTree(node_infos)
     print ("node_infos in refresh nodes:",node_infos)
     #furniture data loaded from fake data for purpose of 
