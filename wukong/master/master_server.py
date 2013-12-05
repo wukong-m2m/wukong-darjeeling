@@ -508,13 +508,15 @@ class testrtt(tornado.web.RequestHandler):
   def get(self):
     global node_infos
 
-    comm = getComm()
-    node_infos = comm.getAllNodeInfos()
-    print node_infos
-    rebuildTree(node_infos)
-    #testrtt = template.Loader(os.getcwd()).load('static/testrtt.html').generate(log=['Please press the buttons to add/remove nodes.'], node_infos=node_infos, set_location=True, default_location = LOCATION_ROOT)
-    #self.content_type = 'application/json'
-    #self.write({'status':0, 'testrtt':testrtt})
+    node_infos = []
+    if wkpf.globals.connected:
+      comm = getComm()
+      node_infos = comm.getAllNodeInfos()
+      print node_infos
+      rebuildTree(node_infos)
+      #testrtt = template.Loader(os.getcwd()).load('static/testrtt.html').generate(log=['Please press the buttons to add/remove nodes.'], node_infos=node_infos, set_location=True, default_location = LOCATION_ROOT)
+      #self.content_type = 'application/json'
+      #self.write({'status':0, 'testrtt':testrtt})
     self.render('static/testrtt.html', log=['Please press the buttons to add/remove nodes.'], node_infos=node_infos, set_location=True, default_location = LOCATION_ROOT, connected=wkpf.globals.connected)
 
 class refresh_nodes(tornado.web.RequestHandler):
