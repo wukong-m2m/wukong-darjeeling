@@ -126,11 +126,11 @@ def firstCandidate(logger, changesets, routingTable, locTree):
             has_wuclasses = [wuclass for wuclass in node.wuclasses() if wuclass.wuclassdef().id == wuclassdef.id]
 
             # virtual wuobject should be recreated instead of reuse
-            if len(has_wuobjects) > 0 and not has_wuobjects[0].virtual:
+            if len(has_wuobjects) > 0 and not all([wuobject.virtual for wuobject in has_wuobjects]):
                 # assuming there is no duplicated wuobjects on node
-                the_wuobject = has_wuobjects[0]
-                # use existing wuobject
-                component.instances.append(the_wuobject)
+                for the_wuobject in has_wuobjects:
+                  # use existing wuobject
+                  component.instances.append(the_wuobject)
                 pass # pass on to the next candidates
 
             # virtual wuclasses should be recreated instead of reuse
@@ -165,6 +165,8 @@ def firstCandidate(logger, changesets, routingTable, locTree):
 
         component.instances = sorted(component.instances, key=lambda wuObject: wuObject.virtual, reverse=False)
         # limit to min candidate if possible
+        # FIXME: has to set to group_size 0 for m-chess demo
+        component.group_size = 0
         if component.group_size:
           component.instances = component.instances[:component.group_size]
 
