@@ -276,6 +276,9 @@ function FBP_link()
             FBP_buildConnection(FBP_source, obj);
         }
         FBP_source = null;
+        // This has to turn off to let next connection work 
+        // without pressing the button twice
+	    FBP_linkIsActive = false;
     });
 }
 function FBP_save()
