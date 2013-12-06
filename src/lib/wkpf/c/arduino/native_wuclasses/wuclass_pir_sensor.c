@@ -1,26 +1,20 @@
 #include "debug.h"
 #include "../../common/native_wuclasses/native_wuclasses.h"
 #include <avr/io.h>
+#include "../../common/native_wuclasses/GENERATEDwuclass_pir_sensor.h"
 
-void wuclass_pir_sensor_setup(wuobject_t *wuobject) {}
+#define set_input(portdir, pin) portdir &= ~(1<<pin)
+#define output_high(port, pin) port |= (1<<pin)
+#define input_get(port, pin) ((port & (1 << pin)) != 0)
+
+void wuclass_pir_sensor_setup(wuobject_t *wuobject) {
+  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(PirSensor): setup\n");
+  set_input(DDRH, 4);
+  output_high(PINH, 4);
+}
 
 void wuclass_pir_sensor_update(wuobject_t *wuobject) {
-  ADCSRA = _BV(ADEN) | (6 & 7);  // set prescaler value
-
-  ADMUX = (3 << 6) & 0xc0;              // set reference value
-
-  uint8_t channel  = 1; // channel 1 for pin A1
-  ADMUX = (ADMUX & 0xc0) | _BV(ADLAR) | (channel & 0x0f);
-  ADCSRB |= (channel & 0x20)>>2;
-
-  ADCSRA |= _BV(ADSC);                  // Start conversion
-  while(!(ADCSRA & _BV(ADIF)));         // wait for conversion complete
-  ADCSRA |= _BV(ADIF);                  // clear ADCIF
-  bool showup = false;
-  if(ADCH > 100) {
-    showup = true;
-    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(PirSensor): Sensed pir value (%d): true\n", ADCH);
-  }else
-    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(PirSensor): Sensed pir value (%d): false\n", ADCH);
-  wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_PIR_SENSOR_CURRENT_VALUE, showup);
+  bool currentValue = input_get(PINH, 4);
+  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(PirSensor): Sensed pir value: %d\n", currentValue);  
+  wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_MAGNETIC_SENSOR_OUTPUT, currentValue);  
 }
