@@ -91,12 +91,17 @@ class Generator:
 
     @staticmethod
     def generateTablesXML(name, changesets):
-        def generateProperties(wuobject_properties, component_properties):
+        def generateProperties(wuobject_properties, component):
             properties = wuobject_properties
+            component_properties = component.properties
 
             for property in properties:
-                if property.name in component_properties:
+                if property.name in component_properties and len(component_properties[property.name].strip())>0:
                     property.value = component_properties[property.name]
+                else:   #if no value given, use default value of property
+                    default_val = WuObjectFactory.wuclassdefsbyname[component.type].properties[property.name].value
+                    if len(default_val) >0:
+                        property.value = default_val
             return [p for p in properties if p.access!='readonly']
 
         # TODO: this should be in a higher level place somewhere.
@@ -111,10 +116,10 @@ class Generator:
         initvalues = ElementTree.SubElement(root, 'initvalues')
         for link in changesets.links:
             link_element = ElementTree.SubElement(links, 'link')
-            link_element.attrib['fromComponent'] = str(link.from_component_index)
-            link_element.attrib['fromProperty'] = str(link.from_property_id)
-            link_element.attrib['toComponent'] = str(link.to_component_index)
-            link_element.attrib['toProperty'] = str(link.to_property_id)
+            link_element.attrib['fromComponent'] = str(link.from_component.index)
+            link_element.attrib['fromProperty'] = str(link.from_property.id)
+            link_element.attrib['toComponent'] = str(link.to_component.index)
+            link_element.attrib['toProperty'] = str(link.to_property.id)
         component_index = 0
         for component in changesets.components:
             component_element = ElementTree.SubElement(components, 'component')
@@ -129,7 +134,7 @@ class Generator:
         component_index = 0
         for component in changesets.components:
             wuobject = component.instances[0]
-            for property in generateProperties(wuobject.properties.values(), component.properties_with_default_values):
+            for property in generateProperties(wuobject.properties.values(), component):
                 initvalue = ElementTree.SubElement(initvalues, 'initvalue')
                 initvalue.attrib['componentId'] = str(component_index)
                 initvalue.attrib['propertyNumber'] = str(property.id)
@@ -143,8 +148,8 @@ class Generator:
                 elif property.wutype.wutype == 'boolean':
                     initvalue.attrib['value'] = '1' if property.value == 'true'else '0'
                 else: # Enum
-                    enumtype = WuObjectFactory.wutypedefs[property.name]
-                    enumvalues = [wuvalue.value.upper() for wuvalue in enumtype.values]
+                    enumtype = property.wutype
+                    enumvalues = [wuvalue.upper() for wuvalue in enumtype.values]
                     initvalue.attrib['value'] = str(enumvalues.index(property.value.upper())) # Translate the string representation to an integer
             component_index += 1
         tree.write(os.path.join(JAVA_OUTPUT_DIR, "WKDeploy.xml"))

@@ -229,19 +229,19 @@ class WuApplication:
       for linkTag in self.applicationDom.getElementsByTagName('link'):
           from_component_id = linkTag.parentNode.getAttribute('instanceId')
           from_component = componentInstanceMap[from_component_id]
-          from_property = linkTag.getAttribute('fromProperty').lower() 
-          from_property_id = WuObjectFactory.wuclassdefsbyname[from_component.type].properties[from_property].id
+          from_property_name = linkTag.getAttribute('fromProperty').lower() 
+          from_property_id = WuObjectFactory.wuclassdefsbyname[from_component.type].properties[from_property_name].id
           to_component_id = linkTag.getAttribute('toInstanceId')
           to_component = componentInstanceMap[to_component_id]
-          to_property =  linkTag.getAttribute('toProperty').lower() 
-          to_property_id = WuObjectFactory.wuclassdefsbyname[to_component.type].properties[to_property].id
+          to_property_name =  linkTag.getAttribute('toProperty').lower() 
+          to_property_id = WuObjectFactory.wuclassdefsbyname[to_component.type].properties[to_property_name].id
 
 
           
           hash_value = (int(from_component_id)*100+int(from_property_id))*100000+int(to_component_id)*100+int(to_property_id)
-          if hash_value not in self.wuLinkList:
-            link = WuLink(from_component_id, from_property_id, 
-                    to_component_id, to_property_id)
+          if hash_value not in self.wuLinkList.keys():
+            link = WuLink(from_component, from_property_name, 
+                    to_component, to_property_name)
             self.wuLinkList[hash_value] = link
             self.changesets.links.append(link)
           
