@@ -157,7 +157,12 @@ class Communication:
 
     def getLocation(self, destination):
       print '[wkpfcomm] getLocation', destination
-
+      #########This code is put here just in case we need to change some node location before get it.
+      #Sometimes invalid locations block discovery, we have to correct it beforehand
+      #comm = getComm()   
+      #if comm.setLocation(1, "WuKong")
+      ##########################################
+      
       length = 0
       location = ''
       if SIMULATION == "true":

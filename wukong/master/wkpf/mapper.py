@@ -137,6 +137,7 @@ def firstCandidate(logger, changesets, routingTable, locTree):
             # virtual wuclasses should be recreated instead of reuse
             elif has_wuclass:
                 # create a new wuobject from existing wuclasses published from node (could be virtual)
+                sensorNode = locTree.sensor_dict[node.id]
                 sensorNode.initPortList(forceInit = False)
                 port_number = sensorNode.reserveNextPort()
                 wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number,True)

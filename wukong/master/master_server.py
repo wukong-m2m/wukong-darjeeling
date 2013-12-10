@@ -568,7 +568,6 @@ class nodes(tornado.web.RequestHandler):
         for info in comm.getActiveNodeInfos():
           if info.id == int(nodeId):
             info.location = location
-            info.save()
             senNd = SensorNode(info)
             print (info.location)
             wkpf.globals.location_tree.addSensor(senNd)
