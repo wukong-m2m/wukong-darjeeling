@@ -4,6 +4,7 @@ import copy
 
 
 class WuComponent:
+ 
   def __init__(self, component_index, location, group_size, reaction_time,
           type, application_hashed_name, properties=None):
     self.index = component_index
@@ -15,10 +16,10 @@ class WuComponent:
     self.properties = properties  #properties without default values
     if self.properties == None:
       self.properties = []
-
+    self.tmpid = -1     #temporary id, only used for generating wkpfdeploy.xml
     self.instances = [] # WuObjects allocated on various Nodes after mapping
     self.heartbeatgroups = []
-
+    
 class WuLink:
   def __init__(self, from_component, from_property_name,
           to_component, to_property_name):
