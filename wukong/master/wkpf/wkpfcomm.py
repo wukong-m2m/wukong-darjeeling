@@ -3,6 +3,7 @@ import sys, time, copy
 from transport import *
 from locationTree import *
 from models import *
+from virtualNode import *
 from globals import *
 from configuration import *
 import simulator
@@ -27,6 +28,7 @@ class Communication:
       self.all_node_infos = []
       self.broker = getAgent()
       self.device_type = None
+      VirtualNode.init().setComm(self)
       try:
         if SIMULATION == "true":
           raise KeyboardInterrupt
@@ -60,11 +62,29 @@ class Communication:
     def getNodeInfos(self, node_ids):
       return filter(lambda info: info.id in node_ids, self.getAllNodeInfos())
 
+    def gen_virtual_node(self, id):
+      node = WuNode(id, "Local", type='master')
+
+      wuobjects = {}
+      # create only wuobjects for mapping
+      for index, wuclassdef in enumerate(VirtualNode.getWuClassDefs()):
+        wuobjects[index+1] = WuObjectFactory.createWuObject(wuclassdef, node, index+1, False)
+      node.wuobjects = wuobjects
+
+      gevent.sleep(0)
+      return node
+
     def getAllNodeInfos(self, force=False):
-      print '[wkpfcomm] getting all nodes from discovery'
-      self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
-      WuNode.saveNodes()
-      return self.all_node_infos
+      if self.all_node_infos == [] or force:
+        print '[wkpfcomm] getting all nodes from discovery'
+        node_ids = self.getNodeIds()
+        nodeInfo = self.gen_virtual_node(node_ids[0])
+        node_ids = node_ids[1:]
+        self.all_node_infos = [nodeInfo] + [self.getNodeInfo(int(destination)) for destination in node_ids if self.getNodeInfo(int(destination))]
+        WuNode.saveNodes()
+      else:
+        print '[wkpfcomm] getting all nodes from cache'
+      return copy.deepcopy(self.all_node_infos)
 
     def updateAllNodeInfos(self):
       nodelist = self.getNodeIds()
@@ -107,9 +127,9 @@ class Communication:
       print '[wkpfcomm] getNodeInfo of node id', destination
 
       (basic,generic,specific) = self.getDeviceType(destination)
-      #print "basic=", basic
-      #print "generic=", generic
-      #print "specific=", specific
+      print "basic=", basic
+      print "generic=", generic
+      print "specific=", specific
       if generic == 0xff:
         node = WuNode.findById(destination)
         location = self.getLocation(destination)
@@ -127,27 +147,57 @@ class Communication:
         
         node.wuobjects = wuObjects
         gevent.sleep(0)
-        
-      else:
-        # Create a virtual wuclass for non wukong device. We support switch only now. 
-        # We may support others in the future.
-        
-        wuclassdef = WuObjectFactory.wuclassdefsbyid["4"]    # Light_Actuator
+      elif generic == 0x2:
+        node = WuNode.findById(destination)
+        if not node:
+          node = WuNode.create(destination, "Gateway", type='gateway')
+      elif generic == 17:
+        # Create an dimmer object
+        node = WuNode.findById(destination)
+        if not node:
+          node = WuNode.create(destination, 'WuKong', type='native')
+        wuclassdef = WuObjectFactory.wuclassdefsbyid["44"]    # Dimmer
 
         if not wuclassdef:
           print '[wkpfcomm] Unknown device type', generic
           return None
-        wunode = WuNode(destination, LOCATION_ROOT,type='native')
-        port_number =1
-        
 
-        # Create one
-        if (WuObject.ZWAVE_SWITCH_PORT not in node.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
-          # 0x100 is a mgic number. When we see this in the code generator, 
-          # we will generate ZWave command table to implement the wuclass by
-          # using the Z-Wave command.
-          wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_SWITCH_PORT, False, property_values={})
-          wuobjects[WuObject.ZWAVE_SWITCH_PORT] = wuobject
+        # Create wuobjects for all channels
+        # FIXME: This is a simple hack for the demo. We need to investigate the device more by using
+        # the multichannel command to get the number of instances.
+        # In addition, the wuobject generation code here should be splited into two parts, we should multiple nodeinfo
+        # each of them represent one instace with proper device type information so that we can reuse the
+        # multi instance code between differnt radios. For now , we try to make it work with three channel dimmer.
+        wuobjects[WuObject.ZWAVE_DIMMER_PORT1] = WuObject.create(wuclassdef, node, WuObject.ZWAVE_DIMMER_PORT1)
+        wuobjects[WuObject.ZWAVE_DIMMER_PORT2] = WuObject.create(wuclassdef, node, WuObject.ZWAVE_DIMMER_PORT2)
+        wuobjects[WuObject.ZWAVE_DIMMER_PORT3] = WuObject.create(wuclassdef, node, WuObject.ZWAVE_DIMMER_PORT3)
+
+      else:
+	    # FIXME: We shouldn't be doing duck typing for wudevices since we could detect
+	    # devices other than light dimmers
+    	return None
+
+        # Create a virtual wuclass for non wukong device. We support switch only now. 
+        # We may support others in the future.
+#        node = WuNode.find(id=destination)
+#        if not node:
+#          node = WuNode.create(destination, 'WuKong',type='native')
+#        wuclassdef = WuClassDef.find(id=4)    # Light_Actuator
+#
+#        if not wuclassdef:
+#          print '[wkpfcomm] Unknown device type', generic
+#          return None
+#
+#        wuobject = WuObject.find(node_identity=node.identity,
+#            wuclassdef_identity=wuclassdef.identity)
+#
+#        # Create one
+#        if not wuobject:
+#          # 0x100 is a mgic number. When we see this in the code generator, 
+#          # we will generate ZWave command table to implement the wuclass by
+#          # using the Z-Wave command.
+#          wuobject = WuObject.create(wuclassdef, node, WuObject.ZWAVE_SWITCH_PORT1)
+
 
       return node
 
@@ -329,6 +379,7 @@ class Communication:
 
           if not node:
             print '[wkpfcomm] Unknown node id', destination
+            break
 
           wuclassdef = WuObjectFactory.wuclassdefsbyid[wuclass_id]
 
@@ -355,7 +406,7 @@ class Communication:
       wunode = wuobject.wunode
       value = wuproperty.value
       datatype = wuproperty.datatype
-      number = wuproperty.number
+      number = wuproperty.id
 
       reply = self.zwave.send(wunode.id, 
               pynvc.WKPF_READ_PROPERTY,
@@ -393,7 +444,7 @@ class Communication:
       wunode = wuobject.wunode
       value = wuproperty.value
       datatype = wuproperty.datatype
-      #number = wuproperty.wupropertydef.number
+      number = wuproperty.id
 
       if datatype == 'boolean':
         datatype = WKPF_PROPERTY_TYPE_BOOLEAN
