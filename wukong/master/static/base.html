@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{% block title %}{% end %}</title>
+    <link type="text/css" href="/static/css/smoothness/jquery-ui-1.9.2.custom.min.css" rel="stylesheet" />
+    <link type="text/css" href="/static/css/jquery.contextMenu.css" rel="stylesheet" />
+    <link type="text/css" href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link type="text/css" href="/static/css/jquery.treeview.css" rel="stylesheet"/>
+    <link type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.4.5/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet" />
+    <link type="text/css" href="/static/css/base.css" rel="stylesheet" />
+    {% block head_css %}{% end %}
+
+    <script type="text/javascript" src="/static/js/underscore-min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-ui-1.9.2.custom.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular-resource.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.0/angular-ui-router.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-ui-disabler-1.0.0.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.contextMenu.js"></script>
+    <script type="text/javascript" src="/static/js/json2.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.blockUI.js"></script>
+    <script type="text/javascript" src="/static/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.4.5/bootstrap-editable/js/bootstrap-editable.min.js"></script>
+    {% block head_js %}{% end %}
+  </head>
+    <body>
+      <!-- Top bar -->
+      <div class="navbar">
+        <div class="navbar-inner">
+          <a class="brand" href="/"><small><img src="/static/images/wukong_logo.jpg" width=25 height=20 /></small> Wukong </a>
+          <ul class="nav">
+            {% block nav %}{% end %}
+          </ul>
+        </div>
+      </div>
+
+      {% if not connected %}
+      <div class="alert">
+        <h4>It appears that you have not connected to a zwave gateway</h4>
+        <p>Please connect a zwave gateway to the master and restart.</p>
+      </div>
+      {% end %}
+
+
+      {% block container %}{% end %}
+
+      <!--
+      <table width="100%" border=0 height="100%">
+        <tbody>
+          <tr valign=top>
+            <td id="content" class="content"></td>
+          </tr>
+        </tbody>
+      </table>
+      -->
+    </body>
+</html>

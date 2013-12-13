@@ -1,7 +1,20 @@
+{% extends "base.html" %}
+
+{% block nav %}
+<li><a href="/">Applications</a></li>
+<li class="active"><a href="/testrtt">Node Editor</a></li>
+<li><a href="/loc_tree">Landmark Editor</a></li>
+<li><a href="/ide">WuClass Designer</a></li>
+{% end %}
+
+{% block head_js %}
 <script type="text/javascript" src="/static/js/testrtt.js"></script>
 <script type="text/javascript" src="/static/js/display_locationTree.js"></script>
+{% end %}
 
-<div id='wrapper'>
+
+{% block container %}
+<div id='container-fluid'>
     <div class=row-fluid>
         <div class="span12">
             <div class=tabbable>
@@ -50,3 +63,4 @@
         </div>
     </div>
 </div>
+{% end %}
