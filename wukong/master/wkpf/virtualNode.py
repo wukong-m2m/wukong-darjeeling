@@ -60,7 +60,8 @@ class VirtualNodeLinks:
 class VirtualNode:
   @classmethod
   def getWuClassDefs(cls):
-    return [WuClassDef.find(id=434)]
+    return [WuObjectFactory.wuclassdefsbyid[434]]
+    #return [WuClassDef.find(id=434)]
 
   _virtualNode = None
   @classmethod
