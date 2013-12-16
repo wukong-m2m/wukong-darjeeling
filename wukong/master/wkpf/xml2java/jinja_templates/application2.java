@@ -40,7 +40,7 @@ public class WKDeploy {
             {% for wuobject in component.instances %}
                 // If wuclass is not on nodes and has to create a virtual wuobject
                 {% if wuobject.virtual %}
-        if (WKPF.isLocalComponent((short){{ component.index }})) {
+        if (WKPF.isLocalComponent((short){{ component.tmpid }})) {
             VirtualWuObject wuclassInstance{{ wuobject.wuclassdef|wuclassname }} = new {{ wuobject.wuclassdef|wuclassvirtualclassname }}();
             WKPF.createWuObject((short){{ wuobject.wuclassdef|wuclassid }}, WKPF.getPortNumberForComponent((short){{ component.index }}), wuclassInstance{{ wuobject.wuclassdef|wuclassname }});
         }
