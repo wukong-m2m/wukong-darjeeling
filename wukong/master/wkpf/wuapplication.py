@@ -194,7 +194,7 @@ class WuApplication:
           if componentTag.getElementsByTagName('group_size'):
             group_size = int(componentTag.getElementsByTagName('group_size')[0].getAttribute('requirement'))
           else:
-            group_size = 1
+            group_size = 0 # meaning all possible
 
           if componentTag.getElementsByTagName('reaction_time'):
             reaction_time = float(componentTag.getElementsByTagName('reaction_time')[0].getAttribute('requirement'))
@@ -352,8 +352,9 @@ class WuApplication:
       for node_id in destination_ids:
         node = WuNode.node_dict[node_id]
         print "Deploy to node %d type %s"% (node_id, node.type)
-        if node.type == 'native': #We need to review the logic here ---- Sen
-          continue
+        if node.type == 'native': continue
+        if node.type == 'gateway': continue
+        if node.type == 'master': VirtualNode.init().deploy(self.changesets)
         remaining_ids.remove(node_id)
         self.logDeployStatus("Deploying to node %d, remaining %s" % (node_id, str(remaining_ids)))
         retries = 3
