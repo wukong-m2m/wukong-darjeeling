@@ -16,10 +16,12 @@ from wkpf.util import *
 class Generator:
     @staticmethod
     def generate(name, changesets):
-        print '[generator] generate Java App'
-        Generator.generateJavaApplication(name, changesets)
+        Generator.generateTempComponentID(name, changesets)
         print '[generator] generate Table XML'
         Generator.generateTablesXML(name, changesets)
+        print '[generator] generate Java App'
+        Generator.generateJavaApplication(name, changesets)
+        
 
     @staticmethod
     def generateJavaApplication(name, changesets):
@@ -88,7 +90,12 @@ class Generator:
         output = open(os.path.join(JAVA_OUTPUT_DIR, "WKDeploy.java"), 'w')
         output.write(jinja2_env.get_template('application2.java').render(name=name, changesets=changesets))
         output.close()
-
+    @staticmethod
+    def generateTempComponentID(name, changesets):
+        component_index = 0
+        for component in changesets.components:
+          component.tmpid = component_index
+          component_index = component_index + 1
     @staticmethod
     def generateTablesXML(name, changesets):
         def generateProperties(wuobject_properties, component):
@@ -114,10 +121,7 @@ class Generator:
         links = ElementTree.SubElement(root, 'links')
         components = ElementTree.SubElement(root, 'components')
         initvalues = ElementTree.SubElement(root, 'initvalues')
-        component_index = 0
-        for component in changesets.components:
-            component.tmpid = component_index
-            component_index = component_index + 1
+        
         for link in changesets.links:
             link_element = ElementTree.SubElement(links, 'link')
             link_element.attrib['fromComponent'] = str(link.from_component.tmpid)
