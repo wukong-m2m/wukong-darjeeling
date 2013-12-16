@@ -30,9 +30,10 @@ except:
   sys.exit(-1)
 import wkpf.wusignal
 from wkpf.wuapplication import WuApplication
-from wkpf.parser import *
+from wkpf.wuclasslibraryparser import *
 from wkpf.wkpfcomm import *
 from wkpf.util import *
+from wkpf.virtualNode import *
 
 import wkpf.globals
 from configuration import *
@@ -70,7 +71,7 @@ def rebuildTree(nodes):
   nodes_clone = copy.deepcopy(nodes)
   wkpf.globals.location_tree = LocationTree(LOCATION_ROOT)
   wkpf.globals.location_tree.buildTree(nodes_clone)
-  flag = os.path.exists("../ComponentDefinitions/landmarks.txt")
+  flag = os.path.exists("../LocalData/landmarks.txt")
   if(flag):
       wkpf.globals.location_tree.loadTree()
   wkpf.globals.location_tree.printTree()
@@ -133,20 +134,6 @@ def update_applications():
       logging.info('%s' % (dirname))
       wkpf.globals.applications.append(load_app_from_dir(app_dir))
       application_basenames = [os.path.basename(app.dir) for app in wkpf.globals.applications]
-
-# deprecated
-def getPropertyValuesOfApp(mapping_results, property_names):
-  properties_json = []
-
-  comm = getComm()
-  for wuobject in mapping_results.values():
-    for name in property_names:
-      if name in wuobject:
-        wuproperty = wuobject.getPropertyByName(name)
-        (value, datatype, status) = comm.getProperty(wuobject, int(wuproperty.getId()))
-        properties_json.append({'name': name, 'value': value, 'wuclassname': wuproperty.wuclass.name})
-
-  return properties_json
 
 class idemain(tornado.web.RequestHandler):
   def get(self):
@@ -338,7 +325,9 @@ class map_application(tornado.web.RequestHandler):
       rebuildTree(node_infos)
 
       # Map with location tree info (discovery), this will produce mapping_results
-      mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, getComm().getRoutingInformation())
+      #mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, getComm().getRoutingInformation())
+      # routing table is useless now
+      mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, None)
 
       ret = []
       for component in wkpf.globals.applications[app_ind].changesets.components:
@@ -354,7 +343,7 @@ class map_application(tornado.web.RequestHandler):
           wuobj_hash = {
             'instanceId': component.index,
             'name': component.type,
-            'nodeId': wuobj.wunode().id,
+            'nodeId': wuobj.wunode.id,
             'portNumber': wuobj.port_number,
             'virtual': wuobj.virtual
           }
@@ -505,19 +494,21 @@ class testrtt(tornado.web.RequestHandler):
   def get(self):
     global node_infos
 
-    comm = getComm()
-    node_infos = comm.getAllNodeInfos()
-    print node_infos
-    rebuildTree(node_infos)
-    #testrtt = template.Loader(os.getcwd()).load('static/testrtt.html').generate(log=['Please press the buttons to add/remove nodes.'], node_infos=node_infos, set_location=True, default_location = LOCATION_ROOT)
-    #self.content_type = 'application/json'
-    #self.write({'status':0, 'testrtt':testrtt})
+    node_infos = []
+    if wkpf.globals.connected:
+      comm = getComm()
+      node_infos = comm.getAllNodeInfos()
+      print node_infos
+      rebuildTree(node_infos)
+      #testrtt = template.Loader(os.getcwd()).load('static/testrtt.html').generate(log=['Please press the buttons to add/remove nodes.'], node_infos=node_infos, set_location=True, default_location = LOCATION_ROOT)
+      #self.content_type = 'application/json'
+      #self.write({'status':0, 'testrtt':testrtt})
     self.render('static/testrtt.html', log=['Please press the buttons to add/remove nodes.'], node_infos=node_infos, set_location=True, default_location = LOCATION_ROOT, connected=wkpf.globals.connected)
 
 class refresh_nodes(tornado.web.RequestHandler):
   def post(self):
     global node_infos
-    node_infos = getComm().getActiveNodeInfos(False)
+    node_infos = getComm().getActiveNodeInfos(True)
     rebuildTree(node_infos)
     print ("node_infos in refresh nodes:",node_infos)
     #furniture data loaded from fake data for purpose of 
@@ -560,15 +551,13 @@ class nodes(tornado.web.RequestHandler):
       return
     if location:
       comm = getComm()
-      if comm.setLocation(int(nodeId), location):
-        # update our knowledge too
-        for info in comm.getActiveNodeInfos():
-          if info.id == int(nodeId):
-            info.location = location
-            info.save()
-            senNd = SensorNode(info)
-            print (info.location)
-            wkpf.globals.location_tree.addSensor(senNd)
+      info = WuNode.find(id=int(nodeId))
+      if info.type != 'wudevice' or comm.setLocation(int(nodeId), location):
+        info.location = location
+        info.save()
+        senNd = SensorNode(info)
+        print (info.location)
+        wkpf.globals.location_tree.addSensor(senNd)
         wkpf.globals.location_tree.printTree()
         self.content_type = 'application/json'
         self.write({'status':0})
@@ -873,12 +862,12 @@ class save_landmark(tornado.web.RequestHandler):
         
 class load_landmark(tornado.web.RequestHandler):
     def post(self):
-        flag = os.path.exists("../ComponentDefinitions/landmarks.txt")
+        flag = os.path.exists("../LocalData/landmarks.txt")
         if(flag):
             wkpf.globals.location_tree.loadTree()
             self.write({'message':'Load Successfully!'})
         else:
-            self.write({'message':'"../ComponentDefinitions/landmarks.txt" does not exist '})
+            self.write({'message':'"../LocalData/landmarks.txt" does not exist '})
         
 class add_landmark(tornado.web.RequestHandler):
   def put(self):
@@ -1028,10 +1017,11 @@ wukong = tornado.web.Application([
 
 logging.info("Starting up...")
 setup_signal_handler_greenlet()
-Parser.parseLibrary(COMPONENTXML_PATH)
+WuClassLibraryParser.read(COMPONENTXML_PATH)
 update_applications()
 import_wuXML()
 make_FBP()
+VirtualNode.init()
 wukong.listen(MASTER_PORT)
 if __name__ == "__main__":
   ioloop.start()
