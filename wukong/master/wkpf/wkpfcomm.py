@@ -132,7 +132,7 @@ class Communication:
         # Create a virtual wuclass for non wukong device. We support switch only now. 
         # We may support others in the future.
         
-        wuclassdef = WuObjectFactory.wuclassdefsbyid["4"]    # Light_Actuator
+        wuclassdef = WuObjectFactory.wuclassdefsbyid[4]    # Light_Actuator
 
         if not wuclassdef:
           print '[wkpfcomm] Unknown device type', generic
