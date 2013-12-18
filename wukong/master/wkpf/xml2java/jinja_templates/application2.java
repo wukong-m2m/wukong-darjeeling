@@ -4,7 +4,7 @@ import javax.wukong.virtualwuclasses.*;
 public class WKDeploy {
     /* Component names to indexes:
     {%- for component in changesets.components %}
-    {{ component.type }} => {{ component.index }}
+    {{ component.type }} => {{ component.tmpid }}
     {%- endfor %}
     */
 
@@ -40,9 +40,9 @@ public class WKDeploy {
             {% for wuobject in component.instances %}
                 // If wuclass is not on nodes and has to create a virtual wuobject
                 {% if wuobject.virtual %}
-        if (WKPF.isLocalComponent((short){{ component.index }})) {
+        if (WKPF.isLocalComponent((short){{ component.tmpid }})) {
             VirtualWuObject wuclassInstance{{ wuobject.wuclassdef|wuclassname }} = new {{ wuobject.wuclassdef|wuclassvirtualclassname }}();
-            WKPF.createWuObject((short){{ wuobject.wuclassdef|wuclassid }}, WKPF.getPortNumberForComponent((short){{ component.index }}), wuclassInstance{{ wuobject.wuclassdef|wuclassname }});
+            WKPF.createWuObject((short){{ wuobject.wuclassdef|wuclassid }}, WKPF.getPortNumberForComponent((short){{ component.tmpid }}), wuclassInstance{{ wuobject.wuclassdef|wuclassname }});
         }
                 {% endif %}
             {% endfor %}

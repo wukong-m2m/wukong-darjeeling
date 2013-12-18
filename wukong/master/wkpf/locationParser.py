@@ -395,7 +395,7 @@ class LocationParser:
             print "location string '" + str + "' doesn't match anything"
             print traceback.print_exception(exc_type, exc_value, exc_traceback,
                                           limit=2, file=sys.stdout)
-            log.info (  traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout))
+            log.info (  traceback.print_exception(exc_type, exc_value, exc_traceback, limit=9, file=sys.stdout))
             raise
 
 if __name__ == "__main__":
@@ -417,8 +417,8 @@ if __name__ == "__main__":
     locTree.addLandmark(landmark1)
     locTree.addLandmark(landmark2)
     locTree.printTree(locTree.root, 0)
-    query = u"/universal/Boli_Building#above(window)"
-    query2=u"/universal/Boli_Building#findCenter()"
+    query = u"/universal/Boli_Building#closest(window)"
+    query2=u"/universal/Boli_Building#use(2)"
     func = u"closest(4,4,4)"
     locParser = LocationParser( locTree)
     result = locParser.parse(query2)
