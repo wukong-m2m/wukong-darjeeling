@@ -702,12 +702,14 @@ class WuClassSource(tornado.web.RequestHandler):
         # We may use jinja2 here
         if type == "C":
           f = open('templates/wuclass.tmpl.c')
+          classname = Convert.to_c(name)
         else:
           f = open('templates/wuclass.tmpl.java')
+          classname = Convert.to_java(name)
 
         template = Template(f.read())
         f.close()
-        cont = template.render(classname=Convert.to_java(name))
+        cont = template.render(classname=classname)
     except:
       self.write(traceback.format_exc())
       return

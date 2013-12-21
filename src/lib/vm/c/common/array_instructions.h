@@ -70,7 +70,7 @@ static inline void ARRAYLENGTH()
  */
 static inline void BALOAD()
 {
-	uint32_t index = popInt();
+	int32_t index = popInt();
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
@@ -100,7 +100,7 @@ static inline void CALOAD()
  */
 static inline void SALOAD()
 {
-	uint32_t index = popInt();
+	int32_t index = popInt();
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
@@ -120,7 +120,7 @@ static inline void SALOAD()
  */
 static inline void IALOAD()
 {
-	uint32_t index = popInt();
+	int32_t index = popInt();
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
@@ -139,7 +139,7 @@ static inline void IALOAD()
  */
 static inline void LALOAD()
 {
-	uint32_t index = popInt();
+	int32_t index = popInt();
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
@@ -154,7 +154,7 @@ static inline void LALOAD()
 
 static inline void AALOAD()
 {
-	uint32_t index = popInt();
+	int32_t index = popInt();
 	dj_ref_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
@@ -174,7 +174,7 @@ static inline void AALOAD()
 static inline void BASTORE()
 {
 	uint8_t value = popShort();
-	uint32_t index = popInt();
+	int32_t index = popInt();
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 	if (arr==NULL)
 		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
@@ -203,7 +203,7 @@ static inline void CASTORE()
 static inline void SASTORE()
 {
 	int16_t value = popShort();
-	uint32_t index = popInt();
+	int32_t index = popInt();
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
@@ -223,7 +223,7 @@ static inline void SASTORE()
 static inline void IASTORE()
 {
 	int32_t value = popInt();
-	uint32_t index = popInt();
+	int32_t index = popInt();
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
@@ -244,7 +244,7 @@ static inline void IASTORE()
 static inline void LASTORE()
 {
 	int64_t value = popLong();
-	uint32_t index = popInt();
+	int32_t index = popInt();
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
@@ -265,7 +265,7 @@ static inline void LASTORE()
 static inline void AASTORE()
 {
 	ref_t value = popRef();
-	uint32_t index = popInt();
+	int32_t index = popInt();
 	dj_ref_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
