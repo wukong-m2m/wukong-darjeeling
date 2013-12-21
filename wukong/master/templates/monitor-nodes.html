@@ -1,4 +1,5 @@
 <!--<button id="refresh">Refresh</button>-->
+<button id=refresh>Rediscovery</button>
 <table class="table">
     <thead>
         <tr>
@@ -94,6 +95,9 @@
                 }
             });
         });
+	$('#refresh').click(function() {
+		alert("Call the update function here");
+	});
 
         {% for node_info in node_infos %}
 
