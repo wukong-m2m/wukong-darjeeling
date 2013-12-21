@@ -1,0 +1,207 @@
+<application name="fb2a818dfe866820abcfea15d294606d">
+<page title="_first_">
+    <component type="Light_Sensor" instanceId="26" x="268" y="43" w="109" h="61">
+        <link fromProperty="current_value" toInstanceId="30" toProperty="value"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="PIR_Sensor" instanceId="27" x="798" y="84" w="108" h="60">
+        <link fromProperty="current_value" toInstanceId="29" toProperty="input2"/>
+        <link fromProperty="current_value" toInstanceId="60" toProperty="input2"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="And_Gate" instanceId="29" x="1250" y="31" w="113" h="75">
+        <link fromProperty="output" toInstanceId="28" toProperty="on_off"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Threshold" instanceId="30" x="1002" y="18" w="117" h="88">
+        <link fromProperty="output" toInstanceId="29" toProperty="input1"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Numeric_Controller" instanceId="31" x="216" y="110" w="100" h="139">
+        <link fromProperty="output" toInstanceId="30" toProperty="threshold"/>
+        <link fromProperty="output" toInstanceId="39" toProperty="threshold"/>
+        <link fromProperty="output" toInstanceId="41" toProperty="threshold"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Light_Sensor" instanceId="35" x="334" y="218" w="110" h="64">
+        <link fromProperty="current_value" toInstanceId="39" toProperty="value"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Light_Sensor" instanceId="37" x="390" y="299" w="109" h="61">
+        <link fromProperty="current_value" toInstanceId="41" toProperty="value"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="PIR_Sensor" instanceId="38" x="787" y="274" w="108" h="59">
+        <link fromProperty="current_value" toInstanceId="43" toProperty="input2"/>
+        <link fromProperty="current_value" toInstanceId="45" toProperty="input2"/>
+        <link fromProperty="current_value" toInstanceId="58" toProperty="input2"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Threshold" instanceId="39" x="571" y="120" w="110" h="92">
+        <link fromProperty="output" toInstanceId="44" toProperty="input"/>
+        <link fromProperty="output" toInstanceId="45" toProperty="input1"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Threshold" instanceId="41" x="583" y="264" w="100" h="100">
+        <link fromProperty="output" toInstanceId="47" toProperty="input"/>
+        <link fromProperty="output" toInstanceId="48" toProperty="input2"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="And_Gate" instanceId="43" x="1159" y="182" w="113" h="72">
+        <link fromProperty="output" toInstanceId="33" toProperty="on_off"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Not_gate" instanceId="44" x="858" y="167" w="110" h="62">
+        <link fromProperty="ouput" toInstanceId="43" toProperty="input1"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="And_Gate" instanceId="45" x="1138" y="284" w="110" h="72">
+        <link fromProperty="output" toInstanceId="46" toProperty="input1"/>
+        <link fromProperty="output" toInstanceId="48" toProperty="input1"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="And_Gate" instanceId="46" x="1367" y="227" w="112" h="76">
+        <link fromProperty="output" toInstanceId="34" toProperty="on_off"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Not_gate" instanceId="47" x="883" y="392" w="116" h="65">
+        <link fromProperty="ouput" toInstanceId="46" toProperty="input2"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="And_Gate" instanceId="48" x="1301" y="387" w="112" h="72">
+        <link fromProperty="output" toInstanceId="49" toProperty="input"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Not_gate" instanceId="49" x="1429" y="376" w="110" h="59">
+        <link fromProperty="ouput" toInstanceId="33" toProperty="on_off"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Numeric_Controller" instanceId="50" x="203" y="330" w="113" h="133">
+        <link fromProperty="output" toInstanceId="53" toProperty="threshold"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="PIR_Sensor" instanceId="51" x="599" y="381" w="102" h="58">
+        <link fromProperty="current_value" toInstanceId="55" toProperty="input1"/>
+        <link fromProperty="current_value" toInstanceId="56" toProperty="input"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Temperature_Humidity_Sensor" instanceId="52" x="263" y="530" w="109" h="73">
+        <link fromProperty="current_value_temperature" toInstanceId="53" toProperty="value"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Threshold" instanceId="53" x="435" y="417" w="113" h="87">
+        <link fromProperty="output" toInstanceId="55" toProperty="input2"/>
+        <link fromProperty="operator" toInstanceId="57" toProperty="input2"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="And_Gate" instanceId="55" x="705" y="500" w="107" h="74">
+        <link fromProperty="output" toInstanceId="54" toProperty="on_off"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Not_gate" instanceId="56" x="947" y="467" w="105" h="58">
+        <link fromProperty="ouput" toInstanceId="57" toProperty="input1"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="And_Gate" instanceId="57" x="1136" y="525" w="103" h="69">
+        <link fromProperty="output" toInstanceId="58" toProperty="input1"/>
+        <link fromProperty="output" toInstanceId="60" toProperty="input1"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="And_Gate" instanceId="58" x="1275" y="586" w="104" h="71">
+        <link fromProperty="output" toInstanceId="54" toProperty="on_off"/>
+        <link fromProperty="output" toInstanceId="61" toProperty="input"/>
+        <link fromProperty="output" toInstanceId="33" toProperty="on_off"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="And_Gate" instanceId="60" x="1448" y="600" w="106" h="73">
+        <link fromProperty="output" toInstanceId="62" toProperty="input"/>
+        <link fromProperty="output" toInstanceId="54" toProperty="on_off"/>
+        <link fromProperty="output" toInstanceId="28" toProperty="on_off"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Not_gate" instanceId="61" x="1574" y="367" w="105" h="60">
+        <link fromProperty="ouput" toInstanceId="34" toProperty="on_off"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Not_gate" instanceId="62" x="1683" y="382" w="110" h="60">
+        <link fromProperty="ouput" toInstanceId="34" toProperty="on_off"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Light_Actuator" instanceId="28" x="1582" y="25" w="122" h="46">
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Light_Actuator" instanceId="33" x="1627" y="110" w="130" h="46">
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Light_Actuator" instanceId="34" x="1635" y="201" w="129" h="44">
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Light_Actuator" instanceId="54" x="1656" y="521" w="118" h="49">
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+</page>
+</application>

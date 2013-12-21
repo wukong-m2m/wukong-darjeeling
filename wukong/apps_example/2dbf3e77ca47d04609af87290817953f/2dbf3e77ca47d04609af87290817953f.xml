@@ -1,0 +1,27 @@
+<application name="2dbf3e77ca47d04609af87290817953f">
+<page title="_first_">
+    <component type="or_gate" instanceId="26" x="619" y="153" w="100" h="100">
+        <link fromProperty="output" toInstanceId="25" toProperty="on_off"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="PIR_Sensor" instanceId="27" x="411" y="97" w="100" h="100">
+        <link fromProperty="current_value" toInstanceId="26" toProperty="input1"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Magnetic_Sensor" instanceId="28" x="403" y="235" w="100" h="100">
+        <link fromProperty="output" toInstanceId="26" toProperty="input2"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Light_Actuator" instanceId="25" x="872" y="162" w="100" h="100">
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+</page>
+</application>

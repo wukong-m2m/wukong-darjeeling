@@ -1,0 +1,51 @@
+<application name="c09d5541f27c325c326c3ead0703f7d7">
+<page title="_first_">
+    <component type="Temperature_Humidity_Sensor" instanceId="21" x="275" y="256" w="100" h="100">
+        <link fromProperty="current_value_temperature" toInstanceId="23" toProperty="value"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Numeric_Controller" instanceId="22" x="286" y="86" w="100" h="100">
+        <link fromProperty="output" toInstanceId="23" toProperty="threshold"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Threshold" instanceId="23" x="489" y="208" w="100" h="100">
+        <link fromProperty="output" toInstanceId="27" toProperty="input1"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Threshold" instanceId="24" x="485" y="402" w="100" h="100">
+        <link fromProperty="output" toInstanceId="27" toProperty="input2"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Temperature_Humidity_Sensor" instanceId="25" x="249" y="586" w="100" h="100">
+        <link fromProperty="current_value_temperature" toInstanceId="24" toProperty="value"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Numeric_Controller" instanceId="26" x="243" y="418" w="100" h="100">
+        <link fromProperty="output" toInstanceId="24" toProperty="threshold"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="And_Gate" instanceId="27" x="683" y="304" w="100" h="100">
+        <link fromProperty="output" toInstanceId="28" toProperty="on_off"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Light_Actuator" instanceId="28" x="838" y="304" w="100" h="100">
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+</page>
+</application>
