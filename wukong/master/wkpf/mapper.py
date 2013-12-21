@@ -125,7 +125,6 @@ def firstCandidate(logger, changesets, routingTable, locTree):
             has_wuobjects = [wuobject for wuobject in node.wuobjects.values() if wuobject.wuclassdef.id == wuclassdef.id]
             has_wuclasses = [wuclass for wuclass in node.wuclasses.values() if wuclass.id == wuclassdef.id]
 
-            # virtual wuobject should be recreated instead of reuse
             if len(has_wuobjects) > 0 and all([not wuobject.virtual for wuobject in has_wuobjects]):
                 # assuming there is no duplicated wuobjects on node
                 for the_wuobject in has_wuobjects:
@@ -133,8 +132,11 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                   component.instances.append(the_wuobject)
                 pass # pass on to the next candidates
 
-            # virtual wuclasses should be recreated instead of reuse
-            elif len(has_wuclasses) > 0 and not has_wuclasses[0].virtual:
+            # for now it seems all published wuclasses are virtual
+            # so there is no point in checking whether it is virtual or not
+            # but in the future, who knows what other types of wuclass we will have
+            # virtual wuobject should be recreated instead of reuse
+            elif len(has_wuclasses) > 0:
                 # assuming there is no duplicated wuclasses on node
                 the_wuclass = has_wuclasses[0]
                 # create a new wuobject from existing wuclasses published from node (could be virtual)
@@ -142,9 +144,9 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                 sensorNode.initPortList(forceInit = False)
                 port_number = sensorNode.reserveNextPort()
                 wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number, True)
-                print "appending vitual for", node.id
                 component.instances.append(wuobject)
                 pass # pass on to the next candidates
+            # virtual wuobject should be recreated instead of reuse
             elif node.type != 'native' and node.type != 'picokong':
                 # create a new virtual wuobject where the node 
                 # doesn't have the wuclass for it

@@ -55,14 +55,16 @@ app.controller('MainController', function($scope, $state, $log, Applications, Ap
   $scope.ex_apps = ApplicationsEx.query();
   $scope.create = function() {
     app_name = prompt('Please enter the application name:', 'Application name');
-    var newApp = new Applications({app_name: app_name});
-    $log.debug('creating');
-    newApp.$save({app_name: app_name}, function() {
-      $log.debug('saved');
-      $log.debug(newApp);
-      $scope.apps = Applications.query();
-      window.location.href = '/#/a/' + newApp.id; // angularjs routing prefix
-    });
+    if(app_name != '' && app_name != null) {
+      var newApp = new Applications({app_name: app_name});
+      $log.debug('creating');
+      newApp.$save({app_name: app_name}, function() {
+        $log.debug('saved');
+        $log.debug(newApp);
+        $scope.apps = Applications.query();
+        window.location.href = '/#/a/' + newApp.id; // angularjs routing prefix
+      });
+    }
   };
   $scope.select_example = function(app) {
     var default_name = prompt('Please provide new name for the application?\n(This will copy example application to your local folder, you can just cancel it.)', "");
