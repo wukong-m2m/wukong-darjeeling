@@ -25,20 +25,6 @@ app.config(function($stateProvider, $urlRouterProvider) {
         }
       }
     })
-    .state('select_example', {
-      url: '/a/select/:appId', 
-      views: { 
-        'list' : {
-          templateUrl: 'static/partials/applications_list.html'
-        },
-        'body' : {
-          templateUrl: function(stateParams) {
-            alert(""+str(stateParams.appId));
-            return '/applications/' + stateParams.appId;
-          }
-        }
-      }
-    })
 });
 
 app.factory('Applications', function($resource) {
