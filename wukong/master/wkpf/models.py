@@ -18,7 +18,7 @@ class WuComponent:
     self.properties = properties  #properties without default values
     if self.properties == None:
       self.properties = []
-    self.tmpid = -1     #temporary id, only used for generating wkpfdeploy.xml
+    self.deployid = -1     #temporary id, only used for generating wkpfdeploy.xml
     self.instances = [] # WuObjects allocated on various Nodes after mapping
     self.heartbeatgroups = []
     

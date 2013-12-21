@@ -94,7 +94,7 @@ class Generator:
     def generateTempComponentID(name, changesets):
         component_index = 0
         for component in changesets.components:
-          component.tmpid = component_index
+          component.deployid = component_index
           component_index = component_index + 1
     @staticmethod
     def generateTablesXML(name, changesets):
@@ -123,13 +123,13 @@ class Generator:
         
         for link in changesets.links:
             link_element = ElementTree.SubElement(links, 'link')
-            link_element.attrib['fromComponent'] = str(link.from_component.tmpid)
+            link_element.attrib['fromComponent'] = str(link.from_component.deployid)
             link_element.attrib['fromProperty'] = str(link.from_property.id)
-            link_element.attrib['toComponent'] = str(link.to_component.tmpid)
+            link_element.attrib['toComponent'] = str(link.to_component.deployid)
             link_element.attrib['toProperty'] = str(link.to_property.id)
         for component in changesets.components:
             component_element = ElementTree.SubElement(components, 'component')
-            component_element.attrib['id'] = str(component.tmpid)
+            component_element.attrib['id'] = str(component.deployid)
             component_wuclass = WuObjectFactory.wuclassdefsbyname[component.type]
             component_element.attrib['wuclassId'] = str(component_wuclass.id)
             for endpoint in component.instances:
@@ -140,7 +140,7 @@ class Generator:
             wuobject = component.instances[0]
             for property in generateProperties(wuobject.properties.values(), component):
                 initvalue = ElementTree.SubElement(initvalues, 'initvalue')
-                initvalue.attrib['componentId'] = str(component.tmpid)
+                initvalue.attrib['componentId'] = str(component.deployid)
                 initvalue.attrib['propertyNumber'] = str(property.id)
                 if property.wutype in datatype_sizes: # Basic type
                     initvalue.attrib['valueSize'] = str(datatype_sizes[property.wutype])
