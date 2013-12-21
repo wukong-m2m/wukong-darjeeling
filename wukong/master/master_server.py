@@ -192,6 +192,69 @@ class applications(tornado.web.RequestHandler):
       self.content_type = 'application/json'
       self.write({'status':1, 'mesg':'Cannot create application'})
 
+#### deal with example applications
+def get_example_applications():
+  logging.info('updating applications:')
+
+  example_applications = [] 
+  for dirname in os.listdir(EX_APP_DIR):
+    app_dir = os.path.join(EX_APP_DIR, dirname)
+    if dirname.lower() == 'base': continue
+    if not os.path.isdir(app_dir): continue    
+    example_applications.append(load_app_from_dir(app_dir))
+    
+
+  return example_applications
+
+class example_applications(tornado.web.RequestHandler):
+  ## For querying example applications
+  def get(self):
+    example_apps = get_example_applications()
+    apps = sorted([application.config() for application in example_apps], key=lambda k: k['app_name'])
+    self.content_type = 'application/json'
+    self.write(json.dumps(apps))
+
+  # For copying example application to local folder
+  def post(self):
+    try:
+      try:
+        copy_app_name = self.get_argument('app_name')
+        copy_app_id = self.get_argument('app_id')
+        print app_name, app_id
+      except:
+        app_name = 'application' + str(len(wkpf.globals.applications))
+      app_id = hashlib.md5(copy_app_name).hexdigest()
+
+      if getAppIndex(app_id):
+        self.content_type = 'application/json'
+        self.write({'status':1, 'mesg':'Cannot create application with the same name'})
+        return
+
+      # copy base for the new application
+      logging.info('creating application... "%s"' % (copy_app_name))
+      copyAnything(os.path.join(EX_APP_DIR, copy_app_id), os.path.join(APP_DIR, app_id))
+
+      app = WuApplication(id=app_id, app_name=copy_app_name, dir=os.path.join(APP_DIR, app_id))
+      logging.info('app constructor')
+      logging.info(app.app_name)
+
+      wkpf.globals.applications.append(app)
+
+      # dump config file to app
+      logging.info('saving application configuration...')
+      app.saveConfig()
+
+      self.content_type = 'application/json'
+      self.write(app.config())
+    except Exception as e:
+      exc_type, exc_value, exc_traceback = sys.exc_info()
+      print traceback.print_exception(exc_type, exc_value, exc_traceback,
+                                  limit=2, file=sys.stdout)
+      self.content_type = 'application/json'
+      self.write({'status':1, 'mesg':'Cannot create application'})
+
+
+
 class application(tornado.web.RequestHandler):
   # Display a specific application
   def get(self, app_id):
@@ -973,6 +1036,7 @@ wukong = tornado.web.Application([
   (r"/nodes/([0-9]*)", nodes),
   (r"/nodes/refresh", refresh_nodes),
   (r"/applications", applications), # responsible for listing and adding application
+  (r"/example_applications", example_applications),
   (r"/applications/([a-fA-F\d]{32})", application), # responsible for application specific actions (deploy page, update attributes, delete, etc)
   (r"/applications/([a-fA-F\d]{32})/deploy", deploy_application), # post for deploying
   (r"/applications/([a-fA-F\d]{32})/deploy/map", map_application),
