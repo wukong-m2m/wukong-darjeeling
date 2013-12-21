@@ -477,7 +477,8 @@ class poll_testrtt(tornado.web.RequestHandler):
 class stop_testrtt(tornado.web.RequestHandler):
   def post(self):
     comm = getComm()
-    comm.updateAllNodeInfos()
+    node_infos = comm.updateAllNodeInfos()
+    rebuildTree(node_infos)
     if comm.onStopMode():
       self.content_type = 'application/json'
       self.write({'status':0})
