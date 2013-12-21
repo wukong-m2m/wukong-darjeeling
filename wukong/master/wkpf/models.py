@@ -1,5 +1,7 @@
 import sqlite3
 import copy
+from xml.etree import ElementTree
+import xml.dom.minidom
 
 
 
@@ -138,7 +140,40 @@ class WuNode:
     stri += "wuobjects"+str(self.wuobjects)+'\n'
     stri += "type:"+self.type+'\n'
     return stri
-    
+  @classmethod
+  def dumpXML(cls):   
+    root = ElementTree.Element('Nodes')
+
+    for id, node in cls.node_dict.items():
+        node_element = ElementTree.SubElement(root, 'Node')
+        node_element.attrib['id'] = str(id)
+        location_element = ElementTree.SubElement(node_element, "Location")
+        location_element.attrib['length'] = str(len(node.location))
+        location_element.attrib['content'] = str(node.location)
+        
+        wuclasslist_element = ElementTree.SubElement(node_element,"WuClassList")
+        wuclasslist_element.attrib['length'] = str(len(node.wuclasses))
+        for wuclassid, wuclass in  node.wuclasses.items():
+            wuclass_element = ElementTree.SubElement(wuclasslist_element,"WuCLass")
+            wuclass_element.attrib['id'] = str(wuclassid)
+            wuclass_element.attrib['virtual'] = str(wuclass.virtual)
+        
+        wuobjectlist_element = ElementTree.SubElement(node_element,"WuObjectList")
+        for port, wuobject in  node.wuobjects.items():
+            wuobject_element = ElementTree.SubElement(wuobjectlist_element,"WuObject")
+            wuobject_element.attrib['id'] = str(wuobject.wuclassdef.id)
+            wuobject_element.attrib['virtual'] = str(wuobject.virtual)
+            wuobject_element.attrib['port'] = str(port)
+  #          for prop_name, prop_value in wuobject.properties.items():
+   #           wuproperty_element = ElementTree.SubElement(wuobject_element,"WuProperty")
+    #          wuproperty_element.attrib['name'] = str(prop_name)
+     #         wuproperty_element.attrib['value'] = str(prop_value)
+
+    #for more human readable xml
+    rough_stri = ElementTree.tostring(root, 'utf-8')
+    xml_content = xml.dom.minidom.parseString(rough_stri)
+    pretty_stri = xml_content.toprettyxml()
+    return pretty_stri
   @classmethod
   def findById(cls, id):
     if id in cls.node_dict.keys():
@@ -146,14 +181,73 @@ class WuNode:
     return None
   
   @classmethod
-  def saveNodes(cls, filename="../LocalData/nodes.txt"):#for debug now, will expand to support reconstructing nodes from the dump ---- Sen
+  def saveNodes(cls, filename="../LocalData/nodes.xml"):#for debug now, will expand to support reconstructing nodes from the dump ---- Sen
       
     fin = open(filename,"w")
-    for nd in WuNode.node_dict.values():
-      fin.write( nd.dump())
+    fin.write( WuNode.dumpXML())
     fin.close()
     return
-  
+    
+  @classmethod
+  def loadNodes(cls, filename="../LocalData/nodes.xml"):#for debug now, will expand to support reconstructing nodes from the dump ---- Sen
+      print ('[loadNodes in models] Loading node from file', filename)
+      try:
+          fin = open(filename,"r")
+      except Exception:
+          print (filename,'does not exist, initial list is empty!')
+          return cls.node_dict.values()
+      nodedom = xml.dom.minidom.parse(filename)
+      nodes = nodedom.getElementsByTagName("Node")
+      for node_ele in nodes:
+          nodeid = node_ele.getAttribute("id")
+          wuclasses = {}
+          wuobjects = {}
+          location = ''
+          node = WuNode(nodeid, location, wuclasses, wuobjects) #note: wuclasses, pass by reference, change in original list is also change in node
+          if node_ele.hasChildNodes():
+              for prop_ele in node_ele.childNodes:
+                  if prop_ele.nodeType != prop_ele.ELEMENT_NODE:    
+                      continue
+                  if prop_ele.tagName == "Location":
+                      node.location = prop_ele.getAttribute("content")
+                  if prop_ele.tagName == "WuClassList":
+                      for wuclass_ele in prop_ele.childNodes:
+                          if wuclass_ele.nodeType != wuclass_ele.ELEMENT_NODE:    
+                              continue
+                          wuclass_id = int(wuclass_ele.getAttribute("id"), 0)
+                          virtual = True if wuclass_ele.getAttribute("virtual").lower()=="true" else False
+                          try:
+                              wuclassdef = WuObjectFactory.wuclassdefsbyid[wuclass_id]
+
+                          except KeyError:
+                              print '[loadNodes in models] Unknown wuclass id', wuclass_id
+                              print ('[loadNodes in models] Invalid saved discover input file', filename)
+                              return
+
+                          wuclasses[wuclass_id] = wuclassdef
+                  if prop_ele.tagName == "WuObjectList":
+                      for wuobj in prop_ele.childNodes:
+                          if wuobj.nodeType != wuobj.ELEMENT_NODE:    
+                              continue
+                          port_number = int(wuobj.getAttribute("port"), 0)
+                          wuclass_id = int(wuobj.getAttribute("id"), 0)
+                          virtual = True if wuobj.getAttribute("virtual").lower()=="true" else False
+                          try:
+                              wuclassdef = WuObjectFactory.wuclassdefsbyid[wuclass_id]
+                          except KeyError:
+                              print '[loadNodes in models] Unknown wuclass id', wuclass_id
+                              print ('[loadNodes in models] Invalid saved discover input file', filename)
+                              return
+                          wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number, virtual)
+        #                  for wuprop in wuobj.childNodes:
+         #                       if wuobj.nodeType != wuobj.ELEMENT_NODE:    
+          #                          continue
+           #                     prop_name = wuprop.getAttribute("name")
+            #                    prop_value = int(wuprop.getAttribute("value"),0)
+             #                   wuobject.properties[prop_name] = prop_value
+    
+      return cls.node_dict.values()                              
+      
   def isResponding(self):
     return len(self.wuclasses) > 0 or len(self.wuobjects) > 0
 

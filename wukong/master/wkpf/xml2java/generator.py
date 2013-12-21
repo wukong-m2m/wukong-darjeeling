@@ -101,7 +101,6 @@ class Generator:
         def generateProperties(wuobject_properties, component):
             properties = wuobject_properties
             component_properties = component.properties
-
             for property in properties:
                 if property.name in component_properties and len(component_properties[property.name].strip())>0:
                     property.value = component_properties[property.name]

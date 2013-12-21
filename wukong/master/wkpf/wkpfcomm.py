@@ -111,21 +111,21 @@ class Communication:
       #print "generic=", generic
       #print "specific=", specific
       if generic == 0xff:
-        node = WuNode.findById(destination)
+        wunode = WuNode.findById(destination)
         location = self.getLocation(destination)
         gevent.sleep(0) # give other greenlets some air to breath
-        if not node:
-          node = WuNode(destination, location)
+        if not wunode:
+          wunode = WuNode(destination, location)
     
         wuClasses = self.getWuClassList(destination)
         print '[wkpfcomm] get %d wuclasses' % (len(wuClasses))
-        node.wuclasses = wuClasses
+        wunode.wuclasses = wuClasses
         gevent.sleep(0)
 
         wuObjects = self.getWuObjectList(destination)
         print '[wkpfcomm] get %d wuobjects' % (len(wuObjects))
         
-        node.wuobjects = wuObjects
+        wunode.wuobjects = wuObjects
         gevent.sleep(0)
         
       else:
@@ -147,9 +147,7 @@ class Communication:
           # we will generate ZWave command table to implement the wuclass by
           # using the Z-Wave command.
           wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_SWITCH_PORT, False, property_values={})
-          wuobjects[WuObject.ZWAVE_SWITCH_PORT] = wuobject
-
-      return node
+      return wunode
 
     def getDeviceType(self, destination):
       self.device_type = self.zwave.getDeviceType(destination)
