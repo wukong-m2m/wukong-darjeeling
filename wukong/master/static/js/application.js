@@ -83,7 +83,8 @@ function application_fill()
 
     $('#appadd').click(function() {
         app_name = prompt('Please enter the application name:', 'Application name')
-        $.post('/applications/new', {app_name: app_name}, function(data) {
+        if(app_name != '' && app_name != null) {
+          $.post('/applications/new', {app_name: app_name}, function(data) {
             if (data.status == '1') {
                 alert(data.mesg);
             }
@@ -91,7 +92,8 @@ function application_fill()
                 console.log(data);
                 application_fill();
             }
-        });
+          });
+        }
     });
 }
 
