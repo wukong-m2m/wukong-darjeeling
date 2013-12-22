@@ -63,6 +63,7 @@ class Communication:
     def getAllNodeInfos(self, force=False):
       if force:
         print '[wkpfcomm] getting all nodes from discovery'
+        WuNode.clearNodes()
         self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
         WuNode.saveNodes()
       else:
