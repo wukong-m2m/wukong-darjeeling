@@ -511,26 +511,31 @@ class testrtt(tornado.web.RequestHandler):
     global node_infos
 
     comm = getComm()
-    node_infos = comm.getAllNodeInfos()
+    node_infos = comm.getAllNodeInfos(False)
     
-    #node_infos = WuNode.loadNodes()
-    print node_infos
     rebuildTree(node_infos)
     testrtt = template.Loader(os.getcwd()).load('templates/testrtt.html').generate(log=['Please press the buttons to add/remove nodes.'], node_infos=node_infos, set_location=True, default_location = LOCATION_ROOT)
     self.content_type = 'application/json'
     self.write({'status':0, 'testrtt':testrtt})
 
 class refresh_nodes(tornado.web.RequestHandler):
-  def post(self):
+  def post(self, force):
     global node_infos
-    node_infos = WuNode.loadNodes()
-    #node_infos = getComm().getActiveNodeInfos(False)
+
+    if int(force,0) == 0:
+      node_infos = getComm().getActiveNodeInfos(False)
+    else:
+      node_infos = getComm().getActiveNodeInfos(True)
     rebuildTree(node_infos)
     print ("node_infos in refresh nodes:",node_infos)
     #furniture data loaded from fake data for purpose of 
     #getComm().getRoutingInformation()
     # default is false
     set_location = self.get_argument('set_location', False)
+    if set_location == u'True':
+      set_location = True
+    else:
+      set_location = False
 
     nodes = template.Loader(os.getcwd()).load('templates/monitor-nodes.html').generate(node_infos=node_infos, set_location=set_location, default_location=LOCATION_ROOT)
 
@@ -991,7 +996,7 @@ wukong = tornado.web.Application([
   (r"/testrtt/poll", poll_testrtt),
   (r"/testrtt", testrtt),
   (r"/nodes/([0-9]*)", nodes),
-  (r"/nodes/refresh", refresh_nodes),
+  (r"/nodes/refresh/([0-9])", refresh_nodes),
   (r"/applications", list_applications),
   (r"/applications/new", new_application),
   (r"/applications/([a-fA-F\d]{32})", application),

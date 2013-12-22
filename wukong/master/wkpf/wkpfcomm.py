@@ -61,9 +61,12 @@ class Communication:
       return filter(lambda info: info.id in node_ids, self.getAllNodeInfos())
 
     def getAllNodeInfos(self, force=False):
-      print '[wkpfcomm] getting all nodes from discovery'
-      self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
-      WuNode.saveNodes()
+      if force:
+        print '[wkpfcomm] getting all nodes from discovery'
+        self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
+        WuNode.saveNodes()
+      else:
+        self.all_node_infos = WuNode.loadNodes()
       return self.all_node_infos
 
     def updateAllNodeInfos(self):

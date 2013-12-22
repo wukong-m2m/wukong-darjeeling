@@ -12,11 +12,12 @@ $(function() {
             message: '<h1>Processing</h1>',
             css: { border: '3px solid #a00' }
         });
-        $.post('/nodes/refresh', function(data) {
+        $.post('/nodes/refresh/0', function(data) {
             $('#nodes').html(data.nodes);
             $('#nodes').unblock();
         });
     });
+    
 
     $('a#mapping_results-btn').click(function(e) {
         $.post('/applications/' + current_application + '/deploy/map', function(data) {

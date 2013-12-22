@@ -143,7 +143,6 @@ class WuNode:
   @classmethod
   def dumpXML(cls):   
     root = ElementTree.Element('Nodes')
-
     for id, node in cls.node_dict.items():
         node_element = ElementTree.SubElement(root, 'Node')
         node_element.attrib['id'] = str(id)
@@ -193,13 +192,14 @@ class WuNode:
       print ('[loadNodes in models] Loading node from file', filename)
       try:
           fin = open(filename,"r")
+          nodedom = xml.dom.minidom.parse(filename)
       except Exception:
           print (filename,'does not exist, initial list is empty!')
           return cls.node_dict.values()
-      nodedom = xml.dom.minidom.parse(filename)
+      
       nodes = nodedom.getElementsByTagName("Node")
       for node_ele in nodes:
-          nodeid = node_ele.getAttribute("id")
+          nodeid = int(node_ele.getAttribute("id"))
           wuclasses = {}
           wuobjects = {}
           location = ''
