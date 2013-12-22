@@ -3,6 +3,7 @@
 
 # author: Penn Su
 from gevent import monkey; monkey.patch_all()
+from xml.dom.minidom import parse, parseString
 import gevent
 import serial
 import platform
@@ -230,20 +231,19 @@ class example_applications(tornado.web.RequestHandler):
         self.write({'status':1, 'mesg':'Cannot create application with the same name'})
         return
 
-      # copy base for the new application
-      logging.info('creating application... "%s"' % (copy_app_name))
       copyAnything(os.path.join(EX_APP_DIR, copy_app_id), os.path.join(APP_DIR, app_id))
-
       app = WuApplication(id=app_id, app_name=copy_app_name, dir=os.path.join(APP_DIR, app_id))
-      logging.info('app constructor')
-      logging.info(app.app_name)
-
+      
+      # copy xml file from example dir and fix the name in xml
+      with open (os.path.join(APP_DIR, app_id) + "/" + copy_app_id + ".xml" , "r") as myfile:
+        data=myfile.read()  
+        dom = parseString(data)
+        dom.documentElement.getAttributeNode('name').value = app_id
+        app.updateXML(dom.toxml()[22:])
+      os.remove(os.path.join(APP_DIR, app_id) + "/" + copy_app_id + ".xml")
       wkpf.globals.applications.append(app)
-
-      # dump config file to app
-      logging.info('saving application configuration...')
+      
       app.saveConfig()
-
       self.content_type = 'application/json'
       self.write(app.config())
     except Exception as e:
