@@ -1,0 +1,39 @@
+<application name="49d61e52107645517f1fdde5ae5abce7">
+<page title="_first_">
+    <component type="And_Gate" instanceId="21" x="592" y="286" w="100" h="100">
+        <link fromProperty="output" toInstanceId="22" toProperty="on_off"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="PIR_Sensor" instanceId="23" x="246" y="350" w="100" h="100">
+        <link fromProperty="current_value" toInstanceId="21" toProperty="input2"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Light_Sensor" instanceId="24" x="246" y="236" w="100" h="100">
+        <link fromProperty="current_value" toInstanceId="26" toProperty="value"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Numeric_Controller" instanceId="25" x="241" y="71" w="100" h="100">
+        <link fromProperty="output" toInstanceId="26" toProperty="threshold"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Threshold" instanceId="26" x="421" y="190" w="100" h="100">
+        <link fromProperty="output" toInstanceId="21" toProperty="input1"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+    <component type="Light_Actuator" instanceId="22" x="793" y="230" w="100" h="100">
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+</page>
+</application>
