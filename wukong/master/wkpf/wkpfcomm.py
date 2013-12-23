@@ -146,7 +146,7 @@ class Communication:
         
 
         # Create one
-        if (WuObject.ZWAVE_SWITCH_PORT not in node.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
+        if (WuObject.ZWAVE_SWITCH_PORT not in wunode.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
           # 0x100 is a mgic number. When we see this in the code generator, 
           # we will generate ZWave command table to implement the wuclass by
           # using the Z-Wave command.
