@@ -12,7 +12,7 @@ def findComponentFromIndex(components, index):
   return None
 
 def keyFromInstance(instance):
-  return (instance.port_number, instance.wunode().id, instance.wuclassdef().id)
+  return (instance.port_number, instance.wunode.id, instance.wuclassdef.id)
 
 
 
@@ -37,8 +37,8 @@ class VirtualNodeLinks:
         outdegrees_component = findComponentFromIndex(self.components, link.to_component_index)
         outdegrees_instances = outdegrees_component.instances # all mapped wuobjects
         for instance in outdegrees_instances:
-          wuclassdef = WuClassDef.find(name=outdegrees_component.type)
-          wupropertydef = WuPropertyDef.find(wuclass_id=wuclassdef.id, number=link.to_property_id)
+          wuclassdef = WuObjectFactory.wuclassdefsbyname[outdegrees_component.type]
+          wupropertydef = WuObjectFactory.wuclassdefsbyid[wuclassdef.id].properties[link.to_property_name]
           outdegrees.append(VirtualNodeLink(outdegrees_component, VirtualNode.init().getPropertiesOfInstance(instance).getProperty(wupropertydef.name)))
     return outdegrees
 
@@ -49,8 +49,8 @@ class VirtualNodeLinks:
         indegrees_component = findComponentFromIndex(self.components, link.from_component_index)
         indegrees_instances = indegrees_component.instances # all mapped wuobjects
         for instance in indegress_instances:
-          wuclassdef = WuClassDef.find(name=indegrees_component.type)
-          wupropertydef = WuPropertyDef.find(wuclass_id=wuclassdef.id, number=link.from_property_id)
+          wuclassdef = WuObjectFactory.wuclassdefsbyname[indegrees_component.type]
+          wupropertydef = WuObjectFactory.wuclassdefsbyid[wuclassdef.id].properties[link.from_property_name]
           indegrees.append(VirtualNodeLink(indegrees_component, VirtualNode.init().getPropertiesOfInstance(instance).getProperty(wupropertydef.name)))
     return indegrees
 
@@ -61,7 +61,6 @@ class VirtualNode:
   @classmethod
   def getWuClassDefs(cls):
     return [WuObjectFactory.wuclassdefsbyid[434]]
-    #return [WuClassDef.find(id=434)]
 
   _virtualNode = None
   @classmethod
@@ -101,25 +100,25 @@ class VirtualNode:
     print 'initializing WuObjects'
     for component in changesets.components:
       for instance in component.instances:
-        wuclassdef = instance.wuclassdef()
+        wuclassdef = instance.wuclassdef
         if wuclassdef.name and wuclassdef.id:
           # metaprogramming
           # eval is not secure, but we can be pretty sure that security is not on our priority list for now
-          properties = VirtualNodeProperties([VirtualNodeProperty(wpds.name, wpds.number) for wpds in wuclassdef.wupropertydefs()])
+          properties = VirtualNodeProperties([VirtualNodeProperty(wpds.name, wpds.number) for wpds in wuclassdef.properties])
 
           # set default values
-          for propertydef in wuclassdef.wupropertydefs():
-            value = propertydef.default_value
+          for propertydef in wuclassdef.properties:
+            value = propertydef.value
             # FIXME: hard code datatype
             if propertydef.name == 'level':
-              value = int(propertydef.default_value)
+              value = int(propertydef.value)
             if value == 'true':
               value = True
             if value == 'false':
               value = False
             properties.set(propertydef.name, value)
 
-          wuobject = eval(wuclassdef.name)(instance.port_number, instance.wunode().id, properties)
+          wuobject = eval(wuclassdef.name)(instance.port_number, instance.wunode.id, properties)
           print 'putting instance ', keyFromInstance(instance)
           self.wuobjects[keyFromInstance(instance)] = wuobject
 
@@ -139,7 +138,7 @@ class VirtualNode:
   def updateWuObjects(self):
     if self.changesets and self.components:
       for wuobject in self.wuobjects.values():
-        wuclassdef = WuClassDef.find(name=wuobject.__class__.__name__)
+        wuclassdef = WuObjectFactory.wuclassdefsbyname[wuobject.__class__.__name__]
         for search in self.components:
           if search.type == wuclassdef.name:
             component = search
