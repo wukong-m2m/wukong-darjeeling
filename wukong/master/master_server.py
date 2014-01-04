@@ -342,7 +342,8 @@ class map_application(tornado.web.RequestHandler):
       rebuildTree(node_infos)
 
       # Map with location tree info (discovery), this will produce mapping_results
-      mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, getComm().getRoutingInformation())
+      #mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, getComm().getRoutingInformation())
+      mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, [])
 
       ret = []
       for component in wkpf.globals.applications[app_ind].changesets.components:
