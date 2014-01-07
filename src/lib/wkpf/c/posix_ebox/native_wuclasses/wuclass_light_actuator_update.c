@@ -12,8 +12,8 @@
 
 #define EBOX_LIGHT_ACTUATOR_PIN 0
 
-#define setbit(port, bit) (outb(port, inb(port) | (1<<bit)))
-#define clearbit(port, bit) (outb(port, inb(port) & ~(1<<bit)))
+#define setbit(port, bit) (outb((inb(port) | (1<<bit)), port)
+#define clearbit(port, bit) (outb((inb(port) & ~(1<<bit)), port))
 
 void wuclass_light_actuator_setup(wuobject_t *wuobject) {}
 
@@ -22,7 +22,7 @@ void wuclass_light_actuator_update(wuobject_t *wuobject) {
 	wkpf_internal_read_property_boolean(wuobject, WKPF_PROPERTY_LIGHT_ACTUATOR_ON_OFF, &onOff);
 
 	iopl(3); // Allow IO
-	setbit(EBOX_DDR0, EBOX_LIGHT_ACTUATOR_PIN);
+	setbit(EBOX_DDR0, EBOX_LIGHT_ACTUATOR_PIN); // Bit set -> output
 	if (onOff)
 		setbit(EBOX_PORT0, EBOX_LIGHT_ACTUATOR_PIN);
 	else
