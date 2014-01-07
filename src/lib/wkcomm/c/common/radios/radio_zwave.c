@@ -7,11 +7,11 @@
 #include "debug.h"
 #include "djtimer.h"
 #include "uart.h"
-#include <avr/io.h>
-#define output_low(port, pin) port &= ~(1<<pin)
-#define output_high(port, pin) port |= (1<<pin)
-#define set_input(portdir, pin) portdir &= ~(1<<pin)
-#define set_output(portdir, pin) portdir |= (1<<pin)
+// see issue 115 #include <avr/io.h>
+// see issue 115 #define output_low(port, pin) port &= ~(1<<pin)
+// see issue 115 #define output_high(port, pin) port |= (1<<pin)
+// see issue 115 #define set_input(portdir, pin) portdir &= ~(1<<pin)
+// see issue 115 #define set_output(portdir, pin) portdir |= (1<<pin)
 
 // Here we have a circular dependency between radio_X and routing.
 // Bit of a code smell, but since the two are supposed to be used together I'm leaving it like this for now.
@@ -142,12 +142,12 @@ void radio_zwave_poll(void) {
 
 extern void radio_zwave_platform_dependent_init(void); // from radio_zwave_platform_dependent.c
 void radio_zwave_init(void) {
-    set_output(DDRK,0);
-    set_output(DDRK,1);
-    set_output(DDRK,2);
-    set_output(DDRK,3);
+// see issue 115     set_output(DDRK,0);
+// see issue 115     set_output(DDRK,1);
+// see issue 115     set_output(DDRK,2);
+// see issue 115     set_output(DDRK,3);
 
-    output_high(PORTK,0);
+// see issue 115     output_high(PORTK,0);
     uart_inituart(ZWAVE_UART, ZWAVE_UART_BAUDRATE);
 
     // Clear existing queue on Zwave
@@ -158,7 +158,7 @@ void radio_zwave_init(void) {
         uart_read_byte(ZWAVE_UART);
     }
 
-    output_high(PORTK,1);
+// see issue 115     output_high(PORTK,1);
    
     // TODO: why is this here?
     // for(i=0;i<100;i++)
@@ -184,7 +184,7 @@ void radio_zwave_init(void) {
             if (uart_available(ZWAVE_UART, 150))
                 radio_zwave_poll();
         }
-    	output_high(PORTK,2);
+// see issue 115     	output_high(PORTK,2);
         if(!radio_zwave_my_address_loaded) { // Can't read address -> panic 
 	    unsigned char softreset[] = {ZWAVE_TYPE_REQ, FUNC_ID_SERIAL_API_SOFT_RESET};
 	    SerialAPI_request(softreset, 2);
@@ -193,15 +193,15 @@ void radio_zwave_init(void) {
 	    }
             //dj_panic(WKCOMM_PANIC_INIT_FAILED);
 	    retries=10;
-    	    output_low(PORTK,1);
-    	    output_low(PORTK,2);
+// see issue 115 	    output_low(PORTK,1);
+// see issue 115 	    output_low(PORTK,2);
 	}
         if (radio_zwave_my_address != previous_received_address) { // Sometimes I get the wrong address. Only accept if we get the same address twice in a row. No idea if this helps though, since I don't know what's going on exactly.
             radio_zwave_my_address_loaded = false;
             previous_received_address = radio_zwave_my_address;
         }
     }
-    output_high(PORTK,3);
+// see issue 115     output_high(PORTK,3);
         if(!radio_zwave_my_address_loaded) // Can't read address -> panic
     DEBUG_LOG(DBG_WKCOMM, "My Zwave node_id: %d\n", radio_zwave_my_address);
     radio_zwave_platform_dependent_init();
