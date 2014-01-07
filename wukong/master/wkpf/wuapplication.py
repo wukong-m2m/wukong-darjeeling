@@ -248,7 +248,9 @@ class WuApplication:
 
   def cleanAndCopyJava(self):
     # clean up the directory
-    distutils.dir_util.remove_tree(JAVA_OUTPUT_DIR)
+    if os.path.exists(JAVA_OUTPUT_DIR):
+      distutils.dir_util.remove_tree(JAVA_OUTPUT_DIR)
+    
     os.mkdir(JAVA_OUTPUT_DIR)
 
     # copy WKDeployCustomComponents.xml to wkdeploy/java
