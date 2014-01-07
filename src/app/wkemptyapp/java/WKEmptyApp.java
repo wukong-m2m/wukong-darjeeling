@@ -1,7 +1,7 @@
 import javax.wukong.wkpf.*;
 import javax.wukong.virtualwuclasses.*;
 
-public class WKDeploy {
+public class WKEmptyApp {
     // Empty application to build an WuKong VM without any app.
     public static void main (String[] args) {
         System.out.println("My node id: " + WKPF.getMyNodeId());
