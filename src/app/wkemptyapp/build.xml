@@ -7,7 +7,7 @@
 	<!-- Only list Java libraries here -->
 	<property name="lib-depends" value="base, wkpf_virtual"/>
 	
-	<property name="wkpftable" value="WKDeploy.xml"/>
+	<property name="wkpftable" value="WKEmptyApp.xml"/>
 	<property name="wkpf-app-specific-componentxml" value="WKDeployCustomComponents.xml"/>
 
 	<!-- include the library build template -->
