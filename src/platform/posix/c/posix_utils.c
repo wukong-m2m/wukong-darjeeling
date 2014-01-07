@@ -16,6 +16,7 @@ char * ref_t_base_address;
 
 char** posix_argv;
 char* posix_uart_filenames[4];
+bool posix_arg_addnode = false;
 
 void posix_parse_uart_arg(char *arg) {
 	int uart = arg[0];
@@ -28,20 +29,21 @@ void posix_parse_uart_arg(char *arg) {
 	printf("Uart %d at %s\n", uart, posix_uart_filenames[uart]);
 }
 
-void posix_parse_command_line(int argc,char* argv[]) {
+void posix_parse_command_line(int argc, char* argv[]) {
 	posix_argv = argv; // Used by wkpf_reprog code to do a reboot
 
 	int c;
 	while (1) {
 		static struct option long_options[] = {
-			{"uart",    required_argument, 0, 'u'},
+			{"uart",      required_argument, 0, 'u'},
+			{"zwave_add", no_argument,       0, 'a'},
 			{0, 0, 0, 0}
 		};
 
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long (argc, argv, "u:",
+		c = getopt_long (argc, argv, "au:",
 		    long_options, &option_index);
 
 		/* Detect the end of the options. */
@@ -49,10 +51,12 @@ void posix_parse_command_line(int argc,char* argv[]) {
 			break;
 
 		switch (c) {
+			case 'a':
+				posix_arg_addnode = true;
+				break;
 			case 'u':
 				posix_parse_uart_arg(optarg);
-			break;
-
+				break;
 			default:
 				abort ();
 		}
