@@ -106,6 +106,7 @@
 				<fileset dir="${csrc}">
 					<include name="common/**/*.c"/>
 					<include name="${platform}/**/*.c"/>
+					<include name="${platform}_${subplatform}/**/*.c"/>
 				</fileset>
 				<fileset dir="${build}" includes="*.c"/>
 				

@@ -3,16 +3,16 @@
 	<!-- include native code for libraries -->
 	<!-- note that libraries should come after libraries they depend on
 		 (wkcomm first, the wkpf), or else loading the archive will fail -->
-	<property name="libs" value="uart, wkcomm, wkreprog, wkpf"/>
+	<property name="libs" value="vm, base, darjeeling3, uart, wkcomm, wkreprog, wkpf, wkpf_virtual"/>
 
 	<!-- Compile these applications -->
 	<property name="apps" value="wkdeploy"/>
 
 	<!-- Platform and architecture selection -->
 	<property name="platform" value="posix"/>
-	<property name="platform" value="pc"/>
+	<property name="subplatform" value="ebox"/>
 	<property name="architecture" value="native"/>
-	<property name="configuration" value="native-picokong"/>
+	<property name="configuration" value="ebox"/>
 
 	<property name="app-archive-size" value="4096"/>
 
