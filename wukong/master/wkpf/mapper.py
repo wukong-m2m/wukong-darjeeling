@@ -161,7 +161,6 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                 # regardless of whether java impl exist
             else:
                 pass # pass on to the next candidates
-        print component.instances[0].wunode.id
         print ([inst.wunode.id for inst in component.instances])
         #this is ignoring ordering of policies, eg. location policy, should be fixed or replaced by other algorithm later--- Sen
         component.instances = sorted(component.instances, key=lambda wuObject: wuObject.virtual, reverse=False)
