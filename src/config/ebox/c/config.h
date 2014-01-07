@@ -62,7 +62,7 @@ typedef int64_t dj_time_t;
 // #define ROUTING_USE_WUKONG
 
 // Radios: choose as many as the routing protocol allows (max 1 for routing_none)
-// #define RADIO_USE_ZWAVE
+#define RADIO_USE_ZWAVE
 // #define RADIO_USE_XBEE
 
 #endif

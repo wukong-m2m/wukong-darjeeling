@@ -122,7 +122,7 @@ void radio_zwave_poll(void) {
     if(zwave_mode==1)//learning mode
     {
 	    DEBUG_LOG(DBG_ZWAVETRACE,"start zwave learn !!!!!!!!!");
-		PORTK &=~_BV(1);
+// see issue 115 		PORTK &=~_BV(1);
 	    radio_zwave_learn();//finish will set zwave mode=0
 	    zwave_mode=0;
 		
@@ -370,7 +370,7 @@ void Zwave_receive(int processmessages) {
                     zwave_learn_on=0;
                     zwave_learn_block=0;
                     zwave_mode=0;
-					PORTK |=_BV(1);
+// see issue 115 					PORTK |=_BV(1);
                 }
             }
         }
