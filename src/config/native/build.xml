@@ -10,6 +10,7 @@
 
 	<!-- Platform and architecture selection -->
 	<property name="platform" value="posix"/>
+	<property name="subplatform" value="pc"/>
 	<property name="architecture" value="native"/>
 	<property name="configuration" value="native"/>
 
