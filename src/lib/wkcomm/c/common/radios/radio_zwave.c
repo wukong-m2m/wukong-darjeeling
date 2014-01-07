@@ -55,7 +55,7 @@
 #define WKCOMM_PANIC_INIT_FAILED 100 // Need to make sure these codes don't overlap with other libs or the definitions in panic.h
 
 // radio_zwave data
-radio_zwave_address_t radio_zwave_my_address;
+radio_zwave_address_t radio_zwave_my_address = 0;
 bool radio_zwave_my_address_loaded = false;
 uint8_t radio_zwave_receive_buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+4+3]; // 4 for Zwave overhead, 3 for wkcomm overhead
 
