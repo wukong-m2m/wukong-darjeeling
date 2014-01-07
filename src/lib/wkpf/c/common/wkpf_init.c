@@ -5,7 +5,7 @@
 #include "wkpf_comm.h"
 #include "wkcomm.h"
 #include "native_wuclasses/native_wuclasses.h"
-#include <avr/io.h>
+// see issue 115 #include <avr/io.h>
 
 dj_hook wkpf_markRootSetHook;
 dj_hook wkpf_updatePointersHook;
@@ -18,14 +18,14 @@ dj_hook wkpf_comm_handleMessageHook;
 
 void led_init()
 {
-	set_output(DDRK, 0);
-	set_output(DDRK, 1);
-	set_output(DDRK, 2);
-	set_output(DDRK, 3);
-	output_low(PORTK, 0);
-	output_low(PORTK, 1);
-	output_low(PORTK, 2);
-	output_low(PORTK, 3);
+// see issue 115 	set_output(DDRK, 0);
+// see issue 115 	set_output(DDRK, 1);
+// see issue 115 	set_output(DDRK, 2);
+// see issue 115 	set_output(DDRK, 3);
+// see issue 115 	output_low(PORTK, 0);
+// see issue 115 	output_low(PORTK, 1);
+// see issue 115 	output_low(PORTK, 2);
+// see issue 115 	output_low(PORTK, 3);
 }
 
 void wkpf_init() {
