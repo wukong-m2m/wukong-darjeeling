@@ -21,7 +21,7 @@
 					<compilerarg value="-ggdb"/>
 					<compilerarg value="-Wall"/>
 					<compilerarg value="-Werror"/>
-					<compilerarg value="-std=c99"/>
+					<compilerarg value="-std=gnu99"/>
 					<compiler-args/>
 				</compiler>
 				
