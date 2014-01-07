@@ -146,6 +146,7 @@ class WuNode:
     for id, node in cls.node_dict.items():
         node_element = ElementTree.SubElement(root, 'Node')
         node_element.attrib['id'] = str(id)
+        node_element.attrib['type'] = str(node.type)
         location_element = ElementTree.SubElement(node_element, "Location")
         location_element.attrib['length'] = str(len(node.location))
         location_element.attrib['content'] = str(node.location)
@@ -206,10 +207,11 @@ class WuNode:
       nodes = nodedom.getElementsByTagName("Node")
       for node_ele in nodes:
           nodeid = int(node_ele.getAttribute("id"))
+          nodetype = node_ele.getAttribute("type")
           wuclasses = {}
           wuobjects = {}
           location = ''
-          node = WuNode(nodeid, location, wuclasses, wuobjects) #note: wuclasses, pass by reference, change in original list is also change in node
+          node = WuNode(nodeid, location, wuclasses, wuobjects,type=nodetype) #note: wuclasses, pass by reference, change in original list is also change in node
           if node_ele.hasChildNodes():
               for prop_ele in node_ele.childNodes:
                   if prop_ele.nodeType != prop_ele.ELEMENT_NODE:    
