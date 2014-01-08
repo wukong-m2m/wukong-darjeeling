@@ -12,7 +12,7 @@
 
 #define EBOX_LIGHT_ACTUATOR_PIN 0
 
-#define setbit(port, bit) (outb((inb(port) | (1<<bit)), port)
+#define setbit(port, bit) (outb((inb(port) | (1<<bit)), port))
 #define clearbit(port, bit) (outb((inb(port) & ~(1<<bit)), port))
 
 void wuclass_light_actuator_setup(wuobject_t *wuobject) {}
