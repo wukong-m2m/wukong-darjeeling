@@ -11,6 +11,7 @@
 #define EBOX_DDR2  0x9a
 
 #define EBOX_LIGHT_ACTUATOR_PIN 0
+#define EBOX_LIGHT_ACTUATOR_REVERSED_PIN 1
 
 #define setbit(port, bit) (outb((inb(port) | (1<<bit)), port))
 #define clearbit(port, bit) (outb((inb(port) & ~(1<<bit)), port))
@@ -23,10 +24,14 @@ void wuclass_light_actuator_update(wuobject_t *wuobject) {
 
 	iopl(3); // Allow IO
 	setbit(EBOX_DDR0, EBOX_LIGHT_ACTUATOR_PIN); // Bit set -> output
-	if (onOff)
+	setbit(EBOX_DDR0, EBOX_LIGHT_ACTUATOR_REVERSED_PIN); // Bit set -> output
+	if (onOff) {
 		setbit(EBOX_PORT0, EBOX_LIGHT_ACTUATOR_PIN);
-	else
+		clearbit(EBOX_PORT0, EBOX_LIGHT_ACTUATOR_REVERSED_PIN);
+	} else {
 		clearbit(EBOX_PORT0, EBOX_LIGHT_ACTUATOR_PIN);
+		setbit(EBOX_PORT0, EBOX_LIGHT_ACTUATOR_REVERSED_PIN);
+	}
 
 	printf("WKPFUPDATE(Light): Setting light to: %x\n", onOff);
 }
