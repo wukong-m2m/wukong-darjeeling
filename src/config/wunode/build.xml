@@ -33,19 +33,19 @@
 
 	<target name="avrdude" depends="executable">
 		<exec executable="avrdude">
-			<arg line="-p atmega2560 -P ${avrdude-programmer} -c stk500v2 -U flash:w:darjeeling.ihex"/>
+			<arg line="-p atmega2560 -P ${avrdude-programmer} -c wiring -U flash:w:darjeeling.ihex"/>
 		</exec>
 	</target>
 
 	<target name="avrdude-only">
 		<exec executable="avrdude">
-			<arg line="-p atmega2560 -P ${avrdude-programmer} -c stk500v2 -U flash:w:darjeeling.ihex"/>
+			<arg line="-p atmega2560 -P ${avrdude-programmer} -c wiring -U flash:w:darjeeling.ihex"/>
 		</exec>
 	</target>
 
 	<target name="avrdude-eeprom" depends="executable">
 		<exec executable="avrdude">
-			<arg line="-p atmega2560 -P ${avrdude-programmer} -c stk500v2 -U flash:w:darjeeling.ihex -U eeprom:w:darjeeling_eeprom.ihex"/>
+			<arg line="-p atmega2560 -P ${avrdude-programmer} -c wiring -U flash:w:darjeeling.ihex -U eeprom:w:darjeeling_eeprom.ihex"/>
 		</exec>
 	</target>
 
