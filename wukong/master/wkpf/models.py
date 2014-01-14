@@ -2,6 +2,7 @@ import sqlite3
 import copy
 from xml.etree import ElementTree
 import xml.dom.minidom
+import traceback
 
 
 
@@ -124,7 +125,7 @@ class WuNode:
     self.id = id
     if location == None:
 	try:
-	    self.location = WuNode,locations[id]
+	    self.location = WuNode.locations[id]
 	except:
 	    self.location = 'WuKong'
     else:	    
@@ -193,6 +194,9 @@ class WuNode:
     fin = open(filename,"w")
     fin.write( WuNode.dumpXML())
     fin.close()
+    WuNode.locations={}
+    for id in WuNode.node_dict:
+      WuNode.locations[id] = WuNode.node_dict[id].location
     return
   @classmethod
   def clearNodes(cls, filename="../LocalData/nodes.xml"):
