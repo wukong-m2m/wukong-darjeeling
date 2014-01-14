@@ -141,7 +141,7 @@ class Communication:
         if not wuclassdef:
           print '[wkpfcomm] Unknown device type', generic
           return None
-        wunode = WuNode(destination, LOCATION_ROOT,type='native')
+        wunode = WuNode(destination, None,type='native')
         port_number =1
         
 

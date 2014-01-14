@@ -118,10 +118,17 @@ class WuTypeDef:
 class WuNode:
   
   node_dict = {}
+  locations = {}
 
   def __init__(self, id, location, wuclassdefs=None, wuobj=None,energy=100.0,type='wudevice'):
     self.id = id
-    self.location = location
+    if location == None:
+	try:
+	    self.location = WuNode,locations[id]
+	except:
+	    self.location = 'WuKong'
+    else:	    
+        self.location = location
     self.wuclasses = wuclassdefs  #wuclasses[id]
     self.wuobjects = wuobj    #wuobjects[port]
     if self.wuclasses == None:
@@ -218,6 +225,7 @@ class WuNode:
                       continue
                   if prop_ele.tagName == "Location":
                       node.location = prop_ele.getAttribute("content")
+		      WuNode.locations[nodeid] = node.location
                   if prop_ele.tagName == "WuClassList":
                       for wuclass_ele in prop_ele.childNodes:
                           if wuclass_ele.nodeType != wuclass_ele.ELEMENT_NODE:    
