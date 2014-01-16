@@ -9,6 +9,7 @@ public class LocalNetworkServer extends Thread
 	protected Socket clientSocket;
 	protected int clientId;
 	protected Queue<byte[]> messages;
+	protected boolean keepRunning;
 
 	public static void main(String[] args) throws IOException 
 	{ 
@@ -54,6 +55,7 @@ public class LocalNetworkServer extends Thread
 	private LocalNetworkServer (Socket clientSoc)
 	{
 		messages = new LinkedList<byte[]>();
+		keepRunning = true;
 		clientSocket = clientSoc;
 		start();
 	}
@@ -62,7 +64,7 @@ public class LocalNetworkServer extends Thread
 	{
 		try { 
 			BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			OutputStream out = clientSocket.getOutputStream();
+			BufferedOutputStream out = new BufferedOutputStream(clientSocket.getOutputStream());
 			long lastHeartbeat = 0;
 
 			// Say hi
@@ -76,58 +78,65 @@ public class LocalNetworkServer extends Thread
 			this.clientId += 256*in.read();
 			System.out.println("New client " + this.clientId);
 
+
+			if (LocalNetworkServer.clients.get(this.clientId) != null)
+				LocalNetworkServer.clients.get(this.clientId).keepRunning = false; // Kill old thread for client with same ID if it was still around
 			// Register this client in the global list
 			LocalNetworkServer.clients.put(this.clientId, this);
 
-			try {
+			while(keepRunning) {
+				// Receive messages
+				if (in.ready()) {
+					byte length = (byte)in.read();
+					byte [] message = new byte[length];
+					message[0] = (byte)length;
+					for (int i=1; i<length; i++)
+						message[i] = (byte)in.read();
+					int destId = message[3] + message[4]*256;
 
-				while(true) {
-					// Receive messages
-					if (in.ready()) {
-						byte length = (byte)in.read();
-						byte [] message = new byte[length+1];
-						message[0] = (byte)length;
-						for (int i=1; i<length; i++)
-							message[i] = (byte)in.read();
-						int destId = message[3] + message[4]*256;
+					System.out.println("Received message for " + destId + ", length " + length);
 
-						System.out.println("Received message from " + destId + ", length " + length);
-
-						LocalNetworkServer destClient = LocalNetworkServer.clients.get(destId);
-						if (destClient != null) {
-							destClient.messages.add(message);
-						}
-						else
-							System.out.println("Message for " + destId + " dropped.");
+					LocalNetworkServer destClient = LocalNetworkServer.clients.get(destId);
+					if (destClient != null) {
+						destClient.messages.add(message);
 					}
-
-					// Send messages
-					if (this.messages.size() > 0) {
-						System.out.println("Forwarding a message to node " + this.clientId);
-						byte [] message = this.messages.poll();
-						for (int i=0; i<message[0]; i++)
-							out.write(message[i]);
-						out.flush();
-					}
-
-					// Heartbeat
-					if (System.currentTimeMillis() - lastHeartbeat > 1000) {
-						lastHeartbeat = System.currentTimeMillis();
-						out.write(0);
-						out.flush();
-					}
-
-					Thread.yield();
+					else
+						System.out.println("Message for " + destId + " dropped.");
 				}
-			}
-			catch (IOException e) {
-				System.out.println("Node " + this.clientId + " disconnected."); 
-				LocalNetworkServer.clients.remove(this.clientId);
+
+				// Send messages
+				if (this.messages.size() > 0) {
+					System.out.println("Forwarding message to node " + this.clientId);
+					byte [] message = this.messages.poll();
+					for (int i=0; i<message[0]; i++)
+						out.write(message[i]);
+					out.flush();
+				}
+
+				// Heartbeat
+				if (System.currentTimeMillis() - lastHeartbeat > 1000) {
+					System.out.println("Heartbeat for node " + this.clientId);
+					try {
+					lastHeartbeat = System.currentTimeMillis();
+					out.write(0);
+					out.flush();
+					}
+					catch (IOException e){
+						this.keepRunning = false;
+					}
+				}
+
+				Thread.yield();
 			}
 		} 
 		catch (IOException e) { 
 			System.err.println("Problem with Communication Server");
-			LocalNetworkServer.clients.remove(this.clientId);
+			System.err.println(e);
 		} 
+		finally {
+			System.out.println("Node " + this.clientId + " disconnected.");
+			if (LocalNetworkServer.clients.get(this.clientId) == this)
+				LocalNetworkServer.clients.remove(this.clientId);			
+		}
 	}
 } 

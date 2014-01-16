@@ -74,7 +74,7 @@ void radio_local_poll(void) {
 		radio_local_address_t src = radio_local_receive_buffer[0] + 256*radio_local_receive_buffer[1];
 		recv(radio_local_sockfd, radio_local_receive_buffer, 2, 0); // skip dest
 		recv(radio_local_sockfd, radio_local_receive_buffer, length-5, 0); // skip dest
-		printf("-------------------> message received from %d, length %d\n", src, length);
+		printf("-------------------> message received from %d, length %d\n", src, length-5);
 		routing_handle_local_message(src, radio_local_receive_buffer, length-5);
 	}
 }
