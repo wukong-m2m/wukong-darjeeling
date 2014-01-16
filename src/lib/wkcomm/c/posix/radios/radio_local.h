@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-typedef uint8_t radio_local_address_t;
+typedef uint16_t radio_local_address_t;
 
 extern void radio_local_init(void);
 extern radio_local_address_t radio_local_get_node_id();
