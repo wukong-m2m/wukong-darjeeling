@@ -9,5 +9,6 @@ extern void posix_parse_command_line(int argc, char* argv[]);
 extern char** posix_argv;
 extern char* posix_uart_filenames[4];
 extern bool posix_arg_addnode;
+extern uint16_t posix_local_network_id;
 
 #endif // POSIX_UTILSH

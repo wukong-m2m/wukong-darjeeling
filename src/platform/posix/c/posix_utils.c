@@ -17,6 +17,7 @@ char * ref_t_base_address;
 char** posix_argv;
 char* posix_uart_filenames[4];
 bool posix_arg_addnode = false;
+uint16_t posix_local_network_id = 0;
 
 void posix_parse_uart_arg(char *arg) {
 	int uart = arg[0];
@@ -29,6 +30,11 @@ void posix_parse_uart_arg(char *arg) {
 	printf("Uart %d at %s\n", uart, posix_uart_filenames[uart]);
 }
 
+void posix_parse_localid_arg(char *arg) {
+	posix_local_network_id = atoi(arg);
+	printf("Local network id: %d", posix_local_network_id);
+}
+
 void posix_parse_command_line(int argc, char* argv[]) {
 	posix_argv = argv; // Used by wkpf_reprog code to do a reboot
 
@@ -37,13 +43,14 @@ void posix_parse_command_line(int argc, char* argv[]) {
 		static struct option long_options[] = {
 			{"uart",      required_argument, 0, 'u'},
 			{"zwave_add", no_argument,       0, 'a'},
+			{"local_network_id",      required_argument, 0, 'i'},
 			{0, 0, 0, 0}
 		};
 
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long (argc, argv, "au:",
+		c = getopt_long (argc, argv, "uai:",
 		    long_options, &option_index);
 
 		/* Detect the end of the options. */
@@ -51,11 +58,14 @@ void posix_parse_command_line(int argc, char* argv[]) {
 			break;
 
 		switch (c) {
+			case 'u':
+				posix_parse_uart_arg(optarg);
+				break;
 			case 'a':
 				posix_arg_addnode = true;
 				break;
-			case 'u':
-				posix_parse_uart_arg(optarg);
+			case 'i':
+				posix_parse_localid_arg(optarg);
 				break;
 			default:
 				abort ();
