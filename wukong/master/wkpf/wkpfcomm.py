@@ -111,10 +111,10 @@ class Communication:
       print '[wkpfcomm] getNodeInfo of node id', destination
 
       (basic,generic,specific) = self.getDeviceType(destination)
-      #print "basic=", basic
-      #print "generic=", generic
-      #print "specific=", specific
-      if generic == 0xff:
+      print "basic=", basic
+      print "generic=", generic
+      print "specific=", specific
+      if generic == 0xff or generic == 0x02:
         wunode = WuNode.findById(destination)
         location = self.getLocation(destination)
         gevent.sleep(0) # give other greenlets some air to breath
@@ -141,7 +141,7 @@ class Communication:
         if not wuclassdef:
           print '[wkpfcomm] Unknown device type', generic
           return None
-        wunode = WuNode(destination, LOCATION_ROOT,type='native')
+        wunode = WuNode(destination, None,type='native')
         port_number =1
         
 

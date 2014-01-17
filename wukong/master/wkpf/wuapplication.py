@@ -236,14 +236,12 @@ class WuApplication:
           to_property_name =  linkTag.getAttribute('toProperty').lower() 
           to_property_id = WuObjectFactory.wuclassdefsbyname[to_component.type].properties[to_property_name].id
 
-
-          
           hash_value = (int(from_component_id)*100+int(from_property_id))*100000+int(to_component_id)*100+int(to_property_id)
           if hash_value not in self.wuLinkList.keys():
             link = WuLink(from_component, from_property_name, 
                     to_component, to_property_name)
             self.wuLinkList[hash_value] = link
-            self.changesets.links.append(link)
+          self.changesets.links.append(self.wuLinkList[hash_value])
           
 
   def cleanAndCopyJava(self):
