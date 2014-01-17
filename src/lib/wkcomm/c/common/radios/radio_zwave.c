@@ -76,6 +76,7 @@ uint8_t last_node = 0;
 uint8_t ack_got = 0;
 int zwsend_ack_got = 0;
 uint8_t wait_CAN_NAK = 1;
+uint8_t wait_RF_ready = 100;
 uint8_t zwave_learn_block = 0;
 uint32_t zwave_time_learn_start;
 uint8_t zwave_mode = 0;
@@ -205,6 +206,8 @@ void radio_zwave_init(void) {
         if(!radio_zwave_my_address_loaded) // Can't read address -> panic
     DEBUG_LOG(DBG_WKCOMM, "My Zwave node_id: %d\n", radio_zwave_my_address);
     radio_zwave_platform_dependent_init();
+
+    dj_timer_delay(wait_RF_ready);
 	radio_zwave_set_node_info(0,0xff, 0);
 }
 
