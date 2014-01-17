@@ -1,5 +1,6 @@
 #include "debug.h"
 #include "../../common/native_wuclasses/native_wuclasses.h"
+#include "../posix_pc_utils.h"
 
 void wuclass_light_sensor_setup(wuobject_t *wuobject) {
 	// Just get a value to make sure the file is created even if the object's not used in the FBP
