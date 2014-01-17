@@ -63,7 +63,7 @@ public class LocalNetworkServer extends Thread
 	public void run()
 	{
 		try { 
-			BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			BufferedInputStream in = new BufferedInputStream(clientSocket.getInputStream());
 			BufferedOutputStream out = new BufferedOutputStream(clientSocket.getOutputStream());
 			long lastHeartbeat = 0;
 
@@ -86,7 +86,7 @@ public class LocalNetworkServer extends Thread
 
 			while(keepRunning) {
 				// Receive messages
-				if (in.ready()) {
+				if (in.available() > 0) {
 					byte length = (byte)in.read();
 					byte [] message = new byte[length];
 					message[0] = (byte)length;
@@ -94,32 +94,35 @@ public class LocalNetworkServer extends Thread
 						message[i] = (byte)in.read();
 					int destId = message[3] + message[4]*256;
 
-					System.out.println("Received message for " + destId + ", length " + length);
+					System.out.print("Received message for " + destId + ", length " + length);
 
 					LocalNetworkServer destClient = LocalNetworkServer.clients.get(destId);
 					if (destClient != null) {
 						destClient.messages.add(message);
+						System.out.println("");
 					}
 					else
-						System.out.println("Message for " + destId + " dropped.");
+						System.out.println(" ---> dropped.");
 				}
 
 				// Send messages
 				if (this.messages.size() > 0) {
-					System.out.println("Forwarding message to node " + this.clientId);
 					byte [] message = this.messages.poll();
-					for (int i=0; i<message[0]; i++)
+					System.out.print("Forwarding message to node " + this.clientId);
+					for (int i=0; i<message[0]; i++) {
 						out.write(message[i]);
+						System.out.print(" [" + String.format("%02X ", message[i]) + "]");
+					}
 					out.flush();
+					System.out.println("");
 				}
 
 				// Heartbeat
 				if (System.currentTimeMillis() - lastHeartbeat > 1000) {
-					System.out.println("Heartbeat for node " + this.clientId);
 					try {
-					lastHeartbeat = System.currentTimeMillis();
-					out.write(0);
-					out.flush();
+						lastHeartbeat = System.currentTimeMillis();
+						out.write(0);
+						out.flush();
 					}
 					catch (IOException e){
 						this.keepRunning = false;
