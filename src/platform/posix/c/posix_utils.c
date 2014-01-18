@@ -18,6 +18,7 @@ char** posix_argv;
 char* posix_uart_filenames[4];
 bool posix_arg_addnode = false;
 uint16_t posix_local_network_id = 0;
+char * posix_pc_io_directory = "./djnetwork";
 
 void posix_parse_uart_arg(char *arg) {
 	int uart = arg[0];
@@ -44,13 +45,14 @@ void posix_parse_command_line(int argc, char* argv[]) {
 			{"uart",      required_argument, 0, 'u'},
 			{"zwave_add", no_argument,       0, 'a'},
 			{"local_network_id",      required_argument, 0, 'i'},
+			{"virtual_io_directory",      required_argument, 0, 'd'},
 			{0, 0, 0, 0}
 		};
 
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long (argc, argv, "uai:",
+		c = getopt_long (argc, argv, "au:i:d:",
 		    long_options, &option_index);
 
 		/* Detect the end of the options. */
@@ -66,6 +68,9 @@ void posix_parse_command_line(int argc, char* argv[]) {
 				break;
 			case 'i':
 				posix_parse_localid_arg(optarg);
+				break;
+			case 'd':
+				posix_pc_io_directory = optarg;
 				break;
 			default:
 				abort ();
