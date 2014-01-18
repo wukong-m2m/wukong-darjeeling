@@ -5,6 +5,7 @@
 #include <libgen.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include "posix_utils.h"
 #include "posix_pc_utils.h"
 #include "wkcomm.h"
 
@@ -18,8 +19,7 @@ void mkpath(char *dir)
 FILE* get_property_file(wuobject_t *wuobject, char *property, char* mode) {
 	char dirname[1024];
 	char filename[1024];
-	char* basedirectory = "/Users/niels/tmp/djnetwork";
-	snprintf(dirname, 1024, "%s/node_%d", basedirectory, wkcomm_get_node_id());
+	snprintf(dirname, 1024, "%s/node_%d", posix_pc_io_directory, wkcomm_get_node_id());
 	snprintf(filename, 1024, "%s/%s_%d", dirname, property, wuobject->port_number);
 
 	FILE* file = fopen(filename, mode);
