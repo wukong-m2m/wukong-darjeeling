@@ -38,17 +38,17 @@ wkcomm_address_t addr_xbee_to_wkcomm(radio_xbee_address_t xbee_addr) {
 }
 #endif // RADIO_USE_XBEE
 
-#ifdef RADIO_USE_LOCAL
-#include "../../posix/radios/radio_local.h"
-radio_local_address_t addr_wkcomm_to_local(wkcomm_address_t wkcomm_addr) {
+#ifdef RADIO_USE_NETWORKSERVER
+#include "../../posix/radios/radio_networkserver.h"
+radio_networkserver_address_t addr_wkcomm_to_local(wkcomm_address_t wkcomm_addr) {
 	// local address is only 8 bits. To translate wkcomm address to local, just ignore the higher 8 bits
 	// (so effectively using routing_none we can still only use 256 nodes)
-    return (radio_local_address_t)(wkcomm_addr & 0xFF);
+    return (radio_networkserver_address_t)(wkcomm_addr & 0xFF);
 }
-wkcomm_address_t addr_local_to_wkcomm(radio_local_address_t local_addr) {
+wkcomm_address_t addr_local_to_wkcomm(radio_networkserver_address_t local_addr) {
 	return (wkcomm_address_t)local_addr;
 }
-#endif // RADIO_USE_LOCAL
+#endif // RADIO_USE_NETWORKSERVER
 
 // SENDING
 uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
@@ -58,8 +58,8 @@ uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
 	#ifdef RADIO_USE_XBEE
 		return radio_xbee_send(addr_wkcomm_to_xbee(dest), payload, length);
 	#endif
-	#ifdef RADIO_USE_LOCAL
-		return radio_local_send(addr_wkcomm_to_local(dest), payload, length);
+	#ifdef RADIO_USE_NETWORKSERVER
+		return radio_networkserver_send(addr_wkcomm_to_local(dest), payload, length);
 	#endif
 	return 0;
 }
@@ -91,11 +91,11 @@ void routing_handle_xbee_message(radio_xbee_address_t xbee_addr, uint8_t *payloa
 }
 #endif // RADIO_USE_XBEE
 
-#ifdef RADIO_USE_LOCAL
-void routing_handle_local_message(radio_local_address_t local_addr, uint8_t *payload, uint8_t length) {
+#ifdef RADIO_USE_NETWORKSERVER
+void routing_handle_local_message(radio_networkserver_address_t local_addr, uint8_t *payload, uint8_t length) {
 	wkcomm_handle_message(addr_local_to_wkcomm(local_addr), payload, length);
 }
-#endif // RADIO_USE_LOCAL
+#endif // RADIO_USE_NETWORKSERVER
 
 // MY NODE ID
 // Get my own node id
@@ -107,8 +107,8 @@ wkcomm_address_t routing_get_node_id() {
 	#ifdef RADIO_USE_XBEE
 		return addr_xbee_to_wkcomm(radio_xbee_get_node_id());
 	#endif
-	#ifdef RADIO_USE_LOCAL
-		return addr_local_to_wkcomm(radio_local_get_node_id());
+	#ifdef RADIO_USE_NETWORKSERVER
+		return addr_local_to_wkcomm(radio_networkserver_get_node_id());
 	#endif
 	return 2; // Just return 1 if we have no radios at all.
 }
@@ -122,8 +122,8 @@ void routing_init() {
 	#ifdef RADIO_USE_XBEE
 		radio_xbee_init();
 	#endif
-	#ifdef RADIO_USE_LOCAL
-		radio_local_init();
+	#ifdef RADIO_USE_NETWORKSERVER
+		radio_networkserver_init();
 	#endif
 }
 
@@ -139,8 +139,8 @@ void routing_poll() {
 	#ifdef RADIO_USE_XBEE
 		radio_xbee_poll();
 	#endif
-	#ifdef RADIO_USE_LOCAL
-		radio_local_poll();
+	#ifdef RADIO_USE_NETWORKSERVER
+		radio_networkserver_poll();
 	#endif
 }
 

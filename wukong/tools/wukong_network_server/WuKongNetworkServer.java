@@ -2,10 +2,10 @@ import java.net.*;
 import java.io.*; 
 import java.util.*;
 
-public class LocalNetworkServer extends Thread
+public class WuKongNetworkServer extends Thread
 {
 	protected static boolean serverContinue = true;
-	protected static Map<Integer, LocalNetworkServer> clients;
+	protected static Map<Integer, WuKongNetworkServer> clients;
 	protected Socket clientSocket;
 	protected int clientId;
 	protected Queue<byte[]> messages;
@@ -13,7 +13,7 @@ public class LocalNetworkServer extends Thread
 
 	public static void main(String[] args) throws IOException 
 	{ 
-		clients = new HashMap<Integer, LocalNetworkServer>();
+		clients = new HashMap<Integer, WuKongNetworkServer>();
 
 		ServerSocket serverSocket = null; 
 
@@ -24,7 +24,7 @@ public class LocalNetworkServer extends Thread
 				while (serverContinue) {
 					serverSocket.setSoTimeout(10000);
 					try {
-						new LocalNetworkServer (serverSocket.accept()); 
+						new WuKongNetworkServer (serverSocket.accept()); 
 					}
 					catch (SocketTimeoutException ste) {
 //						System.out.println ("Timeout Occurred");
@@ -52,7 +52,7 @@ public class LocalNetworkServer extends Thread
 		}
 	}
 
-	private LocalNetworkServer (Socket clientSoc)
+	private WuKongNetworkServer (Socket clientSoc)
 	{
 		messages = new LinkedList<byte[]>();
 		keepRunning = true;
@@ -79,10 +79,10 @@ public class LocalNetworkServer extends Thread
 			System.out.println("New client " + this.clientId);
 
 
-			if (LocalNetworkServer.clients.get(this.clientId) != null)
-				LocalNetworkServer.clients.get(this.clientId).keepRunning = false; // Kill old thread for client with same ID if it was still around
+			if (WuKongNetworkServer.clients.get(this.clientId) != null)
+				WuKongNetworkServer.clients.get(this.clientId).keepRunning = false; // Kill old thread for client with same ID if it was still around
 			// Register this client in the global list
-			LocalNetworkServer.clients.put(this.clientId, this);
+			WuKongNetworkServer.clients.put(this.clientId, this);
 
 			while(keepRunning) {
 				// Receive messages
@@ -96,7 +96,7 @@ public class LocalNetworkServer extends Thread
 
 					System.out.print("Received message for " + destId + ", length " + length);
 
-					LocalNetworkServer destClient = LocalNetworkServer.clients.get(destId);
+					WuKongNetworkServer destClient = WuKongNetworkServer.clients.get(destId);
 					if (destClient != null) {
 						destClient.messages.add(message);
 						System.out.println("");
@@ -138,8 +138,8 @@ public class LocalNetworkServer extends Thread
 		} 
 		finally {
 			System.out.println("Node " + this.clientId + " disconnected.");
-			if (LocalNetworkServer.clients.get(this.clientId) == this)
-				LocalNetworkServer.clients.remove(this.clientId);			
+			if (WuKongNetworkServer.clients.get(this.clientId) == this)
+				WuKongNetworkServer.clients.remove(this.clientId);			
 		}
 	}
 } 

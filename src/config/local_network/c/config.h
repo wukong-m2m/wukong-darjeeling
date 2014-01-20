@@ -64,6 +64,6 @@ typedef int64_t dj_time_t;
 // Radios: choose as many as the routing protocol allows (max 1 for routing_none)
 // #define RADIO_USE_ZWAVE
 // #define RADIO_USE_XBEE
-#define RADIO_USE_LOCAL
+#define RADIO_USE_NETWORKSERVER
 
 #endif
