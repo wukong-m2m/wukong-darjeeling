@@ -28,12 +28,12 @@ void posix_parse_uart_arg(char *arg) {
 		abort();
 	}
 	posix_uart_filenames[uart] = arg+2;
-	printf("Uart %d at %s\n", uart, posix_uart_filenames[uart]);
+	printf("[posix platform parameters] Uart %d at %s\n", uart, posix_uart_filenames[uart]);
 }
 
 void posix_parse_localid_arg(char *arg) {
 	posix_local_network_id = atoi(arg);
-	printf("Local network id: %d", posix_local_network_id);
+	printf("[posix platform parameters] Network id: %d\n", posix_local_network_id);
 }
 
 void posix_parse_command_line(int argc, char* argv[]) {
@@ -71,6 +71,7 @@ void posix_parse_command_line(int argc, char* argv[]) {
 				break;
 			case 'd':
 				posix_pc_io_directory = optarg;
+				printf("[posix platform parameters] Sensor IO file system at: %s\n", posix_pc_io_directory);
 				break;
 			default:
 				abort ();

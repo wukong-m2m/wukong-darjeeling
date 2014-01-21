@@ -18,7 +18,7 @@
 
 
 // Message format:
-// 1 byte remaining length (=2+2+X), 2 byte source 2 byte dest, X byte payload
+// 1 byte length (=1+2+2+X), 2 byte source 2 byte dest, X byte payload
 
 
 int radio_networkserver_sockfd;
