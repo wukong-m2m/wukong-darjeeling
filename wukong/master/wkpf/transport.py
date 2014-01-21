@@ -13,6 +13,8 @@ import wusignal
 import time
 from configuration import *
 from globals import *
+import socket # for NetworkServerAgent
+import select # for NetworkServerAgent
 
 import pynvc # for message constants
 import pyzwave
@@ -342,6 +344,201 @@ class ZwaveAgent(TransportAgent):
 
             gevent.sleep(0)
 
+# Agent to connect to the network server in /wukong/tools/local_network_server
+class NetworkServerAgent(TransportAgent):
+    _agent = None
+    @classmethod
+    def init(cls):
+        if not cls._agent:
+            cls._agent = NetworkServerAgent()
+        return cls._agent
+
+    def __init__(self):
+        self._mode = 'stop'
+
+        #TODONR make address and port configurable
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._socket.connect(("127.0.0.1", 10008))
+
+        # Server says hi
+        self._socket.recv(1)
+
+        # Tell the server our network id
+        source = 1 # TODONR: is the master ALWAYS 1?
+        buffer = bytearray()
+        buffer.append(source%0xFF)
+        buffer.append(source/0xFF)
+        self._socket.send(buffer)
+
+        TransportAgent.__init__(self)
+
+    # add a defer to queue
+    def deferSend(self, destination, command, payload, allowed_replies, cb, error_cb):
+        def callback(reply):
+            cb(reply)
+
+        def error_callback(reply):
+            error_cb(reply)
+
+        defer = new_defer(callback, 
+                error_callback,
+                self.verify(allowed_replies), 
+                allowed_replies, 
+                new_message(destination, command, self.getNextSequenceNumberAsPrefixPayload() + payload), int(round(time.time() * 1000)) + 10000)
+        tasks.put_nowait(defer)
+        return defer
+
+    def getDeviceType(self,node):   #mock only wudevice, not sure what does the 3 fields do though, feel free to change it if you understand it
+        return (None, 0xff, None)
+
+    def send(self, destination, command, payload, allowed_replies):
+        result = AsyncResult()
+
+        def callback(reply):
+            result.set(reply)
+
+        def error_callback(reply):
+            result.set(reply)
+
+
+        defer = new_defer(callback, 
+                error_callback,
+                self.verify(allowed_replies), 
+                allowed_replies, 
+                new_message(destination, command, self.getNextSequenceNumberAsPrefixPayload() + payload), int(round(time.time() * 1000)) + 10000)
+        tasks.put_nowait(defer)
+
+        message = result.get() # blocking
+
+        # received ack from Agent
+        return message
+
+    def routing(self):
+
+        result = AsyncResult()
+
+        def callback(reply):
+            result.set(reply)
+
+        defer = new_defer(callback,
+                callback,
+                None,
+                None,
+                new_message(1, "routing", 0),
+                0)
+        tasks.put_nowait(defer)
+
+        return result.get()
+
+    def discovery(self):
+        print "TODONR: hardcoded discovery result: [1,3]"
+        return [1,3]
+
+        result = AsyncResult()
+
+        def callback(reply):
+            result.set(reply)
+
+        defer = new_defer(callback,
+                callback,
+                None, 
+                None, 
+                new_message(1, "discovery", 0),
+                0)
+        tasks.put_nowait(defer)
+
+        nodes = result.get() # blocking
+        return nodes
+
+    def add(self):
+        if self._mode != 'stop':
+            return False
+        return True
+
+    def delete(self):
+        if self._mode != 'stop':
+            return False
+        return True
+
+    def stop(self):
+        self._mode = 'stop'
+        return True
+
+    def poll(self):
+        # TODONR return pyzwave.poll()
+        return "Not availble"
+
+    def receive(self, timeout_msec=100):
+        print "========================================== receive called"
+        while 1:
+            try:
+                r, w, e = select.select([self._socket], [], [], timeout_msec)
+                if r:
+                    length = ord(self._socket.recv(1)[0])
+                    message = map(ord, self._socket.recv(length-1))
+                    src = message[0] + (message[1] * 0xFF)
+                    reply = message[4:]
+                    if src and reply:
+                        # with seq number
+                        deliver = new_deliver(src, reply[0], reply[1:])
+                        messages.put_nowait(deliver)
+                        print '[transport] receive: put a message to messages'
+            except Exception as e:
+                print '[transport] receive exception'
+                print e
+
+            getDeferredQueue().removeTimeoutDefer()
+
+            #logger.debug('receive: going to sleep')
+            gevent.sleep(0.01) # sleep for at least 10 msec
+
+
+    # to be run in a thread, and others will use ioloop to monitor this thread
+    def handler(self):
+        while 1:
+            defer = tasks.get()
+
+            if defer.message.command == "discovery":
+                defer.callback(self.discovery())
+            elif defer.message.command == "routing":
+                defer.callback({})
+            else: # send
+                retries = 1
+                destination = defer.message.destination
+                command = defer.message.command
+                payload = defer.message.payload
+
+                # prevent pyzwave send got preempted and defer is not in queue
+                # TODONR: is this relevant for network server?
+                if len(defer.allowed_replies) > 0:
+                    print "[transport] handler: appending defer", defer, "to queue"
+                    getAgent().append(defer)
+
+                while retries > 0:
+                    try:
+                        destination = defer.message.destination
+                        source = 1 # TODONR: is the master ALWAYS 1?
+                        buffer = bytearray()
+                        buffer.append(1+2+2+1+len(payload))
+                        buffer.append(source%0xFF)
+                        buffer.append(source/0xFF)
+                        buffer.append(destination%0xFF)
+                        buffer.append(destination/0XFF)
+                        buffer.append(command)
+                        buffer.extend(payload)
+                        self._socket.send(buffer)
+                        break
+                    except Exception as e:
+                        log = "==IOError== retries remaining: " + str(retries)
+                        print '[transport] ' + log
+                    retries -= 1
+
+                if retries == 0 or len(defer.allowed_replies) == 0:
+                    print "[transport] handler: returns immediately to handle failues, or defer has no expected replies"
+                    defer.callback(None)
+
+            gevent.sleep(0)
+
 # Mock agent behavior, will only provide fixed responses and will not contact any external devices
 # So no receive, and no call to any c library, no calls to broker, etc
 class MockAgent(TransportAgent):
@@ -506,6 +703,9 @@ def getMockAgent():
 
 def getZwaveAgent():
     return ZwaveAgent.init()
+
+def getNetworkServerAgent():
+    return NetworkServerAgent.init()
 
 def getDeferredQueue():
     return DeferredQueue.init()
