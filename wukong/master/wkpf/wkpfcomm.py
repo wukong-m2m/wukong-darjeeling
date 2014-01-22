@@ -30,8 +30,13 @@ class Communication:
       try:
         if SIMULATION == "true":
           raise KeyboardInterrupt
-        self.zwave = getZwaveAgent()
-      except:
+        if WKPFCOMM_AGENT == "NETWORKSERVER":
+          self.zwave = getNetworkServerAgent()
+        else:
+          self.zwave = getZwaveAgent()
+      except Exception as e:
+        print "Exception while creating agent"
+        print e
         is_not_connected()
         self.zwave = getMockAgent()
         if SIMULATION == "true":
