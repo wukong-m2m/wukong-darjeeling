@@ -349,7 +349,6 @@ class NetworkServerAgent(TransportAgent):
     MODE_MESSAGE = 1
     MODE_DISCOVERY = 2
     _agent = None
-    #TODONR make address and port configurable
 
     @classmethod
     def init(cls):

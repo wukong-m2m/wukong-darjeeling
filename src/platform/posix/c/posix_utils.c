@@ -18,7 +18,9 @@ char** posix_argv;
 char* posix_uart_filenames[4];
 bool posix_arg_addnode = false;
 uint16_t posix_local_network_id = 0;
-char * posix_pc_io_directory = "./djnetwork";
+char* posix_pc_io_directory = "./djnetwork";
+char* posix_network_server_address = "127.0.0.1";
+int posix_network_server_port = 10008;
 
 void posix_parse_uart_arg(char *arg) {
 	int uart = arg[0];
@@ -36,6 +38,21 @@ void posix_parse_localid_arg(char *arg) {
 	printf("[posix platform parameters] Network id: %d\n", posix_local_network_id);
 }
 
+void posix_parse_networkserver_arg(char *arg) {
+	// Should be either "address" or "address:port"
+	char* colon = strstr(arg, ":");
+	if (colon == NULL) {
+		posix_network_server_address = arg;
+	} else {
+		// copy address and terminate by overwriting ':'' with a 0
+		posix_network_server_address = strdup(arg);
+		posix_network_server_address[colon-arg] = 0;
+		// get the port number
+		posix_network_server_port = atoi(colon+1);
+	}
+	printf("[posix platform parameters] Network server address: %s, port: %d\n", posix_network_server_address, posix_network_server_port);
+}
+
 void posix_parse_command_line(int argc, char* argv[]) {
 	posix_argv = argv; // Used by wkpf_reprog code to do a reboot
 
@@ -46,13 +63,14 @@ void posix_parse_command_line(int argc, char* argv[]) {
 			{"zwave_add", no_argument,       0, 'a'},
 			{"local_network_id",      required_argument, 0, 'i'},
 			{"virtual_io_directory",      required_argument, 0, 'd'},
+			{"network_server",      required_argument, 0, 's'},
 			{0, 0, 0, 0}
 		};
 
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long (argc, argv, "au:i:d:",
+		c = getopt_long (argc, argv, "au:i:d:s:",
 		    long_options, &option_index);
 
 		/* Detect the end of the options. */
@@ -72,6 +90,9 @@ void posix_parse_command_line(int argc, char* argv[]) {
 			case 'd':
 				posix_pc_io_directory = optarg;
 				printf("[posix platform parameters] Sensor IO file system at: %s\n", posix_pc_io_directory);
+				break;
+			case 's':
+				posix_parse_networkserver_arg(optarg);
 				break;
 			default:
 				abort ();

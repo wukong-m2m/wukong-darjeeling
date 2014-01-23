@@ -33,8 +33,8 @@ void open_connection() {
 
 	memset(&radio_networkserver_servaddr, 0, sizeof(radio_networkserver_servaddr));
 	radio_networkserver_servaddr.sin_family = AF_INET;
-	radio_networkserver_servaddr.sin_addr.s_addr=inet_addr("127.0.0.1");
-	radio_networkserver_servaddr.sin_port=htons(10008);
+	radio_networkserver_servaddr.sin_addr.s_addr=inet_addr(posix_network_server_address);
+	radio_networkserver_servaddr.sin_port=htons(posix_network_server_port);
 
 	int retval = connect(radio_networkserver_sockfd, (struct sockaddr *)&radio_networkserver_servaddr, sizeof(radio_networkserver_servaddr));
 
