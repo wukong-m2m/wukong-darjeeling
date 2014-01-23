@@ -10,6 +10,8 @@ extern char** posix_argv;
 extern char* posix_uart_filenames[4];
 extern bool posix_arg_addnode;
 extern uint16_t posix_local_network_id;
-extern char * posix_pc_io_directory;
+extern char* posix_pc_io_directory;
+extern char* posix_network_server_address;
+extern int posix_network_server_port;
 
 #endif // POSIX_UTILSH
