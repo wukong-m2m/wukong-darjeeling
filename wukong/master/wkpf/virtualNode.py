@@ -90,7 +90,7 @@ class VirtualNode:
         from py import *
     '''
     print 'VirtualNode imp load_source'
-    gevent.spawn(self.run)
+    #gevent.spawn(self.run)
 
   def setComm(self,comm):
     self.comm = comm
@@ -129,6 +129,7 @@ class VirtualNode:
       wuobject.setup()
 
   def deploy(self, changesets):
+    return
     self.changesets = changesets # just holding reference
     self.initializeWuObjects(self.changesets)
     self.components = self.changesets.components
