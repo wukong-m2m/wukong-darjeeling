@@ -372,7 +372,10 @@ class ZwaveAgent(TransportAgent):
 
 # Agent to connect to the network server in /wukong/tools/local_network_server
 class NetworkServerAgent(TransportAgent):
+    MODE_MESSAGE = 1
+    MODE_DISCOVERY = 2
     _agent = None
+
     @classmethod
     def init(cls):
         if not cls._agent:
@@ -382,9 +385,8 @@ class NetworkServerAgent(TransportAgent):
     def __init__(self):
         self._mode = 'stop'
 
-        #TODONR make address and port configurable
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.connect(("127.0.0.1", 10008))
+        self._socket.connect((NETWORKSERVER_ADDRESS, NETWORKSERVER_PORT))
 
         # Server says hi
         self._socket.recv(1)
@@ -392,8 +394,9 @@ class NetworkServerAgent(TransportAgent):
         # Tell the server our network id
         source = 1 # TODONR: is the master ALWAYS 1?
         buffer = bytearray()
-        buffer.append(source%0xFF)
-        buffer.append(source/0xFF)
+        buffer.append(NetworkServerAgent.MODE_MESSAGE)
+        buffer.append(source%256)
+        buffer.append(source/256)
         self._socket.send(buffer)
 
         TransportAgent.__init__(self)
@@ -455,10 +458,8 @@ class NetworkServerAgent(TransportAgent):
         tasks.put_nowait(defer)
 
         return result.get()
-
+        
     def discovery(self):
-        print "TODONR: hardcoded discovery result: [1,3]"
-        return [1,3]
 
         result = AsyncResult()
 
@@ -495,14 +496,16 @@ class NetworkServerAgent(TransportAgent):
         return "Not availble"
 
     def receive(self, timeout_msec=100):
-        print "========================================== receive called"
         while 1:
             try:
                 r, w, e = select.select([self._socket], [], [], timeout_msec)
                 if r:
                     length = ord(self._socket.recv(1)[0])
+                    if length == 0:
+                        # just a heartbeat message
+                        continue
                     message = map(ord, self._socket.recv(length-1))
-                    src = message[0] + (message[1] * 0xFF)
+                    src = message[0] + (message[1] * 256)
                     reply = message[4:]
                     if src and reply:
                         # with seq number
@@ -525,7 +528,37 @@ class NetworkServerAgent(TransportAgent):
             defer = tasks.get()
 
             if defer.message.command == "discovery":
-                defer.callback(self.discovery())
+                discovery_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                discovery_socket.connect((NETWORKSERVER_ADDRESS, NETWORKSERVER_PORT))
+                # Server says hi
+                discovery_socket.recv(1)
+
+                # Tell the server our network id
+                buffer = bytearray()
+                buffer.append(NetworkServerAgent.MODE_DISCOVERY)
+                discovery_socket.send(buffer)
+
+                discovered_ids=[]
+                try:
+                    r, w, e = select.select([discovery_socket], [], [], 1000)
+                    if r:
+                        length = ord(discovery_socket.recv(1)[0])
+                        length += 256*ord(discovery_socket.recv(1)[0])
+                        message = map(ord, discovery_socket.recv(length-2))
+                        for i in range((length-2)/2):
+                            discovered_ids.append(message[i*2] + 256*message[i*2+1])
+                except Exception as e:
+                    print '[transport] receive exception, discovery failed'
+                    print e
+                finally:
+                    discovery_socket.close()
+                print "[transport] discovery result:"
+                print discovered_ids
+                # The master seems to treat the first discoved node as a special case (the master)
+                # This seems like a bad design to me, but for now I'll just sort the ids to make sure
+                # the master is first (assuming it's node 1, and there's no node 0)
+                discovered_ids.sort()
+                defer.callback(discovered_ids)
             elif defer.message.command == "routing":
                 defer.callback({})
             else: # send
@@ -546,12 +579,18 @@ class NetworkServerAgent(TransportAgent):
                         source = 1 # TODONR: is the master ALWAYS 1?
                         buffer = bytearray()
                         buffer.append(1+2+2+1+len(payload))
-                        buffer.append(source%0xFF)
-                        buffer.append(source/0xFF)
-                        buffer.append(destination%0xFF)
-                        buffer.append(destination/0XFF)
+                        buffer.append(source%256)
+                        buffer.append(source/256)
+                        buffer.append(destination%256)
+                        buffer.append(destination/256)
                         buffer.append(command)
                         buffer.extend(payload)
+                        print "networkserver send"
+                        print source
+                        print destination
+                        print destination%256
+                        print destination/256
+                        print buffer
                         self._socket.send(buffer)
                         break
                     except Exception as e:

@@ -18,9 +18,9 @@
 #include "../../common/routing/routing.h"
 
 
-// Message format:
-// 1 byte length (=1+2+2+X), 2 byte source 2 byte dest, X byte payload
-
+// Protocol format: see WuKongNetworkServer.java
+#define MODE_MESSAGE 1
+#define MODE_DISCOVERY 2
 
 int radio_networkserver_sockfd;
 struct sockaddr_in radio_networkserver_servaddr;
@@ -34,8 +34,8 @@ void open_connection() {
 
 	memset(&radio_networkserver_servaddr, 0, sizeof(radio_networkserver_servaddr));
 	radio_networkserver_servaddr.sin_family = AF_INET;
-	radio_networkserver_servaddr.sin_addr.s_addr=inet_addr("127.0.0.1");
-	radio_networkserver_servaddr.sin_port=htons(10008);
+	radio_networkserver_servaddr.sin_addr.s_addr=inet_addr(posix_network_server_address);
+	radio_networkserver_servaddr.sin_port=htons(posix_network_server_port);
 
 	int retval = connect(radio_networkserver_sockfd, (struct sockaddr *)&radio_networkserver_servaddr, sizeof(radio_networkserver_servaddr));
 
@@ -46,14 +46,17 @@ void open_connection() {
 	if (length != 1 || radio_networkserver_receive_buffer[0] != 42) {
 		fprintf(stderr, "Unable to establish local radio connection.\n");
 	}
-
+	uint8_t send_buffer[3];
+	// Connect in messaging mode
+	send_buffer[0] = MODE_MESSAGE;
 	// Tell the server our network id
-	uint8_t send_buffer[2];
-	send_buffer[0] = radio_networkserver_get_node_id() & 0xFF;
-	send_buffer[1] = (radio_networkserver_get_node_id() >> 8) & 0xFF;
-    retval = write(radio_networkserver_sockfd, send_buffer, 2);
-	if (retval == -1)
+	send_buffer[1] = radio_networkserver_get_node_id() & 0xFF;
+	send_buffer[2] = (radio_networkserver_get_node_id() >> 8) & 0xFF;
+    retval = write(radio_networkserver_sockfd, send_buffer, 3);
+	if (retval == -1) {
 		fprintf(stderr, "Unable to send local network id to server: %d\n", errno);
+		exit(1);
+	}
 }
 
 void radio_networkserver_init(void) {
