@@ -15,10 +15,10 @@
 
 uint8_t send_message(wkcomm_address_t dest_node_id, uint8_t command, uint8_t *payload, uint8_t length) {
 	// Print some debug info
-#ifdef DEBUG
+#ifdef DARJEELING_DEBUG
 	DEBUG_LOG(DBG_WKPF, "WKPF: sending property set command to %d:", dest_node_id);
 	for(int i=0; i<length; i++) {
-		DEBUG_LOG(DBG_WKPF, "[%x] ", message_buffer[i]);
+		DEBUG_LOG(DBG_WKPF, "[%x] ", payload[i]);
 	}
 	DEBUG_LOG(DBG_WKPF, "\n");
 #endif

@@ -526,6 +526,12 @@ class NetworkServerAgent(TransportAgent):
                     print e
                 finally:
                     discovery_socket.close()
+                print "[transport] discovery result:"
+                print discovered_ids
+                # The master seems to treat the first discoved node as a special case (the master)
+                # This seems like a bad design to me, but for now I'll just sort the ids to make sure
+                # the master is first (assuming it's node 1, and there's no node 0)
+                discovered_ids.sort()
                 defer.callback(discovered_ids)
             elif defer.message.command == "routing":
                 defer.callback({})
@@ -553,6 +559,12 @@ class NetworkServerAgent(TransportAgent):
                         buffer.append(destination/256)
                         buffer.append(command)
                         buffer.extend(payload)
+                        print "networkserver send"
+                        print source
+                        print destination
+                        print destination%256
+                        print destination/256
+                        print buffer
                         self._socket.send(buffer)
                         break
                     except Exception as e:

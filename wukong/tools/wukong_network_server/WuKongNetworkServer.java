@@ -16,7 +16,7 @@ public class WuKongNetworkServer extends Thread
 	protected static Map<Integer, WuKongNetworkServer> clients;
 	protected Socket clientSocket;
 	protected int clientId;
-	protected Queue<byte[]> messages;
+	protected Queue<int[]> messages;
 	protected boolean keepRunning;
 
 	private final int MODE_MESSAGE = 1;
@@ -65,7 +65,7 @@ public class WuKongNetworkServer extends Thread
 
 	private WuKongNetworkServer (Socket clientSoc)
 	{
-		messages = new LinkedList<byte[]>();
+		messages = new LinkedList<int[]>();
 		keepRunning = true;
 		clientSocket = clientSoc;
 		start();
@@ -120,14 +120,14 @@ public class WuKongNetworkServer extends Thread
 		while(keepRunning) {
 			// Receive messages
 			if (in.available() > 0) {
-				byte length = (byte)in.read();
-				byte [] message = new byte[length];
-				message[0] = (byte)length;
+				int length = in.read();
+				int [] message = new int[length];
+				message[0] = length;
 				for (int i=1; i<length; i++)
-					message[i] = (byte)in.read();
+					message[i] = in.read();
 				int destId = message[3] + message[4]*256;
 
-				System.out.print("Received message for " + destId + ", length " + length);
+				System.out.print("Received message from " + this.clientId + ", for " + destId + ", length " + length);
 
 				WuKongNetworkServer destClient = WuKongNetworkServer.clients.get(destId);
 				if (destClient != null) {
@@ -140,7 +140,7 @@ public class WuKongNetworkServer extends Thread
 
 			// Send messages
 			if (this.messages.size() > 0) {
-				byte [] message = this.messages.poll();
+				int [] message = this.messages.poll();
 				System.out.print("Forwarding message to node " + this.clientId);
 				for (int i=0; i<message[0]; i++) {
 					out.write(message[i]);
@@ -170,13 +170,13 @@ public class WuKongNetworkServer extends Thread
 		int number_of_clients = WuKongNetworkServer.clients.keySet().size();
 		int length = 2+number_of_clients*2;
 		System.out.println("discovery, number of clients " + number_of_clients);
-		out.write((byte)length%256);
-		out.write((byte)length/256);
+		out.write(length%256);
+		out.write(length/256);
 		Integer[] ids = WuKongNetworkServer.clients.keySet().toArray(new Integer[0]);
 		for (int i=0; i<number_of_clients; i++) {
 			System.out.println("clients " + ids[i]);
-			out.write((byte)(ids[i]%256));
-			out.write((byte)(ids[i]/256));
+			out.write((ids[i]%256));
+			out.write((ids[i]/256));
 		}
 		out.flush();
 	}

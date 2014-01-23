@@ -40,12 +40,10 @@ wkcomm_address_t addr_xbee_to_wkcomm(radio_xbee_address_t xbee_addr) {
 
 #ifdef RADIO_USE_NETWORKSERVER
 #include "../../posix/radios/radio_networkserver.h"
-radio_networkserver_address_t addr_wkcomm_to_local(wkcomm_address_t wkcomm_addr) {
-	// local address is only 8 bits. To translate wkcomm address to local, just ignore the higher 8 bits
-	// (so effectively using routing_none we can still only use 256 nodes)
-    return (radio_networkserver_address_t)(wkcomm_addr & 0xFF);
+radio_networkserver_address_t addr_wkcomm_to_networkserver(wkcomm_address_t wkcomm_addr) {
+    return (radio_networkserver_address_t)(wkcomm_addr);
 }
-wkcomm_address_t addr_local_to_wkcomm(radio_networkserver_address_t local_addr) {
+wkcomm_address_t addr_networkserver_to_wkcomm(radio_networkserver_address_t local_addr) {
 	return (wkcomm_address_t)local_addr;
 }
 #endif // RADIO_USE_NETWORKSERVER
@@ -59,7 +57,8 @@ uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
 		return radio_xbee_send(addr_wkcomm_to_xbee(dest), payload, length);
 	#endif
 	#ifdef RADIO_USE_NETWORKSERVER
-		return radio_networkserver_send(addr_wkcomm_to_local(dest), payload, length);
+		DEBUG_LOG(DBG_WKPF, "hhhhhhhhhh %d, %d\n", dest, addr_wkcomm_to_networkserver(dest));
+		return radio_networkserver_send(addr_wkcomm_to_networkserver(dest), payload, length);
 	#endif
 	return 0;
 }
@@ -93,7 +92,7 @@ void routing_handle_xbee_message(radio_xbee_address_t xbee_addr, uint8_t *payloa
 
 #ifdef RADIO_USE_NETWORKSERVER
 void routing_handle_local_message(radio_networkserver_address_t local_addr, uint8_t *payload, uint8_t length) {
-	wkcomm_handle_message(addr_local_to_wkcomm(local_addr), payload, length);
+	wkcomm_handle_message(addr_networkserver_to_wkcomm(local_addr), payload, length);
 }
 #endif // RADIO_USE_NETWORKSERVER
 
@@ -108,7 +107,7 @@ wkcomm_address_t routing_get_node_id() {
 		return addr_xbee_to_wkcomm(radio_xbee_get_node_id());
 	#endif
 	#ifdef RADIO_USE_NETWORKSERVER
-		return addr_local_to_wkcomm(radio_networkserver_get_node_id());
+		return addr_networkserver_to_wkcomm(radio_networkserver_get_node_id());
 	#endif
 	return 2; // Just return 1 if we have no radios at all.
 }
