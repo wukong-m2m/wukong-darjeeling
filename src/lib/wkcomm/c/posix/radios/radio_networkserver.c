@@ -8,6 +8,7 @@
 #include <string.h>
 #include "types.h"
 #include "config.h"
+#include "routing/routing.h"
 #include "radio_networkserver.h"
 #include "posix_utils.h"
 
