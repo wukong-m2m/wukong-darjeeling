@@ -64,6 +64,19 @@ Block.copyData=function(dest,src) {
 	dest.monitorProper = src.monitor;
 }
 
+Block.prototype.addMonitorProperty = function(global_id) {
+	this.monitorProper.push(global_id);
+}
+
+Block.prototype.removeMonitorProperty = function(global_id) {
+	for(i = 0; i < this.monitorProper.length; i++) {
+		if(this.monitorProper[i] == global_id) {
+			this.monitorProper.splice(i, 1);
+			return
+		}
+	}
+}
+
 Block.prototype.serialize=function(obj) {
 	obj.id = this.id;
 	var pos = this.getPosition();
@@ -120,10 +133,25 @@ Block.prototype.draw=function() {
     this.div.append('<span style="font-family:"Trebuchet MS", Helvetica, sans-serif; font-size: 20pt; word-wrap: break-word;">' + this.type.replace('_', ' ') + '</span>');
 	for(i=0;i<this.slots.length;i++) {
 		this.div.append('<div class=signal id=signal_'+this.id+'_'+i+'>');
+		$('#signal_'+this.id+'_'+i).data('global_id', this.id+'_'+i);
 		$('#signal_'+this.id+'_'+i).css('position','absolute').css('width',100).css('height',15).css('left',0).css('top',i*15+20);
 		$('#signal_'+this.id+'_'+i).html(this.slots[i].name.replace('_', ' '));
+		$('#signal_'+this.id+'_'+i).bind('click', function() {
+			
+			if(Block.current != null) {
+				if($(this).css("background-color") != "rgb(255, 0, 0)") {
+					$(this).css("background-color", "red");
+					Block.current.addMonitorProperty($(this).data('global_id'));
+				} else {
+					$(this).css("background-color", "yellow");
+					Block.current.removeMonitorProperty($(this).data('global_id'));
+				}
+			}
+		});
 	}
 }
+
+
 Block.prototype.addSignal=function(con) {
 	var i;
 
