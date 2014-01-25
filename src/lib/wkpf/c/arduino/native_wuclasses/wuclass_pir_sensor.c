@@ -16,5 +16,5 @@ void wuclass_pir_sensor_setup(wuobject_t *wuobject) {
 void wuclass_pir_sensor_update(wuobject_t *wuobject) {
   bool currentValue = input_get(PINH, 4);
   DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(PirSensor): Sensed pir value: %d\n", currentValue);  
-  wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_MAGNETIC_SENSOR_OUTPUT, currentValue);  
+  wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_PIR_SENSOR_CURRENT_VALUE, currentValue);  
 }
