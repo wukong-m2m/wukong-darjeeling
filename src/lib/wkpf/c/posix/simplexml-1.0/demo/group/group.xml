@@ -1,0 +1,79 @@
+<?XML version="1.0"?>
+<!DOCTYPE GROUP SYSTEM "group.dtd">
+
+<!-- 
+
+Group Demo XML File
+
+Note: There's no "group.dtd" the doctype is only there to illustrate
+that the Simple XML parser ignores the doctype.
+
+The structure of the group file should be obvious, try adding unkown
+tags or attributes or removing existing ones to find out how the
+group sample "validates" the file.
+
+-->
+
+<group>
+
+	<mailgroup name="movies" desc="people that love to go to the movies">
+		<member>chris</member>
+		<member>travis</member>
+		<member>bob</member>
+	</mailgroup>
+
+	<mailgroup name="games" desc="people that love playing games">
+		<member>bob</member>
+		<member>dave</member>
+		<member>drew</member>
+		<member>tim</member>
+	</mailgroup>
+
+	<mailgroup name="reading" desc="people that love to read">
+		<member>dave</member>
+		<member>drew</member>
+		<member>travis</member>
+	</mailgroup>
+
+	<mailgroup name="empty">
+		<!-- this group doesn't have a description or any members -->
+	</mailgroup>
+
+	<person alias="tim">
+		<firstname>Timothy</firstname>
+		<lastname>Brailing</lastname>
+		<email>tim@foo.com</email>
+	</person>
+
+	<person alias="drew">
+		<firstname>Drew</firstname>
+		<lastname>Erickson</lastname>
+		<email>drew@foo.com</email>
+	</person>
+
+	<person alias="travis">
+		<firstname>Travis</firstname>
+		<lastname>Eckels</lastname>
+		<email>travis@foo.com</email>
+	</person>
+
+	<person alias="bob">
+		<firstname>Robert</firstname>
+		<lastname>Billings</lastname>
+		<email>bob@foo.com</email>
+	</person>
+
+	<person alias="chris">
+		<firstname>Christian</firstname>
+		<lastname>Kramer</lastname>
+		<email>chris@foo.com</email>
+	</person>
+
+	<person alias="dave">
+		<firstname>David</firstname>
+		<lastname>Stone</lastname>
+		<email>dave@foo.com</email>
+	</person>
+
+</group>
+
