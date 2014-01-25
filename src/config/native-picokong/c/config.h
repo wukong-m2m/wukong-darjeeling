@@ -54,7 +54,6 @@ typedef int64_t dj_time_t;
 #define DARJEELING_PRINTF printf
 
 #define DARJEELING_PGMSPACE_MACRO
-#define IS_SIMULATOR
 
 // Routing: choose 1
 #define ROUTING_USE_NONE

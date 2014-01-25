@@ -9,23 +9,16 @@
 #include "posix_pc_utils.h"
 #include "wkcomm.h"
 
-void mkpath(char *dir)
-{
-	char cmd[1024];
-	snprintf(cmd, 1024, "mkdir -p %s", dir);
-	system(cmd);
-}
 
 FILE* get_property_file(wuobject_t *wuobject, char *property, char* mode) {
 	char dirname[1024];
 	char filename[1024];
-	snprintf(dirname, 1024, "%s/node_%d", posix_pc_io_directory, wkcomm_get_node_id());
+	posix_get_node_directory(dirname, 1024);
 	snprintf(filename, 1024, "%s/%s_%d", dirname, property, wuobject->port_number);
 
 	FILE* file = fopen(filename, mode);
 	if (file == NULL) {
 		// Maybe the file doesn't exist yet
-		mkpath(dirname);
 		file = fopen(filename, "w");
 		if (file != NULL) {
 			// Write 0 as a default value in case the file will be read

@@ -24,7 +24,7 @@
 					<compilerarg value="-std=gnu99"/>
 					<compiler-args/>
 				</compiler>
-				
+
 				<compile-elements/>
 			</cc>
 		</sequential>
@@ -38,9 +38,7 @@
 			<cc
 				name="gcc"
 				outfile="@{outputfile}"
-				>
-				<linker/>
-				
+				>				
 				<link-elements/>
 			</cc>
 		</sequential>

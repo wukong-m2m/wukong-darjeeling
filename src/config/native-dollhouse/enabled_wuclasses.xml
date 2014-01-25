@@ -1,0 +1,30 @@
+<WuKong>
+    <WuClass name="Generic" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <WuClass name="Threshold" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <!-- <WuClass name="Temperature_Sensor" appCanCreateInstances="false" createInstancesAtStartup="0" /> -->
+    <WuClass name="Numeric_Controller" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <WuClass name="Light_Actuator" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <WuClass name="Light_Sensor" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <!-- <WuClass name="And_Gate" appCanCreateInstances="false" createInstancesAtStartup="0" /> -->
+    <!-- <WuClass name="Sound_Sensor" appCanCreateInstances="false" createInstancesAtStartup="0" /> -->
+    <WuClass name="PIR_Sensor" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <!-- <WuClass name="LED" virtualappCanCreateInstances="false" createInstancesAtStartup="0" /> -->
+    <!-- <WuClass name="Binary_Sensor" virtualappCanCreateInstances="false" createInstancesAtStartup="0" /> -->
+    <WuClass name="Logical" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <!-- <WuClass name="If_short" appCanCreateInstances="false" createInstancesAtStartup="0" /> -->
+    <!-- <WuClass name="If_boolean" appCanCreateInstances="false" createInstancesAtStartup="0" /> -->
+    <WuClass name="Temperature_Humidity_Sensor" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <WuClass name="Slider" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <!-- <WuClass name="Gh_Sensor" virtualappCanCreateInstances="false" createInstancesAtStartup="0" /> -->
+    <WuClass name="Magnetic_Sensor" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <WuClass name="Fan" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <WuClass name="Condition_selector_boolean" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <WuClass name="Condition_selector_short" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <WuClass name="Loop_delay_boolean" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <WuClass name="Loop_delay_short" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <WuClass name="MathOp" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <!-- <WuClass name="or_gate" virtualappCanCreateInstances="false" createInstancesAtStartup="0" /> -->
+    <!-- <WuClass name="Not_gate" virtualappCanCreateInstances="false" createInstancesAtStartup="0" /> -->
+    <!-- <WuClass name="MCHESS" appCanCreateInstances="false" createInstancesAtStartup="0" /> -->
+    <!-- <WuClass name="Dimmer" appCanCreateInstances="false" createInstancesAtStartup="0" /> -->
+</WuKong>
