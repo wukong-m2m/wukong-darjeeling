@@ -8,6 +8,7 @@
 #include <string.h>
 #include "types.h"
 #include "config.h"
+#include "debug.h"
 #include "routing/routing.h"
 #include "radio_networkserver.h"
 #include "posix_utils.h"
@@ -78,7 +79,7 @@ void radio_networkserver_poll(void) {
 		radio_networkserver_address_t src = radio_networkserver_receive_buffer[0] + 256*radio_networkserver_receive_buffer[1];
 		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, 2, 0); // skip dest
 		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, length-5, 0); // skip dest
-		printf("-------------------> message received from %d, length %d\n", src, length-5);
+		DEBUG_LOG(DBG_WKCOMM, "message received from %d, length %d\n", src, length-5);
 		routing_handle_local_message(src, radio_networkserver_receive_buffer, length-5);
 	}
 }
@@ -92,7 +93,7 @@ uint8_t radio_networkserver_send(radio_networkserver_address_t dest, uint8_t *pa
 	send_buffer[4] = (dest >> 8) & 0xFF;
 	memcpy(send_buffer+5, payload, length);
     int retval = write(radio_networkserver_sockfd, send_buffer, length+5);
-	printf("-------------------> message sent to %d, length %d\n", dest, length);
+	DEBUG_LOG(DBG_WKCOMM, "message sent to %d, length %d\n", dest, length);
 	if (retval != -1)
 		return 0;
 	else

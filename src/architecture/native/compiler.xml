@@ -11,6 +11,11 @@
 		<element name="compiler-args" optional="true"/>
 		<element name="compile-elements"/>
 		<sequential>
+<!-- 
+			<exec executable="xml2-config" outputproperty="libxml2-cflags">
+				<arg value="- -cflags"/>
+			</exec>
+ -->
 			<mkdir dir="@{objectfiles}"/>
 			<cc
 				name="gcc"
@@ -22,9 +27,12 @@
 					<compilerarg value="-Wall"/>
 					<compilerarg value="-Werror"/>
 					<compilerarg value="-std=gnu99"/>
+
+					<compilerarg value="-I/opt/local/include/libxml2"/>
+
 					<compiler-args/>
 				</compiler>
-				
+
 				<compile-elements/>
 			</cc>
 		</sequential>
@@ -35,11 +43,25 @@
 		<attribute name="outputfile"/>
 		<element name="link-elements"/>
 		<sequential>
+<!-- 
+			<exec executable="xml2-config" outputproperty="libxml2-libs">
+				<arg value="- -libs"/>
+			</exec>
+ -->
 			<cc
 				name="gcc"
 				outfile="@{outputfile}"
 				>
-				<linker/>
+				<linker>
+
+					<linkerarg value="-L/opt/local/lib"/>
+					<linkerarg value="-lxml2"/>
+					<linkerarg value="-lz"/>
+					<linkerarg value="-lpthread"/>
+					<linkerarg value="-liconv"/>
+					<linkerarg value="-lm"/>
+
+				</linker>
 				
 				<link-elements/>
 			</cc>

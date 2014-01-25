@@ -38,7 +38,7 @@ int main(int argc,char* argv[])
 	posix_parse_command_line(argc, argv);
 
 	// Read the lib and app infusion archives from file
-	di_app_archive = posix_load_infusion_archive("app_infusion.dja");
+	di_app_archive = posix_load_infusion_archive(posix_app_infusion_filename);
 
 	// initialise memory manager
 	void *mem = malloc(HEAPSIZE);
