@@ -57,7 +57,6 @@ uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
 		return radio_xbee_send(addr_wkcomm_to_xbee(dest), payload, length);
 	#endif
 	#ifdef RADIO_USE_NETWORKSERVER
-		DEBUG_LOG(DBG_WKPF, "hhhhhhhhhh %d, %d\n", dest, addr_wkcomm_to_networkserver(dest));
 		return radio_networkserver_send(addr_wkcomm_to_networkserver(dest), payload, length);
 	#endif
 	return 0;
