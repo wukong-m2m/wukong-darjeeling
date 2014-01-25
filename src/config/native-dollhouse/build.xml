@@ -12,7 +12,7 @@
 	<property name="platform" value="posix"/>
 	<property name="subplatform" value="pc"/>
 	<property name="architecture" value="native"/>
-	<property name="configuration" value="local_network"/>
+	<property name="configuration" value="native-dollhouse"/>
 
 	<property name="app-archive-size" value="4096"/>
 

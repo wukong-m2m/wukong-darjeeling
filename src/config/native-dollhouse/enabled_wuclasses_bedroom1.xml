@@ -1,0 +1,7 @@
+<WuKong>
+    <WuClass name="Threshold" appCanCreateInstances="true" createInstancesAtStartup="0" />
+    <WuClass name="Light_Sensor" appCanCreateInstances="false" createInstancesAtStartup="1" />
+    <WuClass name="PIR_Sensor" appCanCreateInstances="false" createInstancesAtStartup="1" />
+    <WuClass name="Slider" appCanCreateInstances="false" createInstancesAtStartup="1" />
+    <WuClass name="Magnetic_Sensor" appCanCreateInstances="false" createInstancesAtStartup="1" />
+</WuKong>

@@ -54,7 +54,9 @@ typedef int64_t dj_time_t;
 #define DARJEELING_PRINTF printf
 
 #define DARJEELING_PGMSPACE_MACRO
-#define IS_SIMULATOR
+
+// Don't use the code generated from enabled_wuclasses.xml, but proces the xml at startup, so 1 VM binary can be started in different configurations
+#define LOAD_ENABLED_WUCLASSES_AT_STARTUP
 
 // Routing: choose 1
 #define ROUTING_USE_NONE
