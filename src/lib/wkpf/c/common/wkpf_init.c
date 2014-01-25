@@ -5,6 +5,10 @@
 #include "wkpf_comm.h"
 #include "wkcomm.h"
 #include "native_wuclasses/native_wuclasses.h"
+#ifdef LOAD_ENABLED_WUCLASSES_AT_STARTUP
+#include "posix_utils.h"
+#include "../posix/wkpf_process_enabled_wuclasses_xml.h"
+#endif
 // see issue 115 #include <avr/io.h>
 
 dj_hook wkpf_markRootSetHook;
@@ -39,6 +43,16 @@ void wkpf_init() {
 	wkpf_comm_handleMessageHook.function = wkpf_comm_handle_message;
 	dj_hook_add(&wkcomm_handle_message_hook, &wkpf_comm_handleMessageHook);
 
+#ifdef LOAD_ENABLED_WUCLASSES_AT_STARTUP
+	if (posix_enabled_wuclasses_xml != NULL) {
+		if (wkpf_process_enabled_wuclasses_xml() != WKPF_OK)
+			dj_panic(DJ_PANIC_OUT_OF_MEMORY);
+	} else {
+		if (wkpf_native_wuclasses_init() != WKPF_OK)
+			dj_panic(DJ_PANIC_OUT_OF_MEMORY);		
+	}
+#else
 	if (wkpf_native_wuclasses_init() != WKPF_OK)
 		dj_panic(DJ_PANIC_OUT_OF_MEMORY);
+#endif
 }
