@@ -347,7 +347,7 @@ void wkpf_comm_handle_message(void *data) {
 				response_cmd = WKPF_COMM_CMD_WRITE_PROPERTY_R;
 			} else
 				retval = WKPF_ERR_SHOULDNT_HAPPEN;
-				if (retval != WKPF_OK) {
+			if (retval != WKPF_OK) {
 				payload [0] = retval;
 				response_cmd = WKPF_COMM_CMD_ERROR_R;
 				response_size = 1;
