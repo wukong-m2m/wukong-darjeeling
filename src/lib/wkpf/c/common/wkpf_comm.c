@@ -26,7 +26,7 @@ uint8_t send_message(wkcomm_address_t dest_node_id, uint8_t command, uint8_t *pa
 	// Send
 	wkcomm_received_msg *reply;
 	uint8_t retval = wkcomm_send_and_wait_for_reply(dest_node_id, command, payload, length,
-													100 /* 100ms timeout */,  (uint8_t[]){command+1 /* the reply to this command */, WKPF_COMM_CMD_ERROR_R}, 2, &reply);
+													1000 /* 1000ms timeout */,  (uint8_t[]){command+1 /* the reply to this command */, WKPF_COMM_CMD_ERROR_R}, 2, &reply);
 	if (retval == WKCOMM_SEND_OK) {
 		if (reply->command != WKPF_COMM_CMD_ERROR_R)
 			return WKPF_OK;
