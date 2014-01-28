@@ -402,7 +402,7 @@ function FBP_parseXMLPage(comps)
             if(attrs) {
                 for(j=0;j<attrs.length;j++) {
                     var attr = attrs[j];
-                    meta.monitorProper[attr.name] = attr.value;
+                    meta.monitorProper[attr.value] = attr.name;
                 }
             }
         }
@@ -660,6 +660,13 @@ function FBP_toXML(gnodes,glines)
 			xml = xml + ' />\n';
 		}
 //sato add end
+		if(source.monitorProper) {
+			xml = xml +'		<monitorProperty ';
+			for(var i in source.monitorProper) {
+				xml = xml + source.monitorProper[i] + '="'+i+'" ';
+			}
+			xml = xml +'/>\n';
+		}
         xml = xml + '    </component>\n';
     }
     for(var k in gnodes) {
@@ -686,6 +693,13 @@ function FBP_toXML(gnodes,glines)
 				xml = xml + ' />\n';
 			}
 //sato add end
+			if(source.monitorProper) {
+				xml = xml +'		<monitorProperty ';
+				for(var i in source.monitorProper) {
+					xml = xml + source.monitorProper[i] + '="'+i+'" ';
+				}
+				xml = xml +'/>\n';
+			}
             xml = xml + '    </component>\n';
         }
     }
