@@ -2,7 +2,11 @@
 #include "../../common/native_wuclasses/native_wuclasses.h"
 #include "../posix_pc_utils.h"
 
-void wuclass_temperature_humidity_sensor_setup(wuobject_t *wuobject) {}
+void wuclass_temperature_humidity_sensor_setup(wuobject_t *wuobject) {
+	// Just get a value to make sure the file is created even if the object's not used in the FBP
+	posix_property_get(wuobject, "temperature_sensor");
+	posix_property_get(wuobject, "humidity_sensor");
+}
 
 void wuclass_temperature_humidity_sensor_update(wuobject_t *wuobject) {
 	int temp_value = posix_property_get(wuobject, "temperature_sensor");

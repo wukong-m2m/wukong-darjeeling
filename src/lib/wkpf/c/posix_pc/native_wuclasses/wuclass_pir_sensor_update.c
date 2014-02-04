@@ -4,6 +4,8 @@
 #include "../posix_pc_utils.h"
 
 void wuclass_pir_sensor_setup(wuobject_t *wuobject) {
+	// Just get a value to make sure the file is created even if the object's not used in the FBP
+	posix_property_get(wuobject, "pir_sensor");
 }
 
 void wuclass_pir_sensor_update(wuobject_t *wuobject) {

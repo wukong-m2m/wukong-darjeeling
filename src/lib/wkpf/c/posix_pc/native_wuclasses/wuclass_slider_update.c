@@ -2,7 +2,10 @@
 #include "../../common/native_wuclasses/native_wuclasses.h"
 #include "../posix_pc_utils.h"
 
-void wuclass_slider_setup(wuobject_t *wuobject) {}
+void wuclass_slider_setup(wuobject_t *wuobject) {
+	// Just get a value to make sure the file is created even if the object's not used in the FBP
+	posix_property_get(wuobject, "slider");
+}
 
 void wuclass_slider_update(wuobject_t *wuobject) {
 	int value = posix_property_get(wuobject, "slider");
