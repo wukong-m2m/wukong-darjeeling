@@ -2,7 +2,10 @@
 #include "../../common/native_wuclasses/native_wuclasses.h"
 #include <stdio.h>
 
-void wuclass_light_actuator_setup(wuobject_t *wuobject) {}
+void wuclass_light_actuator_setup(wuobject_t *wuobject) {
+	// Just put a dummy value to make sure the file is created even if the object's not used in the FBP
+	posix_property_put(wuobject, "light_actuator", 0);
+}
 
 void wuclass_light_actuator_update(wuobject_t *wuobject) {
 	bool onOff;

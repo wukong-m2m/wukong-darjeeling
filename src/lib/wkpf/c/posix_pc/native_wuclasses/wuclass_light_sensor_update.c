@@ -1,7 +1,10 @@
 #include "debug.h"
 #include "../../common/native_wuclasses/native_wuclasses.h"
 
-void wuclass_light_sensor_setup(wuobject_t *wuobject) {}
+void wuclass_light_sensor_setup(wuobject_t *wuobject) {
+	// Just get a value to make sure the file is created even if the object's not used in the FBP
+	posix_property_get(wuobject, "light_sensor");
+}
 
 void wuclass_light_sensor_update(wuobject_t *wuobject) {
 	int value = posix_property_get(wuobject, "light_sensor");
