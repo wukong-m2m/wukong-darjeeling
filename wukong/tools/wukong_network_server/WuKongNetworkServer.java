@@ -136,33 +136,30 @@ public class WuKongNetworkServer extends Thread
 				length = in.read();
 			}
 			catch (SocketTimeoutException ste) {
-				// Nothing received from client for 1s. Send heartbeat to check if the connection still exists
-				try {
-					out.write(0);
-					out.flush();
-					continue;
-				}
-				catch (IOException e){
-					this.keepRunning = false;
-				}
+				continue;
 			}
 
-			// Length byte received. Process the rest of the message
-			int [] message = new int[length];
-			message[0] = length;
-			for (int i=1; i<length; i++)
-				message[i] = in.read();
-			int destId = message[3] + message[4]*256;
+			if (length < 0) {
+				// Connection closed
+				keepRunning = false;
+			} else {
+				// Length byte received. Process the rest of the message
+				int [] message = new int[length];
+				message[0] = length;
+				for (int i=1; i<length; i++)
+					message[i] = in.read();
+				int destId = message[3] + message[4]*256;
 
-			System.out.print("Received message from " + this.clientId + ", for " + destId + ", length " + length);
+				System.out.print("Received message from " + this.clientId + ", for " + destId + ", length " + length);
 
-			WuKongNetworkServer destClient = WuKongNetworkServer.clients.get(destId);
-			if (destClient != null) {
-				System.out.println("");
-				destClient.sendMessage(message);
-			}
-			else {
-				System.out.println(" ---> dropped.");
+				WuKongNetworkServer destClient = WuKongNetworkServer.clients.get(destId);
+				if (destClient != null) {
+					System.out.println("");
+					destClient.sendMessage(message);
+				}
+				else {
+					System.out.println(" ---> dropped.");
+				}
 			}
 		}
 	}
