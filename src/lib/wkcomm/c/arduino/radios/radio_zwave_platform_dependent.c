@@ -15,8 +15,10 @@ extern bool zwave_btn_is_push;
 extern bool zwave_btn_is_release;
 
 void radio_zwave_platform_dependent_init(void) {
+#ifdef USE_INT_AS_BUTTON	
     EICRA |= (0x01 & 0x03);//falling endge interrupt mode
     EIMSK |=_BV(0);//enable INT0
+#endif    
 
     DDRD &= ~_BV(0); 
     PORTD |= _BV(0);	//pull high
@@ -54,6 +56,7 @@ void radio_zwave_platform_dependent_poll(void) {
 		PORTK |= _BV(0);
 		zwave_led_time = 0;
 	}
+#ifdef USE_INT_AS_BUTTON	
     if( (EIMSK&0x01) ==0 )//INT0 is disable
     {
 	    if( (dj_timer_getTimeMillis()-zwave_time_btn_interrupt)>100 )//wait 100ms for button debounce, enable interrupt again
@@ -62,8 +65,9 @@ void radio_zwave_platform_dependent_poll(void) {
 		    EIMSK |=_BV(0);//enable INT0
 	    }
     }
+#endif    
 }
-
+#ifdef USE_INT_AS_BUTTON	
 ISR(INT0_vect)
 {
     EIMSK &=~_BV(0);//disable INT0
@@ -101,5 +105,5 @@ ISR(INT0_vect)
 		}
     }
 }
-
+#endif
 #endif // RADIO_USE_ZWAVE
