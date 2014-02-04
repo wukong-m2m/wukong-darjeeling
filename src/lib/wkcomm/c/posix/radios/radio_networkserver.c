@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <time.h>
 #include "types.h"
 #include "config.h"
 #include "debug.h"
@@ -69,6 +70,14 @@ radio_networkserver_address_t radio_networkserver_get_node_id() {
 }
 
 void radio_networkserver_poll(void) {
+	// TMP CODE TO PREVENT THE BUSY LOOP FROM GOING TO 100% CPU LOAD
+	// THIS IS OBVIOUSLY NOT THE BEST WAY TO DO IT...
+	struct timespec tim, tim2;
+	tim.tv_sec = 0;
+	tim.tv_nsec = 1000000L; // 1 millisecond
+	nanosleep(&tim , &tim2);
+	// END TMP CODE
+
 	uint8_t length;
 	if (recv(radio_networkserver_sockfd, &length, 1, MSG_DONTWAIT) > 0) {
 		if (length == 0) {
