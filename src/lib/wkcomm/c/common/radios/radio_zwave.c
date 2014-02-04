@@ -1,3 +1,4 @@
+// vim: ts=4 sw=4
 #include "config.h" // To get RADIO_USE_ZWAVE
 
 #ifdef RADIO_USE_ZWAVE
@@ -125,14 +126,16 @@ void radio_zwave_poll(void) {
 	    DEBUG_LOG(DBG_ZWAVETRACE,"start zwave learn !!!!!!!!!");
 		PORTK &=~_BV(1);
 	    radio_zwave_learn();//finish will set zwave mode=0
-	    zwave_mode=0;
-		
     }
     else if(zwave_mode==2)//reset mode
     {
 	    DEBUG_LOG(DBG_ZWAVETRACE,"start zwave reset !!!!!!!!!");
 	    radio_zwave_reset();
 	    zwave_mode=0;
+
+    }
+    if (zwave_learn_on) {
+	    radio_zwave_learn();
     }
     if (uart_available(ZWAVE_UART, 0))
     {    
@@ -445,8 +448,8 @@ void radio_zwave_learn() {
         }
     }
     //DEBUG_LOG(DBG_WKCOMM, "current:"DBG32" start:"DBG32", zwave_learn_block:%d: ", dj_timer_getTimeMillis(), zwave_time_learn_start, zwave_learn_block);
-    if(dj_timer_getTimeMillis()-zwave_time_learn_start>10000 && !zwave_learn_block) { //time out learn off
-        // DEBUG_LOG(DBG_WKCOMM, "turn off!!!!!!!!!!!!!!!!");
+    if (dj_timer_getTimeMillis()-zwave_time_learn_start>2000) { //time out learn off
+        DEBUG_LOG(true, "turn off\n");
         onoff=0;
         b[0] = 1;
         b[1] = 5;
