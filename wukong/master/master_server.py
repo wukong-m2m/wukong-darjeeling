@@ -20,7 +20,7 @@ import shutil, errno
 import datetime
 import glob
 import copy
-import fcntl, termios, struct
+import fcntl, termios, struct, thread
 
 try:
   import pyzwave
@@ -36,6 +36,7 @@ from wkpf.util import *
 
 import wkpf.globals
 from configuration import *
+from android_server import start_android_server
 
 import tornado.options
 
@@ -1048,4 +1049,5 @@ import_wuXML()
 make_FBP()
 wukong.listen(MASTER_PORT)
 if __name__ == "__main__":
+  thread.start_new_thread(start_android_server)
   ioloop.start()

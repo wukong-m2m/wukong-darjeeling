@@ -6,6 +6,7 @@ import logging
 
 signal_reconfiguration = False
 signal_deployment = None
+android_queue = None
 
 def signal_reconfig():
     global signal_reconfiguration
@@ -16,6 +17,12 @@ def signal_deploy(*args):
     global signal_deployment
     logging.info('deploy signal set')
     signal_deployment = args
+    logging.info('args = %s' % args)
+
+def set_android_queue(queue):
+    global android_queue
+    logging.info('android queue set')
+    android_queue = queue
 
 def signal_handler():
     global signal_reconfiguration
@@ -28,9 +35,13 @@ def signal_handler():
                     signal_reconfiguration = False
 
             if signal_deployment:
+		logging.info("Deploy signal working...")
                 if len(applications) > 0:
+		    logging.info("Actually trying to deploy.")
                     gevent.sleep(2)
-                    active_application().deploy_with_discovery(*signal_deployment)
+                    response = active_application().deploy_with_discovery(*signal_deployment)
+		    if android_queue is not None:
+		    	android_queue.put(response)
                     #node_ids = [info.nodeId for info in getComm().getActiveNodeInfos(force=True)]
                     #active_application().deploy(node_ids,*signal_deployment)
                     signal_deployment = None
