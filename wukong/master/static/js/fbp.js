@@ -729,10 +729,10 @@ function FBP_importBlock()
 		var sel = $('#diaimport_page option:selected').val();
 		var list = $('#diaimport_comp');
 		list.empty();
-		var nodes = g_pages[sel].nodes;
 		if (sel == undefined) {
 			return;
 		}
+		var nodes = g_pages[sel].nodes;
 		for(i=0;i<nodes.length;i++) {
 			list.append('<option val="'+nodes[i].id+'">'+nodes[i].id+','+nodes[i].type+','+nodes[i].location+'</option>');
 		}
