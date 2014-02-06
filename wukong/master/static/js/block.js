@@ -18,11 +18,17 @@ Block.prototype.init=function() {
 	this.div.attr('id','obj'+this.id);
 	this.div.css('position','absolute');
 	this.div.css('cursor','pointer');
-	this.div.css('background-color','#00ff00');
+	this.div.css('background-color','rgb(151,223,236)');
+	this.div.css('-webkit-box-shadow','4px 5px 6px #AAA');
+	this.div.css('-moz-box-shadow','4px 5px 6px #AAA');
+	this.div.css('box-shadow','4px 5px 6px #AAA');
+	this.div.css('border-radius','10px');
+	this.div.css('-webkit-border-radius','10px');
+	this.div.css('-moz-border-radius','10px');
 	this.div.attr('class','block');
 	this.setPosition(250,50);
 //	this.setPosition(Math.floor((Math.random()*100)),Math.floor((Math.random()*50)));
-	this.setSize(100,100);
+	this.setSize(120,100);
 	this.location = '';
 	this.group_size = 1;
 	this.reaction_time = 1;
@@ -101,7 +107,7 @@ Block.restore=function(a) {
 	var n = Block.factory(a.type);
 	n.id = a.id;
 	n.setPosition(a.x,a.y);
-	n.setSize(a.w,a.h);
+	n.setSize(120,100);
 	n.type = a.type;
 	n.location = a.location;
 	n.group_size = a.group_size;
@@ -120,8 +126,11 @@ Block.prototype.draw=function() {
     this.div.append('<span style="font-family:"Trebuchet MS", Helvetica, sans-serif; font-size: 20pt; word-wrap: break-word;">' + this.type.replace('_', ' ') + '</span>');
 	for(i=0;i<this.slots.length;i++) {
 		this.div.append('<div class=signal id=signal_'+this.id+'_'+i+'>');
-		$('#signal_'+this.id+'_'+i).css('position','absolute').css('width',100).css('height',15).css('left',0).css('top',i*15+20);
-		$('#signal_'+this.id+'_'+i).html(this.slots[i].name.replace('_', ' '));
+		$('#signal_'+this.id+'_'+i).css('position','absolute').css('width',118).css('height',15).css('left',0).css('top',i*15+20);
+		if (this.sigProper[this.slots[i].name])
+			$('#signal_'+this.id+'_'+i).html(this.slots[i].name.replace('_', ' ')+':'+this.sigProper[this.slots[i].name]);
+		else
+			$('#signal_'+this.id+'_'+i).html(this.slots[i].name.replace('_', ' '));
 	}
 }
 Block.prototype.addSignal=function(con) {
