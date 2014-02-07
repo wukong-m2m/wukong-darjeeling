@@ -206,7 +206,7 @@ class WuNode:
     fin.close()
     return
   @classmethod
-  def loadNodes(cls, filename="../LocalData/nodes.xml"):#for debug now, will expand to support reconstructing nodes from the dump ---- Sen
+  def loadNodes(cls, filename="../LocalData/nodes.xml"):
       print ('[loadNodes in models] Loading node from file', filename)
       try:
           fin = open(filename,"r")
@@ -222,7 +222,7 @@ class WuNode:
           wuclasses = {}
           wuobjects = {}
           location = ''
-          node = WuNode(nodeid, location, wuclasses, wuobjects,type=nodetype) #note: wuclasses, pass by reference, change in original list is also change in node
+          node = WuNode(nodeid, location, wuclasses, wuobjects,type=nodetype) #caution: wuclasses is passed by reference, a change in original list is also a change in node
           if node_ele.hasChildNodes():
               for prop_ele in node_ele.childNodes:
                   if prop_ele.nodeType != prop_ele.ELEMENT_NODE:    
