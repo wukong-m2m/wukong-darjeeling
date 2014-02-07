@@ -146,8 +146,7 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                 wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number, True)
                 component.instances.append(wuobject)
                 pass # pass on to the next candidates
-            # virtual wuobject should be recreated instead of reuse
-            elif node.type != 'native' and node.type != 'picokong':
+            elif node.type != 'native' and node.type != 'picokong' and wuclassdef.virtual==True:
                 # create a new virtual wuobject where the node 
                 # doesn't have the wuclass for it
                 # TODO: should check for existance of virtual impl
@@ -164,7 +163,6 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                 # regardless of whether java impl exist
             else:
                 pass # pass on to the next candidates
-        print component.instances[0].wunode.id
         print ([inst.wunode.id for inst in component.instances])
         #this is ignoring ordering of policies, eg. location policy, should be fixed or replaced by other algorithm later--- Sen
         component.instances = sorted(component.instances, key=lambda wuObject: wuObject.virtual, reverse=False)
@@ -178,7 +176,7 @@ def firstCandidate(logger, changesets, routingTable, locTree):
         print ([inst.wunode.id for inst in component.instances])
         if len(component.instances) == 0:
           logger.errorMappingStatus('No avilable match could be found for component %s' % (component))
-          return False
+          #return False
 
     # Done looping components
 

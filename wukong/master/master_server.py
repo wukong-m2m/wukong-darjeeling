@@ -389,8 +389,7 @@ class map_application(tornado.web.RequestHandler):
 
       # Map with location tree info (discovery), this will produce mapping_results
       #mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, getComm().getRoutingInformation())
-      # routing table is useless now
-      mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, None)
+      mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, [])
 
       ret = []
       for component in wkpf.globals.applications[app_ind].changesets.components:
@@ -525,7 +524,8 @@ class poll_testrtt(tornado.web.RequestHandler):
 class stop_testrtt(tornado.web.RequestHandler):
   def post(self):
     comm = getComm()
-    comm.updateAllNodeInfos()
+    node_infos = comm.updateAllNodeInfos()
+    rebuildTree(node_infos)
     if comm.onStopMode():
       self.content_type = 'application/json'
       self.write({'status':0})
@@ -569,15 +569,23 @@ class testrtt(tornado.web.RequestHandler):
     self.render('static/testrtt.html', log=['Please press the buttons to add/remove nodes.'], node_infos=node_infos, set_location=True, default_location = LOCATION_ROOT, connected=wkpf.globals.connected)
 
 class refresh_nodes(tornado.web.RequestHandler):
-  def post(self):
+  def post(self, force):
     global node_infos
-    node_infos = getComm().getActiveNodeInfos(True)
+
+    if int(force,0) == 0:
+      node_infos = getComm().getActiveNodeInfos(False)
+    else:
+      node_infos = getComm().getActiveNodeInfos(True)
     rebuildTree(node_infos)
     print ("node_infos in refresh nodes:",node_infos)
     #furniture data loaded from fake data for purpose of 
     #getComm().getRoutingInformation()
     # default is false
     set_location = self.get_argument('set_location', False)
+    if set_location == u'True':
+      set_location = True
+    else:
+      set_location = False
 
     nodes = template.Loader(os.getcwd()).load('static/monitor-nodes.html').generate(node_infos=node_infos, set_location=set_location, default_location=LOCATION_ROOT)
 
@@ -612,21 +620,34 @@ class nodes(tornado.web.RequestHandler):
       self.content_type = 'application/json'
       self.write({'status':0})
       return
+    comm = getComm()
     if location:
-      comm = getComm()
-      info = WuNode.find(id=int(nodeId))
-      if info.type != 'wudevice' or comm.setLocation(int(nodeId), location):
-        info.location = location
-        info.save()
-        senNd = SensorNode(info)
-        print (info.location)
-        wkpf.globals.location_tree.addSensor(senNd)
-        wkpf.globals.location_tree.printTree()
-        self.content_type = 'application/json'
-        self.write({'status':0})
-      else:
-        self.content_type = 'application/json'
-        self.write({'status':1, 'mesg': 'Cannot set location, please try again.'})
+       print "ndoeId=",nodeId
+       info = comm.getNodeInfo(int(nodeId))
+       print "device type=",info.type
+       if info.type == 'native':
+         info.location = location
+	 WuNode.saveNodes()
+         senNd = SensorNode(info)
+         wkpf.globals.location_tree.addSensor(senNd)
+         wkpf.globals.location_tree.printTree()
+         self.content_type = 'application/json'
+         self.write({'status':0})
+       else:
+	  if comm.setLocation(int(nodeId), location):
+		# update our knowledge too
+		for info in comm.getActiveNodeInfos():
+			if info.id == int(nodeId):
+				info.location = location
+				senNd = SensorNode(info)
+				print (info.location)
+		wkpf.globals.location_tree.addSensor(senNd)
+		wkpf.globals.location_tree.printTree()
+		self.content_type = 'application/json'
+		self.write({'status':0})
+          else:
+		self.content_type = 'application/json'
+		self.write({'status':1, 'mesg': 'Cannot set location, please try again.'})
 
 class WuLibrary(tornado.web.RequestHandler):	
   def get(self):
@@ -747,13 +768,15 @@ class WuClassSource(tornado.web.RequestHandler):
         traceback.print_exc()
         # We may use jinja2 here
         if type == "C":
-          f = open('static/wuclass.tmpl.c')
+          f = open('templates/wuclass.tmpl.c')
+          classname = Convert.to_c(name)
         else:
-          f = open('static/wuclass.tmpl.java')
+          f = open('templates/wuclass.tmpl.java')
+          classname = Convert.to_java(name)
 
         template = Template(f.read())
         f.close()
-        cont = template.render(classname=Convert.to_java(name))
+        cont = template.render(classname=classname)
     except:
       self.write(traceback.format_exc())
       return
@@ -1067,6 +1090,7 @@ wukong = tornado.web.Application([
 logging.info("Starting up...")
 setup_signal_handler_greenlet()
 WuClassLibraryParser.read(COMPONENTXML_PATH)
+WuNode.loadNodes()
 update_applications()
 import_wuXML()
 make_FBP()

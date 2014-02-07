@@ -80,16 +80,14 @@ class Communication:
       return node
 
     def getAllNodeInfos(self, force=False):
-      if self.all_node_infos == [] or force:
+      if force:
         print '[wkpfcomm] getting all nodes from discovery'
-        node_ids = self.getNodeIds()
-        nodeInfo = self.gen_virtual_node(node_ids[0])
-        node_ids = node_ids[1:]
-        self.all_node_infos = [nodeInfo] + [self.getNodeInfo(int(destination)) for destination in node_ids if self.getNodeInfo(int(destination))]
+        WuNode.clearNodes()
+        self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
         WuNode.saveNodes()
       else:
-        print '[wkpfcomm] getting all nodes from cache'
-      return copy.deepcopy(self.all_node_infos)
+        self.all_node_infos = WuNode.loadNodes()
+      return self.all_node_infos
 
     def updateAllNodeInfos(self):
       nodelist = self.getNodeIds()
@@ -135,76 +133,44 @@ class Communication:
       print "basic=", basic
       print "generic=", generic
       print "specific=", specific
-      if generic == 0xff:
-        node = WuNode.findById(destination)
+      if generic == 0xff or generic == 0x02:
+        wunode = WuNode.findById(destination)
         location = self.getLocation(destination)
         gevent.sleep(0) # give other greenlets some air to breath
-        if not node:
-          node = WuNode(destination, location)
+        if not wunode:
+          wunode = WuNode(destination, location)
     
         wuClasses = self.getWuClassList(destination)
         print '[wkpfcomm] get %d wuclasses' % (len(wuClasses))
-        node.wuclasses = wuClasses
+        wunode.wuclasses = wuClasses
         gevent.sleep(0)
 
         wuObjects = self.getWuObjectList(destination)
         print '[wkpfcomm] get %d wuobjects' % (len(wuObjects))
         
-        node.wuobjects = wuObjects
+        wunode.wuobjects = wuObjects
         gevent.sleep(0)
-      elif generic == 0x2:
-        node = WuNode.findById(destination)
-        if not node:
-          node = WuNode.create(destination, "Gateway", type='gateway')
-      elif generic == 17:
-        # Create an dimmer object
-        node = WuNode.findById(destination)
-        if not node:
-          node = WuNode.create(destination, 'WuKong', type='native')
-        wuclassdef = WuObjectFactory.wuclassdefsbyid["44"]    # Dimmer
+        
+      else:
+        # Create a virtual wuclass for non wukong device. We support switch only now. 
+        # We may support others in the future.
+        
+        wuclassdef = WuObjectFactory.wuclassdefsbyid[4]    # Light_Actuator
 
         if not wuclassdef:
           print '[wkpfcomm] Unknown device type', generic
           return None
+        wunode = WuNode(destination, None,type='native')
+        port_number =1
+        
 
-        # Create wuobjects for all channels
-        # FIXME: This is a simple hack for the demo. We need to investigate the device more by using
-        # the multichannel command to get the number of instances.
-        # In addition, the wuobject generation code here should be splited into two parts, we should multiple nodeinfo
-        # each of them represent one instace with proper device type information so that we can reuse the
-        # multi instance code between differnt radios. For now , we try to make it work with three channel dimmer.
-        wuobjects[WuObject.ZWAVE_DIMMER_PORT1] = WuObject.create(wuclassdef, node, WuObject.ZWAVE_DIMMER_PORT1)
-        wuobjects[WuObject.ZWAVE_DIMMER_PORT2] = WuObject.create(wuclassdef, node, WuObject.ZWAVE_DIMMER_PORT2)
-        wuobjects[WuObject.ZWAVE_DIMMER_PORT3] = WuObject.create(wuclassdef, node, WuObject.ZWAVE_DIMMER_PORT3)
-
-      else:
-	    # FIXME: We shouldn't be doing duck typing for wudevices since we could detect
-	    # devices other than light dimmers
-    	return None
-
-        # Create a virtual wuclass for non wukong device. We support switch only now. 
-        # We may support others in the future.
-#        node = WuNode.find(id=destination)
-#        if not node:
-#          node = WuNode.create(destination, 'WuKong',type='native')
-#        wuclassdef = WuClassDef.find(id=4)    # Light_Actuator
-#
-#        if not wuclassdef:
-#          print '[wkpfcomm] Unknown device type', generic
-#          return None
-#
-#        wuobject = WuObject.find(node_identity=node.identity,
-#            wuclassdef_identity=wuclassdef.identity)
-#
-#        # Create one
-#        if not wuobject:
-#          # 0x100 is a mgic number. When we see this in the code generator, 
-#          # we will generate ZWave command table to implement the wuclass by
-#          # using the Z-Wave command.
-#          wuobject = WuObject.create(wuclassdef, node, WuObject.ZWAVE_SWITCH_PORT1)
-
-
-      return node
+        # Create one
+        if (WuObject.ZWAVE_SWITCH_PORT not in wunode.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
+          # 0x100 is a mgic number. When we see this in the code generator, 
+          # we will generate ZWave command table to implement the wuclass by
+          # using the Z-Wave command.
+          wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_SWITCH_PORT, False, property_values={})
+      return wunode
 
     def getDeviceType(self, destination):
       self.device_type = self.zwave.getDeviceType(destination)
