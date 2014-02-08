@@ -53,13 +53,14 @@ void radio_zwave_platform_dependent_poll(void) {
 			if (dj_timer_getTimeMillis() > zwave_pe4_press + 100) {
 				zwave_btn_is_release = 1;
 				zwave_time_btn_release=dj_timer_getTimeMillis();
-				zwave_pe4_press = 0;
 				zwave_btn_is_push=false;
 				zwave_btn_is_release=true;
 				zwave_led_time = zwave_time_btn_release;
 				PORTK &= ~_BV(0);
 				DEBUG_LOG(true,"PE4 1");
 			}
+			zwave_pe4_press = 0;
+			zwave_btn_is_push = false;
 		}
 	} else {
 		if ((PING&_BV(5))) {
