@@ -53,6 +53,7 @@ class WuApplication:
     self.wuComponents = {}
     self.wuLinkList = {}
     self.instanceIds = []
+    self.monitorProperties = {}
 
     self.changesets = ChangeSets([], [], [])
 
@@ -211,12 +212,22 @@ class WuApplication:
           for propertyTag in componentTag.getElementsByTagName('signalProperty'):
             for attr in propertyTag.attributes.values():
               properties[attr.name] = attr.value.strip()
+
+          
           index = componentTag.getAttribute('instanceId')
-          if index in self.instanceIds:  #wucomponent already appears in other pages, merge property requirement, suppose location etc are the same
+          self.monitorProperties[index] = {}
+          
+	  # set monitoring properties index for components in application
+          for propertyTag in componentTag.getElementsByTagName('monitorProperty'):
+            for attr in propertyTag.attributes.values():
+              self.monitorProperties[index][attr.name] = attr.value.strip()
+
+          if index in self.instanceIds:
+            
+            #wucomponent already appears in other pages, merge property requirement, suppose location etc are the same
             self.wuComponents[index].properties = dict(self.wuComponents[index].properties.items() + properties.items())
           else:
-            component = WuComponent(index, location, group_size, reaction_time, type,
-                  application_hashed_name, properties)
+            component = WuComponent(index, location, group_size, reaction_time, type, application_hashed_name, properties)
             componentInstanceMap[componentTag.getAttribute('instanceId')] = component
             self.wuComponents[componentTag.getAttribute('instanceId')] = component
             self.changesets.components.append(component)
@@ -242,8 +253,16 @@ class WuApplication:
                     to_component, to_property_name)
             self.wuLinkList[hash_value] = link
           self.changesets.links.append(self.wuLinkList[hash_value])
+      
+      #add monitoring related links
+      for instanceId, properties in self.monitorProperties.items():
+          for name, index in properties:  
+              hash_value = (int(instanceId)*100 + int(index)*100000 + 0 + 0)
+              if hash_value not in self.WuLink.keys():
+                  link = WuLink(instanceId, name, 0, 'monitor')
+                  self.wuLinkList[hash_value] = link
+              self.changesets.links.append(self.wuLinkList[hash_value])
           
-
   def cleanAndCopyJava(self):
     # clean up the directory
     if os.path.exists(JAVA_OUTPUT_DIR):
