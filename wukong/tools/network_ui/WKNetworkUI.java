@@ -44,6 +44,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener {
     private JPanel sensorPanel;
     private JTextField sensorTextField;
     private JTree tree;
+    private DefaultTreeModel treemodel;
     private URL helpURL;
     private static boolean DEBUG = false;
 
@@ -57,18 +58,18 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener {
 
 	private String networkdir = "/Users/niels/git/darjeeling/src/config/native-dollhouse/dollhouse/";
 
-	private Sensor selectedSensor = null;
+    private DefaultMutableTreeNode selectedSensorTreeNode = null;
 
     public WKNetworkUI() {
         super(new GridLayout(1,0));
 
         //Create the nodes.
-        DefaultMutableTreeNode top =
-            new DefaultMutableTreeNode(networkdir);
+        DefaultMutableTreeNode top = new DefaultMutableTreeNode(networkdir);
+        treemodel = new DefaultTreeModel(top);
         createNodes(top);
 
         //Create a tree that allows one selection at a time.
-        tree = new JTree(top);
+        tree = new JTree(treemodel);
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		for (int i = 0; i < tree.getRowCount(); i++) {
 		    tree.expandRow(i);
@@ -112,22 +113,24 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener {
 				String text = sensorTextField.getText();
 				try {
 					int newval = Integer.parseInt(sensorTextField.getText());
+                    Sensor selectedSensor = (Sensor)selectedSensorTreeNode.getUserObject();
 					selectedSensor.setValue(newval);
+                    treemodel.nodeChanged(selectedSensorTreeNode);
 				} catch (NumberFormatException ex) {
 				}
 			}
 		}
 	}
 
-    private void setSelectedSensor(Sensor s) {
+    private void setSelectedSensorTreeNode(DefaultMutableTreeNode s) {
     	if (s == null) {
     		sensorTextField.setText("");
     		sensorTextField.setEnabled(false);
     	} else {
-    		sensorTextField.setText(s.getValue().toString());
+    		sensorTextField.setText(((Sensor)s.getUserObject()).getValue().toString());
     		sensorTextField.setEnabled(true);
     	}
-    	this.selectedSensor = s;
+    	this.selectedSensorTreeNode = s;
     }
 
     /** Required by TreeSelectionListener interface. */
@@ -137,11 +140,10 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener {
 
         if (node == null) return;
 
-        Object nodeInfo = node.getUserObject();
-        if (nodeInfo instanceof Sensor) {
-        	this.setSelectedSensor((Sensor)nodeInfo);
+        if (node.getUserObject() instanceof Sensor) {
+        	this.setSelectedSensorTreeNode(node);
         } else {
-        	this.setSelectedSensor(null);
+        	this.setSelectedSensorTreeNode(null);
         }
 
     }
