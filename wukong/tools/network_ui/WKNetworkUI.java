@@ -1,36 +1,3 @@
-/*
- * Copyright (c) 1995, 2008, Oracle and/or its affiliates. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *   - Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *
- *   - Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *
- *   - Neither the name of Oracle or the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
- * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */ 
-
-
-
 import javax.swing.*;
 import javax.swing.tree.*;
 import javax.swing.event.*;
@@ -39,14 +6,16 @@ import java.awt.event.*;
 import java.net.URL;
 import java.io.*;
 import java.util.*;
+import name.pachler.nio.file.*;
 
-public class WKNetworkUI extends JPanel implements TreeSelectionListener {
+public class WKNetworkUI extends JPanel implements TreeSelectionListener, ActionListener {
     private JPanel sensorPanel;
     private JTextField sensorTextField;
     private JTree tree;
     private DefaultTreeModel treemodel;
     private URL helpURL;
     private static boolean DEBUG = false;
+    private DirectoryWatcher directorywatcher;
 
     //Optionally play with line styles.  Possible values are
     //"Angled" (the default), "Horizontal", and "None".
@@ -63,6 +32,9 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener {
     public WKNetworkUI() {
         super(new GridLayout(1,0));
 
+        // Watch node directories for changes
+        directorywatcher = new DirectoryWatcher(networkdir);
+
         //Create the nodes.
         DefaultMutableTreeNode top = new DefaultMutableTreeNode(networkdir);
         treemodel = new DefaultTreeModel(top);
@@ -77,7 +49,6 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener {
 
         //Listen for when the selection changes.
         tree.addTreeSelectionListener(this);
-
         if (playWithLineStyle) {
             System.out.println("line style = " + lineStyle);
             tree.putClientProperty("JTree.lineStyle", lineStyle);
@@ -89,7 +60,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener {
         //Create the HTML viewing pane.
         sensorPanel = new JPanel();
 		sensorTextField = new JTextField("", 20);
-		sensorTextField.addActionListener(new SensorTextHandler());
+		sensorTextField.addActionListener(this);
 		sensorTextField.setEnabled(false);
 		sensorPanel.add(sensorTextField);
         JScrollPane sensorView = new JScrollPane(sensorPanel);
@@ -107,32 +78,6 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener {
         add(splitPane);
     }
 
-	private class SensorTextHandler implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == sensorTextField) {
-				String text = sensorTextField.getText();
-				try {
-					int newval = Integer.parseInt(sensorTextField.getText());
-                    Sensor selectedSensor = (Sensor)selectedSensorTreeNode.getUserObject();
-					selectedSensor.setValue(newval);
-                    treemodel.nodeChanged(selectedSensorTreeNode);
-				} catch (NumberFormatException ex) {
-				}
-			}
-		}
-	}
-
-    private void setSelectedSensorTreeNode(DefaultMutableTreeNode s) {
-    	if (s == null) {
-    		sensorTextField.setText("");
-    		sensorTextField.setEnabled(false);
-    	} else {
-    		sensorTextField.setText(((Sensor)s.getUserObject()).getValue().toString());
-    		sensorTextField.setEnabled(true);
-    	}
-    	this.selectedSensorTreeNode = s;
-    }
-
     /** Required by TreeSelectionListener interface. */
     public void valueChanged(TreeSelectionEvent e) {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode)
@@ -145,7 +90,30 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener {
         } else {
         	this.setSelectedSensorTreeNode(null);
         }
+    }
+    private void setSelectedSensorTreeNode(DefaultMutableTreeNode s) {
+        if (s == null) {
+            sensorTextField.setText("");
+            sensorTextField.setEnabled(false);
+        } else {
+            sensorTextField.setText(((Sensor)s.getUserObject()).getValue().toString());
+            sensorTextField.setEnabled(true);
+        }
+        this.selectedSensorTreeNode = s;
+    }
 
+    /** Required by ActionListener interface */
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == sensorTextField) {
+            String text = sensorTextField.getText();
+            try {
+                int newval = Integer.parseInt(sensorTextField.getText());
+                Sensor selectedSensor = (Sensor)selectedSensorTreeNode.getUserObject();
+                selectedSensor.setValue(newval);
+                treemodel.nodeChanged(selectedSensorTreeNode);
+            } catch (NumberFormatException ex) {
+            }
+        }
     }
 
     private void createNodes(DefaultMutableTreeNode top) {
@@ -156,6 +124,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener {
 				String dirname = listOfFiles[i].getName();
 				try {
 					Node node = new Node(this.networkdir + dirname);
+                    directorywatcher.watchDirectory(this.networkdir + dirname, node);
 				    DefaultMutableTreeNode treenode = new DefaultMutableTreeNode(dirname);
 				    top.add(treenode);
 					treenode.add(new DefaultMutableTreeNode("Location: " + node.location));
@@ -259,7 +228,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener {
     }
 
 
-	private class Node {
+	private class Node implements DirectoryWatcherListener {
 		private String node_directory = "UNKNOWN";
 		public String location = "UNKNOWN";
 		public Map<String, Sensor> sensors;
@@ -269,8 +238,36 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener {
 			this.node_directory = node_directory;
 			this.sensors = new HashMap<String, Sensor>();
 			this.actuators = new HashMap<String, Actuator>();
+
 			this.update_info();
 		}
+
+
+        public void directoryChanged(WatchKey signalledKey) {
+            // get list of events from key
+            java.util.List<WatchEvent<?>> list = signalledKey.pollEvents();
+
+            // VERY IMPORTANT! call reset() AFTER pollEvents() to allow the
+            // key to be reported again by the watch service
+            signalledKey.reset();
+
+            // we'll simply print what has happened; real applications
+            // will do something more sensible here
+            for(WatchEvent e : list){
+                String message = "";
+                if(e.kind() == StandardWatchEventKind.ENTRY_CREATE){
+                    Path context = (Path)e.context();
+                    message = context.toString() + " created";
+                } else if(e.kind() == StandardWatchEventKind.ENTRY_MODIFY){
+                    Path context = (Path)e.context();
+                    message = context.toString() + " modified";
+                } else if(e.kind() == StandardWatchEventKind.OVERFLOW){
+                    message = "OVERFLOW: more changes happened than we could retreive";
+                } else
+                    message = e.toString();
+                System.out.println(message);
+            }
+        }
 
 		private void update_info() throws java.io.IOException {
 			File folder = new File(this.node_directory);
