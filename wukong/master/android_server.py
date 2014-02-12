@@ -1,67 +1,32 @@
 #!/usr/bin/python
 #Author: Anastasia Shuba
 
+import BaseHTTPServer, hashlib, logging, shutil, traceback
+import sys, os, copy, errno
+from multiprocessing import Queue
 
-from gevent import monkey; monkey.patch_all()
-import gevent
-import serial
-import platform
-import os, sys, zipfile, re, time
-import tornado.ioloop, tornado.web
 import tornado.template as template
-import simplejson as json
-from jinja2 import Template
-import logging
-import hashlib
-from threading import Thread
-import traceback
-import StringIO
-import shutil, errno
-import datetime
-import glob
-import copy
-import fcntl, termios, struct
 
-try:
-  import pyzwave
-except:
-  print "Please install the pyzwave module in the wukong/tools/python/pyzwave by using"
-  print "cd ../tools/python/pyzwave; sudo python setup.py install"
-  sys.exit(-1)
-import wkpf.wusignal
-from wkpf.wuapplication import WuApplication
+import wkpf.globals
 from wkpf.wuclasslibraryparser import *
 from wkpf.wkpfcomm import *
 from wkpf.util import *
-
-import wkpf.globals
 from configuration import *
 
-import tornado.options
-import BaseHTTPServer, thread, cgi
-
-#import BaseHTTPServer, hashlib, logging, shutil, traceback
-#import sys, os, copy, errno
-#from multiprocessing import Queue
-
-#import tornado.template as template
-
-#import wkpf.globals
-#from wkpf.wkpfcomm import getComm
-
-#from configuration import *
-#from wkpf.wuapplication import WuApplication
-#import wkpf.wusignal as wusignal
-#from wkpf.locationTree import LocationTree
+from configuration import *
+from wkpf.wuapplication import WuApplication
+import wkpf.wusignal as wusignal
+from wkpf.locationTree import LocationTree
 
 #Constants:
-HOST_NAME = '192.168.1.81' #Home
+HOST_NAME = '192.168.1.83' #Home
 PORT_NUMBER = 6789
 
 #Send command will always be a POST request
-DEPLOY_COMMAND = "1"
-STOP_COMMAND = "2"
-VIEW_COMMAND = "3"
+DEPLOY_PICK_COMMAND = "1"
+DEPLOY_APP_COMMAND = "2"
+STOP_COMMAND = "3"
+VIEW_COMMAND = "4"
 
 def start_android_server():
 	server_class = BaseHTTPServer.HTTPServer
@@ -127,9 +92,6 @@ def delete(app_id, msg_writer):
 
 def save_new_app(app_name, msg_writer, xml=None):
 	app_id = hashlib.md5(app_name).hexdigest()
-	logging.info("App id: %s" % app_id)
-	logging.info("App index: %s" % getAppIndex(app_id))
-	logging.info("App test index: %s" % getAppIndex("b0b2b92ac40509493fb55c60065fe8d2"))
 	if getAppIndex(app_id) is not None:
 		msg_writer.write({'status':1, 'mesg':'Cannot create application with the same name'})
 		return
@@ -158,21 +120,11 @@ def save_new_app(app_name, msg_writer, xml=None):
 	return app_id
 
 def deploy_app(app_id, msg_writer):
-	#Get node info
-	#global node_infos
-
 	#TODO: hardcoded here, differs from original
 	node_infos = getComm().getActiveNodeInfos(False)
 
 	rebuildTree(node_infos)
 	print ("node_infos in refresh nodes:",node_infos)
-	#furniture data loaded from fake data for purpose of 
-	#getComm().getRoutingInformation()
-	# default is false
-	#TODO - hardcoded here, differs from original. what exactly is this?
-	set_location = False
-
-	nodes = template.Loader(os.getcwd()).load('templates/monitor-nodes.html').generate(node_infos=node_infos, set_location=set_location, default_location=LOCATION_ROOT)
 
 	#MAP:
 	app_ind = getAppIndex(app_id)
@@ -180,12 +132,8 @@ def deploy_app(app_id, msg_writer):
 		msg_writer.write({'status':1, 'mesg': 'Cannot find the application'})
 		return
 	platforms = ['avr_mega2560']
-	# TODO: need platforms from fbp
-	#node_infos = getComm().getActiveNodeInfos()
 	rebuildTree(node_infos)
 
-	# Map with location tree info (discovery), this will produce mapping_results
-	#mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, getComm().getRoutingInformation())
 	mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, [])
 
 	ret = []
@@ -209,15 +157,6 @@ def deploy_app(app_id, msg_writer):
 		obj_hash['instances'].append(wuobj_hash)
 
 	ret.append(obj_hash)
-
-	#DEPLOY
-	deployment = template.Loader(os.getcwd()).load('templates/deployment.html').generate(
-		app=wkpf.globals.applications[app_ind],
-		app_id=app_id, node_infos=node_infos,
-		logs=wkpf.globals.applications[app_ind].logs(),
-		changesets=wkpf.globals.applications[app_ind].changesets, 
-		set_location=False, 
-		default_location=LOCATION_ROOT)
 
 	#DEPLOY
 	wkpf.globals.set_wukong_status("Deploying")
@@ -251,15 +190,27 @@ class AndroidServer(BaseHTTPServer.BaseHTTPRequestHandler):
 		self.send_header("Content-type", "text/html")
 		self.end_headers()
 
-		if(self.path.split("/")[1] == DEPLOY_COMMAND):
-			print "*** About to deploy... %s ***" % latest_app_id
-			deploy_app(latest_app_id, self.wfile)
-		elif(self.path.split("/")[1] == STOP_COMMAND):
+		cmd = self.path.split("/")[1]
+		if(cmd == DEPLOY_PICK_COMMAND):
+			app_names = []
+			for app in list(wkpf.globals.applications):
+				app_names.append(str(app.app_name))
+			self.wfile.write({'status':0, 'apps':app_names})
+
+		elif(cmd == DEPLOY_APP_COMMAND):
+			print "*** About to deploy..."
+			app_name = self.headers.getheader("file_name")
+			app_id = hashlib.md5(app_name).hexdigest()
+			print "*** About to deploy... %s ***" % app_id
+			deploy_app(app_id, self.wfile)
+		elif(cmd == STOP_COMMAND):
 			print "TODO Stop"
-		elif(self.path.split("/")[1] == VIEW_COMMAND):
+			for app in list(wkpf.globals.applications):
+				print app.app_name
+		elif(cmd == VIEW_COMMAND):
 			print "TODO View"
 		#Send resposne string to client:
-		self.wfile.write("true")
+		#self.wfile.write("true")
 
 	#This method will be used upon a SEND command only
 	def do_POST(self):
