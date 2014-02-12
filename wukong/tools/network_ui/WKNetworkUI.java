@@ -113,7 +113,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener {
 				try {
 					int newval = Integer.parseInt(sensorTextField.getText());
 					selectedSensor.setValue(newval);
-				} catch (NumberFormatException e) {
+				} catch (NumberFormatException ex) {
 				}
 			}
 		}
@@ -208,7 +208,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener {
     private class Actuator {
     	protected String name;
     	protected String fullfilename;
-    	private Integer value;
+    	protected Integer value;
 
     	public Actuator(String dir, String file) {
     		this.name = file.substring(4);
@@ -245,6 +245,14 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener {
 
     	public void setValue(int value) {
     		System.out.println("SET " + this.fullfilename + " TO " + value);
+    		try {
+	    		this.value = value;
+				PrintWriter writer = new PrintWriter(this.fullfilename);
+				writer.println(this.value.toString());
+				writer.close();
+			} catch (FileNotFoundException e) {
+				System.out.println(e);
+			}
     	}
     }
 
