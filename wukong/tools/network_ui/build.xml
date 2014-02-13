@@ -17,23 +17,20 @@
         	   destdir="build/classes"
         	   classpathref="classpath"/>
     </target>
-</project>
 
-
-
-
-
-<!--     <target name="jar">
+	<target name="jar" depends="build">
         <mkdir dir="build/jar"/>
-        <jar destfile="build/jar/HelloWorld.jar" basedir="build/classes">
+        <jar destfile="build/jar/network_ui.jar" basedir="build/classes">
             <manifest>
-                <attribute name="Main-Class" value="oata.HelloWorld"/>
+                <attribute name="Main-Class" value="WKNetworkUI"/>
             </manifest>
+            <zipgroupfileset dir="." includes="*.jar" />
         </jar>
     </target>
 
-    <target name="run">
-        <java jar="build/jar/HelloWorld.jar" fork="true"/>
+    <target name="run" depends="jar">
+        <java dir="."
+        	  jar="build/jar/network_ui.jar"
+        	  fork="true"/>
     </target>
-
- -->
+</project>

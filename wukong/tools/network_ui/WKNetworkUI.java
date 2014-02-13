@@ -13,8 +13,6 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     private JTextField sensorTextField;
     private JTree tree;
     private DefaultTreeModel treemodel;
-    private URL helpURL;
-    private static boolean DEBUG = false;
     private DirectoryWatcher directorywatcher;
 
     //Optionally play with line styles.  Possible values are
@@ -23,11 +21,11 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     private static String lineStyle = "Horizontal";
     
     //Optionally set the look and feel.
-    private static boolean useSystemLookAndFeel = false;
+    private static boolean useSystemLookAndFeel = true;
 
 	private String networkdir = "/Users/niels/git/darjeeling/src/config/native-dollhouse/dollhouse/";
 
-    private DefaultMutableTreeNode selectedSensorTreeNode = null;
+    private SensorTreeNode selectedSensorTreeNode = null;
 
     public WKNetworkUI() {
         super(new GridLayout(1,0));
@@ -83,20 +81,18 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         DefaultMutableTreeNode node = (DefaultMutableTreeNode)
                            tree.getLastSelectedPathComponent();
 
-        if (node == null) return;
-
-        if (node.getUserObject() instanceof Sensor) {
-        	this.setSelectedSensorTreeNode(node);
+        if (node instanceof SensorTreeNode) {
+        	this.setSelectedSensorTreeNode((SensorTreeNode)node);
         } else {
         	this.setSelectedSensorTreeNode(null);
         }
     }
-    private void setSelectedSensorTreeNode(DefaultMutableTreeNode s) {
+    private void setSelectedSensorTreeNode(SensorTreeNode s) {
         if (s == null) {
             sensorTextField.setText("");
             sensorTextField.setEnabled(false);
         } else {
-            sensorTextField.setText(((Sensor)s.getUserObject()).getValue().toString());
+            sensorTextField.setText(s.getValue().toString());
             sensorTextField.setEnabled(true);
         }
         this.selectedSensorTreeNode = s;
@@ -108,8 +104,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
             String text = sensorTextField.getText();
             try {
                 int newval = Integer.parseInt(sensorTextField.getText());
-                Sensor selectedSensor = (Sensor)selectedSensorTreeNode.getUserObject();
-                selectedSensor.setValue(newval);
+                selectedSensorTreeNode.setValue(newval);
                 treemodel.nodeChanged(selectedSensorTreeNode);
             } catch (NumberFormatException ex) {
             }
@@ -122,29 +117,13 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
 		for (int i = 0; i < listOfFiles.length; i++) {
 			if (listOfFiles[i].isDirectory() && listOfFiles[i].getName().startsWith("node_")) {
 				String dirname = listOfFiles[i].getName();
-				try {
-					Node node = new Node(this.networkdir + dirname);
-                    directorywatcher.watchDirectory(this.networkdir + dirname, node);
-				    DefaultMutableTreeNode treenode = new DefaultMutableTreeNode(dirname);
-				    top.add(treenode);
-					treenode.add(new DefaultMutableTreeNode("Location: " + node.location));
-				    if (node.sensors.size() > 0) {
-					    DefaultMutableTreeNode treenode_sensors = new DefaultMutableTreeNode("sensors");
-					    treenode.add(treenode_sensors);
-					    for (Sensor s : node.sensors.values()) {
-						    treenode_sensors.add(new DefaultMutableTreeNode(s));
-						}
-				    }
-				    if (node.actuators.size() > 0) {
-					    DefaultMutableTreeNode treenode_actuators = new DefaultMutableTreeNode("actuators");
-					    treenode.add(treenode_actuators);
-					    for (Actuator a : node.actuators.values()) {
-						    treenode_actuators.add(new DefaultMutableTreeNode(a));
-						}
-				    }
-				} catch (IOException e) {
-					top.add(new DefaultMutableTreeNode("Failed to read " + dirname));
-				}
+                try {
+    				DeviceTreeNode node = new DeviceTreeNode(this.networkdir, dirname, this.directorywatcher, this.treemodel);
+    			    top.add(node);
+                } catch (IOException e) {
+                    System.err.println("Error reading " + dirname);                    
+                    System.err.println(e);
+                }
 			}
 		}
     }
@@ -175,146 +154,6 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         frame.pack();
         frame.setVisible(true);
     }
-
-    private class Actuator {
-    	protected String name;
-    	protected String fullfilename;
-    	protected Integer value;
-
-    	public Actuator(String dir, String file) {
-    		this.name = file.substring(4);
-    		this.fullfilename = dir + "/" + file;
-    		this.update_info();
-    	}
-
-    	public void update_info() {
-			this.value = null;
-			try {
-				BufferedReader br = new BufferedReader(new FileReader(new File(this.fullfilename)));
-				String ioport_data = br.readLine();
-				this.value = Integer.parseInt(ioport_data);
-				br.close();    		
-			} catch (IOException e) {
-				System.out.println(e);
-			}
-    	}
-
-    	public Integer getValue() {
-    		return value;
-    	}
-
-    	public String toString() {
-    		return name + " = " + value;
-    	}
-    }
-
-    private class Sensor extends Actuator {
-    	public Sensor (String dir, String file) {
-    		super(dir, file);
-    		this.name = file.substring(3);
-    	}
-
-    	public void setValue(int value) {
-    		System.out.println("SET " + this.fullfilename + " TO " + value);
-    		try {
-	    		this.value = value;
-				PrintWriter writer = new PrintWriter(this.fullfilename);
-				writer.println(this.value.toString());
-				writer.close();
-			} catch (FileNotFoundException e) {
-				System.out.println(e);
-			}
-    	}
-    }
-
-
-	private class Node implements DirectoryWatcherListener {
-		private String node_directory = "UNKNOWN";
-		public String location = "UNKNOWN";
-		public Map<String, Sensor> sensors;
-		public Map<String, Actuator> actuators;
-
-		public Node(String node_directory) throws java.io.IOException {
-			this.node_directory = node_directory;
-			this.sensors = new HashMap<String, Sensor>();
-			this.actuators = new HashMap<String, Actuator>();
-
-			this.update_info();
-		}
-
-
-        public void directoryChanged(WatchKey signalledKey) {
-            // get list of events from key
-            java.util.List<WatchEvent<?>> list = signalledKey.pollEvents();
-
-            // VERY IMPORTANT! call reset() AFTER pollEvents() to allow the
-            // key to be reported again by the watch service
-            signalledKey.reset();
-
-            // we'll simply print what has happened; real applications
-            // will do something more sensible here
-            for(WatchEvent e : list){
-                String message = "";
-                if(e.kind() == StandardWatchEventKind.ENTRY_CREATE){
-                    Path context = (Path)e.context();
-                    message = context.toString() + " created";
-                } else if(e.kind() == StandardWatchEventKind.ENTRY_MODIFY){
-                    Path context = (Path)e.context();
-                    message = context.toString() + " modified";
-                } else if(e.kind() == StandardWatchEventKind.OVERFLOW){
-                    message = "OVERFLOW: more changes happened than we could retreive";
-                } else
-                    message = e.toString();
-                System.out.println(message);
-            }
-        }
-
-		private void update_info() throws java.io.IOException {
-			File folder = new File(this.node_directory);
-			File[] listOfFiles = folder.listFiles(); 
-
-			for (int i = 0; i < listOfFiles.length; i++) 
-			{
-				if (listOfFiles[i].isFile()) 
-				{
-					String filename = listOfFiles[i].getName();
-					if (filename.startsWith("IN_") || filename.startsWith("OUT_")) {
-						if (filename.startsWith("IN_")) {
-							if (this.sensors.containsKey(filename))
-								this.sensors.get(filename).update_info();
-							else
-								this.sensors.put(filename, new Sensor(node_directory, filename));
-						}
-						else {
-							if (this.actuators.containsKey(filename))
-								this.actuators.get(filename).update_info();
-							else
-								this.actuators.put(filename, new Actuator(node_directory, filename));
-						}
-					}
-					if (filename.equals("config.txt")) {
-						try {
-							BufferedReader br = new BufferedReader(new FileReader(new File(node_directory, filename)));
-
-							String config_line;
-							while ((config_line = br.readLine()) != null) {
-								if (config_line.equals("Location (in raw bytes on the next line):")) {
-									int location_length = br.read();
-									config_line = br.readLine();
-									this.location = config_line.substring(0, location_length);
-									break;
-								}
-							}
-							br.close();
-						} catch (IOException e) {
-							this.location = "UNKNOWN";
-							System.out.println(e);
-						}
-					}
-				}
-			}
-		}
-	}
 
     public static void main(String[] args) {
         //Schedule a job for the event dispatch thread:
