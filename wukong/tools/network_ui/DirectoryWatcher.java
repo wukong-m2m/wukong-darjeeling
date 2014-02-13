@@ -34,9 +34,7 @@ public class DirectoryWatcher extends Thread {
             // take() will block until a file has been created/deleted
             WatchKey signalledKey;
             try {
-                System.out.println("hallo2\n");
                 signalledKey = watchService.take();
-                System.out.println("hallo3\n");
                 if (watchkeys.containsKey(signalledKey))
                     watchkeys.get(signalledKey).directoryChanged(signalledKey);
             } catch (InterruptedException ix){

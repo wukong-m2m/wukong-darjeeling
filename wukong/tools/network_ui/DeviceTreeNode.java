@@ -12,14 +12,14 @@ public class DeviceTreeNode extends DefaultMutableTreeNode implements DirectoryW
 	private Map<String, ActuatorTreeNode> actuators;
 	private DefaultMutableTreeNode sensorsGroupNode;
 	private DefaultMutableTreeNode actuatorsGroupNode;
-	private TreeModel treemodel;
+	private DefaultTreeModel treemodel;
 
-	public DeviceTreeNode(String network_directory, String node_directory, DirectoryWatcher directorywatcher, TreeModel treemodel) throws java.io.IOException {
+	public DeviceTreeNode(String network_directory, String node_directory, DirectoryWatcher directorywatcher, DefaultTreeModel treemodel) throws java.io.IOException {
 		this.directory = network_directory + '/' + node_directory;
 		this.name = node_directory;
 		this.sensors = new HashMap<String, SensorTreeNode>();
 		this.actuators = new HashMap<String, ActuatorTreeNode>();
-		treemodel = treemodel;
+		this.treemodel = treemodel;
 		directorywatcher.watchDirectory(this.directory, this);
 		this.update_info();
 	}
@@ -45,7 +45,16 @@ public class DeviceTreeNode extends DefaultMutableTreeNode implements DirectoryW
                 message = context.toString() + " created";
             } else if(e.kind() == StandardWatchEventKind.ENTRY_MODIFY){
                 Path context = (Path)e.context();
-                message = context.toString() + " modified";
+                String filename = context.toString();
+                message = filename + " modified";
+                if (this.sensors.containsKey(filename)) {
+                	this.sensors.get(filename).update_info();
+                	this.treemodel.nodeChanged(this.sensors.get(filename));
+                }
+                if (this.actuators.containsKey(filename)) {
+                	this.actuators.get(filename).update_info();
+                	this.treemodel.nodeChanged(this.actuators.get(filename));
+                }
             } else if(e.kind() == StandardWatchEventKind.OVERFLOW){
                 message = "OVERFLOW: more changes happened than we could retreive";
             } else

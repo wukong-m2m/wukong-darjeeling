@@ -105,7 +105,6 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
             try {
                 int newval = Integer.parseInt(sensorTextField.getText());
                 selectedSensorTreeNode.setValue(newval);
-                treemodel.nodeChanged(selectedSensorTreeNode);
             } catch (NumberFormatException ex) {
             }
         }
