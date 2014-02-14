@@ -21,7 +21,28 @@ public class NetworkServer extends Thread
 
 	public static void main(String[] args) throws IOException 
 	{
-		new NetworkServer().run();
+		NetworkServer s = new NetworkServer();
+		s.setMessagesListener(new StandardOutputListener());
+		s.run();
+	}
+
+	private static class StandardOutputListener implements NetworkServerMessagesListener {
+		public void messageDropped(int src, int dest, int[] message){
+			System.out.print("Dropped message from " + src + " to " + dest + ", length " + message.length);
+		}
+		public void messageSent(int src, int dest, int[] message){
+			System.out.print("Forwarding message from " + src + " to " + dest + "   ");
+			for (int i=0; i<message[0]; i++) {
+				System.out.print(" [" + String.format("%02X ", message[i]) + "]");
+			}
+			System.out.println("");
+		}
+		public void clientConnected(int client){
+			System.out.println("Node " + client + " connected.");
+		}
+		public void clientDisconnected(int client){
+			System.out.println("Node " + client + " disconnected.");
+		}
 	}
 
 	public void run() {
@@ -120,8 +141,6 @@ public class NetworkServer extends Thread
 			finally {
 				if (NetworkServer.listener != null)
 					NetworkServer.listener.clientDisconnected(this.clientId);
-				else
-					System.out.println("Node " + this.clientId + " disconnected.");
 				if (NetworkServer.clients.get(this.clientId) == this)
 					NetworkServer.clients.remove(this.clientId);			
 			}
@@ -135,9 +154,6 @@ public class NetworkServer extends Thread
 			this.clientId += 256*in.read();
 			if (NetworkServer.listener != null)
 				NetworkServer.listener.clientConnected(this.clientId);
-			else
-				System.out.println("New client " + this.clientId);
-
 
 			if (NetworkServer.clients.get(this.clientId) != null)
 				NetworkServer.clients.get(this.clientId).keepRunning = false; // Kill old thread for client with same ID if it was still around
@@ -165,15 +181,16 @@ public class NetworkServer extends Thread
 						message[i] = in.read();
 					int destId = message[3] + message[4]*256;
 
-					System.out.print("Received message from " + this.clientId + ", for " + destId + ", length " + length);
 
 					NetworkServerClientHandler destClient = NetworkServer.clients.get(destId);
 					if (destClient != null) {
-						System.out.println("");
+						if (NetworkServer.listener != null)
+							NetworkServer.listener.messageSent(this.clientId, destId, message);
 						destClient.sendMessage(message);
 					}
 					else {
-						System.out.println(" ---> dropped.");
+						if (NetworkServer.listener != null)
+							NetworkServer.listener.messageDropped(this.clientId, destId, message);
 					}
 				}
 			}
@@ -181,13 +198,10 @@ public class NetworkServer extends Thread
 
 		private synchronized void sendMessage(int[] message) {
 			try {
-				System.out.print("Forwarding message to node " + this.clientId);
 				for (int i=0; i<message[0]; i++) {
 					out.write(message[i]);
-					System.out.print(" [" + String.format("%02X ", message[i]) + "]");
 				}
 				out.flush();
-				System.out.println("");
 			}
 			catch (IOException e) {
 				System.err.println("IOException sending message to node " + this.clientId); 
