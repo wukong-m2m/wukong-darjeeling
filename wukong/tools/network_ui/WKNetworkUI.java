@@ -80,16 +80,26 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         JScrollPane sensorView = new JScrollPane(sensorPanel);
 
         //Add the scroll panes to a split pane.
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        splitPane.setTopComponent(treeView);
-        splitPane.setBottomComponent(sensorView);
+        JSplitPane devicesPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        devicesPane.setTopComponent(treeView);
+        devicesPane.setBottomComponent(sensorView);
 
         Dimension minimumSize = new Dimension(100, 50);
         sensorView.setMinimumSize(minimumSize);
         treeView.setMinimumSize(minimumSize);
 
+        JSplitPane mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        mainPane.setTopComponent(devicesPane);
+        TextArea textArea = new TextArea();
+        mainPane.setBottomComponent(textArea);
+
+        // Start the network server
+        NetworkServer networkServer = new NetworkServer();
+        networkServer.setMessagesListener(new UIMessagesLog(textArea));
+        networkServer.start();
+
         //Add the split pane to this panel.
-        add(splitPane);
+        add(mainPane);
     }
 
     /** Required by TreeSelectionListener interface. */
