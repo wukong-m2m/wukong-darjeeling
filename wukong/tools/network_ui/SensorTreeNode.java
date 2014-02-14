@@ -1,6 +1,6 @@
 import java.io.*;
 
-public class SensorTreeNode extends ActuatorTreeNode {
+public class SensorTreeNode extends IOPortTreeNode {
 	public SensorTreeNode (String dir, String file) {
 		super(dir, file);
 		this.name = file.substring(3);

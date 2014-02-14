@@ -8,8 +8,7 @@ public class DeviceTreeNode extends DefaultMutableTreeNode implements DirectoryW
 	private String directory;
 	private String name;
 	private String location = "UNKNOWN";
-	private Map<String, SensorTreeNode> sensors;
-	private Map<String, ActuatorTreeNode> actuators;
+	private Map<String, IOPortTreeNode> ioPorts;
 	private DefaultMutableTreeNode sensorsGroupNode;
 	private DefaultMutableTreeNode actuatorsGroupNode;
 	private DefaultTreeModel treemodel;
@@ -17,8 +16,7 @@ public class DeviceTreeNode extends DefaultMutableTreeNode implements DirectoryW
 	public DeviceTreeNode(String network_directory, String node_directory, DirectoryWatcher directorywatcher, DefaultTreeModel treemodel) throws java.io.IOException {
 		this.directory = network_directory + '/' + node_directory;
 		this.name = node_directory;
-		this.sensors = new HashMap<String, SensorTreeNode>();
-		this.actuators = new HashMap<String, ActuatorTreeNode>();
+		this.ioPorts = new HashMap<String, IOPortTreeNode>();
 		this.treemodel = treemodel;
 		directorywatcher.watchDirectory(this.directory, this);
 		this.update_info();
@@ -47,13 +45,9 @@ public class DeviceTreeNode extends DefaultMutableTreeNode implements DirectoryW
                 Path context = (Path)e.context();
                 String filename = context.toString();
                 message = filename + " modified";
-                if (this.sensors.containsKey(filename)) {
-                	this.sensors.get(filename).update_info();
-                	this.treemodel.nodeChanged(this.sensors.get(filename));
-                }
-                if (this.actuators.containsKey(filename)) {
-                	this.actuators.get(filename).update_info();
-                	this.treemodel.nodeChanged(this.actuators.get(filename));
+                if (this.ioPorts.containsKey(filename)) {
+                	this.ioPorts.get(filename).update_info();
+                	this.treemodel.nodeChanged(this.ioPorts.get(filename));
                 }
             } else if(e.kind() == StandardWatchEventKind.OVERFLOW){
                 message = "OVERFLOW: more changes happened than we could retreive";
@@ -73,23 +67,13 @@ public class DeviceTreeNode extends DefaultMutableTreeNode implements DirectoryW
 			{
 				String filename = listOfFiles[i].getName();
 				if (filename.startsWith("IN_") || filename.startsWith("OUT_")) {
-					if (filename.startsWith("IN_")) {
-						if (this.sensorsGroupNode == null) {
-							this.sensorsGroupNode = new DefaultMutableTreeNode("sensors");
-							this.add(this.sensorsGroupNode);
-						}
-						SensorTreeNode sensor = new SensorTreeNode(directory, filename);
-						this.sensorsGroupNode.add(sensor);
-						this.sensors.put(filename, sensor);
-					} else {
-						if (this.actuatorsGroupNode == null) {
-							this.actuatorsGroupNode = new DefaultMutableTreeNode("sensors");
-							this.add(this.actuatorsGroupNode);
-						}
-						ActuatorTreeNode actuator = new ActuatorTreeNode(directory, filename);
-						this.actuatorsGroupNode.add(actuator);
-						this.actuators.put(filename, actuator);
-					}
+					IOPortTreeNode ioPortTreeNode;
+					if (filename.startsWith("IN_"))
+						ioPortTreeNode = new SensorTreeNode(directory, filename);
+					else
+						ioPortTreeNode = new ActuatorTreeNode(directory, filename);
+					this.add(ioPortTreeNode);
+					this.ioPorts.put(filename, ioPortTreeNode);
 				}
 				if (filename.equals("config.txt")) {
 					try {

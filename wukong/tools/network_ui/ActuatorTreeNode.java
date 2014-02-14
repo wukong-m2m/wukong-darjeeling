@@ -4,34 +4,8 @@ import javax.swing.event.*;
 import java.util.*;
 import java.io.*;
 
-public class ActuatorTreeNode extends DefaultMutableTreeNode {
-	protected String name;
-	protected String fullfilename;
-	protected Integer value;
-
+public class ActuatorTreeNode extends IOPortTreeNode {
 	public ActuatorTreeNode(String dir, String file) {
-		this.name = file.substring(4);
-		this.fullfilename = dir + "/" + file;
-		this.update_info();
-	}
-
-	public void update_info() {
-		this.value = null;
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(new File(this.fullfilename)));
-			String ioport_data = br.readLine();
-			this.value = Integer.parseInt(ioport_data);
-			br.close();    		
-		} catch (IOException e) {
-			System.out.println(e);
-		}
-	}
-
-	public Integer getValue() {
-		return value;
-	}
-
-	public String toString() {
-		return name + " = " + value;
+		super(dir, file);
 	}
 }

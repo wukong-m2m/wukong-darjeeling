@@ -45,6 +45,22 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
 		    tree.expandRow(i);
 		}
 
+        //Set icons for sensors and actuators
+        tree.setCellRenderer(new DefaultTreeCellRenderer() {
+            private Icon sensorIcon = UIManager.getIcon("InternalFrame.maximizeIcon");
+            private Icon actuatorIcon = UIManager.getIcon("InternalFrame.closeIcon");
+            @Override
+            public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean isLeaf, int row, boolean focused) {
+                Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, isLeaf, row, focused);
+                System.err.println(sensorIcon);
+                if (value instanceof SensorTreeNode)
+                    setIcon(sensorIcon);
+                else if (value instanceof ActuatorTreeNode)
+                    setIcon(actuatorIcon);
+                return c;
+            }
+        });
+
         //Listen for when the selection changes.
         tree.addTreeSelectionListener(this);
         if (playWithLineStyle) {
