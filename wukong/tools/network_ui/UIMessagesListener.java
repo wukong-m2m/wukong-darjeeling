@@ -12,6 +12,11 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 	JTree tree;
 	DefaultTreeModel treemodel;
 
+	private final int WKPF_PROPERTY_TYPE_SHORT         = 0;
+	private final int WKPF_PROPERTY_TYPE_BOOLEAN       = 1;
+	private final int WKPF_PROPERTY_TYPE_REFRESH_RATE  = 2;
+
+
 	public UIMessagesListener (TextArea textArea, JTree tree, DefaultTreeModel treemodel) {
 		this.textArea = textArea;
 		this.tree = tree;
@@ -25,7 +30,16 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 		this.textArea.append(msg + "\n");
 	}
 
-	public String parseMessage(int[] message) {
+	private String propertyTypeToString(int type) {
+		switch(type) {
+			case WKPF_PROPERTY_TYPE_SHORT       : return "short";
+			case WKPF_PROPERTY_TYPE_BOOLEAN     : return "boolean";
+			case WKPF_PROPERTY_TYPE_REFRESH_RATE: return "refresh_rate";
+		}
+		return "unknown";
+	}
+
+	private String parseMessage(int[] message) {
 		/*
 		 NetworkServer header
 		 byte 0   : length
@@ -76,11 +90,11 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 				sb.append(" wuclasses:");
 				for (int i = 3; i < payload.length; i+=3) {
 					sb.append("{id:");
-					sb.append(payload[i+1]+payload[i]*256); // TODONR: change to little endian
+					sb.append(payload[i]*256 + payload[i+1]); // TODONR: change to little endian
 					sb.append(" canCreate:");
-					sb.append((payload[i+2]&0x2) == 0 ? "False" : "True");
+					sb.append((payload[i+2] & 0x2) == 0 ? "False" : "True");
 					sb.append(" virtual:");
-					sb.append((payload[i+2]&0x1) == 0 ? "False" : "True");
+					sb.append((payload[i+2] & 0x1) == 0 ? "False" : "True");
 					sb.append("} ");
 				}
 				break;
@@ -112,9 +126,18 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 				break;
 			case 0x96:
 				command_name = "WKPF_WRITE_PROPERTY";
+				sb.append("port:" + payload[0]);
+				sb.append(" property: " + payload[3]);
+				sb.append(" type:" + propertyTypeToString(payload[4]));
+				if (payload[4]==WKPF_PROPERTY_TYPE_SHORT || payload[4]==WKPF_PROPERTY_TYPE_REFRESH_RATE) {
+					sb.append(" value:" + payload[5]*256 + payload[6]);
+				} else {
+					sb.append(" value:" + payload[5]);
+				}
 				break;
 			case 0x97:
 				command_name = "WKPF_WRITE_PROPERTY_R";
+				sb.append("OK");
 				break;
 			case 0x98:
 				command_name = "WKPF_REQUEST_PROPERTY_INIT";
