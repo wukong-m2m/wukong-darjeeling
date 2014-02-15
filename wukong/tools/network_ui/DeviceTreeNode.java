@@ -42,25 +42,28 @@ public class DeviceTreeNode extends DefaultMutableTreeNode implements DirectoryW
         // we'll simply print what has happened; real applications
         // will do something more sensible here
         for(WatchEvent e : list){
-            String message = "";
             if(e.kind() == StandardWatchEventKind.ENTRY_CREATE){
                 Path context = (Path)e.context();
-                message = context.toString() + " created";
+                String filename = context.toString();
+				if (filename.startsWith("IN_") || filename.startsWith("OUT_"))
+					this.addIoPortTreeNode(filename);
             } else if(e.kind() == StandardWatchEventKind.ENTRY_MODIFY){
                 Path context = (Path)e.context();
                 String filename = context.toString();
-                message = filename + " modified";
                 if (filename.equals("config.txt")) {
                 	this.update_info();
                 } else if (this.ioPorts.containsKey(filename)) {
                 	this.ioPorts.get(filename).update_info();
                 	this.treemodel.nodeChanged(this.ioPorts.get(filename));
                 }
+            } else if(e.kind() == StandardWatchEventKind.ENTRY_DELETE){
+                Path context = (Path)e.context();
+                String filename = context.toString();
+				if (filename.startsWith("IN_") || filename.startsWith("OUT_"))
+					this.removeIoPortTreeNode(filename);
             } else if(e.kind() == StandardWatchEventKind.OVERFLOW){
-                message = "OVERFLOW: more changes happened than we could retreive";
-            } else
-                message = e.toString();
-            System.out.println(message);
+                System.err.println("OVERFLOW: more changes happened than we could retreive");
+			}
         }
     }
 
@@ -88,6 +91,27 @@ public class DeviceTreeNode extends DefaultMutableTreeNode implements DirectoryW
     	this.treemodel.nodeChanged(this);
     }
 
+    private void addIoPortTreeNode(String filename) {
+		IOPortTreeNode ioPortTreeNode;
+		if (filename.startsWith("IN_"))
+			ioPortTreeNode = new SensorTreeNode(directory, filename);
+		else
+			ioPortTreeNode = new ActuatorTreeNode(directory, filename);
+		this.add(ioPortTreeNode);
+		this.treemodel.nodeStructureChanged(this);
+		this.ioPorts.put(filename, ioPortTreeNode);
+    }
+
+    private void removeIoPortTreeNode(String filename) {
+    	System.out.println("REMOVE " + filename);
+    	if (this.ioPorts.containsKey(filename)) {
+    		IOPortTreeNode port = this.ioPorts.get(filename);
+    		this.remove(port);
+			this.treemodel.nodeStructureChanged(this);
+    		this.ioPorts.remove(filename);
+    	}
+    }
+
 	private void init() throws java.io.IOException {
 		File folder = new File(this.directory);
 		File[] listOfFiles = folder.listFiles(); 
@@ -98,13 +122,7 @@ public class DeviceTreeNode extends DefaultMutableTreeNode implements DirectoryW
 			{
 				String filename = listOfFiles[i].getName();
 				if (filename.startsWith("IN_") || filename.startsWith("OUT_")) {
-					IOPortTreeNode ioPortTreeNode;
-					if (filename.startsWith("IN_"))
-						ioPortTreeNode = new SensorTreeNode(directory, filename);
-					else
-						ioPortTreeNode = new ActuatorTreeNode(directory, filename);
-					this.add(ioPortTreeNode);
-					this.ioPorts.put(filename, ioPortTreeNode);
+					this.addIoPortTreeNode(filename);
 				}
 			}
 		}

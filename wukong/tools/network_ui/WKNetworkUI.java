@@ -57,7 +57,6 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
             @Override
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean isLeaf, int row, boolean focused) {
                 Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, isLeaf, row, focused);
-                System.err.println(sensorIcon);
                 if (value instanceof SensorTreeNode)
                     setIcon(sensorIcon);
                 else if (value instanceof ActuatorTreeNode)
