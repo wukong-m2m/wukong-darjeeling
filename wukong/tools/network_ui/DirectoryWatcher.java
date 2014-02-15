@@ -15,7 +15,6 @@ public class DirectoryWatcher extends Thread {
     }
 
     public void watchDirectory(String dir, DirectoryWatcherListener listener) {
-        System.out.println("watching " + dir);
         Path watchedPath = Paths.get(dir);
         try {
             WatchKey key = watchedPath.register(watchService, StandardWatchEventKind.ENTRY_CREATE, StandardWatchEventKind.ENTRY_MODIFY, StandardWatchEventKind.ENTRY_DELETE);
