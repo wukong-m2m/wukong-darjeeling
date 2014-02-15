@@ -26,12 +26,19 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     //Optionally set the look and feel.
     private static boolean useSystemLookAndFeel = true;
 
-	private String networkdir = "/Users/niels/git/darjeeling/src/config/native-dollhouse/dollhouse/";
+	private String networkdir;
 
     private SensorTreeNode selectedSensorTreeNode = null;
 
-    public WKNetworkUI() {
+    public WKNetworkUI(String networkdir) {
         super(new GridLayout(1,0));
+
+        File f = new File(networkdir);
+        if (!f.isDirectory()) {
+            System.err.println(networkdir + " not found or not a directory.");
+            System.exit(1);
+        }
+        this.networkdir = networkdir;
 
         // Watch node directories for changes
         directorywatcher = new DirectoryWatcher(networkdir);
@@ -172,11 +179,8 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         int client = Integer.parseInt(subdirname.substring(5));
         DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
         for (int i=0; i<root.getChildCount(); i++) {
-            System.err.println("hallo 3");
-
             if (root.getChildAt(i) instanceof DeviceTreeNode) {
                 DeviceTreeNode device = (DeviceTreeNode)root.getChildAt(i);
-                System.err.println("hallo " + device);
                 if (device.getClientId() == client) {
                     root.remove(device);
                     rootNodeStructureChanged();
@@ -231,7 +235,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
      * this method should be invoked from the
      * event dispatch thread.
      */
-    private static void createAndShowGUI() {
+    private static void createAndShowGUI(String networkdir) {
         if (useSystemLookAndFeel) {
             try {
                 UIManager.setLookAndFeel(
@@ -246,19 +250,22 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //Add content to the window.
-        frame.add(new WKNetworkUI());
+        frame.add(new WKNetworkUI(networkdir));
 
         //Display the window.
         frame.pack();
         frame.setVisible(true);
     }
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         //Schedule a job for the event dispatch thread:
         //creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                createAndShowGUI();
+                if (args.length > 0)
+                    createAndShowGUI(args[0]);
+                else
+                    createAndShowGUI("/Users/niels/git/darjeeling/src/config/native-dollhouse/dollhouse/");
             }
         });
     }

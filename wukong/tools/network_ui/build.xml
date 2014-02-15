@@ -1,13 +1,14 @@
-<project name="WKNetworkUI" default="build">
+<project name="WKNetworkUI" default="jar">
 	<path id="classpath">
 		<pathelement path="${java.class.path}"/>
 		<fileset dir=".">
-			<include name="*.jar" />
+			<include name="jpathwatch-0-95.jar" />
 		</fileset>
 	</path>
 
     <target name="clean">
         <delete dir="build"/>
+        <delete file="network_ui.jar"/>
     </target>
 
     <target name="build">
@@ -19,18 +20,17 @@
     </target>
 
 	<target name="jar" depends="build">
-        <mkdir dir="build/jar"/>
-        <jar destfile="build/jar/network_ui.jar" basedir="build/classes">
+        <jar destfile="network_ui.jar" basedir="build/classes">
             <manifest>
                 <attribute name="Main-Class" value="WKNetworkUI"/>
             </manifest>
-            <zipgroupfileset dir="." includes="*.jar" />
+            <zipgroupfileset dir="." includes="jpathwatch-0-95.jar" />
         </jar>
     </target>
 
     <target name="run" depends="jar">
         <java dir="."
-        	  jar="build/jar/network_ui.jar"
+        	  jar="network_ui.jar"
         	  fork="true"/>
     </target>
 </project>
