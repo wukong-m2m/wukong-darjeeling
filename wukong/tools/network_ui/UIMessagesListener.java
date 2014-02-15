@@ -141,7 +141,7 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 			if (root.getChildAt(i) instanceof DeviceTreeNode) {
 				DeviceTreeNode device = (DeviceTreeNode)root.getChildAt(i);
 				if (device.getClientId() == client)
-                	this.treemodel.nodeChanged(device);
+					this.treemodel.nodeChanged(device);
 			}
 		}
 	}

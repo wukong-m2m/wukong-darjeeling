@@ -103,7 +103,6 @@ public class DeviceTreeNode extends DefaultMutableTreeNode implements DirectoryW
     }
 
     private void removeIoPortTreeNode(String filename) {
-    	System.out.println("REMOVE " + filename);
     	if (this.ioPorts.containsKey(filename)) {
     		IOPortTreeNode port = this.ioPorts.get(filename);
     		this.remove(port);

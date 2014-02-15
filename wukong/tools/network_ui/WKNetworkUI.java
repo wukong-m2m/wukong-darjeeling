@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.*;
 import name.pachler.nio.file.*;
 
-public class WKNetworkUI extends JPanel implements TreeSelectionListener, ActionListener {
+public class WKNetworkUI extends JPanel implements TreeSelectionListener, ActionListener, DirectoryWatcherListener {
     private DirectoryWatcher directorywatcher;
     private NetworkServer networkServer;
 
@@ -36,17 +36,14 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         // Watch node directories for changes
         directorywatcher = new DirectoryWatcher(networkdir);
 
-        //Create the nodes.
+        //Create a tree that allows one selection at a time.
         DefaultMutableTreeNode top = new DefaultMutableTreeNode(networkdir);
         treemodel = new DefaultTreeModel(top);
-        createNodes(top);
-
-        //Create a tree that allows one selection at a time.
         tree = new JTree(treemodel);
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-		for (int i = 0; i < tree.getRowCount(); i++) {
-		    tree.expandRow(i);
-		}
+
+        //Create the nodes.
+        createNodes();
 
         //Set icons for sensors and actuators
         tree.setCellRenderer(new DefaultTreeCellRenderer() {
@@ -147,21 +144,86 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         }
     }
 
-    private void createNodes(DefaultMutableTreeNode top) {
+    private void rootNodeStructureChanged() {
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
+        this.treemodel.nodeStructureChanged(root);
+        // Expand everything (default is collapsed, how annoying.)
+        for (int i = 0; i < tree.getRowCount(); i++) {
+            tree.expandRow(i);
+        }
+    }
+
+    private void addDeviceTreeNode(String subdirname) {
+        File subdir = new File(networkdir, subdirname);
+        if (subdir.isDirectory()) {
+            DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
+            try {
+                DeviceTreeNode node = new DeviceTreeNode(this.networkdir, subdirname, this.directorywatcher, this.treemodel);
+                root.add(node);
+                rootNodeStructureChanged();
+            } catch (IOException e) {
+                System.err.println("Error reading " + subdirname);                    
+                System.err.println(e);
+            }
+        }
+    }
+
+    private void removeDeviceTreeNode(String subdirname) {
+        int client = Integer.parseInt(subdirname.substring(5));
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
+        for (int i=0; i<root.getChildCount(); i++) {
+            System.err.println("hallo 3");
+
+            if (root.getChildAt(i) instanceof DeviceTreeNode) {
+                DeviceTreeNode device = (DeviceTreeNode)root.getChildAt(i);
+                System.err.println("hallo " + device);
+                if (device.getClientId() == client) {
+                    root.remove(device);
+                    rootNodeStructureChanged();
+                }
+            }
+        }
+    }
+
+    // Methods to scan the file system for nodes
+    // Should probably be moved to a separate class (subclass of DefaultTreeModel? still not sure about how to properly do a tree in Java)
+    public void directoryChanged(WatchKey signalledKey) {
+        // get list of events from key
+        java.util.List<WatchEvent<?>> list = signalledKey.pollEvents();
+
+        // VERY IMPORTANT! call reset() AFTER pollEvents() to allow the
+        // key to be reported again by the watch service
+        signalledKey.reset();
+
+        // we'll simply print what has happened; real applications
+        // will do something more sensible here
+        for(WatchEvent e : list){
+            if(e.kind() == StandardWatchEventKind.ENTRY_CREATE){
+                Path context = (Path)e.context();
+                String filename = context.toString();
+                if (filename.startsWith("node_"))
+                    this.addDeviceTreeNode(filename);
+            } else if(e.kind() == StandardWatchEventKind.ENTRY_DELETE){
+                Path context = (Path)e.context();
+                String filename = context.toString();
+                if (filename.startsWith("node_"))
+                    this.removeDeviceTreeNode(filename);
+            } else if(e.kind() == StandardWatchEventKind.OVERFLOW){
+                System.err.println("OVERFLOW: more changes happened than we could retreive");
+            }
+        }
+    }
+
+    private void createNodes() {
 		File folder = new File(this.networkdir);
 		File[] listOfFiles = folder.listFiles(); 
 		for (int i = 0; i < listOfFiles.length; i++) {
-			if (listOfFiles[i].isDirectory() && listOfFiles[i].getName().startsWith("node_")) {
-				String dirname = listOfFiles[i].getName();
-                try {
-    				DeviceTreeNode node = new DeviceTreeNode(this.networkdir, dirname, this.directorywatcher, this.treemodel);
-    			    top.add(node);
-                } catch (IOException e) {
-                    System.err.println("Error reading " + dirname);                    
-                    System.err.println(e);
-                }
+			if (listOfFiles[i].getName().startsWith("node_")) {
+                addDeviceTreeNode(listOfFiles[i].getName());
 			}
 		}
+        directorywatcher.watchDirectory(this.networkdir, this);
+        rootNodeStructureChanged();
     }
         
     /**
