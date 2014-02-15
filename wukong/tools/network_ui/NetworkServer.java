@@ -26,6 +26,10 @@ public class NetworkServer extends Thread
 		s.run();
 	}
 
+	public Set<Integer> getConnectedClients() {
+		return NetworkServer.clients.keySet();
+	}
+
 	private static class StandardOutputListener implements NetworkServerMessagesListener {
 		public void messageDropped(int src, int dest, int[] message){
 			System.out.print("Dropped message from " + src + " to " + dest + ", length " + message.length);

@@ -26,6 +26,11 @@ public class DeviceTreeNode extends DefaultMutableTreeNode implements DirectoryW
 		return name;
 	}
 
+	public int getClientId() {
+		// Assuming nodes are named "node_X"
+		return Integer.parseInt(name.substring(5));
+	}
+
     public void directoryChanged(WatchKey signalledKey) {
         // get list of events from key
         java.util.List<WatchEvent<?>> list = signalledKey.pollEvents();

@@ -7,10 +7,15 @@ import java.net.URL;
 import java.io.*;
 import java.util.*;
 
-public class UIMessagesLog implements NetworkServerMessagesListener {
+public class UIMessagesListener implements NetworkServerMessagesListener {
 	TextArea textArea;
-	public UIMessagesLog (TextArea textArea) {
+	JTree tree;
+	DefaultTreeModel treemodel;
+
+	public UIMessagesListener (TextArea textArea, JTree tree, DefaultTreeModel treemodel) {
 		this.textArea = textArea;
+		this.tree = tree;
+		this.treemodel = treemodel;
 	}
 
 	public void print(String msg) {
@@ -19,7 +24,6 @@ public class UIMessagesLog implements NetworkServerMessagesListener {
 	public void println(String msg) {
 		this.textArea.append(msg + "\n");
 	}
-
 
 	public String parseMessage(int[] message) {
 		/*
@@ -131,10 +135,24 @@ public class UIMessagesLog implements NetworkServerMessagesListener {
 		}
 		this.println("");
 	}
+
+	public void updateClientInTree(int client) {
+		DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
+		for (int i=0; i<root.getChildCount(); i++) {
+			if (root.getChildAt(i) instanceof DeviceTreeNode) {
+				DeviceTreeNode device = (DeviceTreeNode)root.getChildAt(i);
+				if (device.getClientId() == client)
+                	this.treemodel.nodeChanged(device);
+			}
+		}
+	}
+
 	public void clientConnected(int client){
 		this.println("Node " + client + " connected.");
+		updateClientInTree(client);
 	}
 	public void clientDisconnected(int client){
 		this.println("Node " + client + " disconnected.");
+		updateClientInTree(client);
 	}
 }

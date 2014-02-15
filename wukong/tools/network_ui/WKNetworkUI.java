@@ -9,11 +9,14 @@ import java.util.*;
 import name.pachler.nio.file.*;
 
 public class WKNetworkUI extends JPanel implements TreeSelectionListener, ActionListener {
+    private DirectoryWatcher directorywatcher;
+    private NetworkServer networkServer;
+
+    // UI
     private JPanel sensorPanel;
     private JTextField sensorTextField;
     private JTree tree;
     private DefaultTreeModel treemodel;
-    private DirectoryWatcher directorywatcher;
 
     //Optionally play with line styles.  Possible values are
     //"Angled" (the default), "Horizontal", and "None".
@@ -49,6 +52,8 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         tree.setCellRenderer(new DefaultTreeCellRenderer() {
             private Icon sensorIcon = UIManager.getIcon("InternalFrame.maximizeIcon");
             private Icon actuatorIcon = UIManager.getIcon("InternalFrame.closeIcon");
+            private Icon connectedDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.maximizeIcon");
+            private Icon disconnectedDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.closeIcon");
             @Override
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean isLeaf, int row, boolean focused) {
                 Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, isLeaf, row, focused);
@@ -57,6 +62,13 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                     setIcon(sensorIcon);
                 else if (value instanceof ActuatorTreeNode)
                     setIcon(actuatorIcon);
+                else if (value instanceof DeviceTreeNode) {
+                    int clientId = ((DeviceTreeNode)value).getClientId();
+                    if (networkServer != null && networkServer.getConnectedClients().contains(clientId))
+                        setIcon(connectedDeviceTreeNodeIcon);
+                    else
+                        setIcon(disconnectedDeviceTreeNodeIcon);
+                }
                 return c;
             }
         });
@@ -94,8 +106,8 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         mainPane.setBottomComponent(textArea);
 
         // Start the network server
-        NetworkServer networkServer = new NetworkServer();
-        networkServer.setMessagesListener(new UIMessagesLog(textArea));
+        networkServer = new NetworkServer();
+        networkServer.setMessagesListener(new UIMessagesListener(textArea, tree, treemodel));
         networkServer.start();
 
         //Add the split pane to this panel.
