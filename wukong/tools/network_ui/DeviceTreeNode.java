@@ -19,11 +19,11 @@ public class DeviceTreeNode extends DefaultMutableTreeNode implements DirectoryW
 		this.ioPorts = new HashMap<String, IOPortTreeNode>();
 		this.treemodel = treemodel;
 		directorywatcher.watchDirectory(this.directory, this);
-		this.update_info();
+		this.init();
 	}
 
 	public String toString() {
-		return name;
+		return name + " (" + this.location + ")";
 	}
 
 	public int getClientId() {
@@ -50,7 +50,9 @@ public class DeviceTreeNode extends DefaultMutableTreeNode implements DirectoryW
                 Path context = (Path)e.context();
                 String filename = context.toString();
                 message = filename + " modified";
-                if (this.ioPorts.containsKey(filename)) {
+                if (filename.equals("config.txt")) {
+                	this.update_info();
+                } else if (this.ioPorts.containsKey(filename)) {
                 	this.ioPorts.get(filename).update_info();
                 	this.treemodel.nodeChanged(this.ioPorts.get(filename));
                 }
@@ -62,7 +64,31 @@ public class DeviceTreeNode extends DefaultMutableTreeNode implements DirectoryW
         }
     }
 
-	private void update_info() throws java.io.IOException {
+    private void update_info() {
+    	File configfile = new File(this.directory, "config.txt");
+    	if (configfile.isFile()) {
+			try {
+				BufferedReader br = new BufferedReader(new FileReader(configfile));
+
+				String config_line;
+				while ((config_line = br.readLine()) != null) {
+					if (config_line.equals("Location (in raw bytes on the next line):")) {
+						int location_length = br.read();
+						config_line = br.readLine();
+						this.location = config_line.substring(0, location_length);
+						break;
+					}
+				}
+				br.close();
+			} catch (IOException e) {
+				this.location = "UNKNOWN";
+				System.out.println(e);
+			}
+    	}
+    	this.treemodel.nodeChanged(this);
+    }
+
+	private void init() throws java.io.IOException {
 		File folder = new File(this.directory);
 		File[] listOfFiles = folder.listFiles(); 
 
@@ -80,26 +106,8 @@ public class DeviceTreeNode extends DefaultMutableTreeNode implements DirectoryW
 					this.add(ioPortTreeNode);
 					this.ioPorts.put(filename, ioPortTreeNode);
 				}
-				if (filename.equals("config.txt")) {
-					try {
-						BufferedReader br = new BufferedReader(new FileReader(new File(directory, filename)));
-
-						String config_line;
-						while ((config_line = br.readLine()) != null) {
-							if (config_line.equals("Location (in raw bytes on the next line):")) {
-								int location_length = br.read();
-								config_line = br.readLine();
-								this.location = config_line.substring(0, location_length);
-								break;
-							}
-						}
-						br.close();
-					} catch (IOException e) {
-						this.location = "UNKNOWN";
-						System.out.println(e);
-					}
-				}
 			}
 		}
+		this.update_info();
 	}
 }

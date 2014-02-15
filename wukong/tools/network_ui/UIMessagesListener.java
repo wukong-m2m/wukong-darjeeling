@@ -123,7 +123,6 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 		return command_name;
 	}
 
-
 	public void messageDropped(int src, int dest, int[] message){
 		this.print("Dropped message from " + src + " to " + dest + ", length " + message.length);
 	}
