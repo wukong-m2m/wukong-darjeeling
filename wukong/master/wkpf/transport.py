@@ -13,7 +13,10 @@ import wusignal
 import time
 from configuration import *
 from globals import *
-from array import array
+
+from gevent.server import DatagramServer
+from gevent import socket
+
 
 import pynvc # for message constants
 import pyzwave
@@ -94,8 +97,8 @@ class TransportAgent:
         gevent.spawn(self.receive)
 
     def getNextSequenceNumberAsPrefixPayload(self):
-      self._seq = (self._seq + 1) % (2**16)
-      return [self._seq/256, self._seq%256]
+        self._seq = (self._seq + 1) % (2**16)
+        return [self._seq/256, self._seq%256]
 
     # to be overridden, non-blocking, send defer to greelet thread
     def deferSend(self, destination, command, payload, allowed_replies, cb):
@@ -346,6 +349,264 @@ class ZwaveAgent(TransportAgent):
 
             gevent.sleep(0)
 
+class IPAgent(TransportAgent):
+    LID_REQ = 0x01
+    LID_REP = 0x02
+    _ip_agent = None
+    @classmethod
+    def init(cls):
+        if not cls._ip_agent:
+            cls._ip_agent = IPAgent()
+        return cls._ip_agent
+
+    class UDPServer(DatagramServer):
+        def __init__(self, *args, **kwargs):
+            DatagramServer.__init__(self, *args, **kwargs)
+            self._messages = Queue()
+            self._lidtoaddr = {1:"127.0.0.1:9000"}
+            self._addrtolid = {"127.0.0.1:9000":1}
+            gevent.spawn(self.serve_forever)
+
+        def receive_messages(self):
+            return self._messages.get()
+
+        def send_message(self, lid, message):
+            address = self.find_address(lid).split(":")
+            address[1] = int(address[1])
+            address = tuple(address)
+
+            sock = socket.socket(type=socket.SOCK_DGRAM)
+            #sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                sock.sendto(message, address)
+                print "[IPAgent] send message %s to %s" % (message, address)
+                received, address = sock.recvfrom(4096)
+            except Exception as e:
+                print e
+            finally:
+                sock.close()
+
+        def handle(self, data, address):
+            print '[IPAgent] from addr %s port %s: got %r' % (address[0], address[1], data)
+            straddr = "%d.%d.%d.%d:%d" % tuple([ord(c) for c in data[1:5]]+[(ord(data[5])<<8)+(ord(data[6])&0xff)])
+            print straddr
+            if ord(data[0]) == IPAgent.LID_REQ:
+                lid = self.find_lid(straddr)
+                if lid == None: lid = self.allocate_lid(straddr)
+                self.socket.sendto(bytearray([IPAgent.LID_REP, (lid>>8)&0xff, lid&0xff]), address)
+            else:
+                lid = self.find_lid("%s:%s" % (address[0], address[1]))
+                self._messages.put((lid, data))
+
+        def find_lid(self, address):
+            if address in self._addrtolid:
+                return self._addrtolid[address]
+            else:
+                return None
+
+        def find_address(self, lid):
+            if lid in self._lidtoaddr:
+                return self._lidtoaddr[lid]
+            else:
+                return None            
+
+        def allocate_lid(self, address):
+            for key in xrange(2, 256):
+                if key not in self._lidtoaddr:
+                    self._lidtoaddr[key] = address
+                    self._addrtolid[address] = key
+                    return key
+            assert False, "[IPAgent] Not enough lids"
+
+        def discover(self):
+            lids = self._lidtoaddr.keys()
+            return [1, len(lids)] + lids
+
+    def __init__(self):
+        self._mode = 'stop'
+        self._server = self.UDPServer(':%d' % 9000)
+        TransportAgent.__init__(self)
+
+    # add a defer to queue
+    def deferSend(self, destination, command, payload, allowed_replies, cb, error_cb):
+        def callback(reply):
+            cb(reply)
+
+        def error_callback(reply):
+            error_cb(reply)
+
+        defer = new_defer(callback, 
+                error_callback,
+                self.verify(allowed_replies), 
+                allowed_replies, 
+                new_message(destination, command, self.getNextSequenceNumberAsPrefixPayload() + payload), int(round(time.time() * 1000)) + 10000)
+        tasks.put_nowait(defer)
+        return defer
+
+    def send(self, destination, command, payload, allowed_replies):
+        result = AsyncResult()
+
+        def callback(reply):
+            result.set(reply)
+
+        def error_callback(reply):
+            result.set(reply)
+
+
+        defer = new_defer(callback, 
+                error_callback,
+                self.verify(allowed_replies), 
+                allowed_replies, 
+                new_message(destination, command, self.getNextSequenceNumberAsPrefixPayload() + payload), int(round(time.time() * 1000)) + 10000)
+        tasks.put_nowait(defer)
+
+        message = result.get() # blocking
+
+        # received ack from Agent
+        return message
+
+    def getDeviceType(self,node):
+        return (None, 0xff, None)
+
+    def routing(self):
+
+        result = AsyncResult()
+
+        def callback(reply):
+            result.set(reply)
+
+        defer = new_defer(callback,
+                callback,
+                None,
+                None,
+                new_message(1, "routing", 0),
+                0)
+        tasks.put_nowait(defer)
+
+        return result.get()
+
+    def discovery(self):
+
+        result = AsyncResult()
+
+        def callback(reply):
+            result.set(reply)
+
+        defer = new_defer(callback,
+                callback,
+                None, 
+                None, 
+                new_message(1, "discovery", 0),
+                0)
+        tasks.put_nowait(defer)
+
+        nodes = result.get() # blocking
+        return nodes
+
+    def add(self):
+        if self._mode != 'stop':
+            return False
+
+        try:
+            self._mode = 'add'
+            GIDService.init().setMode(self._mode)
+            return True
+        except:
+            return False
+
+    def delete(self):
+        if self._mode != 'stop':
+            return False
+
+        try:
+            self._mode = 'delete'
+            print "Not Available"
+            #GIDService.init().setMode(self._mode)
+            return True
+        except:
+            return False
+
+    def stop(self):
+        try:
+            self._mode = 'stop'
+            GIDService.init().setMode(self._mode)
+            return True
+        except:
+            return False
+
+    def poll(self):
+        return "Not availble"
+
+    def receive(self, timeout_msec=100):
+        while 1:
+            try:
+                src, reply = self._server.receive_messages()
+                if src and reply:
+                    print "receive: Got message", src, reply
+                    # with seq number
+                    deliver = new_deliver(src, reply[0], reply[1:])
+                    messages.put_nowait(deliver)
+                    print '[transport] receive: put a message to messages'
+            except:
+                print '[transport] receive exception'
+
+            getDeferredQueue().removeTimeoutDefer()
+
+            #logger.debug('receive: going to sleep')
+            gevent.sleep(0.01) # sleep for at least 10 msec
+
+
+    # to be run in a thread, and others will use ioloop to monitor this thread
+    def handler(self):
+        while 1:
+            defer = tasks.get()
+            #print 'handler: getting defer from task queue'
+
+            if defer.message.command == "discovery":
+                #print 'handler: processing discovery request'
+                print "IP discovery"
+                nodes = self._server.discover()
+                gateway_id = nodes[0]
+                total_nodes = nodes[1]
+                # remaining are the discovered nodes
+                discovered_nodes = nodes[2:]
+                try:
+                    discovered_nodes.remove(gateway_id)
+                except ValueError:
+                    pass # sometimes gateway_id is not in the list
+                print nodes
+                defer.callback(discovered_nodes)
+            elif defer.message.command == "routing":
+                defer.callback({})
+            else:
+                #print 'handler: processing send request'
+                retries = 1
+                destination = defer.message.destination
+                command = defer.message.command
+                payload = defer.message.payload
+
+                # prevent pyzwave send got preempted and defer is not in queue
+                if len(defer.allowed_replies) > 0:
+                    print "[transport] handler: appending defer", defer, "to queue"
+                    getAgent().append(defer)
+
+                while retries > 0:
+                    try:
+                        #print "handler: sending message from defer"
+                        self._server.send_message(destination, bytearray([command] + payload))
+
+                        break
+                    except Exception as e:
+                        log = "==IOError== retries remaining: " + str(retries)
+                        print '[transport] ' + log
+                    retries -= 1
+
+                if retries == 0 or len(defer.allowed_replies) == 0:
+                    print "[transport] handler: returns immediately to handle failues, or defer has no expected replies"
+                    defer.callback(None)
+
+            gevent.sleep(0)
+
 # Mock agent behavior, will only provide fixed responses and will not contact any external devices
 # So no receive, and no call to any c library, no calls to broker, etc
 class MockAgent(TransportAgent):
@@ -524,9 +785,19 @@ class GIDService:
         self.avail_bitset = None
         self.loadAvailableGIDs()
         self.reserve_list = []
+        self.ready = False
         print 'GIDService: init [OK]'
 
+    def setMode(self, mode):
+        if mode == 'add':
+            self.ready = True
+        else:
+            self.ready = False
+
     def handleGIDPacket(self, packet):
+        if not self.ready:
+            return
+
         master_busy()
         payload = None
         client_lid = None
@@ -680,6 +951,9 @@ def getMockAgent():
 
 def getZwaveAgent():
     return ZwaveAgent.init()
+
+def getIPAgent():
+    return IPAgent.init()
 
 def getDeferredQueue():
     return DeferredQueue.init()

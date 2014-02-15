@@ -30,8 +30,10 @@ class Communication:
       try:
         if SIMULATION == "true":
           raise KeyboardInterrupt
-        self.zwave = getZwaveAgent()
-      except:
+        self.zwave = getZwaveAgent()#getRPCAgent()
+      except Exception as e:
+        print "Exception while creating agent"
+        print e
         is_not_connected()
         self.zwave = getMockAgent()
         if SIMULATION == "true":
