@@ -31,6 +31,7 @@
     <target name="run" depends="jar">
         <java dir="."
         	  jar="network_ui.jar"
-        	  fork="true"/>
+        	  fork="true"
+              args="-m ../../master"/>
     </target>
 </project>

@@ -6,9 +6,12 @@ import java.awt.event.*;
 import java.net.URL;
 import java.io.*;
 import java.util.*;
+import java.lang.Runtime;
 import name.pachler.nio.file.*;
 
 public class WKNetworkUI extends JPanel implements TreeSelectionListener, ActionListener, DirectoryWatcherListener, NetworkServerMessagesListener {
+    private static HashMap<Process, String> childProcesses;
+
     private DirectoryWatcher directorywatcher;
     private NetworkServer networkServer;
 
@@ -322,15 +325,76 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         frame.setVisible(true);
     }
 
+    public static void forkChildProcess(final String name, final String command, final String directory) throws IOException {
+        final Process p = Runtime.getRuntime().exec(command, null, new File(directory));
+        WKNetworkUI.childProcesses.put(p, name);
+
+        // Start a thread to monitor output
+        Thread t = new Thread() {
+            public void run() {
+                System.out.println("[" + name + "] CHILD PROCESS STARTED.");
+                BufferedReader in = new BufferedReader(  
+                                    new InputStreamReader(p.getInputStream()));  
+                String line = null;
+                try {
+                    while ((line = in.readLine()) != null) {  
+                        System.out.println("[" + name + "] " + line);
+                    }
+                    System.out.println("[" + name + "] CHILD PROCESS TERMINATED.");
+                } catch (IOException e) {
+                    System.err.println("Exception while reading output for child process " + name);
+                    System.err.println(e);
+                }
+            }
+        };
+        t.start();
+    }
+
+    public static void runMasterServer(String masterdir) {
+        try {
+            forkChildProcess("master server", "python master_server.py", masterdir);
+        } catch (IOException e) {
+            System.err.println("Can't start master server");
+            System.err.println(e);
+            System.exit(1);
+        }
+    }
+
     public static void main(final String[] args) {
+        WKNetworkUI.childProcesses = new HashMap<Process, String>();
+
+        // Add a hook to kill all child processes
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                public void run() {
+                    for (Process p : WKNetworkUI.childProcesses.keySet()) {
+                        System.out.println("[" + WKNetworkUI.childProcesses.get(p) + "] CHILD PROCESS TERMINATED.");
+                        p.destroy();
+                    }
+                }
+            }, "Shutdown-thread"));
+
         //Schedule a job for the event dispatch thread:
         //creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (args.length > 0)
-                    createAndShowGUI(args[0]);
-                else
-                    createAndShowGUI("/Users/niels/git/darjeeling/src/config/native-dollhouse/dollhouse/");
+                String networkdir = "/Users/niels/git/darjeeling/src/config/native-dollhouse/dollhouse/";
+                boolean startMaster = false;
+                String masterdir = "../../master";
+
+                for (int i=0; i<args.length; i++) {
+                    if (args[i].equals("-d")) {
+                        networkdir = args[i+1];
+                        i++; // skip network dir
+                    } else if (args[i].equals("-m")) {
+                        startMaster = true;
+                        masterdir = args[i+1];
+                        i++; // skip master dir
+                    }
+                }
+
+                createAndShowGUI(networkdir);
+                if (startMaster)
+                    runMasterServer(masterdir);
             }
         });
     }
