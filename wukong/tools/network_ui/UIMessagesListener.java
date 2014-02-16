@@ -89,8 +89,6 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 				break;
 			case 0x14:
 				command_name = "WKREPROG_COMMIT";
-					sb.append(" ===" + payload[0] + "=== ");
-					sb.append(" ===" + payload[1] + "=== ");
 					sb.append("commit reprogramming of " + (payload[1]*256+payload[0]) + " bytes");
 				break;
 			case 0x15:
