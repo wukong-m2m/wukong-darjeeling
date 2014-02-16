@@ -11,9 +11,9 @@ import name.pachler.nio.file.*;
 
 public class WKNetworkUI extends JPanel implements TreeSelectionListener, ActionListener, DirectoryWatcherListener, NetworkServerMessagesListener {
     private static HashMap<Process, String> childProcesses;
+    private static NetworkServer networkServer;
 
     private DirectoryWatcher directorywatcher;
-    private NetworkServer networkServer;
 
     // UI
     private JPanel sensorPanel;
@@ -115,10 +115,8 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         mainPane.setBottomComponent(textArea);
 
         // Start the network server
-        networkServer = new NetworkServer();
-        networkServer.addMessagesListener(new UIMessagesListener(textArea, tree, treemodel));
-        networkServer.addMessagesListener(this);
-        networkServer.start();
+        WKNetworkUI.networkServer.addMessagesListener(new UIMessagesListener(textArea, tree, treemodel));
+        WKNetworkUI.networkServer.addMessagesListener(this);
 
         //Add the split pane to this panel.
         add(mainPane);
@@ -326,6 +324,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     }
 
     public static void forkChildProcess(final String name, final String command, final String directory) throws IOException {
+        System.out.println("[" + name + "] starting " + command);
         final Process p = Runtime.getRuntime().exec(command, null, new File(directory));
         WKNetworkUI.childProcesses.put(p, name);
 
@@ -364,7 +363,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
             String commandline = String.format("./darjeeling.elf -i %d -d %s -e %s",
                                                 vm.clientId,
                                                 networkdir,
-                                                vm.enabledWuClassesXML.getPath());
+                                                vm.enabledWuClassesXML.getAbsolutePath());
             try {
                 forkChildProcess("vm " + vm.clientId, commandline, vmdir);
             } catch (IOException e) {
@@ -419,6 +418,8 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                     System.exit(1);
                 }
 
+                WKNetworkUI.networkServer = new NetworkServer();
+                WKNetworkUI.networkServer.start();
                 createAndShowGUI(networkdir);
                 if (masterdir != null)
                     runMasterServer(masterdir);

@@ -32,6 +32,6 @@
         <java dir="."
         	  jar="network_ui.jar"
         	  fork="true"
-              args="-c ../../../src/config/native-dollhouse/dollhouse/networkconfig.xml"/>
+              args="-c ../../simulator_scenarios/dollhouse/networkconfig.xml"/>
     </target>
 </project>
