@@ -147,14 +147,28 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 				break;
 			case 0x94:
 				command_name = "WKPF_READ_PROPERTY";
+				sb.append("port:" + payload[0]);
+				sb.append(" property:" + payload[3]);
+				sb.append(" wuclass:" + (payload[1]*256+payload[2]));
 				break;
 			case 0x95:
 				command_name = "WKPF_READ_PROPERTY_R";
+				sb.append("port:" + payload[0]);
+				sb.append(" property:" + payload[3]);
+				sb.append(" wuclass:" + (payload[1]*256+payload[2]));
+				sb.append(" type:" + propertyTypeToString(payload[4]));
+				sb.append(" status:" + String.format("%02X ", payload[5]));
+				if (payload[4]==WKPF_PROPERTY_TYPE_SHORT || payload[4]==WKPF_PROPERTY_TYPE_REFRESH_RATE) {
+					sb.append(" value:" + payload[6]*256 + payload[7]);
+				} else {
+					sb.append(" value:" + payload[6]);
+				}
 				break;
 			case 0x96:
 				command_name = "WKPF_WRITE_PROPERTY";
 				sb.append("port:" + payload[0]);
-				sb.append(" property: " + payload[3]);
+				sb.append(" property:" + payload[3]);
+				sb.append(" wuclass:" + (payload[1]*256+payload[2]));
 				sb.append(" type:" + propertyTypeToString(payload[4]));
 				if (payload[4]==WKPF_PROPERTY_TYPE_SHORT || payload[4]==WKPF_PROPERTY_TYPE_REFRESH_RATE) {
 					sb.append(" value:" + payload[5]*256 + payload[6]);
@@ -168,9 +182,12 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 				break;
 			case 0x98:
 				command_name = "WKPF_REQUEST_PROPERTY_INIT";
+				sb.append("port:" + payload[0]);
+				sb.append(" property:" + payload[1]);
 				break;
 			case 0x99:
 				command_name = "WKPF_REQUEST_PROPERTY_INIT_R";
+				sb.append("OK");
 				break;
 			case 0x9A:
 				command_name = "WKPF_GET_LOCATION";
@@ -191,18 +208,6 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 			case 0x9D:
 				command_name = "WKPF_SET_LOCATION_R";
 				sb.append("OK");
-				break;
-			case 0x9E:
-				command_name = "WKPF_GET_FEATURES";
-				break;
-			case 0x9F:
-				command_name = "WKPF_GET_FEATURES_R";
-				break;
-			case 0xA0:
-				command_name = "WKPF_SET_FEATURE";
-				break;
-			case 0xA1:
-				command_name = "WKPF_SET_FEATURE_R";
 				break;
 			case 0xAF:
 				command_name = "WKPF_ERROR_R";
