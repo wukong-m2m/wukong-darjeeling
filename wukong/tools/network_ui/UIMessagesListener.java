@@ -238,23 +238,11 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 		this.println("Msg from " + src + " to " + dest + ": " + parsedCommand);
 	}
 
-	public void updateClientInTree(int client) {
-		DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
-		for (int i=0; i<root.getChildCount(); i++) {
-			if (root.getChildAt(i) instanceof DeviceTreeNode) {
-				DeviceTreeNode device = (DeviceTreeNode)root.getChildAt(i);
-				if (device.getClientId() == client)
-					this.treemodel.nodeChanged(device);
-			}
-		}
-	}
-
 	public void clientConnected(int client){
 		this.println("Node " + client + " connected.");
-		updateClientInTree(client);
 	}
+
 	public void clientDisconnected(int client){
 		this.println("Node " + client + " disconnected.");
-		updateClientInTree(client);
 	}
 }

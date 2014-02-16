@@ -7,7 +7,7 @@ public class ExternalDeviceTreeNode extends DeviceTreeNode {
 	}
 
 	public String toString() {
-		return "node_" + clientId;
+		return "External node " + clientId;
 	}
 
 	public int getClientId() {

@@ -158,8 +158,37 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     /** Required by NetworkServerMessagesListener interface */
     public void messageDropped(int src, int dest, int[] message) {}
     public void messageSent(int src, int dest, int[] message) {}
-    public void clientConnected(int client) {}
-    public void clientDisconnected(int client) {}
+
+    public void clientConnected(int client) {
+        // Search for existing client
+        DeviceTreeNode device = findDeviceTreeNode(client);
+        if (device != null) {
+            // Found: it must be a simulated node that wasn't connected to the simulator before.
+            // Just update it to change the icon.
+            this.treemodel.nodeChanged(device);
+        } else {
+            // Not found, could be an external (not simulated) node connecting.
+            // Or it could be a node without a directory because it hasn't been created yet.
+            // We'll add it as an external device for now, and replace the node if a directory appears later.
+            addExternalDeviceTreeNode(client);
+        }
+    }
+
+    public void clientDisconnected(int client) {
+        DeviceTreeNode device = findDeviceTreeNode(client);
+        if (device != null) {
+            if (device instanceof SimulatedDeviceTreeNode) {
+                // Simulated node disconnected. Update the icon.
+                this.treemodel.nodeChanged(device);
+            } else {
+                // External device disconnected. Remove it from the tree.
+                removeDeviceTreeNode(client);
+            }
+        }
+    }
+
+    public void updateClientInTree(int client) {
+    }
 
     private void rootNodeStructureChanged() {
         DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
@@ -170,7 +199,14 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         }
     }
 
-    private void addDeviceTreeNode(String subdirname) {
+    private void addExternalDeviceTreeNode(int clientId) {
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
+        DeviceTreeNode node = new ExternalDeviceTreeNode(clientId);
+        root.add(node);
+        rootNodeStructureChanged();
+    }
+
+    private void addSimulatedDeviceTreeNode(String subdirname) {
         File subdir = new File(networkdir, subdirname);
         if (subdir.isDirectory()) {
             DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
@@ -185,18 +221,26 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         }
     }
 
-    private void removeDeviceTreeNode(String subdirname) {
-        int client = Integer.parseInt(subdirname.substring(5));
+    private void removeDeviceTreeNode(int clientId) {
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
+        DeviceTreeNode device = findDeviceTreeNode(clientId);
+        if (device != null) {
+            root.remove(device);
+            rootNodeStructureChanged();
+        }
+    }
+
+    private DeviceTreeNode findDeviceTreeNode(int clientId) {
         DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
         for (int i=0; i<root.getChildCount(); i++) {
             if (root.getChildAt(i) instanceof DeviceTreeNode) {
                 DeviceTreeNode device = (DeviceTreeNode)root.getChildAt(i);
-                if (device.getClientId() == client) {
-                    root.remove(device);
-                    rootNodeStructureChanged();
+                if (device.getClientId() == clientId) {
+                    return device;
                 }
             }
         }
+        return null;
     }
 
     // Methods to scan the file system for nodes
@@ -215,13 +259,24 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
             if(e.kind() == StandardWatchEventKind.ENTRY_CREATE){
                 Path context = (Path)e.context();
                 String filename = context.toString();
-                if (filename.startsWith("node_"))
-                    this.addDeviceTreeNode(filename);
+                if (filename.startsWith("node_")) {
+                    int clientId = Integer.parseInt(filename.substring(5));
+                    DeviceTreeNode device = findDeviceTreeNode(clientId);
+                    if (device != null && device instanceof ExternalDeviceTreeNode) {
+                        // This may really have been a simulated node that hadn't created
+                        // its IO directory yet when the node connected to the simulator.
+                        // Remove the external device node and replace it with a simulated one.
+                        this.removeDeviceTreeNode(clientId);
+                    }
+                    this.addSimulatedDeviceTreeNode(filename);
+                }
             } else if(e.kind() == StandardWatchEventKind.ENTRY_DELETE){
                 Path context = (Path)e.context();
                 String filename = context.toString();
-                if (filename.startsWith("node_"))
-                    this.removeDeviceTreeNode(filename);
+                if (filename.startsWith("node_")) {
+                    int clientId = Integer.parseInt(filename.substring(5));
+                    this.removeDeviceTreeNode(clientId);
+                }
             } else if(e.kind() == StandardWatchEventKind.OVERFLOW){
                 System.err.println("OVERFLOW: more changes happened than we could retreive");
             }
@@ -233,7 +288,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
 		File[] listOfFiles = folder.listFiles(); 
 		for (int i = 0; i < listOfFiles.length; i++) {
 			if (listOfFiles[i].getName().startsWith("node_")) {
-                addDeviceTreeNode(listOfFiles[i].getName());
+                addSimulatedDeviceTreeNode(listOfFiles[i].getName());
 			}
 		}
         directorywatcher.watchDirectory(this.networkdir, this);
