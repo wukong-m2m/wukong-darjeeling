@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.*;
 import name.pachler.nio.file.*;
 
-public class WKNetworkUI extends JPanel implements TreeSelectionListener, ActionListener, DirectoryWatcherListener {
+public class WKNetworkUI extends JPanel implements TreeSelectionListener, ActionListener, DirectoryWatcherListener, NetworkServerMessagesListener {
     private DirectoryWatcher directorywatcher;
     private NetworkServer networkServer;
 
@@ -58,14 +58,17 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
             private Icon actuatorIcon = UIManager.getIcon("InternalFrame.closeIcon");
             private Icon connectedDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.maximizeIcon");
             private Icon disconnectedDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.closeIcon");
+            private Icon externalDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.minimizeIcon");
             @Override
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean isLeaf, int row, boolean focused) {
                 Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, isLeaf, row, focused);
-                if (value instanceof SensorTreeNode)
+                if (value instanceof SensorTreeNode) {
                     setIcon(sensorIcon);
-                else if (value instanceof ActuatorTreeNode)
+                } else if (value instanceof ActuatorTreeNode) {
                     setIcon(actuatorIcon);
-                else if (value instanceof DeviceTreeNode) {
+                } else if (value instanceof ExternalDeviceTreeNode) {
+                    setIcon(externalDeviceTreeNodeIcon);
+                } else if (value instanceof SimulatedDeviceTreeNode) {
                     int clientId = ((DeviceTreeNode)value).getClientId();
                     if (networkServer != null && networkServer.getConnectedClients().contains(clientId))
                         setIcon(connectedDeviceTreeNodeIcon);
@@ -110,7 +113,8 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
 
         // Start the network server
         networkServer = new NetworkServer();
-        networkServer.setMessagesListener(new UIMessagesListener(textArea, tree, treemodel));
+        networkServer.addMessagesListener(new UIMessagesListener(textArea, tree, treemodel));
+        networkServer.addMessagesListener(this);
         networkServer.start();
 
         //Add the split pane to this panel.
@@ -151,6 +155,12 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         }
     }
 
+    /** Required by NetworkServerMessagesListener interface */
+    public void messageDropped(int src, int dest, int[] message) {}
+    public void messageSent(int src, int dest, int[] message) {}
+    public void clientConnected(int client) {}
+    public void clientDisconnected(int client) {}
+
     private void rootNodeStructureChanged() {
         DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
         this.treemodel.nodeStructureChanged(root);
@@ -165,7 +175,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         if (subdir.isDirectory()) {
             DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
             try {
-                DeviceTreeNode node = new DeviceTreeNode(this.networkdir, subdirname, this.directorywatcher, this.treemodel);
+                DeviceTreeNode node = new SimulatedDeviceTreeNode(this.networkdir, subdirname, this.directorywatcher, this.treemodel);
                 root.add(node);
                 rootNodeStructureChanged();
             } catch (IOException e) {

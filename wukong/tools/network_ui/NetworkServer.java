@@ -14,7 +14,7 @@ public class NetworkServer extends Thread
 {
 	private static boolean serverContinue = true;
 	private static Map<Integer, NetworkServerClientHandler> clients;
-	private static NetworkServerMessagesListener listener;
+	private static List<NetworkServerMessagesListener> listeners;
 
 	private final int MODE_MESSAGE = 1;
 	private final int MODE_DISCOVERY = 2;
@@ -22,8 +22,33 @@ public class NetworkServer extends Thread
 	public static void main(String[] args) throws IOException 
 	{
 		NetworkServer s = new NetworkServer();
-		s.setMessagesListener(new StandardOutputListener());
+		s.addMessagesListener(new StandardOutputListener());
 		s.run();
+	}
+
+	public NetworkServer() {
+		this.listeners = new ArrayList<NetworkServerMessagesListener>();
+	}
+
+	public void addMessagesListener(NetworkServerMessagesListener listener) {
+		this.listeners.add(listener);
+	}
+
+	void fireMessageDropped(int src, int dest, int[] message) {
+		for (NetworkServerMessagesListener listener : this.listeners)
+			listener.messageDropped(src, dest, message);
+	}
+	void fireMessageSent(int src, int dest, int[] message) {
+		for (NetworkServerMessagesListener listener : this.listeners)
+			listener.messageSent(src, dest, message);
+	}
+	void fireClientConnected(int client) {
+		for (NetworkServerMessagesListener listener : this.listeners)
+			listener.clientConnected(client);
+	}
+	void fireClientDisconnected(int client) {
+		for (NetworkServerMessagesListener listener : this.listeners)
+			listener.clientDisconnected(client);
 	}
 
 	public Set<Integer> getConnectedClients() {
@@ -89,10 +114,6 @@ public class NetworkServer extends Thread
 		}
 	}
 
-	public void setMessagesListener(NetworkServerMessagesListener listener) {
-		this.listener = listener;
-	}
-
 	private class NetworkServerClientHandler extends Thread {
 		public Socket clientSocket;
 		public BufferedInputStream in;
@@ -143,8 +164,7 @@ public class NetworkServer extends Thread
 				System.err.println(e);
 			} 
 			finally {
-				if (NetworkServer.listener != null)
-					NetworkServer.listener.clientDisconnected(this.clientId);
+				fireClientDisconnected(this.clientId);
 				if (NetworkServer.clients.get(this.clientId) == this)
 					NetworkServer.clients.remove(this.clientId);			
 			}
@@ -156,8 +176,7 @@ public class NetworkServer extends Thread
 			if (this.clientId < 0)
 				throw new IOException("No ID received");
 			this.clientId += 256*in.read();
-			if (NetworkServer.listener != null)
-				NetworkServer.listener.clientConnected(this.clientId);
+			fireClientConnected(this.clientId);
 
 			if (NetworkServer.clients.get(this.clientId) != null)
 				NetworkServer.clients.get(this.clientId).keepRunning = false; // Kill old thread for client with same ID if it was still around
@@ -188,13 +207,11 @@ public class NetworkServer extends Thread
 
 					NetworkServerClientHandler destClient = NetworkServer.clients.get(destId);
 					if (destClient != null) {
-						if (NetworkServer.listener != null)
-							NetworkServer.listener.messageSent(this.clientId, destId, message);
+						fireMessageSent(this.clientId, destId, message);
 						destClient.sendMessage(message);
 					}
 					else {
-						if (NetworkServer.listener != null)
-							NetworkServer.listener.messageDropped(this.clientId, destId, message);
+						fireMessageDropped(this.clientId, destId, message);
 					}
 				}
 			}
