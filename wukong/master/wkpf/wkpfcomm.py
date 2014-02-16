@@ -468,7 +468,7 @@ class Communication:
 
       # Start the reprogramming process
       print "[wkpfcomm] Sending REPRG_OPEN command with image size ", len(bytecode)
-      reply = self.zwave.send(destination, pynvc.REPRG_DJ_OPEN, [len(bytecode) >> 8 & 0xFF, len(bytecode) & 0xFF], [pynvc.REPRG_DJ_OPEN_R])
+      reply = self.zwave.send(destination, pynvc.REPRG_DJ_OPEN, [len(bytecode) & 0xFF, len(bytecode) >> 8 & 0xFF], [pynvc.REPRG_DJ_OPEN_R])
 
       if reply == None:
         print "[wkpfcomm] No reply from node to REPRG_OPEN command"

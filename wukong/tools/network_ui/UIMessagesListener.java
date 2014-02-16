@@ -15,6 +15,10 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 	private final int WKPF_PROPERTY_TYPE_SHORT         = 0;
 	private final int WKPF_PROPERTY_TYPE_BOOLEAN       = 1;
 	private final int WKPF_PROPERTY_TYPE_REFRESH_RATE  = 2;
+	private final int WKREPROG_OK                      = 0;
+	private final int WKREPROG_REQUEST_RETRANSMIT      = 1;
+	private final int WKREPROG_TOOLARGE                = 2; // Not used yet
+	private final int WKREPROG_FAILED                  = 3; // Not used yet
 
 
 	public UIMessagesListener (TextArea textArea, JTree tree, DefaultTreeModel treemodel) {
@@ -59,21 +63,44 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 		switch(command) {
 			case 0x10:
 				command_name = "WKREPROG_OPEN";
+				sb.append("bytes to write:" + (payload[1]*256+payload[0]));
 				break;
 			case 0x11:
 				command_name = "WKREPROG_OPEN_R";
+				if (payload[0] == WKREPROG_OK) {
+					sb.append("OK pagesize:" + (payload[2]*256+payload[1]));
+				} else if (payload[0] == WKREPROG_TOOLARGE)
+					sb.append("TOO LARGE");
 				break;
 			case 0x12:
 				command_name = "WKREPROG_WRITE";
+				sb.append("offset:" + (payload[1]*256+payload[0]));
+				sb.append(" data:");
+				for (int i=2; i<payload.length; i++) {
+					sb.append(" [" + String.format("%02X ", payload[i]) + "]");
+				}
 				break;
 			case 0x13:
 				command_name = "WKREPROG_WRITE_R";
+				if (payload[0] == WKREPROG_OK)
+					sb.append("OK");
+				else if (payload[0] == WKREPROG_REQUEST_RETRANSMIT)
+					sb.append("REQUEST RETRANSMIT FROM OFFSET " + (payload[2]*256+payload[1])); // Now this is LE again... Need to clean up this mess.
 				break;
 			case 0x14:
 				command_name = "WKREPROG_COMMIT";
+					sb.append(" ===" + payload[0] + "=== ");
+					sb.append(" ===" + payload[1] + "=== ");
+					sb.append("commit reprogramming of " + (payload[1]*256+payload[0]) + " bytes");
 				break;
 			case 0x15:
 				command_name = "WKREPROG_COMMIT_R";
+				if (payload[0] == WKREPROG_OK)
+					sb.append("OK");
+				else if (payload[0] == WKREPROG_REQUEST_RETRANSMIT)
+					sb.append("REQUEST RETRANSMIT FROM OFFSET " + (payload[2]*256+payload[1])); // Now this is LE again... Need to clean up this mess.
+				else if (payload[0] == WKREPROG_FAILED)
+					sb.append("FAILED");
 				break;
 			case 0x16:
 				command_name = "WKREPROG_REBOOT";
@@ -84,13 +111,13 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 				break;
 			case 0x91:
 				command_name = "WKPF_GET_WUCLASS_LIST_R";
-				sb.append("message part:" + payload[0]+1);
+				sb.append("message part:" + (payload[0]+1)); // Add 1 because payload[0] is the message number, starting from 0, while payload[1] is the total number of messages.
 				sb.append(" of " + payload[1]);
 				sb.append(" total wuclasses:" + payload[2]);
 				sb.append(" wuclasses:");
 				for (int i = 3; i < payload.length; i+=3) {
 					sb.append("{id:");
-					sb.append(payload[i]*256 + payload[i+1]); // TODONR: change to little endian
+					sb.append((payload[i]*256 + payload[i+1])); // TODONR: change to little endian
 					sb.append(" canCreate:");
 					sb.append((payload[i+2] & 0x2) == 0 ? "False" : "True");
 					sb.append(" virtual:");
@@ -112,7 +139,7 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 					sb.append("{port:");
 					sb.append(payload[i]);
 					sb.append(" wuclass:");
-					sb.append(payload[i+2]+payload[i+1]*256); // TODONR: change to little endian
+					sb.append(payload[i+1]*256+payload[i+2]); // TODONR: change to little endian
 					sb.append(" virtual:");
 					sb.append((payload[i+3]) == 0 ? "False" : "True");
 					sb.append("} ");
@@ -195,7 +222,7 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 		this.print("DROPPED MESSAGE from " + src + " to " + dest + ", length " + message.length);
 	}
 	public void messageSent(int src, int dest, int[] message){
-		if (true) {
+		if (false) { // Useful for debugging
 			this.print("            ");
 			for (int i=0; i<message[0]; i++) {
 				this.print("[" + String.format("%02X ", message[i]) + "] ");
