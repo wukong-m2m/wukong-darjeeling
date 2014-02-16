@@ -333,8 +333,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         Thread t = new Thread() {
             public void run() {
                 System.out.println("[" + name + "] CHILD PROCESS STARTED.");
-                BufferedReader in = new BufferedReader(  
-                                    new InputStreamReader(p.getInputStream()));  
+                BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));  
                 String line = null;
                 try {
                     while ((line = in.readLine()) != null) {  
@@ -360,6 +359,22 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         }
     }
 
+    public static void runVMs(String vmdir, String networkdir, java.util.List<NetworkConfigParser.VMNode> vmsToStart) {
+        for(NetworkConfigParser.VMNode vm : vmsToStart) {
+            String commandline = String.format("./darjeeling.elf -i %d -d %s -e %s",
+                                                vm.clientId,
+                                                networkdir,
+                                                vm.enabledWuClassesXML.getPath());
+            try {
+                forkChildProcess("vm " + vm.clientId, commandline, vmdir);
+            } catch (IOException e) {
+                System.err.println("Can't start node VM " + vm.clientId);
+                System.err.println(e);
+                System.exit(1);
+            }
+        }
+    }
+
     public static void main(final String[] args) {
         WKNetworkUI.childProcesses = new HashMap<Process, String>();
 
@@ -377,24 +392,38 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         //creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                String networkdir = "/Users/niels/git/darjeeling/src/config/native-dollhouse/dollhouse/";
-                boolean startMaster = false;
-                String masterdir = "../../master";
+                String networkdir = null;
+                String masterdir = null;
+                String vmdir = null;
+                java.util.List<NetworkConfigParser.VMNode> vmsToStart = null;
 
                 for (int i=0; i<args.length; i++) {
                     if (args[i].equals("-d")) {
                         networkdir = args[i+1];
                         i++; // skip network dir
                     } else if (args[i].equals("-m")) {
-                        startMaster = true;
                         masterdir = args[i+1];
+                        i++; // skip master dir
+                    } else if (args[i].equals("-c")) {
+                        NetworkConfigParser config = new NetworkConfigParser(args[i+1]);
+                        networkdir = config.pathToNetworkDirectory.getAbsolutePath();
+                        masterdir = config.pathToMasterServer.getAbsolutePath();
+                        vmdir = config.pathToVM.getAbsolutePath();
+                        vmsToStart = config.nodes;
                         i++; // skip master dir
                     }
                 }
 
+                if (networkdir == null) {
+                    System.err.println("Please specify at least the network directory.");
+                    System.exit(1);
+                }
+
                 createAndShowGUI(networkdir);
-                if (startMaster)
+                if (masterdir != null)
                     runMasterServer(masterdir);
+                if (vmsToStart != null)
+                    runVMs(vmdir, networkdir, vmsToStart);
             }
         });
     }
