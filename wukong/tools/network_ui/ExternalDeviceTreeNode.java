@@ -7,7 +7,10 @@ public class ExternalDeviceTreeNode extends DeviceTreeNode {
 	}
 
 	public String toString() {
-		return "External node " + clientId;
+		if (this.clientId == 1) // Assuming the master always has id 1
+			return "Master";
+		else
+			return "External node " + this.clientId;
 	}
 
 	public int getClientId() {
