@@ -54,8 +54,8 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
 
         //Set icons for sensors and actuators
         tree.setCellRenderer(new DefaultTreeCellRenderer() {
-            private Icon sensorIcon = UIManager.getIcon("InternalFrame.maximizeIcon");
-            private Icon actuatorIcon = UIManager.getIcon("InternalFrame.closeIcon");
+            private Icon sensorIcon = new ImageIcon("sensor.png");
+            private Icon actuatorIcon = new ImageIcon("actuator.png");
             private Icon connectedDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.maximizeIcon");
             private Icon disconnectedDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.closeIcon");
             private Icon externalDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.minimizeIcon");
