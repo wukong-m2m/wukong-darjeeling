@@ -57,7 +57,7 @@ public class NetworkServer extends Thread
 
 	private static class StandardOutputListener implements NetworkServerMessagesListener {
 		public void messageDropped(int src, int dest, int[] message){
-			System.out.print("Dropped message from " + src + " to " + dest + ", length " + message.length);
+			System.out.println("Dropped message from " + src + " to " + dest + ", length " + message.length);
 		}
 		public void messageSent(int src, int dest, int[] message){
 			System.out.print("Forwarding message from " + src + " to " + dest + "   ");

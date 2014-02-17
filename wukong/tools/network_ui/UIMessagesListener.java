@@ -222,7 +222,8 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 	}
 
 	public void messageDropped(int src, int dest, int[] message){
-		this.print("DROPPED MESSAGE from " + src + " to " + dest + ", length " + message.length);
+		String parsedCommand = parseMessage(message);
+		this.println("DROPPED MESSAGE from " + src + " to " + dest + ": " + parsedCommand);
 	}
 	public void messageSent(int src, int dest, int[] message){
 		if (false) { // Useful for debugging
