@@ -1,0 +1,4 @@
+<WuKong>
+    <WuClass name="PIR_Sensor" appCanCreateInstances="false" createInstancesAtStartup="1" />
+    <WuClass name="Magnetic_Sensor" appCanCreateInstances="false" createInstancesAtStartup="1" />
+</WuKong>

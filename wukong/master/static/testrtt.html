@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block nav %}
+<li><a href="/">Applications</a></li>
+<li class="active"><a href="/testrtt">Node Editor</a></li>
+<li><a href="/loc_tree">Landmark Editor</a></li>
+<li><a href="/ide">WuClass Designer</a></li>
+{% end %}
+
+{% block head_js %}
+<script type="text/javascript" src="/static/js/poll.js"></script>
+<script type="text/javascript" src="/static/js/testrtt.js"></script>
+<script type="text/javascript" src="/static/js/display_locationTree.js"></script>
+{% end %}
+
+
+{% block container %}
+<div id='container-fluid'>
+    <div class=row-fluid>
+        <div class="span12">
+            <div class=tabbable>
+                <ul class="nav nav-pills">
+                    <li class="active"><a href="#testrtt" data-toggle="tab">+/- ZWave Nodes</a></li>
+                    <li><a href="#nodes" data-toggle="tab">Node Location</a></li>
+                    <li><a id="location_editor_tab" href="#location_editor" data-toggle="tab">Location Editor</a></li>
+                </ul>
+                <div class=tab-content>
+                    <div class="tab-pane" id="nodes">
+                        {% include "monitor-nodes.html" %}
+                    </div>
+                    <div class="tab-pane active" id="testrtt">
+                        <button id="include">Add nodes</button>
+                        <button id="exclude">Remove nodes</button>
+                        <button id="stop">Stop to complete operation</button>
+
+                        <pre id="log">
+                        {% for l in log %}
+                        {{ l }}
+                        {% end %}
+                        </pre>
+                    </div>
+                    <div class="tab-pane" id="location_editor">
+                      
+                    </div>
+                    <div class="modal ui-widget-content" id="tree_dialog" role="dialog" style="display:none">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                            <h3>Select a Node</h3>
+                        </div>
+                        <div class="modal-body">
+                          <div id="treeInDialogDiv">
+                            <ul id="treeInDialog" class="treeview">
+                            </ul>
+                          </div>
+                          Selected TreeNode: <input id = "selectedTreeNode" type=text size="20"/>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="confirm_tree_dialog" data-dismiss="modal" class="dialogCloseButton">OK</button>
+                            <button data-dismiss="modal" class="dialogCloseButton">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% end %}

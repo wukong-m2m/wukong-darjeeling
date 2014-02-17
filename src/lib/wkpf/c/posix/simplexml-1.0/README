@@ -1,0 +1,174 @@
+$Id: README,v 1.1.1.1 2002/08/23 10:38:57 essmann Exp $
+
+----------------------------------------------------------------------
+SIMPLEXML
+----------------------------------------------------------------------
+
+Simple XML is, as the name suggests, a very simple XML parser.
+
+You might want to use Simple XML if
+- a simple to use XML parser interface
+- a small and fast XML parser
+=> you need to parse simple XML files such as configuration files 
+
+You definately don't want to use Simple XML if
+- you need a well-proven XML parser
+- want to parse XML data block-wise
+- need a validating parser
+- need support for entities or cdata
+- need to parse unicode documents
+=> you need a full-fledged XML parser
+
+
+----------------------------------------------------------------------
+INSTALLATION
+----------------------------------------------------------------------
+
+To build and install simplexml perform the following steps:
+
+1. Modify the Makefile to suit your needs
+2. % make
+3. % make install
+
+
+----------------------------------------------------------------------
+THE PARSER
+----------------------------------------------------------------------
+
+The parser only consists of the two files 'simplexml.c' and 
+'simplexml.h'. That's it.
+
+To use it, simply add the two files to your application and compile it
+with them (it doesn't make sense to have a library for simplexml since
+the whole purpose of simplexml is to leave it as simple that you can 
+statically add it to your application).
+
+The parser itself only uses the standard and the string library and
+should thus compile on almost any platform. (Well, to be honest, I
+haven't written any C code in years. I'm sure you're going to notice
+a lot of stuff where you'd say "awww, this must have been made by an
+OO freak, one wouldn't do it like this in C". Well, feel free to 
+correct the code, and if you do please send me a copy of it ;-))
+
+
+----------------------------------------------------------------------
+USAGE
+----------------------------------------------------------------------
+
+Using the Simple XML parser is really simple:
+
+1.) Include the parser in your source:
+    #include "simplexml.h"
+
+2.) Read all the data you want to parse to a character array:
+    char* sData= ...; /* the data to parse */
+    long nDataLen= ...; /* the number of characters to parse */
+
+3.) Create a parser:
+    SimpleXmlParser parser= simpleXmlCreateParser(sData, nDataLen);
+
+4.) Create a handler for parser events:
+    void* handler (SimpleXmlParser parser, SimpleXmlEvent event,
+      const char* szName, const char* szValue) {
+      ... /* do something */
+      return handler;
+    }
+
+5.) Invoke the parser:
+    simpleXmlParse(parser, handler);
+
+Note: The beauty of Simple XML lies in the fact the handler may return
+a different handler for every subtag read, i.e. you may write a 
+handler for every tag type. Take a look at the 'group.c' sample, it 
+makes use of this feature.
+
+To get an idea of how to use something I always prefer demo code (it's
+the best way to learn something for me). That's why I've included two
+demo programs: 'dump' and 'group'. 'dump' simply shows off what the
+parser does by dumping out the various parser events. It does not make
+use of the handler-switching-feature and is therefore not a very good
+example. 'group' on the other hand makes use of Simple XML the way it
+was intended. It reads persons and person groups from an XML file.
+
+For a concise API documentation please refer to the comments in the
+header file 'simplexml.h' (the comments are written in sort of a 
+JavaDoc style).
+
+
+----------------------------------------------------------------------
+TODO
+----------------------------------------------------------------------
+
+Well, as this parser should remain small and simple there isn't much
+I would want to add. If you need a callback for comments, then take
+a look at the parser, it's already perpared. Also adding support for
+CDATA if you need it shouldn't be too much of a problem.
+
+One thing that is definately going to cause trouble is if you want to
+extend it to make it work on data buffers that are repeatedly filled.
+The only easy way to do that is to do it via a callback (i.e. a call-
+back to gets called whenever the parser needs more data). If you 
+really need this then you probably want to have a look at one of the
+full-fledged XML parsers, some of them support read buffers.
+
+
+----------------------------------------------------------------------
+YES, BUT WHY?!?
+----------------------------------------------------------------------
+
+A colleague at work (Hi Joe!) invented the Simple XML parser and did
+a Java implementation about a year ago. I liked the parser since it 
+was small, fast and easy to use compared to the "I-can-do-everything" 
+monster parsers.
+
+While writing a simple utility in C (I haven't done any C programming
+in years :-)) I wanted to have an XML configuration file for the 
+utility. Since I needed a parser for this thingy I went looking for
+C parsers. And as is for Java I found some decent monster parsers that
+can do anything but are just not simple enough to use. That's when I
+decided to write a C version of Simple XML.
+
+Sun Aug 11 11:25:11 CEST 2002
+// Bruno Essmann
+
+One final word: Those "I-can-do-everything" monster parsers are very
+well needed. As soon as you're doing serious XML business you'll want
+to have one of those. The only purpose of Simple XML is to have a 
+simple XML parser for simple XML files.
+
+
+----------------------------------------------------------------------
+LICENSE INFORMATION
+----------------------------------------------------------------------
+
+Copyright (c) 2001-2002 Bruno Essmann <essmann@users.sourceforge.net>
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions 
+are met:
+
+1. Redistributions of source code must retain the above copyright 
+   notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above 
+   copyright notice, this list of conditions and the following 
+   disclaimer in the documentation and/or other materials provided 
+   with the distribution.
+
+3. The name of the author may not be used to endorse or promote
+   products derived from this software without specific prior
+   written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+

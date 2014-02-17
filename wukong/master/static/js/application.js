@@ -1,5 +1,3 @@
-// vim: ts=4 sw=4
-
 global_polling_status = false;
 
 function polling_is_stopped() {

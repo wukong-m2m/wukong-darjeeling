@@ -7,7 +7,7 @@ import logging
 from configuration import *
 
 def addHead():
-	head_path = os.path.join(ROOT_PATH, "wukong/master/templates/fbp.html")
+	head_path = os.path.join(ROOT_PATH, "wukong/master/static/fbp.html")
 	g = open(head_path, "a")
 	g.write('\n'+
             '<html>'+'\n'+
@@ -34,12 +34,12 @@ def addHead():
 def addMiddle(aList):
     for list in aList:
     	list = list.replace('./','/')
-        g = open("./templates/fbp.html","a")
+        g = open("./static/fbp.html","a")
         g.write('\t\t'+'<script type="text/javascript" src="'+list+'"></script>'+'\n')
         g.close()
 
 def addEnd():
-    end_path = os.path.join(ROOT_PATH, "wukong/master/templates/fbp.html")
+    end_path = os.path.join(ROOT_PATH, "wukong/master/static/fbp.html")
     g = open(end_path, "a")
     g.write(
                 '\t'+'</head>'+'\n'+
@@ -103,9 +103,9 @@ def check(name):
 
 class fbp_main:
 	def make(self):
-		existFile = os.path.exists("./templates/fbp.html")
+		existFile = os.path.exists("./static/fbp.html")
 		if existFile:
-		    os.remove("./templates/fbp.html")
+		    os.remove("./static/fbp.html")
 
 		addHead()
 #		_jsList = glob.glob("./static/js/*.js")

@@ -6,10 +6,11 @@
 	<property name="libs" value="uart, wkcomm, wkreprog, wkpf"/>
 
 	<!-- Compile these applications -->
-	<property name="apps" value="wkdeploy"/>
+	<property name="apps" value="wkemptyapp"/>
 
 	<!-- Platform and architecture selection -->
 	<property name="platform" value="posix"/>
+	<property name="platform" value="pc"/>
 	<property name="architecture" value="native"/>
 	<property name="configuration" value="native-picokong"/>
 

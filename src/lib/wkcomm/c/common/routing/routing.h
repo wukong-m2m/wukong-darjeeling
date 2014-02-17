@@ -31,5 +31,10 @@ extern void routing_handle_zwave_message(radio_zwave_address_t zwave_addr, uint8
 extern void routing_handle_xbee_message(radio_xbee_address_t xbee_addr, uint8_t *payload, uint8_t length);
 #endif // RADIO_USE_XBEE
 
+#ifdef RADIO_USE_NETWORKSERVER
+#include "radios/radio_networkserver.h"
+extern void routing_handle_local_message(radio_networkserver_address_t local_addr, uint8_t *payload, uint8_t length);
+#endif // RADIO_USE_NETWORKSERVER
+
 #endif // ROUTING_NONEH
 

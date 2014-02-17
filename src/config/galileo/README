@@ -1,0 +1,3 @@
+Use "sudo ./install_service" to install the compiled VM as a linux server.
+It will be installed to /usr/local/darjeeling, and a service script will be created in /etc/init.d/darjeeling.sh.
+

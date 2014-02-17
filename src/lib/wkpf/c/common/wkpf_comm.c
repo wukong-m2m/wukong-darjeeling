@@ -15,10 +15,10 @@
 
 uint8_t send_message(wkcomm_address_t dest_node_id, uint8_t command, uint8_t *payload, uint8_t length) {
 	// Print some debug info
-#ifdef DEBUG
+#ifdef DARJEELING_DEBUG
 	DEBUG_LOG(DBG_WKPF, "WKPF: sending property set command to %d:", dest_node_id);
 	for(int i=0; i<length; i++) {
-		DEBUG_LOG(DBG_WKPF, "[%x] ", message_buffer[i]);
+		DEBUG_LOG(DBG_WKPF, "[%x] ", payload[i]);
 	}
 	DEBUG_LOG(DBG_WKPF, "\n");
 #endif
@@ -26,7 +26,7 @@ uint8_t send_message(wkcomm_address_t dest_node_id, uint8_t command, uint8_t *pa
 	// Send
 	wkcomm_received_msg *reply;
 	uint8_t retval = wkcomm_send_and_wait_for_reply(dest_node_id, command, payload, length,
-													100 /* 100ms timeout */,  (uint8_t[]){command+1 /* the reply to this command */, WKPF_COMM_CMD_ERROR_R}, 2, &reply);
+													1000 /* 1000ms timeout */,  (uint8_t[]){command+1 /* the reply to this command */, WKPF_COMM_CMD_ERROR_R}, 2, &reply);
 	if (retval == WKCOMM_SEND_OK) {
 		if (reply->command != WKPF_COMM_CMD_ERROR_R)
 			return WKPF_OK;
@@ -347,7 +347,7 @@ void wkpf_comm_handle_message(void *data) {
 				response_cmd = WKPF_COMM_CMD_WRITE_PROPERTY_R;
 			} else
 				retval = WKPF_ERR_SHOULDNT_HAPPEN;
-				if (retval != WKPF_OK) {
+			if (retval != WKPF_OK) {
 				payload [0] = retval;
 				response_cmd = WKPF_COMM_CMD_ERROR_R;
 				response_size = 1;

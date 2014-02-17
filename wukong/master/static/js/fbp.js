@@ -152,6 +152,7 @@ function FBP_addBlock()
 
 function FBP_delBlock()
 {
+	if (Block.current == null) return;
 	if (g_selected_line) {
 		var lines=[];
 		for(i=0;i<g_lines.length;i++) {
@@ -164,13 +165,7 @@ function FBP_delBlock()
 		g_selected_line = null;
 		return;
 	}
-	if (Block.current == null) return;
-    for(i=0;i<g_nodes.length;i++) {
-        if (g_nodes[i].id == Block.current.id) {
-            g_nodes.splice(i,1);
-            break;
-        }
-    }
+
 	var new_lines = [];
     for(i=0;i<g_lines.length;i++) {
 		if ((g_lines[i].source.id != Block.current.id)&&
@@ -178,6 +173,21 @@ function FBP_delBlock()
 			new_lines.push(g_lines[i]);
 		}
 	}
+    for(i=0;i<Block.widgets.length;i++) {
+        if (Block.widgets[i].id == Block.current.id) {
+            // FIXME: need to update widgets as well, but this should not be a separate list, there should be one list to manage all the blocks
+            Block.widgets.splice(i,1)
+            break;
+        }
+    }
+    // Should've delete links before blocks, it seems like that's what happening
+    // otherwise the links will be updated fully
+    for(i=0;i<g_nodes.length;i++) {
+        if (g_nodes[i].id == Block.current.id) {
+            g_nodes.splice(i,1);
+            break;
+        }
+    }
 	g_lines = new_lines;
 	FBP_refreshLines();
     Block.current.div.remove();
@@ -266,6 +276,9 @@ function FBP_link()
             FBP_buildConnection(FBP_source, obj);
         }
         FBP_source = null;
+        // This has to turn off to let next connection work 
+        // without pressing the button twice
+	    FBP_linkIsActive = false;
     });
 }
 function FBP_save()
@@ -417,7 +430,7 @@ function FBP_parseXMLPage(comps)
         if (group_size.length > 0) {
             meta.group_size = group_size.attr("requirement");
         } else {
-            meta.group_size = 1;
+            meta.group_size = 0;
         }
         console.log('group size ' + meta.group_size);
         reaction_time = c.find("reaction_time")

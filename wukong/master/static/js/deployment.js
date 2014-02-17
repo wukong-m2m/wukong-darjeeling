@@ -1,5 +1,3 @@
-
-
 $(function() {
     $('#deployment-tab').click(function () {
         $('a#nodes-btn').click();

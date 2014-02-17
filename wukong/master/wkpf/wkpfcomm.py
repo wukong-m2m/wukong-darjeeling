@@ -3,6 +3,7 @@ import sys, time, copy
 from transport import *
 from locationTree import *
 from models import *
+from virtualNode import *
 from globals import *
 from configuration import *
 import simulator
@@ -27,11 +28,17 @@ class Communication:
       self.all_node_infos = []
       self.broker = getAgent()
       self.device_type = None
+      VirtualNode.init().setComm(self)
       try:
         if SIMULATION == "true":
           raise KeyboardInterrupt
-        self.zwave = getZwaveAgent()
-      except:
+        if WKPFCOMM_AGENT == "NETWORKSERVER":
+          self.zwave = getNetworkServerAgent()
+        else:
+          self.zwave = getZwaveAgent()
+      except Exception as e:
+        print "Exception while creating agent"
+        print e
         is_not_connected()
         self.zwave = getMockAgent()
         if SIMULATION == "true":
@@ -59,6 +66,18 @@ class Communication:
 
     def getNodeInfos(self, node_ids):
       return filter(lambda info: info.id in node_ids, self.getAllNodeInfos())
+
+    def gen_virtual_node(self, id):
+      node = WuNode(id, "Local", type='master')
+
+      wuobjects = {}
+      # create only wuobjects for mapping
+      for index, wuclassdef in enumerate(VirtualNode.getWuClassDefs()):
+        wuobjects[index+1] = WuObjectFactory.createWuObject(wuclassdef, node, index+1, False)
+      node.wuobjects = wuobjects
+
+      gevent.sleep(0)
+      return node
 
     def getAllNodeInfos(self, force=False):
       if force:
@@ -331,6 +350,7 @@ class Communication:
 
           if not node:
             print '[wkpfcomm] Unknown node id', destination
+            break
 
           wuclassdef = WuObjectFactory.wuclassdefsbyid[wuclass_id]
 
@@ -357,7 +377,7 @@ class Communication:
       wunode = wuobject.wunode
       value = wuproperty.value
       datatype = wuproperty.datatype
-      number = wuproperty.number
+      number = wuproperty.id
 
       reply = self.zwave.send(wunode.id, 
               pynvc.WKPF_READ_PROPERTY,
@@ -395,7 +415,7 @@ class Communication:
       wunode = wuobject.wunode
       value = wuproperty.value
       datatype = wuproperty.datatype
-      #number = wuproperty.wupropertydef.number
+      number = wuproperty.id
 
       if datatype == 'boolean':
         datatype = WKPF_PROPERTY_TYPE_BOOLEAN

@@ -7,11 +7,11 @@
 #include "debug.h"
 #include "djtimer.h"
 #include "uart.h"
-#include <avr/io.h>
-#define output_low(port, pin) port &= ~(1<<pin)
-#define output_high(port, pin) port |= (1<<pin)
-#define set_input(portdir, pin) portdir &= ~(1<<pin)
-#define set_output(portdir, pin) portdir |= (1<<pin)
+// see issue 115 #include <avr/io.h>
+// see issue 115 #define output_low(port, pin) port &= ~(1<<pin)
+// see issue 115 #define output_high(port, pin) port |= (1<<pin)
+// see issue 115 #define set_input(portdir, pin) portdir &= ~(1<<pin)
+// see issue 115 #define set_output(portdir, pin) portdir |= (1<<pin)
 
 // Here we have a circular dependency between radio_X and routing.
 // Bit of a code smell, but since the two are supposed to be used together I'm leaving it like this for now.
@@ -55,7 +55,7 @@
 #define WKCOMM_PANIC_INIT_FAILED 100 // Need to make sure these codes don't overlap with other libs or the definitions in panic.h
 
 // radio_zwave data
-radio_zwave_address_t radio_zwave_my_address;
+radio_zwave_address_t radio_zwave_my_address = 0;
 bool radio_zwave_my_address_loaded = false;
 uint8_t radio_zwave_receive_buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+4+3]; // 4 for Zwave overhead, 3 for wkcomm overhead
 
@@ -76,6 +76,7 @@ uint8_t last_node = 0;
 uint8_t ack_got = 0;
 int zwsend_ack_got = 0;
 uint8_t wait_CAN_NAK = 1;
+uint8_t wait_RF_ready = 100;
 uint8_t zwave_learn_block = 0;
 uint32_t zwave_time_learn_start;
 uint8_t zwave_mode = 0;
@@ -122,7 +123,7 @@ void radio_zwave_poll(void) {
     if(zwave_mode==1)//learning mode
     {
 	    DEBUG_LOG(DBG_ZWAVETRACE,"start zwave learn !!!!!!!!!");
-		PORTK &=~_BV(1);
+// see issue 115 		PORTK &=~_BV(1);
 	    radio_zwave_learn();//finish will set zwave mode=0
 	    zwave_mode=0;
 		
@@ -142,12 +143,12 @@ void radio_zwave_poll(void) {
 
 extern void radio_zwave_platform_dependent_init(void); // from radio_zwave_platform_dependent.c
 void radio_zwave_init(void) {
-    set_output(DDRK,0);
-    set_output(DDRK,1);
-    set_output(DDRK,2);
-    set_output(DDRK,3);
+// see issue 115     set_output(DDRK,0);
+// see issue 115     set_output(DDRK,1);
+// see issue 115     set_output(DDRK,2);
+// see issue 115     set_output(DDRK,3);
 
-    output_high(PORTK,0);
+// see issue 115     output_high(PORTK,0);
     uart_inituart(ZWAVE_UART, ZWAVE_UART_BAUDRATE);
 
     // Clear existing queue on Zwave
@@ -158,7 +159,7 @@ void radio_zwave_init(void) {
         uart_read_byte(ZWAVE_UART);
     }
 
-    output_high(PORTK,1);
+// see issue 115     output_high(PORTK,1);
    
     // TODO: why is this here?
     // for(i=0;i<100;i++)
@@ -184,7 +185,7 @@ void radio_zwave_init(void) {
             if (uart_available(ZWAVE_UART, 150))
                 radio_zwave_poll();
         }
-    	output_high(PORTK,2);
+// see issue 115     	output_high(PORTK,2);
         if(!radio_zwave_my_address_loaded) { // Can't read address -> panic 
 	    unsigned char softreset[] = {ZWAVE_TYPE_REQ, FUNC_ID_SERIAL_API_SOFT_RESET};
 	    SerialAPI_request(softreset, 2);
@@ -193,18 +194,20 @@ void radio_zwave_init(void) {
 	    }
             //dj_panic(WKCOMM_PANIC_INIT_FAILED);
 	    retries=10;
-    	    output_low(PORTK,1);
-    	    output_low(PORTK,2);
+// see issue 115 	    output_low(PORTK,1);
+// see issue 115 	    output_low(PORTK,2);
 	}
         if (radio_zwave_my_address != previous_received_address) { // Sometimes I get the wrong address. Only accept if we get the same address twice in a row. No idea if this helps though, since I don't know what's going on exactly.
             radio_zwave_my_address_loaded = false;
             previous_received_address = radio_zwave_my_address;
         }
     }
-    output_high(PORTK,3);
+// see issue 115     output_high(PORTK,3);
         if(!radio_zwave_my_address_loaded) // Can't read address -> panic
     DEBUG_LOG(DBG_WKCOMM, "My Zwave node_id: %d\n", radio_zwave_my_address);
     radio_zwave_platform_dependent_init();
+
+    dj_timer_delay(wait_RF_ready);
 	radio_zwave_set_node_info(0,0xff, 0);
 }
 
@@ -370,7 +373,7 @@ void Zwave_receive(int processmessages) {
                     zwave_learn_on=0;
                     zwave_learn_block=0;
                     zwave_mode=0;
-					PORTK |=_BV(1);
+// see issue 115 					PORTK |=_BV(1);
                 }
             }
         }
