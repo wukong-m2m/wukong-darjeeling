@@ -76,20 +76,25 @@ uint8_t wkpf_create_wuobject(uint16_t wuclass_id, uint8_t port_number, dj_object
 	wuobject->next = wuobjects_list;
 	wuobjects_list = wuobject;
 
-	// Check if any properties need to pull their initial value from a remote node (properties that are the destination end of a link coming from another node)
-	for(int i=0; i<wuclass->number_of_properties; i++) {
-		if (wkpf_does_property_need_initialisation_pull(port_number, i)) {
-			wuobject_property_t *property = wkpf_get_property(wuobject, i);
-			wkpf_set_property_status_needs_pull(property);
-			DEBUG_LOG(DBG_WKPF, "WKPF: Setting needs pull bit for property %d at port %d\n", i, port_number);
-		}
-	}
+	wkpf_set_request_property_init_where_necessary(wuobject);
 
 	if (!WKPF_IS_VIRTUAL_WUCLASS(wuclass))
 		wuclass->setup(wuobject);
 
 	DEBUG_LOG(DBG_WKPF, "WKPF: Created wuobject for wuclass id %d at port %d\n", wuclass_id, port_number);
 	return WKPF_OK;
+}
+
+void wkpf_set_request_property_init_where_necessary(wuobject_t *wuobject) {
+	uint8_t port_number = wuobject->port_number;
+	// Check if any properties need to pull their initial value from a remote node (properties that are the destination end of a link coming from another node)
+	for(int i=0; i<wuobject->wuclass->number_of_properties; i++) {
+		if (wkpf_does_property_need_initialisation_pull(port_number, i)) {
+			wuobject_property_t *property = wkpf_get_property(wuobject, i);
+			wkpf_set_property_status_needs_pull(property);
+			DEBUG_LOG(DBG_WKPF, "WKPF: Setting needs pull bit for property %d at port %d\n", i, port_number);
+		}
+	}
 }
 
 uint8_t wkpf_remove_wuobject(uint8_t port_number) {
