@@ -8,6 +8,11 @@ extern uint8_t wkpf_send_set_property_int16(wkcomm_address_t dest_node_id, uint8
 extern uint8_t wkpf_send_set_property_boolean(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, bool value);
 extern uint8_t wkpf_send_set_property_refresh_rate(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, wkpf_refresh_rate_t value);
 extern uint8_t wkpf_send_request_property_init(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number);
+extern uint8_t wkpf_send_monitor_property_int16(wkcomm_address_t progression_server_id, wkcomm_address_t node_id, uint16_t wuclass_id, int16_t value);
+extern uint8_t wkpf_send_monitor_property_boolean(wkcomm_address_t progression_server_id, wkcomm_address_t node_id, uint16_t wuclass_id, bool value);
+extern uint8_t wkpf_send_monitor_property_refresh_rate(wkcomm_address_t progression_server_id, wkcomm_address_t node_id, uint16_t wuclass_id, wkpf_refresh_rate_t value);
+
+
 extern void wkpf_comm_handle_message(void *msg); // Will be called with a pointer to a wkcomm_received_msg
 
 // Message types
