@@ -69,6 +69,13 @@ uint8_t wkpf_create_wuobject(uint16_t wuclass_id, uint8_t port_number, dj_object
 	// Initialise memory (fixes a bug where old data corrupted the property status)
 	memset(wuobject, 0, size);
 
+	wuobject->wuclass = wuclass;
+	wuobject->port_number = port_number;
+	wuobject->java_instance_reference = java_instance_reference;
+	wuobject->need_to_call_update = false;
+	wuobject->next = wuobjects_list;
+	wuobjects_list = wuobject;
+
 	// Check if any properties need to pull their initial value from a remote node (properties that are the destination end of a link coming from another node)
 	for(int i=0; i<wuclass->number_of_properties; i++) {
 		if (wkpf_does_property_need_initialisation_pull(port_number, i)) {
@@ -77,13 +84,6 @@ uint8_t wkpf_create_wuobject(uint16_t wuclass_id, uint8_t port_number, dj_object
 			DEBUG_LOG(DBG_WKPF, "WKPF: Setting needs pull bit for property %d at port %d\n", i, port_number);
 		}
 	}
-
-	wuobject->wuclass = wuclass;
-	wuobject->port_number = port_number;
-	wuobject->java_instance_reference = java_instance_reference;
-	wuobject->need_to_call_update = false;
-	wuobject->next = wuobjects_list;
-	wuobjects_list = wuobject;
 
 	if (!WKPF_IS_VIRTUAL_WUCLASS(wuclass))
 		wuclass->setup(wuobject);
