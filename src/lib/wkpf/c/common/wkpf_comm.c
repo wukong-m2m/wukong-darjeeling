@@ -54,6 +54,7 @@ uint8_t wkpf_call_adaptor(wkcomm_address_t dest_node_id, uint16_t wuclass_id, ui
 
 }
 
+
 uint8_t wkpf_send_set_property_int16(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, int16_t value) {
 	uint8_t message_buffer[7];
 	if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH) {
@@ -101,6 +102,57 @@ uint8_t wkpf_send_set_property_refresh_rate(wkcomm_address_t dest_node_id, uint8
 		return send_message(dest_node_id, WKPF_COMM_CMD_WRITE_PROPERTY, message_buffer, 7);
 	}
 }
+
+uint8_t wkpf_send_monitor_property_int16(wkcomm_address_t progression_server_id, wkcomm_address_t node_id, uint16_t wuclass_id, int16_t value) {
+    uint8_t message_buffer[7];
+    if (property_port >= DEVICE_NATIVE_ZWAVE_SWITCH) {
+        return WKPF_COMM_CMD_ERROR_R;
+    } else {
+        message_buffer[0] = (uint8_t)(node_id >> 8);
+        message_buffer[1] = (uint8_t)(node_id);
+        message_buffer[2] = (uint8_t)(wuclass_id >> 8);
+        message_buffer[3] = (uint8_t)(wuclass_id);
+        message_buffer[4] = WKPF_PROPERTY_TYPE_SHORT;
+        message_buffer[5] = (uint8_t)(value >> 8);
+        message_buffer[6] = (uint8_t)(value);
+        return send_message(progression_server_id, WUKONG_MONITOR_PROPERTY, message_buffer, 7);
+    }
+
+}
+
+uint8_t wkpf_send_monitor_property_boolean(wkcomm_address_t progression_server_id, wkcomm_address_t node_id, uint16_t wuclass_id, bool value) {
+
+    uint8_t message_buffer[6];
+    if (property_port >= DEVICE_NATIVE_ZWAVE_SWITCH) {
+        return WKPF_COMM_CMD_ERROR_R;
+    } else {
+        message_buffer[0] = (uint8_t)(node_id >> 8);
+        message_buffer[1] = (uint8_t)(node_id);
+        message_buffer[2] = (uint8_t)(wuclass_id >> 8);
+        message_buffer[3] = (uint8_t)(wuclass_id);
+        message_buffer[4] = WKPF_PROPERTY_TYPE_BOOLEAN;
+        message_buffer[5] = (uint8_t)(value);
+        return send_message(progression_server_id, WUKONG_MONITOR_PROPERTY, message_buffer, 6);
+    }
+}
+
+uint8_t wkpf_send_monitor_property_refresh_rate(wkcomm_address_t progression_server_id, wkcomm_address_t node_id, uint16_t wuclass_id, wkpf_refresh_rate_t value) {
+
+    uint8_t message_buffer[7];
+    if (property_port >= DEVICE_NATIVE_ZWAVE_SWITCH) {
+        return WKPF_COMM_CMD_ERROR_R;
+    } else {
+        message_buffer[0] = (uint8_t)(node_id >> 8);
+        message_buffer[1] = (uint8_t)(node_id);
+        message_buffer[2] = (uint8_t)(wuclass_id >> 8);
+        message_buffer[3] = (uint8_t)(wuclass_id);
+        message_buffer[4] = WKPF_PROPERTY_TYPE_REFRESH_RATE;
+        message_buffer[5] = (uint8_t)(value >> 8);
+        message_buffer[6] = (uint8_t)(value);
+        return send_message(progression_server_id, WUKONG_MONITOR_PROPERTY, message_buffer, 7);
+    }
+}
+
 
 uint8_t wkpf_send_request_property_init(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number) {
 	uint8_t message_buffer[2];
