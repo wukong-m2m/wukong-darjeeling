@@ -1,0 +1,11 @@
+<project default="all">
+	<!-- set the name of the library -->
+	<property name="name" value="ecocast"/>
+	
+	<!-- list of libraries this library depends on -->
+	<property name="lib-c-depends" value="wkcomm"/>
+	<property name="lib-java-depends" value=""/>
+
+	<!-- include the library build template -->
+	<import file="../lib.xml"/>
+</project>

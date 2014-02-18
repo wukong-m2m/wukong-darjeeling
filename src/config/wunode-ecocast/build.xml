@@ -1,0 +1,20 @@
+<project default="all">
+	<!-- include native code for libraries -->
+	<!-- note that libraries should come after libraries they depend on
+		 (wkcomm first, the wkpf), or else loading the archive will fail -->
+	<property name="libs" value="uart, wkcomm, wkreprog, ecocast"/>
+
+	<!-- Compile these applications -->
+	<property name="apps" value="helloworld"/>
+
+	<!-- Platform and architecture selection -->
+	<property name="platform" value="arduino"/>
+	<property name="architecture" value="avr"/>
+	<property name="configuration" value="wunode"/>
+
+	<property name="mcu" value="atmega2560"/>
+	<property name="app-archive-size" value="4096"/>
+
+	<!-- Import the rest from config.xml (magic) -->
+	<import file="../config.xml"/>
+</project>
