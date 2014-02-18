@@ -45,10 +45,11 @@ typedef unsigned long long int dj_time_t;
 // #define DBG_WKPF true
 // #define DBG_WKPFGC true
 // #define DBG_WKPFUPDATE true
-// #define DBG_WKCOMM true
-// #define DBG_WKREPROG true
+#define DBG_WKCOMM true
+#define DBG_WKREPROG true
 // #define DBG_ZWAVETRACE true
 // #define DBG_WKPFGH true
+#define DBG_ECO true
 
 void avr_serialPrintf(char * format, ...);
 #define DARJEELING_PRINTF avr_serialPrintf

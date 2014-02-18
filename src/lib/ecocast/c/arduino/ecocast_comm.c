@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "djarchive.h"
+#include "debug.h"
 #include "wkcomm.h"
 #include "wkreprog.h"
 #include "ecocast_comm.h"
@@ -65,6 +66,8 @@ void ecocast_comm_handle_message(void *data) {
 			uint8_t packetnr = payload[0];
 			uint8_t lastpacketnr = payload[1];
 
+			DEBUG_LOG(DBG_ECO, "[ECO] Received packet %d of %d\n", packetnr, lastpacketnr+1);
+
 			if (packetnr == 0) {
 				ecocast_code_capsule_start = dj_archive_get_file(di_app_archive, 0);
 				if ((ecocast_code_capsule_start & 1) == 1) {
@@ -83,6 +86,7 @@ void ecocast_comm_handle_message(void *data) {
 				wkreprog_close();
 				// Execute the code
 				ecocast_execute_code_capsule(ecocast_code_capsule_start, payload[2], payload);
+				response_size = payload[2];
 			} else {
 				response_size = 0;
 			}
