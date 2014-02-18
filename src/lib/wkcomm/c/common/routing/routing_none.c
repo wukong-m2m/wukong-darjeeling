@@ -38,6 +38,15 @@ wkcomm_address_t addr_xbee_to_wkcomm(radio_xbee_address_t xbee_addr) {
 }
 #endif // RADIO_USE_XBEE
 
+#ifdef RADIO_USE_NETWORKSERVER
+#include "../../posix/radios/radio_networkserver.h"
+radio_networkserver_address_t addr_wkcomm_to_networkserver(wkcomm_address_t wkcomm_addr) {
+    return (radio_networkserver_address_t)(wkcomm_addr);
+}
+wkcomm_address_t addr_networkserver_to_wkcomm(radio_networkserver_address_t local_addr) {
+	return (wkcomm_address_t)local_addr;
+}
+#endif // RADIO_USE_NETWORKSERVER
 
 // SENDING
 uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
@@ -46,6 +55,9 @@ uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
 	#endif
 	#ifdef RADIO_USE_XBEE
 		return radio_xbee_send(addr_wkcomm_to_xbee(dest), payload, length);
+	#endif
+	#ifdef RADIO_USE_NETWORKSERVER
+		return radio_networkserver_send(addr_wkcomm_to_networkserver(dest), payload, length);
 	#endif
 	return 0;
 }
@@ -77,6 +89,11 @@ void routing_handle_xbee_message(radio_xbee_address_t xbee_addr, uint8_t *payloa
 }
 #endif // RADIO_USE_XBEE
 
+#ifdef RADIO_USE_NETWORKSERVER
+void routing_handle_local_message(radio_networkserver_address_t local_addr, uint8_t *payload, uint8_t length) {
+	wkcomm_handle_message(addr_networkserver_to_wkcomm(local_addr), payload, length);
+}
+#endif // RADIO_USE_NETWORKSERVER
 
 // MY NODE ID
 // Get my own node id
@@ -87,6 +104,9 @@ wkcomm_address_t routing_get_node_id() {
 	#endif
 	#ifdef RADIO_USE_XBEE
 		return addr_xbee_to_wkcomm(radio_xbee_get_node_id());
+	#endif
+	#ifdef RADIO_USE_NETWORKSERVER
+		return addr_networkserver_to_wkcomm(radio_networkserver_get_node_id());
 	#endif
 	return 2; // Just return 1 if we have no radios at all.
 }
@@ -99,6 +119,9 @@ void routing_init() {
 	#endif
 	#ifdef RADIO_USE_XBEE
 		radio_xbee_init();
+	#endif
+	#ifdef RADIO_USE_NETWORKSERVER
+		radio_networkserver_init();
 	#endif
 }
 
@@ -113,6 +136,9 @@ void routing_poll() {
 	#endif
 	#ifdef RADIO_USE_XBEE
 		radio_xbee_poll();
+	#endif
+	#ifdef RADIO_USE_NETWORKSERVER
+		radio_networkserver_poll();
 	#endif
 }
 

@@ -23,3 +23,8 @@ TESTRTT_PATH = os.path.join(ROOT_PATH, 'wukong', 'tools', 'python', 'pyzwave')
 APP_DIR = os.path.join(ROOT_PATH, 'wukong', 'apps')
 BASE_DIR = os.path.join(ROOT_PATH, 'wukong', 'master', 'baseapp')
 MOCK_XML = os.path.join(ROOT_PATH, 'wukong', 'master', 'mock_discovery.xml')
+
+NETWORKSERVER_ADDRESS = config.get('NETWORKSERVER_ADDRESS', '127.0.0.1')
+NETWORKSERVER_PORT = int(config.get('NETWORKSERVER_PORT', 10008))
+
+WKPFCOMM_AGENT = config.get('WKPFCOMM_AGENT', 'ZWAVE')

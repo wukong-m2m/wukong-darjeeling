@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<doc>
+	<element attribute="attribute value">
+		<subelem>another element</subelem>
+	</element>
+	<element attribute="another value">
+		<subelem>another element</subelem>
+		<subelem>yet another element</subelem>
+	</element>
+</doc>

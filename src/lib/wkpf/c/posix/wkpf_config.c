@@ -6,6 +6,7 @@
 #include "wkcomm.h"
 #include "wkpf.h"
 #include "wkpf_config.h"
+#include "posix_utils.h"
 
 typedef struct features_t {
 	bool feature_enabled[WKPF_NUMBER_OF_FEATURES];
@@ -17,7 +18,6 @@ typedef struct features_t {
 features_t features;
 bool features_loaded = false;
 
-#define CONFIG_FILE_NAME "config.txt"
 #define CONFIG_FILE_LOCATION_STRING "Location (in raw bytes on the next line):\n"
 #define CONFIG_FILE_MASTER_ID_STRING "Master: %d\n"
 #define CONFIG_FILE_GID_STRING "Gid: %d\n"
@@ -28,9 +28,9 @@ bool prefix(const char *pre, const char *str) {
 }
 
 void save_features_data() {
-	FILE *fp = fopen(CONFIG_FILE_NAME, "w");
+	FILE *fp = fopen(posix_config_filename, "w");
 	if (fp== NULL) {
-		printf("Can't open %s for writing, aborting...\n", CONFIG_FILE_NAME);
+		printf("Can't open %s for writing, aborting...\n", posix_config_filename);
 		abort();
 	}		
 	fprintf(fp, CONFIG_FILE_MASTER_ID_STRING, features.master_node_id);
@@ -45,7 +45,7 @@ void save_features_data() {
 }
 
 void load_features_data() {
-	FILE *fp = fopen(CONFIG_FILE_NAME, "r");
+	FILE *fp = fopen(posix_config_filename, "r");
 	if (fp== NULL) {
 		// No config file found, create default features.
 		for (int i=0; i<WKPF_NUMBER_OF_FEATURES; i++)
@@ -64,11 +64,11 @@ void load_features_data() {
         	if (prefix("Master", line)) {
 				int master_node_id;
 				if (!sscanf(line, CONFIG_FILE_MASTER_ID_STRING, &master_node_id)) {
-					printf("Master node id in %s not in expected format, aborting...\n", CONFIG_FILE_NAME);
+					printf("Master node id in %s not in expected format, aborting...\n", posix_config_filename);
 					abort();
 				}
 				if (master_node_id > 255) {
-					printf("Master node id in %s too large (%d), aborting...\n", CONFIG_FILE_NAME, master_node_id);
+					printf("Master node id in %s too large (%d), aborting...\n", posix_config_filename, master_node_id);
 					abort();
 				}
 				features.master_node_id = master_node_id;
@@ -76,11 +76,11 @@ void load_features_data() {
         	} else if (prefix("Gid", line)) {
 				int gid;
 				if (!sscanf(line, CONFIG_FILE_GID_STRING, &gid)) {
-					printf("Gid in %s not in expected format, aborting...\n", CONFIG_FILE_NAME);
+					printf("Gid in %s not in expected format, aborting...\n", posix_config_filename);
 					abort();
 				}
 				if (gid > 255) {
-					printf("Gid in %s too large (%d), aborting...\n", CONFIG_FILE_NAME, gid);
+					printf("Gid in %s too large (%d), aborting...\n", posix_config_filename, gid);
 					abort();
 				}
 				features.gid = gid;
@@ -89,7 +89,7 @@ void load_features_data() {
 				int feature;
 				int is_enabled;
 				if(!sscanf(line, CONFIG_FILE_ENABLED_FEATURE_STRING, &feature, &is_enabled) == 1) {
-					printf("Feature in %s not in expected format, aborting...\n", CONFIG_FILE_NAME);
+					printf("Feature in %s not in expected format, aborting...\n", posix_config_filename);
 					abort();
 				}
 				features.feature_enabled[feature] = is_enabled;

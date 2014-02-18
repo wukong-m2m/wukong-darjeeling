@@ -6,10 +6,11 @@
 	<property name="libs" value="vm, base, darjeeling3, uart, wkcomm, wkreprog, wkpf, wkpf_virtual"/>
 
 	<!-- Compile these applications -->
-	<property name="apps" value="wkdeploy"/>
+	<property name="apps" value="wkemptyapp"/>
 
 	<!-- Platform and architecture selection -->
 	<property name="platform" value="posix"/>
+	<property name="subplatform" value="pc"/>
 	<property name="architecture" value="native"/>
 	<property name="configuration" value="native"/>
 

@@ -1,0 +1,54 @@
+<project default="all">
+	<!-- include native code for libraries -->
+	<!-- note that libraries should come after libraries they depend on
+		 (wkcomm first, the wkpf), or else loading the archive will fail -->
+	<property name="libs" value="uart, wkcomm, wkreprog, ecocast"/>
+
+	<!-- Compile these applications -->
+	<property name="apps" value="helloworld"/>
+
+	<!-- Platform and architecture selection -->
+	<property name="platform" value="arduino"/>
+	<property name="architecture" value="avr"/>
+	<property name="configuration" value="wunode-ecocast"/>
+
+	<property name="mcu" value="atmega2560"/>
+	<property name="app-archive-size" value="4096"/>
+
+	<!-- Import the rest from config.xml (magic) -->
+	<import file="../config.xml"/>
+
+	<!-- Import settings like the USB port the programmer is connected to -->
+	<import file="../../settings.xml"/>
+
+	<!-- convenience targets to launch avrdude or avarice -->
+	<target name="avrdude-jtag" depends="executable">
+		<exec executable="avrdude">
+			<arg line="-p atmega2560 -P usb -c dragon_jtag -U flash:w:darjeeling.ihex"/>
+		</exec>
+	</target>
+
+	<target name="avrdude" depends="executable">
+		<exec executable="avrdude">
+			<arg line="-p atmega2560 -P ${avrdude-programmer} -c wiring -U flash:w:darjeeling.ihex"/>
+		</exec>
+	</target>
+
+	<target name="avrdude-only">
+		<exec executable="avrdude">
+			<arg line="-p atmega2560 -P ${avrdude-programmer} -c wiring -U flash:w:darjeeling.ihex"/>
+		</exec>
+	</target>
+
+	<target name="avrdude-eeprom" depends="executable">
+		<exec executable="avrdude">
+			<arg line="-p atmega2560 -P ${avrdude-programmer} -c wiring -U flash:w:darjeeling.ihex -U eeprom:w:darjeeling_eeprom.ihex"/>
+		</exec>
+	</target>
+
+	<target name="avarice">
+		<exec executable="avarice">
+			<arg line="-g -j usb -B 4000000 :4242"/>
+		</exec>
+	</target>
+</project>

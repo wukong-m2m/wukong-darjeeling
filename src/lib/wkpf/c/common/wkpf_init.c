@@ -5,7 +5,11 @@
 #include "wkpf_comm.h"
 #include "wkcomm.h"
 #include "native_wuclasses/native_wuclasses.h"
-#include <avr/io.h>
+#ifdef LOAD_ENABLED_WUCLASSES_AT_STARTUP
+#include "posix_utils.h"
+#include "../posix/wkpf_process_enabled_wuclasses_xml.h"
+#endif
+// see issue 115 #include <avr/io.h>
 
 dj_hook wkpf_markRootSetHook;
 dj_hook wkpf_updatePointersHook;
@@ -18,14 +22,14 @@ dj_hook wkpf_comm_handleMessageHook;
 
 void led_init()
 {
-	set_output(DDRK, 0);
-	set_output(DDRK, 1);
-	set_output(DDRK, 2);
-	set_output(DDRK, 3);
-	output_low(PORTK, 0);
-	output_low(PORTK, 1);
-	output_low(PORTK, 2);
-	output_low(PORTK, 3);
+// see issue 115 	set_output(DDRK, 0);
+// see issue 115 	set_output(DDRK, 1);
+// see issue 115 	set_output(DDRK, 2);
+// see issue 115 	set_output(DDRK, 3);
+// see issue 115 	output_low(PORTK, 0);
+// see issue 115 	output_low(PORTK, 1);
+// see issue 115 	output_low(PORTK, 2);
+// see issue 115 	output_low(PORTK, 3);
 }
 
 void wkpf_init() {
@@ -39,6 +43,16 @@ void wkpf_init() {
 	wkpf_comm_handleMessageHook.function = wkpf_comm_handle_message;
 	dj_hook_add(&wkcomm_handle_message_hook, &wkpf_comm_handleMessageHook);
 
+#ifdef LOAD_ENABLED_WUCLASSES_AT_STARTUP
+	if (posix_enabled_wuclasses_xml != NULL) {
+		if (wkpf_process_enabled_wuclasses_xml() != WKPF_OK)
+			dj_panic(DJ_PANIC_OUT_OF_MEMORY);
+	} else {
+		if (wkpf_native_wuclasses_init() != WKPF_OK)
+			dj_panic(DJ_PANIC_OUT_OF_MEMORY);		
+	}
+#else
 	if (wkpf_native_wuclasses_init() != WKPF_OK)
 		dj_panic(DJ_PANIC_OUT_OF_MEMORY);
+#endif
 }

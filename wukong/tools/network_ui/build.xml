@@ -1,0 +1,37 @@
+<project name="WKNetworkUI" default="jar">
+	<path id="classpath">
+		<pathelement path="${java.class.path}"/>
+		<fileset dir=".">
+			<include name="jpathwatch-0-95.jar" />
+		</fileset>
+	</path>
+
+    <target name="clean">
+        <delete dir="build"/>
+        <delete file="network_ui.jar"/>
+    </target>
+
+    <target name="build">
+        <mkdir dir="build/classes"/>
+        <javac includeAntRuntime="false"
+        	   srcdir="."
+        	   destdir="build/classes"
+        	   classpathref="classpath"/>
+    </target>
+
+	<target name="jar" depends="build">
+        <jar destfile="network_ui.jar" basedir="build/classes">
+            <manifest>
+                <attribute name="Main-Class" value="WKNetworkUI"/>
+            </manifest>
+            <zipgroupfileset dir="." includes="jpathwatch-0-95.jar" />
+        </jar>
+    </target>
+
+    <target name="run" depends="jar">
+        <java dir="."
+        	  jar="network_ui.jar"
+        	  fork="true"
+              args="-c ../../simulator_scenarios/dollhouse/networkconfig.xml"/>
+    </target>
+</project>

@@ -32,7 +32,7 @@ uint16_t wkpf_number_of_components = 0; // To be set when we load the map
 #define WKPF_LINK_DEST_COMPONENT_ID(i)						(dj_di_getU16(wkpf_links_store + 2 + WKPF_LINK_ENTRY_SIZE*i + 3))
 #define WKPF_LINK_DEST_PROPERTY(i)							(dj_di_getU8(wkpf_links_store + 2 + WKPF_LINK_ENTRY_SIZE*i + 5))
 // TODONR: refactor
-#define WKPF_LINK_DEST_WUCLASS_ID(i)						0
+#define WKPF_LINK_DEST_WUCLASS_ID(i)						(WKPF_COMPONENT_WUCLASS_ID(WKPF_LINK_DEST_COMPONENT_ID(i)))
 
 // Component map format
 // 2 bytes little endian number of components
@@ -205,15 +205,22 @@ uint8_t wkpf_load_component_to_wuobject_map(dj_di_pointer map) {
 
 	// After storing the reference, only use the constants defined above to access it so that we may change the storage implementation later
 	DEBUG_LOG(DBG_WKPF, "WKPF: Registering %x components\n", wkpf_number_of_components);
-#ifdef DARJEELING_DEBUG
-	for (int i=0; i<wkpf_number_of_components; i++) {
+	for (uint16_t i=0; i<wkpf_number_of_components; i++) {
 		DEBUG_LOG(DBG_WKPF, "WKPF: Component %d, %d endpoints -> ", i, WKPF_NUMBER_OF_ENDPOINTS(i));
-		for (int j=0; j<WKPF_NUMBER_OF_ENDPOINTS(i); j++) {
+		for (uint8_t j=0; j<WKPF_NUMBER_OF_ENDPOINTS(i); j++) {
 			DEBUG_LOG(DBG_WKPF, "  (node %d, port %d)", WKPF_COMPONENT_ENDPOINT_NODE_ID(i, j), WKPF_COMPONENT_ENDPOINT_PORT(i, j));
+			if (WKPF_COMPONENT_ENDPOINT_NODE_ID(i, j) == wkcomm_get_node_id()) {
+				wuobject_t *wuobject;
+				if (wkpf_get_wuobject_by_port(WKPF_COMPONENT_ENDPOINT_PORT(i, j), &wuobject) == WKPF_OK) {
+					// This is a local component, and it's wuobject already exists. This means it's a hardware device, and the
+					// application won't need to create an object for it. It may have an incoming link from another device though,
+					// so in that case we need to set the pull bit to ask the remote device for the initial value.
+					wkpf_set_request_property_init_where_necessary(wuobject);
+				}
+			}
 		}
 		DEBUG_LOG(DBG_WKPF, "\n");
 	}
-#endif // DARJEELING_DEBUG
 
 // // TODONR: nieuwe constante bedenken en implementatie van group_add_node_to_watch en wkcomm_get_node_id
 // #ifdef NVM_USE_GROUP

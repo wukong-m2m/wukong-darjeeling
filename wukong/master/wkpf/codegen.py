@@ -369,19 +369,36 @@ class CodeGen:
         native_wuclasses_filename = 'GENERATEDnative_wuclasses.c'
         native_wuclasses_path = os.path.join(c_dir, native_wuclasses_filename)
         native_wuclasses = open(native_wuclasses_path, 'w')
+        # For posix we need a function to process lines of another enabled_wuclasses file at startup
+        native_wuclasses_filename_posix = 'GENERATEDprocess_enabled_wuclass.c'
+        native_wuclasses_path_posix = os.path.join(c_dir, "..", "..", "posix", native_wuclasses_filename_posix)
+        native_wuclasses_posix = open(native_wuclasses_path_posix, 'w')
 
         header_lines = ['#include <debug.h>\n',
+            '#include <string.h>\n',
             '#include "wkcomm.h"\n',
             '#include "wkpf_wuclasses.h"\n',
             '#include "native_wuclasses.h"\n'
         ]
+        header_lines_posix = ['#include <debug.h>\n',
+            '#include <string.h>\n',
+            '#include "wkcomm.h"\n',
+            '#include "wkpf_wuclasses.h"\n',
+            '#include "../common/native_wuclasses/native_wuclasses.h"\n'
+        ]
         init_function_lines = ['''
-
         uint8_t wkpf_native_wuclasses_init() {
-
-
           DEBUG_LOG(DBG_WKPF, "WKPF: (INIT) Running wkpf native init for node id: %x\\n", wkcomm_get_node_id());
+        ''']
 
+        init_function_lines_posix = ['''
+        uint8_t wkpf_process_enabled_wuclass(char* wuclassname, bool appCanCreateInstances, int createInstancesAtStartup) {
+            static int next_free_port = 1;
+            printf("[posix init] Registering wuclass %s", wuclassname);
+            if (createInstancesAtStartup > 0)
+                printf(", and creating %d instance(s)\\n", createInstancesAtStartup);
+            else
+                printf("\\n");
         ''']
 
         dom = parseString(open(enabled_wuclasses_filename).read())
@@ -429,14 +446,37 @@ class CodeGen:
                 init_function_lines.append('''
                         %s.flags |= WKPF_WUCLASS_FLAG_APP_CAN_CREATE_INSTANCE;''' % wuclass.getCName())
 
+            header_lines_posix.append('#include "../common/native_wuclasses/%s.h"\n' % wuclass.getCFileName())
+            init_function_lines_posix.append('''
+            if (!strcmp(wuclassname, "%s")) {
+                wkpf_register_wuclass(&%s);
+                for (int i=0; i<createInstancesAtStartup; i++) {
+                    uint8_t retval;
+                    retval = wkpf_create_wuobject(%s.wuclass_id, next_free_port++, 0, true);
+                    if (retval != WKPF_OK)
+                        return retval;
+                }
+                if (appCanCreateInstances)
+                    %s.flags |= WKPF_WUCLASS_FLAG_APP_CAN_CREATE_INSTANCE;
+                return WKPF_OK;
+            }
+            ''' % (wuclass.getName(), wuclass.getCName(), wuclass.getCName(), wuclass.getCName()))
+
         init_function_lines.append('''
             return WKPF_OK;
+        }''')
+        init_function_lines_posix.append('''
+            printf("Unknown wuclass %s\\n", wuclassname);
+            return WKPF_ERR_WUCLASS_NOT_FOUND;
         }''')
 
         native_wuclasses.writelines(header_lines)
         native_wuclasses.writelines(init_function_lines)
-
         native_wuclasses.close()
+        native_wuclasses_posix.writelines(header_lines_posix)
+        native_wuclasses_posix.writelines(init_function_lines_posix)
+        native_wuclasses_posix.close()
+
 
 
     @staticmethod
