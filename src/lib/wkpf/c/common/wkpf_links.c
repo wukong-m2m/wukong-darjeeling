@@ -32,7 +32,7 @@ uint16_t wkpf_number_of_components = 0; // To be set when we load the map
 #define WKPF_LINK_DEST_COMPONENT_ID(i)						(dj_di_getU16(wkpf_links_store + 2 + WKPF_LINK_ENTRY_SIZE*i + 3))
 #define WKPF_LINK_DEST_PROPERTY(i)							(dj_di_getU8(wkpf_links_store + 2 + WKPF_LINK_ENTRY_SIZE*i + 5))
 // TODONR: refactor
-#define WKPF_LINK_DEST_WUCLASS_ID(i)						0
+#define WKPF_LINK_DEST_WUCLASS_ID(i)						(WKPF_COMPONENT_WUCLASS_ID(WKPF_LINK_DEST_COMPONENT_ID(i)))
 
 // Component map format
 // 2 bytes little endian number of components

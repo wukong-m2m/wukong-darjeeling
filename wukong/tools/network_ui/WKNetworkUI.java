@@ -12,6 +12,7 @@ import name.pachler.nio.file.*;
 public class WKNetworkUI extends JPanel implements TreeSelectionListener, ActionListener, DirectoryWatcherListener, NetworkServerMessagesListener {
     private static HashMap<Process, String> childProcesses;
     private static NetworkServer networkServer;
+    private static StandardLibraryParser standardLibrary;
 
     private DirectoryWatcher directorywatcher;
 
@@ -115,7 +116,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         mainPane.setBottomComponent(textArea);
 
         // Start the network server
-        WKNetworkUI.networkServer.addMessagesListener(new UIMessagesListener(textArea, tree, treemodel));
+        WKNetworkUI.networkServer.addMessagesListener(new UIMessagesListener(textArea, WKNetworkUI.standardLibrary));
         WKNetworkUI.networkServer.addMessagesListener(this);
 
         //Add the split pane to this panel.
@@ -124,9 +125,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
 
     /** Required by TreeSelectionListener interface. */
     public void valueChanged(TreeSelectionEvent e) {
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode)
-                           tree.getLastSelectedPathComponent();
-
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)tree.getLastSelectedPathComponent();
         if (node instanceof SensorTreeNode) {
         	this.setSelectedSensorTreeNode((SensorTreeNode)node);
         } else {
@@ -394,6 +393,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                 String networkdir = null;
                 String masterdir = null;
                 String vmdir = null;
+                String standardlibraryxml = null;
                 java.util.List<NetworkConfigParser.VMNode> vmsToStart = null;
 
                 for (int i=0; i<args.length; i++) {
@@ -408,8 +408,12 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                         networkdir = config.pathToNetworkDirectory.getAbsolutePath();
                         masterdir = config.pathToMasterServer.getAbsolutePath();
                         vmdir = config.pathToVM.getAbsolutePath();
+                        standardlibraryxml = config.pathToStandardLibrary.getAbsolutePath();
                         vmsToStart = config.nodes;
                         i++; // skip master dir
+                    } else if (args[i].equals("-l")) {
+                        standardlibraryxml = args[i+1];
+                        i++; // skip standard library
                     }
                 }
 
@@ -418,6 +422,8 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                     System.exit(1);
                 }
 
+                if (standardlibraryxml != null)
+                    WKNetworkUI.standardLibrary = new StandardLibraryParser(standardlibraryxml);
                 WKNetworkUI.networkServer = new NetworkServer();
                 WKNetworkUI.networkServer.start();
                 createAndShowGUI(networkdir);
