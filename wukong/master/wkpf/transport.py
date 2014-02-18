@@ -700,6 +700,10 @@ class BrokerAgent:
             print '[transport] getting messages from nodes'
             print '[transport] ' + str(deliver)
 
+            # insert monitoring message into database
+            if deliver.command == pynvc.MONITORING:
+                print '[monitoring] node %d : %s' % (deliver.destination, str(bytearray(deliver.payload)))
+
             # display logs from nodes if received
             if deliver.command == pynvc.LOGGING:
                 print '[transport] node %d : %s' % (deliver.destination,
