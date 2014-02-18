@@ -7,10 +7,9 @@ function Block()
 {
 	this.init();
 }
-Block.register=function(type,b)
-{
-	Block.classes[type] = b;
-}
+Block.register = function (type, b) {
+    Block.classes[type] = b;
+};
 Block.prototype.init=function() {
 	this.id = Block_count;
 	this.div = $('<div></div>');
@@ -137,7 +136,7 @@ Block.prototype.draw=function() {
     this.div.append('<span style="font-family:"Trebuchet MS", Helvetica, sans-serif; font-size: 20pt; word-wrap: break-word;">' + this.type.replace('_', ' ') + '</span>');
 	for(i=0;i<this.slots.length;i++) {
 		this.div.append('<div class=signal id=signal_'+this.id+'_'+i+'>');
-<<<<<<< HEAD
+
 		$('#signal_'+this.id+'_'+i).data('property_name', this.slots[i].name);
 		$('#signal_'+this.id+'_'+i).data('index', i);
 		$('#signal_'+this.id+'_'+i).data('block_id', this.id);
@@ -159,13 +158,7 @@ Block.prototype.draw=function() {
 				}
 			}
 		});
-=======
-		$('#signal_'+this.id+'_'+i).css('position','absolute').css('width',118).css('height',15).css('left',0).css('top',i*15+20);
-		if (this.sigProper[this.slots[i].name])
-			$('#signal_'+this.id+'_'+i).html(this.slots[i].name.replace('_', ' ')+':'+this.sigProper[this.slots[i].name]);
-		else
-			$('#signal_'+this.id+'_'+i).html(this.slots[i].name.replace('_', ' '));
->>>>>>> develop
+
 	}
 }
 Block.prototype.addSignal=function(con) {
