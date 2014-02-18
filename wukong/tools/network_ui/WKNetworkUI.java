@@ -6,11 +6,14 @@ import java.awt.event.*;
 import java.net.URL;
 import java.io.*;
 import java.util.*;
+import java.lang.Runtime;
 import name.pachler.nio.file.*;
 
-public class WKNetworkUI extends JPanel implements TreeSelectionListener, ActionListener, DirectoryWatcherListener {
+public class WKNetworkUI extends JPanel implements TreeSelectionListener, ActionListener, DirectoryWatcherListener, NetworkServerMessagesListener {
+    private static HashMap<Process, String> childProcesses;
+    private static NetworkServer networkServer;
+
     private DirectoryWatcher directorywatcher;
-    private NetworkServer networkServer;
 
     // UI
     private JPanel sensorPanel;
@@ -54,18 +57,21 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
 
         //Set icons for sensors and actuators
         tree.setCellRenderer(new DefaultTreeCellRenderer() {
-            private Icon sensorIcon = UIManager.getIcon("InternalFrame.maximizeIcon");
-            private Icon actuatorIcon = UIManager.getIcon("InternalFrame.closeIcon");
+            private Icon sensorIcon = new ImageIcon("sensor.png");
+            private Icon actuatorIcon = new ImageIcon("actuator.png");
             private Icon connectedDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.maximizeIcon");
             private Icon disconnectedDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.closeIcon");
+            private Icon externalDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.minimizeIcon");
             @Override
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean isLeaf, int row, boolean focused) {
                 Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, isLeaf, row, focused);
-                if (value instanceof SensorTreeNode)
+                if (value instanceof SensorTreeNode) {
                     setIcon(sensorIcon);
-                else if (value instanceof ActuatorTreeNode)
+                } else if (value instanceof ActuatorTreeNode) {
                     setIcon(actuatorIcon);
-                else if (value instanceof DeviceTreeNode) {
+                } else if (value instanceof ExternalDeviceTreeNode) {
+                    setIcon(externalDeviceTreeNodeIcon);
+                } else if (value instanceof SimulatedDeviceTreeNode) {
                     int clientId = ((DeviceTreeNode)value).getClientId();
                     if (networkServer != null && networkServer.getConnectedClients().contains(clientId))
                         setIcon(connectedDeviceTreeNodeIcon);
@@ -109,9 +115,8 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         mainPane.setBottomComponent(textArea);
 
         // Start the network server
-        networkServer = new NetworkServer();
-        networkServer.setMessagesListener(new UIMessagesListener(textArea, tree, treemodel));
-        networkServer.start();
+        WKNetworkUI.networkServer.addMessagesListener(new UIMessagesListener(textArea, tree, treemodel));
+        WKNetworkUI.networkServer.addMessagesListener(this);
 
         //Add the split pane to this panel.
         add(mainPane);
@@ -151,6 +156,41 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         }
     }
 
+    /** Required by NetworkServerMessagesListener interface */
+    public void messageDropped(int src, int dest, int[] message) {}
+    public void messageSent(int src, int dest, int[] message) {}
+
+    public void clientConnected(int client) {
+        // Search for existing client
+        DeviceTreeNode device = findDeviceTreeNode(client);
+        if (device != null) {
+            // Found: it must be a simulated node that wasn't connected to the simulator before.
+            // Just update it to change the icon.
+            this.treemodel.nodeChanged(device);
+        } else {
+            // Not found, could be an external (not simulated) node connecting.
+            // Or it could be a node without a directory because it hasn't been created yet.
+            // We'll add it as an external device for now, and replace the node if a directory appears later.
+            addExternalDeviceTreeNode(client);
+        }
+    }
+
+    public void clientDisconnected(int client) {
+        DeviceTreeNode device = findDeviceTreeNode(client);
+        if (device != null) {
+            if (device instanceof SimulatedDeviceTreeNode) {
+                // Simulated node disconnected. Update the icon.
+                this.treemodel.nodeChanged(device);
+            } else {
+                // External device disconnected. Remove it from the tree.
+                removeDeviceTreeNode(client);
+            }
+        }
+    }
+
+    public void updateClientInTree(int client) {
+    }
+
     private void rootNodeStructureChanged() {
         DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
         this.treemodel.nodeStructureChanged(root);
@@ -160,12 +200,19 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         }
     }
 
-    private void addDeviceTreeNode(String subdirname) {
+    private void addExternalDeviceTreeNode(int clientId) {
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
+        DeviceTreeNode node = new ExternalDeviceTreeNode(clientId);
+        root.add(node);
+        rootNodeStructureChanged();
+    }
+
+    private void addSimulatedDeviceTreeNode(String subdirname) {
         File subdir = new File(networkdir, subdirname);
         if (subdir.isDirectory()) {
             DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
             try {
-                DeviceTreeNode node = new DeviceTreeNode(this.networkdir, subdirname, this.directorywatcher, this.treemodel);
+                DeviceTreeNode node = new SimulatedDeviceTreeNode(this.networkdir, subdirname, this.directorywatcher, this.treemodel);
                 root.add(node);
                 rootNodeStructureChanged();
             } catch (IOException e) {
@@ -175,18 +222,26 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         }
     }
 
-    private void removeDeviceTreeNode(String subdirname) {
-        int client = Integer.parseInt(subdirname.substring(5));
+    private void removeDeviceTreeNode(int clientId) {
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
+        DeviceTreeNode device = findDeviceTreeNode(clientId);
+        if (device != null) {
+            root.remove(device);
+            rootNodeStructureChanged();
+        }
+    }
+
+    private DeviceTreeNode findDeviceTreeNode(int clientId) {
         DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
         for (int i=0; i<root.getChildCount(); i++) {
             if (root.getChildAt(i) instanceof DeviceTreeNode) {
                 DeviceTreeNode device = (DeviceTreeNode)root.getChildAt(i);
-                if (device.getClientId() == client) {
-                    root.remove(device);
-                    rootNodeStructureChanged();
+                if (device.getClientId() == clientId) {
+                    return device;
                 }
             }
         }
+        return null;
     }
 
     // Methods to scan the file system for nodes
@@ -205,13 +260,24 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
             if(e.kind() == StandardWatchEventKind.ENTRY_CREATE){
                 Path context = (Path)e.context();
                 String filename = context.toString();
-                if (filename.startsWith("node_"))
-                    this.addDeviceTreeNode(filename);
+                if (filename.startsWith("node_")) {
+                    int clientId = Integer.parseInt(filename.substring(5));
+                    DeviceTreeNode device = findDeviceTreeNode(clientId);
+                    if (device != null && device instanceof ExternalDeviceTreeNode) {
+                        // This may really have been a simulated node that hadn't created
+                        // its IO directory yet when the node connected to the simulator.
+                        // Remove the external device node and replace it with a simulated one.
+                        this.removeDeviceTreeNode(clientId);
+                    }
+                    this.addSimulatedDeviceTreeNode(filename);
+                }
             } else if(e.kind() == StandardWatchEventKind.ENTRY_DELETE){
                 Path context = (Path)e.context();
                 String filename = context.toString();
-                if (filename.startsWith("node_"))
-                    this.removeDeviceTreeNode(filename);
+                if (filename.startsWith("node_")) {
+                    int clientId = Integer.parseInt(filename.substring(5));
+                    this.removeDeviceTreeNode(clientId);
+                }
             } else if(e.kind() == StandardWatchEventKind.OVERFLOW){
                 System.err.println("OVERFLOW: more changes happened than we could retreive");
             }
@@ -223,7 +289,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
 		File[] listOfFiles = folder.listFiles(); 
 		for (int i = 0; i < listOfFiles.length; i++) {
 			if (listOfFiles[i].getName().startsWith("node_")) {
-                addDeviceTreeNode(listOfFiles[i].getName());
+                addSimulatedDeviceTreeNode(listOfFiles[i].getName());
 			}
 		}
         directorywatcher.watchDirectory(this.networkdir, this);
@@ -257,15 +323,108 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         frame.setVisible(true);
     }
 
+    public static void forkChildProcess(final String name, final String command, final String directory) throws IOException {
+        System.out.println("[" + name + "] starting " + command);
+        final Process p = Runtime.getRuntime().exec(command, null, new File(directory));
+        WKNetworkUI.childProcesses.put(p, name);
+
+        // Start a thread to monitor output
+        Thread t = new Thread() {
+            public void run() {
+                System.out.println("[" + name + "] CHILD PROCESS STARTED.");
+                BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));  
+                String line = null;
+                try {
+                    while ((line = in.readLine()) != null) {  
+                        System.out.println("[" + name + "] " + line);
+                    }
+                    System.out.println("[" + name + "] CHILD PROCESS TERMINATED.");
+                } catch (IOException e) {
+                    System.err.println("Exception while reading output for child process " + name);
+                    System.err.println(e);
+                }
+            }
+        };
+        t.start();
+    }
+
+    public static void runMasterServer(String masterdir) {
+        try {
+            forkChildProcess("master server", "python master_server.py", masterdir);
+        } catch (IOException e) {
+            System.err.println("Can't start master server");
+            System.err.println(e);
+            System.exit(1);
+        }
+    }
+
+    public static void runVMs(String vmdir, String networkdir, java.util.List<NetworkConfigParser.VMNode> vmsToStart) {
+        for(NetworkConfigParser.VMNode vm : vmsToStart) {
+            String commandline = String.format("./darjeeling.elf -i %d -d %s -e %s",
+                                                vm.clientId,
+                                                networkdir,
+                                                vm.enabledWuClassesXML.getAbsolutePath());
+            try {
+                forkChildProcess("vm " + vm.clientId, commandline, vmdir);
+            } catch (IOException e) {
+                System.err.println("Can't start node VM " + vm.clientId);
+                System.err.println(e);
+                System.exit(1);
+            }
+        }
+    }
+
     public static void main(final String[] args) {
+        WKNetworkUI.childProcesses = new HashMap<Process, String>();
+
+        // Add a hook to kill all child processes
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                public void run() {
+                    for (Process p : WKNetworkUI.childProcesses.keySet()) {
+                        System.out.println("[" + WKNetworkUI.childProcesses.get(p) + "] CHILD PROCESS TERMINATED.");
+                        p.destroy();
+                    }
+                }
+            }, "Shutdown-thread"));
+
         //Schedule a job for the event dispatch thread:
         //creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (args.length > 0)
-                    createAndShowGUI(args[0]);
-                else
-                    createAndShowGUI("/Users/niels/git/darjeeling/src/config/native-dollhouse/dollhouse/");
+                String networkdir = null;
+                String masterdir = null;
+                String vmdir = null;
+                java.util.List<NetworkConfigParser.VMNode> vmsToStart = null;
+
+                for (int i=0; i<args.length; i++) {
+                    if (args[i].equals("-d")) {
+                        networkdir = args[i+1];
+                        i++; // skip network dir
+                    } else if (args[i].equals("-m")) {
+                        masterdir = args[i+1];
+                        i++; // skip master dir
+                    } else if (args[i].equals("-c")) {
+                        NetworkConfigParser config = new NetworkConfigParser(args[i+1]);
+                        networkdir = config.pathToNetworkDirectory.getAbsolutePath();
+                        masterdir = config.pathToMasterServer.getAbsolutePath();
+                        vmdir = config.pathToVM.getAbsolutePath();
+                        vmsToStart = config.nodes;
+                        i++; // skip master dir
+                    }
+                }
+
+                if (networkdir == null) {
+                    System.err.println("Please specify at least the network directory.");
+                    System.exit(1);
+                }
+
+                WKNetworkUI.networkServer = new NetworkServer();
+                WKNetworkUI.networkServer.start();
+                createAndShowGUI(networkdir);
+                if (masterdir != null)
+                    runMasterServer(masterdir);
+                if (vmsToStart != null)
+                    runVMs(vmdir, networkdir, vmsToStart);
             }
         });
     }

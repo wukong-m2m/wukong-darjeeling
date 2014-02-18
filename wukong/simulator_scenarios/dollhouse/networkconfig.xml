@@ -1,0 +1,18 @@
+<WuKongNetworkSimulatorConfig>
+	<Paths
+		master_server = "../../master/" 
+		vm="../../../src/config/native-simulator"
+		network_directory="."
+		/>
+	<Nodes>
+		<Node id="2" enabled_wuclasses="enabled_wuclasses_bedroom1.xml" />
+		<Node id="3" enabled_wuclasses="enabled_wuclasses_bedroom2.xml" />
+		<Node id="4" enabled_wuclasses="enabled_wuclasses_bedroom3.xml" />
+		<Node id="5" enabled_wuclasses="enabled_wuclasses_kitchen.xml" />
+		<Node id="6" enabled_wuclasses="enabled_wuclasses_entrance1.xml" />
+		<Node id="7" enabled_wuclasses="enabled_wuclasses_entrance2.xml" />
+	</Nodes>
+</WuKongNetworkSimulatorConfig>
+
+
+
