@@ -106,12 +106,12 @@ class GIDService(gevent.server.DatagramServer()):
             print "[GIDService] got GID REQUEST from %d" % client_lid
 
             gid = self.reserveGID(client_lid, client_gid)
-            if not gid: 
+            if not gid:
                 no_error = False
             tmp_msg = [pynvc.MULT_PROTO_MSG_SUBTYPE_GID_OFFER] + self.getTwoBytesListFromInt16(gid)
             payload = self.getGIDPayload(
-                self.getTwoBytesListFromInt16(NULL_GID), 
-                self.getTwoBytesListFromInt16(MASTER_GID), 
+                self.getTwoBytesListFromInt16(NULL_GID),
+                self.getTwoBytesListFromInt16(MASTER_GID),
                 pynvc.MULT_PROTO_MSG_TYPE, tmp_msg
             )
             print "[GIDService] reply with GID OFFER", payload
@@ -129,12 +129,12 @@ class GIDService(gevent.server.DatagramServer()):
             no_error = False
 
         '''
-        if no_error: 
+        if no_error:
             #getZwaveAgent().deferSend(client_lid, payload[0], payload[1:], [], cb, error_cb)
-            defer = new_defer(cb, 
+            defer = new_defer(cb,
                 error_cb,
-                None, 
-                [], 
+                None,
+                [],
                 new_message(client_lid, payload[0], payload[1:]), int(round(time.time() * 1000)) + 10000)
             tasks.put_nowait(defer)
         '''
@@ -199,7 +199,7 @@ class GIDService(gevent.server.DatagramServer()):
             for rlid, rgid in self.reserve_list:
                 self.setBit(gid)
             self.reserve_list = []
-        
+
         if (not self.testBit(gid)) and self.database[gid] == lid:
             return gid
 

@@ -4,43 +4,47 @@ import signal
 
 import gtwconfig as CONST
 from broker import Broker
-import tcp
-import rpcservice
-import udp 
 import zw
+import ip
+import rpcservice
+import relayservice
+
+_broker = None
 
 def gateway_init():
-    shutdown_event = Event()
-
+    global _broker
     # Broker
-    broker = Broker()
-    broker.start()
+    _broker = Broker()
 
-    # TCP protocol interface
-    i_tcp = tcp.TCPInterface(('localhost', CONST.TCP_PORT), 'TCP0', broker)
-    i_tcp.start()
+    # IP protocol interface
+    i_ip = ip.IPInterface(('localhost', CONST.IP_PORT), 'IP')
+    _broker.register_interface(i_ip)
 
     # RPC protocol service
-    s_rpc = rpcservice.RPCService(broker)
-    s_rpc.start()
-
-    # UDP protocol interface
-    i_udp = udp.UDPInterface(('localhost', CONST.UDP_PORT), 'UDP0', broker)
-    i_udp.start()
+    s_rpc = rpcservice.RPCService('RPC', _broker.get_interface, _broker.get_all_interfaces())
+    _broker.register_service(s_rpc)
 
     # ZWave protocol interface
-    i_zw = zw.ZWInterface(CONST.ZWAVE_ADDR, 'ZW0', broker)
-    i_zw.start()
+    i_zw = zw.ZWInterface(CONST.ZWAVE_ADDR, 'ZW')
+    _broker.register_interface(i_zw)
+
+    # Master setup service
+    s_relay = relayservice.RelayService('RELAY')
+    _broker.register_service(s_relay)
+
+def gateway_start():
+    global _broker
+
+    shutdown_event = Event()
+
+    _broker.start()
+    print "[Gateway] Started"
 
     # Signal Handling for graceful stop
     def signal_handler():
         print "\n\n*** WARNING ***"
         print "[Gateway] Shutdown signal received"
-        broker.close()
-        s_rpc.close()
-        i_tcp.close()
-        i_udp.close()
-        i_zw.close()
+        _broker.close()
         shutdown_event.set()
 
     gevent.signal(signal.SIGTERM, signal_handler)
@@ -52,6 +56,7 @@ def gateway_init():
     shutdown_event.wait()
     print "[Gateway] Shuting down"
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     gateway_init()
+    gateway_start()

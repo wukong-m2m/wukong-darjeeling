@@ -11,16 +11,48 @@ from gevent.server import DatagramServer
 from gevent.queue import Queue
 import gtwconfig as CONST
 
-#gevent.server.StreamServer(('localhost', CONST.RPC_PORT), handle)
 class ZWInterface(object):
-    def __init__(self, address, name, broker):
-        self.broker = broker
-        self.egress = self.broker.registerInterface(name, self, CONST.RT_IF_TYPE_ZW)
+    def __init__(self, address, name):
+        self._name = name
+        self._protocol_type = CONST.PROTOCOL_TYPE_ZW
         self._greenlet = None
-        self.timeout_msec = 100
-        pyzwave.init(address)        
-        print "[ZWInterface] initialized on address %s" % address
+        self._send_to_broker = None
+        self._timeout_msec = 100
+        pyzwave.init(address)
+        print "[ZWInterface] '%s' initialized on address %s" % (name, address)
 
+    def get_name(self):
+        return self._name
+
+    def get_protocol_type(self):
+        return self._protocol_type
+
+    def set_send_to_broker(self, f):
+        self._send_to_broker = f
+
+    def start(self):
+        self._greenlet = gevent.spawn(self._serve_forever)
+        print "[ZWInterface] Started"
+        gevent.sleep(0) # Make the greenlet start first and return
+
+    def close(self):
+        self._greenlet.kill()
+        print "[ZWInterface] Stopped"
+
+    def _serve_forever(self):
+        while True:
+            try:
+                src, reply = pyzwave.receive(self._timeout_msec)
+                if src and reply:
+                    reply = ''.join([chr(byte) for byte in reply])
+                    print "[ZWInterface] receive: Got message %s from %d" % (str(reply), src)
+                    self._send_to_broker(((self._name, str(src)), reply))
+            except:
+                print '[ZWInterface] receive exception'
+
+            gevent.sleep(0.01) # sleep for at least 10 msec
+
+    # Function for RPC
     def send(self, destination, payload):
         pyzwave.send(destination, [0x88] + payload)
 
@@ -48,34 +80,25 @@ class ZWInterface(object):
         return discovered_nodes
 
     def poll(self):
-        pyzwave.poll()
+        return pyzwave.poll()
 
-    def add(self):
-        pyzwave.add()
+    def add_mode(self):
+        try:
+            pyzwave.add()
+            return True
+        except:
+            return False
 
-    def delete(self):
-        pyzwave.delete()
+    def delete_mode(self):
+        try:
+            pyzwave.delete()
+            return True
+        except:
+            return False
 
-    def stop(self):
-        pyzwave.stop()
-
-    def start(self):
-        self._greenlet = gevent.spawn(self.receive)
-        print "[ZWInterface] Started"
-        gevent.sleep(0) # Make the greenlet start first and return
-
-    def close(self):
-        print "[ZWInterface] Stop working"
-        self._greenlet.kill()
-
-    def receive(self):
-        while True:
-            try:
-                src, reply = pyzwave.receive(self.timeout_msec)
-                if src and reply:
-                    print "[ZWInterface] receive: Got message %s from %d" % (str(reply), src)
-                    self.egress.put((src, None, reply))
-            except:
-                print '[ZWInterface] receive exception'
-
-            gevent.sleep(0.01) # sleep for at least 10 msec
+    def stop_mode(self):
+        try:
+            pyzwave.stop()
+            return True
+        except:
+            return False
