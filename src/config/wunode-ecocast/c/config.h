@@ -44,7 +44,7 @@ typedef unsigned long long int dj_time_t;
 // #define DBG_DARJEELING_GC true
 // #define DBG_WKPF true
 // #define DBG_WKPFGC true
-#define DBG_WKPFUPDATE true
+// #define DBG_WKPFUPDATE true
 // #define DBG_WKCOMM true
 // #define DBG_WKREPROG true
 // #define DBG_ZWAVETRACE true
@@ -61,7 +61,7 @@ void avr_serialPrintf(char * format, ...);
 // #define ROUTING_USE_WUKONG
 
 // Radios: choose as many as the routing protocol allows (max 1 for routing_none)
-#define RADIO_USE_ZWAVE
+// #define RADIO_USE_ZWAVE
 // #define RADIO_USE_XBEE
 
 #endif
