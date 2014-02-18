@@ -97,7 +97,6 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         sensorPanel = new JPanel();
 		sensorTextField = new JTextField("", 20);
 		sensorTextField.addActionListener(this);
-		sensorTextField.setEnabled(false);
 		sensorPanel.add(sensorTextField);
         JScrollPane sensorView = new JScrollPane(sensorPanel);
 
@@ -136,8 +135,10 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         if (s == null) {
             sensorTextField.setText("");
             sensorTextField.setEnabled(false);
+            sensorTextField.setVisible(false);
         } else {
             sensorTextField.setText(s.getValue().toString());
+            sensorTextField.setVisible(true);
             sensorTextField.setEnabled(true);
         }
         this.selectedSensorTreeNode = s;
@@ -315,11 +316,13 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //Add content to the window.
-        frame.add(new WKNetworkUI(networkdir));
+        WKNetworkUI ui = new WKNetworkUI(networkdir);
+        frame.add(ui);
 
         //Display the window.
         frame.pack();
         frame.setVisible(true);
+        ui.setSelectedSensorTreeNode(null);
     }
 
     public static void forkChildProcess(final String name, final String command, final String directory) throws IOException {
