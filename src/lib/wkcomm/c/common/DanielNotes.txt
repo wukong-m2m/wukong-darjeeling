@@ -1,0 +1,29 @@
+// This file is created by Daniel 
+// 2014/02/18
+
+Questions for routing_wukong.c
+
+- Line 133 and 134: Is S1 equal to s1? C is case sensitive and they
+  should be different. 
+- L140: Will this line block the function?
+- Line 151: what's a wifi-server? 
+- What's cid?
+- RT_FAILED is used in several place:
+	* Line 176: no path
+	* Line 195: cannot find wifi cid based on LID.
+- Line 199: the transmission is not actually completed. What's the
+  return of radio_wifi_send()? The function return success when the
+  data are written into UART port. It may fail to reach the
+  destination.
+	radio_wifi_send(): Lin 705, radio_wifi.c
+	
+- Line 202: the failure is casused by not finding IP address, not
+  transmission. In this case, delay the transmission will not fix the
+  problem.
+- Line 209: is this line sending the failure message to someone?
+- Line 213: if the transmission fails, variable ret has no value.
+- Line 190 ~ 215: this is no error handling when the next interface is
+  wifi but wifi radio is NOT used. Same problem applies for other
+  radio. 
+
+			 
