@@ -364,7 +364,7 @@ void wkpf_comm_handle_message(void *data) {
 				retval = wkpf_property_needs_initialisation_push(wuobject, property_number);
 			}
 			if (retval != WKPF_OK) {
-				payload [2] = retval;
+				payload [0] = retval;
 				response_cmd = WKPF_COMM_CMD_ERROR_R;
 				response_size = 1;
 			} else {
