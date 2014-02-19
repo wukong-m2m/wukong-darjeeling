@@ -60,10 +60,10 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         tree.setCellRenderer(new DefaultTreeCellRenderer() {
             private Icon sensorIcon = new ImageIcon("sensorIcon.png");
             private Icon actuatorIcon = new ImageIcon("actuatorIcon.png");
-            private Icon unknownNodeDirectoryIcon =new ImageIcon("unknownNodeDirectoryIcon.png");
-            private Icon runningChildProcessIcon = UIManager.getIcon("InternalFrame.maximizeIcon");
-            private Icon stoppedChildProcessIcon = UIManager.getIcon("InternalFrame.closeIcon");
-            private Icon externalClientIcon = UIManager.getIcon("InternalFrame.minimizeIcon");
+            private Icon unknownNodeDirectoryIcon = new ImageIcon("unknownNodeDirectoryIcon.png");
+            private Icon runningChildProcessIcon = new ImageIcon("runningChildProcessIcon.png");
+            private Icon stoppedChildProcessIcon = new ImageIcon("stoppedChildProcessIcon.png");
+            private Icon externalClientIcon = new ImageIcon("externalClientIcon.png");
             @Override
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean isLeaf, int row, boolean focused) {
                 Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, isLeaf, row, focused);
