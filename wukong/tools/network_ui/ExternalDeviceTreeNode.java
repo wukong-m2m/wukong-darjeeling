@@ -1,5 +1,7 @@
 
 public class ExternalDeviceTreeNode extends DeviceTreeNode {
+	// This class represents a network client without an IO filesystem in the network directory.
+	// This chould either be the master, or for instance a real Galileo node joining the simulated network.
 	int clientId;
 
 	public ExternalDeviceTreeNode(int clientId) {

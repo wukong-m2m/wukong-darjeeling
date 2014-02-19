@@ -58,11 +58,12 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
 
         //Set icons for sensors and actuators
         tree.setCellRenderer(new DefaultTreeCellRenderer() {
-            private Icon sensorIcon = new ImageIcon("sensor.png");
-            private Icon actuatorIcon = new ImageIcon("actuator.png");
-            private Icon connectedDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.maximizeIcon");
-            private Icon disconnectedDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.closeIcon");
-            private Icon externalDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.minimizeIcon");
+            private Icon sensorIcon = new ImageIcon("sensorIcon.png");
+            private Icon actuatorIcon = new ImageIcon("actuatorIcon.png");
+            private Icon unknownNodeDirectoryIcon =new ImageIcon("unknownNodeDirectoryIcon.png");
+            private Icon runningChildProcessIcon = UIManager.getIcon("InternalFrame.maximizeIcon");
+            private Icon stoppedChildProcessIcon = UIManager.getIcon("InternalFrame.closeIcon");
+            private Icon externalClientIcon = UIManager.getIcon("InternalFrame.minimizeIcon");
             @Override
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean isLeaf, int row, boolean focused) {
                 Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, isLeaf, row, focused);
@@ -70,14 +71,24 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                     setIcon(sensorIcon);
                 } else if (value instanceof ActuatorTreeNode) {
                     setIcon(actuatorIcon);
-                } else if (value instanceof ExternalDeviceTreeNode) {
-                    setIcon(externalDeviceTreeNodeIcon);
-                } else if (value instanceof SimulatedDeviceTreeNode) {
+                } else if (value instanceof DeviceTreeNode) {
                     int clientId = ((DeviceTreeNode)value).getClientId();
-                    if (networkServer != null && networkServer.getConnectedClients().contains(clientId))
-                        setIcon(connectedDeviceTreeNodeIcon);
-                    else
-                        setIcon(disconnectedDeviceTreeNodeIcon);
+                    if (WKNetworkUI.childProcessManager.hasChildProcess(clientId)) {
+                        // This is a node for a child process managed by the UI
+                        // (meaning we can start/stop it by double clicking on the tree node)
+                        if (networkServer != null && networkServer.getConnectedClients().contains(clientId))
+                            setIcon(runningChildProcessIcon);
+                        else
+                            setIcon(stoppedChildProcessIcon);
+                    } else {
+                        // This is either
+                        //   - a node_X directory in the network directory, without a corresponding client connected to the network
+                        //   - or, a connected client, not managed by the UI. This could be a Galileo joining the simulated network, or a simulated VM started externally
+                        if (networkServer != null && networkServer.getConnectedClients().contains(clientId))
+                            setIcon(externalClientIcon);
+                        else
+                            setIcon(unknownNodeDirectoryIcon);
+                    }
                 }
                 return c;
             }
@@ -205,11 +216,14 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     public void clientDisconnected(int client) {
         DeviceTreeNode device = findDeviceTreeNode(client);
         if (device != null) {
-            if (device instanceof SimulatedDeviceTreeNode) {
-                // Simulated node disconnected. Update the icon.
+            if (device instanceof SimulatedDeviceTreeNode
+                || WKNetworkUI.childProcessManager.hasChildProcess(device.getClientId())) {
+                // It's either a node filesystem in the network directory
+                // or an external child process controlled (started/stopped) by the UI.
+                // We keep both in the tree, and update the icon.
                 this.treemodel.nodeChanged(device);
             } else {
-                // External device disconnected. Remove it from the tree.
+                // It's an external device, not controlled by the UI. Remove it from the tree.
                 removeDeviceTreeNode(client);
             }
         }
