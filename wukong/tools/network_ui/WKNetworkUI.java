@@ -97,7 +97,6 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                 TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
                 if(selRow != -1) {
                     if(e.getClickCount() == 2) {
-                        System.out.println("DOUBLE CLICK " + selRow + " path " + selPath);
                         Object lastComponent = selPath.getLastPathComponent();
                         if (lastComponent instanceof DeviceTreeNode)
                             final_this.deviceTreeNodeDoubleClicked((DeviceTreeNode)lastComponent);
@@ -141,7 +140,13 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     }
 
     public void deviceTreeNodeDoubleClicked(DeviceTreeNode node) {
-        // niels
+        int clientId = node.getClientId();
+        if (this.childProcessManager.hasChildProcess(clientId)) {
+            if (this.childProcessManager.isChildProcessRunning(clientId))
+                this.childProcessManager.stopChildProcess(clientId);
+            else
+                this.childProcessManager.startChildProcess(clientId);
+        }
     }
 
     /** Required by TreeSelectionListener interface. */
@@ -348,13 +353,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     }
 
     public static void runMasterServer(String masterdir) {
-        try {
-            WKNetworkUI.childProcessManager.forkChildProcess("master server", "python master_server.py", masterdir);
-        } catch (IOException e) {
-            System.err.println("Can't start master server");
-            System.err.println(e);
-            System.exit(1);
-        }
+        WKNetworkUI.childProcessManager.addChildProcess("master server", "python master_server.py", masterdir, 1);
     }
 
     public static void runVMs(String vmdir, String networkdir, java.util.List<NetworkConfigParser.VMNode> vmsToStart) {
@@ -363,13 +362,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                                                 vm.clientId,
                                                 networkdir,
                                                 vm.enabledWuClassesXML.getAbsolutePath());
-            try {
-                WKNetworkUI.childProcessManager.forkChildProcess("vm " + vm.clientId, commandline, vmdir);
-            } catch (IOException e) {
-                System.err.println("Can't start node VM " + vm.clientId);
-                System.err.println(e);
-                System.exit(1);
-            }
+            WKNetworkUI.childProcessManager.addChildProcess("vm " + vm.clientId, commandline, vmdir, vm.clientId);
         }
     }
 

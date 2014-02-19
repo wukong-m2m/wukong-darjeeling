@@ -3,55 +3,119 @@ import java.util.*;
 import java.lang.Runtime;
 
 public class ChildProcessManager {
-    private HashMap<Process, String> childProcesses;
+    private ArrayList<ChildProcessHandler> childProcesses;
 
 	public ChildProcessManager() {
-		childProcesses = new HashMap<Process, String>();
+		this.childProcesses = new ArrayList<ChildProcessHandler>();
 		final ChildProcessManager final_this = this;
 
         // Add a hook to kill all child processes
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 public void run() {
-                    for (Process p : final_this.childProcesses.keySet()) {
-                        System.out.println("[" + final_this.childProcesses.get(p) + "] CHILD PROCESS TERMINATED.");
-                        p.destroy();
+                    for (ChildProcessHandler p : final_this.childProcesses) {
+                        System.out.println("[" + p.name + "] CHILD PROCESS TERMINATED.");
+                        p.stop();
                     }
                 }
             }, "Shutdown-thread"));
 	}
 
-    public void forkChildProcess(final String name, final String command, final String directory) throws IOException {
-        System.out.println("[" + name + "] starting " + command);
-        final Process p = Runtime.getRuntime().exec(command, null, new File(directory));
-        this.childProcesses.put(p, name);
-
-        // Start a thread to monitor output
-        Thread t = new Thread() {
-            public void run() {
-                System.out.println("[" + name + "] CHILD PROCESS STARTED.");
-                BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));  
-                String line = null;
-                try {
-                    while ((line = in.readLine()) != null) {  
-                        System.out.println("[" + name + "] " + line);
-                    }
-                    System.out.println("[" + name + "] CHILD PROCESS TERMINATED.");
-                } catch (IOException e) {
-                    System.err.println("Exception while reading output for child process " + name);
-                    System.err.println(e);
-                }
+    public boolean hasChildProcess(Integer clientId) {
+        for (ChildProcessHandler p : this.childProcesses) {
+            if (p.clientId == clientId) {
+                return true;
             }
-        };
-        t.start();
+        }
+        return false;
+    }
+    public boolean isChildProcessRunning(Integer clientId) {
+        for (ChildProcessHandler p : this.childProcesses) {
+            if (p.clientId == clientId) {
+                return p.isRunning;
+            }
+        }
+        return false;
+    }
+    public void stopChildProcess(Integer clientId) {
+        for (ChildProcessHandler p : this.childProcesses) {
+            if (p.clientId == clientId) {
+                p.stop();
+            }
+        }
+    }
+    public void startChildProcess(Integer clientId) {
+        for (ChildProcessHandler p : this.childProcesses) {
+            if (p.clientId == clientId) {
+                p.start();
+            }
+        }        
+    }
+
+    public void addChildProcess(String name, String commandline, String directory, Integer clientId) {
+        this.childProcesses.add(new ChildProcessHandler(name, commandline, directory, clientId));
     }
 
 	private class ChildProcessHandler {
-		String commandline;
-		String name;
-		Integer nodeId;
+		private String commandline;
+		private String directory;
+		public String name;
+		public Integer clientId;
+        public boolean isRunning;
+        private Process process;
 
-		public ChildProcessHandler(String commandline, String name, Integer nodeId) {
-
+		public ChildProcessHandler(String name, String commandline, String directory, Integer clientId) {
+            this.commandline = commandline;
+            this.directory = directory;
+            this.name = name;
+            this.clientId = clientId;
+            this.isRunning = false;
+            this.process = null;
+            this.start();
 		}
+
+        public synchronized void start() {
+            if (this.isRunning)
+                return;
+
+            try {
+                System.out.println("[" + this.name + "] starting " + this.commandline);
+                this.process = Runtime.getRuntime().exec(this.commandline, null, new File(this.directory));
+            } catch (IOException e) {
+                System.err.println("Exception while starting child process: " + e);
+                System.err.println(commandline);
+                System.err.println("in");
+                System.err.println(directory);
+                this.process = null;
+            }
+
+            this.isRunning = true;
+            // Start a thread to monitor output
+            final ChildProcessHandler final_this = this;
+            Thread t = new Thread() {
+                public void run() {
+                    try {
+                        System.out.println("[" + name + "] CHILD PROCESS STARTED.");
+                        BufferedReader in = new BufferedReader(new InputStreamReader(final_this.process.getInputStream()));  
+                        String line = null;
+                        while ((line = in.readLine()) != null) {  
+                            System.out.println("[" + name + "] " + line);
+                        }
+                    } catch (IOException e) {
+                        System.err.println("Exception while reading output for child process " + name);
+                        System.err.println(e);
+                    } finally {
+                        System.out.println("[" + name + "] CHILD PROCESS TERMINATED.");
+                        final_this.isRunning = false;
+                        final_this.process = null;
+                    }
+                }
+            };
+            t.start();
+        }
+
+        public void stop() {
+            if (this.process != null)
+                this.process.destroy();
+        }
 	}
 }
