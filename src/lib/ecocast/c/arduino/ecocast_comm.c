@@ -82,6 +82,7 @@ void ecocast_comm_handle_message(void *data) {
 			wkreprog_write(msg->length-3, payload+3);
 
 			if (packetnr == lastpacketnr) {
+				DEBUG_LOG(DBG_ECO, "[ECO] Executing capsule. Return value size: %d\n", payload[23]);
 				// Flush current page to flash
 				wkreprog_close();
 				// Execute the code
