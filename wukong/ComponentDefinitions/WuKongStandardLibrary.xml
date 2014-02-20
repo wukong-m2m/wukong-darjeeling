@@ -160,4 +160,7 @@
         <property name="input" access="writeonly" datatype="boolean"  />
         <property name="ouput" access="readonly" datatype="boolean"  />
     </WuClass>
+    <WuClass name="Server" id="44" virtual="false" type="hard">
+        <property name="input" access="readwrite" datatype="short"  default="100"/>
+    </WuClass>
 </WuKong>

@@ -233,6 +233,12 @@ class WuApplication:
             self.changesets.components.append(component)
             self.instanceIds.append(index)
 
+      # add server as component in node 0
+      component = WuComponent(1, '/'+LOCATION_ROOT, 1, 2.0, 'Server', 0, {})
+      componentInstanceMap[0] = component
+      self.wuComponents[0] = component
+      self.changesets.components.append(component)
+      self.instanceIds.append(0)
 
       #assumption: at most 99 properties for each instance, at most 999 instances
       linkSet = []  #store hashed result of links to avoid duplicated links: (fromInstanceId*100+fromProperty)*100000+toInstanceId*100+toProperty
@@ -256,10 +262,10 @@ class WuApplication:
       
       #add monitoring related links
       for instanceId, properties in self.monitorProperties.items():
-          for name, index in properties:  
-              hash_value = (int(instanceId)*100 + int(index)*100000 + 0 + 0)
-              if hash_value not in self.WuLink.keys():
-                  link = WuLink(instanceId, name, 0, 'monitor')
+          for name in properties:
+              hash_value = (int(instanceId)*100 + int(properties[name])*100000 + 0 + 0)
+              if hash_value not in self.wuLinkList.keys():
+                  link = WuLink(componentInstanceMap[instanceId], name, componentInstanceMap[0], 'input')
                   self.wuLinkList[hash_value] = link
               self.changesets.links.append(self.wuLinkList[hash_value])
           
@@ -367,6 +373,9 @@ class WuApplication:
       self.logDeployStatus('Preparing to deploy to nodes %s' % (str(destination_ids)))
       remaining_ids = copy.deepcopy(destination_ids)
       gevent.sleep(0)
+
+      destination_ids.remove(1)
+      remaining_ids.remove(1    )
 
       for node_id in destination_ids:
         node = WuNode.node_dict[node_id]

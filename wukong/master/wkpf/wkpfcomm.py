@@ -1,9 +1,10 @@
 # vi: ts=2 sw=2 expandtab
+# vi: ts=2 sw=2 expandtab
 import sys, time, copy
 from transport import *
 from locationTree import *
 from models import *
-from globals import *
+from wkpf.globals import *
 from configuration import *
 import simulator
 
@@ -69,8 +70,11 @@ class Communication:
       if force:
         print '[wkpfcomm] getting all nodes from discovery'
         WuNode.clearNodes()
-        self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
+        for destination in self.getNodeIds():
+            self.getNodeInfo(int(destination))
+        WuNode.addVirtualNodes(wkpf.globals.virtual_nodes)
         WuNode.saveNodes()
+        self.all_node_infos = WuNode.getAllWuNodes()
       else:
         self.all_node_infos = WuNode.loadNodes()
       return self.all_node_infos

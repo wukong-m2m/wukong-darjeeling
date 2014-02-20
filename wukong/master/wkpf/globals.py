@@ -3,6 +3,7 @@ active_ind = 0
 applications = []
 location_tree = None
 wukong_status = []
+virtual_nodes = {}
 connected = (False if SIMULATION == "true" else True)  # whether zwave gateway is connected
 
 MASTER_BUSY = False

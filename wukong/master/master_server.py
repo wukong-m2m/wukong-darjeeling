@@ -65,6 +65,18 @@ def make_FBP():
 
 wkpf.globals.location_tree = LocationTree(LOCATION_ROOT)
 
+def initializeVirtualNode():
+    # Add the server as a virtual Wudevice for monitoring
+    wuclasses = {}
+    wuobjects = {}
+
+    # 1 is by default the network id of the controller
+    node = WuNode(1, '/' + LOCATION_ROOT, wuclasses, wuobjects, 'virtualdevice')
+    wuclassdef = WuObjectFactory.wuclassdefsbyid[44]
+    wuobject = WuObjectFactory.createWuObject(wuclassdef, node, 1, False)
+    wkpf.globals.virtual_nodes[1] = node
+
+
 # using cloned nodes
 def rebuildTree(nodes):
   nodes_clone = copy.deepcopy(nodes)
@@ -1042,6 +1054,7 @@ wukong = tornado.web.Application([
 logging.info("Starting up...")
 setup_signal_handler_greenlet()
 WuClassLibraryParser.read(COMPONENTXML_PATH)
+initializeVirtualNode();
 WuNode.loadNodes()
 update_applications()
 import_wuXML()

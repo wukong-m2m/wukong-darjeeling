@@ -15,6 +15,7 @@ from configuration import *
 from globals import *
 import socket # for NetworkServerAgent
 import select # for NetworkServerAgent
+from storage.model import sensor
 
 import pynvc # for message constants
 import pyzwave
@@ -666,6 +667,10 @@ class MockAgent(TransportAgent):
     def poll(self):
         return "Not availble"
 
+    def receive(self, timeout_msec = 10):
+        return True
+
+
     # to be run in a thread, and others will use ioloop to monitor this thread
     def handler(self):
         while 1:
@@ -701,8 +706,9 @@ class BrokerAgent:
             print '[transport] ' + str(deliver)
 
             # insert monitoring message into database
-            if deliver.command == pynvc.MONITORING:
-                print '[monitoring] node %d : %s' % (deliver.destination, str(bytearray(deliver.payload)))
+            if deliver.command == 150:
+                data_collection = sensor.SensorData.createByPayload(deliver.destination, deliver.payload)
+                print(data_collection.toDocument())
 
             # display logs from nodes if received
             if deliver.command == pynvc.LOGGING:
