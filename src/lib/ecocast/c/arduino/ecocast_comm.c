@@ -1,95 +1,81 @@
-#include <avr/pgmspace.h>
-#include <avr/boot.h>
 #include <stddef.h>
 #include <stdint.h>
 #include "djarchive.h"
 #include "debug.h"
+#include "program_mem.h"
 #include "wkcomm.h"
 #include "wkreprog.h"
 #include "ecocast_comm.h"
-#include "program_mem.h"
+#include "ecocast_capsules.h"
 
-// Format:
-//    Request:  [ 0x88, 0x20 (ECOCOMMAND),   seq_LSB, seq_MSB, packetnr, lastpacketnr, retval_size, payload.... ]
+uint16_t offset_in_capsule_file;
+
+// Message format:
+//    Request:  [ 0x88, 0x20 (ECOCOMMAND),   seq_LSB, seq_MSB, fragmentnr, lastfragmentnr, retval_size, payload.... ]
 //    Response: [ 0x88, 0x21 (ECOCOMMAND_R), seq_LSB, seq_MSB, retval.... ]
-
-dj_di_pointer ecocast_code_capsule_start = 0;
-
-void ecocast_execute_code_capsule(dj_di_pointer capsule, uint8_t retval_size, uint8_t* retval_buffer) {
-	// According to http://gcc.gnu.org/wiki/avr-gcc
-	//  Z (R30, R31) is call used and could be destroyed by the function in the capsule, but since we already did the ICALL then this doesn't matter
-	//  Y (R28, R29) is call saved. This means it's still safe after ICALL, but we need to restore the contents if we modify it (for 16 and 32 bit retval)
-
-	// TODONR: this doesn't work if capsule is above 64K
-	uint16_t programme_counter_address = capsule/2; // PC is in words, not bytes.
-	switch (retval_size) {
-		case 1:
-			asm("ICALL\n" \
-				"ST Y, R24\n" \
-				: \
-				: "z"(programme_counter_address), "y"(retval_buffer));
-		break;
-		case 2:
-			asm("ICALL\n" \
-				"PUSH R28\n" \
-				"PUSH R29\n" \
-				"ST Y+, R24\n" \
-				"ST Y+, R25\n" \
-				"POP R29\n" \
-				"POP R28\n" \
-				: \
-				: "z"(programme_counter_address), "y"(retval_buffer));
-		break;
-		case 4:
-			asm("ICALL\n" \
-				"PUSH R28\n" \
-				"PUSH R29\n" \
-				"ST Y+, R22\n" \
-				"ST Y+, R23\n" \
-				"ST Y+, R24\n" \
-				"ST Y+, R25\n" \
-				"POP R29\n" \
-				"POP R28\n" \
-				: \
-				: "z"(programme_counter_address), "y"(retval_buffer));
-		break;
-	}
-}
-
+//
+// Buffer organisation:
+// Each capsule starts with a 6 byte capsule header:
+//  2 bytes length (little endian)
+//  4 bytes hash
+//  length-6 bytes capsule data (header size is included in length)
+//
+// Capsules are required to have an even number of bytes to
+// maintain word alignment (python side will take care of this)
+//
+// Two 0 bytes after the last capsule signal the end of the buffer
+// We will assume the capsule is the same if the length and hash
+// value match. Given the right hash function on the Python side, 
+// the chance of collisions is very low.
+// Alternatively, we could make the hash larger, or still receive
+// the whole capsule and check it really matches. This would cost
+// more communication overhead though, for something that won't
+// happen in practice.
 void ecocast_comm_handle_message(void *data) {
 	wkcomm_received_msg *msg = (wkcomm_received_msg *)data;
 	uint8_t *payload = msg->payload;
-	uint8_t response_size = 0, response_cmd = 0;
+	uint8_t response_size, response_cmd = 0;
 
 	switch (msg->command) {
 		case ECOCAST_COMM_ECOCOMMAND: {
-			uint8_t packetnr = payload[0];
-			uint8_t lastpacketnr = payload[1];
+			uint8_t fragmentnr = payload[0];
+			uint8_t lastfragmentnr = payload[1];
+			uint8_t *capsule_data = payload+3;
+			bool capsule_found_in_buffer = false;
 
-			DEBUG_LOG(DBG_ECO, "[ECO] Received packet %d of %d\n", packetnr, lastpacketnr+1);
-
-			if (packetnr == 0) {
-				ecocast_code_capsule_start = dj_archive_get_file(di_app_archive, 0);
-				if ((ecocast_code_capsule_start & 1) == 1) {
-					// Need to start writing at a word boundary
-					wkreprog_open(0, 1);
-					ecocast_code_capsule_start++;
+			DEBUG_LOG(DBG_ECO, "[ECO] Received packet nr %d, last packet nr %d\n", fragmentnr, lastfragmentnr);
+			if (fragmentnr == 0) {
+				// FIRST fragment of a capsule: check if we have the capsule already
+				uint16_t length = *((uint16_t *)capsule_data);
+				if (ecocast_find_capsule_padding_or_empty_space(length, capsule_data+2, &offset_in_capsule_file)) {
+					// Found! Execute it and return the result immediately.
+					DEBUG_LOG(DBG_ECO, "[ECO] Found, so executing directly\n");
+					capsule_found_in_buffer = true;
 				} else {
-					wkreprog_open(0, 0);
+					// Not found. Open the file for writing at the first free position.
+					wkreprog_open(ecocast_find_capsule_filenr(), offset_in_capsule_file);
+					wkreprog_write(msg->length-3, payload+3);
 				}
+			} else {
+				// Not the first capsule, so we always write it
+				wkreprog_write(msg->length-3, payload+3);
 			}
 
-			wkreprog_write(msg->length-3, payload+3);
-
-			if (packetnr == lastpacketnr) {
-				DEBUG_LOG(DBG_ECO, "[ECO] Executing capsule. Return value size: %d\n", payload[23]);
-				// Flush current page to flash
-				wkreprog_close();
-				// Execute the code
-				ecocast_execute_code_capsule(ecocast_code_capsule_start, payload[2], payload);
-				response_size = payload[2];
+			if (fragmentnr == lastfragmentnr) {
+				// This is the last part of the capsule, we need to close the flash
+				if (!capsule_found_in_buffer) { // Unless we're going to execute a capsule already in flash, because then we never opened it.
+					wkreprog_close();
+				}
+			}
+			
+			if (fragmentnr == lastfragmentnr
+				|| capsule_found_in_buffer) {
+				ecocast_execute_code_capsule_at_offset(offset_in_capsule_file, payload[2], payload + 1);
+				response_size = payload[2] + 1;
+				payload[0] = ECOCAST_REPLY_EXECUTED;
 			} else {
-				response_size = 0;
+				response_size = 1;
+				payload[0] = ECOCAST_REPLY_OK;				
 			}
 			response_cmd = ECOCAST_COMM_ECOCOMMAND_R;
 		}

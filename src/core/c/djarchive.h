@@ -16,6 +16,7 @@
 #define DJ_FILETYPE_WKPF_LINK_TABLE   		2
 #define DJ_FILETYPE_WKPF_COMPONENT_MAP		3
 #define DJ_FILETYPE_WKPF_INITVALUES_TABLE	4
+#define DJ_FILETYPE_ECOCAST_CAPSULE_BUFFER	5
 
 #define dj_archive_filesize(file) (dj_di_getU16(file-3))
 #define dj_archive_filetype(file) (dj_di_getU8(file-1))
