@@ -25,6 +25,43 @@ dj_di_pointer ecocast_find_capsule_code_address(uint16_t offset_in_capsule_file)
 	return dj_archive_get_file(di_app_archive, ecocast_find_capsule_filenr()) + offset_in_capsule_file + 6;
 }
 
+void ecocast_do_execute_with_1byte_retval(uint16_t programme_counter_address, uint8_t* retval_buffer) {
+	// Somehow, this won't compile unless I push/pop Y onto the stack (r28/29). Strange, since I'm not changing Y here.
+	asm("ICALL\n" \
+		"PUSH R28\n" \
+		"PUSH R29\n" \
+		"ST Y, R24\n" \
+		"POP R29\n" \
+		"POP R28\n" \
+		: \
+		: "z"(programme_counter_address), "y"(retval_buffer));
+}
+
+void ecocast_do_execute_with_2byte_retval(uint16_t programme_counter_address, uint8_t* retval_buffer) {
+	asm("ICALL\n" \
+		"PUSH R28\n" \
+		"PUSH R29\n" \
+		"ST Y+, R24\n" \
+		"ST Y+, R25\n" \
+		"POP R29\n" \
+		"POP R28\n" \
+		: \
+		: "z"(programme_counter_address), "y"(retval_buffer));
+}
+void ecocast_do_execute_with_4byte_retval(uint16_t programme_counter_address, uint8_t* retval_buffer) {
+	asm("ICALL\n" \
+		"PUSH R28\n" \
+		"PUSH R29\n" \
+		"ST Y+, R22\n" \
+		"ST Y+, R23\n" \
+		"ST Y+, R24\n" \
+		"ST Y+, R25\n" \
+		"POP R29\n" \
+		"POP R28\n" \
+		: \
+		: "z"(programme_counter_address), "y"(retval_buffer));
+}
+
 void ecocast_execute_code_capsule_at_offset(uint16_t offset_in_capsule_file, uint8_t retval_size, uint8_t* retval_buffer) {
 	// According to http://gcc.gnu.org/wiki/avr-gcc
 	//  Z (R30, R31) is call used and could be destroyed by the function in the capsule, but since we already did the ICALL then this doesn't matter
@@ -36,40 +73,17 @@ void ecocast_execute_code_capsule_at_offset(uint16_t offset_in_capsule_file, uin
 
 	switch (retval_size) {
 		case 1:
+			ecocast_do_execute_with_1byte_retval(programme_counter_address, retval_buffer);
 		break;
 		case 2:
-			asm("ICALL\n" \
-				"PUSH R28\n" \
-				"PUSH R29\n" \
-				"ST Y+, R24\n" \
-				"ST Y+, R25\n" \
-				"POP R29\n" \
-				"POP R28\n" \
-				: \
-				: "z"(programme_counter_address), "y"(retval_buffer));
+			ecocast_do_execute_with_2byte_retval(programme_counter_address, retval_buffer);
 		break;
 		case 4:
-			asm("ICALL\n" \
-				"PUSH R28\n" \
-				"PUSH R29\n" \
-				"ST Y+, R22\n" \
-				"ST Y+, R23\n" \
-				"ST Y+, R24\n" \
-				"ST Y+, R25\n" \
-				"POP R29\n" \
-				"POP R28\n" \
-				: \
-				: "z"(programme_counter_address), "y"(retval_buffer));
+			ecocast_do_execute_with_4byte_retval(programme_counter_address, retval_buffer);
 		break;
 	}
 }
 
-void ecocast_do_execute_with_1byte_retval(uint16_t programme_counter_address, uint8_t* retval_buffer) {
-	asm("ICALL\n" \
-		"ST Y, R24\n" \
-		: \
-		: "z"(programme_counter_address), "y"(retval_buffer));
-}
 
 uint8_t ecocast_find_capsule_padding_or_empty_space(uint16_t length, uint8_t *hash, uint16_t *offset_in_capsule_file) {
 	// This will look for the capsule with the specified length and hash.
@@ -107,7 +121,7 @@ uint8_t ecocast_find_capsule_padding_or_empty_space(uint16_t length, uint8_t *ha
 	*offset_in_capsule_file = (uint16_t)(pos-capsule_file_start);
 	uint16_t capsule_file_size = dj_archive_filesize(dj_archive_get_file(di_app_archive, capsule_filenr));
 	uint16_t free_space = capsule_file_size - *offset_in_capsule_file;
-	DEBUG_LOG(DBG_ECO, "[ECO] Not found. Free space left in buffer %d. Capsule size %d.\n", free_space, length);
+	DEBUG_LOG(DBG_ECO, "\n[ECO] Not found. Free space left in buffer %d. Capsule size %d.\n", free_space, length);
 	if (free_space < length) {
 		*offset_in_capsule_file = (capsule_file_start & 1); // (will be 0 or 1: still need to start at first even address)
 		free_space = capsule_file_size - *offset_in_capsule_file;
