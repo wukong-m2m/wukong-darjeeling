@@ -47,14 +47,22 @@ void ecocast_comm_handle_message(void *data) {
 			if (fragmentnr == 0) {
 				// FIRST fragment of a capsule: check if we have the capsule already
 				uint16_t length = *((uint16_t *)capsule_data);
-				if (ecocast_find_capsule_padding_or_empty_space(length, capsule_data+2, &offset_in_capsule_file)) {
+				uint8_t retval = ecocast_find_capsule_padding_or_empty_space(length, capsule_data+2, &offset_in_capsule_file);
+				if (retval == ECOCAST_CAPSULE_FOUND) {
 					// Found! Execute it and return the result immediately.
 					DEBUG_LOG(DBG_ECO, "[ECO] Found, so executing directly\n");
 					capsule_found_in_buffer = true;
-				} else {
-					// Not found. Open the file for writing at the first free position.
+				} else if (retval == ECOCAST_CAPSULE_NOT_FOUND) {
+					// Not found, but enough free space. Open the file for writing at the first free position.
 					wkreprog_open(ecocast_find_capsule_filenr(), offset_in_capsule_file);
 					wkreprog_write(msg->length-3, payload+3);
+				} else {
+					// retval == ECOCAST_BUFFER_TOO_SMALL
+					// The capsule file is too small to receive this capsule. Send error code.
+					response_cmd = ECOCAST_COMM_ECOCOMMAND_R;
+					response_size = 1;
+					payload[0] = ECOCAST_REPLY_TOO_BIG;
+					break; // Breaking here is a bit ugly. Refactor later.
 				}
 			} else {
 				// Not the first capsule, so we always write it
@@ -63,13 +71,18 @@ void ecocast_comm_handle_message(void *data) {
 
 			if (fragmentnr == lastfragmentnr) {
 				// This is the last part of the capsule, we need to close the flash
-				if (!capsule_found_in_buffer) { // Unless we're going to execute a capsule already in flash, because then we never opened it.
+				// Unless we're going to execute a capsule already in flash, because then we never opened it.
+				if (!capsule_found_in_buffer) {
+					// First write two 0 bytes to signal this is currently the last capsule in the file.
+					uint8_t zeros[] = { 0, 0 };
+					wkreprog_write(2, zeros);
+					// Then close the file.
 					wkreprog_close();
 				}
 			}
 			
 			if (fragmentnr == lastfragmentnr
-				|| capsule_found_in_buffer) {
+					|| capsule_found_in_buffer) {
 				ecocast_execute_code_capsule_at_offset(offset_in_capsule_file, payload[2], payload + 1);
 				response_size = payload[2] + 1;
 				payload[0] = ECOCAST_REPLY_EXECUTED;
