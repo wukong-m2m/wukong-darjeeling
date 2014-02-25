@@ -21,6 +21,7 @@ import datetime
 import glob
 import copy
 import fcntl, termios, struct
+from pymongo import MongoClient
 
 try:
   import pyzwave
@@ -46,6 +47,16 @@ except:
   print "cd ../tools/python/pyzwave; sudo python setup.py install"
   sys.exit(-1)
 
+
+try:
+    wkpf.globals.mongoDBClient = MongoClient(MONGODB_URL)
+
+except:
+  print "MongoDB instance " + MONGODB_URL + " can't be connected."
+  print "Please install the mongDB, pymongo module."
+  sys.exit(-1)
+
+
 tornado.options.parse_command_line()
 #tornado.options.enable_pretty_logging()
 
@@ -53,6 +64,8 @@ IP = sys.argv[1] if len(sys.argv) >= 2 else '127.0.0.1'
 
 landId = 100
 node_infos = []
+
+
 
 from make_js import make_main
 from make_fbp import fbp_main

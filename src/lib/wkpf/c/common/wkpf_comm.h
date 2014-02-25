@@ -38,7 +38,7 @@ extern void wkpf_comm_handle_message(void *msg); // Will be called with a pointe
 
 #define WUKONG_MONITOR_PROPERTY                   0xB5
 
-#define WUKONG_MASTER 0
+#define WUKONG_MASTER 1
 #define DEVICE_NATIVE_ZWAVE_SWITCH 64
 #define DEVICE_NATIVE_ZWAVE_DIMMER 65
 #define DEVICE_NATIVE_ZWAVE_CURTAIN 66

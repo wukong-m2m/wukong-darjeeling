@@ -11,13 +11,14 @@ class SensorData:
 
     @classmethod
     def createByPayload(self, node_id, payload):
-        port = payload[2]
-        class_id = (payload[3] << 8) + payload[4]
-        type = payload[6]
+
+        class_id = (payload[2] << 8) + payload[3]
+        port = payload[4]
+        type = payload[5]
         if type == 1: #boolean
-            value = payload[7]
+            value = payload[6]
         else:
-            value = (payload[7] << 8) + payload[8]
+            value = (payload[6] << 8) + payload[7]
 
         return SensorData(node_id, class_id, port, value, 0)
 

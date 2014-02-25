@@ -35,7 +35,7 @@ void wuclass_slider_update(wuobject_t *wuobject) {
   int16_t output = (int16_t)((int32_t)ADCH*range/255+low);
   wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_SLIDER_OUTPUT, output);
 
-  DEBUG_LOG(true, "WKPFUPDATE(Slider): Sensed %d, low %d, high %d, output %d\n", ADCH, low, high, output);
+  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Slider): Sensed %d, low %d, high %d, output %d\n", ADCH, low, high, output);
 }
 
 // ADC CHANNEL 0,  value for channel variable: 0
