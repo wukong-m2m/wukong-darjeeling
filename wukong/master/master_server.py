@@ -21,7 +21,6 @@ import datetime
 import glob
 import copy
 import fcntl, termios, struct
-from pymongo import MongoClient
 
 try:
   import pyzwave
@@ -39,6 +38,14 @@ import wkpf.globals
 from configuration import *
 
 import tornado.options
+
+try:
+  from pymongo import MongoClient
+except:
+  print "Please install python mongoDB driver pymongo by using"
+  print "easy_install pymongo"
+  sys.exit(-1)
+
 
 try:
    m = pyzwave.getDeviceType
