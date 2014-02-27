@@ -6,6 +6,7 @@ import java.io.*;
 import name.pachler.nio.file.*;
 
 public class SimulatedDeviceTreeNode extends DeviceTreeNode implements DirectoryWatcherListener {
+	// This class represents a node with an IO filesystem in the network directory.
 	private String directory;
 	private String name;
 	private String location = "UNKNOWN";

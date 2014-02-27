@@ -10,9 +10,9 @@ import java.lang.Runtime;
 import name.pachler.nio.file.*;
 
 public class WKNetworkUI extends JPanel implements TreeSelectionListener, ActionListener, DirectoryWatcherListener, NetworkServerMessagesListener {
-    private static HashMap<Process, String> childProcesses;
     private static NetworkServer networkServer;
     private static StandardLibraryParser standardLibrary;
+    private static ChildProcessManager childProcessManager;
 
     private DirectoryWatcher directorywatcher;
 
@@ -58,11 +58,12 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
 
         //Set icons for sensors and actuators
         tree.setCellRenderer(new DefaultTreeCellRenderer() {
-            private Icon sensorIcon = new ImageIcon("sensor.png");
-            private Icon actuatorIcon = new ImageIcon("actuator.png");
-            private Icon connectedDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.maximizeIcon");
-            private Icon disconnectedDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.closeIcon");
-            private Icon externalDeviceTreeNodeIcon = UIManager.getIcon("InternalFrame.minimizeIcon");
+            private Icon sensorIcon = new ImageIcon("sensorIcon.png");
+            private Icon actuatorIcon = new ImageIcon("actuatorIcon.png");
+            private Icon unknownNodeDirectoryIcon = new ImageIcon("unknownNodeDirectoryIcon.png");
+            private Icon runningChildProcessIcon = new ImageIcon("runningChildProcessIcon.png");
+            private Icon stoppedChildProcessIcon = new ImageIcon("stoppedChildProcessIcon.png");
+            private Icon externalClientIcon = new ImageIcon("externalClientIcon.png");
             @Override
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean isLeaf, int row, boolean focused) {
                 Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, isLeaf, row, focused);
@@ -70,14 +71,24 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                     setIcon(sensorIcon);
                 } else if (value instanceof ActuatorTreeNode) {
                     setIcon(actuatorIcon);
-                } else if (value instanceof ExternalDeviceTreeNode) {
-                    setIcon(externalDeviceTreeNodeIcon);
-                } else if (value instanceof SimulatedDeviceTreeNode) {
+                } else if (value instanceof DeviceTreeNode) {
                     int clientId = ((DeviceTreeNode)value).getClientId();
-                    if (networkServer != null && networkServer.getConnectedClients().contains(clientId))
-                        setIcon(connectedDeviceTreeNodeIcon);
-                    else
-                        setIcon(disconnectedDeviceTreeNodeIcon);
+                    if (WKNetworkUI.childProcessManager.hasChildProcess(clientId)) {
+                        // This is a node for a child process managed by the UI
+                        // (meaning we can start/stop it by double clicking on the tree node)
+                        if (networkServer != null && networkServer.getConnectedClients().contains(clientId))
+                            setIcon(runningChildProcessIcon);
+                        else
+                            setIcon(stoppedChildProcessIcon);
+                    } else {
+                        // This is either
+                        //   - a node_X directory in the network directory, without a corresponding client connected to the network
+                        //   - or, a connected client, not managed by the UI. This could be a Galileo joining the simulated network, or a simulated VM started externally
+                        if (networkServer != null && networkServer.getConnectedClients().contains(clientId))
+                            setIcon(externalClientIcon);
+                        else
+                            setIcon(unknownNodeDirectoryIcon);
+                    }
                 }
                 return c;
             }
@@ -89,6 +100,23 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
             System.out.println("line style = " + lineStyle);
             tree.putClientProperty("JTree.lineStyle", lineStyle);
         }
+
+        final WKNetworkUI final_this = this;
+        MouseListener mouseListener = new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                int selRow = tree.getRowForLocation(e.getX(), e.getY());
+                TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
+                if(selRow != -1) {
+                    if(e.getClickCount() == 2) {
+                        Object lastComponent = selPath.getLastPathComponent();
+                        if (lastComponent instanceof DeviceTreeNode)
+                            final_this.deviceTreeNodeDoubleClicked((DeviceTreeNode)lastComponent);
+                    }
+                }
+            }
+        };
+        tree.addMouseListener(mouseListener);
+
 
         //Create the scroll pane and add the tree to it. 
         JScrollPane treeView = new JScrollPane(tree);
@@ -120,6 +148,16 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
 
         //Add the split pane to this panel.
         add(mainPane);
+    }
+
+    public void deviceTreeNodeDoubleClicked(DeviceTreeNode node) {
+        int clientId = node.getClientId();
+        if (this.childProcessManager.hasChildProcess(clientId)) {
+            if (this.childProcessManager.isChildProcessRunning(clientId))
+                this.childProcessManager.stopChildProcess(clientId);
+            else
+                this.childProcessManager.startChildProcess(clientId);
+        }
     }
 
     /** Required by TreeSelectionListener interface. */
@@ -178,11 +216,14 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     public void clientDisconnected(int client) {
         DeviceTreeNode device = findDeviceTreeNode(client);
         if (device != null) {
-            if (device instanceof SimulatedDeviceTreeNode) {
-                // Simulated node disconnected. Update the icon.
+            if (device instanceof SimulatedDeviceTreeNode
+                || WKNetworkUI.childProcessManager.hasChildProcess(device.getClientId())) {
+                // It's either a node filesystem in the network directory
+                // or an external child process controlled (started/stopped) by the UI.
+                // We keep both in the tree, and update the icon.
                 this.treemodel.nodeChanged(device);
             } else {
-                // External device disconnected. Remove it from the tree.
+                // It's an external device, not controlled by the UI. Remove it from the tree.
                 removeDeviceTreeNode(client);
             }
         }
@@ -325,39 +366,8 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         ui.setSelectedSensorTreeNode(null);
     }
 
-    public static void forkChildProcess(final String name, final String command, final String directory) throws IOException {
-        System.out.println("[" + name + "] starting " + command);
-        final Process p = Runtime.getRuntime().exec(command, null, new File(directory));
-        WKNetworkUI.childProcesses.put(p, name);
-
-        // Start a thread to monitor output
-        Thread t = new Thread() {
-            public void run() {
-                System.out.println("[" + name + "] CHILD PROCESS STARTED.");
-                BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));  
-                String line = null;
-                try {
-                    while ((line = in.readLine()) != null) {  
-                        System.out.println("[" + name + "] " + line);
-                    }
-                    System.out.println("[" + name + "] CHILD PROCESS TERMINATED.");
-                } catch (IOException e) {
-                    System.err.println("Exception while reading output for child process " + name);
-                    System.err.println(e);
-                }
-            }
-        };
-        t.start();
-    }
-
     public static void runMasterServer(String masterdir) {
-        try {
-            forkChildProcess("master server", "python master_server.py", masterdir);
-        } catch (IOException e) {
-            System.err.println("Can't start master server");
-            System.err.println(e);
-            System.exit(1);
-        }
+        WKNetworkUI.childProcessManager.addChildProcess("master server", "python master_server.py", masterdir, 1);
     }
 
     public static void runVMs(String vmdir, String networkdir, java.util.List<NetworkConfigParser.VMNode> vmsToStart) {
@@ -366,28 +376,12 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                                                 vm.clientId,
                                                 networkdir,
                                                 vm.enabledWuClassesXML.getAbsolutePath());
-            try {
-                forkChildProcess("vm " + vm.clientId, commandline, vmdir);
-            } catch (IOException e) {
-                System.err.println("Can't start node VM " + vm.clientId);
-                System.err.println(e);
-                System.exit(1);
-            }
+            WKNetworkUI.childProcessManager.addChildProcess("vm " + vm.clientId, commandline, vmdir, vm.clientId);
         }
     }
 
     public static void main(final String[] args) {
-        WKNetworkUI.childProcesses = new HashMap<Process, String>();
-
-        // Add a hook to kill all child processes
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-                public void run() {
-                    for (Process p : WKNetworkUI.childProcesses.keySet()) {
-                        System.out.println("[" + WKNetworkUI.childProcesses.get(p) + "] CHILD PROCESS TERMINATED.");
-                        p.destroy();
-                    }
-                }
-            }, "Shutdown-thread"));
+        WKNetworkUI.childProcessManager = new ChildProcessManager();
 
         //Schedule a job for the event dispatch thread:
         //creating and showing this application's GUI.

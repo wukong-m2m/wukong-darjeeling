@@ -5,7 +5,7 @@
 	<property name="libs" value="uart, wkcomm, wkreprog, ecocast"/>
 
 	<!-- Compile these applications -->
-	<property name="apps" value="helloworld"/>
+	<property name="apps" value="eco_app"/>
 
 	<!-- Platform and architecture selection -->
 	<property name="platform" value="arduino"/>

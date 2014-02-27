@@ -30,7 +30,8 @@ class Communication:
       self.device_type = None
       try:
         if SIMULATION == "true":
-          raise KeyboardInterrupt
+          print "simulation mode"
+          raise Exception('simulation', 'Set simulation in master.cfg to false if you do not want simulated discovery')
         if WKPFCOMM_AGENT == "NETWORKSERVER":
           self.zwave = getNetworkServerAgent()
         else:

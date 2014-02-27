@@ -592,12 +592,12 @@ class nodes(tornado.web.RequestHandler):
     location = self.get_argument('location')
     print node_infos
     print 'in nodes: simulation:'+SIMULATION
-    if SIMULATION != "false":
+    if SIMULATION == "true":
       for info in node_infos:
         if info.id == int(nodeId):
           info.location = location
           senNd = SensorNode(info)
-#          senNd = SensorNode(info, 0, 0, 0)
+          WuNode.saveNodes()
           wkpf.globals.location_tree.addSensor(senNd)
       wkpf.globals.location_tree.printTree()
       self.content_type = 'application/json'
@@ -605,32 +605,33 @@ class nodes(tornado.web.RequestHandler):
       return
     comm = getComm()
     if location:
-       print "ndoeId=",nodeId
+       #print "nodeId=",nodeId
        info = comm.getNodeInfo(int(nodeId))
-       print "device type=",info.type
+       #print "device type=",info.type
        if info.type == 'native':
          info.location = location
-	 WuNode.saveNodes()
+         WuNode.saveNodes()
          senNd = SensorNode(info)
          wkpf.globals.location_tree.addSensor(senNd)
-         wkpf.globals.location_tree.printTree()
+         #wkpf.globals.location_tree.printTree()
          self.content_type = 'application/json'
          self.write({'status':0})
        else:
-	  if comm.setLocation(int(nodeId), location):
-		# update our knowledge too
-		for info in comm.getActiveNodeInfos():
-			if info.id == int(nodeId):
-				info.location = location
-				senNd = SensorNode(info)
-				print (info.location)
-		wkpf.globals.location_tree.addSensor(senNd)
-		wkpf.globals.location_tree.printTree()
-		self.content_type = 'application/json'
-		self.write({'status':0})
-          else:
-		self.content_type = 'application/json'
-		self.write({'status':1, 'mesg': 'Cannot set location, please try again.'})
+         if comm.setLocation(int(nodeId), location):
+          # update our knowledge too
+            for info in comm.getActiveNodeInfos():
+              if info.id == int(nodeId):
+                info.location = location
+                senNd = SensorNode(info)
+                print (info.location)
+            wkpf.globals.location_tree.addSensor(senNd)
+            wkpf.globals.location_tree.printTree()
+            WuNode.saveNodes()
+            self.content_type = 'application/json'
+            self.write({'status':0})
+         else:
+            self.content_type = 'application/json'
+            self.write({'status':1, 'mesg': 'Cannot set location, please try again.'})
 
 class WuLibrary(tornado.web.RequestHandler):	
   def get(self):
