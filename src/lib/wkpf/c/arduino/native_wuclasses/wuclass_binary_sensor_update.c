@@ -56,7 +56,7 @@ void wuclass_binary_sensor_update(wuobject_t *wuobject) {
   }
 #endif
 
-  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(BinarySensor): Sensed binary value hihihihihi: %d\n", currentValue);
+  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(BinarySensor): Sensed binary value: %d\n", currentValue);
   DEBUG_LOG(DBG_WKPFUPDATE, "done %d\n", currentValue);
   
 }
