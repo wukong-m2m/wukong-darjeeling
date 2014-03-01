@@ -3,6 +3,7 @@ import copy
 from xml.etree import ElementTree
 import xml.dom.minidom
 import traceback
+import wkpf.globals
 
 
 
@@ -148,6 +149,16 @@ class WuNode:
     stri += "wuobjects"+str(self.wuobjects)+'\n'
     stri += "type:"+self.type+'\n'
     return stri
+
+  @staticmethod
+  def addVirtualNodes(nodes):
+    WuNode.node_dict =  dict(WuNode.node_dict.items() +  nodes.items())
+    return
+
+  @staticmethod
+  def getAllWuNodes():
+    return WuNode.node_dict.values()
+
   @classmethod
   def dumpXML(cls):   
     root = ElementTree.Element('Nodes')
@@ -265,7 +276,9 @@ class WuNode:
            #                     prop_name = wuprop.getAttribute("name")
             #                    prop_value = int(wuprop.getAttribute("value"),0)
              #                   wuobject.properties[prop_name] = prop_value
-    
+
+      #add the virtual nodes
+      cls.node_dict = dict(cls.node_dict.items() + wkpf.globals.virtual_nodes.items())
       return cls.node_dict.values()                              
       
   def isResponding(self):

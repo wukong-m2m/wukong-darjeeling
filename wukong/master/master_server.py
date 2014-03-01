@@ -40,11 +40,29 @@ from configuration import *
 import tornado.options
 
 try:
+  from pymongo import MongoClient
+except:
+  print "Please install python mongoDB driver pymongo by using"
+  print "easy_install pymongo"
+  sys.exit(-1)
+
+
+try:
    m = pyzwave.getDeviceType
 except:
   print "Please reinstall the pyzwave module in the wukong/tools/python/pyzwave by using"
   print "cd ../tools/python/pyzwave; sudo python setup.py install"
   sys.exit(-1)
+
+
+try:
+    wkpf.globals.mongoDBClient = MongoClient(MONGODB_URL)
+
+except:
+  print "MongoDB instance " + MONGODB_URL + " can't be connected."
+  print "Please install the mongDB, pymongo module."
+  sys.exit(-1)
+
 
 tornado.options.parse_command_line()
 #tornado.options.enable_pretty_logging()
@@ -53,6 +71,8 @@ IP = sys.argv[1] if len(sys.argv) >= 2 else '127.0.0.1'
 
 landId = 100
 node_infos = []
+
+
 
 from make_js import make_main
 from make_fbp import fbp_main
@@ -64,6 +84,18 @@ def make_FBP():
 	test_1.make()	
 
 wkpf.globals.location_tree = LocationTree(LOCATION_ROOT)
+
+def initializeVirtualNode():
+    # Add the server as a virtual Wudevice for monitoring
+    wuclasses = {}
+    wuobjects = {}
+
+    # 1 is by default the network id of the controller
+    node = WuNode(1, '/' + LOCATION_ROOT, wuclasses, wuobjects, 'virtualdevice')
+    wuclassdef = WuObjectFactory.wuclassdefsbyid[44]
+    wuobject = WuObjectFactory.createWuObject(wuclassdef, node, 1, False)
+    wkpf.globals.virtual_nodes[1] = node
+
 
 # using cloned nodes
 def rebuildTree(nodes):
@@ -1043,6 +1075,7 @@ wukong = tornado.web.Application([
 logging.info("Starting up...")
 setup_signal_handler_greenlet()
 WuClassLibraryParser.read(COMPONENTXML_PATH)
+initializeVirtualNode();
 WuNode.loadNodes()
 update_applications()
 import_wuXML()
