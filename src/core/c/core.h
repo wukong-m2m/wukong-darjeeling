@@ -10,6 +10,7 @@
 
 // For libraries that need frequent polling. Currently just for radios, but maybe there are other uses. Should be fast.
 extern dj_hook *dj_core_pollingHook;
+extern dj_hook *dj_core_shutdownHook;
 
 extern uint8_t dj_exec_runlevel;
 #define dj_exec_setRunlevel(runlevel)			(dj_exec_runlevel = runlevel)
