@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "debug.h"
 #include "../../common/native_wuclasses/native_wuclasses.h"
 #include "../posix_pc_utils.h"
@@ -21,5 +20,5 @@ void wuclass_led_update(wuobject_t *wuobject) {
 	posix_property_put(wuobject, "led2", port2);
 	posix_property_put(wuobject, "led3", port3);
 	posix_property_put(wuobject, "led4", port4);
-	printf("WKPFUPDATE(Fan): Setting leds to: %x %x %x %x\n", port1, port2, port3, port4);
+	DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Fan): Setting leds to: %x %x %x %x\n", port1, port2, port3, port4);
 }

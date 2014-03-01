@@ -23,5 +23,5 @@ void wuclass_slider_update(wuobject_t *wuobject) {
 	int16_t output = (int16_t)((int32_t)value*range/255+low);
 	wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_SLIDER_OUTPUT, output);
 
-	printf("WKPFUPDATE(Slider): Sensed %d, low %d, high %d, output %d\n", value, low, high, output);
+	DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Slider): Sensed %d, low %d, high %d, output %d\n", value, low, high, output);
 }
