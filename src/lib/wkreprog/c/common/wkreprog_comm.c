@@ -1,6 +1,7 @@
 #include "core.h"
 #include "debug.h"
 #include "types.h"
+#include "hooks.h"
 #include "wkcomm.h"
 #include "wkreprog_comm.h"
 #include "wkreprog_impl.h"
@@ -95,6 +96,7 @@ void wkreprog_comm_handle_message(void *data) {
 		break;
 		case WKREPROG_COMM_CMD_REPROG_REBOOT: {
 			DEBUG_LOG(DBG_WKREPROG, "Reboot the VM.\n");
+			dj_hook_call(dj_core_shutdownHook, NULL);
 			wkreprog_impl_reboot();
 		}
 	}
