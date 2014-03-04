@@ -387,46 +387,78 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         //creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                boolean start_vms = true;
+                boolean start_master = true;
+                String wukong_root = "../../..";
+                String scenario = "dollhouse";
                 String networkdir = null;
+                String scenarioname = null;
                 String masterdir = null;
                 String vmdir = null;
                 String standardlibraryxml = null;
                 java.util.List<NetworkConfigParser.VMNode> vmsToStart = null;
 
                 for (int i=0; i<args.length; i++) {
-                    if (args[i].equals("-d")) {
+                    if (args[i].equals("-w")) {
+                        // Override the wukong root if the simulator isn't started from <wkroot>/wukong/tools/network_ui
+                        wukong_root = args[i+1];
+                        i++; // skip wukong root dir
+                    } else if (args[i].equals("-s")) {
+                        // Load a network config
+                        scenarioname = args[i+1];
+                        i++; // skip master dir
+                    } else if (args[i].equals("-d")) {
+                        // Set a network directory to monitor if no network config is loaded (or override it, but that's not very useful)
                         networkdir = args[i+1];
                         i++; // skip network dir
                     } else if (args[i].equals("-m")) {
+                        // Override the master directory
                         masterdir = args[i+1];
                         i++; // skip master dir
-                    } else if (args[i].equals("-c")) {
-                        NetworkConfigParser config = new NetworkConfigParser(args[i+1]);
-                        networkdir = config.pathToNetworkDirectory.getAbsolutePath();
-                        masterdir = config.pathToMasterServer.getAbsolutePath();
-                        vmdir = config.pathToVM.getAbsolutePath();
-                        standardlibraryxml = config.pathToStandardLibrary.getAbsolutePath();
-                        vmsToStart = config.nodes;
-                        i++; // skip master dir
                     } else if (args[i].equals("-l")) {
+                        // Override the standard library
                         standardlibraryxml = args[i+1];
                         i++; // skip standard library
+                    } else if (args[i].equals("-no-vms")) {
+                        // Don't start the VMs in the network config (so we can start them manually)
+                        start_vms = false;
+                    } else if (args[i].equals("-no-master")) {
+                        // Don't start the master server (so we can start it manually)
+                        start_master = false;
                     }
                 }
+
+                if (networkdir == null && scenarioname == null) {
+                    System.out.println("LOADING DEFAULT DOLLHOUSE SCENARIO.");
+                    NetworkConfigParser config = new NetworkConfigParser(wukong_root + "/wukong/simulator_scenarios/dollhouse/networkconfig.xml");
+                    networkdir = config.pathToNetworkDirectory.getAbsolutePath();
+                    vmsToStart = config.nodes;
+                } else if (scenarioname != null) {
+                    System.out.println("LOADING " + scenarioname + " SCENARIO.");
+                    NetworkConfigParser config = new NetworkConfigParser(wukong_root + "/wukong/simulator_scenarios/" + scenarioname + "/networkconfig.xml");
+                    networkdir = config.pathToNetworkDirectory.getAbsolutePath();
+                    vmsToStart = config.nodes;
+                }
+
+                if (masterdir == null)
+                    masterdir = new File(wukong_root + "/wukong/master").getAbsolutePath();
+                if (vmdir == null)
+                    vmdir = new File(wukong_root + "/src/config/native-simulator").getAbsolutePath();
+                if (standardlibraryxml == null)
+                    standardlibraryxml = new File(wukong_root + "/wukong/ComponentDefinitions/WuKongStandardLibrary.xml").getAbsolutePath();
 
                 if (networkdir == null) {
                     System.err.println("Please specify at least the network directory.");
                     System.exit(1);
                 }
 
-                if (standardlibraryxml != null)
-                    WKNetworkUI.standardLibrary = new StandardLibraryParser(standardlibraryxml);
+                WKNetworkUI.standardLibrary = new StandardLibraryParser(standardlibraryxml);
                 WKNetworkUI.networkServer = new NetworkServer();
                 WKNetworkUI.networkServer.start();
                 createAndShowGUI(networkdir);
-                if (masterdir != null)
+                if (start_master)
                     runMasterServer(masterdir);
-                if (vmsToStart != null)
+                if (start_vms && vmsToStart != null)
                     runVMs(vmdir, networkdir, vmsToStart);
             }
         });

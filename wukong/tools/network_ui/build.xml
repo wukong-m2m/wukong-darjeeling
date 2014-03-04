@@ -31,7 +31,6 @@
     <target name="run" depends="jar">
         <java dir="."
         	  jar="network_ui.jar"
-        	  fork="true"
-              args="-c ../../simulator_scenarios/dollhouse/networkconfig.xml"/>
+        	  fork="true"/>
     </target>
 </project>

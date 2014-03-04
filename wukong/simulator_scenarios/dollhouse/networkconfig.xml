@@ -1,9 +1,6 @@
 <WuKongNetworkSimulatorConfig>
 	<Paths
-		master_server = "../../master/" 
-		vm="../../../src/config/native-simulator"
 		network_directory="."
-		standard_library="../../ComponentDefinitions/WuKongStandardLibrary.xml"
 		/>
 	<Nodes>
 		<Node id="2" enabled_wuclasses="enabled_wuclasses_bedroom1.xml" />

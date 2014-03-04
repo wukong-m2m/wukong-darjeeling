@@ -10,11 +10,7 @@ import java.util.*;
 
 public class NetworkConfigParser {
 	private File pathToNetworkConfigFile = null;
-
-	public File pathToVM = null;
-	public File pathToMasterServer = null;
 	public File pathToNetworkDirectory = null;
-	public File pathToStandardLibrary = null;
 	public List<VMNode> nodes = null;
 
 	public NetworkConfigParser(String filename) {
@@ -38,14 +34,8 @@ public class NetworkConfigParser {
 					NamedNodeMap nodeMap = tempNode.getAttributes();
 					for (int i = 0; i < nodeMap.getLength(); i++) {
 						Node node = nodeMap.item(i);
-						if (node.getNodeName().equals("master_server"))
-							this.pathToMasterServer = getPathRelativeToConfigFile(node.getNodeValue());
-						else if (node.getNodeName().equals("vm"))
-							this.pathToVM = getPathRelativeToConfigFile(node.getNodeValue());
-						else if (node.getNodeName().equals("network_directory"))
+						if (node.getNodeName().equals("network_directory"))
 							this.pathToNetworkDirectory = getPathRelativeToConfigFile(node.getNodeValue());
-						else if (node.getNodeName().equals("standard_library"))
-							this.pathToStandardLibrary = getPathRelativeToConfigFile(node.getNodeValue());
 					}
 				} else if (tempNode.getNodeType() == Node.ELEMENT_NODE
 						&& tempNode.getNodeName().equals("Nodes")) {
