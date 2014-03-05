@@ -366,8 +366,11 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         ui.setSelectedSensorTreeNode(null);
     }
 
-    public static void runMasterServer(String masterdir) {
-        WKNetworkUI.childProcessManager.addChildProcess("master server", "python master_server.py", masterdir, 1);
+    public static void runMasterServer(String masterdir, String appdir) {
+        if (appdir != null)
+            WKNetworkUI.childProcessManager.addChildProcess("master server", "python master_server.py -appdir=" + appdir, masterdir, 1);
+        else
+            WKNetworkUI.childProcessManager.addChildProcess("master server", "python master_server.py", masterdir, 1);
     }
 
     public static void runVMs(String vmdir, String networkdir, java.util.List<NetworkConfigParser.VMNode> vmsToStart) {
@@ -396,6 +399,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                 String masterdir = null;
                 String vmdir = null;
                 String standardlibraryxml = null;
+                String appdir = null;
                 java.util.List<NetworkConfigParser.VMNode> vmsToStart = null;
 
                 for (int i=0; i<args.length; i++) {
@@ -429,15 +433,16 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                 }
 
                 if (networkdir == null && scenarioname == null) {
-                    System.out.println("LOADING DEFAULT DOLLHOUSE SCENARIO.");
-                    NetworkConfigParser config = new NetworkConfigParser(wukong_root + "/wukong/simulator_scenarios/dollhouse/networkconfig.xml");
-                    networkdir = config.pathToNetworkDirectory.getAbsolutePath();
-                    vmsToStart = config.nodes;
-                } else if (scenarioname != null) {
-                    System.out.println("LOADING " + scenarioname + " SCENARIO.");
+                    System.out.println("USING DEFAULT DOLLHOUSE SCENARIO.");
+                    scenarioname = "dollhouse";
+                }
+                if (scenarioname != null) {
+                    System.out.println("LOADING " + scenarioname + ".");
                     NetworkConfigParser config = new NetworkConfigParser(wukong_root + "/wukong/simulator_scenarios/" + scenarioname + "/networkconfig.xml");
                     networkdir = config.pathToNetworkDirectory.getAbsolutePath();
                     vmsToStart = config.nodes;
+                    if (config.pathToMasterApplicationsDirectory != null)
+                        appdir = config.pathToMasterApplicationsDirectory.getAbsolutePath();
                 }
 
                 if (masterdir == null)
@@ -457,7 +462,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                 WKNetworkUI.networkServer.start();
                 createAndShowGUI(networkdir);
                 if (start_master)
-                    runMasterServer(masterdir);
+                    runMasterServer(masterdir, appdir);
                 if (start_vms && vmsToStart != null)
                     runVMs(vmdir, networkdir, vmsToStart);
             }

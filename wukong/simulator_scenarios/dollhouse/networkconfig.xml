@@ -1,5 +1,6 @@
 <WuKongNetworkSimulatorConfig>
 	<Paths
+		app_dir="./apps"
 		network_directory="."
 		/>
 	<Nodes>

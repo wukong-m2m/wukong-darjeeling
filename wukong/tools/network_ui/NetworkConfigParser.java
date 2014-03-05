@@ -11,6 +11,7 @@ import java.util.*;
 public class NetworkConfigParser {
 	private File pathToNetworkConfigFile = null;
 	public File pathToNetworkDirectory = null;
+	public File pathToMasterApplicationsDirectory = null;
 	public List<VMNode> nodes = null;
 
 	public NetworkConfigParser(String filename) {
@@ -36,6 +37,8 @@ public class NetworkConfigParser {
 						Node node = nodeMap.item(i);
 						if (node.getNodeName().equals("network_directory"))
 							this.pathToNetworkDirectory = getPathRelativeToConfigFile(node.getNodeValue());
+						else if (node.getNodeName().equals("app_dir"))
+							this.pathToMasterApplicationsDirectory = getPathRelativeToConfigFile(node.getNodeValue());
 					}
 				} else if (tempNode.getNodeType() == Node.ELEMENT_NODE
 						&& tempNode.getNodeName().equals("Nodes")) {

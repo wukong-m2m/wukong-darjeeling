@@ -22,6 +22,10 @@ import glob
 import copy
 import fcntl, termios, struct
 
+import tornado.options
+tornado.options.define("appdir", type=str, help="Directory that contains the applications")
+tornado.options.parse_command_line()
+
 try:
   import pyzwave
 except:
@@ -35,9 +39,9 @@ from wkpf.wkpfcomm import *
 from wkpf.util import *
 
 import wkpf.globals
-from configuration import *
 
-import tornado.options
+
+from configuration import *
 
 try:
    m = pyzwave.getDeviceType
@@ -46,8 +50,6 @@ except:
   print "cd ../tools/python/pyzwave; sudo python setup.py install"
   sys.exit(-1)
 
-tornado.options.parse_command_line()
-#tornado.options.enable_pretty_logging()
 
 IP = sys.argv[1] if len(sys.argv) >= 2 else '127.0.0.1'
 
@@ -1048,5 +1050,6 @@ update_applications()
 import_wuXML()
 make_FBP()
 wukong.listen(MASTER_PORT)
+
 if __name__ == "__main__":
   ioloop.start()

@@ -1,4 +1,5 @@
 import os
+import tornado.options
 from configobj import ConfigObj
 
 ROOT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
@@ -20,7 +21,10 @@ COMPONENTXML_PATH = os.path.join(ROOT_PATH, 'wukong', 'ComponentDefinitions', 'W
 TEMPLATE_DIR = os.path.join(ROOT_PATH, 'wukong', 'tools', 'xml2java')
 JAVA_OUTPUT_DIR = os.path.join(ROOT_PATH, 'src', 'app', 'wkdeploy', 'java')
 TESTRTT_PATH = os.path.join(ROOT_PATH, 'wukong', 'tools', 'python', 'pyzwave')
-APP_DIR = os.path.join(ROOT_PATH, 'wukong', 'apps')
+if tornado.options.options.appdir == None:
+	APP_DIR = os.path.join(ROOT_PATH, 'wukong', 'apps')
+else:
+	APP_DIR = tornado.options.options.appdir
 BASE_DIR = os.path.join(ROOT_PATH, 'wukong', 'master', 'baseapp')
 MOCK_XML = os.path.join(ROOT_PATH, 'wukong', 'master', 'mock_discovery.xml')
 
