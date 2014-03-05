@@ -1076,7 +1076,7 @@ logging.info("Starting up...")
 setup_signal_handler_greenlet()
 WuClassLibraryParser.read(COMPONENTXML_PATH)
 initializeVirtualNode();
-WuNode.loadNodes()
+#WuNode.loadNodes()
 update_applications()
 import_wuXML()
 make_FBP()
