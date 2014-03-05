@@ -67,13 +67,18 @@ class Communication:
       return filter(lambda info: info.id in node_ids, self.getAllNodeInfos())
 
     def getAllNodeInfos(self, force=False):
-      if force:
-        print '[wkpfcomm] getting all nodes from discovery'
+      if force == False:
+        self.all_node_infos = WuNode.loadNodes()
+        if self.all_node_infos == None:
+          print ('[wkpfcomm] error in cached discovery result')
+      if force == True or self.all_node_infos == None:
+        print '[wkpfcomm] getting all nodes from node discovery'
         WuNode.clearNodes()
         self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
+        WuNode.addVirtualNodes(wkpf.globals.virtual_nodes)
         WuNode.saveNodes()
-      else:
-        self.all_node_infos = WuNode.loadNodes()
+
+
       return self.all_node_infos
 
     def updateAllNodeInfos(self):

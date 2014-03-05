@@ -102,7 +102,7 @@ def firstCandidate(logger, changesets, routingTable, locTree):
             msg = 'Cannot find match for location query "'+ component.location+'" of wuclass "'+ component.type+ '", we will invalid the query and pick all by default.' 
             logger.errorMappingStatus(msg)
             set_wukong_status(msg)
-            candidates = locTree.root.getAllAliveNodeIds()
+            #candidates = locTree.root.getAllAliveNodeIds()
 
 
         if len(candidates) < component.group_size:
