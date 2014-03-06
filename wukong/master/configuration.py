@@ -21,10 +21,10 @@ COMPONENTXML_PATH = os.path.join(ROOT_PATH, 'wukong', 'ComponentDefinitions', 'W
 TEMPLATE_DIR = os.path.join(ROOT_PATH, 'wukong', 'tools', 'xml2java')
 JAVA_OUTPUT_DIR = os.path.join(ROOT_PATH, 'src', 'app', 'wkdeploy', 'java')
 TESTRTT_PATH = os.path.join(ROOT_PATH, 'wukong', 'tools', 'python', 'pyzwave')
-if tornado.options.options.appdir == None:
-	APP_DIR = os.path.join(ROOT_PATH, 'wukong', 'apps')
-else:
+if hasattr(tornado.options.options, 'appdir') and tornado.options.options.appdir == None:
 	APP_DIR = tornado.options.options.appdir
+else:
+	APP_DIR = os.path.join(ROOT_PATH, 'wukong', 'apps')
 BASE_DIR = os.path.join(ROOT_PATH, 'wukong', 'master', 'baseapp')
 MOCK_XML = os.path.join(ROOT_PATH, 'wukong', 'master', 'mock_discovery.xml')
 
