@@ -429,6 +429,16 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                     } else if (args[i].equals("-no-master")) {
                         // Don't start the master server (so we can start it manually)
                         start_master = false;
+                    } else {
+                        System.out.println("Options:");
+                        System.out.println("\t-w <wkroot>\tOverride the wukong root if the simulator isn't started from <wkroot>/wukong/tools/network_ui");
+                        System.out.println("\t-s <scenario>\tSet the scenario to load to <wkroot>/simulator_scenarios/<scenario>. Defaults to <wkroot>/wukong/dollhouse");
+                        System.out.println("\t-d <dir>\tOverride the simulated IO directory to monitor. Defaults to the scenario directory.");
+                        System.out.println("\t-m <dir>\tOverride the directory where the master server is located. Defaults to <wkroot>/wukong/master");
+                        System.out.println("\t-m <file>\tOverride the standard library location. Defaults to <wkroot>/wukong/ComponentDefinitions/WuKongStandardLibrary.xml");
+                        System.out.println("\t-no-vms\t\tStop the network UI from starting the VMs, so they may be run separately, for instance in a debugger.");
+                        System.out.println("\t-no-master\tStop the network UI from starting the master, so it may be run separately.");
+                        System.exit(1);
                     }
                 }
 
