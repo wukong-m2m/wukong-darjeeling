@@ -37,4 +37,3 @@ NETWORKSERVER_PORT = 10008
 
 # The address to connect to mongoDB instance
 # mongo://[username]:[password]@[host]:[port]/[database]
-MONGODB_URL = mongodb://Wukong:d1rect@128.195.121.34:27017/wukong
