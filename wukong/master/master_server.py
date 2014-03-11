@@ -1075,7 +1075,7 @@ wukong = tornado.web.Application([
 logging.info("Starting up...")
 setup_signal_handler_greenlet()
 WuClassLibraryParser.read(COMPONENTXML_PATH)
-initializeVirtualNode();
+#initializeVirtualNode();
 #WuNode.loadNodes()
 update_applications()
 import_wuXML()
