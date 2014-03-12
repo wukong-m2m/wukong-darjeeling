@@ -87,6 +87,7 @@
     </WuClass>
     <WuClass name="Binary_Sensor" id="1004" virtual="false" type="hard" privateCData="short">
         <property name="current_value" access="readwrite" datatype="boolean" default="false"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="10" />
     </WuClass>
     <WuClass name="Temperature_Humidity_Sensor" id="1005" virtual="false" type="hard">
         <property name="current_value_temperature" access="readonly" datatype="short"  />
