@@ -92,8 +92,9 @@ def firstCandidate(logger, changesets, routingTable, locTree):
     #clear all "mapped" tags in every node before mapping
     for nodeid in WuNode.node_dict:
         node = locTree.getNodeInfoById(nodeid)
-        for wuobj in node.wuobjects.values():
-            wuobj.mapped = False
+        if node != None:
+            for wuobj in node.wuobjects.values():
+                wuobj.mapped = False
             
     # construct and filter candidates for every component on the FBP (could be the same wuclass but with different policy)
     for component in changesets.components:
