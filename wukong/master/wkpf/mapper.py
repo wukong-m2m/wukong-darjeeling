@@ -142,22 +142,15 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                 wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number,True)
                 print "appending vitual for", node.id
                 component.instances.append(wuobject)
-                '''        
+                  
             elif (not wuobj_found) and node.type != 'native' and node.type != 'picokong' and wuclassdef.virtual==True:
                 # create a new virtual wuobject where the node 
                 # doesn't have the wuclass for it
-                # TODO: should check for existance of virtual impl
-                # as indicated by the virtual attribute 
-                # (will be changed to a more appropriate name later)
                 sensorNode = locTree.sensor_dict[node.id]
                 sensorNode.initPortList(forceInit = False)
                 port_number = sensorNode.reserveNextPort()
                 wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number, True)
-                # don't save to db
                 component.instances.append(wuobject)
-
-                # TODO: looks like this will always return true for mapping
-                # regardless of whether java impl exist'''
 
         print ([inst.wunode.id for inst in component.instances])
         #this is ignoring ordering of policies, eg. location policy, should be fixed or replaced by other algorithm later--- Sen
