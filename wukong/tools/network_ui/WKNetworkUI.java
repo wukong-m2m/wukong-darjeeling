@@ -121,12 +121,13 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         //Create the scroll pane and add the tree to it. 
         JScrollPane treeView = new JScrollPane(tree);
 
-        //Create the HTML viewing pane.
         sensorPanel = new JPanel();
 		sensorTextField = new JTextField("", 20);
 		sensorTextField.addActionListener(this);
 		sensorPanel.add(sensorTextField);
         JScrollPane sensorView = new JScrollPane(sensorPanel);
+
+
 
         //Add the scroll panes to a split pane.
         JSplitPane devicesPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -137,16 +138,20 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         sensorView.setMinimumSize(minimumSize);
         treeView.setMinimumSize(minimumSize);
 
-        JSplitPane mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        mainPane.setTopComponent(devicesPane);
-        TextArea textArea = new TextArea();
-        mainPane.setBottomComponent(textArea);
-
+        JTabbedPane logTabs = new JTabbedPane();
+        WKNetworkUI.childProcessManager.setLogTabbedPane(logTabs);
+        // Tab for network trace
+        TextArea networkTraceTextArea = new TextArea();
+        networkTraceTextArea.setEditable(false);
+        logTabs.addTab("Network", networkTraceTextArea);
         // Start the network server
-        WKNetworkUI.networkServer.addMessagesListener(new UIMessagesListener(textArea, WKNetworkUI.standardLibrary));
+        WKNetworkUI.networkServer.addMessagesListener(new UIMessagesListener(networkTraceTextArea, WKNetworkUI.standardLibrary));
         WKNetworkUI.networkServer.addMessagesListener(this);
 
         //Add the split pane to this panel.
+        JSplitPane mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        mainPane.setTopComponent(devicesPane);
+        mainPane.setBottomComponent(logTabs);
         add(mainPane);
     }
 
@@ -367,18 +372,24 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     }
 
     public static void runMasterServer(String masterdir, String appdir) {
+        ArrayList<String> commandline = new ArrayList<String>();
+        commandline.add("python");
+        commandline.add("master_server.py");
         if (appdir != null)
-            WKNetworkUI.childProcessManager.addChildProcess("master server", "python master_server.py -appdir=" + appdir, masterdir, 1);
-        else
-            WKNetworkUI.childProcessManager.addChildProcess("master server", "python master_server.py", masterdir, 1);
+            commandline.add("-appdir=" + appdir);
+        WKNetworkUI.childProcessManager.addChildProcess("master", commandline, masterdir, 1);
     }
 
     public static void runVMs(String vmdir, String networkdir, java.util.List<NetworkConfigParser.VMNode> vmsToStart) {
         for(NetworkConfigParser.VMNode vm : vmsToStart) {
-            String commandline = String.format("./darjeeling.elf -i %d -d %s -e %s",
-                                                vm.clientId,
-                                                networkdir,
-                                                vm.enabledWuClassesXML.getAbsolutePath());
+            ArrayList<String> commandline = new ArrayList<String>();
+            commandline.add("./darjeeling.elf");
+            commandline.add("-i");
+            commandline.add(new Integer(vm.clientId).toString());
+            commandline.add("-d");
+            commandline.add(networkdir);
+            commandline.add("-e");
+            commandline.add(vm.enabledWuClassesXML.getAbsolutePath());
             WKNetworkUI.childProcessManager.addChildProcess("vm " + vm.clientId, commandline, vmdir, vm.clientId);
         }
     }
