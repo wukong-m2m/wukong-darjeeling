@@ -17,7 +17,8 @@ import socket # for NetworkServerAgent
 import select # for NetworkServerAgent
 
 import pynvc # for message constants
-import pyzwave
+if WKPFCOMM_AGENT == "ZWAVE":
+    import pyzwave
 import pyzigbee
 
 Message = namedtuple('Message', 'destination command payload')

@@ -1,8 +1,9 @@
-import pyzwave
+from configuration import *
+if WKPFCOMM_AGENT == "ZWAVE":
+  import pyzwave
 import pyzigbee
 import sys
 import os
-from configuration import *
 
 
 REPRG_DJ_OPEN                = 0x10

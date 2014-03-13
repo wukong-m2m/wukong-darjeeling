@@ -25,13 +25,16 @@ import fcntl, termios, struct
 import tornado.options
 tornado.options.define("appdir", type=str, help="Directory that contains the applications")
 tornado.options.parse_command_line()
+from configuration import *
 
-try:
-  import pyzwave
-except:
-  print "Please install the pyzwave module in the wukong/tools/python/pyzwave by using"
-  print "cd ../tools/python/pyzwave; sudo python setup.py install"
-  sys.exit(-1)
+if WKPFCOMM_AGENT == "ZWAVE":
+  try:
+    import pyzwave
+    m = pyzwave.getDeviceType
+  except:
+    print "Please install the pyzwave module in the wukong/tools/python/pyzwave by using"
+    print "cd ../tools/python/pyzwave; sudo python setup.py install"
+    sys.exit(-1)
 import wkpf.wusignal
 from wkpf.wuapplication import WuApplication
 from wkpf.wuclasslibraryparser import *
@@ -39,17 +42,6 @@ from wkpf.wkpfcomm import *
 from wkpf.util import *
 
 import wkpf.globals
-
-
-from configuration import *
-
-try:
-   m = pyzwave.getDeviceType
-except:
-  print "Please reinstall the pyzwave module in the wukong/tools/python/pyzwave by using"
-  print "cd ../tools/python/pyzwave; sudo python setup.py install"
-  sys.exit(-1)
-
 
 IP = sys.argv[1] if len(sys.argv) >= 2 else '127.0.0.1'
 
