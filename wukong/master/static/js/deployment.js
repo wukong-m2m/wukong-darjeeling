@@ -31,18 +31,18 @@ $(function() {
                 _.each(data.mapping_results, function(result) {
                     if (result.instances.length > 0) {
                         _.each(result.instances, function(instance) {
-                          if (instance.portNumber) {
+                          //if (instance.portNumber) {
                             if (instance.virtual) {
-                              $table.append(_.template('<tr class=warning><td><%= instanceId %></td><td>(Virtual) <%= name %></td><td><%= nodeId %></td><td><%= portNumber %></td></tr>')(instance));
+                              $table.append(_.template('<tr class=info><td><%= instanceId %></td><td>(Virtual) <%= name %></td><td><%= nodeId %></td><td><%= portNumber %></td></tr>')(instance));
                             } else {
                               $table.append(_.template('<tr class=success><td><%= instanceId %></td><td><%= name %></td><td><%= nodeId %></td><td><%= portNumber %></td></tr>')(instance));
                             }
-                          } else {
-                            $table.append(_.template('<tr class=info><td><%= instanceId %></td><td><%= name %></td><td><%= nodeId %></td><td><%= portNumber %></td></tr>')(instance));
-                          }
+                          //} else {
+                        //    $table.append(_.template('<tr class=warning><td><%= instanceId %></td><td><%= name %></td><td><%= nodeId %></td><td><%= portNumber %></td></tr>')(instance));
+                          //}
                         });
                     } else {
-                        $table.append(_.template('<tr class=error><td><%= instanceId %></td><td><%= name %></td><td>Cannot find matching wuobjects</td><td></td></tr>')(result));
+                        $table.append(_.template('<tr class=error><td><%= instanceId %></td><td><%= name %></td><td><%= msg%></td><td></td></tr>')(result));
                     }
                 });
 

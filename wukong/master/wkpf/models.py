@@ -21,6 +21,7 @@ class WuComponent:
       self.properties = []
     self.deployid = -1     #temporary id, only used for generating wkpfdeploy.xml
     self.instances = [] # WuObjects allocated on various Nodes after mapping
+    self.message = ""
     self.heartbeatgroups = []
     
 class WuLink:
