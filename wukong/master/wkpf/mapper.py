@@ -88,7 +88,7 @@ def firstCandidate(logger, changesets, routingTable, locTree):
     #output: assign node id to WuObjects
     # TODO: mapping results for generating the appropriate instiantiation for different nodes
 
-
+    mapping_result = True
     #clear all "mapped" tags in every node before mapping
     for nodeid in WuNode.node_dict:
         node = locTree.getNodeInfoById(nodeid)
@@ -108,16 +108,13 @@ def firstCandidate(logger, changesets, routingTable, locTree):
             #no mapping result
             exc_type, exc_value, exc_traceback = sys.exc_info()
             msg = 'Cannot find match for location query "'+ component.location+'" of wuclass "'+ component.type+ '".' 
-            logger.errorMappingStatus(msg)
-            set_wukong_status(msg)
-            return False
-            #candidates = locTree.root.getAllAliveNodeIds()
-
-
-        if len(candidates) < component.group_size:
-            msg = 'There is not enough candidates %r for component %s, but mapper will continue to map' % (candidates, component)
-            set_wukong_status(msg)
             logger.warnMappingStatus(msg)
+            set_wukong_status(msg)
+            component.message = msg
+            candidates, rating = [], []
+            mapping_result = False
+            continue
+            #candidates = locTree.root.getAllAliveNodeIds()
                 
         # construct wuobjects, instances of component
         for candidate in candidates:
@@ -140,7 +137,7 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                 sensorNode = locTree.sensor_dict[node.id]
                 sensorNode.initPortList(forceInit = False)
                 port_number = sensorNode.reserveNextPort()
-                wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number,True)
+                wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number,False)
                 print "appending vitual for", node.id
                 component.instances.append(wuobject)
                   
@@ -152,7 +149,15 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                 port_number = sensorNode.reserveNextPort()
                 wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number, True)
                 component.instances.append(wuobject)
-
+                
+        if len(component.instances) <= component.group_size:
+            msg = 'There is not enough candidates wuobjects from %r for component %s' % (candidates, component.type)
+            set_wukong_status(msg)
+            logger.warnMappingStatus(msg)
+            component.message = msg
+            mapping_result = False
+            continue
+        
         print ([inst.wunode.id for inst in component.instances])
         #this is ignoring ordering of policies, eg. location policy, should be fixed or replaced by other algorithm later--- Sen
         component.instances = sorted(component.instances, key=lambda wuObject: wuObject.virtual, reverse=False)
@@ -164,9 +169,6 @@ def firstCandidate(logger, changesets, routingTable, locTree):
           if inst.virtual:
             WuObjectFactory.remove(inst.wunode, inst.port_number)
         print ([inst.wunode.id for inst in component.instances])
-        if len(component.instances) == 0:
-          logger.errorMappingStatus('No avilable match could be found for component %s' % (component))
-          return False
 
     # Done looping components
 
@@ -197,4 +199,4 @@ def firstCandidate(logger, changesets, routingTable, locTree):
             #senNd.temp_port_list = []
 
     set_wukong_status('')
-    return True
+    return mapping_result
