@@ -374,6 +374,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     public static void runMasterServer(String masterdir, String appdir) {
         ArrayList<String> commandline = new ArrayList<String>();
         commandline.add("python");
+        commandline.add("-u");        
         commandline.add("master_server.py");
         if (appdir != null)
             commandline.add("-appdir=" + appdir);
