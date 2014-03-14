@@ -17,10 +17,11 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     private DirectoryWatcher directorywatcher;
 
     // UI
-    private JPanel sensorPanel;
-    private JTextField sensorTextField;
+    private JPanel sensorValuePanel;
+    private JTextField sensorValueTextField;
     private JTree tree;
     private DefaultTreeModel treemodel;
+    private NodeDetailsPanel nodeDetailsPanel;
 
     //Optionally play with line styles.  Possible values are
     //"Angled" (the default), "Horizontal", and "None".
@@ -121,21 +122,28 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         //Create the scroll pane and add the tree to it. 
         JScrollPane treeView = new JScrollPane(tree);
 
-        sensorPanel = new JPanel();
-		sensorTextField = new JTextField("", 20);
-		sensorTextField.addActionListener(this);
-		sensorPanel.add(sensorTextField);
-        JScrollPane sensorView = new JScrollPane(sensorPanel);
+        sensorValuePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		sensorValueTextField = new JTextField("", 5);
+		sensorValueTextField.addActionListener(this);
+        sensorValuePanel.add(new JLabel("Sensor value: "));
+        sensorValuePanel.add(sensorValueTextField);
 
+        nodeDetailsPanel = new NodeDetailsPanel();
+
+        JPanel detailsPanel = new JPanel(new BorderLayout());
+        detailsPanel.add(sensorValuePanel, BorderLayout.NORTH);
+        detailsPanel.add(nodeDetailsPanel, BorderLayout.CENTER);
+
+        JScrollPane scrollPane = new JScrollPane(detailsPanel);
 
 
         //Add the scroll panes to a split pane.
         JSplitPane devicesPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         devicesPane.setTopComponent(treeView);
-        devicesPane.setBottomComponent(sensorView);
+        devicesPane.setBottomComponent(scrollPane);
 
         Dimension minimumSize = new Dimension(100, 50);
-        sensorView.setMinimumSize(minimumSize);
+        scrollPane.setMinimumSize(minimumSize);
         treeView.setMinimumSize(minimumSize);
 
         JTabbedPane logTabs = new JTabbedPane();
@@ -173,26 +181,35 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         } else {
         	this.setSelectedSensorTreeNode(null);
         }
+
+        TreePath path = tree.getSelectionPath();
+        for (Object pathcomponent : path.getPath()) {
+            if (pathcomponent instanceof DeviceTreeNode) {
+                nodeDetailsPanel.setDeviceTreeNode((DeviceTreeNode)pathcomponent);
+                return;
+            }            
+        }
+        nodeDetailsPanel.setDeviceTreeNode(null);
     }
     private void setSelectedSensorTreeNode(SensorTreeNode s) {
         if (s == null) {
-            sensorTextField.setText("");
-            sensorTextField.setEnabled(false);
-            sensorTextField.setVisible(false);
+            sensorValueTextField.setText("");
+            sensorValueTextField.setEnabled(false);
+            sensorValueTextField.setVisible(false);
         } else {
-            sensorTextField.setText(s.getValue().toString());
-            sensorTextField.setVisible(true);
-            sensorTextField.setEnabled(true);
+            sensorValueTextField.setText(s.getValue().toString());
+            sensorValueTextField.setVisible(true);
+            sensorValueTextField.setEnabled(true);
         }
         this.selectedSensorTreeNode = s;
     }
 
     /** Required by ActionListener interface */
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == sensorTextField) {
-            String text = sensorTextField.getText();
+        if (e.getSource() == sensorValueTextField) {
+            String text = sensorValueTextField.getText();
             try {
-                int newval = Integer.parseInt(sensorTextField.getText());
+                int newval = Integer.parseInt(sensorValueTextField.getText());
                 selectedSensorTreeNode.setValue(newval);
             } catch (NumberFormatException ex) {
             }

@@ -33,6 +33,10 @@ public class SimulatedDeviceTreeNode extends DeviceTreeNode implements Directory
 		return Integer.parseInt(name.substring(5));
 	}
 
+	public String getDirectory() {
+		return this.directory;
+	}
+
     public void directoryChanged(WatchKey signalledKey) {
         // get list of events from key
         java.util.List<WatchEvent<?>> list = signalledKey.pollEvents();
