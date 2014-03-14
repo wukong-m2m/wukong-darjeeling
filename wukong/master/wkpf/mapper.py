@@ -100,6 +100,7 @@ def firstCandidate(logger, changesets, routingTable, locTree):
     for component in changesets.components:
         # filter by location
         locParser = LocationParser(locTree)
+        msg = ''
         print component
         try:
             candidates, rating = locParser.parse(component.location)
@@ -150,7 +151,7 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                 wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number, True)
                 component.instances.append(wuobject)
                 
-        if len(component.instances) <= component.group_size:
+        if len(component.instances) < component.group_size:
             msg = 'There is not enough candidates wuobjects from %r for component %s' % (candidates, component.type)
             set_wukong_status(msg)
             logger.warnMappingStatus(msg)
