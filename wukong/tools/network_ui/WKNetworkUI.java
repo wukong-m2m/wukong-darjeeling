@@ -149,7 +149,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         JTabbedPane logTabs = new JTabbedPane();
         WKNetworkUI.childProcessManager.setLogTabbedPane(logTabs);
         // Tab for network trace
-        TextArea networkTraceTextArea = new TextArea();
+        LogTextArea networkTraceTextArea = new LogTextArea();
         networkTraceTextArea.setEditable(false);
         logTabs.addTab("Network", networkTraceTextArea);
         // Start the network server

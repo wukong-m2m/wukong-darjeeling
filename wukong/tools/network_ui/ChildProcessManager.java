@@ -60,7 +60,7 @@ public class ChildProcessManager {
     }
 
     public void addChildProcess(String name, java.util.List<String> commandline, String directory, Integer clientId) {
-        TextArea childLogTextArea = new TextArea();
+        LogTextArea childLogTextArea = new LogTextArea();
         childLogTextArea.setEditable(false);
         if (this.logTabs != null)
             this.logTabs.addTab(name, childLogTextArea);

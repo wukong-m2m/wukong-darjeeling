@@ -15,6 +15,7 @@ public class NodeDetailsPanel extends JPanel {
 		this.setLayout(new GridLayout(1,1));
 		this.textArea = new TextArea();
 		this.textArea.setEditable(false);
+		this.textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 		this.add(this.textArea);
 	}
 
@@ -32,20 +33,23 @@ public class NodeDetailsPanel extends JPanel {
 		String directory = ((SimulatedDeviceTreeNode)node).getDirectory();
 		String archive_file = directory + "/app_infusion.dja";
 		StringBuilder sb = new StringBuilder();
+		sb.append("\nContents of app_infusion.dja for node " + node.getClientId() + ":\n\n");
 
 		// open input file
 		try {
 			FileInputStream fileInput = new FileInputStream(archive_file);
 
 			while (true) {
-				int filelength = fileInput.read()  + fileInput.read()*256;
+				int filelength = fileInput.read() + fileInput.read()*256;
 				if (filelength == 0)
 					break;
 
 				int filetype = fileInput.read();
 		        sb.append(String.format("FILE length %d, type '%s'\n", filelength, this.filetypeToString(filetype)));
-		        byte[] filedata = new byte[filelength];
-		        fileInput.read(filedata);
+		        int[] filedata = new int[filelength];
+		        for (int i=0; i<filelength; i++)
+		        	filedata[i] = fileInput.read();
+
 				if (filetype == 0)
 				    sb.append("\t Java archive\n");
 				else if (filetype == 1)
@@ -73,13 +77,53 @@ public class NodeDetailsPanel extends JPanel {
 	}
 
 
-	private void parseLinkTable(StringBuilder sb, byte[] filedata) {
-
+	private void parseLinkTable(StringBuilder sb, int[] filedata) {
+	    int number_of_links = filedata[0]+256*filedata[1];
+		sb.append(String.format("\t%s: \t\t\t%d links\n", bts(filedata, 0, 2), number_of_links));
+		for (int i=0; i<number_of_links; i++) {
+			int[] link = Arrays.copyOfRange(filedata, 2+i*6, 2+i*6+6);
+	        int fromcomponent = link[0]+link[1]*256;
+	        int fromport = link[2];
+	        int tocomponent = link[3]+link[4]*256;
+	        int toport = link[5];
+        	sb.append(String.format("\t%s: \t\tlink from (%d,%d) to (%d,%d)\n",
+        												  bts(link, 0, 6),
+                                                          fromcomponent,
+                                                          fromport,
+                                                          tocomponent,
+                                                          toport));
+	    }
 	}
-	private void parseComponentMap(StringBuilder sb, byte[] filedata) {
 
+	private void parseComponentMap(StringBuilder sb, int[] filedata) {
+	    int number_of_components = filedata[0]+256*filedata[1];
+	    sb.append(String.format("\t%s: \t\t\t%d components\n", bts(filedata, 0, 2), number_of_components));
+
+		int[] offsettable = Arrays.copyOfRange(filedata, 2, 2+(number_of_components)*2);
+	    sb.append("\t\t\t\t\toffset table:\n");
+	    for (int i=0; i<number_of_components; i++) {
+	        int offset = offsettable[2*i]+offsettable[2*i+1]*256;
+	        sb.append(String.format("\t%s: \t\t\t\tcomponent %d at offset %d\n", bts(offsettable, 2*i, 2), i, offset));
+		}
+
+	    int[] componenttable = Arrays.copyOfRange(filedata, 2+(number_of_components)*2, filedata.length);
+	    int pos = 0;
+	    sb.append("\t\t\t\t\tcomponents:\n");
+	    for (int i=0; i<number_of_components; i++) {
+	        int number_of_endpoints = componenttable[pos];
+	        int wuclass = componenttable[pos+1]+componenttable[pos+2]*256;
+	        sb.append(String.format("\t%s: \t\t\tcomponent %d, wuclass %d, %d endpoint(s):\n", bts(componenttable, pos, 3), i,  wuclass, number_of_endpoints));
+	        pos += 3;
+	        for (int j=0; j<number_of_endpoints; j++) {
+	            int node = componenttable[pos]+componenttable[pos+1]*256;
+	            int port = componenttable[pos+2];
+	            sb.append(String.format("\t%s: \t\t\t\tnode %d, port %d\n", bts(componenttable, pos, 3), node, port));
+	            pos += 3;
+	        }
+	    }
 	}
-	private void parseInitvalues(StringBuilder sb, byte[] filedata) {
+
+	private void parseInitvalues(StringBuilder sb, int[] filedata) {
 	    int number_of_initvalues = filedata[0]+256*filedata[1];
 		sb.append(String.format("\t%s: \t\t\t%d initvalues\n", bts(filedata, 0, 2), number_of_initvalues));
 		int pos = 2;
@@ -87,7 +131,7 @@ public class NodeDetailsPanel extends JPanel {
 			int component_id = filedata[pos]+filedata[pos+1]*256;
 			int property_number = filedata[pos+2];
 			int value_size = filedata[pos+3];
-	        sb.append(String.format("\t%s: \t\t\tcomponent %d, property %d, size %d\n", bts(filedata, pos, 4),
+	        sb.append(String.format("\t%s: \t\tcomponent %d, property %d, size %d\n", bts(filedata, pos, 4),
 					                                                                    component_id,
 					                                                                    property_number,
 					                                                                    value_size));
@@ -98,35 +142,15 @@ public class NodeDetailsPanel extends JPanel {
 	        	valuestr = new Integer(filedata[pos+4]+filedata[pos+5]*256).toString();
 	        } else
 	        	valuestr = "?";
-	        sb.append(String.format("\t%s: \t\t\t\tvalue %s\n", bts(filedata, pos+4, value_size), valuestr));
+	        sb.append(String.format("\t%s: \t\t\t\t\tvalue %s\n", bts(filedata, pos+4, value_size), valuestr));
 	        pos += 4+value_size;
-		}		
-    // initvalues = filedata[2:]
-    // pos = 0
-    // for i in range(number_of_initvalues):
-    //     component_id = initvalues[pos]+initvalues[pos+1]*256
-    //     property_number = initvalues[pos+2]
-    //     value_size = initvalues[pos+3]
-    //     print "\t%s: \t\t\tcomponent %d, property %d, size %d" % (str(initvalues[pos:pos+4]),
-    //                                                               component_id,
-    //                                                               property_number,
-    //                                                               value_size)
-    //     value = initvalues[pos+4:pos+4+value_size]
-    //     if value_size == 1:
-    //         valuestr = str(value[0])
-    //     elif value_size == 2:
-    //         valuestr = str(value[0]+value[1]*256)
-    //     else:
-    //         valuestr = str(value)
-    //     print "\t%s: \t\t\t\tvalue %s" % (str(value), valuestr)
-    //     pos += 4+value_size
-
+		}
 	}
 
-	private String bts(byte[] bytes, int start, int length) {
+	private String bts(int[] bytes, int start, int length) {
 		StringBuilder sb = new StringBuilder();
 		while (length-- > 0) {
-			sb.append(String.format("[%x] ", bytes[start++]));
+			sb.append(String.format("[%2x]", bytes[start++]));
 		}
 		return sb.toString();
 	}
