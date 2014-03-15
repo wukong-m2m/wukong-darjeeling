@@ -122,7 +122,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         //Create the scroll pane and add the tree to it. 
         JScrollPane treeView = new JScrollPane(tree);
 
-        sensorValuePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        sensorValuePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
 		sensorValueTextField = new JTextField("", 5);
 		sensorValueTextField.addActionListener(this);
         sensorValuePanel.add(new JLabel("Sensor value: "));
