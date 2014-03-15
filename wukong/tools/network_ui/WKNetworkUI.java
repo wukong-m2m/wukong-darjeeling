@@ -219,7 +219,6 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     /** Required by NetworkServerMessagesListener interface */
     public void messageDropped(int src, int dest, int[] message) {}
     public void messageSent(int src, int dest, int[] message) {}
-
     public void clientConnected(int client) {
         // Search for existing client
         DeviceTreeNode device = findDeviceTreeNode(client);
@@ -234,7 +233,6 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
             addExternalDeviceTreeNode(client);
         }
     }
-
     public void clientDisconnected(int client) {
         DeviceTreeNode device = findDeviceTreeNode(client);
         if (device != null) {
@@ -250,9 +248,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
             }
         }
     }
-
-    public void updateClientInTree(int client) {
-    }
+    public void discovery(Integer[] ids) {}
 
     private void rootNodeStructureChanged() {
         DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();

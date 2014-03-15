@@ -99,7 +99,10 @@ public class ChildProcessManager {
                 public void run() {
                     try {
                         try {
-                            System.out.println("[" + final_this.name + "] starting " + final_this.commandline.toString());
+                            System.out.print("[" + final_this.name + "] starting ");
+                            for (String s : final_this.commandline)
+                                System.out.print(s + " ");
+                            System.out.println("");
                             ProcessBuilder pb = new ProcessBuilder(final_this.commandline);
                             pb.directory(new File(final_this.directory));
                             pb.redirectErrorStream(true);
