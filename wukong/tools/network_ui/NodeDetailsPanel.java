@@ -11,12 +11,13 @@ import java.util.*;
 public class NodeDetailsPanel extends JPanel {
 	private TextArea textArea;
 
-	public NodeDetailsPanel() {
-		this.setLayout(new GridLayout(1,1));
+	public NodeDetailsPanel() {		
+		this.setLayout(new BorderLayout());
 		this.textArea = new TextArea();
 		this.textArea.setEditable(false);
 		this.textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-		this.add(this.textArea);
+		this.add(new JLabel("Node information:"), BorderLayout.NORTH);
+		this.add(this.textArea, BorderLayout.CENTER);
 	}
 
 	public void setDeviceTreeNode(DeviceTreeNode node) {
