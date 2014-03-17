@@ -72,8 +72,7 @@ class WuObjectFactory:
     cls.wuclassdefsbyid[id] = WuClassDef( id, name, virtual, type, properties) 
     cls.wuclassdefsbyname[name] = cls.wuclassdefsbyid[id]
     return cls.wuclassdefsbyname[name]
-    
-# TODO: should remove virtual from this class
+
 class WuClassDef:
   
   # Maintaining an ordered list for save function
