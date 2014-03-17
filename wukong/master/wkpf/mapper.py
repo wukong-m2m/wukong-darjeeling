@@ -123,7 +123,7 @@ def firstCandidate(logger, changesets, routingTable, locTree):
             node = locTree.getNodeInfoById(candidate)
             available_wuobjects = [wuobject for wuobject in node.wuobjects.values() if wuobject.wuclassdef.id == wuclassdef.id]
             
-            has_wuclass = wuclassdef.id in node.wuclasses.keys() and node.wuclasses[wuclassdef.id].virtual == False
+            has_wuclass = wuclassdef.id in node.wuclasses.keys()
             wuobj_found = False
             for avail_wuobj in available_wuobjects:
                 # use existing native wuobject, caution given to obj mapped due to previous candidates
