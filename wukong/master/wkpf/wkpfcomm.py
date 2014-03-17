@@ -289,8 +289,10 @@ class Communication:
 
           virtual = virtual_or_publish & 0x1
           publish = virtual_or_publish & 0x2
-
-          if publish:
+          
+          #virtual wuclass, non-publish wuclass will not be shown upon discovery, because we cannot create new wuobjs using them
+          #to create new virtual wuobjs, we need to re-download virtual wuclass...
+          if publish and (not virtual):
             node = WuNode.findById(destination)
 
             if not node:
