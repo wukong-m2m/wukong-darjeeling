@@ -308,6 +308,15 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     // Methods to scan the file system for nodes
     // Should probably be moved to a separate class (subclass of DefaultTreeModel? still not sure about how to properly do a tree in Java)
     public void directoryChanged(WatchKey signalledKey) {
+        try {
+            // The event we get is the start of the modification. If we read the file too quickly
+            // the VM may not have finished writing the value yet.
+            // There's probably a better way to do this, but for now just sleeping 50ms shouldn't
+            // be noticable to the user and will give the VM ample time to finish writing the new
+            // value
+            Thread.sleep(50);
+        } catch (InterruptedException e) {}
+
         // get list of events from key
         java.util.List<WatchEvent<?>> list = signalledKey.pollEvents();
 
