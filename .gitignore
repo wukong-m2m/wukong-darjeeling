@@ -15,7 +15,6 @@ darjeeling_eeprom.ihex
 darjeeling.a
 darjeeling-avr.map
 build
-app_infusion.dja
 lib_infusions.dja
 programflash.data
 .tags
