@@ -22,6 +22,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     private JTree tree;
     private DefaultTreeModel treemodel;
     private NodeDetailsPanel nodeDetailsPanel;
+    private JSplitPane devicesPane, mainPane;
 
     //Optionally play with line styles.  Possible values are
     //"Angled" (the default), "Horizontal", and "None".
@@ -139,14 +140,15 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
 
 
         //Add the scroll panes to a split pane.
-        JSplitPane devicesPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        devicesPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        devicesPane.setResizeWeight(0.5);
         devicesPane.setTopComponent(treeView);
         devicesPane.setBottomComponent(detailsPanel);
 
-        Dimension minimumSize = new Dimension(100, 50);
-        // scrollPane.setMinimumSize(minimumSize);
-        detailsPanel.setMinimumSize(minimumSize);
-        treeView.setMinimumSize(minimumSize);
+        // Dimension minimumSize = new Dimension(100, 50);
+        // // scrollPane.setMinimumSize(minimumSize);
+        // detailsPanel.setMinimumSize(minimumSize);
+        // treeView.setMinimumSize(minimumSize);
 
         JTabbedPane logTabs = new JTabbedPane();
         WKNetworkUI.childProcessManager.setLogTabbedPane(logTabs);
@@ -159,7 +161,8 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         WKNetworkUI.networkServer.addMessagesListener(this);
 
         //Add the split pane to this panel.
-        JSplitPane mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        mainPane.setResizeWeight(0.5);
         mainPane.setTopComponent(devicesPane);
         mainPane.setBottomComponent(logTabs);
         add(mainPane);
@@ -393,6 +396,8 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         frame.pack();
         frame.setVisible(true);
         ui.setSelectedSensorTreeNode(null);
+        ui.devicesPane.setDividerLocation(0.5);
+        ui.mainPane.setDividerLocation(0.7);
     }
 
     public static void runMasterServer(String masterdir, String appdir) {

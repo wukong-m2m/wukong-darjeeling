@@ -64,10 +64,7 @@ public class NodeDetailsPanel extends JPanel {
 				sb.append("\n");
 			}
 
-			if (fileInput.available() == 0)
-				sb.append("END OF ARCHIVE\n");
-			else
-				sb.append("UNEXPECTED DATA AFTER END OF ARCHIVE: " + fileInput.available() + " bytes.\n");
+			sb.append("END OF ARCHIVE\n");
 			fileInput.close();
 		} catch (FileNotFoundException fnfex) {
 			sb.append(archive_file + " not found.");
