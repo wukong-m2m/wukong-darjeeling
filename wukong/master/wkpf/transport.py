@@ -15,6 +15,7 @@ from configuration import *
 from globals import *
 import socket # for NetworkServerAgent
 import select # for NetworkServerAgent
+import traceback
 
 import pynvc # for message constants
 if WKPFCOMM_AGENT == "ZWAVE":
@@ -490,6 +491,7 @@ class NetworkServerAgent(TransportAgent):
             except Exception as e:
                 print '[transport] receive exception'
                 print e
+                traceback.print_tb(e.__traceback__)
 
             getDeferredQueue().removeTimeoutDefer()
 
