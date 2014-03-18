@@ -47,6 +47,7 @@ except:
   sys.exit(-1)
 
 
+
 try:
    m = pyzwave.getDeviceType
 except:
@@ -54,14 +55,14 @@ except:
   print "cd ../tools/python/pyzwave; sudo python setup.py install"
   sys.exit(-1)
 
+if(MONITORING == 'true'):
+    try:
+        wkpf.globals.mongoDBClient = MongoClient(MONGODB_URL)
 
-try:
-    wkpf.globals.mongoDBClient = MongoClient(MONGODB_URL)
-
-except:
-  print "MongoDB instance " + MONGODB_URL + " can't be connected."
-  print "Please install the mongDB, pymongo module."
-  sys.exit(-1)
+    except:
+      print "MongoDB instance " + MONGODB_URL + " can't be connected."
+      print "Please install the mongDB, pymongo module."
+      sys.exit(-1)
 
 
 tornado.options.parse_command_line()
