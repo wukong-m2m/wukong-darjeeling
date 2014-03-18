@@ -21,6 +21,7 @@
 // (routing requires at least 1 radio_ library to be linked in)
 #include "../../common/routing/routing.h"
 
+#ifdef RADIO_USE_NETWORKSERVER
 
 // Protocol format: see WuKongNetworkServer.java
 #define MODE_MESSAGE 1
@@ -116,3 +117,5 @@ uint8_t radio_networkserver_send(radio_networkserver_address_t dest, uint8_t *pa
 	else
 		return -1;
 }
+
+#endif // RADIO_USE_NETWORKSERVER
