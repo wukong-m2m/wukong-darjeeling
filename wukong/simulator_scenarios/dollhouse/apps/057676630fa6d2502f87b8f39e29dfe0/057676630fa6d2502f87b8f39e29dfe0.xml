@@ -1,41 +1,41 @@
 <application name="057676630fa6d2502f87b8f39e29dfe0">
 <page title="_first_">
-    <component type="Magnetic_Sensor" instanceId="31" x="251" y="104" w="100" h="100">
-        <link fromProperty="output" toInstanceId="33" toProperty="input1"/>
-        <location requirement="/WuKong/Entrance/Left#" />
-        <group_size requirement="1" />
-        <reaction_time requirement="1" />
-        <signalProperty output="" refresh_rate=""  />
-    </component>
-    <component type="Magnetic_Sensor" instanceId="32" x="244" y="240" w="100" h="100">
-        <link fromProperty="output" toInstanceId="33" toProperty="input2"/>
-        <location requirement="/WuKong/Entrance/Right#" />
-        <group_size requirement="1" />
-        <reaction_time requirement="1" />
-        <signalProperty output="" refresh_rate=""  />
-    </component>
-    <component type="or_gate" instanceId="33" x="443" y="149" w="100" h="100">
-        <link fromProperty="output" toInstanceId="35" toProperty="input1"/>
+    <component type="Or_Gate" instanceId="26" x="481" y="148" w="120" h="100">
+        <link fromProperty="output" toInstanceId="27" toProperty="input1"/>
         <location requirement="/WuKong/Entrance#" />
         <group_size requirement="1" />
         <reaction_time requirement="1" />
         <signalProperty output=""  />
     </component>
-    <component type="PIR_Sensor" instanceId="34" x="249" y="390" w="100" h="100">
-        <link fromProperty="current_value" toInstanceId="35" toProperty="input2"/>
-        <location requirement="/WuKong/Entrance#" />
-        <group_size requirement="1" />
-        <reaction_time requirement="1" />
-        <signalProperty current_value="" refresh_rate=""  />
-    </component>
-    <component type="or_gate" instanceId="35" x="671" y="232" w="100" h="100">
+    <component type="Or_Gate" instanceId="27" x="657" y="240" w="120" h="100">
         <link fromProperty="output" toInstanceId="36" toProperty="on_off"/>
         <location requirement="/WuKong/Entrance#" />
         <group_size requirement="1" />
         <reaction_time requirement="1" />
         <signalProperty output=""  />
     </component>
-    <component type="Light_Actuator" instanceId="36" x="868" y="234" w="100" h="100">
+    <component type="Magnetic_Sensor" instanceId="31" x="251" y="104" w="120" h="100">
+        <link fromProperty="output" toInstanceId="26" toProperty="input1"/>
+        <location requirement="/WuKong/Entrance/Left#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty output="" refresh_rate=""  />
+    </component>
+    <component type="Magnetic_Sensor" instanceId="32" x="244" y="240" w="120" h="100">
+        <link fromProperty="output" toInstanceId="26" toProperty="input2"/>
+        <location requirement="/WuKong/Entrance/Right#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty output="" refresh_rate=""  />
+    </component>
+    <component type="PIR_Sensor" instanceId="34" x="249" y="390" w="120" h="100">
+        <link fromProperty="current_value" toInstanceId="27" toProperty="input2"/>
+        <location requirement="/WuKong/Entrance#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty current_value="" refresh_rate=""  />
+    </component>
+    <component type="Light_Actuator" instanceId="36" x="868" y="234" w="120" h="100">
         <location requirement="/WuKong/Entrance#" />
         <group_size requirement="1" />
         <reaction_time requirement="1" />

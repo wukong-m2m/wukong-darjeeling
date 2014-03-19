@@ -21,7 +21,7 @@
         <reaction_time requirement="1" />
         <signalProperty operator="" threshold="" value="" output=""  />
     </component>
-    <component type="Light_Actuator" instanceId="35" x="980" y="245" w="120" h="100">
+    <component type="Light_Actuator" instanceId="35" x="753" y="208" w="120" h="100">
         <location requirement="/WuKong/Bedroom#" />
         <group_size requirement="1" />
         <reaction_time requirement="1" />

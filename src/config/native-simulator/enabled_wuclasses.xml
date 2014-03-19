@@ -10,7 +10,6 @@
     <WuClass name="Condition_Selector_Short" appCanCreateInstances="false" createInstancesAtStartup="0" />
     <WuClass name="Math_Op" appCanCreateInstances="false" createInstancesAtStartup="0" />
     <WuClass name="Light_Sensor" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="Temperature_Sensor" appCanCreateInstances="false" createInstancesAtStartup="0" />
     <WuClass name="PIR_Sensor" appCanCreateInstances="false" createInstancesAtStartup="0" />
     <WuClass name="Binary_Sensor" appCanCreateInstances="false" createInstancesAtStartup="0" />
     <WuClass name="Temperature_Humidity_Sensor" appCanCreateInstances="false" createInstancesAtStartup="0" />
