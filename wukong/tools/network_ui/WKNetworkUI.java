@@ -360,6 +360,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     private void createNodes() {
 		File folder = new File(this.networkdir);
 		File[] listOfFiles = folder.listFiles(); 
+        Arrays.sort(listOfFiles);
 		for (int i = 0; i < listOfFiles.length; i++) {
 			if (listOfFiles[i].getName().startsWith("node_")) {
                 addSimulatedDeviceTreeNode(listOfFiles[i].getName());
