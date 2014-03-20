@@ -292,3 +292,16 @@ class WuObject:
   
   def getPropertyByName(self, name):
     return property_values[name]
+
+  def dump(self):
+    message = ''
+    message += 'On WuNode: ' + str(self.wunode.id) + '\n'
+    message += 'Wuclass Name: ' + str(self.wuclassdef.name) + '\n'
+    message += 'Virtual: ' + str(self.virtual) + '\n'
+    message += 'Has mapped: ' + str(self.mapped) + '\n'
+    message += 'The properties under this wuobject: \n'
+    for property in self.properties:
+      message += 'name: ' + self.properties[property].name
+      message += ', value: ' + str(self.properties[property].value) + '\n'
+      
+    return message

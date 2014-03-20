@@ -384,7 +384,9 @@ class CodeGen:
             '#include <string.h>\n',
             '#include "wkcomm.h"\n',
             '#include "wkpf_wuclasses.h"\n',
-            '#include "../common/native_wuclasses/native_wuclasses.h"\n'
+            '#include "../common/native_wuclasses/native_wuclasses.h"\n',
+            '#include "wkpf_properties.h"\n',
+            '#include "../common/native_wuclasses/GENERATEDwkpf_wuclass_library.h"\n'
         ]
         init_function_lines = ['''
         uint8_t wkpf_native_wuclasses_init() {
@@ -392,7 +394,7 @@ class CodeGen:
         ''']
 
         init_function_lines_posix = ['''
-        uint8_t wkpf_process_enabled_wuclass(char* wuclassname, bool appCanCreateInstances, int createInstancesAtStartup) {
+        uint8_t wkpf_process_enabled_wuclass_power(char* wuclassname, bool appCanCreateInstances, int createInstancesAtStartup, int power) {
             static int next_free_port = 1;
             printf("[posix init] Registering wuclass %s", wuclassname);
             if (createInstancesAtStartup > 0)
@@ -447,20 +449,46 @@ class CodeGen:
                         %s.flags |= WKPF_WUCLASS_FLAG_APP_CAN_CREATE_INSTANCE;''' % wuclass.getCName())
 
             header_lines_posix.append('#include "../common/native_wuclasses/%s.h"\n' % wuclass.getCFileName())
-            init_function_lines_posix.append('''
-            if (!strcmp(wuclassname, "%s")) {
-                wkpf_register_wuclass(&%s);
-                for (int i=0; i<createInstancesAtStartup; i++) {
-                    uint8_t retval;
-                    retval = wkpf_create_wuobject(%s.wuclass_id, next_free_port++, 0, true);
-                    if (retval != WKPF_OK)
-                        return retval;
+            if wuclass_name != 'Light_Sensor2':
+                init_function_lines_posix.append('''
+                if (!strcmp(wuclassname, "%s")) {
+                    wkpf_register_wuclass(&%s);
+                    for (int i=0; i<createInstancesAtStartup; i++) {
+                        uint8_t retval;
+                        retval = wkpf_create_wuobject(%s.wuclass_id, next_free_port++, 0, true);
+                        if (retval != WKPF_OK)
+                            return retval;
+                    }
+                    if (appCanCreateInstances)
+                        %s.flags |= WKPF_WUCLASS_FLAG_APP_CAN_CREATE_INSTANCE;
+                    return WKPF_OK;
                 }
-                if (appCanCreateInstances)
-                    %s.flags |= WKPF_WUCLASS_FLAG_APP_CAN_CREATE_INSTANCE;
-                return WKPF_OK;
-            }
-            ''' % (wuclass.getName(), wuclass.getCName(), wuclass.getCName(), wuclass.getCName()))
+                ''' % (wuclass.getName(), wuclass.getCName(), wuclass.getCName(), wuclass.getCName()))
+            else:
+                init_function_lines_posix.append(r'''
+                if (!strcmp(wuclassname, "%s")) {
+                    wkpf_register_wuclass(&%s);
+                    for (int i=0; i<createInstancesAtStartup; i++) {
+                        uint8_t retval;
+                        retval = wkpf_create_wuobject(%s.wuclass_id, next_free_port++, 0, true);
+                        if (retval != WKPF_OK){
+                            return retval;
+                        }
+                        wuobject_t *wuobject;
+                        printf("port: %%d\n", next_free_port - 1);
+                        if (wkpf_get_wuobject_by_port(next_free_port - 1, &wuobject) != WKPF_ERR_WUOBJECT_NOT_FOUND){
+                            wkpf_external_write_property_int16(wuobject, WKPF_PROPERTY_LIGHT_SENSOR2_POWER, power);
+                            int16_t value;
+                            retval = wkpf_external_read_property_int16(wuobject, WKPF_PROPERTY_LIGHT_SENSOR2_POWER, &value);
+                            printf("%%d\n", value);
+                        }
+                    }
+                    if (appCanCreateInstances)
+                        %s.flags |= WKPF_WUCLASS_FLAG_APP_CAN_CREATE_INSTANCE;
+                    return WKPF_OK;
+                }
+                ''' % (wuclass.getName(), wuclass.getCName(), wuclass.getCName(), wuclass.getCName()))
+                
 
         init_function_lines.append('''
             return WKPF_OK;

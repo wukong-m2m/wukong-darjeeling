@@ -77,6 +77,7 @@
     <WuClass name="Light_Sensor" id="1001" virtual="false" type="hard">
         <property name="current_value" access="readonly" datatype="short"  />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="10"  />
+        <property name="power" access="readwrite" datatype="short" default="0" />
     </WuClass>
     <WuClass name="Temperature_Sensor" id="1002" virtual="false" type="hard">
         <property name="current_temperature" access="readonly" datatype="short"  />
@@ -105,9 +106,18 @@
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
     </WuClass>
 
+    <WuClass name="Light_Sensor2" id="1008" virtual="false" type="hard">
+        <property name="current_value" access="readonly" datatype="short"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="10"  />
+        <property name="power" access="readwrite" datatype="short" default="0" />
+        <property name="range" access="readonly" datatype="short" default="0" />
+        <property name="precision" access="readonly" datatype="short" default="0" />
+    </WuClass>
+
     <!-- Actuators -->
     <WuClass name="Light_Actuator" id="2001" virtual="false" type="hard">
         <property name="on_off" access="readwrite" datatype="boolean" default="false"  />
+        <property name="power" access="readwrite" datatype="short" default="0" />
     </WuClass>
     <WuClass name="LED" id="2002" virtual="false" type="hard" privateCData="bool">
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="1000"  />
@@ -119,4 +129,6 @@
     <WuClass name="Fan" id="2003" virtual="false" type="hard">
         <property name="on_off" access="readwrite" datatype="boolean" default="false"/>
     </WuClass>
+
+    <!-- Service --> 
 </WuKong>

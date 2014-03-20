@@ -336,6 +336,7 @@ class Communication:
           total_number_of_messages = reply.payload[3]
 
         reply = reply.payload[5:]
+        print reply
         while len(reply) > 1:
           port_number = reply[0]
           wuclass_id = (reply[1] <<8) + reply[2]
@@ -351,6 +352,13 @@ class Communication:
             print '[wkpfcomm] Unknown wuclass id', wuclass_id
             break
 
+          if wuclassdef.name == 'Light_Sensor2':
+            print 'property0: ' + str(self.getProperty2(2, 0))
+            print 'property1: ' + str(self.getProperty2(2, 1))
+            print 'property2: ' + str(self.getProperty2(2, 2))
+            print 'property3: ' + str(self.getProperty2(2, 3))
+            print 'property4: ' + str(self.getProperty2(2, 4))
+
 
           if (not node) or (port_number not in node.wuobjects.keys()) or node.wuobjects[port_number].wuclassdef != wuclassdef:
             wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number, virtual)
@@ -360,6 +368,35 @@ class Communication:
           reply = reply[4:]
 
       return wuobjects
+    def getProperty2(self, destination, property_number):
+      print '[wkpfcomm] getProperty'
+
+      reply = self.zwave.send(destination, 
+              pynvc.WKPF_READ_PROPERTY,
+              [1, 1008/256, 
+                    1008%256, property_number], 
+              [pynvc.WKPF_READ_PROPERTY_R, pynvc.WKPF_ERROR_R])
+
+
+      if reply == None:
+        return (None, None, None)
+
+      if reply.command == pynvc.WKPF_ERROR_R:
+        print "[wkpfcomm] WKPF RETURNED ERROR ", reply.payload
+        return (None, None, None)
+
+      # compatible
+      reply = [reply.command] + reply.payload
+
+      datatype = reply[7]
+      status = reply[8]
+      if datatype == WKPF_PROPERTY_TYPE_BOOLEAN:
+        value = reply[9] != 0
+      elif datatype == WKPF_PROPERTY_TYPE_SHORT or datatype == WKPF_PROPERTY_TYPE_REFRESH_RATE:
+        value = (reply[9] <<8) + reply[10]
+      else:
+        value = None
+      return (value, datatype, status)
 
     # Only used by inspector
     def getProperty(self, wuproperty):

@@ -19,6 +19,7 @@
     <WuClass name="Light_Actuator" appCanCreateInstances="false" createInstancesAtStartup="0" />
     <WuClass name="LED" appCanCreateInstances="false" createInstancesAtStartup="0" />
     <WuClass name="Fan" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <WuClass name="Light_Sensor2" appCanCreateInstances="false" createInstancesAtStartup="0" />
 </WuKong>
 
 

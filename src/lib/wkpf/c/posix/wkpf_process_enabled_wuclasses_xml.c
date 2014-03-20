@@ -8,7 +8,8 @@
 #include "posix_utils.h"
 
 // GENERATED:
-extern uint8_t wkpf_process_enabled_wuclass(char* wuclassname, bool appCanCreateInstances, int createInstancesAtStartup);
+// extern uint8_t wkpf_process_enabled_wuclass(char* wuclassname, bool appCanCreateInstances, int createInstancesAtStartup);
+extern uint8_t wkpf_process_enabled_wuclass_power(char* wuclassname, bool appCanCreateInstances, int createInstancesAtStartup, int power);
 
 int wkpf_process_enabled_wuclasses_readfile (char* sFileName, char** psData, long *pnDataLen) {
     struct stat fstat;
@@ -46,6 +47,11 @@ void* wkpf_process_enabled_wuclasses_handler (SimpleXmlParser parser, SimpleXmlE
     static bool appCanCreateInstances;
     static int createInstancesAtStartup;
 
+    static int power = -1;
+    static int range = -1;
+    static int precision = -1;
+    static int refresh_rate = -1;
+
     if (event == ADD_SUBTAG) {
         if (!strcmp(szName, "WuClass")) {
             wuclassname[0] = 0;
@@ -61,9 +67,25 @@ void* wkpf_process_enabled_wuclasses_handler (SimpleXmlParser parser, SimpleXmlE
                                         || strcmp(szValue, "1") == 0;
         else if (!strcmp(szAttribute, "createInstancesAtStartup"))
             createInstancesAtStartup = atoi(szValue);
+        else if (!strcmp(szAttribute, "power")){
+            printf("read %s\n", szValue);
+            power = atoi(szValue);
+        }
+        else if (!strcmp(szAttribute, "range")){
+            printf("read %s\n", szValue);
+            range = atoi(szValue);
+        }
+        else if (!strcmp(szAttribute, "precision")){
+            printf("read %s\n", szValue);
+            precision = atoi(szValue);
+        }
+        else if (!strcmp(szAttribute, "refresh_rate")){
+            printf("read %s\n", szValue);
+            refresh_rate = atoi(szValue);
+        }
     } else if (event == FINISH_TAG) {
         if (!strcmp(szName, "WuClass")) {
-            if (wkpf_process_enabled_wuclass(wuclassname, appCanCreateInstances, createInstancesAtStartup) != WKPF_OK) {
+            if (wkpf_process_enabled_wuclass_power(wuclassname, appCanCreateInstances, createInstancesAtStartup, power) != WKPF_OK) {
                 printf("Initialisation failed.\n");
                 exit(1);
             }

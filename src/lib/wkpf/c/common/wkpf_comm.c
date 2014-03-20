@@ -119,7 +119,7 @@ void wkpf_comm_handle_message(void *data) {
 
 	if (dj_exec_getRunlevel() == RUNLEVEL_REPROGRAMMING)
 		return;
-
+	DEBUG_LOG(true, "Reading fuckin property");
 	switch (msg->command) {
 		case WKPF_COMM_CMD_GET_LOCATION: {
 			// Format of get_location request messages: payload[0] offset of the first byte requested
@@ -258,6 +258,8 @@ void wkpf_comm_handle_message(void *data) {
 			uint8_t property_number = payload[3];
 			wuobject_t *wuobject;
 			retval = wkpf_get_wuobject_by_port(port_number, &wuobject);
+
+
 			if (retval != WKPF_OK) {
 				payload [2] = retval;
 				response_cmd = WKPF_COMM_CMD_ERROR_R;
@@ -269,6 +271,7 @@ void wkpf_comm_handle_message(void *data) {
 			if (WKPF_GET_PROPERTY_DATATYPE(wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_SHORT) {
 				int16_t value;
 				retval = wkpf_external_read_property_int16(wuobject, property_number, &value);
+				DEBUG_LOG(true, "Reading fuckin property %d:", value);
 				payload[4] = WKPF_GET_PROPERTY_DATATYPE(wuobject->wuclass->properties[property_number]);
 				payload[5] = property_status;
 				payload[6] = (uint8_t)(value>>8);
