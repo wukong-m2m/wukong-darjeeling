@@ -33,11 +33,11 @@
 // about - 8 and 16 MHz - this doesn't lose precision.)
 #define FRACT_INC ((MICROSECONDS_PER_TIMER0_OVERFLOW % 1000) >> 3)
 #define FRACT_MAX (1000 >> 3)
-
+#define USE_ARDUINO
+#ifndef USE_ARDUINO
 volatile unsigned long timer0_overflow_count = 0;
 volatile unsigned long timer0_millis = 0;
 static unsigned char timer0_fract = 0;
-
 SIGNAL(TIMER0_OVF_vect)
 {
 
@@ -159,3 +159,30 @@ void avr_serialWrite(unsigned char value)
 	while (!((UCSR0A) & (1 << UDRE0)));
 	UDR0 = value;
 }
+#else
+void avr_timerInit()
+{
+	// THis is done inside the Arduino
+}
+void avr_serialInit(uint32_t baud)
+{
+	// This is done inside the Arduino
+}
+void avr_serialVPrint(char * format, va_list arg)
+{
+	static char temp[128];
+	vsnprintf(temp, 128, format, arg);
+	avr_serialPrint(temp);
+}
+
+void avr_serialPrintf(char * format, ...)
+{
+	va_list arg;
+
+	va_start(arg, format);
+	avr_serialVPrint(format, arg);
+	va_end(arg);
+
+}
+
+#endif

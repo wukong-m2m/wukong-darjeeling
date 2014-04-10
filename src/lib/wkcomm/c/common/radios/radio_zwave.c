@@ -143,7 +143,8 @@ void radio_zwave_poll(void) {
         Zwave_receive(1);
     }
 }
-
+#undef DBG_WKCOMM
+#define DBG_WKCOMM true
 extern void radio_zwave_platform_dependent_init(void); // from radio_zwave_platform_dependent.c
 void radio_zwave_init(void) {
 // see issue 115     set_output(DDRK,0);

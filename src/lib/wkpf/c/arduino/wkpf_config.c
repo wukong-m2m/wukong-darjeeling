@@ -12,17 +12,17 @@ static uint8_t EEMEM eeprom_master_address;
 static uint8_t EEMEM eeprom_gid;
 
 #define load_location_length() eeprom_read_byte((uint8_t*)&eeprom_location_length)
-#define save_location_length(x) eeprom_update_byte((uint8_t*)&eeprom_location_length, (uint8_t)x)
+#define save_location_length(x) eeprom_write_byte((uint8_t*)&eeprom_location_length, (uint8_t)x)
 #define load_location(dest, offset, length) eeprom_read_block((void*)dest, (const void*)(eeprom_location+offset), length)
-#define save_location(src, offset, length) eeprom_update_block((const void*)src, (void*)(eeprom_location+offset), length)
+#define save_location(src, offset, length) eeprom_write_block((const void*)src, (void*)(eeprom_location+offset), length)
 #define feat_addr(feature) &eeprom_wkpf_features[feature / 8]
-#define enable_feature(feature) eeprom_update_byte(feat_addr(feature), eeprom_read_byte(feat_addr(feature)) | (1<<(feature % 8)))
-#define disable_feature(feature) eeprom_update_byte(feat_addr(feature), eeprom_read_byte(feat_addr(feature)) & ~(1<<(feature % 8)))
+#define enable_feature(feature) eeprom_write_byte(feat_addr(feature), eeprom_read_byte(feat_addr(feature)) | (1<<(feature % 8)))
+#define disable_feature(feature) eeprom_write_byte(feat_addr(feature), eeprom_read_byte(feat_addr(feature)) & ~(1<<(feature % 8)))
 #define get_feature_enabled(feature) (eeprom_read_byte(feat_addr(feature)) & (1<<(feature % 8)))
 #define load_master_node_id() eeprom_read_word((uint16_t*)&eeprom_master_address)
-#define save_master_node_id(x) eeprom_update_word((uint16_t*)&eeprom_master_address, (uint16_t)x)
+#define save_master_node_id(x) eeprom_write_word((uint16_t*)&eeprom_master_address, (uint16_t)x)
 #define load_gid() eeprom_read_word((uint16_t*)&eeprom_gid)
-#define save_gid(x) eeprom_update_word((uint16_t*)&eeprom_gid, (uint16_t)x)
+#define save_gid(x) eeprom_write_word((uint16_t*)&eeprom_gid, (uint16_t)x)
 
 // Stores a part of the location in EEPROM, or returns WKPF_ERR_LOCATION_TOO_LONG if the string is too long.
 uint8_t wkpf_config_set_part_of_location_string(char* src, uint8_t offset, uint8_t length) {
