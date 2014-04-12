@@ -148,11 +148,12 @@ static inline void * dj_mem_getUpdatedPointer(void * ptr)
 {
 	return (ptr==0)? 0 : (void*)((size_t)ptr - dj_mem_getChunkShift(ptr));
 }
-
+#ifndef ARDUINO_ARCH_WUDEVICE
 static inline ref_t dj_mem_getUpdatedReference(ref_t ref)
 {
 	return (ref==0)?0:(ref - dj_mem_getChunkShift(REF_TO_VOIDP(ref)));
 }
+#endif
 
 static inline void dj_mem_setChunkColor(void *ptr, int color)
 {

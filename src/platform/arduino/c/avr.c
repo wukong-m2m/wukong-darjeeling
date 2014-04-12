@@ -33,8 +33,7 @@
 // about - 8 and 16 MHz - this doesn't lose precision.)
 #define FRACT_INC ((MICROSECONDS_PER_TIMER0_OVERFLOW % 1000) >> 3)
 #define FRACT_MAX (1000 >> 3)
-#define USE_ARDUINO
-#ifndef USE_ARDUINO
+#ifndef ARDUINO
 volatile unsigned long timer0_overflow_count = 0;
 volatile unsigned long timer0_millis = 0;
 static unsigned char timer0_fract = 0;

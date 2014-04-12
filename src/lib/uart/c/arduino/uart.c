@@ -3,8 +3,7 @@
 #include "djtimer.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#define USE_ARDUINO
-#ifndef USE_ARDUINO
+#ifndef ARDUINO
 // Mostly copied from NanoVM's uart.c
 #define CLOCK 16000000 // Not sure if there's a better way to get the clock speed, but right now all our devices are at 16MHz
 
