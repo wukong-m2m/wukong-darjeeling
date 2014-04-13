@@ -1,0 +1,30 @@
+#######################################
+# Syntax Coloring Map For Wire
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+loop	KEYWORD2
+enableWuClass	KEYWORD2
+addWuObject	KEYWORD2
+setPropertyRefreshRate	KEYWORD2
+setPropertyBool	KEYWORD2
+setPropertyShort KEYWORD2
+
+#######################################
+# Instances (KEYWORD2)
+#######################################
+
+wukong	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
