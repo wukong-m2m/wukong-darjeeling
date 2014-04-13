@@ -12,11 +12,6 @@
 
 begin	KEYWORD2
 loop	KEYWORD2
-enableWuClass	KEYWORD2
-addWuObject	KEYWORD2
-setPropertyRefreshRate	KEYWORD2
-setPropertyBool	KEYWORD2
-setPropertyShort KEYWORD2
 
 #######################################
 # Instances (KEYWORD2)

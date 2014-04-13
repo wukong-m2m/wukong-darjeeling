@@ -73,7 +73,7 @@ void wukong_loop()
 			// Will call update() for native profiles directly,
 			// and return only true for virtual profiles requiring an update.
 			if(wkpf_get_next_wuobject_to_update(&wuobject)) {
-				return wuobject;
+				return;
 			}
 		}
 	}
