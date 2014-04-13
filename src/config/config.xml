@@ -48,6 +48,7 @@
 	<!-- Meta-targets -->
 	<target name="all" depends="executable"/>
 	<target name="executable" depends="compile-libs, compile-apps, compile-core, compile-platform, unpack, compile-main, packdi, repack, link"/>
+	<target name="arduino" depends="compile-libs, compile-apps, compile-core, compile-platform, unpack, compile-main, packdi, repack"/>
 	<target name="lib" depends="compile-libs, compile-apps, compile-core, compile-platform, unpack, compile-main, repack"/>
 	
 	<!-- Compile libraries -->
