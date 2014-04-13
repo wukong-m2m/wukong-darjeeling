@@ -1,4 +1,6 @@
 all:
-	cd ..; ant lib
-	- cd ..; ant
-	cp ../darjeering.a libdarjeering.a
+	cd ..; ant arduino
+	cp ../darjeeling.a libdarjeeling.a
+	rm -rf wkpf
+	mkdir wkpf
+	-cp `find ../../.. -name '*.h'` wkpf
