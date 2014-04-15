@@ -1,35 +1,40 @@
 import binascii
-import gtwconfig as CONST
+import mptn as MPTN
 import struct
+from gevent import socket
 
-def dump(msg):
+HEADER_FORMAT_STR = "!" + ''.join([{1:'B',2:'H',4:'I',8:'Q'}[i] for i in MPTN.MULT_PROTO_HEADER_FORMAT])
+
+def format(msg):
     """Receives all message parts from socket, printing each frame neatly"""
-    print "----------------------------------------"
+    r = "----------------------------------------\n"
     for part in msg:
-        print "[%03d]" % len(part), # Trailing comma suppresses newline
+        r += ("[%03d]" % len(part)) # Trailing comma suppresses newline
         try:
-            print part.decode('ascii')
+            r += part.decode('ascii')
         except UnicodeDecodeError:
-            print r"0x%s" % (binascii.hexlify(part).decode('ascii'))
+            r += r"0x%s" % (binascii.hexlify(part).decode('ascii'))
+        r += '\n'
+    return r
 
-def create_mult_proto_header_byte_list(dest_gid, src_gid, msg_type, msg_subtype):
-    s = create_mult_proto_header_str(est_gid, src_gid, msg_type, msg_subtype)
-    return [i for i in s]
-
-def create_mult_proto_header_str(dest_gid, src_gid, msg_type, msg_subtype):
-    m = {1:'B',2:'H',4:'I',8:'Q'}
-    l = []
-    f = "<"
-    for i, length in [(dest_gid, CONST.MULT_PROTO_LEN_GID), (src_gid, CONST.MULT_PROTO_LEN_GID), (msg_type, CONST.MULT_PROTO_LEN_MSG_TYPE), (msg_subtype, CONST.MULT_PROTO_LEN_MSG_SUBTYPE)]:
-        l.append(i)
-        f += m[length]
-    h = struct.pack(f, *l)
+def create_mult_proto_header_to_str(dest_did, src_did, msg_type, msg_subtype):
+    l = [dest_did, src_did, msg_type, msg_subtype]
+    h = struct.pack(HEADER_FORMAT_STR, *l)
     return h
 
 def extract_mult_proto_header_from_str(s):
-    header = s[:MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET]
-    m = {1:'B',2:'H',4:'I',8:'Q'}
-    f = "<"
-    for length in [CONST.MULT_PROTO_LEN_GID, CONST.MULT_PROTO_LEN_GID, CONST.MULT_PROTO_LEN_MSG_TYPE, CONST.MULT_PROTO_LEN_MSG_SUBTYPE]:
-        f += m[length]
-    return struct.unpack(f, header)
+    header = s[:MPTN.MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET]
+    return struct.unpack(HEADER_FORMAT_STR, header)
+
+def special_recv(sock):
+    size = sock.recv(struct.calcsize("!L"))
+    size = socket.ntohl(struct.unpack("!L", size)[0])
+    message = ""
+    while len(message) < size:
+        message += sock.recv(size - len(message))
+    return message
+
+def special_send(sock, message):
+    size = struct.pack("!L",socket.htonl(len(message)))
+    sock.send(size)
+    sock.sendall(message)
