@@ -9,7 +9,7 @@ from gevent.event import Event
 import signal
 
 import gtwconfig as CONFIG
-from gateway import Gateway
+from gtwclass import Gateway
 import zwave
 
 import logging

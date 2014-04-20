@@ -7,19 +7,20 @@ import logging
 import collections
 import gevent
 from gevent.event import AsyncResult
-from gevent.server import DatagramServer, StreamServer
 import gevent.queue
 import wusignal
 from configuration import *
 from globals import *
 import pynvc
 
-import socket
+import struct
+from gevent import socket
 from tinyrpc.protocols.jsonrpc import JSONRPCProtocol
 from tinyrpc.transports import ClientTransport
 from tinyrpc import RPCClient
-import dbdict
-
+import mptnUtils
+import ipaddress
+from gevent.lock import RLock
 
 '''
 DeferredQueue class: A queue with timeout
@@ -134,6 +135,73 @@ class TransportAgent:
 '''
 RPCClientAgent connects to gateway by TCPClient
 '''
+class RPCTCPClient(ClientTransport):
+    def __init__(self, server_did, server_ip, server_port):
+        self.server_did = server_did
+        self.server_ip = server_ip
+        self.server_port = server_port
+
+    def _process_message(self, message):
+        dest_did, src_did, msg_type, msg_subtype = mptnUtils.extract_mult_proto_header_from_str(message)
+
+        if len(message) <= mptnUtils.MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET:
+            print "[transport] RPC drops message since payload is empty"
+            return None
+
+        payload = message[mptnUtils.MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET:]
+        
+        if dest_did != getDIDService().get_master_did():
+            print "[transport] RPC drops message since DEST DID (%X) is not master" % dest_did
+            return None
+
+        if not getDIDService().is_did_valid(src_did):
+            print "[transport] RPC drops message since SRC DID (%X) is not valid" % src_did
+            return None
+
+        if msg_type != mptnUtils.MULT_PROTO_MSG_TYPE_RPC:
+            print "[transport] RPC drops message since msg_type (%X) is not RPC" % msg_type
+            return None
+
+        if msg_subtype != mptnUtils.MULT_PROTO_MSG_SUBTYPE_RPC_REP:
+            print "[transport] RPC drops message since msg_type (%X) is not RPC" % msg_type
+            return None
+
+        return payload
+
+    def send_message(self, message, expect_reply=True):
+        address = (self.server_ip, self.server_port)
+        for i in xrange(mptnUtils.CONNECTION_RETRIES):
+            try:
+                sock = socket.create_connection(address, mptnUtils.NETWORK_TIMEOUT)
+                break
+            except IOError as e:
+                print '[transport] RPC failed to connect to master %s:%s: %s', address[0], address[1], str(e)
+        else:
+            if sock is not None: sock.close()
+            return None
+
+        ret = None
+        try:
+            #sock.settimeout(mptnUtils.NETWORK_TIMEOUT)
+
+            mptnUtils.special_send(sock, message)
+
+            if expect_reply:
+                message = mptnUtils.special_recv(sock)
+                ret = self._process_message(message)
+
+        except socket.timeout:
+            print "[transport] RPC socket is timeout with addr=%s with msg=%s" % (str(address), message)
+        except socket.error as e:
+            print"[transport] RPC gets socket error %s with addr=%s with msg=%s" % (str(e), str(address), message)
+        except struct.error as e:
+            print "[transport] RPC python struct cannot interpret message %s with error %s" % (message, str(e))
+        finally:
+            sock.close()
+        
+        if expect_reply:
+            return ret
+
 class RPCAgent(TransportAgent):
     _rpc_agent = None
     @classmethod
@@ -143,79 +211,18 @@ class RPCAgent(TransportAgent):
         return cls._rpc_agent
 
     def __init__(self):
-        self._seq = 0
-        self._gw_addr_table = {}
-        #self.addGatewayClients(["127.0.0.1:9000"])
+        self._mode = 'stop'
+        TransportAgent.__init__(self)
 
-        ## TODO
-        def receive(self, data, address):
-            if src and reply:
-                print "[transport] receive: Got message ", src, reply
-                # with seq number
-                deliver = new_deliver(src, reply[0], reply[1:])
-                messages.put_nowait(deliver)
-                print '[transport] receive: put a message to messages'
-
-            while True:
-                try:
-                    src, reply = self.server.receive(timeout_msec)
-                except:
-                    print "[transport] RPC receive fail, gateway ip=" + client.transport.server_ip + ", port =" + str(client.transport.server_port)
-
-        gevent.spawn(self.handler)
-
-
-    class TCPClient(ClientTransport):
-        def __init__(self, server_ip, server_port):
-            self.server_ip = server_ip
-            self.server_port = server_port
-
-        def send_message(self, message, expect_reply=True):
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            try:
-                # Connect to server and send data
-                sock.connect((self.server_ip, self.server_port))
-                sock.sendall( + message)
-                if expect_reply:
-                    # Receive data from the server and shut down
-                    received = ""
-                    while True:
-                        data = sock.recv(4096)
-                        if not data: break
-                        received += data
-            except socket.error, e:
-                print "[transport] RPC connection error: " + e
-            finally:
-                sock.close()
-
-            if expect_reply:
-                return received
-
-    def addGatewayClients(self, addresses_list):
-        for address in addresses_list:
-            addr, port = address.split(":")
-            rpc_client = RPCClient(
+    def _create_client_stub(self, did, ip, port):
+        assert isinstance(did, int), "did should be integer"
+        assert isinstance(ip, basestring), "port should be string"
+        assert isinstance(port, int), "port should be integer"
+        rpc_client = RPCClient(
                 JSONRPCProtocol(),
-                RPCAgent.TCPClient((addr, int(port)))
+                RPCTCPClient(did, ip, port)
             )
-            self._gw_addr_table[address] = rpc_client.get_proxy()
-
-    def getGatewayClient(self, address):
-        return self._gw_addr_table[address]
-
-    def getAllGatewayClients(self):
-        ret = []
-        for address, rpc_tuple in self._gw_addr_table.items():
-            ret.append((address, rpc_tuple))
-        return ret
-
-    def getGatewayAddress(self, node_gid):
-        return self._gw_addr_table[getGIDService().findGatewayAddress(node_gid)]
-
-
-    ### call a remote method
-    # result = self.getGatewayClient(gateway's address).method(arg)
+        return rpc_client.get_proxy() # Usage: ret_obj.func()
 
     # non-blocking method
     def deferSend(self, destination, command, payload, allowed_replies, cb, error_cb):
@@ -321,75 +328,225 @@ class RPCAgent(TransportAgent):
 
         return result.get()
 
-    def add(self):
-        if self._mode != 'stop': return False
-
-        getGIDServce().start_accepting()
-        count = 0
-        for gw_addr, gwc in self.getAllGatewayClients():
-            try:
-                if gwc.add():
-                    count += 1
-            except:
-                print "[transport] RPC add() to gateway(%s) fails" % gwc_addr
-        
-        if count:
-            self._mode = 'add'
-            return True
-        else:
-            getGIDServce().stop_accepting()
+    def _learn(self, to_mode):
+        if to_mode not in ['stop','add','delete']:
+            print "[transport] RPC calls do not have a member named %s" % to_mode
             return False
+
+        if self._mode != 'stop' and to_mode != 'stop':
+            return False
+        
+        if self._mode == 'stop' and to_mode == 'stop':
+            return True
+
+        if to_mode != 'stop':
+            getDIDService().start_accepting()
+        else:
+            getDIDService().stop_accepting()
+
+        count = 0
+        for did, ip, port in getDIDService().get_all_gateways():
+            gateway = self._create_client_stub(did, ip, port)
+            try:
+                if to_mode == 'add':
+                    if gateway.add():
+                        count += 1
+                elif to_mode == 'delete': 
+                    if gateway.delete():
+                        count += 1
+                else: 
+                    if gateway.stop():
+                        count += 1
+            except:
+                print "[transport] RPC call %s() to gateway (%d %s) fails" % (to_mode, did, str((ip, port)))
+        
+        if count > 0:
+            self._mode = to_mode
+            return True
+
+        print "[transport] RPC calls %s() to all gateways fail or no gateway found" % to_mode
+        getDIDService().stop_accepting()
+        return False
+
+    def add(self):
+        return self._learn('add')
 
     def delete(self):
-        if self._mode != 'stop': return False
-
-        getGIDServce().start_accepting()
-        count = 0
-        for gw_addr, gwc in self.getAllGatewayClients():
-            try:
-                if gwc.delete():
-                    count += 1
-            except:
-                print "[transport] RPC delete() to gateway(%s) fails" % gwc_addr
-        
-        if count:
-            self._mode = 'delete'
-            return True
-        else:
-            getGIDServce().stop_accepting()
-            return False
+        return self._learn('delete')
 
     def stop(self):
-        if self._mode == 'stop': return True
-
-        getGIDServce().stop_accepting()
-        count = 0
-        for gw_addr, gwc in self.getAllGatewayClients():
-            try:
-                if gwc.stop():
-                    count += 1
-            except:
-                print "[transport] RPC stop() to gateway(%s) fails" % gwc_addr
-                
-        if count:
-            self._mode = 'stop'
-            return True
-        else:
-            return False
+        return self._learn('stop')
 
     def poll(self):
         ret = []
-        for gw_addr, gwc in self.getAllGatewayClients():
+        for did, ip, port in getDIDService().get_all_gateways():
+            gateway = self._create_client_stub(did, ip, port)
             try:
-                p = gwc.poll()
+                p = gateway.poll()
                 ret.append(p)
             except:
-                print "[transport] RPC poll() to gateway(%s) fails" % gwc_addr
+                print "[transport] RPC poll() to gateway(%d %s) fails" % (did, str((ip, port)))
         
         if len(ret):
-            return ret.join("\n")
+            return ret.join("; ")
+        
+        print "[transport] RPC poll() to gateway(%d %s) fail or no gateway found" % (did, str((ip, port)))
+        return "Not availble"
+
+    def _process_message(self, context, message):
+        if len(message) < mptnUtils.MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET:
+            print "[transport] TCP Server receives message with header shorter than required %s" % mptnUtils.format(str(message))
+            return None, None
+
+        dest_did, src_did, msg_type, msg_subtype = mptnUtils.extract_mult_proto_header_from_str(message)
+        payload = message[mptnUtils.MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET:] if len(message) > mptnUtils.MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET else None
+
+        assert isinstance(context, tuple), "[transport] TCP Server context should be an IP address tuple"
+        context_str = ':'.join([str(i) for i in context])
+        log_msg = mptnUtils.format([context_str, dest_did, src_did, msg_type, msg_subtype, str(payload)])
+        print "[transport] TCP Server receives message:\n" + log_msg
+
+        if msg_type == mptnUtils.MULT_PROTO_MSG_TYPE_PFX:
+            # Only PFX REQ message from gateway would get here
+            if msg_subtype != mptnUtils.MULT_PROTO_MSG_SUBTYPE_PFX_REQ:
+                print "[transport] TCP Server receives message subtype other than PFX UPD and will not send any reply"
+                return None, None
+
+            if dest_did != getDIDService().get_master_did() and src_did != 0xFFFFFFFF:
+                print "[transport] TCP server: PFX REQ with incorrect src did = %X and/or dest did = %X" % (src_did, dest_did)
+                return None, None
+
+            if payload is None:
+                print "[transport] TCP server: PFX REQ might have the payload"
+                return None, None
+            
+            # _pfx_req_handler "RADDR=%d;LEN=%d;PORT=%d"
+            payload = payload.split(";")
+            if len(payload) != 3:
+                print "[transport] TCP server: PFX REQ payload should be RADDR=int;LEN=int;PORT=int"
+                return None, None
+
+            try:
+                raddr = int(payload[0].split("=")[1])
+                raddr_len = int(payload[1].split("=")[1])
+                port = int(payload[2].split("=")[1])
+            except:
+                print "[transport] TCP server: PFX REQ payload should be RADDR=int;LEN=int;PORT=int"
+                return None, None
+
+            dest_did = getDIDService().get_or_allocate_gateway_did(raddr, raddr_len, context[0], port)
+
+            msg_subtype = mptnUtils.MULT_PROTO_MSG_SUBTYPE_PFX_ACK if dest_did != 0xFFFFFFFF else mptnUtils.MULT_PROTO_MSG_SUBTYPE_PFX_NAK
+            
+            message = mptnUtils.create_mult_proto_header_to_str(dest_did, getDIDService().get_master_did(), msg_type, msg_subtype)
+            return (1, message)
+
+        elif msg_type == mptnUtils.MULT_PROTO_MSG_TYPE_DID:
+            # Only DID UPD message from gateway would get here
+            if msg_subtye != mptnUtils.MULT_PROTO_MSG_SUBTYPE_DID_UPD:
+                print "[transport] TCP server receives invalid DID message subtype %X and will not send any reply" % msg_subtype
+                return None, None
+
+            if dest_did != getDIDService().get_master_did() and src_did != 0xFFFFFFFF:
+                print "[transport] TCP server: DID UPD with incorrect src did = %X and/or dest did = %X" % (src_did, dest_did)
+                return None, None
+
+            if payload is None:
+                print "[transport] TCP server: DID UPD might have the payload"
+                return None, None
+
+            if len(payload) != 8:
+                print "[transport] TCP server: DID UPD payload must be 8 bytes (MAC address)"
+                return None, None
+
+            # _did_req_handler
+            registering_did = src_did
+            gateway_did = dest_did
+            mac_addr = payload
+            registered_did = getDIDService().allocate_device_did(registering_did, gateway_did, mac_addr)
+            msg_subtype = mptnUtils.MULT_PROTO_MSG_SUBTYPE_DID_ACK if registered_did != 0xFFFFFFFF else mptnUtils.MULT_PROTO_MSG_SUBTYPE_DID_NAK
+            message = mptnUtils.create_mult_proto_header_to_str(registered_did, getDIDService().get_master_did(), msg_type, msg_subtype)
+
+            return (1, message)
+
+        # For the rest of msg_type
+        # Check if SRC_DID is on MPTN network
+        # Also check if DEST_DID is on MPTN network
+        # Drop if one of test is not passed
+        if dest_did != getDIDService().get_master_did():
+            print "[transport] TCP server drops message since DEST DID (%X) is not master" % dest_did
+            return None, None
+
+        if not getDIDService().is_did_valid(src_did):
+            print "[transport] TCP server drops message since SRC DID (%X) is not valid" % src_did
+            return None, None        
+        
+        if msg_type == mptnUtils.MULT_PROTO_MSG_TYPE_FWD:
+            # Check if DEST_DID is on the same network and get radio address of it
+            #   True:   send to transport and return back to source gateway or master
+            #   False:  find and then send to radio address of destination IP hop
+            if payload is None:
+                print "[transport] TCP server: packet FWD might have the payload"
+                return None, None
+
+            if msg_subtype != mptnUtils.MULT_PROTO_MSG_SUBTYPE_FWD:
+                print "[transport] TCP server receives invalid FWD FWD message subtype and will not send any reply"
+                return None, None 
+            
+            msg_subtype = mptnUtils.MULT_PROTO_MSG_SUBTYPE_FWD_ACK
+            header = mptnUtils.create_mult_proto_header_to_str(src_did, dest_did, msg_type, msg_subtype)
+
+            return (2, (header, src_did, payload))
+
         else:
-            return "Not availble"
+            print "[transport] TCP server receives unknown message with type %X" % msg_type
+            return None, None 
+
+    def receive(self):
+        try:
+            server = socket.socket()
+            server.bind(('', tcp_port))
+            server.listen(500)
+        except socket.error as msg:
+            server.close()
+            print "[transport] TCP Server cannot start due to socket error: %s" % msg
+            return
+
+        def handle_socket(sock, addr):
+            try:
+                print "[transport] TCP Server accepts connection from address %s" % str(addr)
+                sock.settimeout(mptnUtils.NETWORK_TIMEOUT)
+                message = mptnUtils.special_recv(sock)
+                status, response = self._process_message(addr, message)
+                if status is None:
+                    return
+
+                if status == 1:
+                    mptnUtils.special_send(sock, response)
+
+                elif status == 2:
+                    mptnUtils.special_send(sock, response[0])
+                    src = response[1]
+                    reply = response[2]
+                    if src and reply:
+                        deliver = new_deliver(src, reply[0], reply[1:])
+                        messages.put_nowait(deliver)
+                        print '[transport] TCP Server receive: put a message to messages'
+
+            except socket.timeout:
+                print "[transport] TCP Server socket is timeout from addr=%s with msg=%s" % (str(addr),message)
+            except socket.error as e:
+                print "[transport] TCP Server gets socket error %s from addr=%s with msg=%s" % (str(e), str(addr), message)
+            except struct.error as e:
+                print "[transport] TCP Server python struct cannot interpret message %s" % message
+            finally:
+                sock.close()
+            getDeferredQueue().removeTimeoutDefer()
+
+        while True:
+            new_sock, address = server.accept()
+            gevent.spawn(handle_socket, new_sock, address)
+            gevent.sleep(0.01) 
 
     def handler(self):
         while True:
@@ -399,72 +556,103 @@ class RPCAgent(TransportAgent):
             if defer.message.command == "discovery":
                 #print 'handler: processing discovery request'
                 discovered_nodes = []
-                for gw_addr, gwc in self.getAllGatewayClients():
+                for did, ip, port in getDIDService().get_all_gateways():
+                    gateway = self._create_client_stub(did, ip, port)
                     try:
-                        dinterfaces = gwc.discover()
-                        for interface, dnodes in dinterfaces.items():
-                            for node_lid in dnoes:
-                                node_gid = getGIDServce().getGID(node_lid, interface, gw_addr)
-                                discovered_nodes.append(node_gid)
+                        d = gateway.discover()
+                        max_num = 2**(getDIDService().get_gateway_raddr_len(did)*8)-1
+                        prefix = getDIDService().get_gateway_prefix(did)
+                        for i in xrange(len(d)):
+                            if d[i] > max_num:
+                                print "[transport] RPC discover() to gateway(%d %s) fails due to incorrect radio address %d" % (did, str((ip, port)), d[i])
+                                d = []
+                                break
+                            d[i] = prefix | d[i]
+                        discovered_nodes += d
                     except:
-                        print "[transport] RPC discover() to gateway(%s) fails" % gwc_addr
-
+                        print "[transport] RPC discover() to gateway(%d %s) fails" % (did, str((ip, port)))
                 defer.callback(discovered_nodes)
 
             elif defer.message.command == "routing":
                 #print 'handler: processing routing request'
                 routing = {}
-                for gw_addr, gwc in self.getAllGatewayClients():
+                for did, ip, port in getDIDService().get_all_gateways():
+                    gateway = self._create_client_stub(did, ip, port)
                     try:
-                        rinterfaces = gwc.routing()
-                        for interface, rnodes in rinterfaces.items():
-                            for node_lid, rinfo in rnodes.items():
-                                node_gid = getGIDServce().getGID(node_lid, interface, gw_addr)
-                                routing[node_gid] = rinfo
+                        r = gateway.routing()
+                        max_num = 2**(getDIDService().get_gateway_raddr_len(did)*8)-1
+                        prefix = getDIDService().get_gateway_prefix(did)
+                        for rnode, rlist in r.items():
+                            if rnode > max_num:
+                                break
+                            rnode = prefix | rnode
+                            for i in xrange(len(rlist)):
+                                if rlist[i] > max_num:
+                                    print "[transport] RPC routing() to gateway(%d %s) fails due to incorrect radio address %d in the routing list of device DID %d" % (did, str((ip, port)), rlist[i], rnode)
+                                    rlist = []
+                                    break
+                                rlist[i] = prefix | rlist[i]
+                            if len(rlist) == 0:
+                                break
+                            routing[rnode] = rlist
                     except:
                         print "[transport] RPC routing() to gateway(%s) fails" % gw_addr
 
                 defer.callback(routing)
 
             elif defer.message.command == "device_type":
-                node_gid = defer.message.destination
-                gw_dest = getGIDService().getLID(node_gid)
-                gw_addr = self.getGatewayAddress(node_gid)
-                try:
-                    device_type = self.getGatewayClient(gw_addr).getDeviceType(gw_dest)
-                except:
-                    print "[transport] RPC getDeviceType() with node(%d) and gateway(%s) fails" % (node_gid, gw_addr)
-                    device_type = None
+                device_type = None
+                dev_did = defer.message.destination
+                dev_addr = getDIDService().get_device_raddr(dev_did)
+                if dev_addr is not None:
+                    gw_did, gw_ip, gw_port = getDIDService().get_gateway(dev_did)
+                    if gw_did is not None:
+                        gateway = self._create_client_stub(gw_did, gw_ip, gw_port)
+                        try:
+                            device_type = gateway.getDeviceType(dev_addr)
+                        except:
+                            print "[transport] RPC getDeviceType() to DID(%d) and gateway(%d %s) fails" % (dev_did, gw_did, str((gw_ip, gw_port)))
 
                 defer.callback(device_type)
 
             else: # defer.message.command is 'send'
                 retries = 1
-                node_gid = defer.message.destination
-                gw_dest = getGIDService().getLID(node_gid)
+                dev_did = defer.message.destination
                 command = defer.message.command
                 payload = defer.message.payload
 
-                # prevent pyzwave send got preempted and defer is not in queue
-                if len(defer.allowed_replies) > 0:
-                    print "[transport] handler: appending defer %s to queue" % str(defer)
-                    getAgent().append(defer)
+                dev_addr = getDIDService().get_device_raddr(dev_did)
+                if dev_addr is None:
+                    retries = 0
+                else:
+                    gw_did, gw_ip, gw_port = getDIDService().get_gateway(dev_did)
 
-                while retries > 0:
-                    try:
-                        gw_addr = self.getGatewayAddress(node_gid)
-                        #print "handler: sending message from defer"
-                        success, msg = self.getGatewayClient(gw_addr).send(gw_dest, [command] + payload)
+                    if gw_did is None:
+                        retries = 0
+                    else:
+                        gateway = self._create_client_stub(gw_did, gw_ip, gw_port)
 
-                        if success: break
+                        # prevent pyzwave send got preempted and defer is not in queue
+                        if len(defer.allowed_replies) > 0:
+                            print "[transport] handler: appending defer %s to queue" % str(defer)
+                            getAgent().append(defer)
 
-                        print "[transport] RPC send() replies IOError(%s) so retries %d time(s)" % (str(msg), retries)
-                    except:
-                        print "[transport] RPC send() to node(%d) and gateway(%s) fails" % (node_gid, gw_addr)
-                    retries -= 1
+                        while retries > 0:
+                            try:
+                                #print "handler: sending message from defer"
+                                message = [command] + payload
+                                message = getDIDService().create_fwd_message_byte_list(dev_did, message)
+
+                                success, msg = gateway.send(dev_addr, message)
+
+                                if success: break
+
+                                print "[transport] RPC send() replies %s so retries %d time(s)" % (msg, retries)
+                            except:
+                                print "[transport] RPC send() to DID(%d) and gateway(%d %s) fails" % (dev_did, gw_did, str((gw_ip, gw_port)))
 
                 if retries == 0 or len(defer.allowed_replies) == 0:
-                    print "[transport] handler: returns immediately to handle failues, or defer has no expected replies"
+                    print "[transport] handler: returns immediately to handle failures, or defer has no expected replies"
                     defer.callback(None)
 
             gevent.sleep(0)
@@ -622,9 +810,6 @@ class BrokerAgent:
                     if deliver.command == pynvc.GROUP_NOTIFY_NODE_FAILURE:
                         print "[transport] reconfiguration message received"
                         wusignal.signal_reconfig()
-                    elif getGIDService().isGIDdeliver(deliver):
-                        print "[transport] GID configuration message received"
-                        getGIDService().handleGIDPacket(deliver)
                     else:
                         print "[transport] Failure: Unknown message received"
                 else:
@@ -633,193 +818,196 @@ class BrokerAgent:
                     print '[transport] ' + str(deliver)
             gevent.sleep(0)
 
-class GIDService:
-    _gid_server = None
+class DIDService:
+    _did_server = None
     @classmethod
     def init(cls):
-        if not cls._gid_server:
-            cls._gid_server = GIDService()
-        return cls._gid_server
+        if not cls._did_server:
+            cls._did_server = DIDService()
+        return cls._did_server
 
     def __init__(self):
-        self.gid_null = 0x0000
-        self.gid_master = 0x0001
-        self.gid_bits = 16
-        self.gid_max = 2**self.gid_bits - 1
-        self.database = dbdict.DBDict("gid.db")
-        self.avail_num = 0
-        self.avail_bitset = None
-        self.loadAvailableGIDs()
-        self.reserve_list = []
-        self.ready = False
-        print 'GIDService: init [OK]'
+        self._device_dids = mptnUtils.DBDict("master_dev_dids")
+        self._gateway_dids = mptnUtils.DBDict("master_gtw_dids")
+        self._device_macs = mptnUtils.DBDict("master_dev_macs")
+        self._is_insertable = False
+        self._global_lock = RLock()
 
-    def setMode(self, mode):
-        if mode == 'add':
-            self.ready = True
+    def _update_gateways(self, new_did):
+        # update other gateway PFX UPD
+        to_new_gateway_str = []
+        new_did, new_ip, new_port = self.get_gateway(new_did)
+        new_did_str = str(ipaddress.ip_address(new_did))
+        new_mask = self.get_gateway_prefix_len(new_did)
+        for did, ip, port in self.get_all_gateways():
+            # payload "DID/MASK=IP:PORT"
+            did_str = str(ipaddress.ip_address(did))
+            mask = self.get_gateway_prefix_len(did)
+            if did == new_did:
+                to_new_gateway_str.append("%s/%d=%s:%d" % (did_str, mask, ip, port))
+            else:
+                header = mptnUtils.create_mult_proto_header_to_str(did, getDIDService().get_master_did(), mptnUtils.MULT_PROTO_MSG_TYPE_PFX, mptnUtils.MULT_PROTO_MSG_SUBTYPE_PFX_UPD)
+                payload = "%s/%d=%s:%d" % (new_did_str, new_mask, new_ip, new_port)
+                self._send_to((ip, port), header+payload)
+
+        header = mptnUtils.create_mult_proto_header_to_str(new_did, getDIDService().get_master_did(), mptnUtils.MULT_PROTO_MSG_TYPE_PFX, mptnUtils.MULT_PROTO_MSG_SUBTYPE_PFX_UPD)
+        payload = ";".join(to_new_gateway_str)
+        self._send_to((ip, port), header+payload)
+
+    def _send_to(self, address, message):
+        for i in xrange(mptnUtils.CONNECTION_RETRIES):
+            try:
+                sock = socket.create_connection(address, mptnUtils.NETWORK_TIMEOUT)
+                break
+            except IOError as e:
+                print '[transport] failed to connect to gateway %s:%s: %s', address[0], address[1], str(e)
         else:
-            self.ready = False
+            if sock is not None: sock.close()
+            return None
 
-    def handleGIDPacket(self, packet):
-        if not self.ready:
-            return
+        try:
+            #sock.settimeout(mptnUtils.NETWORK_TIMEOUT)
+            mptnUtils.special_send(sock, message)
 
-        master_busy()
-        payload = None
-        client_lid = None
-        no_error = True
+        except socket.timeout:
+            print "[transport] gateway socket is timeout with addr=%s with msg=%s" % (str(address), message)
+        except socket.error as e:
+            print"[transport] gets socket error %s to gateway with addr=%s with msg=%s" % (str(e), str(address), message)
+        except struct.error as e:
+            print "[transport] python struct cannot interpret message %s to gateway with error %s" % (message, str(e))
+        finally:
+            sock.close()
+    
+    def get_master_did(self):
+        return 0
 
-        if self.isGIDRequestPacket(packet):
-            # TO MODIFY LID
-            client_lid = packet.destination
-            client_gid = self.getGIDSourceAddressFromPacket(packet)
-            print "GIDService: got GID REQUEST from %d" % client_lid
-            gid = self.reserveGID(client_lid, client_gid)
-            if not gid:
-                no_error = False
-            tmp_msg = [pynvc.MULT_PROTO_MSG_SUBTYPE_GID_OFFER] + self.getTwoBytesListFromInt16(gid)
-            payload = self.getGIDPayload(self.getTwoBytesListFromInt16(self.gid_null), self.getTwoBytesListFromInt16(self.gid_master), pynvc.MULT_PROTO_MSG_TYPE, tmp_msg)
-            print "GIDService: reply with GID OFFER", payload
-        elif self.isGIDACKPacket(packet):
-            # TO MODIFY LID
-            client_lid = packet.destination
-            client_gid = self.getGIDSourceAddressFromPacket(packet)
-            print "GIDService: got GID ACK from %d GID = %d" % (client_lid, client_gid)
-            self.allocateGID(client_lid, client_gid)
-            no_error = False
+    def is_did_valid(self, did):
+        if did in self._device_dids.keys():
+            return True
+
+        if did in self._gateway_dids.keys():
+            return True
+
+    def start_accepting(self):
+        with self._global_lock:
+            self._is_insertable = True
+
+    def stop_accepting(self):
+        with self._global_lock:
+            self._is_insertable = False
+
+    def allocate_device_did(self, did, gateway_did, mac_addr=None):
+        if mac_addr is not None and mac_addr in self._device_macs.keys():
+            if self._device_macs[mac_addr] != did
+                return 0xFFFFFFFF
+        
+        with self._global_lock:
+            self._device_macs[mac_addr] = did
+            self._device_dids[did] = (gateway_did, raddr)
+        return did
+
+    def get_or_allocate_gateway_did(self, g_raddr, g_raddr_len, g_ip, g_port):
+        error_did = 0xFFFFFFFF
+        for did in self._gateway_dids.keys():
+            ip, port, prefix, prefix_len, raddr, raddr_len = self._gateway_dids[did]
+            if g_ip == ip and g_port == port:
+                if g_addr_len != raddr_len or g_raddr != raddr:
+                    return error_did
+                return did
         else:
-            print "GIDService Error: invalid GID packet", packet
-            no_error = False
+            max_len = mptnUtils.MULT_PROTO_LEN_DID
+            prefix_len = (max_len-g_raddr_len)*8
 
-        def cb(reply):
-            print "GIDService: GID packet send callback: ", reply
-        def error_cb():
-            print "GIDService: GID packet send error callback"
+            if g_raddr_len > max_len:
+                print "[DID] gateway's radio address length exceeds %d bytes" % max_len
+                return error_did
 
-        if no_error:
-            #getZwaveAgent().deferSend(client_lid, payload[0], payload[1:], [], cb, error_cb)
-            defer = new_defer(cb,
-                error_cb,
-                None,
-                [],
-                new_message(client_lid, payload[0], payload[1:]), int(round(time.time() * 1000)) + 10000)
-            tasks.put_nowait(defer)
+            if g_raddr > 2**(g_raddr_len*8):
+                print "[DID] gateway's radio address %d exceeds %d" % (g_raddr, 2**(g_raddr_len*8))
+                return error_did
 
-        master_available()
+            if g_raddr_len == 4:
+                raise NotImplementedError
+            elif g_raddr_len == 1:
+                candidates = ipaddress.ip_network("0.0.0.0/16").subnets(prefixlen_diff=8)
+            elif g_raddr_len == 2:
+                candidates = ipaddress.ip_network("0.0.0.0/8").subnets(prefixlen_diff=8)
+            else:
+                return error_did
 
-    def getTwoBytesListFromInt16(self, integer):
-        return [(integer>>8 & 0xFF), (integer & 0xFF)]
+            for c in candidates:
+                for did in self._gateway_dids.keys():
+                    if ipaddress.ip_address(did) in c:
+                        break
+                else:
+                    prefix = int(c.network_address)
+                    break
+            else:
+                return error_did
+                    
+            did = prefix | g_raddr
+            netmask = int("1"*prefix_len*8 + "0"*g_raddr_len*8, 2)
+            prefix = did & netmask
+            self._gateway_dids[did] = (g_ip, g_port, prefix, prefix_len, g_raddr, g_raddr_len)
+            gevent.spawn(_update_gateways, did)
+            return did
 
-    '''
-    Bit manipulation functions are used for managing available gids (max 2**16)
-    '''
-    def getByteAndBitIndexes(self, index):
-        byte_ind = int(index / 8)
-        bit_ind = index - byte_ind * 8
-        return byte_ind, bit_ind
+    def get_all_gateways(self):
+        ret = []
+        for did in self._gateway_dids.keys():
+            ip, port, prefix, prefix_len, raddr, raddr_len = self._gateway_dids[did]
+            ret.append((did, ip, port))
+        return ret
 
-    def testBit(self, index):
-        byte_ind, bit_ind = self.getByteAndBitIndexes(index)
-        return (ord(self.avail_bitset[byte_ind]) >> bit_ind) & 0x1
+    def get_gateway(self):
+        if did not in self._device_dids.keys():
+            print "[DID] cannot find device based on DID %d" % did 
+            return None, None, None        
+        
+        gateway_did, raddr = self._device_dids[did]
+        if gateway_did not in self._gateway_dids.keys():
+            print "[DID] cannot find gateway based on DID %d" % did 
+            return None, None, None
 
-    def setBit(self, index):
-        byte_ind, bit_ind = self.getByteAndBitIndexes(index)
-        self.avail_bitset = self.avail_bitset[0:byte_ind] + chr(ord(self.avail_bitset[byte_ind]) | (0x1 << bit_ind)) + self.avail_bitset[byte_ind+1:]
-        self.avail_num += 1
+        ip, port, prefix, prefix_len, raddr, raddr_len = self._gateway_dids[gateway_did]
+        return gateway_did, ip, port
 
-    def clearBit(self, index):
-        byte_ind, bit_ind = self.getByteAndBitIndexes(index)
-        self.avail_bitset = self.avail_bitset[0:byte_ind] + chr(ord(self.avail_bitset[byte_ind]) & (~(0x1 << bit_ind))) + self.avail_bitset[byte_ind+1:]
-        self.avail_num -= 1
+    def get_device_raddr(self, did):
+        if did in self._device_dids.keys():
+            gateway_did, raddr = self._device_dids[did]
+            return raddr
 
-    def popSetBit(self):
-        for i in range(len(self.avail_bitset)):
-            byte = self.avail_bitset[i]
-            if byte is not "\x00":
-                byte = ord(byte)
-                for j in range(8):
-                    if byte & 1:
-                        ret = i*8 + j
-                        self.clearBit(ret)
-                        return ret
-                    byte >>= 1
+        print "[DID] cannot find device's radio address based on DID %d" % did 
         return None
 
-    def loadAvailableGIDs(self):
-        gids = map(lambda x: int(x), self.database.keys())
-        # exclude GID = 1 (Master) and 0 (NULL)
-        #return [i for i in xrange(self.gid_max,1,-1) if i not in gids]
-        byte_num = 1 if self.gid_bits <= 3 else (self.gid_bits - 3)
-        self.avail_bitset = '\xFF' * (byte_num)
-        self.clearBit(0)
-        self.clearBit(1)
-        self.avail_num = self.gid_max + 1 - 2
-        for i in xrange(2,self.gid_max+1):
-            if i in gids:
-                self.clearBit(i)
-    '''
-    GID Packet handling sub-functions
-    '''
-    def reserveGID(self, lid, gid):
-        if self.avail_num == 0:
-            if len(self.reserve_list) == 0:
-                print "GIDService Warning: No Available GID"
-                return None
-            print "GIDService Warning: Canceling reserved GID"
-            for rlid, rgid in self.reserve_list:
-                self.setBit(gid)
-            self.reserve_list = []
+    def get_gateway_raddr_len(self, did):
+        if did in self._gateway_dids.keys():
+            ip, port, prefix, prefix_len, raddr, raddr_len = self._gateway_dids[did]
+            return raddr_len
 
-        if (not self.testBit(gid)) and self.database[gid] == lid:
-            return gid
+        print "[DID] cannot find gateway's radio address len based on DID %d" % did 
+        return None
 
-        gid = self.popSetBit()
-        gevent.sleep(0)
-        self.reserve_list.append((lid,gid))
-        #print self.reserve_list
-        return gid
+    def get_gateway_prefix(self, did):
+        if did in self._gateway_dids.keys():
+            ip, port, prefix, prefix_len, raddr, raddr_len = self._gateway_dids[did]
+            return prefix
 
-    def allocateGID(self, lid, gid):
-        #print self.reserve_list
-        if (lid, gid) not in self.reserve_list:
-            print "GIDService Error: client lid = %d, gid = %d not reserved" % (lid,gid)
-            return None
-        elif gid >= self.gid_max or gid <= 1:
-            print "GIDService Error: client gid = %d exceeds range [2, %d]" % (lid,gid,2**self.gid_bits)
-            return None
-        self.reserve_list.remove((lid, gid))
-        self.database[gid] = lid
-        print "GIDService: Successfully assign GID %d to LID %d" % (gid, lid)
+        print "[DID] cannot find gateway's prefix based on DID %d" % did 
+        return None
 
-    def getLID(self, gid):
-        # return (interface_name, node_lid)
-        if gid in self.database[gid]:
-            return self.database[gid]
-        else:
-            return None
+    def get_gateway_prefix_len(self, did):
+        if did in self._gateway_dids.keys():
+            ip, port, prefix, prefix_len, raddr, raddr_len = self._gateway_dids[did]
+            return prefix_len
 
-    def findGatewayAddress(self, gid):
-        pass
+        print "[DID] cannot find gateway's prefix len based on DID %d" % did 
+        return None
 
-    def getGIDMessageTypeFromPacket(self, packet):
-        return packet.payload[4]
-
-    def getGIDSourceAddressFromPacket(self, packet):
-        hbyte = packet.payload[1] & 0xFF
-        lbyte = packet.payload[2] & 0xFF
-        return (((hbyte) << 8) | lbyte)
-
-    def getGIDPayload(self, destination, source, gid_message_type, extra):
-        return destination + source + [gid_message_type] + extra
-
-    def isGIDdeliver(self, deliver):
-        return deliver.payload[3] == pynvc.MULT_PROTO_MSG_TYPE
-
-    def isGIDRequestPacket(self, packet):
-        return self.getGIDMessageTypeFromPacket(packet) == pynvc.MULT_PROTO_MSG_SUBTYPE_GID_REQ
-
-    def isGIDACKPacket(self, packet):
-        return self.getGIDMessageTypeFromPacket(packet) == pynvc.MULT_PROTO_MSG_SUBTYPE_GID_ACK
+    def create_fwd_message_byte_list(self, did, message):
+        header = mptnUtils.create_mult_proto_header_to_str(did, getDIDService().get_master_did(), mptnUtils.MULT_PROTO_MSG_TYPE_FWD, mptnUtils.MULT_PROTO_MSG_SUBTYPE_FWD)
+        header = map(ord, header)
+        return header+message
 
 def getMockAgent():
     return MockAgent.init()
@@ -833,5 +1021,5 @@ def getRPCAgent():
 def getDeferredQueue():
     return DeferredQueue.init()
 
-def getGIDService():
-    return GIDService.init()
+def getDIDService():
+    return DIDService.init()

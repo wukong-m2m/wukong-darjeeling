@@ -49,7 +49,7 @@ typedef unsigned long long int dj_time_t;
 // #define DBG_WKREPROG true
 // #define DBG_ZWAVETRACE true
 // #define DBG_WKPFGH true
-// #define DBG_WKROUTING true
+#define DBG_WKROUTING true
 //#define DBG_WIFI true
 
 void avr_serialPrintf(char * format, ...);
@@ -58,7 +58,8 @@ void avr_serialPrintf(char * format, ...);
 #define DARJEELING_PGMSPACE_MACRO
 
 // Routing: choose 1
-#define ROUTING_USE_NONE
+#define ROUTING_USE_GATEWAY
+//#define ROUTING_USE_NONE
 //#define ROUTING_USE_DSDV
 //#define ROUTING_USE_WUKONG
 

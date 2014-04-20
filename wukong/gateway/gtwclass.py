@@ -35,11 +35,11 @@ class Gateway(object):
     def start(self, tcp_port):
         try:
             self._ip_server = socket.socket()
-            self._ip_server.bind(('localhost', tcp_port))
+            self._ip_server.bind(('', tcp_port))
             self._ip_server.listen(500)
         except socket.error as msg:
             self._ip_server.close()
-            logger.error("cannot start due to socket error.")
+            logger.error("cannot start due to socket error: %s" % msg)
             return False
         self._greenlet = [gevent.spawn(self._serve_transport_forever), gevent.spawn(self._serve_socket_forever)]
         gevent.sleep(0) # Make the greenlet start first and return
@@ -63,12 +63,15 @@ class Gateway(object):
 
         if isinstance(context, tuple) and len(context) == 2:
             context_str = ':'.join([str(i) for i in context])
+        else:
+            context_str = context
         log_msg = utils.format([context_str, dest_did, src_did, msg_type, msg_subtype, str(payload)])
         logger.debug("receive message:\n" + log_msg)
 
         if msg_type == MPTN.MULT_PROTO_MSG_TYPE_DID:
             # Only DID REQ message from transport device would get here
             if not from_transport:
+                logger.error("cannot receive DID message from IP server")
                 return None
 
             if msg_subtye != MPTN.MULT_PROTO_MSG_SUBTYPE_DID_REQ:
@@ -89,17 +92,18 @@ class Gateway(object):
         # Check if SRC_DID is on MPTN network
         # Also check if DEST_DID is on MPTN network
         # Drop if one of test is not passed
-        if not self._did_service.is_id_valid(dest_did):
+        if not self._did_service.is_did_valid(dest_did):
             logger.debug("drop message since DEST DID (%X) is not valid" % dest_did)
             return None
 
-        if not self._did_service.is_id_valid(src_did):
+        if not self._did_service.is_did_valid(src_did):
             logger.debug("drop message since SRC DID (%X) is not valid" % src_did)
             return None
 
         if msg_type == MPTN.MULT_PROTO_MSG_TYPE_RAD:
             # Only RAD message from external service would get here
             if from_transport:
+                logger.error("cannot receive RAD message from IP server")
                 return None
 
             if payload is not None:
@@ -130,6 +134,7 @@ class Gateway(object):
             # Check if SRC_DID is master's
             # RPC handler would reply a full MPTN packet
             if from_transport:
+                logger.error("cannot receive RPC message from transport device")
                 return None
 
             if payload is None:
@@ -163,20 +168,21 @@ class Gateway(object):
 
             retries = CONFIG.CONNECTION_RETRIES
             for i in xrange(retries):
-                success, message = self._transport_send_handler(src_radio_addr, response)
+                success, message = self._transport_send_handler(radio_address, response)
                 if success:
                     msg_subtype = MPTN.MULT_PROTO_MSG_SUBTYPE_FWD_ACK
-                    header = utils.create_mult_proto_header_to_str(dest_did, src_did, msg_type, msg_subtype)
+                    header = utils.create_mult_proto_header_to_str(src_did, dest_did, msg_type, msg_subtype)
                     return header
                 gevent.sleep(0)
             else:
-                header = utils.create_mult_proto_header_to_str(dest_did, src_did, msg_type, MPTN.MULT_PROTO_MSG_SUBTYPE_FWD_NAK)
-                logger.error("forwarding message to radio address %X fail" % src_radio_addr)
+                header = utils.create_mult_proto_header_to_str(src_did, dest_did, msg_type, MPTN.MULT_PROTO_MSG_SUBTYPE_FWD_NAK)
+                logger.error("forwarding message to radio address %X fail" % radio_address)
                 return header + message
 
         elif msg_type == MPTN.MULT_PROTO_MSG_TYPE_PFX:
             # Only PFX UPD message from master would get here
             if from_transport:
+                logger.error("cannot receive RPC message from transport device")
                 return None
 
             if msg_subtype != MPTN.MULT_PROTO_MSG_SUBTYPE_PFX_UPD:
@@ -206,9 +212,9 @@ class Gateway(object):
                 response = self._process_message(addr, message, False)
                 if response is not None: utils.special_send(sock, response)
             except socket.timeout:
-                logger.error("the socket is timeout from addr=%s with size=%X and msg=%s" % (str(addr), size, message))
+                logger.error("the socket is timeout from addr=%s with msg=%s" % (str(addr),message))
             except socket.error as e:
-                logger.error("gets socket error %s from addr=%s with size=%X and msg=%s" % (str(e), str(addr), size, message))
+                logger.error("gets socket error %s from addr=%s with msg=%s" % (str(e), str(addr), message))
             except struct.error as e:
                 logger.error("python struct cannot interpret message %s" % message)
             finally:
@@ -252,13 +258,7 @@ class Gateway(object):
             return (False, msg)
 
         def getDeviceType(radio_address):
-            r = self._transport.get_device_type(radio_address)
-            if r is not None:
-                return (True, r)
-
-            msg = "transport interface(%s) fails to get device type from device with radio address(%s)" % (self._transport.get_name(), str(radio_address))
-            logger.warning(msg)
-            return (False, msg)
+            return self._transport.get_device_type(radio_address)
 
         def routing():
             r = {}

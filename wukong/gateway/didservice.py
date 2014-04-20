@@ -39,7 +39,7 @@ class DIDService(object):
         else:
             self._db_init(transport_radio_addr, radio_addr_len)
 
-        # Check whether master is connectable and its prefix is valid or not
+        # Check whether master is connectable and its did/prefix is valid or not
         self._get_prefix_from_master()
 
         logger.info("initialized")
@@ -76,8 +76,8 @@ class DIDService(object):
         self._db["GTWSELF_RADIO_ADDR_LEN"] = radio_addr_len
         self._db["GTWSELF_DID"] = None
         self._db["GTWSELF_DID_PREFIX_LEN"] = (MAX_DID_LEN-radio_addr_len)*8
-        self._db["GTWSELF_DID_NETMASK"] = int(("1"*self._db["GTWSELF_DID_PREFIX_LEN"])+("0"*radio_addr_len*8), 2)
-        self._db["GTWSELF_DID_HOSTMASK"] = int(("0"*self._db["GTWSELF_DID_PREFIX_LEN"])+("1"*radio_addr_len*8), 2)
+        self._db["GTWSELF_DID_NETMASK"] = int(("1"*self._db["GTWSELF_DID_PREFIX_LEN"]*8)+("0"*radio_addr_len*8), 2)
+        self._db["GTWSELF_DID_HOSTMASK"] = int(("0"*self._db["GTWSELF_DID_PREFIX_LEN"]*8)+("1"*radio_addr_len*8), 2)
 
         # set_self_ip_addr and tcp_port
         # Not test for IPv6
@@ -102,6 +102,8 @@ class DIDService(object):
 
     def _db_loads(self):
         self._load_dids()
+        if self._db["GTWSELF_DID"] is None:
+            logger.warning("the gateway does not acquire a valid DID/prefix from master")
 
     def _is_db_init(self):
         return len(self._db.keys()) > 0
@@ -166,7 +168,7 @@ class DIDService(object):
         msg_type = MPTN.MULT_PROTO_MSG_TYPE_PFX
         msg_subtype = MPTN.MULT_PROTO_MSG_SUBTYPE_PFX_REQ
         header = utils.create_mult_proto_header_to_str(dest_did, src_did, msg_type, msg_subtype)
-        payload = "RADDR=%d;LEN=%d" % (self._db["GTWSELF_RADIO_ADDR"], self._db["GTWSELF_RADIO_ADDR_LEN"])
+        payload = "RADDR=%d;LEN=%d;PORT=%d" % (self._db["GTWSELF_RADIO_ADDR"], self._db["GTWSELF_RADIO_ADDR_LEN"], self._db["GTWSELF_TCP_PORT"])
 
         success, message = self._send_to_and_recv_from(address, header+payload)
 
@@ -236,11 +238,13 @@ class DIDService(object):
             logger.error("get incorrect msg subtype (%d) instead of FWD ACK from master" % msg_subtype)
             return None
 
+        return None
+
     def _send_to_and_recv_from(self, address, message):
         sock = None
         for i in xrange(CONFIG.CONNECTION_RETRIES):
             try:
-                sock = socket.create_connection(address)
+                sock = socket.create_connection(address, CONFIG.NETWORK_TIMEOUT)
                 break
             except IOError as e:
                 logger.error('failed to connect to master %s:%s: %s', address[0], address[1], str(e))
@@ -248,8 +252,9 @@ class DIDService(object):
             if sock is not None: sock.close()
             return (False, None)
 
+        ret = (False, None)
         try:
-            sock.settimeout(CONFIG.NETWORK_TIMEOUT)
+            #sock.settimeout(CONFIG.NETWORK_TIMEOUT)
 
             utils.special_send(sock, message)
 
@@ -257,14 +262,11 @@ class DIDService(object):
 
             ret = (True, message)
         except socket.timeout:
-            logger.error("socket is timeout with addr=%s with size=%X and msg=%s" % (str(addr), size, message))
-            ret = (False, None)
+            logger.error("socket is timeout with addr=%s with msg=%s" % (str(address), message))
         except socket.error as e:
-            logger.error("gets socket error %s with addr=%s with size=%X and msg=%s" % (str(e), str(addr), size, message))
-            ret = (False, None)
+            logger.error("gets socket error %s with addr=%s with msg=%s" % (str(e), str(address), message))
         except struct.error as e:
-            logger.error("python struct cannot interpret message %s" % message)
-            ret = (False, None)
+            logger.error("python struct cannot interpret message %s with error %s" % (message, str(e)))
         finally:
             sock.close()
 
@@ -274,7 +276,7 @@ class DIDService(object):
     Public functions
     '''
 
-    def is_id_valid(self, did):
+    def is_did_valid(self, did):
         # Check other known network
         # Then Check itself network
         # Last Check if it is master
@@ -297,14 +299,11 @@ class DIDService(object):
             return None
         radio_addr_len = self._db["GTWSELF_RADIO_ADDR_LEN"]
 
-        if payload is None or len(payload) != radio_addr_len+AUTONET_MAC_ADDR:
-            logger.error("the length of payload of DID REQ %d should be the same as that of radio address %d", (len(payload), self._db["GTWSELF_RADIO_ADDR_LEN"]))
+        if payload is None or len(payload) != AUTONET_MAC_ADDR:
+            logger.error("the length of payload of DID REQ %d should be the same as that of Autonet Zigbee MAC address %d" % (len(payload), AUTONET_MAC_ADDR))
             return None            
-
-        temp_payload = payload[:radio_addr_len]
-        payload = payload[radio_addr_len:]
-        temp_unpack_format = "!"+{1:'B',2:'H',4:'I',8:'Q'}[self._db["GTWSELF_RADIO_ADDR_LEN"]]
-        temp_radio_addr = self._db["GTWSELF_DID_HOSTMASK"] & struct.unpack(temp_unpack_format, temp_payload)[0]
+        
+        temp_radio_addr = context
         temp_did = struct.pack("!L", (self_did & self._db["GTWSELF_DID_NETMASK"]) | temp_radio_addr)
         if not self._is_did_set(temp_radio_addr):
             address = (self._db["MASTER_IP_ADDR"], self._db["MASTER_TCP_PORT"])
@@ -374,7 +373,8 @@ class DIDService(object):
             address = self._ok_nets[ok_net].split(":")
             address[1] = int(address[1])
             address = tuple(address)
-            return self._forward_to_final_ip_hop(address, message)
+            self._forward_to_final_ip_hop(address, message)
+            return None
 
         logger.error("the dest_did %X is neither in the gateway's network nor others" % dest_did)
         return None
@@ -389,17 +389,18 @@ class DIDService(object):
             logger.error("cannot update PFX table since payload is empty")
             return None
         
-        # payload "DID/MASK=IP:PORT"
-        payload = payload.split("=")
-        did_net = ipaddress.ip_interface(payload[0]).network
+        for p in payload.split(";"):
+            # payload "DID/MASK=IP:PORT"
+            p = p.split("=")
+            did_net = ipaddress.ip_interface(p[0]).network
 
-        for ok_net in self._ok_nets.keys():
-            # ok_nets key = "DID/MASK" value = "IP:PORT"
-            if did_net.overlaps(ipaddress.ip_interface(ok_net).network):
-                logger.error("cannot update PFX table because it %s overlaps with other existing network %s" % (payload[0], ok_net))
-                return None
+            for ok_net in self._ok_nets.keys():
+                # ok_nets key = "DID/MASK" value = "IP:PORT"
+                if did_net.overlaps(ipaddress.ip_interface(ok_net).network):
+                    logger.error("cannot update PFX table because it %s overlaps with other existing network %s" % (p[0], ok_net))
+                    return None
 
-        # add corresponding network into ok_net
-        self._ok_nets[payload[0]] = payload[1]
-        logger.debug("the info of other network %s is updated successfully." % str(payload))
+            # add corresponding network into ok_net
+            self._ok_nets[p[0]] = p[1]
+            logger.debug("the info of other network %s is updated successfully." % str(p))
         return None

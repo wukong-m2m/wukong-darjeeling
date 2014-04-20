@@ -1,4 +1,7 @@
-#include "wifi.h"
+#include "config.h" // To get RADIO_USE_WIFI
+
+#ifdef RADIO_USE_WIFI
+#include "radio_wifi.h"
 #include "djtimer.h"
 #include "uart.h"
 #include "debug.h"
@@ -327,3 +330,5 @@ void radio_wifi_status(){
   show_result();
   exit_cmd_mode();
 }
+
+#endif

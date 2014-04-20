@@ -62,8 +62,8 @@ class ZWTransport(object):
         try:
             pyzwave.send(destination, [0x88] + payload)
         except Exception as e:
-            ret = "Zwave send with IO error"
-            logger.error("Zwave send with IO error")
+            ret = "Zwave send occurs IO error"
+            logger.error("Zwave send occurs IO error")
         finally:
             _global_lock.release()
         return ret

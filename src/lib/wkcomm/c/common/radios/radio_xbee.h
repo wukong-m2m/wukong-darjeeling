@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-typedef uint8_t radio_xbee_address_t;
+typedef uint16_t radio_xbee_address_t;
 
 extern void radio_xbee_init(void);
 extern radio_xbee_address_t radio_xbee_get_node_id();
