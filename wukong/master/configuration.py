@@ -14,6 +14,7 @@ DEPLOY_PLATFORMS = []
 DEPLOY_PLATFORMS.append(config.get('DEPLOY_PLATFORM', 'avr_mega2560'))
 
 SIMULATION = config.get('SIMULATION', 'false')
+MONITORING = config.get('MONITORING', 'false')
 
 #XML_PATH = os.path.join(ROOT_PATH, 'wukong', 'Applications')
 COMPONENTXML_PATH = os.path.join(ROOT_PATH, 'wukong', 'ComponentDefinitions', 'WuKongStandardLibrary.xml')
@@ -28,3 +29,5 @@ NETWORKSERVER_ADDRESS = config.get('NETWORKSERVER_ADDRESS', '127.0.0.1')
 NETWORKSERVER_PORT = int(config.get('NETWORKSERVER_PORT', 10008))
 
 WKPFCOMM_AGENT = config.get('WKPFCOMM_AGENT', 'ZWAVE')
+
+MONGODB_URL = config.get('MONGODB_URL', '')

@@ -29,7 +29,8 @@ class Communication:
       self.device_type = None
       try:
         if SIMULATION == "true":
-          raise KeyboardInterrupt
+          print "simulation mode"
+          raise Exception('simulation', 'Set simulation in master.cfg to false if you do not want simulated discovery')
         if WKPFCOMM_AGENT == "NETWORKSERVER":
           self.zwave = getNetworkServerAgent()
         else:
@@ -66,13 +67,18 @@ class Communication:
       return filter(lambda info: info.id in node_ids, self.getAllNodeInfos())
 
     def getAllNodeInfos(self, force=False):
-      if force:
-        print '[wkpfcomm] getting all nodes from discovery'
+      if force == False:
+        self.all_node_infos = WuNode.loadNodes()
+        if self.all_node_infos == None:
+          print ('[wkpfcomm] error in cached discovery result')
+      if force == True or self.all_node_infos == None:
+        print '[wkpfcomm] getting all nodes from node discovery'
         WuNode.clearNodes()
         self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
+        WuNode.addVirtualNodes(wkpf.globals.virtual_nodes)
         WuNode.saveNodes()
-      else:
-        self.all_node_infos = WuNode.loadNodes()
+        
+      
       return self.all_node_infos
 
     def updateAllNodeInfos(self):
@@ -283,8 +289,10 @@ class Communication:
 
           virtual = virtual_or_publish & 0x1
           publish = virtual_or_publish & 0x2
-
-          if publish:
+          
+          #virtual wuclass, non-publish wuclass will not be shown upon discovery, because we cannot create new wuobjs using them
+          #to create new virtual wuobjs, we need to re-download virtual wuclass...
+          if publish and (not virtual):
             node = WuNode.findById(destination)
 
             if not node:

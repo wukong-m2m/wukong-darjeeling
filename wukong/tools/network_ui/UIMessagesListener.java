@@ -9,8 +9,7 @@ import java.util.*;
 
 public class UIMessagesListener implements NetworkServerMessagesListener {
 	TextArea textArea;
-	JTree tree;
-	DefaultTreeModel treemodel;
+	StandardLibraryParser standardLibrary;
 
 	private final int WKPF_PROPERTY_TYPE_SHORT         = 0;
 	private final int WKPF_PROPERTY_TYPE_BOOLEAN       = 1;
@@ -21,10 +20,9 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 	private final int WKREPROG_FAILED                  = 3; // Not used yet
 
 
-	public UIMessagesListener (TextArea textArea, JTree tree, DefaultTreeModel treemodel) {
+	public UIMessagesListener (TextArea textArea, StandardLibraryParser standardLibrary) {
 		this.textArea = textArea;
-		this.tree = tree;
-		this.treemodel = treemodel;
+		this.standardLibrary = standardLibrary;
 	}
 
 	public void print(String msg) {
@@ -41,6 +39,30 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 			case WKPF_PROPERTY_TYPE_REFRESH_RATE: return "refresh_rate";
 		}
 		return "unknown";
+	}
+
+	private String wuclassId2String(Integer wuclassId) {
+		if (standardLibrary != null) {
+			StandardLibraryParser.WuClass wuclass = standardLibrary.getWuClass(wuclassId);
+			if (wuclass != null)
+				return wuclass.name;
+		}
+		return wuclassId.toString();
+	}
+
+	private String wuclassAndProperty2String(Integer wuclassId, Integer propertyId) {
+		if (standardLibrary != null) {
+			StandardLibraryParser.WuClass wuclass = standardLibrary.getWuClass(wuclassId);
+			if (wuclass != null) {
+				StandardLibraryParser.Property property = wuclass.getProperty(propertyId);
+				return wuclass.name + "." + property.name;
+			}
+		}
+		return "wuclass:" + wuclassId + " property:" + propertyId.toString();
+	}
+
+	private String int2BoolString(int x) {
+		return x == 0 ? "False" : "True";
 	}
 
 	private String parseMessage(int[] message) {
@@ -115,11 +137,11 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 				sb.append(" wuclasses:");
 				for (int i = 3; i < payload.length; i+=3) {
 					sb.append("{id:");
-					sb.append((payload[i]*256 + payload[i+1])); // TODONR: change to little endian
+					sb.append(wuclassId2String(payload[i]*256 + payload[i+1])); // TODONR: change to little endian
 					sb.append(" canCreate:");
-					sb.append((payload[i+2] & 0x2) == 0 ? "False" : "True");
+					sb.append(int2BoolString(payload[i+2] & 0x2));
 					sb.append(" virtual:");
-					sb.append((payload[i+2] & 0x1) == 0 ? "False" : "True");
+					sb.append(int2BoolString(payload[i+2] & 0x1));
 					sb.append("} ");
 				}
 				break;
@@ -137,41 +159,38 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 					sb.append("{port:");
 					sb.append(payload[i]);
 					sb.append(" wuclass:");
-					sb.append(payload[i+1]*256+payload[i+2]); // TODONR: change to little endian
+					sb.append(wuclassId2String(payload[i+1]*256+payload[i+2])); // TODONR: change to little endian
 					sb.append(" virtual:");
-					sb.append((payload[i+3]) == 0 ? "False" : "True");
+					sb.append(int2BoolString(payload[i+3]));
 					sb.append("} ");
 				}
 				break;
 			case 0x94:
 				command_name = "WKPF_READ_PROPERTY";
-				sb.append("port:" + payload[0]);
-				sb.append(" property:" + payload[3]);
-				sb.append(" wuclass:" + (payload[1]*256+payload[2]));
+				sb.append("port:" + payload[0] + " ");
+				sb.append(wuclassAndProperty2String(payload[1]*256+payload[2], payload[3]));
 				break;
 			case 0x95:
 				command_name = "WKPF_READ_PROPERTY_R";
-				sb.append("port:" + payload[0]);
-				sb.append(" property:" + payload[3]);
-				sb.append(" wuclass:" + (payload[1]*256+payload[2]));
+				sb.append("port:" + payload[0] + " ");
+				sb.append(wuclassAndProperty2String(payload[1]*256+payload[2], payload[3]));
 				sb.append(" type:" + propertyTypeToString(payload[4]));
 				sb.append(" status:" + String.format("%02X ", payload[5]));
 				if (payload[4]==WKPF_PROPERTY_TYPE_SHORT || payload[4]==WKPF_PROPERTY_TYPE_REFRESH_RATE) {
 					sb.append(" value:" + payload[6]*256 + payload[7]);
 				} else {
-					sb.append(" value:" + payload[6]);
+					sb.append(" value:" + int2BoolString(payload[6]));
 				}
 				break;
 			case 0x96:
 				command_name = "WKPF_WRITE_PROPERTY";
-				sb.append("port:" + payload[0]);
-				sb.append(" property:" + payload[3]);
-				sb.append(" wuclass:" + (payload[1]*256+payload[2]));
+				sb.append("port:" + payload[0] + " ");
+				sb.append(wuclassAndProperty2String(payload[1]*256+payload[2], payload[3]));
 				sb.append(" type:" + propertyTypeToString(payload[4]));
 				if (payload[4]==WKPF_PROPERTY_TYPE_SHORT || payload[4]==WKPF_PROPERTY_TYPE_REFRESH_RATE) {
 					sb.append(" value:" + payload[5]*256 + payload[6]);
 				} else {
-					sb.append(" value:" + payload[5]);
+					sb.append(" value:" + int2BoolString(payload[5]));
 				}
 				break;
 			case 0x97:

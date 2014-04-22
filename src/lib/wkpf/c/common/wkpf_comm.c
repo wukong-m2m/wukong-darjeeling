@@ -39,6 +39,19 @@ uint8_t send_message(wkcomm_address_t dest_node_id, uint8_t command, uint8_t *pa
 	}
 }
 
+void send_message_withou_reply(wkcomm_address_t dest_node_id, uint8_t command, uint8_t *payload, uint8_t length) {
+    // Print some debug info
+    #ifdef DARJEELING_DEBUG
+    	DEBUG_LOG(true, "WKPF: sending property set command to %d:", dest_node_id);
+    	for(int i=0; i<length; i++) {
+    		DEBUG_LOG(true, "[%x] ", payload[i]);
+    	}
+    	DEBUG_LOG(true, "\n");
+    #endif
+
+    wkcomm_send(dest_node_id, command, payload, length);
+}
+
 uint8_t wkpf_call_adaptor(wkcomm_address_t dest_node_id, uint16_t wuclass_id, uint8_t property_number, uint16_t value)
 {
 	uint8_t buf[6];
@@ -53,6 +66,7 @@ uint8_t wkpf_call_adaptor(wkcomm_address_t dest_node_id, uint16_t wuclass_id, ui
 	return r;
 
 }
+
 
 uint8_t wkpf_send_set_property_int16(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, int16_t value) {
 	uint8_t message_buffer[7];
@@ -87,7 +101,7 @@ uint8_t wkpf_send_set_property_boolean(wkcomm_address_t dest_node_id, uint8_t po
 }
 
 uint8_t wkpf_send_set_property_refresh_rate(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, wkpf_refresh_rate_t value) {
-	uint8_t message_buffer[7];
+	uint8_t message_buffer[8];
 	if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH) {
 		return WKPF_COMM_CMD_ERROR_R;
 	} else {
@@ -101,6 +115,57 @@ uint8_t wkpf_send_set_property_refresh_rate(wkcomm_address_t dest_node_id, uint8
 		return send_message(dest_node_id, WKPF_COMM_CMD_WRITE_PROPERTY, message_buffer, 7);
 	}
 }
+
+uint8_t wkpf_send_monitor_property_int16(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, int16_t value) {
+    uint8_t message_buffer[6];
+    if (progression_server_id >= DEVICE_NATIVE_ZWAVE_SWITCH) {
+        return WKPF_COMM_CMD_ERROR_R;
+    } else {
+        message_buffer[0] = (uint8_t)(wuclass_id >> 8);
+        message_buffer[1] = (uint8_t)(wuclass_id);
+        message_buffer[2] = port_number;
+        message_buffer[3] = WKPF_PROPERTY_TYPE_SHORT;
+        message_buffer[4] = (uint8_t)(value >> 8);
+        message_buffer[5] = (uint8_t)(value);
+        send_message_withou_reply(progression_server_id, WUKONG_MONITOR_PROPERTY, message_buffer, 6);
+        return WKPF_OK;
+    }
+
+}
+
+uint8_t wkpf_send_monitor_property_boolean(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, bool value) {
+
+    uint8_t message_buffer[5];
+    if (progression_server_id >= DEVICE_NATIVE_ZWAVE_SWITCH) {
+        return WKPF_COMM_CMD_ERROR_R;
+    } else {
+        message_buffer[0] = (uint8_t)(wuclass_id >> 8);
+        message_buffer[1] = (uint8_t)(wuclass_id);
+        message_buffer[2] = port_number;
+        message_buffer[3] = WKPF_PROPERTY_TYPE_BOOLEAN;
+        message_buffer[4] = (uint8_t)(value);
+        send_message_withou_reply(progression_server_id, WUKONG_MONITOR_PROPERTY, message_buffer, 5);
+        return WKPF_OK;
+    }
+}
+
+uint8_t wkpf_send_monitor_property_refresh_rate(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, wkpf_refresh_rate_t value) {
+
+    uint8_t message_buffer[6];
+    if (progression_server_id >= DEVICE_NATIVE_ZWAVE_SWITCH) {
+        return WKPF_COMM_CMD_ERROR_R;
+    } else {
+        message_buffer[0] = (uint8_t)(wuclass_id >> 8);
+        message_buffer[1] = (uint8_t)(wuclass_id);
+        message_buffer[2] = port_number;
+        message_buffer[3] = WKPF_PROPERTY_TYPE_REFRESH_RATE;
+        message_buffer[4] = (uint8_t)(value >> 8);
+        message_buffer[5] = (uint8_t)(value);
+        send_message_withou_reply(progression_server_id, WUKONG_MONITOR_PROPERTY, message_buffer, 6);
+        return WKPF_OK;
+    }
+}
+
 
 uint8_t wkpf_send_request_property_init(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number) {
 	uint8_t message_buffer[2];
@@ -364,7 +429,7 @@ void wkpf_comm_handle_message(void *data) {
 				retval = wkpf_property_needs_initialisation_push(wuobject, property_number);
 			}
 			if (retval != WKPF_OK) {
-				payload [2] = retval;
+				payload [0] = retval;
 				response_cmd = WKPF_COMM_CMD_ERROR_R;
 				response_size = 1;
 			} else {

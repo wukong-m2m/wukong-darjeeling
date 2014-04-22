@@ -19,6 +19,7 @@ NANOVMTOOL = %(ROOT)s/nanovmtool/
 LOCATION_ROOT = WuKong
 
 SIMULATION = false
+MINITORING = false
 
 DEPLOY_PLATFORM = avr_mega2560
 
@@ -34,3 +35,6 @@ WKPFCOMM_AGENT = NETWORKSERVER
 # The address to connect to for the NetworkServerAgent
 NETWORKSERVER_ADDRESS = 127.0.0.1
 NETWORKSERVER_PORT = 10008
+
+# The address to connect to mongoDB instance
+# mongo://[username]:[password]@[host]:[port]/[database]

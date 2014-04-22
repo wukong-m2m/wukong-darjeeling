@@ -19,7 +19,7 @@ extern unsigned int zwave_my_address;
 
 
 //#define DEBUGF(...)  fprintf(stderr, __VA_ARGS__)
-#define DEBUGF(...) 
+#define DEBUGF(...)
 
 
 static PyObject* pyzwave_receive(PyObject *self, PyObject *args) {

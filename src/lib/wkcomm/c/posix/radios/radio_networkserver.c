@@ -7,6 +7,8 @@
 #include <errno.h>
 #include <string.h>
 #include <time.h>
+#include "core.h"
+#include "hooks.h"
 #include "types.h"
 #include "config.h"
 #include "debug.h"
@@ -19,6 +21,7 @@
 // (routing requires at least 1 radio_ library to be linked in)
 #include "../../common/routing/routing.h"
 
+#ifdef RADIO_USE_NETWORKSERVER
 
 // Protocol format: see WuKongNetworkServer.java
 #define MODE_MESSAGE 1
@@ -27,7 +30,7 @@
 int radio_networkserver_sockfd;
 struct sockaddr_in radio_networkserver_servaddr;
 uint8_t radio_networkserver_receive_buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+3]; // 4 for local network overhead, 3 for wkcomm overhead
-
+dj_hook radio_networkserver_shutdownHook;
 
 void open_connection() {
 	struct sockaddr_in radio_networkserver_servaddr;
@@ -61,8 +64,14 @@ void open_connection() {
 	}
 }
 
+void radio_networkserver_shotdown(void *data) {
+	close(radio_networkserver_sockfd);
+}
+
 void radio_networkserver_init(void) {
 	open_connection();
+	radio_networkserver_shutdownHook.function = radio_networkserver_shotdown;
+	dj_hook_add(&dj_core_shutdownHook, &radio_networkserver_shutdownHook);
 }
 
 radio_networkserver_address_t radio_networkserver_get_node_id() {
@@ -108,3 +117,5 @@ uint8_t radio_networkserver_send(radio_networkserver_address_t dest, uint8_t *pa
 	else
 		return -1;
 }
+
+#endif // RADIO_USE_NETWORKSERVER

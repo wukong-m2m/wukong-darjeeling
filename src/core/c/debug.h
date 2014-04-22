@@ -97,6 +97,9 @@
 #ifndef DBG_WKROUTING
 #define DBG_WKROUTING 0
 #endif
+#ifndef DBG_ECO
+#define DBG_ECO 0
+#endif
 
 #ifndef DARJEELING_DEBUG
 

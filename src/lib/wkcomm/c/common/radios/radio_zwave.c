@@ -206,7 +206,7 @@ void radio_zwave_init(void) {
         }
     }
 // see issue 115     output_high(PORTK,3);
-        if(!radio_zwave_my_address_loaded) // Can't read address -> panic
+    //    if(!radio_zwave_my_address_loaded) // Can't read address -> panic
     DEBUG_LOG(DBG_WKCOMM, "My Zwave node_id: %d\n", radio_zwave_my_address);
     radio_zwave_platform_dependent_init();
 

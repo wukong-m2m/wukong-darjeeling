@@ -10,6 +10,9 @@ uint8_t dj_exec_runlevel;
 // For libraries that need frequent polling. Currently just for radios, but maybe there are other uses. Should be fast.
 dj_hook *dj_core_pollingHook = NULL;
 
+// To notify components we're shutting down so things can be cleaned up nicely. (useful for the network server radio so it can properly close the connection)
+dj_hook *dj_core_shutdownHook = NULL;
+
 extern void dj_libraries_init(); // Generated during build based on the included libraries
 
 void core_init(void *mem, uint32_t memsize) {

@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <getopt.h>
+#include <unistd.h>
 
 #include "core.h"
 #include "types.h"

@@ -40,11 +40,30 @@ from configuration import *
 import tornado.options
 
 try:
+  from pymongo import MongoClient
+except:
+  print "Please install python mongoDB driver pymongo by using"
+  print "easy_install pymongo"
+  sys.exit(-1)
+
+
+
+try:
    m = pyzwave.getDeviceType
 except:
   print "Please reinstall the pyzwave module in the wukong/tools/python/pyzwave by using"
   print "cd ../tools/python/pyzwave; sudo python setup.py install"
   sys.exit(-1)
+
+if(MONITORING == 'true'):
+    try:
+        wkpf.globals.mongoDBClient = MongoClient(MONGODB_URL)
+
+    except:
+      print "MongoDB instance " + MONGODB_URL + " can't be connected."
+      print "Please install the mongDB, pymongo module."
+      sys.exit(-1)
+
 
 tornado.options.parse_command_line()
 #tornado.options.enable_pretty_logging()
@@ -53,6 +72,8 @@ IP = sys.argv[1] if len(sys.argv) >= 2 else '127.0.0.1'
 
 landId = 100
 node_infos = []
+
+
 
 from make_js import make_main
 from make_fbp import fbp_main
@@ -64,6 +85,18 @@ def make_FBP():
 	test_1.make()	
 
 wkpf.globals.location_tree = LocationTree(LOCATION_ROOT)
+
+def initializeVirtualNode():
+    # Add the server as a virtual Wudevice for monitoring
+    wuclasses = {}
+    wuobjects = {}
+
+    # 1 is by default the network id of the controller
+    node = WuNode(1, '/' + LOCATION_ROOT, wuclasses, wuobjects, 'virtualdevice')
+    wuclassdef = WuObjectFactory.wuclassdefsbyid[44]
+    wuobject = WuObjectFactory.createWuObject(wuclassdef, node, 1, False)
+    wkpf.globals.virtual_nodes[1] = node
+
 
 # using cloned nodes
 def rebuildTree(nodes):
@@ -352,6 +385,7 @@ class map_application(tornado.web.RequestHandler):
           'location': component.location,
           'group_size': component.group_size,
           'name': component.type,
+          'msg' : component.message,
           'instances': []
         }
 
@@ -560,12 +594,12 @@ class nodes(tornado.web.RequestHandler):
     location = self.get_argument('location')
     print node_infos
     print 'in nodes: simulation:'+SIMULATION
-    if SIMULATION != "false":
+    if SIMULATION == "true":
       for info in node_infos:
         if info.id == int(nodeId):
           info.location = location
           senNd = SensorNode(info)
-#          senNd = SensorNode(info, 0, 0, 0)
+          WuNode.saveNodes()
           wkpf.globals.location_tree.addSensor(senNd)
       wkpf.globals.location_tree.printTree()
       self.content_type = 'application/json'
@@ -573,32 +607,33 @@ class nodes(tornado.web.RequestHandler):
       return
     comm = getComm()
     if location:
-       print "ndoeId=",nodeId
+       #print "nodeId=",nodeId
        info = comm.getNodeInfo(int(nodeId))
-       print "device type=",info.type
+       #print "device type=",info.type
        if info.type == 'native':
          info.location = location
-	 WuNode.saveNodes()
+         WuNode.saveNodes()
          senNd = SensorNode(info)
          wkpf.globals.location_tree.addSensor(senNd)
-         wkpf.globals.location_tree.printTree()
+         #wkpf.globals.location_tree.printTree()
          self.content_type = 'application/json'
          self.write({'status':0})
        else:
-	  if comm.setLocation(int(nodeId), location):
-		# update our knowledge too
-		for info in comm.getActiveNodeInfos():
-			if info.id == int(nodeId):
-				info.location = location
-				senNd = SensorNode(info)
-				print (info.location)
-		wkpf.globals.location_tree.addSensor(senNd)
-		wkpf.globals.location_tree.printTree()
-		self.content_type = 'application/json'
-		self.write({'status':0})
-          else:
-		self.content_type = 'application/json'
-		self.write({'status':1, 'mesg': 'Cannot set location, please try again.'})
+         if comm.setLocation(int(nodeId), location):
+          # update our knowledge too
+            for info in comm.getActiveNodeInfos():
+              if info.id == int(nodeId):
+                info.location = location
+                senNd = SensorNode(info)
+                print (info.location)
+            wkpf.globals.location_tree.addSensor(senNd)
+            wkpf.globals.location_tree.printTree()
+            WuNode.saveNodes()
+            self.content_type = 'application/json'
+            self.write({'status':0})
+         else:
+            self.content_type = 'application/json'
+            self.write({'status':1, 'mesg': 'Cannot set location, please try again.'})
 
 class WuLibrary(tornado.web.RequestHandler):	
   def get(self):
@@ -1042,7 +1077,8 @@ wukong = tornado.web.Application([
 logging.info("Starting up...")
 setup_signal_handler_greenlet()
 WuClassLibraryParser.read(COMPONENTXML_PATH)
-WuNode.loadNodes()
+initializeVirtualNode();
+#WuNode.loadNodes()
 update_applications()
 import_wuXML()
 make_FBP()

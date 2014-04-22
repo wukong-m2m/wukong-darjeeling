@@ -14,6 +14,7 @@ public class NetworkConfigParser {
 	public File pathToVM = null;
 	public File pathToMasterServer = null;
 	public File pathToNetworkDirectory = null;
+	public File pathToStandardLibrary = null;
 	public List<VMNode> nodes = null;
 
 	public NetworkConfigParser(String filename) {
@@ -43,6 +44,8 @@ public class NetworkConfigParser {
 							this.pathToVM = getPathRelativeToConfigFile(node.getNodeValue());
 						else if (node.getNodeName().equals("network_directory"))
 							this.pathToNetworkDirectory = getPathRelativeToConfigFile(node.getNodeValue());
+						else if (node.getNodeName().equals("standard_library"))
+							this.pathToStandardLibrary = getPathRelativeToConfigFile(node.getNodeValue());
 					}
 				} else if (tempNode.getNodeType() == Node.ELEMENT_NODE
 						&& tempNode.getNodeName().equals("Nodes")) {

@@ -88,10 +88,19 @@ def firstCandidate(logger, changesets, routingTable, locTree):
     #output: assign node id to WuObjects
     # TODO: mapping results for generating the appropriate instiantiation for different nodes
 
+    mapping_result = True
+    #clear all "mapped" tags in every node before mapping
+    for nodeid in WuNode.node_dict:
+        node = locTree.getNodeInfoById(nodeid)
+        if node != None:
+            for wuobj in node.wuobjects.values():
+                wuobj.mapped = False
+            
     # construct and filter candidates for every component on the FBP (could be the same wuclass but with different policy)
     for component in changesets.components:
         # filter by location
         locParser = LocationParser(locTree)
+        msg = ''
         print component
         try:
             candidates, rating = locParser.parse(component.location)
@@ -99,82 +108,72 @@ def firstCandidate(logger, changesets, routingTable, locTree):
         except:
             #no mapping result
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            msg = 'Cannot find match for location query "'+ component.location+'" of wuclass "'+ component.type+ '", we will invalid the query and pick all by default.' 
-            logger.errorMappingStatus(msg)
-            set_wukong_status(msg)
-            candidates = locTree.root.getAllAliveNodeIds()
-
-
-        if len(candidates) < component.group_size:
-            msg = 'There is not enough candidates %r for component %s, but mapper will continue to map' % (candidates, component)
-            set_wukong_status(msg)
+            msg = 'Cannot find match for location query "'+ component.location+'" of wuclass "'+ component.type+ '".' 
             logger.warnMappingStatus(msg)
-
-        # This is really tricky, basically there are two things you have to understand to understand this code
-        # 1. There are wuclass that are only for reference and other for actually having a c function on the node
-        # 2. All WuObjects have a wuclass, but it lies either in one of those types mentioned in #1
-        # 3. Usually we assume 'hard' wuclasses will have only native wuclass on the node, so the there will be no wuobjects with a wuclass not in the node.wuclasses list
-        # 4. node.wuclasses contains wuclasses that the node have code for it
-        # 5. node.wuobjects contains just wuobjects from any wuclasses, some might based on wuclass in node.wuclasses list
-        # e.g. A threahold wuclass would have native implementation (also in node.wuclasses) or a virtual implementation (not in node.wuclasses)
-
+            set_wukong_status(msg)
+            component.message = msg
+            candidates, rating = [], []
+            mapping_result = False
+            continue
+            #candidates = locTree.root.getAllAliveNodeIds()
         # construct wuobjects, instances of component
         for candidate in candidates:
             wuclassdef = WuObjectFactory.wuclassdefsbyname[component.type]
             node = locTree.getNodeInfoById(candidate)
             available_wuobjects = [wuobject for wuobject in node.wuobjects.values() if wuobject.wuclassdef.id == wuclassdef.id]
+            
             has_wuclass = wuclassdef.id in node.wuclasses.keys()
-
-
-            if len(available_wuobjects) > 0 and not available_wuobjects[0].virtual:
-                # assuming there is no duplicated wuobjects on node, This is a bug, should be fixed later --- Sen
-                the_wuobject = available_wuobjects[0]
-                # use existing wuobject
-                print "appending native for", node.id, the_wuobject.wunode.location
-                component.instances.append(the_wuobject)
-                pass # pass on to the next candidates
-
-            # virtual wuclasses should be recreated instead of reuse
-            elif has_wuclass:
-                # create a new wuobject from existing wuclasses published from node (could be virtual)
+            wuobj_found = False
+            for avail_wuobj in available_wuobjects:
+                # use existing native wuobject, caution given to obj mapped due to previous candidates
+                if not avail_wuobj.virtual and not avail_wuobj.mapped:
+                    print avail_wuobj.virtual, avail_wuobj.mapped
+                    print "using native at", node.id
+                    component.instances.append(avail_wuobj)
+                    avail_wuobj.mapped = True
+                    wubj_found = True
+                    break
+                    
+            if has_wuclass and (not wuobj_found):    # create a new wuobject from existing wuclasses published from node
                 sensorNode = locTree.sensor_dict[node.id]
                 sensorNode.initPortList(forceInit = False)
                 port_number = sensorNode.reserveNextPort()
-                wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number,True)
-                print "appending vitual for", node.id
+                wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number,False)
+                wuobject.created = True
+                wuobject.mapped = True
                 component.instances.append(wuobject)
-                pass # pass on to the next candidates
-            elif node.type != 'native' and node.type != 'picokong' and wuclassdef.virtual==True:
+                  
+            elif (not wuobj_found) and node.type != 'native' and node.type != 'picokong' and node.type != 'virtualdevice' and wuclassdef.virtual==True:
                 # create a new virtual wuobject where the node 
                 # doesn't have the wuclass for it
-                # TODO: should check for existance of virtual impl
-                # as indicated by the virtual attribute 
-                # (will be changed to a more appropriate name later)
                 sensorNode = locTree.sensor_dict[node.id]
                 sensorNode.initPortList(forceInit = False)
                 port_number = sensorNode.reserveNextPort()
                 wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number, True)
-                # don't save to db
+                wuobject.created = True
+                wuobject.mapped = True
                 component.instances.append(wuobject)
-
-                # TODO: looks like this will always return true for mapping
-                # regardless of whether java impl exist
-            else:
-                pass # pass on to the next candidates
-        print ([inst.wunode.id for inst in component.instances])
+                
+        if len(component.instances) < component.group_size:
+            msg = 'There is not enough candidates wuobjects from %r for component %s' % (candidates, component.type)
+            set_wukong_status(msg)
+            logger.warnMappingStatus(msg)
+            component.message = msg
+            mapping_result = False
+            continue
+        
         #this is ignoring ordering of policies, eg. location policy, should be fixed or replaced by other algorithm later--- Sen
         component.instances = sorted(component.instances, key=lambda wuObject: wuObject.virtual, reverse=False)
         # limit to min candidate if possible
         # here is a bug if there are not enough elements in instances list   ---Sen
         component.instances = component.instances[:component.group_size]
-        print ([inst.wunode.id for inst in component.instances])
         for inst in component.instances[component.group_size:]:     #roll back unused virtual wuclasses created in previous step
-          if inst.virtual:
+          if inst.created:
+            inst.wunode.port_list.remove(inst.port_number)
             WuObjectFactory.remove(inst.wunode, inst.port_number)
-        print ([inst.wunode.id for inst in component.instances])
-        if len(component.instances) == 0:
-          logger.errorMappingStatus('No avilable match could be found for component %s' % (component))
-          #return False
+          inst.mapped = False
+            
+        print ("mapped node id",[inst.wunode.id for inst in component.instances])
 
     # Done looping components
 
@@ -205,4 +204,4 @@ def firstCandidate(logger, changesets, routingTable, locTree):
             #senNd.temp_port_list = []
 
     set_wukong_status('')
-    return True
+    return mapping_result

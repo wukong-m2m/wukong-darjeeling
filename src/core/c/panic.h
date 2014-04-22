@@ -36,6 +36,7 @@
 #define DJ_PANIC_SAFE_POINTER_OVERFLOW		RUNLEVEL_PANIC+7
 // Reserved 100-109 for wkcomm
 // Reserved 110-119 for wkpf
+// Reserved 120-129 for eco
 
 void dj_panic(int32_t panictype);
 
