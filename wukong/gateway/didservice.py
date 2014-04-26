@@ -31,8 +31,8 @@ AUTONET_MAC_ADDR = 8
 
 class DIDService(object):
     def __init__(self, transport_radio_addr, radio_addr_len):
-        self._db = dbdict.DBDict("gtw.db")
-        self._ok_nets = dbdict.DBDict("gtw_ok_nets.db")
+        self._db = dbdict.DBDict("gtw.sqlite")
+        self._ok_nets = dbdict.DBDict("gtw_ok_nets.sqlite")
 
         if self._is_db_init():
             self._db_loads()
@@ -41,6 +41,12 @@ class DIDService(object):
 
         # Check whether master is connectable and its did/prefix is valid or not
         self._get_prefix_from_master()
+
+        if self._db["GTWSELF_DID"] is None:
+            logger.error("cannot initialize gateway because of no prefix")
+            exit(-1)
+        else:
+            logger.info("find gateway DID %d(%s)." % (self._db["GTWSELF_DID"], str(ipaddress.ip_address(self._db["GTWSELF_DID"]))))
 
         logger.info("initialized")
 
@@ -76,8 +82,8 @@ class DIDService(object):
         self._db["GTWSELF_RADIO_ADDR_LEN"] = radio_addr_len
         self._db["GTWSELF_DID"] = None
         self._db["GTWSELF_DID_PREFIX_LEN"] = (MAX_DID_LEN-radio_addr_len)*8
-        self._db["GTWSELF_DID_NETMASK"] = int(("1"*self._db["GTWSELF_DID_PREFIX_LEN"]*8)+("0"*radio_addr_len*8), 2)
-        self._db["GTWSELF_DID_HOSTMASK"] = int(("0"*self._db["GTWSELF_DID_PREFIX_LEN"]*8)+("1"*radio_addr_len*8), 2)
+        self._db["GTWSELF_DID_NETMASK"] = int(("1"*(MAX_DID_LEN-radio_addr_len)*8)+("0"*radio_addr_len*8), 2)
+        self._db["GTWSELF_DID_HOSTMASK"] = int(("0"*(MAX_DID_LEN-radio_addr_len)*8)+("1"*radio_addr_len*8), 2)
 
         # set_self_ip_addr and tcp_port
         # Not test for IPv6
@@ -106,10 +112,10 @@ class DIDService(object):
             logger.warning("the gateway does not acquire a valid DID/prefix from master")
 
     def _is_db_init(self):
-        return len(self._db.keys()) > 0
+        return len(self._db) > 0
 
     def _clear_db(self):
-        for key in self._db.keys():
+        for key in self._db:
             del self._db[key]
 
     def _save_dids(self):
@@ -152,7 +158,7 @@ class DIDService(object):
 
     def _find_did_in_other_network(self, did):
         did_obj = ipaddress.ip_address(did)
-        for ok_net in self._ok_nets.keys():
+        for ok_net in self._ok_nets:
             # ok_nets key = "DID/MASK" value = "IP:PORT"
             if did_obj in ipaddress.ip_interface(ok_net).network:
                 return ok_net
@@ -182,7 +188,8 @@ class DIDService(object):
 
         dest_did, src_did, msg_type, msg_subtype = utils.extract_mult_proto_header_from_str(message)
 
-        log_msg = utils.format([dest_did, src_did, msg_type, msg_subtype])
+        log_msg = utils.split_packet_header(message)
+        log_msg = utils.formatted_print(log_msg)
         logger.debug("expect PFX ACK message, receives:\n" + log_msg)
 
         if msg_type != MPTN.MULT_PROTO_MSG_TYPE_PFX:
@@ -222,7 +229,8 @@ class DIDService(object):
 
         dest_did, src_did, msg_type, msg_subtype = utils.extract_mult_proto_header_from_str(message)
 
-        log_msg = utils.format([dest_did, src_did, msg_type, msg_subtype])
+        log_msg = utils.split_packet_header(message)
+        log_msg = utils.formatted_print(log_msg)
         logger.debug("expect FWD ACK message, receives:\n" + log_msg)
 
         if msg_type != MPTN.MULT_PROTO_MSG_TYPE_FWD:
@@ -304,9 +312,10 @@ class DIDService(object):
             return None            
         
         temp_radio_addr = context
-        temp_did = struct.pack("!L", (self_did & self._db["GTWSELF_DID_NETMASK"]) | temp_radio_addr)
+        temp_did = (self_did & self._db["GTWSELF_DID_NETMASK"]) | temp_radio_addr
         if not self._is_did_set(temp_radio_addr):
             address = (self._db["MASTER_IP_ADDR"], self._db["MASTER_TCP_PORT"])
+            dest_did = self_did
             src_did = temp_did
             msg_type = MPTN.MULT_PROTO_MSG_TYPE_DID
             msg_subtype = MPTN.MULT_PROTO_MSG_SUBTYPE_DID_UPD
@@ -318,14 +327,15 @@ class DIDService(object):
                 logger.error("cannot get DID confirmation from master due to network problem")
                 return None
 
-            if len(message) <= MPTN.MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET:
-                logger.error("packet DID ACK/NAK from master might have the payload")
+            if len(message) > MPTN.MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET:
+                logger.error("packet DID ACK/NAK from master might not have the payload")
                 return None
 
             dest_did, src_did, msg_type, msg_subtype = utils.extract_mult_proto_header_from_str(message)
             payload = message[MPTN.MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET:]
 
-            log_msg = utils.format([dest_did, src_did, msg_type, msg_subtype, payload])
+            log_msg = utils.split_packet_header(message) + [payload]
+            log_msg = utils.formatted_print(log_msg)
             logger.debug("expect DID ACK/NAK message, receives:\n" + log_msg)
 
             if msg_type != MPTN.MULT_PROTO_MSG_TYPE_DID:
@@ -394,7 +404,7 @@ class DIDService(object):
             p = p.split("=")
             did_net = ipaddress.ip_interface(p[0]).network
 
-            for ok_net in self._ok_nets.keys():
+            for ok_net in self._ok_nets:
                 # ok_nets key = "DID/MASK" value = "IP:PORT"
                 if did_net.overlaps(ipaddress.ip_interface(ok_net).network):
                     logger.error("cannot update PFX table because it %s overlaps with other existing network %s" % (p[0], ok_net))

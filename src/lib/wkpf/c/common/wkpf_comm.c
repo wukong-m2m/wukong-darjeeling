@@ -228,7 +228,7 @@ void wkpf_comm_handle_message(void *data) {
 			response_size = 1;
 		}
 		break;
-		case WKPF_COMM_CMD_GET_FEATURES: {
+		/*case WKPF_COMM_CMD_GET_FEATURES: {
 			int count = 0;
 			for (int i=0; i<WKPF_NUMBER_OF_FEATURES; i++) { // Needs to be changed if we have more features than fits in a single message, but for now it will work fine.
 				if (wkpf_config_get_feature_enabled(i)) {
@@ -239,8 +239,8 @@ void wkpf_comm_handle_message(void *data) {
 			response_cmd = WKPF_COMM_CMD_GET_FEATURES_R;
 			response_size = 1+count;
 		}
-		break;
-		case WKPF_COMM_CMD_SET_FEATURE: {
+		break;*/
+		/*case WKPF_COMM_CMD_SET_FEATURE: {
 			retval = wkpf_config_set_feature_enabled(payload[2], payload[3]);
 			if (retval == WKPF_OK) {
 				response_cmd = WKPF_COMM_CMD_SET_FEATURE_R;
@@ -250,7 +250,7 @@ void wkpf_comm_handle_message(void *data) {
 				response_cmd = WKPF_COMM_CMD_ERROR_R;
 				response_size = 1;
 			}
-		}
+		}*/
 		break;
 		case WKPF_COMM_CMD_GET_WUCLASS_LIST: {
 			// Request format: payload[0] request message number

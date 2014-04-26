@@ -64,7 +64,7 @@ void load_features_data() {
 					printf("Did in %s not in expected format, aborting...\n", posix_config_filename);
 					abort();
 				}
-				if (did > 255) {
+				if (did > 4294967295) {
 					printf("Did in %s too large (%d), aborting...\n", posix_config_filename, did);
 					abort();
 				}

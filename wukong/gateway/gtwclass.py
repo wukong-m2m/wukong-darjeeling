@@ -15,7 +15,7 @@ logger = logging.getLogger( __name__ )
 class Gateway(object):
 
     def __init__(self, transport):
-        assert transport != None, "Gateway's transport device is required"
+        assert transport is not None, "Gateway's transport device is required"
         self._transport = transport
         
         self._greenlet = None
@@ -30,7 +30,7 @@ class Gateway(object):
         self._fwd_handler = self._did_service.handle_fwd_message
         self._pfx_upd_handler = self._did_service.handle_pfx_upd_message
 
-        logger.info("Gatway initialized")
+        logger.info("Gateway initialized")
 
     def start(self, tcp_port):
         try:
@@ -55,7 +55,7 @@ class Gateway(object):
 
     def _process_message(self, context, message, from_transport):
         if len(message) < MPTN.MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET:
-            logger.error("receive message with header shorter than required %s" % utils.format(str(message)))
+            logger.error("receive message with header shorter than required %s" % utils.formatted_print(str(message)))
             return None
 
         dest_did, src_did, msg_type, msg_subtype = utils.extract_mult_proto_header_from_str(message)
@@ -64,17 +64,20 @@ class Gateway(object):
         if isinstance(context, tuple) and len(context) == 2:
             context_str = ':'.join([str(i) for i in context])
         else:
-            context_str = context
-        log_msg = utils.format([context_str, dest_did, src_did, msg_type, msg_subtype, str(payload)])
+            context_str = str(context)
+
+        log_msg = [context_str] + utils.split_packet_header(message)
+        if payload is not None: log_msg.append(payload)
+        log_msg = utils.formatted_print(log_msg)
         logger.debug("receive message:\n" + log_msg)
 
         if msg_type == MPTN.MULT_PROTO_MSG_TYPE_DID:
             # Only DID REQ message from transport device would get here
             if not from_transport:
-                logger.error("cannot receive DID message from IP server")
+                logger.error("cannot receive DID message from TCP server")
                 return None
 
-            if msg_subtye != MPTN.MULT_PROTO_MSG_SUBTYPE_DID_REQ:
+            if msg_subtype != MPTN.MULT_PROTO_MSG_SUBTYPE_DID_REQ:
                 logger.error("receives invalid DID message subtype %X and will not send any reply" % msg_subtype)
                 return None
 
@@ -103,7 +106,7 @@ class Gateway(object):
         if msg_type == MPTN.MULT_PROTO_MSG_TYPE_RAD:
             # Only RAD message from external service would get here
             if from_transport:
-                logger.error("cannot receive RAD message from IP server")
+                logger.error("cannot receive RAD message from TCP server")
                 return None
 
             if payload is not None:
@@ -202,11 +205,11 @@ class Gateway(object):
 
     def _serve_socket_forever(self):
         '''
-        This IP server would only serve master and other gateways
+        This TCP server would only serve master and other gateways
         '''
         def handle_socket(sock, addr):
             try:
-                logger.debug("inner IP server accepts connection from address %s" % str(addr))
+                logger.debug("inner TCP server accepts connection from address %s" % str(addr))
                 sock.settimeout(CONFIG.NETWORK_TIMEOUT)
                 message = utils.special_recv(sock)
                 response = self._process_message(addr, message, False)
@@ -220,31 +223,34 @@ class Gateway(object):
             finally:
                 sock.close()
 
-        logger.info("inner IP server is ready to accept")
+        logger.info("inner TCP server is ready to accept")
         while True:
             new_sock, address = self._ip_server.accept()
             gevent.spawn(handle_socket, new_sock, address)
             gevent.sleep(0)
 
     def _serve_transport_forever(self):
-        logger.info("inner transport interface is ready to receive")
+        logger.info("inner transport radio interface is ready to receive")
         while True:
             src_radio_addr, message = self._transport.recv()
 
             if src_radio_addr is not None and message is not None:
                 def handle_transport(src_radio_addr, message):
                     logger.debug("transport device receives message from address %X" % src_radio_addr)
-                    repsonse = self._process_message(src_radio_addr, message, True)
+                    response = self._process_message(src_radio_addr, message, True)
                     if response is not None:
+                        response = [0x88] + map(ord, response)
                         retries = CONFIG.CONNECTION_RETRIES
                         while retries > 0:
                             ret = self._transport_send_handler(src_radio_addr, response)
-                            if ret[0]: break
+                            if ret[0]:
+                                logger.debug("transport device sent message %s to address %X" % (str(response), src_radio_addr))
+                                break
                             retries -= 1
-                            gevent.sleep(0)
+                            logger.debug("transport device fails to send message %s to address %X" % (str(response), src_radio_addr))
+                            gevent.sleep(0.01)
                 gevent.spawn(handle_transport, src_radio_addr, message)
-
-            gevent.sleep(0)
+            gevent.sleep(0.01)
 
     def _transport_function_init(self):
 
@@ -253,7 +259,7 @@ class Gateway(object):
             if e is None:
                 return (True, None)
             
-            msg = "transport interface(%s) fails to send message to device with radio address(%s) and error: %s\n\tmsg: %s" % (self._transport.get_name(), str(radio_address), e, message)
+            msg = "transport radio interface(%s) fails to send message to device with radio address(%s) and error: %s\n\tmsg: %s" % (self._transport.get_name(), str(radio_address), e, message)
             logger.warning(msg)
             return (False, msg)
 

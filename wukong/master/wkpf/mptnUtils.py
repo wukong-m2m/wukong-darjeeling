@@ -68,13 +68,23 @@ from gevent import socket
 
 HEADER_FORMAT_STR = "!" + ''.join([{1:'B',2:'H',4:'I',8:'Q'}[i] for i in MULT_PROTO_HEADER_FORMAT])
 
-def format(msg):
+def split_packet_header(message):
+    ret = []
+    for i in MULT_PROTO_HEADER_FORMAT:
+        ret.append(message[:i])
+        message = message[i:]
+    return ret
+
+def formatted_print(msg):
     """Receives all message parts from socket, printing each frame neatly"""
     r = "----------------------------------------\n"
     for part in msg:
-        r += ("[%03d]" % len(part)) # Trailing comma suppresses newline
+        r += "[%03d]" % len(part) # Trailing comma suppresses newline
         try:
-            r += part.decode('ascii')
+            r += "%s" % part.decode('ascii')
+            r += "\t("
+            r += r"0x%s" % (binascii.hexlify(part).decode('ascii'))
+            r += ")"
         except UnicodeDecodeError:
             r += r"0x%s" % (binascii.hexlify(part).decode('ascii'))
         r += '\n'
@@ -127,7 +137,7 @@ def from_db_type(value):
     Converts a value from the database to a Python object.
     """
     if isinstance(value, buffer):
-        return pickle.loads(value)
+        return pickle.loads(str(value))
     else:
         return value
 

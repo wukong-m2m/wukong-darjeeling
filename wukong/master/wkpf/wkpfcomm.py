@@ -1,6 +1,6 @@
 # vi: ts=2 sw=2 expandtab
 import sys, time, copy
-from transport import *
+from transportv2 import *
 from locationTree import *
 from models import *
 from globals import *
@@ -52,7 +52,7 @@ class Communication:
 
     def verifyWKPFmsg(self, messageStart, minAdditionalBytes):
       # minPayloadLength should not include the command or the 2 byte sequence number
-      return lambda command, payload: (command == pynvc.WKPF_ERROR_R) or (payload != None and payload[0:len(messageStart)]==messageStart and len(payload) >= len(messageStart)+minAdditionalBytes)
+      return lambda command, payload: (command == pynvc.WKPF_ERROR_R) or (payload is not None and payload[0:len(messageStart)]==messageStart and len(payload) >= len(messageStart)+minAdditionalBytes)
 
     def getNodeIds(self):
       if SIMULATION == "true":

@@ -7,6 +7,7 @@ except:
 
 import gevent
 from gevent.lock import RLock
+import sys
 
 import gtwconfig as CONFIG
 import mptn as MPTN
@@ -45,12 +46,14 @@ class ZWTransport(object):
         _global_lock.acquire(True)
         try:
             src, reply = pyzwave.receive(TIMEOUT)
+
             if src and reply:
-                reply = ''.join([chr(byte) for byte in reply])
                 logger.debug("Zwave receives message %s from radio address %X" % (reply, src))
+                reply = ''.join([chr(byte) for byte in reply])
                 return (src, reply)
         except:
-            logger.error("Zwave receives exception")
+            e = sys.exc_info()[0]
+            logger.error("Zwave receives exception %s", str(e))
         finally:
             _global_lock.release()
 
@@ -60,10 +63,11 @@ class ZWTransport(object):
         _global_lock.acquire(True)
         ret = None
         try:
-            pyzwave.send(destination, [0x88] + payload)
-        except Exception as e:
-            ret = "Zwave send occurs IO error"
-            logger.error("Zwave send occurs IO error")
+            pyzwave.send(radio_address, payload)
+        except:
+            e = sys.exc_info()[0]
+            ret = "Zwave send occurs IO error %s" % e
+            logger.error(ret)
         finally:
             _global_lock.release()
         return ret

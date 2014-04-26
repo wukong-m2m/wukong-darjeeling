@@ -1081,7 +1081,7 @@ initializeVirtualNode();
 #WuNode.loadNodes()
 update_applications()
 import_wuXML()
-make_FBP()
+make_FBP(); getComm()
 wukong.listen(MASTER_PORT)
 if __name__ == "__main__":
   ioloop.start()

@@ -34,7 +34,7 @@ typedef unsigned long long int dj_time_t;
 #define ALIGN_16
 
 /* Please see common/debug.h */
- #define DARJEELING_DEBUG
+#define DARJEELING_DEBUG
 // #define DARJEELING_DEBUG_FRAME
 // #define DARJEELING_DEBUG_MEM_TRACE
 // #define DARJEELING_DEBUG_TRACE

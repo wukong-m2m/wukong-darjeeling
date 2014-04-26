@@ -49,10 +49,10 @@ def parseComponentMap(filedata):
         print "\t%s: \t\t\t\tcomponent %d, wuclass %d, %d endpoint(s):" % (str(componenttable[pos:pos+3]), i,  wuclass, number_of_endpoints)
         pos += 3
         for j in range(number_of_endpoints):
-            node = componenttable[pos]+componenttable[pos+1]*256
-            port = componenttable[pos+2]
-            print "\t%s: \t\t\t\t\tnode %d, port %d" % (str(componenttable[pos:pos+3]), node, port)
-            pos += 3
+            node = componenttable[pos] + componenttable[pos+1]<<8 + componenttable[pos]<<16 + componenttable[pos+1]<<24
+            port = componenttable[pos+4]
+            print "\t%s: \t\t\t\t\tnode %d, port %d" % (str(componenttable[pos:pos+5]), node, port)
+            pos += 5
 
 def parseInitvalues(filedata):
     number_of_initvalues = filedata[0]+256*filedata[1]

@@ -1663,7 +1663,7 @@ class _BaseV6(object):
                                     best_doublecolon_len)
             # For zeros at the end of the address.
             if best_doublecolon_end == len(hextets):
-                hextets += ['']
+                hextets.append('')
             hextets[best_doublecolon_start:best_doublecolon_end] = ['']
             # For zeros at the beginning of the address.
             if best_doublecolon_start == 0:

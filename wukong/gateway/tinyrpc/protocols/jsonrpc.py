@@ -137,7 +137,7 @@ class JSONRPCRequest(RPCRequest):
             jdata['params'] = self.args
         if self.kwargs:
             jdata['params'] = self.kwargs
-        if self.unique_id != None:
+        if self.unique_id is not None:
             jdata['id'] = self.unique_id
         return jdata
 
@@ -154,7 +154,7 @@ class JSONRPCBatchRequest(RPCBatchRequest):
         for request in self:
             if isinstance(request, Exception):
                 return True
-            if request.unique_id != None:
+            if request.unique_id is not None:
                 return True
 
         return False
@@ -165,7 +165,7 @@ class JSONRPCBatchRequest(RPCBatchRequest):
 
 class JSONRPCBatchResponse(RPCBatchResponse):
     def serialize(self):
-        return json.dumps([resp._to_dict() for resp in self if resp != None])
+        return json.dumps([resp._to_dict() for resp in self if resp is not None])
 
 
 class JSONRPCProtocol(RPCBatchProtocol):
@@ -280,7 +280,7 @@ class JSONRPCProtocol(RPCBatchProtocol):
         request.unique_id = req.get('id', None)
 
         params = req.get('params', None)
-        if params != None:
+        if params is not None:
             if isinstance(params, list):
                 request.args = req['params']
             elif isinstance(params, dict):

@@ -7,8 +7,8 @@ ROOT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 CONFIG_PATH = os.path.join(ROOT_PATH, 'wukong', 'config', 'gateway.cfg')
 config = ConfigObj(CONFIG_PATH)
 
-MASTER_IP = config.get('MASTER_IP', '127.0.0.1')
-MASTER_TCP_PORT = config.get('MASTER_TCP_PORT', 9010)
+MASTER_IP = 'localhost'
+MASTER_TCP_PORT = 9010
 SELF_IP_INTERFACE = config.get("SELF_IP_INTERFACE", 'lo')
 SELF_TCP_PORT = config.get('SELF_TCP_PORT', 9001)
 CONNECTION_RETRIES = 2
