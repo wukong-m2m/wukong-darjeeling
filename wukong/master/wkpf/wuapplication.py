@@ -145,7 +145,7 @@ class WuApplication:
     except:
         self.app_name='noname';
     self.desc = config['desc']
-    self.dir = config['dir']
+    # self.dir = config['dir']
     self.xml = config['xml']
     try:
       dom = parseString(self.xml)

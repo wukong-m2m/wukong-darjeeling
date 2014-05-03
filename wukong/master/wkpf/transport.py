@@ -18,8 +18,11 @@ import socket # for NetworkServerAgent
 import select # for NetworkServerAgent
 from storage.model import sensor
 import ast
+import traceback
+
 import pynvc # for message constants
-import pyzwave
+if WKPFCOMM_AGENT == "ZWAVE":
+    import pyzwave
 import pyzigbee
 
 Message = namedtuple('Message', 'destination command payload')
@@ -491,6 +494,7 @@ class NetworkServerAgent(TransportAgent):
             except Exception as e:
                 print '[transport] receive exception'
                 print e
+                traceback.print_tb(e.__traceback__)
 
             getDeferredQueue().removeTimeoutDefer()
 

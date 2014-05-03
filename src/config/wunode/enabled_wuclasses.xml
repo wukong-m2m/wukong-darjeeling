@@ -1,7 +1,12 @@
 <WuKong>
-    <WuClass name="Threshold" appCanCreateInstances="true"/>
-    <WuClass name="Light_Sensor" appCanCreateInstances="false" createInstancesAtStartup="1" />
-    <WuClass name="Light_Actuator" appCanCreateInstances="false" createInstancesAtStartup="1" />
-    <WuClass name="Numeric_Controller" appCanCreateInstances="false" createInstancesAtStartup="1" />
-    <WuClass name="Slider" appCanCreateInstances="false" createInstancesAtStartup="1" />
+    <WuClass name="Threshold" appCanCreateInstances="true" />
+    <WuClass name="And_Gate" appCanCreateInstances="true" createInstancesAtStartup="0" />
+    <WuClass name="Or_Gate" appCanCreateInstances="true" createInstancesAtStartup="0" />
+    <WuClass name="Xor_Gate" appCanCreateInstances="true" createInstancesAtStartup="0" />
+    <WuClass name="Not_Gate" appCanCreateInstances="true" createInstancesAtStartup="0" />
+    <WuClass name="If_Short" appCanCreateInstances="true" createInstancesAtStartup="0" />
+    <WuClass name="If_Boolean" appCanCreateInstances="true" createInstancesAtStartup="0" />
+    <WuClass name="Condition_Selector_Boolean" appCanCreateInstances="true" createInstancesAtStartup="0" />
+    <WuClass name="Condition_Selector_Short" appCanCreateInstances="true" createInstancesAtStartup="0" />
+    <WuClass name="Math_Op" appCanCreateInstances="true" createInstancesAtStartup="0" />
 </WuKong>

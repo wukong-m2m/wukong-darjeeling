@@ -3,6 +3,7 @@ import javax.swing.tree.*;
 import javax.swing.event.*;
 import java.util.*;
 import java.io.*;
+import java.lang.*;
 import name.pachler.nio.file.*;
 
 public class SimulatedDeviceTreeNode extends DeviceTreeNode implements DirectoryWatcherListener {
@@ -33,7 +34,20 @@ public class SimulatedDeviceTreeNode extends DeviceTreeNode implements Directory
 		return Integer.parseInt(name.substring(5));
 	}
 
+	public String getDirectory() {
+		return this.directory;
+	}
+
     public void directoryChanged(WatchKey signalledKey) {
+		try {
+			// The event we get is the start of the modification. If we read the file too quickly
+			// the VM may not have finished writing the value yet.
+			// There's probably a better way to do this, but for now just sleeping 50ms shouldn't
+			// be noticable to the user and will give the VM ample time to finish writing the new
+			// value
+			Thread.sleep(50);
+		} catch (InterruptedException e) {}
+
         // get list of events from key
         java.util.List<WatchEvent<?>> list = signalledKey.pollEvents();
 

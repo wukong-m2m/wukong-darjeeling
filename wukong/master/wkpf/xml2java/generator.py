@@ -97,6 +97,12 @@ class Generator:
           component.deployid = component_index
           component_index = component_index + 1
     @staticmethod
+    def isLinkDestination(componentId, propertyId, changesets):
+        for link in changesets.links:
+            if link.to_component.deployid == componentId and link.to_property.id == propertyId:
+                return True
+        return False
+    @staticmethod
     def generateTablesXML(name, changesets):
         def generateProperties(wuobject_properties, component):
             properties = wuobject_properties
@@ -139,6 +145,10 @@ class Generator:
         for component in changesets.components:
             wuobject = component.instances[0]
             for property in generateProperties(wuobject.properties.values(), component):
+                if (Generator.isLinkDestination(component.deployid, property.id, changesets)):
+                    # This property is the destination for a link, so we shouldn't generate an entry in the init value table
+                    # The framework will get the initial value from the source component instead.
+                    continue
                 initvalue = ElementTree.SubElement(initvalues, 'initvalue')
                 initvalue.attrib['componentId'] = str(component.deployid)
                 initvalue.attrib['propertyNumber'] = str(property.id)
