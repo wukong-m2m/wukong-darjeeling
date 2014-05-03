@@ -101,6 +101,16 @@
         <property name="output" access="readonly" datatype="boolean" default="false"/>
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
     </WuClass>
+    <WuClass name="Pressure_Sensor_0" id="1008" virtual="false" type="hard">
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
+        <property name="output" access="readwrite" datatype="short" default="100"  />
+        <property name="high" access="readwrite" datatype="short" default="0"  />
+        <property name="low" access="readwrite" datatype="short" default="1000"  />
+    </WuClass>
+    <WuClass name="Gh_Sensor" id="1009" virtual="false" type="hard" privateCData="bool">
+        <property name="enable" access="readwrite" datatype="boolean" default="true"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="2000"  />
+    </WuClass>
 
     <!-- Actuators -->
     <WuClass name="Light_Actuator" id="2001" virtual="false" type="hard">
