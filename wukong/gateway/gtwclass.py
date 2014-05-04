@@ -35,6 +35,7 @@ class Gateway(object):
     def start(self, tcp_port):
         try:
             self._ip_server = socket.socket()
+            self._ip_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self._ip_server.bind(('', tcp_port))
             self._ip_server.listen(500)
         except socket.error as msg:
@@ -171,7 +172,7 @@ class Gateway(object):
 
             retries = CONFIG.CONNECTION_RETRIES
             for i in xrange(retries):
-                success, message = self._transport_send_handler(radio_address, response)
+                success, message = self._transport_send_handler(radio_address, message)
                 if success:
                     msg_subtype = MPTN.MULT_PROTO_MSG_SUBTYPE_FWD_ACK
                     header = utils.create_mult_proto_header_to_str(src_did, dest_did, msg_type, msg_subtype)

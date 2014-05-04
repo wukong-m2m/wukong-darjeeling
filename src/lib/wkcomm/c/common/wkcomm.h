@@ -8,7 +8,7 @@
 // 1 byte: command
 // 2 bytes: seqnr
 // TODONR: higher payload sizes seem to cause problems in the uart.
-#define WKCOMM_MESSAGE_PAYLOAD_SIZE     40
+#define WKCOMM_MESSAGE_PAYLOAD_SIZE     30
 
 #define WKCOMM_SEND_OK					 0
 #define WKCOMM_SEND_ERR_TOO_LONG		 3

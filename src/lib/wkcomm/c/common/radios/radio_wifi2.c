@@ -738,7 +738,7 @@ uint8_t radio_wifi_send(radio_wifi_address_t dst, uint8_t *buf, uint16_t  len)
 
 void radio_wifi_recvData()
 {
-	uint8_t radio_wifi_receive_buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE]={0};
+	uint8_t radio_wifi_receive_buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+10+7+3]={0}; //10 for MPTN overhead, 7 for ZW overhead, 3 for wkcomm overhead
     uint16_t dataLen = 0;
     uint8_t tmp1, tmp2;
 

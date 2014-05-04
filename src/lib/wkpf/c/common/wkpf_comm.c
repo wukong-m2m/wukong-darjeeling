@@ -10,8 +10,8 @@
 #include "wkpf_wuobjects.h"
 #include "wkpf_properties.h"
 
-#define NUMBER_OF_WUCLASSES_PER_MESSAGE 9
-#define NUMBER_OF_WUOBJECTS_PER_MESSAGE 9
+#define NUMBER_OF_WUCLASSES_PER_MESSAGE ((WKCOMM_MESSAGE_PAYLOAD_SIZE-3)/3)
+#define NUMBER_OF_WUOBJECTS_PER_MESSAGE ((WKCOMM_MESSAGE_PAYLOAD_SIZE-3)/4)
 
 uint8_t send_message(wkcomm_address_t dest_node_id, uint8_t command, uint8_t *payload, uint8_t length) {
 	// Print some debug info

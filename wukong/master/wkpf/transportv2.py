@@ -12,6 +12,7 @@ import wusignal
 from configuration import *
 from globals import *
 import pynvc
+import time
 
 import struct
 from gevent import socket
@@ -184,8 +185,10 @@ class RPCTCPClient(ClientTransport):
             return None
 
         if msg_subtype != mptnUtils.MULT_PROTO_MSG_SUBTYPE_RPC_REP:
-            print "[transport] RPC drops message since msg_type (%X) is not RPC" % msg_type
+            print "[transport] RPC drops message since msg_type (%X) is not RPC" % msg_subtype
             return None
+
+        print "[transport] RPC REP is received"
 
         return payload
 
@@ -196,7 +199,7 @@ class RPCTCPClient(ClientTransport):
                 sock = socket.create_connection(address, mptnUtils.NETWORK_TIMEOUT)
                 break
             except IOError as e:
-                print '[transport] RPC failed to connect to master %s:%s: %s', address[0], address[1], str(e)
+                print '[transport] RPC failed to connect to gateway %s:%s: %s' % (address[0], address[1], str(e))
         else:
             if sock is not None: sock.close()
             return None
@@ -204,7 +207,7 @@ class RPCTCPClient(ClientTransport):
         ret = None
         try:
             #sock.settimeout(mptnUtils.NETWORK_TIMEOUT)
-
+            message = getDIDService().create_rpc_message_str(self.server_did, message)
             mptnUtils.special_send(sock, message)
 
             if expect_reply:
@@ -573,6 +576,7 @@ class RPCAgent(TransportAgent):
                     src = response[1]
                     reply = response[2]
                     if src and reply:
+                        reply = map(ord, reply)
                         deliver = new_deliver(src, reply[0], reply[1:])
                         messages.put_nowait(deliver)
                         print '[transport] TCP Server receive: put a message to messages'
@@ -592,7 +596,7 @@ class RPCAgent(TransportAgent):
             new_sock, address = server.accept()
             prevent_socket_inheritance(new_sock)
             gevent.spawn(handle_socket, new_sock, address)
-            gevent.sleep(0.01) 
+            gevent.sleep(0.01)
 
     def handler(self):
         while True:
@@ -650,7 +654,9 @@ class RPCAgent(TransportAgent):
                 device_type = None
                 dev_did = defer.message.destination
                 dev_addr = getDIDService().get_device_raddr(dev_did)
-                if dev_addr is not None:
+                if dev_addr is None:
+                    device_type = [1, 255, 0]
+                else:
                     gw_did, gw_ip, gw_port = getDIDService().get_gateway(dev_did)
                     if gw_did is not None:
                         gateway = self._create_client_stub(gw_did, gw_ip, gw_port)
@@ -686,10 +692,9 @@ class RPCAgent(TransportAgent):
                         while retries > 0:
                             try:
                                 #print "handler: sending message from defer"
-                                message = [0x88, command] + payload
-                                message = getDIDService().create_fwd_message_byte_list(dev_did, message)
+                                message = getDIDService().create_fwd_message_byte_list(dev_did, [command] + payload)
 
-                                success, msg = gateway.send(dev_addr, message)
+                                success, msg = gateway.send(dev_addr, [0x88] + message)
 
                                 if success: break
 
@@ -1006,7 +1011,7 @@ class DIDService:
 
     def get_all_gateways(self):
         ret = []
-        for did, (ip, port, prefix, prefix_len, raddr, raddr_len) in self._gateway_dids:
+        for did, (ip, port, prefix, prefix_len, raddr, raddr_len) in self._gateway_dids.iteritems():
             ret.append((int(did), ip, port))
         return ret
 
@@ -1058,6 +1063,10 @@ class DIDService:
     def create_fwd_message_byte_list(self, did, message):
         header = mptnUtils.create_mult_proto_header_to_str(did, getDIDService().get_master_did(), mptnUtils.MULT_PROTO_MSG_TYPE_FWD, mptnUtils.MULT_PROTO_MSG_SUBTYPE_FWD)
         header = map(ord, header)
+        return header+message
+
+    def create_rpc_message_str(self, did, message):
+        header = mptnUtils.create_mult_proto_header_to_str(did, getDIDService().get_master_did(), mptnUtils.MULT_PROTO_MSG_TYPE_RPC, mptnUtils.MULT_PROTO_MSG_SUBTYPE_RPC_CMD)
         return header+message
 
 def getMockAgent():

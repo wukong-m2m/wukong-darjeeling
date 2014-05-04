@@ -39,6 +39,8 @@
 #define MULT_PROTO_MSG_SUBTYPE_FWD_ACK  0x01
 #define MULT_PROTO_MSG_SUBTYPE_FWD_NAK  0x02
 
+#define MULT_PROTO_MASTER_DID           0
+
 struct Routing_Table
 {
     wkcomm_address_t my_did;
@@ -62,8 +64,8 @@ wkcomm_address_t routing_get_node_id() {
 // ADDRESS TRANSLATION
 #ifdef RADIO_USE_ZWAVE
 #include "../radios/radio_zwave.h"
-#define GET_DID_PREFIX(x) (x & ~0xFF)
-#define GET_DID_RADIO_ADDRESS(x) (x & 0xFF)
+#define GET_DID_PREFIX(x) (x & 0xFFFFFF00)
+#define GET_DID_RADIO_ADDRESS(x) (x & 0x000000FF)
 radio_zwave_address_t addr_wkcomm_to_zwave(wkcomm_address_t wkcomm_addr) {
     // ZWave address is only 8 bits. To translate wkcomm address to zwave, just ignore the higher 8 bits
     // (so effectively using routing_none we can still only use 256 nodes)
@@ -77,8 +79,8 @@ wkcomm_address_t addr_zwave_to_wkcomm(radio_zwave_address_t zwave_addr) {
 
 #ifdef RADIO_USE_XBEE
 #include "../radios/radio_xbee.h"
-#define GET_DID_PREFIX(x) (x & ~0xFFFF)
-#define GET_DID_RADIO_ADDRESS(x) (x & 0xFFFF)
+#define GET_DID_PREFIX(x) (x & 0xFFFF0000)
+#define GET_DID_RADIO_ADDRESS(x) (x & 0x0000FFFF)
 radio_xbee_address_t addr_wkcomm_to_xbee(wkcomm_address_t wkcomm_addr) {
     // XBee address is only 8 bits. To translate wkcomm address to xbee, just ignore the higher 8 bits
     // (so effectively using routing_none we can still only use 256 nodes)
@@ -94,29 +96,40 @@ wkcomm_address_t addr_xbee_to_wkcomm(radio_xbee_address_t xbee_addr) {
 uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
     uint8_t rt_payload[MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET+WKCOMM_MESSAGE_PAYLOAD_SIZE+3]; // 3 bytes for wkcomm
     uint8_t i;
+
     wkcomm_address_t temp_did;
-    if (GET_DID_PREFIX(did_table.my_did) != GET_DID_PREFIX(dest))
+    for (temp_did = dest, i = 0; i < MULT_PROTO_LEN_DID; ++i)
     {
-        dest = did_table.gateway_did;
+        rt_payload[MULT_PROTO_DEST_BYTE_OFFSET+MULT_PROTO_LEN_DID-1-i] = temp_did & 0xFF;
+        temp_did >>= 8;
     }
-    for (temp_did = dest, i = MULT_PROTO_DEST_BYTE_OFFSET+MULT_PROTO_LEN_DID-1; i >= MULT_PROTO_DEST_BYTE_OFFSET; --i, temp_did>>=8)
+    for (temp_did = did_table.my_did, i = 0; i < MULT_PROTO_LEN_DID; ++i)
     {
-        rt_payload[i] = temp_did & 0xFF;
-    }
-    for (temp_did = did_table.my_did, i = MULT_PROTO_SRC_BYTE_OFFSET+MULT_PROTO_LEN_DID-1; i >= MULT_PROTO_SRC_BYTE_OFFSET; --i, temp_did>>=8)
-    {
-        rt_payload[i] = temp_did & 0xFF;
+        rt_payload[MULT_PROTO_SRC_BYTE_OFFSET+MULT_PROTO_LEN_DID-1-i] = temp_did & 0xFF;
+        temp_did >>= 8;
     }
     rt_payload[MULT_PROTO_MSG_TYPE_BYTE_OFFSET] = MULT_PROTO_MSG_TYPE_FWD;
     rt_payload[MULT_PROTO_MSG_SUBTYPE_BYTE_OFFSET] = MULT_PROTO_MSG_SUBTYPE_FWD;
     memcpy (rt_payload+MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET, payload, length);
     length += MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET;
 
+    DEBUG_LOG(DBG_WKROUTING, "routing send packet:[");
+    for (i = 0; i < length; ++i){
+        DEBUG_LOG(DBG_WKROUTING, "%d", rt_payload[i]);
+        DEBUG_LOG(DBG_WKROUTING, " ");
+    }
+    DEBUG_LOG(DBG_WKROUTING, "]\n");
+
+    if (GET_DID_PREFIX(did_table.my_did) != GET_DID_PREFIX(dest) || dest == MULT_PROTO_MASTER_DID)
+    {
+        dest = did_table.gateway_did;
+    }
+    DEBUG_LOG(DBG_WKROUTING, "routing send dest did is %d\n", dest);
     #ifdef RADIO_USE_ZWAVE
-        return radio_zwave_send(addr_wkcomm_to_zwave(dest), payload, length);
+        return radio_zwave_send(addr_wkcomm_to_zwave(dest), rt_payload, length);
     #endif
     #ifdef RADIO_USE_XBEE
-        return radio_xbee_send(addr_wkcomm_to_xbee(dest), payload, length);
+        return radio_xbee_send(addr_wkcomm_to_xbee(dest), rt_payload, length);
     #endif
     return 0;
 }
@@ -155,55 +168,56 @@ void routing_handle_message(wkcomm_address_t wkcomm_addr, uint8_t *payload, uint
     wkcomm_address_t dest=0, src=0;
     uint8_t msg_type, msg_subtype, i;
 
-    DEBUG_LOG(DBG_WKROUTING, "routing handle packet:[");
+    DEBUG_LOG(DBG_WKROUTING, "routing handle packet:[ ");
     for (i = 0; i < length; ++i){
         DEBUG_LOG(DBG_WKROUTING, "%d", payload[i]);
         DEBUG_LOG(DBG_WKROUTING, " ");
     }
-    DEBUG_LOG(DBG_WKROUTING, "]\n");
+    DEBUG_LOG(DBG_WKROUTING, "] from %d\n", wkcomm_addr);
+
 
     if (length < MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET)
     {
-        DEBUG_LOG(DBG_WKROUTING, "drop garbage packet\n");
+        DEBUG_LOG(DBG_WKROUTING, "routing handler drops garbage packet\n");
         return;
     }
     for (i = MULT_PROTO_DEST_BYTE_OFFSET; i < MULT_PROTO_DEST_BYTE_OFFSET+MULT_PROTO_LEN_DID; ++i)
     {
-        dest <<= 4;
+        dest <<= 8;
         dest |= payload[i];
     }
-    DEBUG_LOG(DBG_WKROUTING, "dest did is %d\n", dest);
+    DEBUG_LOG(DBG_WKROUTING, "routing handle dest did is %d\n", dest);
     for (i = MULT_PROTO_SRC_BYTE_OFFSET; i < MULT_PROTO_SRC_BYTE_OFFSET+MULT_PROTO_LEN_DID; ++i)
     {
-        src <<= 4;
+        src <<= 8;
         src |= payload[i];
     }
-    DEBUG_LOG(DBG_WKROUTING, "src did is %d\n", src);
+    DEBUG_LOG(DBG_WKROUTING, "routing handle src did is %d\n", src);
 
     msg_type = payload[MULT_PROTO_MSG_TYPE_BYTE_OFFSET];
-    DEBUG_LOG(DBG_WKROUTING, "msg_type is %d\n", msg_type);
+    DEBUG_LOG(DBG_WKROUTING, "routing handle msg_type is %d\n", msg_type);
 
     msg_subtype = payload[MULT_PROTO_MSG_SUBTYPE_BYTE_OFFSET];
-    DEBUG_LOG(DBG_WKROUTING, "msg_subtype is %d\n", msg_subtype);
+    DEBUG_LOG(DBG_WKROUTING, "routing handle msg_subtype is %d\n", msg_subtype);
 
     if (msg_type == MULT_PROTO_MSG_TYPE_DID &&
         msg_subtype == MULT_PROTO_MSG_SUBTYPE_DID_OFFR &&
         src == 0)
     {
-        DEBUG_LOG(DBG_WKROUTING, "receives DID OFFR packet\n");
+        DEBUG_LOG(DBG_WKROUTING, "routing handle receives DID OFFR packet\n");
         if (dest != did_table.my_did){
             wkpf_config_set_did(dest);
-            DEBUG_LOG(DBG_WKROUTING, "set DID=%d\n",dest);
+            DEBUG_LOG(DBG_WKROUTING, "routing handle set DID=%d\n",dest);
             did_table.my_did = dest;
             did_table.gateway_did = GET_DID_PREFIX(dest) | GET_DID_RADIO_ADDRESS(did_table.gateway_did);
         } else {
-            DEBUG_LOG(DBG_WKROUTING, "the same DID=%d\n",dest);
+            DEBUG_LOG(DBG_WKROUTING, "routing handle the same DID=%d\n",dest);
         }
     }
     else if(dest == did_table.my_did) //packet is for current node or broadcast
     {
 
-        DEBUG_LOG(DBG_WKROUTING, "receives FWD packet\n");
+        DEBUG_LOG(DBG_WKROUTING, "routing handle receives FWD packet\n");
         if(msg_type == MULT_PROTO_MSG_TYPE_FWD)
         {
             if(msg_subtype == MULT_PROTO_MSG_SUBTYPE_FWD){
@@ -216,7 +230,7 @@ void routing_handle_message(wkcomm_address_t wkcomm_addr, uint8_t *payload, uint
     }
     else
     {
-        DEBUG_LOG(DBG_WKROUTING, "drop unknown packet\n");
+        DEBUG_LOG(DBG_WKROUTING, "routing handler drops unknown packet\n");
         //DEBUG_LOG(DBG_WKROUTING, "forward\n");
         //routing_send(dest, payload, length);
     }
@@ -224,6 +238,7 @@ void routing_handle_message(wkcomm_address_t wkcomm_addr, uint8_t *payload, uint
 
 // INIT
 void routing_init() {
+    DEBUG_LOG(DBG_WKROUTING, "routing_init\n");
     #ifdef RADIO_USE_ZWAVE
         radio_zwave_init();
     #endif
@@ -239,9 +254,9 @@ void routing_poweron_init()
     did_table.my_did = routing_get_node_id();
     did_table.gateway_did = GET_DID_PREFIX(did_table.my_did);
     routing_get_mac_address();
-     routing_get_gateway_did();
-     dj_timer_delay(10);
-     routing_did_req();
+    routing_get_gateway_did();
+    dj_timer_delay(10);
+    routing_did_req();
 }
 
 void routing_get_gateway_did()
@@ -268,7 +283,7 @@ void routing_get_mac_address()
 
 void routing_did_req()    //send DID request
 {
-    DEBUG_LOG(DBG_WKROUTING, "my_did=%d\n",did_table.my_did);
+    DEBUG_LOG(DBG_WKROUTING, "routing did req/chk: my_did=%d\n",did_table.my_did);
     uint8_t rt_payload[MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET + MULT_PROTO_LEN_MAC]; //Autonet MAC address
     uint8_t i;
     for (i = MULT_PROTO_DEST_BYTE_OFFSET; i < MULT_PROTO_DEST_BYTE_OFFSET+MULT_PROTO_LEN_DID; ++i)

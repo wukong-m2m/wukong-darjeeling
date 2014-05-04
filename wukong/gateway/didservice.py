@@ -125,23 +125,28 @@ class DIDService(object):
         self._did_nodes = bitarray()
         self._did_nodes.frombytes(self._db["DID_NODES"].encode('latin-1'))
 
-    def _is_did_set(self, radio_address):
+    def _is_radio_address_set(self, radio_address):
         return self._did_nodes[radio_address]
 
-    def _set_did(self, radio_address, value=True):
+    def _set_radio_address(self, radio_address, value=True):
         assert isinstance(radio_address, int), "radio address(%s) must be integer instead of %s" % (str(radio_address), type(radio_address))
         assert radio_address < len(self._did_nodes), "radio address(%d) cannot excede upper bound %d" % (radio_address, len(self._did_nodes))
         self._did_nodes[radio_address] = value
         self._save_dids()
 
-    def _unset_did(self, radio_address):
-        self._set_did(radio_address, value=False)
+    def _unset_radio_address(self, radio_address):
+        self._set_radio_address(radio_address, value=False)
 
     def _get_transport_radio_address(self, did):
         return did & self._db["GTWSELF_DID_HOSTMASK"]
 
     def _is_did_master(self, did):
         if did == self._db["MASTER_DID"]:
+            return True
+        return False
+
+    def _is_did_self(self, did):
+        if did == self._db["GTWSELF_DID"]:
             return True
         return False
 
@@ -154,7 +159,7 @@ class DIDService(object):
         did_obj = ipaddress.ip_address(did)
         self_did_network = ipaddress.ip_interface("%s/%d"%(str(ipaddress.ip_address(self_did)),self._db["GTWSELF_DID_PREFIX_LEN"])).network
         if did_obj in self_did_network:
-            return self._is_did_set(did & self._db["GTWSELF_DID_HOSTMASK"])
+            return self._is_radio_address_set(did & self._db["GTWSELF_DID_HOSTMASK"])
 
     def _find_did_in_other_network(self, did):
         did_obj = ipaddress.ip_address(did)
@@ -255,7 +260,7 @@ class DIDService(object):
                 sock = socket.create_connection(address, CONFIG.NETWORK_TIMEOUT)
                 break
             except IOError as e:
-                logger.error('failed to connect to master %s:%s: %s', address[0], address[1], str(e))
+                logger.error('failed to connect to master %s:%s: %s' % (address[0], address[1], str(e)))
         else:
             if sock is not None: sock.close()
             return (False, None)
@@ -292,6 +297,9 @@ class DIDService(object):
         if self._is_did_master(did):
             return True
 
+        if self._is_did_self(did):
+            return True
+
         if self._is_did_in_self_network(did):
             return True
 
@@ -313,7 +321,7 @@ class DIDService(object):
         
         temp_radio_addr = context
         temp_did = (self_did & self._db["GTWSELF_DID_NETMASK"]) | temp_radio_addr
-        if not self._is_did_set(temp_radio_addr):
+        if not self._is_radio_address_set(temp_radio_addr):
             address = (self._db["MASTER_IP_ADDR"], self._db["MASTER_TCP_PORT"])
             dest_did = self_did
             src_did = temp_did
@@ -354,7 +362,9 @@ class DIDService(object):
                 logger.error("get an unknown DID %s different from originally assigned %s" % (payload, temp_payload))
                 return None
 
-            self._set_did(temp_radio_addr)
+            logger.debug("it is a valid DID ACK message")
+
+            self._set_radio_address(temp_radio_addr)
             logger.info("successfully allocate DID on both gateway and master")
 
         dest_did = temp_did
@@ -372,8 +382,13 @@ class DIDService(object):
 
         # find the dest_did is in itselves network and return the radio address
         # or find the next ip and port of gateway to forward
+        if self._is_did_master(dest_did):
+            logger.debug("forward the message to master")
+            self._forward_to_final_ip_hop((self._db["MASTER_IP_ADDR"],self._db["MASTER_TCP_PORT"]), message)
+            return None
 
         if self._is_did_in_self_network(dest_did):
+            logger.debug("forward the message to transport radio address directly")
             return self._get_transport_radio_address(dest_did)
 
         ok_net = self._find_did_in_other_network(dest_did)
@@ -383,10 +398,11 @@ class DIDService(object):
             address = self._ok_nets[ok_net].split(":")
             address[1] = int(address[1])
             address = tuple(address)
+            logger.debug("forward the message to other known gateway")
             self._forward_to_final_ip_hop(address, message)
             return None
 
-        logger.error("the dest_did %X is neither in the gateway's network nor others" % dest_did)
+        logger.error("the dest_did %X is neither the master, within the gateway's network, nor within known others" % dest_did)
         return None
 
     def handle_pfx_upd_message(self, context, dest_did, src_did, msg_type, msg_subtype, payload):
