@@ -1,11 +1,4 @@
 try:
-    from bitarray import bitarray
-except:
-    print "Please install the bitarray module from pypi"
-    print "e.g. sudo pip install bitarray"
-    exit(-1)
-
-try:
     import netifaces
 except:
     print "Please install the bitarray module from pypi"
@@ -27,16 +20,15 @@ logging.basicConfig(level=CONFIG.LOG_LEVEL)
 logger = logging.getLogger( __name__ )
 
 MAX_DID_LEN = MPTN.MULT_PROTO_LEN_DID
-AUTONET_MAC_ADDR = 8
+AUTONET_MAC_ADDR_LEN = 8
 
 class DIDService(object):
     def __init__(self, transport_radio_addr, radio_addr_len):
         self._db = dbdict.DBDict("gtw.sqlite")
+        self._did_nodes = dbdict.DBDict("gtw_alloc_did.sqlite")
         self._ok_nets = dbdict.DBDict("gtw_ok_nets.sqlite")
 
-        if self._is_db_init():
-            self._db_loads()
-        else:
+        if not self._is_db_init():
             self._db_init(transport_radio_addr, radio_addr_len)
 
         # Check whether master is connectable and its did/prefix is valid or not
@@ -80,10 +72,12 @@ class DIDService(object):
 
         self._db["GTWSELF_RADIO_ADDR"] = transport_radio_addr
         self._db["GTWSELF_RADIO_ADDR_LEN"] = radio_addr_len
+        self._db["GTWSELF_NETWORK_SIZE"] = 2**(radio_addr_len*8)
         self._db["GTWSELF_DID"] = None
         self._db["GTWSELF_DID_PREFIX_LEN"] = (MAX_DID_LEN-radio_addr_len)*8
         self._db["GTWSELF_DID_NETMASK"] = int(("1"*(MAX_DID_LEN-radio_addr_len)*8)+("0"*radio_addr_len*8), 2)
         self._db["GTWSELF_DID_HOSTMASK"] = int(("0"*(MAX_DID_LEN-radio_addr_len)*8)+("1"*radio_addr_len*8), 2)
+        self._db["GTWSELF_MAC_ADDR"] = self._get_mac_address()
 
         # set_self_ip_addr and tcp_port
         # Not test for IPv6
@@ -101,41 +95,39 @@ class DIDService(object):
             exit(-1)
         self._db["GTWSELF_TCP_PORT"] = CONFIG.SELF_TCP_PORT
 
-        # set did allocation storage
-        self._did_nodes = bitarray(2**(radio_addr_len*8))
-        self._did_nodes.setall(False)
-        self._save_dids()
-
-    def _db_loads(self):
-        self._load_dids()
-        if self._db["GTWSELF_DID"] is None:
-            logger.warning("the gateway does not acquire a valid DID/prefix from master")
+    def _get_mac_address(self):
+        mac = [0xFF, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07]
+        return mac
 
     def _is_db_init(self):
-        return len(self._db) > 0
+        if len(self._db) == 0:
+            return False
+
+        for i in ["GTWSELF_RADIO_ADDR","GTWSELF_RADIO_ADDR_LEN","GTWSELF_NETWORK_SIZE","GTWSELF_DID","GTWSELF_DID_PREFIX_LEN","GTWSELF_DID_NETMASK","GTWSELF_DID_HOSTMASK","GTWSELF_MAC_ADDR","GTWSELF_IP_ADDR","GTWSELF_TCP_PORT"]:
+            if i not in self._db:
+                return False
+
+        return True
 
     def _clear_db(self):
         for key in self._db:
             del self._db[key]
-
-    def _save_dids(self):
-        self._db["DID_NODES"] = self._did_nodes.tobytes()
-
-    def _load_dids(self):
-        self._did_nodes = bitarray()
-        self._did_nodes.frombytes(self._db["DID_NODES"].encode('latin-1'))
+        for key in self._did_nodes:
+            del self._did_nodes[key]
+        for key in self._ok_nets:
+            del self._ok_nets[key]
 
     def _is_radio_address_set(self, radio_address):
-        return self._did_nodes[radio_address]
+        return radio_address in self._did_nodes
 
     def _set_radio_address(self, radio_address, value=True):
         assert isinstance(radio_address, int), "radio address(%s) must be integer instead of %s" % (str(radio_address), type(radio_address))
-        assert radio_address < len(self._did_nodes), "radio address(%d) cannot excede upper bound %d" % (radio_address, len(self._did_nodes))
+        assert radio_address < self._db["GTWSELF_NETWORK_SIZE"], "radio address(%d) cannot excede upper bound %d" % (radio_address, self._db["GTWSELF_NETWORK_SIZE"])
         self._did_nodes[radio_address] = value
-        self._save_dids()
 
     def _unset_radio_address(self, radio_address):
-        self._set_radio_address(radio_address, value=False)
+        if self._is_radio_address_set(radio_address):
+            del self._did_nodes[radio_address]
 
     def _get_transport_radio_address(self, did):
         return did & self._db["GTWSELF_DID_HOSTMASK"]
@@ -159,7 +151,8 @@ class DIDService(object):
         did_obj = ipaddress.ip_address(did)
         self_did_network = ipaddress.ip_interface("%s/%d"%(str(ipaddress.ip_address(self_did)),self._db["GTWSELF_DID_PREFIX_LEN"])).network
         if did_obj in self_did_network:
-            return self._is_radio_address_set(did & self._db["GTWSELF_DID_HOSTMASK"])
+            return self._is_radio_address_set(self._get_transport_radio_address(did))
+        return False
 
     def _find_did_in_other_network(self, did):
         did_obj = ipaddress.ip_address(did)
@@ -179,8 +172,7 @@ class DIDService(object):
         msg_type = MPTN.MULT_PROTO_MSG_TYPE_PFX
         msg_subtype = MPTN.MULT_PROTO_MSG_SUBTYPE_PFX_REQ
         header = utils.create_mult_proto_header_to_str(dest_did, src_did, msg_type, msg_subtype)
-        payload = "RADDR=%d;LEN=%d;PORT=%d" % (self._db["GTWSELF_RADIO_ADDR"], self._db["GTWSELF_RADIO_ADDR_LEN"], self._db["GTWSELF_TCP_PORT"])
-
+        payload = "RADDR=%d;LEN=%d;PORT=%d;MAC=%s" % (self._db["GTWSELF_RADIO_ADDR"], self._db["GTWSELF_RADIO_ADDR_LEN"], self._db["GTWSELF_TCP_PORT"], struct.pack("!BBBBBBBB",*self._db["GTWSELF_MAC_ADDR"]))
         success, message = self._send_to_and_recv_from(address, header+payload)
 
         if not success:
@@ -268,7 +260,6 @@ class DIDService(object):
         ret = (False, None)
         try:
             #sock.settimeout(CONFIG.NETWORK_TIMEOUT)
-
             utils.special_send(sock, message)
 
             message = utils.special_recv(sock)
@@ -315,8 +306,8 @@ class DIDService(object):
             return None
         radio_addr_len = self._db["GTWSELF_RADIO_ADDR_LEN"]
 
-        if payload is None or len(payload) != AUTONET_MAC_ADDR:
-            logger.error("the length of payload of DID REQ %d should be the same as that of Autonet Zigbee MAC address %d" % (len(payload), AUTONET_MAC_ADDR))
+        if payload is None or len(payload) != AUTONET_MAC_ADDR_LEN:
+            logger.error("the length of payload of DID REQ %d should be the same as that of Autonet Zigbee MAC address %d" % (len(payload), AUTONET_MAC_ADDR_LEN))
             return None            
         
         temp_radio_addr = context

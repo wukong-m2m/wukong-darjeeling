@@ -22,7 +22,7 @@ def from_db_type(value):
     Converts a value from the database to a Python object.
     """
     if isinstance(value, buffer):
-        return pickle.loads(value)
+        return pickle.loads(str(value))
     else:
         return value
 

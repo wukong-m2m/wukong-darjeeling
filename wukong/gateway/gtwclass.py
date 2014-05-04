@@ -15,9 +15,9 @@ logger = logging.getLogger( __name__ )
 class Gateway(object):
 
     def __init__(self, transport):
-        assert transport is not None, "Gateway's transport device is required"
+        assert transport is not None, "Gateway's transport radio interface is required"
         self._transport = transport
-        
+
         self._greenlet = None
         self._no_dump = False
 
@@ -30,7 +30,7 @@ class Gateway(object):
         self._fwd_handler = self._did_service.handle_fwd_message
         self._pfx_upd_handler = self._did_service.handle_pfx_upd_message
 
-        logger.info("Gateway initialized")
+        logger.info("initialized")
 
     def start(self, tcp_port):
         try:
@@ -50,7 +50,7 @@ class Gateway(object):
     def stop(self):
         self._ip_server.close()
 
-        for g in self._greenlet: 
+        for g in self._greenlet:
             g.kill()
         logger.warn("stopped")
 
@@ -70,10 +70,8 @@ class Gateway(object):
         log_msg = [context_str] + utils.split_packet_header(message)
         if payload is not None: log_msg.append(payload)
         log_msg = utils.formatted_print(log_msg)
-        logger.debug("receive message:\n" + log_msg)
-
         if msg_type == MPTN.MULT_PROTO_MSG_TYPE_DID:
-            # Only DID REQ message from transport device would get here
+            # Only DID REQ message from transport interface would get here
             if not from_transport:
                 logger.error("cannot receive DID message from TCP server")
                 return None
@@ -86,6 +84,7 @@ class Gateway(object):
                 logger.error("DID REQ with incorrect src did = %X and/or dest did = %X" % (src_did, dest_did))
                 return None
 
+            logger.debug("receive DID REQ message:\n" + log_msg)
             message = self._did_req_handler(context, dest_did, src_did, msg_type, msg_subtype, payload)
             if message is None:
                 return None
@@ -112,9 +111,10 @@ class Gateway(object):
 
             if payload is not None:
                 logger.error("packet RAD might not have the payload")
-                return None                
+                return None
 
             if msg_subtype in self._transport_learn_handler:
+                logger.debug("receive RAD message:\n" + log_msg)
                 success = self._transport_learn_handler[msg_subtype]()
                 if success:
                     msg_subtype = MPTN.MULT_PROTO_MSG_SUBTYPE_RAD_ACK
@@ -123,6 +123,7 @@ class Gateway(object):
                 payload = str(success)
 
             elif msg_subtype == MPTN.MULT_PROTO_MSG_SUBTYPE_RAD_POLL:
+                logger.debug("receive RAD POLL message:\n" + log_msg)
                 payload = str(self._transport_poll_handler())
                 msg_subtype = MPTN.MULT_PROTO_MSG_SUBTYPE_RAD_ACK
 
@@ -138,7 +139,7 @@ class Gateway(object):
             # Check if SRC_DID is master's
             # RPC handler would reply a full MPTN packet
             if from_transport:
-                logger.error("cannot receive RPC message from transport device")
+                logger.error("cannot receive RPC message from transport radio interface")
                 return None
 
             if payload is None:
@@ -149,10 +150,11 @@ class Gateway(object):
                 logger.error("receives invalid RPC message subtype and will not send any reply")
                 return None
 
+            logger.debug("receive RPC CMD message:\n" + log_msg)
             header = utils.create_mult_proto_header_to_str(src_did, dest_did, msg_type, MPTN.MULT_PROTO_MSG_SUBTYPE_RPC_REP)
             payload = self._rpc_handler(context, dest_did, src_did, msg_type, msg_subtype, payload)
             return header + payload
-        
+
         elif msg_type == MPTN.MULT_PROTO_MSG_TYPE_FWD:
             # Check if DEST_DID is on the same network and get radio address of it
             #   True:   send to transport and return back to source gateway or master
@@ -165,6 +167,7 @@ class Gateway(object):
                 logger.error("receives invalid FWD FWD message subtype and will not send any reply")
                 return None
 
+            logger.debug("receive FWD FWD message:\n" + log_msg)
             radio_address = self._fwd_handler(context, dest_did, message)
             if radio_address is None:
                 logger.debug("the forward destination DID is not in this gateway's network")
@@ -186,7 +189,7 @@ class Gateway(object):
         elif msg_type == MPTN.MULT_PROTO_MSG_TYPE_PFX:
             # Only PFX UPD message from master would get here
             if from_transport:
-                logger.error("cannot receive RPC message from transport device")
+                logger.error("cannot receive RPC message from transport radio interface")
                 return None
 
             if msg_subtype != MPTN.MULT_PROTO_MSG_SUBTYPE_PFX_UPD:
@@ -195,13 +198,14 @@ class Gateway(object):
 
             if payload is None:
                 logger.error("packet PFX might have the payload")
-                return None        
-            
+                return None
+
+            logger.debug("receive PFX UPD message:\n" + log_msg)
             self._pfx_upd_handler(context, dest_did, src_did, msg_type, msg_subtype, payload)
-            return None            
+            return None
 
         else:
-            logger.error("receives unknown message with type %X" % msg_type)
+            logger.error("receives unknown message with type %X\n%s" % (msg_type, log_msg))
             return None
 
     def _serve_socket_forever(self):
@@ -237,7 +241,7 @@ class Gateway(object):
 
             if src_radio_addr is not None and message is not None:
                 def handle_transport(src_radio_addr, message):
-                    logger.debug("transport device receives message from address %X" % src_radio_addr)
+                    logger.debug("transport radio interface receives message from address %X" % src_radio_addr)
                     response = self._process_message(src_radio_addr, message, True)
                     if response is not None:
                         response = [0x88] + map(ord, response)
@@ -245,10 +249,10 @@ class Gateway(object):
                         while retries > 0:
                             ret = self._transport_send_handler(src_radio_addr, response)
                             if ret[0]:
-                                logger.debug("transport device sent message %s to address %X" % (str(response), src_radio_addr))
+                                logger.debug("transport radio interface has sent message %s to address %X" % (str(response), src_radio_addr))
                                 break
                             retries -= 1
-                            logger.debug("transport device fails to send message %s to address %X" % (str(response), src_radio_addr))
+                            logger.debug("transport radio interface fails to send message %s to address %X" % (str(response), src_radio_addr))
                             gevent.sleep(0.01)
                 gevent.spawn(handle_transport, src_radio_addr, message)
             gevent.sleep(0.01)
@@ -259,7 +263,7 @@ class Gateway(object):
             e = self._transport.send(radio_address, message)
             if e is None:
                 return (True, None)
-            
+
             msg = "transport radio interface(%s) fails to send message to device with radio address(%s) and error: %s\n\tmsg: %s" % (self._transport.get_name(), str(radio_address), e, message)
             logger.warning(msg)
             return (False, msg)

@@ -22,6 +22,8 @@ from tinyrpc import RPCClient
 import mptnUtils
 import ipaddress
 from gevent.lock import RLock
+import json
+import re
 
 try:
     import fcntl
@@ -430,7 +432,6 @@ class RPCAgent(TransportAgent):
         log_msg = [context_str] + mptnUtils.split_packet_header(message)
         if payload is not None: log_msg.append(payload)
         log_msg = mptnUtils.formatted_print(log_msg)
-        print "[transport] TCP Server receives message:\n" + log_msg
 
         if msg_type == mptnUtils.MULT_PROTO_MSG_TYPE_PFX:
             # Only PFX REQ message from gateway would get here
@@ -446,23 +447,19 @@ class RPCAgent(TransportAgent):
                 print "[transport] TCP server: PFX REQ might have the payload"
                 return None, None
             
-            # _pfx_req_handler "RADDR=%d;LEN=%d;PORT=%d"
-            payload = payload.split(";")
-            if len(payload) != 3:
-                print "[transport] TCP server: PFX REQ payload should be RADDR=int;LEN=int;PORT=int"
-                return None, None
-            
-            print "[transport] TCP Server receives a PFX REQ message"
-
-            try:
-                raddr = int(payload[0].split("=")[1])
-                raddr_len = int(payload[1].split("=")[1])
-                port = int(payload[2].split("=")[1])
-            except:
-                print "[transport] TCP server: PFX REQ payload should be RADDR=int;LEN=int;PORT=int"
+            # _pfx_req_handler "RADDR=%d;LEN=%d;PORT=%d;MAC=%s"            
+            m = re.match("RADDR=(\d+);LEN=(\d+);PORT=(\d+);MAC=(.+)",payload)
+            if m is None or len(m.group(4)) != 8:
+                print "[transport] TCP server: PFX REQ payload should be RADDR=int;LEN=int;PORT=int;MAC=8bytes"
                 return None, None
 
-            dest_did = getDIDService().get_or_allocate_gateway_did(raddr, raddr_len, context[0], port)
+            print "[transport] TCP Server receives PFX REQ message:\n" + log_msg
+            raddr = int(m.group(1)) 
+            raddr_len = int(m.group(2))
+            port = int(m.group(3))
+            mac = m.group(4)
+
+            dest_did = getDIDService().get_or_allocate_gateway_did(raddr, raddr_len, context[0], port, mac)
             msg_subtype = mptnUtils.MULT_PROTO_MSG_SUBTYPE_PFX_ACK if dest_did != 0xFFFFFFFF else mptnUtils.MULT_PROTO_MSG_SUBTYPE_PFX_NAK
             message = mptnUtils.create_mult_proto_header_to_str(dest_did, getDIDService().get_master_did(), msg_type, msg_subtype)
 
@@ -493,8 +490,7 @@ class RPCAgent(TransportAgent):
                 print "[transport] TCP server: DID UPD payload must be 8 bytes (MAC address)"
                 return None, None
 
-            print "[transport] TCP Server receives a DID UPD message"
-
+            print "[transport] TCP Server receives DID UPD message:\n" + log_msg
             # _did_req_handler
             registering_did = src_did
             gateway_did = dest_did
@@ -536,7 +532,7 @@ class RPCAgent(TransportAgent):
                 print "[transport] TCP server receives invalid FWD FWD message subtype and will not send any reply"
                 return None, None 
             
-            print "[transport] TCP Server receives a FWD message"
+            print "[transport] TCP Server receives FWD FWD message:\n" + log_msg
 
             msg_subtype = mptnUtils.MULT_PROTO_MSG_SUBTYPE_FWD_ACK
             header = mptnUtils.create_mult_proto_header_to_str(src_did, dest_did, msg_type, msg_subtype)
@@ -544,7 +540,7 @@ class RPCAgent(TransportAgent):
             return (2, (header, src_did, payload))
 
         else:
-            print "[transport] TCP server receives unknown message with type %X" % msg_type
+            print "[transport] TCP server receives unknown message with type %X\n%s" % (msg_type, log_msg)
             return None, None 
 
     def receive(self, timeout_msec=100):
@@ -881,7 +877,7 @@ class DIDService:
         self._device_dids = mptnUtils.DBDict("master_dev_dids.sqlite")
         self._gateway_dids = mptnUtils.DBDict("master_gtw_dids.sqlite")
         self._device_macs = mptnUtils.DBDict("master_dev_macs.sqlite")
-        self._is_insertable = False
+        self._is_insertable = True
         self._global_lock = RLock()
 
     def _update_gateways(self, new_did, new_ip, new_port, new_mask):
@@ -893,7 +889,7 @@ class DIDService:
         for did, ip, port in self.get_all_gateways():
             # payload "DID/MASK=IP:PORT"
             did_str = str(ipaddress.ip_address(did))
-            mask = self.get_gateway_prefix_len(did)
+            mask = self.get_gateway_prefix_bit_len(did)
             if did == new_did:
                 to_new_gateway_str.append("%s/%d=%s:%d" % (did_str, mask, ip, port))
             else:
@@ -953,25 +949,29 @@ class DIDService:
                 return 0xFFFFFFFF
         
         with self._global_lock:
-            self._device_macs[mac_addr] = did
-            prefix_len = self.get_gateway_prefix_len(gateway_did)
-            raddr = (did << prefix_len) >> prefix_len
-            self._device_dids[did] = (gateway_did, raddr)
-        return did
+            if self._is_insertable:
+                mac_addr = ":".join(map(lambda x:"%02X"%x,map(ord,mac_addr)))
+                self._device_macs[mac_addr] = did
+                prefix_bit_len = self.get_gateway_prefix_bit_len(gateway_did)
+                raddr = (did << prefix_bit_len) >> prefix_bit_len
+                self._device_dids[did] = json.dumps({"gtwdid":gateway_did,"raddr":raddr,"mac":mac_addr})
+            return did
+        return 0xFFFFFFFF
 
-    def get_or_allocate_gateway_did(self, g_raddr, g_raddr_len, g_ip, g_port):
+    def get_or_allocate_gateway_did(self, g_raddr, g_raddr_len, g_ip, g_port, g_mac_addr=None):
         error_did = 0xFFFFFFFF
-        for did, (ip, port, prefix, prefix_len, raddr, raddr_len) in self._gateway_dids.iteritems():
+        for did, g_json_info in self._gateway_dids.iteritems():
             did = int(did)
-            if g_ip == ip and g_port == port:
-                if g_raddr_len != raddr_len or g_raddr != raddr:
-                    print "[DID] there is a gateway's DID %d(%s) matching the ip %s and port %d instead of the radio address %d (?=%d) or its length %d (?=%d)" %(did, str(ipaddress.ip_address(did)), ip, port, g_addr, raddr, g_raddr, raddr_len, g_raddr_len)
+            g_info = json.loads(g_json_info)
+            if g_ip == g_info["ip"] and g_port == g_info["port"]:
+                if g_raddr_len != g_info["raddr_len"] or g_raddr != g_info["raddr"]:
+                    print "[DID] there is a gateway's DID %d(%s) matching the ip %s and port %d instead of the radio address %d (?=%d) or its length %d (?=%d)" %(did, str(ipaddress.ip_address(did)), g_info["ip"], g_info["port"], g_addr, g_info["raddr"], g_raddr, g_info["raddr_len"], g_raddr_len)
                     return error_did
-                print "[DID] one gateway's DID %d(%s) found to match the ip %s and port %d" %(did, str(ipaddress.ip_address(did)), ip, port)
+                print "[DID] one gateway's DID %d(%s) found to match the ip %s and port %d" %(did, str(ipaddress.ip_address(did)), g_info["ip"], g_info["port"])
                 return did
         else:
             max_len = mptnUtils.MULT_PROTO_LEN_DID
-            prefix_len = (max_len-g_raddr_len)*8
+            prefix_bit_len = (max_len-g_raddr_len)*8
 
             if g_raddr_len > max_len:
                 print "[DID] gateway's radio address length exceeds %d bytes" % max_len
@@ -1003,16 +1003,19 @@ class DIDService:
                 return error_did
                     
             did = prefix | g_raddr
-            netmask = int("1"*prefix_len*8 + "0"*g_raddr_len*8, 2)
+            netmask = int("1"*prefix_bit_len + "0"*g_raddr_len*8, 2)
             prefix = did & netmask
-            self._gateway_dids[did] = (g_ip, g_port, prefix, prefix_len, g_raddr, g_raddr_len)
-            gevent.spawn(self._update_gateways, did, g_ip, g_port, prefix_len)
+            g_mac_addr = ":".join(map(lambda x:"%02X"%x,map(ord,g_mac_addr)))
+            self._gateway_dids[did] = json.dumps({"ip":g_ip, "port":g_port, "prefix":prefix, "prefix_bit_len":prefix_bit_len, "raddr":g_raddr, "raddr_len":g_raddr_len, "mac":g_mac_addr})
+            gevent.spawn(self._update_gateways, did, g_ip, g_port, prefix_bit_len)
             return did
 
     def get_all_gateways(self):
         ret = []
-        for did, (ip, port, prefix, prefix_len, raddr, raddr_len) in self._gateway_dids.iteritems():
-            ret.append((int(did), ip, port))
+        for did, g_json_info in self._gateway_dids.iteritems():
+            did = int(did)
+            g_info = json.loads(g_json_info)
+            ret.append((did, g_info["ip"], g_info["port"]))
         return ret
 
     def get_gateway(self, did):
@@ -1020,44 +1023,52 @@ class DIDService:
             print "[DID] cannot find device based on DID %d" % did 
             return None, None, None        
         
-        gateway_did, raddr = self._device_dids[did]
-        if gateway_did not in self._gateway_dids:
+        d_info = json.loads(self._device_dids[did])
+        if d_info["gtwdid"] not in self._gateway_dids:
             print "[DID] cannot find gateway based on DID %d" % did 
             return None, None, None
 
-        ip, port, prefix, prefix_len, raddr, raddr_len = self._gateway_dids[gateway_did]
-        return gateway_did, ip, port
+        g_info = json.loads(self._gateway_dids[d_info["gtwdid"]])
+        return d_info["gtwdid"], g_info["ip"], g_info["port"]
 
     def get_device_raddr(self, did):
         if did in self._device_dids:
-            gateway_did, raddr = self._device_dids[did]
-            return raddr
+            d_info = json.loads(self._device_dids[did])
+            return d_info["raddr"]
 
         print "[DID] cannot find device's radio address based on DID %d" % did 
         return None
 
     def get_gateway_raddr_len(self, did):
         if did in self._gateway_dids:
-            ip, port, prefix, prefix_len, raddr, raddr_len = self._gateway_dids[did]
-            return raddr_len
+            g_info = json.loads(self._gateway_dids[did])
+            return g_info["raddr_len"]
 
         print "[DID] cannot find gateway's radio address len based on DID %d" % did 
         return None
 
     def get_gateway_prefix(self, did):
         if did in self._gateway_dids:
-            ip, port, prefix, prefix_len, raddr, raddr_len = self._gateway_dids[did]
-            return prefix
+            g_info = json.loads(self._gateway_dids[did])
+            return g_info["prefix"]
 
         print "[DID] cannot find gateway's prefix based on DID %d" % did 
         return None
 
-    def get_gateway_prefix_len(self, did):
+    def get_gateway_prefix_bit_len(self, did):
         if did in self._gateway_dids:
-            ip, port, prefix, prefix_len, raddr, raddr_len = self._gateway_dids[did]
-            return prefix_len
+            g_info = json.loads(self._gateway_dids[did])
+            return g_info["prefix_bit_len"]
 
         print "[DID] cannot find gateway's prefix len based on DID %d" % did 
+        return None
+
+    def get_gateway_mac(self, did):
+        if did in self._gateway_dids:
+            g_info = json.loads(self._gateway_dids[did])
+            return g_info["mac"]
+
+        print "[DID] cannot find gateway's mac based on DID %d" % did 
         return None
 
     def create_fwd_message_byte_list(self, did, message):
