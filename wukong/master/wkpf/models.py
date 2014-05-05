@@ -266,6 +266,7 @@ class WuNode:
             #                    prop_value = int(wuprop.getAttribute("value"),0)
              #                   wuobject.properties[prop_name] = prop_value
     
+
       return cls.node_dict.values()                              
       
   def isResponding(self):

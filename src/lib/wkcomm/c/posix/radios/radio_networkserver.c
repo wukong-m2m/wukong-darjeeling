@@ -29,7 +29,7 @@
 
 int radio_networkserver_sockfd;
 struct sockaddr_in radio_networkserver_servaddr;
-uint8_t radio_networkserver_receive_buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+3]; // 4 for local network overhead, 3 for wkcomm overhead
+uint8_t radio_networkserver_receive_buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+3]; // 3 for wkcomm overhead
 dj_hook radio_networkserver_shutdownHook;
 
 void open_connection() {
@@ -51,13 +51,15 @@ void open_connection() {
 	if (length != 1 || radio_networkserver_receive_buffer[0] != 42) {
 		fprintf(stderr, "Unable to establish local radio connection.\n");
 	}
-	uint8_t send_buffer[3];
+	uint8_t send_buffer[5];
 	// Connect in messaging mode
 	send_buffer[0] = MODE_MESSAGE;
 	// Tell the server our network id
 	send_buffer[1] = radio_networkserver_get_node_id() & 0xFF;
 	send_buffer[2] = (radio_networkserver_get_node_id() >> 8) & 0xFF;
-    retval = write(radio_networkserver_sockfd, send_buffer, 3);
+	send_buffer[3] = (radio_networkserver_get_node_id() >> 16) & 0xFF;
+	send_buffer[4] = (radio_networkserver_get_node_id() >> 24) & 0xFF;
+    retval = write(radio_networkserver_sockfd, send_buffer, 5);
 	if (retval == -1) {
 		fprintf(stderr, "Unable to send local network id to server: %d\n", errno);
 		exit(1);
@@ -93,24 +95,31 @@ void radio_networkserver_poll(void) {
 			// Just a heartbeat.
 			return;
 		}
-		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, 2, 0);
-		radio_networkserver_address_t src = radio_networkserver_receive_buffer[0] + 256*radio_networkserver_receive_buffer[1];
-		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, 2, 0); // skip dest
-		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, length-5, 0); // skip dest
+		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, 4, 0);
+		radio_networkserver_address_t src = ((uint32_t)radio_networkserver_receive_buffer[0])
+										 + (((uint32_t)radio_networkserver_receive_buffer[1]) << 8)
+										 + (((uint32_t)radio_networkserver_receive_buffer[2]) << 16)
+										 + (((uint32_t)radio_networkserver_receive_buffer[3]) << 24);
+		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, 4, 0); // skip dest
+		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, length-5, 0);
 		DEBUG_LOG(DBG_WKCOMM, "message received from %d, length %d\n", src, length-5);
 		routing_handle_local_message(src, radio_networkserver_receive_buffer, length-5);
 	}
 }
 
 uint8_t radio_networkserver_send(radio_networkserver_address_t dest, uint8_t *payload, uint8_t length) {
-	uint8_t send_buffer[length+5];
-	send_buffer[0] = 5+length;
-	send_buffer[1] = radio_networkserver_get_node_id() & 0xFF;
-	send_buffer[2] = (radio_networkserver_get_node_id() >> 8) & 0xFF;
-	send_buffer[3] = dest & 0xFF;
-	send_buffer[4] = (dest >> 8) & 0xFF;
-	memcpy(send_buffer+5, payload, length);
-    int retval = write(radio_networkserver_sockfd, send_buffer, length+5);
+	uint8_t send_buffer[length+9];
+	send_buffer[0] = 9+length;
+	send_buffer[1] = ((uint32_t) radio_networkserver_get_node_id()) & 0xFF;
+	send_buffer[2] = (((uint32_t) radio_networkserver_get_node_id()) >> 8) & 0xFF;
+	send_buffer[3] = (((uint32_t) radio_networkserver_get_node_id()) >> 16) & 0xFF;
+	send_buffer[4] = (((uint32_t) radio_networkserver_get_node_id()) >> 24) & 0xFF;
+	send_buffer[5] = dest & 0xFF;
+	send_buffer[6] = (dest >> 8) & 0xFF;
+	send_buffer[7] = (dest >> 16) & 0xFF;
+	send_buffer[8] = (dest >> 24) & 0xFF;
+	memcpy(send_buffer+9, payload, length);
+    int retval = write(radio_networkserver_sockfd, send_buffer, length+9);
 	DEBUG_LOG(DBG_WKCOMM, "message sent to %d, length %d\n", dest, length);
 	if (retval != -1)
 		return 0;

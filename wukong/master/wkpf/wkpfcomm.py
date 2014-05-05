@@ -82,7 +82,7 @@ class Communication:
         self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
         # This doesn't work on SAC2014 branch (fix was cherry picked from develop)
         # It's probably needed on develop though.
-        # WuNode.addVirtualNodes(wkpf.globals.virtual_nodes)
+        # WuNode.addVirtualNodes(globals.virtual_nodes)
         WuNode.saveNodes()
 
 

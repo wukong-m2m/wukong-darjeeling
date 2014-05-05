@@ -371,8 +371,10 @@ class NetworkServerAgent(TransportAgent):
         source = 1 # TODONR: is the master ALWAYS 1?
         buffer = bytearray()
         buffer.append(NetworkServerAgent.MODE_MESSAGE)
-        buffer.append(source%256)
-        buffer.append(source/256)
+        buffer.append(source & 0xff)
+        buffer.append((source >> 8) & 0xff)
+        buffer.append((source >> 16) & 0xff)
+        buffer.append((source >> 24) & 0xff)
         self._socket.send(buffer)
 
         TransportAgent.__init__(self)
@@ -481,8 +483,8 @@ class NetworkServerAgent(TransportAgent):
                         # just a heartbeat message
                         continue
                     message = map(ord, self._socket.recv(length-1))
-                    src = message[0] + (message[1] * 256)
-                    reply = message[4:]
+                    src = message[0] + (message[1] << 8) + (message[2] << 16) + (message[3] << 24)
+                    reply = message[8:]
                     if src and reply:
                         # with seq number
                         deliver = new_deliver(src, reply[0], reply[1:])
@@ -522,8 +524,8 @@ class NetworkServerAgent(TransportAgent):
                         length = ord(discovery_socket.recv(1)[0])
                         length += 256*ord(discovery_socket.recv(1)[0])
                         message = map(ord, discovery_socket.recv(length-2))
-                        for i in range((length-2)/2):
-                            discovered_ids.append(message[i*2] + 256*message[i*2+1])
+                        for i in range((length-2)/4):
+                            discovered_ids.append(message[i*4] + (message[i*4+1] << 8) + (message[i*4+2] << 16) + (message[i*4+3] << 24))
                 except Exception as e:
                     print '[transport] receive exception, discovery failed'
                     print e
@@ -552,18 +554,20 @@ class NetworkServerAgent(TransportAgent):
                         destination = defer.message.destination
                         source = 1 # TODONR: is the master ALWAYS 1?
                         buffer = bytearray()
-                        buffer.append(1+2+2+1+len(payload))
-                        buffer.append(source%256)
-                        buffer.append(source/256)
-                        buffer.append(destination%256)
-                        buffer.append(destination/256)
+                        buffer.append(1+4+4+1+len(payload))
+                        buffer.append(source & 0xff)
+                        buffer.append((source >> 8) & 0xff)
+                        buffer.append((source >> 16) & 0xff)
+                        buffer.append((source >> 24) & 0xff)
+                        buffer.append(destination & 0xff)
+                        buffer.append((destination >> 8) & 0xff)
+                        buffer.append((destination >> 16) & 0xff)
+                        buffer.append((destination >> 24) & 0xff)
                         buffer.append(command)
                         buffer.extend(payload)
                         print "networkserver send"
                         print source
                         print destination
-                        print destination%256
-                        print destination/256
                         print buffer
                         self._socket.send(buffer)
                         break

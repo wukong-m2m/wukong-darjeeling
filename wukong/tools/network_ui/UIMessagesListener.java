@@ -68,18 +68,18 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 	private String parseMessage(int[] message) {
 		/*
 		 NetworkServer header
-		 byte 0   : length
-		 byte 1,2 : src (litte endian)
-		 byte 3,4 : dest (litte endian)
+		 byte 0       : length
+		 byte 1,2,3,4 : src (litte endian)
+		 byte 5,6,7,8 : dest (litte endian)
 		 WKComm header
-		 byte 5   : command
-		 byte 6,7 : seqnr
-		 bytes 8+ : payload
+		 byte 9       : command
+		 byte 10,11   : seqnr
+		 bytes 12+    : payload
 		*/
-		if (message.length < 8) // ?
+		if (message.length < 12) // ?
 			return "";
-		int command = message[5];
-		int[] payload = Arrays.copyOfRange(message, 8, message.length);
+		int command = message[9];
+		int[] payload = Arrays.copyOfRange(message, 12, message.length);
 		String command_name = "UNKNOWN";
 		StringBuilder sb = new StringBuilder();
 		switch(command) {

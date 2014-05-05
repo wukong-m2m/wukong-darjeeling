@@ -10,7 +10,7 @@ extern void posix_get_node_directory(char* dest, int maxlen);
 extern char** posix_argv;
 extern char* posix_uart_filenames[4];
 extern bool posix_arg_addnode;
-extern uint16_t posix_local_network_id;
+extern uint32_t posix_local_network_id;
 extern char* posix_pc_network_directory;
 extern char* posix_network_server_address;
 extern int posix_network_server_port;
