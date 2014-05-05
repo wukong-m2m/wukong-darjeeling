@@ -64,10 +64,6 @@ void load_features_data() {
 					printf("Did in %s not in expected format, aborting...\n", posix_config_filename);
 					abort();
 				}
-				if (did > 4294967295) {
-					printf("Did in %s too large (%d), aborting...\n", posix_config_filename, did);
-					abort();
-				}
 				features.did = did;
 				DEBUG_LOG(DBG_WKPF, "CONFIG: did = %d\n", features.did);
 			} else if (prefix("Feature", line)) {
