@@ -98,6 +98,7 @@
 			name="${name}"
 			infusionfile="${build}/${name}.di"
 			headerfile="${build}/${name}.dih"
+			debugfile="${build}/${name}.debug"
 			hfile="${build}/${name}.h"
 		>
 			<!-- Include the classes -->
