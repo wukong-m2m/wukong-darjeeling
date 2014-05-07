@@ -249,7 +249,7 @@ public class NetworkServer extends Thread
 
 		private void handle_mode_discovery(BufferedInputStream in, BufferedOutputStream out) throws IOException {
 			int number_of_clients = NetworkServer.clients.keySet().size();
-			int length = 2+number_of_clients*2;
+			int length = 2+number_of_clients*4;
 			System.out.println("discovery, number of clients " + number_of_clients);
 			out.write(length%256);
 			out.write(length/256);

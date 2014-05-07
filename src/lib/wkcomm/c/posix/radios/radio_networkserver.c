@@ -101,9 +101,9 @@ void radio_networkserver_poll(void) {
 										 + (((uint32_t)radio_networkserver_receive_buffer[2]) << 16)
 										 + (((uint32_t)radio_networkserver_receive_buffer[3]) << 24);
 		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, 4, 0); // skip dest
-		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, length-5, 0);
-		DEBUG_LOG(DBG_WKCOMM, "message received from %d, length %d\n", src, length-5);
-		routing_handle_local_message(src, radio_networkserver_receive_buffer, length-5);
+		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, length-9, 0); // -9: 1 length, 4 src, 4 dest
+		DEBUG_LOG(DBG_WKCOMM, "message received from %d, length %d\n", src, length-9);
+		routing_handle_local_message(src, radio_networkserver_receive_buffer, length-9);
 	}
 }
 
