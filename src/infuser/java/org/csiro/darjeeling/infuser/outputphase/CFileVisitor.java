@@ -22,6 +22,10 @@
 package org.csiro.darjeeling.infuser.outputphase;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import org.apache.bcel.generic.Type;
 import org.csiro.darjeeling.infuser.structure.DescendingVisitor;
@@ -44,24 +48,47 @@ public class CFileVisitor extends DescendingVisitor
 	
 	private void generateNativeHandler(InternalInfusion element)
 	{
-		// generate switch code
-		writer.println(String.format("void %s_native_handler(dj_global_id id)", element.getHeader().getInfusionName()));
-		writer.println("{");
-		writer.println("\tswitch(id.entity_id)");
-		writer.println("\t{");
-		
+		// sort method implementations by id
+		List<AbstractMethodImplementation> methodImplementations
+			= new ArrayList<AbstractMethodImplementation>(element.getMethodImplementationList().getChildren());
+		Comparator<AbstractMethodImplementation> comparator = new Comparator<AbstractMethodImplementation>() {
+		    public int compare(AbstractMethodImplementation c1, AbstractMethodImplementation c2) {
+		        return c2.getGlobalId().getEntityId() - c1.getGlobalId().getEntityId(); // use your logic
+		    }
+		};
+		Collections.sort(methodImplementations, comparator); 
+
+		// write the array of method pointers
+		String arrayname = String.format("%s_native_method_function_pointers", element.getHeader().getInfusionName());
+		writer.println("typedef void (*native_method_function_t)(void);");
+		writer.println(String.format("native_method_function_t %s[%d] = {",
+									 arrayname,
+									 methodImplementations.size()));
+		int checkId = 0;		
 		for (AbstractMethodImplementation methodImplementation : element.getMethodImplementationList().getChildren())
 		{
+			if (checkId++ != methodImplementation.getGlobalId().getEntityId())
+				writer.println("Entity IDs aren't a continuous range starting at 0... This wasn't supposed to happen...");
 			if (((InternalMethodImplementation)methodImplementation).isNative())
 			{
-				writer.printf("\t\tcase %d: %s(); break;\n",
-						methodImplementation.getGlobalId().getEntityId(),
+				writer.printf("\t%s,\n",
+						generateMethodName(methodImplementation)
+						);
+			}
+			else
+			{
+				writer.printf("\tNULL, // Not a native method: %s\n",
 						generateMethodName(methodImplementation)
 						);
 			}
 		}
-		
-		writer.println("\t}");
+		writer.println("};");
+
+
+		// generate handler code
+		writer.println(String.format("void %s_native_handler(dj_global_id id)", element.getHeader().getInfusionName()));
+		writer.println("{");
+		writer.println(String.format("\t%s[id.entity_id]();", arrayname));
 		writer.println("}");
 		writer.println("");
 	}
