@@ -53,23 +53,12 @@ except:
   print "easy_install pymongo"
   sys.exit(-1)
 
-
-try:
-   m = pyzwave.getDeviceType
-except:
-  print "Please reinstall the pyzwave module in the wukong/tools/python/pyzwave by using"
-  print "cd ../tools/python/pyzwave; sudo python setup.py install"
-  sys.exit(-1)
-
-
 try:
     wkpf.globals.mongoDBClient = MongoClient(MONGODB_URL)
-
 except:
   print "MongoDB instance " + MONGODB_URL + " can't be connected."
   print "Please install the mongDB, pymongo module."
   sys.exit(-1)
-
 
 tornado.options.parse_command_line()
 #tornado.options.enable_pretty_logging()

@@ -3,7 +3,7 @@ import copy
 from xml.etree import ElementTree
 import xml.dom.minidom
 import traceback
-import wkpf.globals
+import globals
 
 
 
@@ -278,7 +278,7 @@ class WuNode:
              #                   wuobject.properties[prop_name] = prop_value
 
       #add the virtual nodes
-      cls.node_dict = dict(cls.node_dict.items() + wkpf.globals.virtual_nodes.items())
+      cls.node_dict = dict(cls.node_dict.items() + globals.virtual_nodes.items())
       return cls.node_dict.values()                              
       
   def isResponding(self):
