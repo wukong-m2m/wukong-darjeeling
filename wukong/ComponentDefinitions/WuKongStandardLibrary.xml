@@ -72,7 +72,10 @@
         <property name="output" access="readonly" datatype="short"  />
         <property name="remainder" access="readonly" datatype="short"  />
     </WuClass>
-
+    <WuClass name="Server" id="44" virtual="false" type="hard">
+        <property name="input" access="readwrite" datatype="short" default="100"  />
+    </WuClass>
+    
     <!-- Sensors -->
     <WuClass name="Light_Sensor" id="1001" virtual="false" type="hard">
         <property name="current_value" access="readonly" datatype="short"  />
