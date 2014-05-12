@@ -53,12 +53,14 @@ except:
   print "easy_install pymongo"
   sys.exit(-1)
 
-try:
-    wkpf.globals.mongoDBClient = MongoClient(MONGODB_URL)
-except:
-  print "MongoDB instance " + MONGODB_URL + " can't be connected."
-  print "Please install the mongDB, pymongo module."
-  sys.exit(-1)
+if(MONITORING == 'true'):
+    try:
+        wkpf.globals.mongoDBClient = MongoClient(MONGODB_URL)
+
+    except:
+      print "MongoDB instance " + MONGODB_URL + " can't be connected."
+      print "Please install the mongDB, pymongo module."
+      sys.exit(-1)
 
 tornado.options.parse_command_line()
 #tornado.options.enable_pretty_logging()
@@ -1072,7 +1074,7 @@ wukong = tornado.web.Application([
 logging.info("Starting up...")
 setup_signal_handler_greenlet()
 WuClassLibraryParser.read(COMPONENTXML_PATH)
-#initializeVirtualNode();
+initializeVirtualNode();
 #WuNode.loadNodes()
 update_applications()
 import_wuXML()

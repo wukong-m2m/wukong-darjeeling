@@ -3,6 +3,7 @@
 
 import os, sys
 from xml.etree import ElementTree
+import xml.dom.minidom
 sys.path.append(os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../..")))
 from jinja2 import Template, Environment, FileSystemLoader
 from struct import pack
@@ -165,4 +166,10 @@ class Generator:
                     enumtype = property.wutype
                     enumvalues = [wuvalue.upper() for wuvalue in enumtype.values]
                     initvalue.attrib['value'] = str(enumvalues.index(property.value.upper())) # Translate the string representation to an integer
-        tree.write(os.path.join(JAVA_OUTPUT_DIR, "WKDeploy.xml"))
+        #tree.write(os.path.join(JAVA_OUTPUT_DIR, "WKDeploy.xml"))
+        rough_stri = ElementTree.tostring(root, 'utf-8')
+        xml_content = xml.dom.minidom.parseString(rough_stri)
+        pretty_stri = xml_content.toprettyxml()
+        fileout = open (os.path.join(JAVA_OUTPUT_DIR, "WKDeploy.xml"), "w")
+        fileout.write(pretty_stri)
+        fileout.close()

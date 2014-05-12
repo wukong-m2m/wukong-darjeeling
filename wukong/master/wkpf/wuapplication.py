@@ -261,13 +261,14 @@ class WuApplication:
           self.changesets.links.append(self.wuLinkList[hash_value])
       
       #add monitoring related links
-      for instanceId, properties in self.monitorProperties.items():
-          for name in properties:
-              hash_value = (int(instanceId)*100 + int(properties[name])*100000 + 0 + 0)
-              if hash_value not in self.wuLinkList.keys():
-                  link = WuLink(componentInstanceMap[instanceId], name, componentInstanceMap[0], 'input')
-                  self.wuLinkList[hash_value] = link
-              self.changesets.links.append(self.wuLinkList[hash_value])
+      if(MONITORING == 'true'):
+          for instanceId, properties in self.monitorProperties.items():
+              for name in properties:
+                  hash_value = (int(instanceId)*100 + int(properties[name])*100000 + 0 + 0)
+                  if hash_value not in self.wuLinkList.keys():
+                      link = WuLink(componentInstanceMap[instanceId], name, componentInstanceMap[0], 'input')
+                      self.wuLinkList[hash_value] = link
+                  self.changesets.links.append(self.wuLinkList[hash_value])
           
   def cleanAndCopyJava(self):
     # clean up the directory
