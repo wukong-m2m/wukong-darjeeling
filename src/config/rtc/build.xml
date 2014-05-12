@@ -3,7 +3,7 @@
 	<!-- include native code for libraries -->
 	<!-- note that libraries should come after libraries they depend on
 		 (wkcomm first, the wkpf), or else loading the archive will fail -->
-	<property name="libs" value="uart, wkcomm, wkreprog, wkpf"/>
+	<property name="libs" value="uart, wkcomm, wkreprog, wkpf, vm, rtc"/>
 
 	<!-- Compile these applications -->
 	<property name="apps" value="wkdeploy"/>

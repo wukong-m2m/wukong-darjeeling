@@ -18,19 +18,29 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Darjeeling.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 #include "debug.h"
+#include "vm.h"
 #include "heap.h"
+#include "infusion.h"
 #include "types.h"
+#include "vmthread.h"
 #include "djtimer.h"
+#include "execution.h"
+#include "djarchive.h"
 #include "hooks.h"
 #include "core.h"
-#include "djarchive.h"
-#include "wkpf_main.h"
+#include "rtc.h"
 
 #include "avr.h"
 
+extern const unsigned char di_lib_infusions_archive_data[];
 extern const unsigned char di_app_infusion_archive_data[];
+
+// From GENERATEDlibinit.c, which is generated during build based on the libraries in this config's libs.
+extern dj_named_native_handler java_library_native_handlers[];
+extern uint8_t java_library_native_handlers_length;
+
 
 unsigned char mem[HEAPSIZE];
 
@@ -43,8 +53,16 @@ int main()
 	avr_serialInit(115200);
 
 	core_init(mem, HEAPSIZE);
-	dj_exec_setRunlevel(RUNLEVEL_RUNNING);
-	wkpf_picokong((dj_di_pointer)di_app_infusion_archive_data);
+
+	// Test code
+	dj_infusion *rtc_infusion = dj_vm_lookupInfusion(vm, "rtc");
+	if (rtc_infusion == NULL)
+		DEBUG_LOG(true, "rtc niet gevonden.\n");
+	else
+		rtc_compile_lib(rtc_infusion);
+
+
+	dj_vm_main((dj_di_pointer)di_lib_infusions_archive_data, (dj_di_pointer)di_app_infusion_archive_data, java_library_native_handlers, java_library_native_handlers_length);
 
 	// Listen to the radio
 	while(true)

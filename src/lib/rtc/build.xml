@@ -12,11 +12,11 @@
 	<property name="name" value="rtc"/>
 	
 	<!-- list of libraries this library depends on -->
-	<property name="lib-c-depends" value=""/>
-	<property name="lib-java-depends" value=""/>
+	<property name="lib-c-depends" value="vm"/>
+	<property name="lib-java-depends" value="base"/>
 
 	<!-- include the library build template -->
 	<import file="../lib.xml"/>
 
-	<property name="public-headerfile" value="*.h"/>
+	<property name="public-headerfile" value="rtc.h"/>
 </project>
