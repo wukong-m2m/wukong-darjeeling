@@ -14,9 +14,11 @@ void wuclass_pir_sensor_setup(wuobject_t *wuobject) {
 void wuclass_pir_sensor_update(wuobject_t *wuobject) {
 	bool value;
 	int value_i;
-	FILE *fp;
-	fp = fopen("/sys/class/gpio/gpio27/value", "r");
+	FILE *fp = NULL;
+	while (fp == NULL)
+		fp = fopen("/sys/class/gpio/gpio27/value", "r");
 	fscanf(fp, "%d", &value_i);
+	fclose(fp);
 	value = (value_i != 0);
 	printf("WKPFUPDATE(PirSensor): Sensed binary value: %d\n", value);
 	//system("echo \"value\" > /dev/ttyGS0"); //Serial (IDE Serial Monitor)
