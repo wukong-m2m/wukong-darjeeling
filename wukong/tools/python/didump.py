@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import os
 import sys
 import struct
 
@@ -8,6 +9,9 @@ def little_endian(l):
 		x *= 256
 		x += l.pop()
 	return x
+
+def first_or_default(lst, p):
+    return next((x for x in lst if p(x)), None)
 
 def parse_count_forward_pointers_and_elements(rawdata, countsize, forwardpointersize, offset=0):
 	# The forward pointers don't seem to work the same way for each element.
@@ -63,6 +67,15 @@ def print_method_impl_list(rawdata):
 	print "\t\tforward pointers:", forward_pointers
 	for i in range(count):
 		print "\t\t\tmethod ", i, elements[i]
+		if methodimpls is not None:
+			methodimpl = methodimpls[i]
+			methoddef = methodimpl['methoddef']
+			if methoddef is not None:
+				print "\t\t\t%s: %s" % (methoddef['name'], methoddef['signature'])
+			else:
+				print "\t\t\tmethoddef %s in infusion %s" % (methodimpl['methoddef.entity_id'], methodimpl['methoddef.infusion'])
+		else:
+			print "\t\t\tNO INFUSION HEADER FOUND"
 		methoddata = elements[i]
 		print "\t\t\treference argument count:", methoddata.pop(0)
 		print "\t\t\tinteger argument count:", methoddata.pop(0)
@@ -147,9 +160,32 @@ def print_element(rawdata):
 		element_types[id][1](rawdata)
 	print
 
+methodimpls = None
+methoddefs = None
+# If we have a dih, parse it.
+infusionfilename = sys.argv[1]
+headerfilename = infusionfilename + 'h'
+if os.path.isfile(headerfilename):
+	from xml.etree import ElementTree
+	doc = ElementTree.parse(headerfilename)
+	dih = doc.getroot()
+	infusion = dih.find('infusion')
+	infusionname = infusion.find('header').attrib['name']
+	methoddeflist = infusion.find('methoddeflist')
+	methoddefs = [{'entity_id': int(x.attrib['entity_id']), 'name': x.attrib['name'], 'signature': x.attrib['signature']}
+				   for x in list(methoddeflist.iter())
+				   if x is not methoddeflist]
+	methodimpllist = infusion.find('methodimpllist')
+	methodimpls = [{'entity_id': int(x.attrib['entity_id']),
+					'methoddef.entity_id': x.attrib['methoddef.entity_id'],
+					'methoddef.infusion': x.attrib['methoddef.infusion'],
+					'methoddef': first_or_default(methoddefs, lambda(d): d['entity_id'] == int(x.attrib['methoddef.entity_id']))
+									if x.attrib['methoddef.infusion'] == infusionname
+									else None}
+				   for x in list(methodimpllist.iter())
+				   if x is not methodimpllist]
 
-filename = sys.argv[1]
-with open(filename, "rb") as f:
+with open(infusionfilename, "rb") as f:
 	rawdata = [ord(x) for x in f.read()]
 	count, forward_pointers, elements = \
 		parse_count_forward_pointers_and_elements(rawdata, 1, 2)
