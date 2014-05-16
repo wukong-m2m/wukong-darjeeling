@@ -86,12 +86,6 @@ static ref_t *refStack;
 static ref_t *localReferenceVariables;
 static int16_t *localIntegerVariables;
 
-static ref_t *referenceParameters;
-static int16_t *integerParameters;
-
-static uint8_t nrReferenceParameters;
-static uint8_t nrIntegerParameters;
-
 static ref_t this;
 
 static int nrOpcodesLeft;
@@ -165,18 +159,7 @@ static inline void dj_exec_loadLocalState(dj_frame *frame) {
 	localReferenceVariables = dj_frame_getLocalReferenceVariables(frame);
 	localIntegerVariables = dj_frame_getLocalIntegerVariables(frame);
 
-	nrReferenceParameters
-			= dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
-					+ ((dj_di_methodImplementation_getFlags(methodImpl)
-							& FLAGS_STATIC) ? 0 : 1);
-	nrIntegerParameters
-			= dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
-
 	if (frame->parent != NULL) {
-		referenceParameters = dj_frame_getReferenceStack(frame->parent)
-				+ nrReferenceParameters - 1;
-		integerParameters = dj_frame_getIntegerStack(frame->parent)
-				- nrIntegerParameters;
 		this = nullref;
 	} else {
 		// Special corner case for the run() method in threads. In this case the method will need to access the implicit
@@ -185,9 +168,6 @@ static inline void dj_exec_loadLocalState(dj_frame *frame) {
 		// global variable and wire the callerReferenceStack to point to it. Not very elegant, but it gets the job done.
 		// this = VOIDP_TO_REF(currentThread->runnable);
 		this = VOIDP_TO_REF(dj_exec_getCurrentThread()->runnable);
-		referenceParameters = &this;
-		integerParameters = NULL;
-
 	}
 }
 
@@ -330,8 +310,6 @@ dj_frame *dj_exec_dumpExecutionState() {
 	}
 	DARJEELING_PRINTF(" local integer   variables: %p\n", localIntegerVariables);
 	DARJEELING_PRINTF(" local reference variables: %p\n", localReferenceVariables);
-	dj_exec_debugInt16(" integer   parameters", integerParameters, nrIntegerParameters, 1);
-	dj_exec_debugRef(  " reference parameters", referenceParameters, nrReferenceParameters);
 	DARJEELING_PRINTF(" PC:%#x  code:%p  this:%p  #OP-codes left:%d\n", pc, code, this, nrOpcodesLeft);
 
 	DARJEELING_PRINTF("--- Current execution state ends ---\n");
@@ -739,10 +717,7 @@ ref_t dj_exec_stackPeekRef() {
  * @param value 16 bit short value
  */
 static inline void setLocalShort(int index, int16_t value) {
-	if (index < nrIntegerParameters)
-		integerParameters[index] = value;
-	else
-		localIntegerVariables[index - nrIntegerParameters] = value;
+	localIntegerVariables[index] = value;
 }
 
 /**
@@ -750,10 +725,7 @@ static inline void setLocalShort(int index, int16_t value) {
  * @param index local variable slot number
  */
 static inline int16_t getLocalShort(int index) {
-	if (index < nrIntegerParameters)
-		return integerParameters[index];
-	else
-		return localIntegerVariables[index - nrIntegerParameters];
+	return localIntegerVariables[index];
 }
 
 /**
@@ -762,20 +734,14 @@ static inline int16_t getLocalShort(int index) {
  * @param value 32 bit integer value
  */
 static inline void setLocalInt(int index, int32_t value) {
-	if (index < nrIntegerParameters)
-		*(int32_t*) (integerParameters + index) = value;
-	else
-		*(int32_t*) (localIntegerVariables + index - nrIntegerParameters) = value;
+	*(int32_t*) (localIntegerVariables + index) = value;
 }
 /**
  * Returns 32 bit integer local variable at index
  * @param index local variable slot number
  */
 static inline int32_t getLocalInt(int index) {
-	if (index < nrIntegerParameters)
-		return *(int32_t*) (integerParameters + index);
-	else
-		return *(int32_t*) (localIntegerVariables + index - nrIntegerParameters);
+	return *(int32_t*) (localIntegerVariables + index);
 }
 
 /**
@@ -784,20 +750,14 @@ static inline int32_t getLocalInt(int index) {
  * @param value 64-bit long value
  */
 static inline void setLocalLong(int index, int64_t value) {
-	if (index < nrIntegerParameters)
-		*(int64_t*) (integerParameters + index) = value;
-	else
-		*(int64_t*) (localIntegerVariables + index - nrIntegerParameters) = value;
+	*(int64_t*) (localIntegerVariables + index) = value;
 }
 /**
  * Returns 64-bit long local variable at index
  * @param index local variable slot number
  */
 static inline int64_t getLocalLong(int index) {
-	if (index < nrIntegerParameters)
-		return *(int64_t*) (integerParameters + index);
-	else
-		return *(int64_t*) (localIntegerVariables + index - nrIntegerParameters);
+	return *(int64_t*) (localIntegerVariables + index);
 }
 
 /**
@@ -806,10 +766,7 @@ static inline int64_t getLocalLong(int index) {
  * @param value reference value
  */
 static inline void setLocalRef(int index, ref_t value) {
-	if (index < nrReferenceParameters)
-		referenceParameters[-index] = value;
-	else
-		localReferenceVariables[index - nrReferenceParameters] = value;
+	localReferenceVariables[index] = value;
 }
 
 /**
@@ -817,10 +774,7 @@ static inline void setLocalRef(int index, ref_t value) {
  * @param index local variable slot number
  */
 static inline ref_t getLocalRef(int index) {
-	if (index < nrReferenceParameters)
-		return referenceParameters[-index];
-	else
-		return localReferenceVariables[index - nrReferenceParameters];
+	return localReferenceVariables[index];
 }
 
 /**
@@ -828,6 +782,38 @@ static inline ref_t getLocalRef(int index) {
  */
 static inline void branch(int16_t offset) {
 	pc += offset;
+}
+
+
+/**
+ * Copies the parameters from the caller's stack to
+ * the callee's local variables.
+ * @param frame the callee's frame
+ * @param methodImplId the callee's methodimpl entity_id
+ */
+static inline void dj_exec_passParameters(dj_frame *frame, dj_global_id methodImplId) {
+	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(methodImplId);
+
+	int16_t *newFrameLocalIntegerVariables = dj_frame_getLocalIntegerVariables(frame);
+	ref_t *newFrameLocalReferenceVariables = dj_frame_getLocalReferenceVariables(frame);
+
+	uint8_t numberOfIntArguments = dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
+	uint8_t numberOfRefArguments = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
+									+ ((dj_di_methodImplementation_getFlags(methodImpl) & FLAGS_STATIC) ? 0 : 1);
+
+	DEBUG_LOG(DBG_DARJEELING, " number of refs %d number of ints %d\n", numberOfRefArguments, numberOfIntArguments);
+	for (int i=0; i<numberOfIntArguments; i++) {
+		// int stack grows up
+		uint16_t intValue = intStack[-numberOfIntArguments + i];
+		DEBUG_LOG(DBG_DARJEELING, " copy int parameter %d\n", intValue);
+		newFrameLocalIntegerVariables[i] = intValue;
+	}
+	for (int i=0; i<numberOfRefArguments; i++) {
+		// ref stack grows down
+		ref_t refValue = refStack[numberOfRefArguments-1 - i]; // -1 since refStack points at the top reference, while intStack points to the free space
+		DEBUG_LOG(DBG_DARJEELING, " copy ref parameter %d\n",refValue);
+		newFrameLocalReferenceVariables[i] = refValue;
+	}
 }
 
 /**
@@ -848,6 +834,17 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 	bool isReturnReference=false;
 	int oldNumRefStack, numRefStack;
 	int diffRefArgs;
+
+
+#ifdef DARJEELING_DEBUG
+	char name[64];
+	dj_infusion_getName(methodImplId.infusion, name, 64);
+
+	DEBUG_LOG(DBG_DARJEELING, ">>>>> callMethod infusion %s, entity %d, virtualCall %d\n",
+								name,
+								methodImplId.entity_id,
+								virtualCall);
+#endif
 
 	// get a pointer in program space to the method implementation block
 	// from the method's global id
@@ -939,6 +936,8 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 
 		// create new frame for the function
 		frame = dj_frame_create(methodImplId);
+
+		dj_exec_passParameters(frame, methodImplId);
 
 		// not enough space on the heap to allocate the frame
 		if (frame == NULL) {

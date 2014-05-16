@@ -187,8 +187,18 @@ public class DIWriterVisitor extends DescendingVisitor
 			// write method details
 			out.writeUINT8(element.getReferenceArgumentCount());
 			out.writeUINT8(element.getIntegerArgumentCount());
-			out.writeUINT8(element.getReferenceLocalVariableCount() - element.getReferenceArgumentCount() - (element.isStatic()?0:1));
-			out.writeUINT8(element.getIntegerLocalVariableCount() - element.getIntegerArgumentCount());
+			// RTC: need to change the stackframe to include parameters, in order to avoid
+			// having to check on each LOAD if it is a parameter or local variable.
+			// Originally the parameters were only kept on the stack in the caller's frame,
+			// but this requires a check on the index at xLOAD and xSTORE instructions,
+			// which is ok in the interpreter, but unacceptably slow for RTC.
+			// out.writeUINT8(element.getReferenceLocalVariableCount() - element.getReferenceArgumentCount() - (element.isStatic()?0:1));
+			// out.writeUINT8(element.getIntegerLocalVariableCount() - element.getIntegerArgumentCount());
+			// Instead we now copy them to the callee's frame's local variable arrays.
+			// This wastes some space, and adds overhead to the function start, but means we
+			// can index all locals directly.
+			out.writeUINT8(element.getReferenceLocalVariableCount());
+			out.writeUINT8(element.getIntegerLocalVariableCount());
 
 			// total number of parameters (including 'this')
 			out.writeUINT8(element.getMethodDefinition().getParameterCount() + (element.isStatic()?0:1));
