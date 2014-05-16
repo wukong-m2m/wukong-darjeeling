@@ -29,15 +29,16 @@ public class AbstractHeader extends Element
 {
 	
 	private String infusionName;
-	private int majorVersion, minorVersion;
+	private int infusionVersion;
+	private int infusionFormatVersion;
 	private AbstractMethodImplementation entryPoint;
 	
-	protected AbstractHeader(String infusionName, int majorVersion, int minorVersion)
+	protected AbstractHeader(String infusionName, int infusionFormatVersion, int infusionVersion)
 	{
 		super(ElementId.HEADER);
 		this.infusionName = infusionName;
-		this.majorVersion = majorVersion;
-		this.minorVersion = minorVersion;
+		this.infusionFormatVersion = infusionFormatVersion;
+		this.infusionVersion = infusionVersion;
 	}
 	
 	/**
@@ -49,19 +50,19 @@ public class AbstractHeader extends Element
 	}
 
 	/**
-	 * @return the majorVersion
+	 * @return the infusionFormatVersion
 	 */
-	public int getMajorVersion()
+	public int getInfusionFormatVersion()
 	{
-		return majorVersion;
+		return infusionFormatVersion;
 	}
 
 	/**
-	 * @return the minorVersion
+	 * @return the infusionVersion
 	 */
-	public int getMinorVersion()
+	public int getInfusionVersion()
 	{
-		return minorVersion;
+		return infusionVersion;
 	}
 	
 	@Override

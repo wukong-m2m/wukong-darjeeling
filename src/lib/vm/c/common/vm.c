@@ -301,6 +301,11 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 	if (infusion->stringTable==DJ_DI_NOT_SET||infusion->classList==DJ_DI_NOT_SET||infusion->methodImplementationList==DJ_DI_NOT_SET||infusion->header==DJ_DI_NOT_SET)
 		dj_panic(DJ_PANIC_MALFORMED_INFUSION);
 
+	// Check if the infusion is of a compatible type (since different branches use different infusion formats,
+	// and forgetting to recompile the infuser is a potentially hard to find bug).
+	if (dj_di_header_getInfusionFormatVersion(infusion->header) != INFUSION_FORMAT_VERSION)
+		dj_panic(DJ_PANIC_INFUSION_VERSION_MISMATCH);
+
 	// iterate over the referenced infusion list and set the appropriate pointers
 	for (i=0; i<dj_di_infusionList_getSize(infusionList); i++)
 	{

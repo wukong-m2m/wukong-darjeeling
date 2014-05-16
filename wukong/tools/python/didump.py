@@ -29,8 +29,8 @@ def lid_to_string(infusion, id):
 	return "(%d, %d)" % (infusion, id)
 
 def print_header_element(rawdata):
-	print "\t\tmajor version:", rawdata[1]
-	print "\t\tminor version:", rawdata[2]
+	print "\t\tinfusion format version:", rawdata[1]
+	print "\t\tinfusion version:", rawdata[2]
 	print "\t\tentry point entity id:", rawdata[3], "(None)" if rawdata[3]==255 else ""
 	print "\t\tinfusion name: '%s'" % (''.join(map(chr, rawdata[4:])))
 

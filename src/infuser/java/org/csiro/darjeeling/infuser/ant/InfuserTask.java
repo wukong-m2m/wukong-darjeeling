@@ -142,14 +142,9 @@ public class InfuserTask extends Task
 		infuserArguments.setNativeOutputFile(name);
 	}
 	
-	public void setMinorVersion(int value)
+	public void setInfusionVersion(int value)
 	{
-		infuserArguments.setMinorVersion(value);
-	}
-    
-	public void setMajorVersion(int value)
-	{
-		infuserArguments.setMajorVersion(value);
+		infuserArguments.setInfusionVersion(value);
 	}
     
 	public void addFileset(FileSet fileset)
