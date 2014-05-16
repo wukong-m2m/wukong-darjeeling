@@ -58,7 +58,7 @@ public class InfuserArguments
 	private String infusionName;
 	
 	// Infusion verion
-	private int majorVersion, minorVersion;
+	private int infusionVersion;
 	
 	// List of output file names. If any of these are left NULL no output will be generated 
 	// for the corresponding type. 
@@ -81,8 +81,7 @@ public class InfuserArguments
 	public InfuserArguments()
 	{
 		infusionName = null;
-		majorVersion = 1;
-		minorVersion = 0;
+		infusionVersion = 0;
 		classFiles = new ArrayList<String>();
 		headerFiles = new ArrayList<String>();
 	}
@@ -155,27 +154,15 @@ public class InfuserArguments
 		if (name.equals("d")) { this.cHeaderOutputFile = value; return; }
 		if (name.equals("n")) { this.cCodeOutputFile = value; return; }
 	
-		// major version
-		if (name.equals("majorversion"))
+		// infusion version
+		if (name.equals("infusionversion"))
 		{
 			try {
-				this.majorVersion = Integer.parseInt(value);
+				this.infusionVersion = Integer.parseInt(value);
 				return;
 			} catch (NumberFormatException ex)
 			{
-				throw new ArgumentParseException("The value for option 'majorversion' should be numeric");
-			}
-		}
-
-		// minor version
-		if (name.equals("minorversion"))
-		{
-			try {
-				this.minorVersion = Integer.parseInt(value);
-				return;
-			} catch (NumberFormatException ex)
-			{
-				throw new ArgumentParseException("The value for option 'minorversion' should be numeric");
+				throw new ArgumentParseException("The value for option 'infusionversion' should be numeric");
 			}
 		}
 
@@ -201,7 +188,7 @@ public class InfuserArguments
 	public InternalInfusion createInfusion() throws InfuserException
 	{
 		// create an infusion and create the header
-		InternalHeader header = new InternalHeader(infusionName, majorVersion, minorVersion);
+		InternalHeader header = new InternalHeader(infusionName, infusionVersion);
 		InternalInfusion infusion = new InternalInfusion(header);
 		
 		// add header files
@@ -302,19 +289,11 @@ public class InfuserArguments
 	}
 
 	/**
-	 * @return the majorVersion
+	 * @return the infusionVersion
 	 */
-	public int getMajorVersion()
+	public int getInfusionVersion()
 	{
-		return majorVersion;
-	}
-
-	/**
-	 * @return the minorVersion
-	 */
-	public int getMinorVersion()
-	{
-		return minorVersion;
+		return infusionVersion;
 	}
 
 	/**
@@ -362,15 +341,10 @@ public class InfuserArguments
 	{
 		this.cHeaderOutputFile = definitionOutputFile;
 	}
-	
-	public void setMajorVersion(int majorVersion)
+		
+	public void setInfusionVersion(int infusionVersion)
 	{
-		this.majorVersion = majorVersion;
-	}
-	
-	public void setMinorVersion(int minorVersion)
-	{
-		this.minorVersion = minorVersion;
+		this.infusionVersion = infusionVersion;
 	}
 	
 	public void setInfusionName(String infusionName)

@@ -204,8 +204,8 @@ public class HeaderVisitor extends DescendingVisitor
 	public void visit(AbstractHeader element)
 	{
 		org.w3c.dom.Element elem = createElement(element);
-		elem.setAttribute("majorversion", "" + element.getMajorVersion());
-		elem.setAttribute("minorversion", "" + element.getMinorVersion());
+		elem.setAttribute("infusionformatversion", "" + element.getInfusionFormatVersion());
+		elem.setAttribute("infusionversion", "" + element.getInfusionVersion());
 		elem.setAttribute("name", element.getInfusionName());
 		
 		int entryPoint = Constants.NO_ENTRYPOINT;
