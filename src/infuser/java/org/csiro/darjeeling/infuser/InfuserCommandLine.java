@@ -35,8 +35,7 @@ public class InfuserCommandLine
 		System.out.println("\t-h=<file>\t\t\t\tOutput header file (.dih)");
 		System.out.println("\t-d=<file>\t\t\t\tOutput c definitions header file (.h)");
 		System.out.println("\t-name=<arg>\t\t\t\tInfusion name");
-		System.out.println("\t-majorversion=<arg>\t\t\tMajor version (integer)");
-		System.out.println("\t-minorversion=<arg>\t\t\tMinor version (integer)");
+		System.out.println("\t-infusionversion=<arg>\t\t\tInfusion version (integer)");
 		System.out.println("");
 		System.out.println("Examples:");
 		System.out.println("\tinfuser include/sys.dih HelloWorld.class -name=hello -o test.di");

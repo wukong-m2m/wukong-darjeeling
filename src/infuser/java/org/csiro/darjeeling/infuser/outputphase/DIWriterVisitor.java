@@ -114,8 +114,8 @@ public class DIWriterVisitor extends DescendingVisitor
 	{
 		try {
 			out.writeUINT8(element.getId().getId());
-			out.writeUINT8(element.getMajorVersion());			
-			out.writeUINT8(element.getMinorVersion());
+			out.writeUINT8(element.getInfusionFormatVersion());
+			out.writeUINT8(element.getInfusionVersion());
 			
 			AbstractMethodImplementation entryPoint = element.getEntryPoint();
 			if (entryPoint!=null)

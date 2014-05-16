@@ -21,15 +21,16 @@
  
 package org.csiro.darjeeling.infuser.structure.elements.internal;
 
+import org.csiro.darjeeling.infuser.Infuser;
 import org.csiro.darjeeling.infuser.structure.ElementVisitor;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractHeader;
 
 public class InternalHeader extends AbstractHeader
 {
 
-	public InternalHeader(String infusionName, int majorVersion, int minorVersion)
+	public InternalHeader(String infusionName, int infusionVersion)
 	{
-		super(infusionName, majorVersion, minorVersion);
+		super(infusionName, Infuser.infusionFormatVersion, infusionVersion);
 	}
 
 	@Override
