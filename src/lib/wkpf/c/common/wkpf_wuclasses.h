@@ -21,7 +21,7 @@ typedef struct wuclass_t {
     uint8_t private_c_data_size;
     uint8_t flags;
     struct wuclass_t *next;
-    uint8_t properties[];
+    uint8_t properties[8];
 } wuclass_t;
 
 extern void wkpf_register_wuclass(wuclass_t *wuclass);

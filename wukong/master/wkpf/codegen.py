@@ -486,13 +486,18 @@ class CodeGen:
         # Lines
         global_vm_header_lines = []
         global_virtual_constants_lines = []
-
+	global_arduinoIDE_header_lines = []
+        global_arduinoIDE_wuclass_native_impl_lines = []
+       
         # Boilerplate for Java global constants file
         global_virtual_constants_lines.append('''
         package javax.wukong.virtualwuclasses;
 
             public class GENERATEDWKPF {
         ''')
+        
+        # Parsing to WukongVM.h for Arduino IDE
+        global_arduinoIDE_wuclass_native_impl_lines.append("wuclass_t classes[] = {")
 
         # Parsing to WuKong Profile Framework Component Library header
         for wutype in wutypedefs.values():
@@ -509,22 +514,27 @@ class CodeGen:
           wuclass_native_header_lines = []
           wuclass_native_impl_lines = []
           wuclass_virtual_super_lines = []
-
+         
           # Generate global header definition for VM
           global_vm_header_lines.append("#define " + wuClass.getCConstName() + " %s\n" % (wuClass.getId()))
-
-          # Generate global constants definition for Java
           global_virtual_constants_lines.append("public static final short " + wuClass.getJavaConstName() + " = %s;\n" % (wuClass.getId()))
 
           for indprop, property in enumerate(wuClass.getProperties()):
             global_vm_header_lines.append("#define " + property.getCConstName() + " " + str(indprop) + "\n")
-
             global_virtual_constants_lines.append("public static final byte " + property.getJavaConstName() + " = " + str(indprop) + ";\n")
 
-          global_vm_header_lines.append("\n")
+          # Parsing to  WukongVM.h for Arduino IDE
+          clip_wuclass_getCConstName = wuClass.getCConstName()[13:]
+          global_arduinoIDE_header_lines.append( "static const int " +  clip_wuclass_getCConstName + "=" + wuClass.getCConstName() + ";\n")
 
+          for indprop, property in enumerate(wuClass.getProperties()):
+            clip_property_getCConstName = property.getCConstName()[14:]
+            global_arduinoIDE_header_lines.append( "static const int " + clip_property_getCConstName + "=" + property.getCConstName() + ";\n")
+
+          global_vm_header_lines.append("\n")
           global_virtual_constants_lines.append("\n")
 
+          global_arduinoIDE_header_lines.append("\n")
 
           # Parsing to WuKong Profile Framework Component Library header in Java
           if wuClass.isVirtual():
@@ -601,7 +611,7 @@ class CodeGen:
                   wuClass.getCUpdateName()
                 ))
 
-          wuclass_native_impl_properties_lines = ''
+          wuclass_native_impl_properties_lines = '\t'
           for ind, property in enumerate(wuClass.getProperties()):
             datatype = property.getDataType()
             access = property.getAccess()
@@ -613,7 +623,9 @@ class CodeGen:
             if ind < len(wuClass.getProperties())-1:
               line += ","
 
-            line += "\n"
+            if ind < len(wuClass.getProperties())-1:                  
+              line += "\n\t\t"
+
             wuclass_native_impl_properties_lines += line
 
           wuclass_native_impl_lines.append('''
@@ -636,6 +648,26 @@ class CodeGen:
                 len(wuClass.getProperties()),
                 "sizeof(%s)" % (wuClass.getPrivateCData()) if wuClass.hasPrivateCData() else "0", 
                 wuclass_native_impl_properties_lines))
+         
+          global_arduinoIDE_wuclass_native_impl_lines.append(
+          '''
+          {
+            %s,
+            wkpf_dump,
+            NULL,
+            %d,
+            %s,
+            0, // Initialise flags to 0, possibly set WKPF_WUCLASS_FLAG_APP_CAN_CREATE_INSTANCE from native_wuclasses_init
+            NULL,
+            {
+            %s
+            }
+          },
+          ''' % (wuClass.getCConstName(),
+                len(wuClass.getProperties()),
+                "sizeof(%s)" % (wuClass.getPrivateCData()) if wuClass.hasPrivateCData() else "0", 
+                wuclass_native_impl_properties_lines))
+                
 
           if wuClass.hasPrivateCData():
             wuclass_native_impl_lines.append('''
@@ -671,12 +703,26 @@ class CodeGen:
         }
         ''')
 
+        global_arduinoIDE_wuclass_native_impl_lines.append("{0,0,0,0,0,0,NULL,{0}}" + "\n" + "};")
+
         if c_dir:
             global_vm_header_filename = 'GENERATEDwkpf_wuclass_library.h'
             global_vm_header_path = os.path.join(c_dir, global_vm_header_filename)
             global_vm_header = open(global_vm_header_path, 'w')
             global_vm_header.writelines(global_vm_header_lines)
             global_vm_header.close()
+
+            global_arduinoIDE_header_filename = 'GENERATEDwkpf_wuclass_library_arduinoIDE.h'
+            global_arduinoIDE_header_path = os.path.join(c_dir, global_arduinoIDE_header_filename)
+            global_arduinoIDE_header = open(global_arduinoIDE_header_path, 'w')
+            global_arduinoIDE_header.writelines(global_arduinoIDE_header_lines)
+            global_arduinoIDE_header.close()
+          
+            global_arduinoIDE_wuclass_native_impl_filename = 'GENERATEDwuclass_arduinoIDE.h'
+            global_arduinoIDE_wuclass_native_impl_path = os.path.join(c_dir, global_arduinoIDE_wuclass_native_impl_filename)
+            global_arduinoIDE_wuclass_native_impl = open(global_arduinoIDE_wuclass_native_impl_path, 'w')
+            global_arduinoIDE_wuclass_native_impl.writelines(global_arduinoIDE_wuclass_native_impl_lines)
+            global_arduinoIDE_wuclass_native_impl.close()
 
         if java_constants_dir:
             global_virtual_constants_filename = 'GENERATEDWKPF.java'

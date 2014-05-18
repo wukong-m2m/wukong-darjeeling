@@ -16,6 +16,7 @@ void wkpf_dump(wuobject_t *obj)
 {
 
 }
+/*
 wuclass_t classes[2] = {
 	{
               WKPF_WUCLASS_BINARY_SENSOR,
@@ -34,12 +35,18 @@ wuclass_t classes[2] = {
 	},
 	{0,0,0,0,0,0,NULL,{0}}
 };
+*/
+#include "wkpf/GENERATEDwuclass_arduinoIDE.h"
+
 typedef void (*WKPFCallback)(wuobject_t *);
 class Wukong {
 	public:
+		/*
 		static const int BINARY_SENSOR=WKPF_WUCLASS_BINARY_SENSOR;
 		static const int BINARY_SENSOR_REFRESH_RATE=WKPF_PROPERTY_BINARY_SENSOR_REFRESH_RATE;
-	      	void begin() {
+	 	*/
+		#include "wkpf/GENERATEDwkpf_wuclass_library_arduinoIDE.h"     
+		void begin() {
 			wukong_setup();
 		}
 
@@ -71,7 +78,37 @@ class Wukong {
 				port++;
 			}
 		}
+		void setPropertyBool(int port, unsigned char property,bool value) {
+			wuobject_t *obj;
+		       	if (wkpf_get_wuobject_by_port(port,&obj)==WKPF_OK) {
+				wkpf_internal_write_property_refresh_rate(obj, property, value);
+			}
+		}
+		void setPropertyShort(int port, unsigned char property,short value) {
+			wuobject_t *obj;
+		       	if (wkpf_get_wuobject_by_port(port,&obj)==WKPF_OK) {
+				wkpf_internal_write_property_refresh_rate(obj, property, value);
+			}
+		}
 		void setPropertyRefreshRate(int port, unsigned char property,short value) {
+			wuobject_t *obj;
+		       	if (wkpf_get_wuobject_by_port(port,&obj)==WKPF_OK) {
+				wkpf_internal_write_property_refresh_rate(obj, property, value);
+			}
+		}
+		void getPropertyBool(int port, unsigned char property,bool &value) {
+			wuobject_t *obj;
+		       	if (wkpf_get_wuobject_by_port(port,&obj)==WKPF_OK) {
+				wkpf_internal_write_property_refresh_rate(obj, property, value);
+			}
+		}
+		void getPropertyShort(int port, unsigned char property,short &value) {
+			wuobject_t *obj;
+		       	if (wkpf_get_wuobject_by_port(port,&obj)==WKPF_OK) {
+				wkpf_internal_write_property_refresh_rate(obj, property, value);
+			}
+		}
+		void getPropertyRefreshRate(int port, unsigned char property,short &value) {
 			wuobject_t *obj;
 		       	if (wkpf_get_wuobject_by_port(port,&obj)==WKPF_OK) {
 				wkpf_internal_write_property_refresh_rate(obj, property, value);
