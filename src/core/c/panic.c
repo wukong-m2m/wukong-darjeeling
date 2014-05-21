@@ -57,6 +57,9 @@ void dj_panic(int32_t panictype)
         case DJ_PANIC_INFUSION_VERSION_MISMATCH:
             DEBUG_LOG(true, "PANIC: incompatible infusion version!\n");
             break;
+        case DJ_PANIC_UNSUPPORTED_OPCODE:
+            DEBUG_LOG(true, "PANIC: unsupported opcode!\n");
+            break;
         default:
             DEBUG_LOG(true, "PANIC: unknown panic type %d!\n", panictype);
             break;

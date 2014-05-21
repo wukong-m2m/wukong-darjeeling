@@ -4,7 +4,7 @@
 #include "hooks.h"
 #include "wkcomm.h"
 #include "wkreprog_comm.h"
-#include "wkreprog_impl.h"
+#include "wkreprog.h"
 
 static uint16_t wkreprog_pos;
 
@@ -19,7 +19,7 @@ void wkreprog_comm_handle_message(void *data) {
 		case WKREPROG_COMM_CMD_REPROG_OPEN: {
 			DEBUG_LOG(DBG_WKREPROG, "Initialise reprogramming.\n");
 			// uint16_t size_to_upload = (uint16_t)payload[0] + (((uint16_t)payload[1]) << 8);
-			if (wkreprog_impl_open(0)) {
+			if (wkreprog_impl_open_app_archive(0)) {
 				// TODONR: DEBUG_LOG(DBG_WKREPROG, "Setting master address to %x", src);
 			    // wkpf_config_set_master_node_id(src);
 				DEBUG_LOG(DBG_WKREPROG, "Going to runlevel RUNLEVEL_REPROGRAMMING.\n");
@@ -27,7 +27,7 @@ void wkreprog_comm_handle_message(void *data) {
 				DEBUG_LOG(DBG_WKREPROG, "Initialise reprogramming code.\n");
 				wkreprog_pos = 0;
 				DEBUG_LOG(DBG_WKREPROG, "Send WKREPROG_COMM_CMD_REPROG_OPEN_R containing page size.\n");
-				uint16_t pagesize = wkreprog_impl_get_page_size();
+				uint16_t pagesize = wkreprog_get_page_size();
 				payload[0] = WKREPROG_OK;
 				payload[1] = (uint8_t)(pagesize);
 				payload[2] = (uint8_t)(pagesize>>8);
@@ -44,7 +44,7 @@ void wkreprog_comm_handle_message(void *data) {
 			DEBUG_LOG(DBG_WKREPROG, "Received program packet for address 0x%x, current position: 0x%x.\n", pos_in_message, wkreprog_pos);
 			uint8_t codelength = msg->length - 2;
 			uint8_t *codepayload = payload + 2;
-			uint16_t pagesize = wkreprog_impl_get_page_size();
+			uint16_t pagesize = wkreprog_get_page_size();
 			if (pos_in_message/(uint16_t)pagesize != (pos_in_message+(uint16_t)codelength)/(uint16_t)pagesize) {
 				// Crossing page boundary, send a reply with OK or REQUEST_RETRANSMIT
 				if (pos_in_message == wkreprog_pos) {

@@ -54,7 +54,7 @@ void ecocast_comm_handle_message(void *data) {
 					capsule_found_in_buffer = true;
 				} else if (retval == ECOCAST_CAPSULE_NOT_FOUND) {
 					// Not found, but enough free space. Open the file for writing at the first free position.
-					wkreprog_open(ecocast_find_capsule_filenr(), offset_in_capsule_file);
+					wkreprog_open_file(ecocast_find_capsule_filenr(), offset_in_capsule_file);
 					wkreprog_write(msg->length-3, payload+3);
 				} else {
 					// retval == ECOCAST_BUFFER_TOO_SMALL

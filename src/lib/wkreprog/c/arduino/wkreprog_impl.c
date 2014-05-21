@@ -26,20 +26,20 @@ uint16_t wkreprog_impl_get_page_size() {
 	return SPM_PAGESIZE;
 }
 
-bool wkreprog_impl_open(uint16_t start_write_position) {
-	// Address of the whole program file
-	void *x = (void *)di_app_infusion_archive_data;
-	avr_flash_pageaddress = (unsigned int)x;
+// Open reprogramming at a position within the app archive
+bool wkreprog_impl_open_app_archive(uint16_t start_write_position) {
+	return wkreprog_impl_open_raw(avr_flash_pageaddress+start_write_position);
+}
 
+// Open reprogramming at any position in flash
+bool wkreprog_impl_open_raw(uint16_t start_write_position) {
 	DEBUG_LOG(DBG_WKREPROG, "AVR: Start writing to flash at address 0x%x.\n", di_app_infusion_archive_data+start_write_position);
 
 	// Set the position to start writing at start_write_position
-	// Skip this many complete pages in the file
-	uint16_t skip_pages = start_write_position / SPM_PAGESIZE;
-	avr_flash_pageaddress += skip_pages*SPM_PAGESIZE;
-	// Set the position within the buffer
+	// avr_flash_pageaddress should point at a page start
+	avr_flash_pageaddress = start_write_position - (start_write_position % SPM_PAGESIZE);
+	// Set the position within the current page
 	avr_flash_buf_len = start_write_position % SPM_PAGESIZE;
-
 	// Fill the beginning of the buffer with the old data currently in the file
 	for (int i=0; i<avr_flash_buf_len; i++)
 		avr_flash_pagebuffer[i] = dj_di_getU8(avr_flash_pageaddress+i);

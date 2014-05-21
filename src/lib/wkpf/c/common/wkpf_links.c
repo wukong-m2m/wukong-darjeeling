@@ -384,7 +384,7 @@ void wkpf_update_initvalue_in_flash(wuobject_t *wuobject, uint8_t object_propert
 		if (object_component_id == value_component_id
 				&& object_property_number == value_property_number) {
 			wuobject_property_t *property = wkpf_get_property(wuobject, value_property_number);
-			wkreprog_open(filenumber, offset);
+			wkreprog_open_file(filenumber, offset);
 			wkreprog_write(value_size, property->value);
 			wkreprog_close();
 			return;

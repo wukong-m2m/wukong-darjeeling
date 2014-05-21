@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "types.h"
+#include "panic.h"
 #include "djarchive.h"
 #include "wkreprog_impl.h"
 
@@ -25,7 +26,7 @@ uint16_t wkreprog_impl_get_page_size() {
 	return 256;
 }
 
-bool wkreprog_impl_open(uint16_t start_write_position) {
+bool wkreprog_impl_open_app_archive(uint16_t start_write_position) {
 	fp = fopen(posix_app_infusion_filename, "rb+");
 	if (fp== NULL) {
 		printf("Error in opening file to write infusion to...\n");
@@ -33,6 +34,11 @@ bool wkreprog_impl_open(uint16_t start_write_position) {
 	fseek(fp, start_write_position, SEEK_SET);
 	in_memory_pointer = (void *)di_app_archive + start_write_position;
 	return true;
+}
+
+bool wkreprog_impl_open_raw(uint16_t start_write_position) {
+	dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
+	return false;
 }
 
 void wkreprog_impl_write(uint8_t size, uint8_t* data) {

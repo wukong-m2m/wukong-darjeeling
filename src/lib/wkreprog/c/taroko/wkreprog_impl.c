@@ -11,7 +11,12 @@ uint16_t wkreprog_impl_get_page_size() {
 	return 0;
 }
 
-bool wkreprog_impl_open(uint16_t start_write_position) {
+bool wkreprog_impl_open_app_archive(uint16_t start_write_position) {
+	dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
+	return false;
+}
+
+bool wkreprog_impl_open_raw(uint16_t start_write_position) {
 	dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
 	return false;
 }
