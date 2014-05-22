@@ -68,7 +68,7 @@ dj_infusion *dj_infusion_create(dj_di_pointer staticFieldInfo, int nrImportedInf
 	ret->classList = 0;
 	ret->methodImplementationList = 0;
 	ret->next = 0;
-	ret->native_handler = 0;
+	ret->native_handlers = 0;
 
 	// initialise to DJ_DI_NOT_SET
 	ret->header = DJ_DI_NOT_SET;

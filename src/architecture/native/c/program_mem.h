@@ -24,6 +24,9 @@
 
 #include <stdint.h>
 
+// Macro to put things in program memory
+#define DJ_PROGMEM 
+
 typedef unsigned long dj_di_pointer;
 
 #define DJ_DI_NOT_SET -1

@@ -60,8 +60,7 @@ public class CFileVisitor extends DescendingVisitor
 
 		// write the array of method pointers
 		String arrayname = String.format("%s_native_method_function_pointers", element.getHeader().getInfusionName());
-		writer.println("typedef void (*native_method_function_t)(void);");
-		writer.println(String.format("native_method_function_t %s[%d] = {",
+		writer.println(String.format("const DJ_PROGMEM native_method_function_t %s[%d] = {",
 									 arrayname,
 									 methodImplementations.size()));
 		int checkId = 0;		
@@ -83,14 +82,6 @@ public class CFileVisitor extends DescendingVisitor
 			}
 		}
 		writer.println("};");
-
-
-		// generate handler code
-		writer.println(String.format("void %s_native_handler(dj_global_id id)", element.getHeader().getInfusionName()));
-		writer.println("{");
-		writer.println(String.format("\t%s[id.entity_id]();", arrayname));
-		writer.println("}");
-		writer.println("");
 	}
 	
 	@Override

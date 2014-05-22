@@ -81,7 +81,7 @@ public class LibInitTask extends Task
 
 			fout.println("dj_named_native_handler java_library_native_handlers[] = {");
 			for (String library : javaLibrariesArray) {
-				fout.println("\t{ \"" + library + "\", &" + library + "_native_handler },");
+				fout.println("\t{ \"" + library + "\", " + library + "_native_method_function_pointers },");
 			}
 			fout.println("};");
 			fout.println("uint8_t java_library_native_handlers_length = " + javaLibrariesArray.size() + ";");

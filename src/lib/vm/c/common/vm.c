@@ -342,7 +342,7 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 
 		if (dj_di_strEqualsDirectStr(dj_di_header_getInfusionName(infusion->header), native_handlers[i].name))
 		{
-			infusion->native_handler = native_handlers[i].handler;
+			infusion->native_handlers = native_handlers[i].handlers;
 
 #ifdef DARJEELING_DEBUG
 			DEBUG_LOG(DBG_DARJEELING, "Attached native handler to infusion %s.", name);

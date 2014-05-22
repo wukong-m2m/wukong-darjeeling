@@ -74,7 +74,7 @@ public class CHeaderVisitor extends DescendingVisitor
 		writer.println("");
 		writer.println("#include \"types.h\"");
 		writer.println("");
-		writer.println(String.format("void %s_native_handler(dj_global_id id);", header.getInfusionName()));
+		writer.println(String.format("extern const native_method_function_t %s_native_method_function_pointers[];", header.getInfusionName()));
 		writer.println("");
 		
 		visit((ParentElement<Element>)element);

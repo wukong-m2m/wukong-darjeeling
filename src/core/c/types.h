@@ -88,12 +88,12 @@ __attribute__ ((__packed__))
 #endif
 ;
 
-typedef void (*dj_native_handler)(dj_global_id);
+typedef void (*native_method_function_t)(void);
 
 struct _dj_named_native_handler
 {
 	char * name;
-	dj_native_handler handler;
+	const native_method_function_t * handlers;
 };
 
 struct _dj_object
@@ -181,7 +181,7 @@ struct _dj_infusion
 	dj_di_pointer stringTable;
 
 	// pointer to native method handler
-	dj_native_handler native_handler;
+	const native_method_function_t * native_handlers;
 
 	// for dynamic adress translation
 	runtime_id_t class_base;

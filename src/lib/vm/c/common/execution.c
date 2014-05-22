@@ -830,10 +830,10 @@ static inline void dj_exec_passParameters(dj_frame *frame, dj_global_id methodIm
 static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 {
 	dj_frame *frame;
-	dj_native_handler handler;
 	bool isReturnReference=false;
 	int oldNumRefStack, numRefStack;
 	int diffRefArgs;
+	const native_method_function_t *handlers = methodImplId.infusion->native_handlers;
 
 
 #ifdef DARJEELING_DEBUG
@@ -859,9 +859,10 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 		DEBUG_LOG(DBG_DARJEELING, "Invoking native method ... \n");
 #endif
 
+		native_method_function_t handler = (handlers != NULL ? methodImplId.infusion->native_handlers[methodImplId.entity_id] : NULL);
+
 		// the method is native, check if we have a native handler
 		// for the infusion the method is in
-		handler = methodImplId.infusion->native_handler;
 		if (handler != NULL)
 		{
 			// Observe the number of reference elements on the ref. stack:
@@ -869,7 +870,7 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 			oldNumRefStack = (ref_t *)dj_frame_getStackEnd(frame) - refStack;
 
 			// execute the method by calling the infusion's native handler
-			handler(methodImplId);
+			handler();
 
 			// The reference stack needs right treatment now, so remember the
 			// contract for parameters and return values of native methods:

@@ -24,6 +24,9 @@
 
 #include <avr/pgmspace.h>
 
+// Macro to put things in program memory
+#define DJ_PROGMEM __flash
+
 typedef unsigned int dj_di_pointer;
 
 extern char DJ_SYSTEM_INFUSION_NAME[];
