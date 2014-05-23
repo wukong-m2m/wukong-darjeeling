@@ -93,7 +93,7 @@ typedef void (*native_method_function_t)(void);
 struct _dj_named_native_handler
 {
 	char * name;
-	const native_method_function_t * handlers;
+	const DJ_PROGMEM native_method_function_t * handlers;
 };
 
 struct _dj_object
@@ -181,7 +181,7 @@ struct _dj_infusion
 	dj_di_pointer stringTable;
 
 	// pointer to native method handler
-	const native_method_function_t * native_handlers;
+	const DJ_PROGMEM native_method_function_t * native_handlers;
 
 	// for dynamic adress translation
 	runtime_id_t class_base;
