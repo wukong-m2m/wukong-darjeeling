@@ -1,16 +1,25 @@
-// LDD     10q0 qq0d dddd yqqq, with d=dest register, q=offset from Y or Z, y=1 for Y 0 for Z
-#define OP_LDD 		0x8008
-// PUSH    1001 001d dddd 1111, with d=source register
+// LDD              10q0 qq0d dddd yqqq, with d=dest register, q=offset from Y or Z, y=1 for Y 0 for Z
+#define OP_LDD 		0x8000
+
+// LD Rd,X+         1001 000d dddd 1101
+#define OP_LDXINC	0x900D
+
+// PUSH             1001 001d dddd 1111, with d=source register
 #define OP_PUSH		0x920F
-// POP     1001 000d dddd 1111
+
+// POP              1001 000d dddd 1111
 #define OP_POP		0x900F
-// LDI     1110 KKKK dddd KKKK, with K=constant to load, d=dest register-16 (can only load to r16-r31)
+
+// LDI              1110 KKKK dddd KKKK, with K=constant to load, d=dest register-16 (can only load to r16-r31)
 #define OP_LDI		0xE000
-// ADD     0000 11rd dddd rrrr, with d=dest register, r=source register
+
+// ADD              0000 11rd dddd rrrr, with d=dest register, r=source register
 #define OP_ADD		0x0C00
-// ADC     0001 11rd dddd rrrr
+
+// ADC              0001 11rd dddd rrrr, with d=dest register, r=source register
 #define OP_ADC		0x1C00
-// RET     1001 0101 0000 1000
+
+// RET              1001 0101 0000 1000
 #define OP_RET		0x9508
 
 #define R0			0
@@ -49,6 +58,6 @@
 #define Y			1
 #define Z			0
 
-uint16_t avr_asm (uint16_t opop, ... );
+uint16_t avr_asm (uint16_t opcode, uint16_t op1, uint16_t op2, uint16_t op3);
 
 

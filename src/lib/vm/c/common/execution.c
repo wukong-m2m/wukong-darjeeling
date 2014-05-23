@@ -862,6 +862,9 @@ static inline void returnFromMethod() {
 
 typedef uint16_t (*native_16bit_method_function_t)(void);
 typedef uint32_t (*native_32bit_method_function_t)(void);
+// TMPRTC
+extern uint16_t rtc_frame_locals_start;
+
 
 /**
  * Enters a method. The method may be either Java or native. If the method is
@@ -1004,6 +1007,9 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 		if (handler != NULL) {
 			// RTC compiled method
 			// execute it directly
+
+			// TODO: setup Z register
+			rtc_frame_locals_start = (uint16_t)dj_frame_getLocalReferenceVariables(frame); // Will be stored in Y by the function prologue
 
 			int16_t ret16;
 			int32_t ret32;

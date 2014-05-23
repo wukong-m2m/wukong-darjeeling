@@ -1,7 +1,7 @@
 package javax.rtc;
 
 public class RTCTest {
-	public static short AddTwo(short x) {
-		return (short)(x+2);
+	public static short AddFortyTwo(short x) {
+		return (short)(x+42);
 	}
 }

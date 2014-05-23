@@ -25,44 +25,42 @@ uint16_t makeSourceRegister(uint16_t src_register) {
 			+ ((src_register & 0x10) << 5);
 }
 
-uint16_t avr_asm (uint16_t opop, ... ) {
-    va_list operands_list;
-    va_start(operands_list, opop);
-
-    uint16_t opcode = va_arg(operands_list, uint16_t);
-    uint16_t instruction;
+uint16_t avr_asm (uint16_t opcode, uint16_t op1, uint16_t op2, uint16_t op3) {
+    uint16_t instruction = 0;
+    DEBUG_LOG(DBG_RTC, "[rtc] asm %x %x %x %x\n", opcode, op1, op2, op3);
 
     switch (opcode) {
     	case OP_PUSH:
     	case OP_POP:
+        case OP_LDXINC:
     		instruction = opcode
-    					 + (va_arg(operands_list, uint16_t) << 4);
+    					 + (op1 << 4);
 			break;
     	case OP_LDD:
     		instruction = opcode
-    					 + (va_arg(operands_list, uint16_t) << 4) // dest reg
-    					 + (va_arg(operands_list, uint16_t) << 3) // Y or Z
-    					 + makeLDDoffset(va_arg(operands_list, uint16_t)); // offset from Y or Z
+    					 + (op1 << 4) // dest reg
+    					 + (op2 << 3) // Y or Z
+    					 + makeLDDoffset(op3); // offset from Y or Z
 			break;
     	case OP_LDI:
     		instruction = opcode
-    					 + ((va_arg(operands_list, uint16_t) - 16)<< 4) // dest reg
-    					 + makeLDIconstant(va_arg(operands_list, uint16_t)); // constant
+    					 + ((op1 - 16) << 4) // dest reg
+    					 + makeLDIconstant(op2); // constant
 			break;
     	case OP_ADD:
     	case OP_ADC:
     		instruction = opcode
-    					 + ((va_arg(operands_list, uint16_t) - 16)<< 4) // dest reg
-    					 + makeSourceRegister(va_arg(operands_list, uint16_t)); // source reg
+    					 + (op1 << 4) // dest reg
+    					 + makeSourceRegister(op2); // source reg
 			break;
 		case OP_RET:
 			instruction = opcode;
+            break;
     	default:
 			DEBUG_LOG(DBG_DARJEELING, "Unimplemented native opcode %d\n", opcode);
 			dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
 			break;
     }
 
-    va_end ( operands_list );
     return instruction;
 }

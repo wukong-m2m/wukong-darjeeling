@@ -71,10 +71,6 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 	dj_vm_loadInfusion(vm, di_app_infusion_data, NULL, 0);
 
 	// TMPRTC
-	DEBUG_LOG(true, "sinterklaas.\n");
-	DEBUG_LOG(true, "sinterklaas.\n");
-	DEBUG_LOG(true, "sinterklaas.\n");
-	DEBUG_LOG(true, "sinterklaas.\n");
 	{
 		dj_infusion *finger = vm->infusions;
 
@@ -362,7 +358,7 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 
 	dj_infusion_getName(infusion, name, 64);
 
-	DEBUG_LOG(DBG_DARJEELING, "Loaded infusion %s.", name);
+	DEBUG_LOG(DBG_DARJEELING, "Loaded infusion %s.\n", name);
 #endif
 
 	for (i=0; i<numHandlers; i++)
@@ -373,7 +369,7 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 			infusion->native_handlers = native_handlers[i].handlers;
 
 #ifdef DARJEELING_DEBUG
-			DEBUG_LOG(DBG_DARJEELING, "Attached native handler to infusion %s.", name);
+			DEBUG_LOG(DBG_DARJEELING, "Attached native handler to infusion %s.\n", name);
 #endif
 		}
 	}

@@ -24,7 +24,7 @@
 #define __config_h
 
 // Allocate 4k heap for the VM
-#define HEAPSIZE 4096
+#define HEAPSIZE 2048
 
 // 'Time slices' are 128 instructions
 #define RUNSIZE 128
