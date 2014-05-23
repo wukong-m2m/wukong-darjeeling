@@ -68,6 +68,7 @@
 // platform specific
 #include "pointerwidth.h"
 
+#include "opcodes.h"
 #include "opcodes.c"
 
 // currently selected Virtual Machine context
@@ -816,6 +817,52 @@ static inline void dj_exec_passParameters(dj_frame *frame, dj_global_id methodIm
 	}
 }
 
+
+/**
+ * Returns from a method. The current execution frame is popped off the thread's frame stack. If there are no other
+ * frames to execute, the thread ends. Otherwise control is switched to the underlying caller frame.
+ */
+static inline void returnFromMethod() {
+	dj_di_pointer methodImpl;
+
+	// get the method from the stack frame so we can calculate how many parameters to pop off the operand stack
+	methodImpl = dj_global_id_getMethodImplementation(
+			dj_exec_getCurrentThread()->frameStack->method);
+
+	// pop frame from frame stack and dealloc it
+	dj_frame_destroy(dj_thread_popFrame(dj_exec_getCurrentThread()));
+
+	// check if there are elements on the call stack
+	if (dj_exec_getCurrentThread()->frameStack == NULL) {
+		// done executing (exited last element on the call stack)
+		dj_exec_getCurrentThread()->status = THREADSTATUS_FINISHED;
+		dj_exec_breakExecution();
+	} else {
+		// perform context switch.
+		dj_exec_activate_thread(dj_exec_getCurrentThread());
+
+		// pop arguments off the stack
+		refStack
+				+= dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
+						+ ((dj_di_methodImplementation_getFlags(methodImpl)
+								& FLAGS_STATIC) ? 0 : 1);
+		intStack
+				-= dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
+	}
+
+#ifdef DARJEELING_DEBUG_TRACE
+	callDepth--;
+#endif
+
+#ifdef DARJEELING_DEBUG_MEM_TRACE
+	vm_mem_dumpMemUsage();
+#endif
+
+}
+
+typedef uint16_t (*native_16bit_method_function_t)(void);
+typedef uint32_t (*native_32bit_method_function_t)(void);
+
 /**
  * Enters a method. The method may be either Java or native. If the method is
  * native, the native handler of the method's containing infusion will be
@@ -834,7 +881,7 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 	int oldNumRefStack, numRefStack;
 	int diffRefArgs;
 	const native_method_function_t *handlers = methodImplId.infusion->native_handlers;
-
+	native_method_function_t handler = (handlers != NULL ? methodImplId.infusion->native_handlers[methodImplId.entity_id] : NULL);
 
 #ifdef DARJEELING_DEBUG
 	char name[64];
@@ -858,8 +905,6 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 #ifndef DARJEELING_DEBUG_FRAME
 		DEBUG_LOG(DBG_DARJEELING, "Invoking native method ... \n");
 #endif
-
-		native_method_function_t handler = (handlers != NULL ? methodImplId.infusion->native_handlers[methodImplId.entity_id] : NULL);
 
 		// the method is native, check if we have a native handler
 		// for the infusion the method is in
@@ -934,6 +979,7 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 		}
 
 	} else {
+		// Java method. May or may not be RTC compiled
 
 		// create new frame for the function
 		frame = dj_frame_create(methodImplId);
@@ -955,61 +1001,44 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 		// switch in newly created frame
 		dj_exec_loadLocalState(frame);
 
-#ifdef DARJEELING_DEBUG_MEM_TRACE
-		vm_mem_dumpMemUsage();
-#endif
+		if (handler != NULL) {
+			// RTC compiled method
+			// execute it directly
 
-#ifdef DARJEELING_DEBUG_TRACE
-		callDepth++;
-#endif
+			int16_t ret16;
+			int32_t ret32;
+			switch (dj_di_methodImplementation_getReturnType(methodImpl)) {
+				case JTID_VOID:
+					handler();
+					returnFromMethod();
+					break;
+				case JTID_SHORT:
+					ret16 = ((native_16bit_method_function_t)handler)();
+					returnFromMethod();
+					pushShort(ret16);
+					break;
+				case JTID_INT:
+					ret32 = ((native_32bit_method_function_t)handler)();
+					returnFromMethod();
+					pushInt(ret32);
+					break;
+				default:
+					dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
+			}
+		}
 
-#ifndef DARJEELING_DEBUG_FRAME
-		DEBUG_LOG(DBG_DARJEELING, "Invoke done\n");
-#endif
+	#ifdef DARJEELING_DEBUG_MEM_TRACE
+			vm_mem_dumpMemUsage();
+	#endif
+
+	#ifdef DARJEELING_DEBUG_TRACE
+			callDepth++;
+	#endif
+
+	#ifndef DARJEELING_DEBUG_FRAME
+			DEBUG_LOG(DBG_DARJEELING, "Invoke done\n");
+	#endif
 	}
-
-}
-
-/**
- * Returns from a method. The current execution frame is popped off the thread's frame stack. If there are no other
- * frames to execute, the thread ends. Otherwise control is switched to the underlying caller frame.
- */
-static inline void returnFromMethod() {
-	dj_di_pointer methodImpl;
-
-	// get the method from the stack frame so we can calculate how many parameters to pop off the operand stack
-	methodImpl = dj_global_id_getMethodImplementation(
-			dj_exec_getCurrentThread()->frameStack->method);
-
-	// pop frame from frame stack and dealloc it
-	dj_frame_destroy(dj_thread_popFrame(dj_exec_getCurrentThread()));
-
-	// check if there are elements on the call stack
-	if (dj_exec_getCurrentThread()->frameStack == NULL) {
-		// done executing (exited last element on the call stack)
-		dj_exec_getCurrentThread()->status = THREADSTATUS_FINISHED;
-		dj_exec_breakExecution();
-	} else {
-		// perform context switch.
-		dj_exec_activate_thread(dj_exec_getCurrentThread());
-
-		// pop arguments off the stack
-		refStack
-				+= dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
-						+ ((dj_di_methodImplementation_getFlags(methodImpl)
-								& FLAGS_STATIC) ? 0 : 1);
-		intStack
-				-= dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
-	}
-
-#ifdef DARJEELING_DEBUG_TRACE
-	callDepth--;
-#endif
-
-#ifdef DARJEELING_DEBUG_MEM_TRACE
-	vm_mem_dumpMemUsage();
-#endif
-
 }
 
 /**

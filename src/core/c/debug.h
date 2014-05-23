@@ -97,6 +97,9 @@
 #ifndef DBG_ECO
 #define DBG_ECO 0
 #endif
+#ifndef DBG_RTC
+#define DBG_RTC 0
+#endif
 
 #ifndef DARJEELING_DEBUG
 

@@ -54,14 +54,6 @@ int main()
 
 	core_init(mem, HEAPSIZE);
 
-	// Test code
-	dj_infusion *rtc_infusion = dj_vm_lookupInfusion(vm, "rtc");
-	if (rtc_infusion == NULL)
-		DEBUG_LOG(true, "rtc niet gevonden.\n");
-	else
-		rtc_compile_lib(rtc_infusion);
-
-
 	dj_vm_main((dj_di_pointer)di_lib_infusions_archive_data, (dj_di_pointer)di_app_infusion_archive_data, java_library_native_handlers, java_library_native_handlers_length);
 
 	// Listen to the radio

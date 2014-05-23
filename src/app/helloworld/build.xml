@@ -6,7 +6,7 @@
 	
 	<!-- list of libraries this library depends on -->
 	<!-- Only list Java libraries here -->
-	<property name="lib-depends" value="base"/>
+	<property name="lib-depends" value="base, rtc"/>
 	
 	<!-- include the library build template -->
 	<import file="../app.xml"/>

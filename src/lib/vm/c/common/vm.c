@@ -40,6 +40,10 @@
  */
 
 
+// TMPRTC
+extern void rtc_compile_lib(dj_infusion *infusion);
+
+
 /**
  * Main function that creates the vm and runs until either all threads stop or runlevel is set to RUNLEVEL_REBOOT
  * This code was in the main() of each config before, but has been extracted to make rebooting easier.
@@ -65,6 +69,30 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 	dj_vm_loadInfusionArchive(vm, di_lib_infusions_archive_data, handlers, handlers_length);
 	dj_di_pointer di_app_infusion_data = dj_archive_get_file(di_app_infusion_archive_data, 0);
 	dj_vm_loadInfusion(vm, di_app_infusion_data, NULL, 0);
+
+	// TMPRTC
+	DEBUG_LOG(true, "sinterklaas.\n");
+	DEBUG_LOG(true, "sinterklaas.\n");
+	DEBUG_LOG(true, "sinterklaas.\n");
+	DEBUG_LOG(true, "sinterklaas.\n");
+	{
+		dj_infusion *finger = vm->infusions;
+
+		while (finger!=NULL)
+		{
+			dj_di_pointer name = dj_di_header_getInfusionName(finger->header);
+			if (dj_di_getU8(name)=='r' && dj_di_getU8(name+1)=='t' && dj_di_getU8(name+2)=='c') {
+				rtc_compile_lib(finger);
+				break;
+			}
+			finger = finger->next;
+		}
+		if (finger == NULL) {
+			DEBUG_LOG(true, "rtc niet gevonden.\n");
+			dj_panic(DJ_PANIC_MALFORMED_INFUSION);
+		}
+	}
+	// ENDTMPRTC
 
 	// pre-allocate an OutOfMemoryError object
 	obj = dj_vm_createSysLibObject(vm, BASE_CDEF_java_lang_OutOfMemoryError);
@@ -483,7 +511,10 @@ typedef struct
 
 void dj_vm_loadInfusionArchive(dj_vm * vm, dj_di_pointer archive, dj_named_native_handler native_handlers[], unsigned char numHandlers)
 {
+	DARJEELING_PRINTF(" nr %d in archive.\n", dj_archive_number_of_files(archive));
+
 	for (uint8_t i=0; i<dj_archive_number_of_files(archive); i++) {
+		DARJEELING_PRINTF(" nr %d \n", i);
 		dj_di_pointer file = dj_archive_get_file(archive, i);
 		if (dj_archive_filetype(file) == DJ_FILETYPE_LIB_INFUSION) {
 			dj_infusion * infusion = dj_vm_loadInfusion(vm, file, native_handlers, numHandlers);

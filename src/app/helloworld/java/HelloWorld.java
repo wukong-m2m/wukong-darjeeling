@@ -18,11 +18,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Darjeeling.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
+import javax.rtc.RTCTest;
+
 public class HelloWorld
 {
 	public static void main(String args[])
 	{
-		System.out.println("Hello, world!");
+		System.out.println("Hello, world!" + RTCTest.AddTwo((short)40));
 	}
 }
