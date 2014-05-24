@@ -1,27 +1,3 @@
-// LDD              10q0 qq0d dddd yqqq, with d=dest register, q=offset from Y or Z, y=1 for Y 0 for Z
-#define OP_LDD 		0x8000
-
-// LD Rd,X+         1001 000d dddd 1101
-#define OP_LDXINC	0x900D
-
-// PUSH             1001 001d dddd 1111, with d=source register
-#define OP_PUSH		0x920F
-
-// POP              1001 000d dddd 1111
-#define OP_POP		0x900F
-
-// LDI              1110 KKKK dddd KKKK, with K=constant to load, d=dest register-16 (can only load to r16-r31)
-#define OP_LDI		0xE000
-
-// ADD              0000 11rd dddd rrrr, with d=dest register, r=source register
-#define OP_ADD		0x0C00
-
-// ADC              0001 11rd dddd rrrr, with d=dest register, r=source register
-#define OP_ADC		0x1C00
-
-// RET              1001 0101 0000 1000
-#define OP_RET		0x9508
-
 #define R0			0
 #define R1			1
 #define R2			2
@@ -58,6 +34,68 @@
 #define Y			1
 #define Z			0
 
-uint16_t avr_asm (uint16_t opcode, uint16_t op1, uint16_t op2, uint16_t op3);
+
+
+// LDD  	            10q0 qq0d dddd yqqq, with d=dest register, q=offset from Y or Z, y=1 for Y 0 for Z
+#define OPCODE_LDD 		0x8000
+
+// LD Rd	,X+         1001 000d dddd 1101
+#define OPCODE_LDXINC	0x900D
+
+// PUSH 	            1001 001d dddd 1111, with d=source register
+#define OPCODE_PUSH		0x920F
+
+// POP  	            1001 000d dddd 1111
+#define OPCODE_POP		0x900F
+
+// LDI  	            1110 KKKK dddd KKKK, with K=constant to load, d=dest register-16 (can only load to r16-r31)
+#define OPCODE_LDI		0xE000
+
+// ADD  	            0000 11rd dddd rrrr, with d=dest register, r=source register
+#define OPCODE_ADD		0x0C00
+
+// ADC  	            0001 11rd dddd rrrr, with d=dest register, r=source register
+#define OPCODE_ADC		0x1C00
+
+// RET  	            1001 0101 0000 1000
+#define OPCODE_RET		0x9508
+
+
+// 6 bit offset q has to be inserted in the opcode like this:
+// 00q0 qq00 0000 0qqq
+#define makeLDDoffset(offset) ( \
+               ((offset) & 0x07) \
+            + (((offset) & 0x18) << 7) \
+            + (((offset) & 0x20) << 8))
+
+// 0000 KKKK 0000 KKKK
+#define makeLDIconstant(constant) ( \
+               ((constant) & 0x0F) \
+            + (((constant) & 0xF0) << 8))
+
+// 0000 00r0 0000 rrrr, with d=dest register, r=source register
+#define makeSourceRegister(src_register) ( \
+               ((src_register) & 0x0F) \
+            + (((src_register) & 0x10) << 5))
+
+
+#define opcodeWithSingleRegOperand(opcode, reg)                 ((opcode) + ((reg) << 4))
+#define opcodeWithSrcAndDestRegOperand(opcode, destreg, srcreg) ((opcode) + ((destreg) << 4) + makeSourceRegister(srcreg))
+
+
+#define asm_PUSH(reg)                   opcodeWithSingleRegOperand(OPCODE_PUSH, reg)
+#define asm_POP(reg)                    opcodeWithSingleRegOperand(OPCODE_POP, reg)
+#define asm_LDXINC(reg)                 opcodeWithSingleRegOperand(OPCODE_LDXINC, reg)
+#define asm_LDD(reg, xy, offset)        (OPCODE_LDD \
+                                     + ((reg) << 4) \
+                                     + ((xy) << 3) \
+                                     + makeLDDoffset(offset))
+#define asm_LDI(reg, constant)          (OPCODE_LDI \
+                                     + (((reg) - 16) << 4) \
+                                     + makeLDIconstant(constant))
+#define asm_ADD(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_ADD, destreg, srcreg)
+#define asm_ADC(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_ADC, destreg, srcreg)
+#define asm_RET                         OPCODE_RET 
+
 
 
