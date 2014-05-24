@@ -32,6 +32,7 @@
 	<!-- Infuser arguments -->
 	<property name="infusionfile" value="${build}/${name}.di"/>
 	<property name="infusionheader" value="${build}/${name}.dih"/>
+	<property name="infusiondebugfile" value="${build}/${name}.debug"/>
 	<property name="infusionhfile" value="${build}/jlib_${name}.h"/>
 	<property name="infusioncfile" value="${build}/jlib_${name}.c"/>
 
@@ -149,7 +150,8 @@
 				infusionfile="${infusionfile}"
 				headerfile="${infusionheader}"
 				hfile="${infusionhfile}"
-				cfile="${infusioncfile}">
+				cfile="${infusioncfile}"
+				debugfile="${infusiondebugfile}">
 			<!-- Include the classes -->
 			<fileset dir="${classes}" ><include name="**/*.class"/></fileset>
 			
