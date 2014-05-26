@@ -22,9 +22,10 @@ class AutoNet:
                     device_list = []
                     for i in xrange(num):
                         device_list.append(ReadNumber())
-                    # TODO: mac_address should be 8 bytes!
+                    # TODO: mac_address should be a list with 8 items of 1 byte!
                     gateway_mac_address = device_list[0]
                     break
+            return gateway_mac_address
 
         def serve_autonet(self):
             while True:
