@@ -47,7 +47,7 @@ typedef unsigned long long int dj_time_t;
 // #define DBG_WKPFGC true
 // #define DBG_WKPFUPDATE true
 // #define DBG_WKCOMM true
-#define DBG_WKREPROG true
+// #define DBG_WKREPROG true
 // #define DBG_ZWAVETRACE true
 #define DBG_RTC true
 

@@ -25,7 +25,7 @@ public class HelloWorld
 {
 	public static void main(String args[])
 	{
-		System.out.println("Hello, world! " + RTCTest.AddFortyTwo((short)20));
-
+		// System.out.println("Hello, world! " + RTCTest.AddFortyTwo((short)20));
+		System.out.println("Hello, world! " + RTCTest.Add((short)2, (short)37, (short)50, (short)20, (short)20));
 	}
 }
