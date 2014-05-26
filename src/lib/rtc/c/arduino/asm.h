@@ -48,6 +48,9 @@
 // POP  	            1001 000d dddd 1111
 #define OPCODE_POP		0x900F
 
+// MOVW               0000 0001 dddd rrrr, with d=dest register/2, r=source register/2
+#define OPCODE_MOVW   0x0100
+
 // LDI  	            1110 KKKK dddd KKKK, with K=constant to load, d=dest register-16 (can only load to r16-r31)
 #define OPCODE_LDI		0xE000
 
@@ -56,6 +59,15 @@
 
 // ADC  	            0001 11rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_ADC		0x1C00
+
+// SUB                0001 10rd dddd rrrr, with d=dest register, r=source register
+#define OPCODE_SUB    0x1800
+
+// MUL                1001 11rd dddd rrrr, with d=dest register, r=source register
+#define OPCODE_MUL    0x9C00
+
+// SBC                0000 10rd dddd rrrr, with d=dest register, r=source register
+#define OPCODE_SBC    0x0800
 
 // RET  	            1001 0101 0000 1000
 #define OPCODE_RET		0x9508
@@ -95,6 +107,10 @@
                                      + makeLDIconstant(constant))
 #define asm_ADD(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_ADD, destreg, srcreg)
 #define asm_ADC(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_ADC, destreg, srcreg)
+#define asm_MUL(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_MUL, destreg, srcreg)
+#define asm_SUB(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_SUB, destreg, srcreg)
+#define asm_SBC(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_SBC, destreg, srcreg)
+#define asm_MOVW(destreg, srcreg)       opcodeWithSrcAndDestRegOperand(OPCODE_MOVW, (destreg/2), (srcreg/2))
 #define asm_RET                         OPCODE_RET 
 
 
