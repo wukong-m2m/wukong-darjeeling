@@ -3,7 +3,7 @@
 	<!-- include native code for libraries -->
 	<!-- note that libraries should come after libraries they depend on
 		 (wkcomm first, the wkpf), or else loading the archive will fail -->
-	<property name="libs" value="uart, wkcomm, wkreprog, wkpf, vm, base, darjeeling3, rtc"/>
+	<property name="libs" value="uart, wkcomm, wkreprog, vm, base, darjeeling3, rtc"/>
 
 	<!-- Compile these applications -->
 	<property name="apps" value="helloworld"/>
@@ -40,6 +40,12 @@
 	<target name="avrdude-only">
 		<exec executable="avrdude">
 			<arg line="-p atmega2560 -P ${avrdude-programmer} -c wiring -U flash:w:darjeeling.ihex"/>
+		</exec>
+	</target>
+
+	<target name="avrdude-readflash">
+		<exec executable="avrdude">
+			<arg line="-p atmega2560 -P ${avrdude-programmer} -c wiring -U flash:r:flashdump.ihex:i"/>
 		</exec>
 	</target>
 

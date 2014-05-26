@@ -1011,22 +1011,27 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 			// TODO: setup Z register
 			rtc_frame_locals_start = (uint16_t)dj_frame_getLocalReferenceVariables(frame); // Will be stored in Y by the function prologue
 
-			int16_t ret16;
+			volatile int16_t ret16;
 			int32_t ret32;
-			switch (dj_di_methodImplementation_getReturnType(methodImpl)) {
+			uint8_t rettype = dj_di_methodImplementation_getReturnType(methodImpl);
+			DEBUG_LOG(DBG_RTC, "[rtc] starting rtc compiled method %i at %p with return type %i\n", methodImplId.entity_id, handler, rettype);
+			switch (rettype) {
 				case JTID_VOID:
 					handler();
 					returnFromMethod();
+					DEBUG_LOG(DBG_RTC, "[rtc] call returned (void)\n");
 					break;
 				case JTID_SHORT:
 					ret16 = ((native_16bit_method_function_t)handler)();
 					returnFromMethod();
 					pushShort(ret16);
+					DEBUG_LOG(DBG_RTC, "[rtc] call returned %d\n", ret16);
 					break;
 				case JTID_INT:
 					ret32 = ((native_32bit_method_function_t)handler)();
 					returnFromMethod();
 					pushInt(ret32);
+					DEBUG_LOG(DBG_RTC, "[rtc] call returned %d\n", ret32);
 					break;
 				default:
 					dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);

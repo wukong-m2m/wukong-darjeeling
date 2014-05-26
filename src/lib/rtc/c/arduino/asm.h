@@ -71,7 +71,7 @@
 // 0000 KKKK 0000 KKKK
 #define makeLDIconstant(constant) ( \
                ((constant) & 0x0F) \
-            + (((constant) & 0xF0) << 8))
+            + (((constant) & 0xF0) << 4))
 
 // 0000 00r0 0000 rrrr, with d=dest register, r=source register
 #define makeSourceRegister(src_register) ( \

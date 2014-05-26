@@ -33,7 +33,7 @@ bool wkreprog_impl_open_app_archive(uint16_t start_write_position) {
 
 // Open reprogramming at any position in flash
 bool wkreprog_impl_open_raw(uint16_t start_write_position) {
-	DEBUG_LOG(DBG_WKREPROG, "AVR: Start writing to flash at address 0x%x.\n", di_app_infusion_archive_data+start_write_position);
+	DEBUG_LOG(DBG_WKREPROG, "AVR: Start writing to flash at address %p.\n", start_write_position);
 
 	// Set the position to start writing at start_write_position
 	// avr_flash_pageaddress should point at a page start
