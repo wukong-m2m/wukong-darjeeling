@@ -69,6 +69,15 @@
 // SBC                0000 10rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_SBC    0x0800
 
+// AND                0010 00rd dddd rrrr, with d=dest register, r=source register
+#define OPCODE_AND    0x2000
+
+// OR                 0010 10rd dddd rrrr, with d=dest register, r=source register
+#define OPCODE_OR     0x2800
+
+// EOR                0010 01rd dddd rrrr, with d=dest register, r=source register
+#define OPCODE_EOR    0x2400
+
 // CALL               1001 010k kkkk 111k
 //                    kkkk kkkk kkkk kkkk
 #define OPCODE_CALL   0x940E
@@ -114,6 +123,10 @@
 #define asm_MUL(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_MUL, destreg, srcreg)
 #define asm_SUB(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_SUB, destreg, srcreg)
 #define asm_SBC(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_SBC, destreg, srcreg)
+#define asm_AND(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_AND, destreg, srcreg)
+#define asm_OR(destreg, srcreg)         opcodeWithSrcAndDestRegOperand(OPCODE_OR, destreg, srcreg)
+#define asm_EOR(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_EOR, destreg, srcreg)
+#define asm_CLR(destreg)                asm_EOR(destreg, destreg)
 #define asm_MOVW(destreg, srcreg)       opcodeWithSrcAndDestRegOperand(OPCODE_MOVW, (destreg/2), (srcreg/2))
 // TODO: support addresses > 128K
 #define asm_CALL1(address)              OPCODE_CALL

@@ -13,6 +13,9 @@
 
 const unsigned char PROGMEM __attribute__ ((aligned (SPM_PAGESIZE))) rtc_compiled_code_buffer[RTC_COMPILED_CODE_BUFFER_SIZE] = {};
 
+// avr-libgcc functions used by translation
+extern void* __divmodhi4;
+
 uint8_t offset_for_intlocal(dj_di_pointer methodimpl, uint8_t local) {
 	return (dj_di_methodImplementation_getReferenceLocalVariableCount(methodimpl) * sizeof(ref_t)) +
 		   (local * sizeof(int16_t));
@@ -50,19 +53,252 @@ void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t 
 	wkreprog_close();
 }
 
-void emit(uint16_t instruction) {
-	uint8_t *instructiondata = (uint8_t *)&instruction;
-	DEBUG_LOG(DBG_RTC, "[rtc]    %x  (%x %x)\n", instruction, instructiondata[0], instructiondata[1]);
-    wkreprog_write(2, (uint8_t *)&instruction);
-    rtc_compiled_code_next_free_byte += 2;
-}
-
 // We'll store the location of the function locals here just before calling the rtc compiled method.
 // The function prologue will retrieve it and set the Y register
+// It gets set by execution.c in the vm lib. Still need to reorganise these dependencies.
 uint16_t rtc_frame_locals_start;
 
-// avr-libgcc functions used by translation
-extern void* __divmodhi4;
+
+// Used to check when we need to flush the buffer
+// (when rtc_codebuffer_position-rtc_codebuffer < RTC_MAX_SIZE_FOR_SINGLE_JVM_INSTRUCTION)
+#define RTC_MAX_SIZE_FOR_SINGLE_JVM_INSTRUCTION 10
+uint16_t *rtc_codebuffer;
+uint16_t *rtc_codebuffer_position;
+
+void rtc_flush() {
+	uint8_t *instructiondata = (uint8_t *)rtc_codebuffer;
+	uint16_t count = rtc_codebuffer_position - rtc_codebuffer;
+#ifdef DARJEELING_DEBUG
+	for (int i=0; i<count; i++) {
+		DEBUG_LOG(DBG_RTC, "[rtc]    %x  (%x %x)\n", rtc_codebuffer[i], instructiondata[i*2], instructiondata[i*2+1]);
+	}
+#endif // DARJEELING_DEBUG
+	// Write to flash
+    wkreprog_write(2*count, instructiondata);
+    // Update last written position to keep track of method function pointers
+    rtc_compiled_code_next_free_byte += 2*count;
+    // Buffer is now empty
+    rtc_codebuffer_position = rtc_codebuffer;
+}
+
+static inline void emit(uint16_t wordopcode) {
+	*(rtc_codebuffer_position++) = wordopcode;
+}
+
+void rtc_compile_method(dj_di_pointer methodimpl) {
+	uint8_t jvm_operand_byte0;
+	uint8_t jvm_operand_byte1;
+
+	// Buffer to hold the code we're building
+	uint16_t codebuffer[16];
+	rtc_codebuffer = codebuffer;
+	rtc_codebuffer_position = codebuffer;
+
+	// prologue (is this the right way?)
+	emit( asm_PUSH(R28) ); // Push Y
+	emit( asm_PUSH(R29) );
+	emit( asm_LDI(R26, ((uint16_t)&rtc_frame_locals_start)&0xFF) ); // Load address OF rtc_frame_locals_start in X
+	emit( asm_LDI(R27, (((uint16_t)&rtc_frame_locals_start)>>8)&0xFF) );
+	emit( asm_LDXINC(R28) ); // Load the address STORED IN rtc_frame_locals_start in Y
+	emit( asm_LDXINC(R29) );
+
+	// translate the method
+	dj_di_pointer code = dj_di_methodImplementation_getData(methodimpl);
+	uint16_t method_length = dj_di_methodImplementation_getLength(methodimpl);
+	DEBUG_LOG(DBG_RTC, "[rtc] method length %d\n", method_length);
+
+	for (uint16_t pc=0; pc<method_length; pc++) {
+		if (rtc_codebuffer_position-rtc_codebuffer < RTC_MAX_SIZE_FOR_SINGLE_JVM_INSTRUCTION) {
+			// There may not be enough space in the buffer to hold the current opcode.
+			rtc_flush();
+		}
+
+		uint8_t opcode = dj_di_getU8(code + pc);
+		DEBUG_LOG(DBG_RTC, "[rtc] JVM opcode %d\n", opcode);
+		switch (opcode) {
+			case JVM_SLOAD:
+			case JVM_SLOAD_0:
+			case JVM_SLOAD_1:
+			case JVM_SLOAD_2:
+			case JVM_SLOAD_3:
+				if (opcode == JVM_SLOAD)
+					jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+				else
+					jvm_operand_byte0 = opcode - JVM_SLOAD_0;
+				emit( asm_LDD(R18, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)) );
+				emit( asm_PUSH(R18) );
+				emit( asm_LDD(R18, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)+1) );
+				emit( asm_PUSH(R18) );
+			break;
+			case JVM_SCONST_0:
+			case JVM_SCONST_1:
+			case JVM_SCONST_2:
+			case JVM_SCONST_3:
+			case JVM_SCONST_4:
+			case JVM_SCONST_5:
+				jvm_operand_byte0 = opcode - JVM_SCONST_0;
+				emit( asm_LDI(R18, jvm_operand_byte0) );
+				emit( asm_PUSH(R18) );
+				emit( asm_LDI(R18, 0) );
+				emit( asm_PUSH(R18) );
+			break;
+			case JVM_BSPUSH:
+				jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+				emit( asm_LDI(R18, jvm_operand_byte0) );
+				emit( asm_PUSH(R18) );
+				emit( asm_LDI(R18, 0) );
+				emit( asm_PUSH(R18) );
+			break;
+			case JVM_SSPUSH:
+				// bytecode is big endian, but I've been pushing LSB first. (maybe change that later)
+				jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+				jvm_operand_byte1 = dj_di_getU8(code + ++pc);
+				emit( asm_LDI(R18, jvm_operand_byte1) );
+				emit( asm_PUSH(R18) );
+				emit( asm_LDI(R18, jvm_operand_byte0) );
+				emit( asm_PUSH(R18) );
+			break;
+			case JVM_SADD:
+				emit( asm_POP(R21) );
+				emit( asm_POP(R20) );
+				emit( asm_POP(R19) );
+				emit( asm_POP(R18) );
+				emit( asm_ADD(R18, R20) );
+				emit( asm_ADC(R19, R21) );
+				emit( asm_PUSH(R18) );
+				emit( asm_PUSH(R19) );
+			break;
+			case JVM_SMUL:
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_POP(R23) );
+				emit( asm_POP(R22) );
+
+				// Code generated by avr-gcc -mmcu=atmega2560 -O3
+		        // mul r24,r22
+		        // movw r18,r0
+		        // mul r24,r23
+		        // add r19,r0
+		        // mul r25,r22
+		        // add r19,r0
+		        // clr r1
+		        // movw r24,r18
+		        // ret
+
+				emit( asm_MUL(R24, R22) );
+				emit( asm_MOVW(R18, R0) );
+				emit( asm_MUL(R24, R23) );
+				emit( asm_ADD(R19, R0) );
+				emit( asm_MUL(R25, R22) );
+				emit( asm_ADD(R19, R0) );
+				// gcc generates "clr r1" here, but it doesn't seem necessary?
+				// emit( asm_MOVW(R24, R18) );
+
+				emit( asm_PUSH(R18) );
+				emit( asm_PUSH(R19) );
+			break;
+			case JVM_SSUB:
+				emit( asm_POP(R21) );
+				emit( asm_POP(R20) );
+				emit( asm_POP(R19) );
+				emit( asm_POP(R18) );
+				emit( asm_SUB(R18, R20) );
+				emit( asm_SBC(R19, R21) );
+				emit( asm_PUSH(R18) );
+				emit( asm_PUSH(R19) );				
+			break;
+			case JVM_SDIV:
+			case JVM_SREM:
+				emit( asm_POP(R23) );
+				emit( asm_POP(R22) );
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_CALL1((uint16_t)&__divmodhi4) );
+				emit( asm_CALL2((uint16_t)&__divmodhi4) );
+				if (opcode == JVM_SDIV) {
+					emit( asm_PUSH(R22) );
+					emit( asm_PUSH(R23) );
+				} else { // JVM_SREM
+					emit( asm_PUSH(R24) );
+					emit( asm_PUSH(R25) );
+				}
+			break;
+			case JVM_SNEG:
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_CLR(R18) );
+				emit( asm_CLR(R19) );
+				emit( asm_SUB(R18, R24) );
+				emit( asm_SBC(R19, R25) );
+				emit( asm_PUSH(R18) );
+				emit( asm_PUSH(R19) );
+			break;
+			case JVM_SAND:
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_POP(R19) );
+				emit( asm_POP(R18) );
+				emit( asm_AND(R18, R24) );
+				emit( asm_AND(R19, R25) );
+				emit( asm_PUSH(R18) );
+				emit( asm_PUSH(R19) );
+			break;
+			case JVM_SOR:
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_POP(R19) );
+				emit( asm_POP(R18) );
+				emit( asm_OR(R18, R24) );
+				emit( asm_OR(R19, R25) );
+				emit( asm_PUSH(R18) );
+				emit( asm_PUSH(R19) );
+			break;
+			case JVM_SXOR:
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_POP(R19) );
+				emit( asm_POP(R18) );
+				emit( asm_EOR(R18, R24) );
+				emit( asm_EOR(R19, R25) );
+				emit( asm_PUSH(R18) );
+				emit( asm_PUSH(R19) );
+			break;
+			case JVM_RETURN:
+				// epilogue (is this the right way?)
+				emit( asm_POP(R29) ); // Pop Y
+				emit( asm_POP(R28) );
+				emit( asm_RET );
+			break;
+			case JVM_SRETURN:
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+
+				// epilogue (is this the right way?)
+				emit( asm_POP(R29) ); // Pop Y
+				emit( asm_POP(R28) );
+				emit( asm_RET );
+			break;
+			case JVM_IRETURN:
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_POP(R23) );
+				emit( asm_POP(R22) );
+
+				// epilogue (is this the right way?)
+				emit( asm_POP(R29) ); // Pop Y
+				emit( asm_POP(R28) );
+				emit( asm_RET );
+			break;
+			default:
+				DEBUG_LOG(DBG_RTC, "Unimplemented Java opcode %d at pc=%d\n", opcode, pc);
+				dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
+			break;
+		}
+		// For now, flush after each opcode
+		rtc_flush();
+	}
+}
+
 void rtc_compile_lib(dj_infusion *infusion) {
 	// uses 512bytes on the stack... maybe optimise this later
 	native_method_function_t rtc_method_start_addresses[256];
@@ -104,164 +340,7 @@ void rtc_compile_lib(dj_infusion *infusion) {
 		// of a function by 2 in order to get a function pointer!
 		rtc_method_start_addresses[i] = (native_method_function_t)(rtc_compiled_code_next_free_byte/2);
 
-		// prologue (is this the right way?)
-		emit( asm_PUSH(R28) ); // Push Y
-		emit( asm_PUSH(R29) );
-		emit( asm_LDI(R26, ((uint16_t)&rtc_frame_locals_start)&0xFF) ); // Load address OF rtc_frame_locals_start in X
-		emit( asm_LDI(R27, (((uint16_t)&rtc_frame_locals_start)>>8)&0xFF) );
-		emit( asm_LDXINC(R28) ); // Load the address STORED IN rtc_frame_locals_start in Y
-		emit( asm_LDXINC(R29) );
-
-		// translate the method
-		dj_di_pointer code = dj_di_methodImplementation_getData(methodimpl);
-		uint16_t method_length = dj_di_methodImplementation_getLength(methodimpl);
-		DEBUG_LOG(DBG_RTC, "[rtc] method length %d\n", method_length);
-
-		uint8_t jvm_operand_byte0;
-		uint8_t jvm_operand_byte1;
-		for (uint16_t pc=0; pc<method_length; pc++) {
-			uint8_t opcode = dj_di_getU8(code + pc);
-			DEBUG_LOG(DBG_RTC, "[rtc] JVM opcode %d\n", opcode);
-			switch (opcode) {
-				case JVM_SLOAD:
-				case JVM_SLOAD_0:
-				case JVM_SLOAD_1:
-				case JVM_SLOAD_2:
-				case JVM_SLOAD_3:
-					if (opcode == JVM_SLOAD)
-						jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-					else
-						jvm_operand_byte0 = opcode - JVM_SLOAD_0;
-					emit( asm_LDD(R18, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)) );
-					emit( asm_PUSH(R18) );
-					emit( asm_LDD(R18, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)+1) );
-					emit( asm_PUSH(R18) );
-				break;
-				case JVM_SCONST_0:
-				case JVM_SCONST_1:
-				case JVM_SCONST_2:
-				case JVM_SCONST_3:
-				case JVM_SCONST_4:
-				case JVM_SCONST_5:
-					jvm_operand_byte0 = opcode - JVM_SCONST_0;
-					emit( asm_LDI(R18, jvm_operand_byte0) );
-					emit( asm_PUSH(R18) );
-					emit( asm_LDI(R18, 0) );
-					emit( asm_PUSH(R18) );
-				break;
-				case JVM_BSPUSH:
-					jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-					emit( asm_LDI(R18, jvm_operand_byte0) );
-					emit( asm_PUSH(R18) );
-					emit( asm_LDI(R18, 0) );
-					emit( asm_PUSH(R18) );
-				break;
-				case JVM_SSPUSH:
-					// bytecode is big endian, but I've been pushing LSB first. (maybe change that later)
-					jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-					jvm_operand_byte1 = dj_di_getU8(code + ++pc);
-					emit( asm_LDI(R18, jvm_operand_byte1) );
-					emit( asm_PUSH(R18) );
-					emit( asm_LDI(R18, jvm_operand_byte0) );
-					emit( asm_PUSH(R18) );
-				break;
-				case JVM_SADD:
-					emit( asm_POP(R21) );
-					emit( asm_POP(R20) );
-					emit( asm_POP(R19) );
-					emit( asm_POP(R18) );
-					emit( asm_ADD(R18, R20) );
-					emit( asm_ADC(R19, R21) );
-					emit( asm_PUSH(R18) );
-					emit( asm_PUSH(R19) );
-				break;
-				case JVM_SMUL:
-					emit( asm_POP(R25) );
-					emit( asm_POP(R24) );
-					emit( asm_POP(R23) );
-					emit( asm_POP(R22) );
-
-					// Code generated by avr-gcc -mmcu=atmega2560 -O3
-			        // mul r24,r22
-			        // movw r18,r0
-			        // mul r24,r23
-			        // add r19,r0
-			        // mul r25,r22
-			        // add r19,r0
-			        // clr r1
-			        // movw r24,r18
-			        // ret
-
-					emit( asm_MUL(R24, R22) );
-					emit( asm_MOVW(R18, R0) );
-					emit( asm_MUL(R24, R23) );
-					emit( asm_ADD(R19, R0) );
-					emit( asm_MUL(R25, R22) );
-					emit( asm_ADD(R19, R0) );
-					// gcc generates "clr r1" here, but it doesn't seem necessary?
-					// emit( asm_MOVW(R24, R18) );
-
-					emit( asm_PUSH(R18) );
-					emit( asm_PUSH(R19) );
-				break;
-				case JVM_SSUB:
-					emit( asm_POP(R21) );
-					emit( asm_POP(R20) );
-					emit( asm_POP(R19) );
-					emit( asm_POP(R18) );
-					emit( asm_SUB(R18, R20) );
-					emit( asm_SBC(R19, R21) );
-					emit( asm_PUSH(R18) );
-					emit( asm_PUSH(R19) );				
-				break;
-				case JVM_SDIV:
-				case JVM_SREM:
-					emit( asm_POP(R23) );
-					emit( asm_POP(R22) );
-					emit( asm_POP(R25) );
-					emit( asm_POP(R24) );
-					emit( asm_CALL1((uint16_t)&__divmodhi4) );
-					emit( asm_CALL2((uint16_t)&__divmodhi4) );
-					if (opcode == JVM_SDIV) {
-						emit( asm_PUSH(R22) );
-						emit( asm_PUSH(R23) );
-					} else { // JVM_SREM
-						emit( asm_PUSH(R24) );
-						emit( asm_PUSH(R25) );
-					}
-				break;
-				case JVM_RETURN:
-					// epilogue (is this the right way?)
-					emit( asm_POP(R29) ); // Pop Y
-					emit( asm_POP(R28) );
-					emit( asm_RET );
-				break;
-				case JVM_SRETURN:
-					emit( asm_POP(R25) );
-					emit( asm_POP(R24) );
-
-					// epilogue (is this the right way?)
-					emit( asm_POP(R29) ); // Pop Y
-					emit( asm_POP(R28) );
-					emit( asm_RET );
-				break;
-				case JVM_IRETURN:
-					emit( asm_POP(R25) );
-					emit( asm_POP(R24) );
-					emit( asm_POP(R23) );
-					emit( asm_POP(R22) );
-
-					// epilogue (is this the right way?)
-					emit( asm_POP(R29) ); // Pop Y
-					emit( asm_POP(R28) );
-					emit( asm_RET );
-				break;
-				default:
-					DEBUG_LOG(DBG_RTC, "Unimplemented Java opcode %d at pc=%d\n", opcode, pc);
-					dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
-				break;
-			}
-		}
+		rtc_compile_method(methodimpl);
 	}
 
 	wkreprog_close();
@@ -274,4 +353,5 @@ void rtc_compile_lib(dj_infusion *infusion) {
 
 	// Mark the infusion as translated (how?)
 }
+
 
