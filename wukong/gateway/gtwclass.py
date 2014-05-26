@@ -51,7 +51,9 @@ class Gateway(object):
             self._ip_server.close()
             logger.error("cannot start due to socket error: %s" % msg)
             return False
-        self._greenlet = [gevent.spawn(self._serve_transport_forever), gevent.spawn(self._serve_socket_forever), gevent.spawn(self.autonet.serve_autonet)]
+        self._greenlet = [gevent.spawn(self._serve_transport_forever), gevent.spawn(self._serve_socket_forever)]
+        if CONFIG.ENABLE_AUTONET:
+            self._greenlet.append(gevent.spawn(self.autonet.serve_autonet))
         gevent.sleep(0) # Make the greenlet start first and return
         logger.info("started on %s:%s" % self._ip_server.getsockname()[:2])
         return True
