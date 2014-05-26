@@ -57,8 +57,12 @@ void emit(uint16_t instruction) {
     rtc_compiled_code_next_free_byte += 2;
 }
 
+// We'll store the location of the function locals here just before calling the rtc compiled method.
+// The function prologue will retrieve it and set the Y register
 uint16_t rtc_frame_locals_start;
 
+// avr-libgcc functions used by translation
+extern void* __divmodhi4;
 void rtc_compile_lib(dj_infusion *infusion) {
 	// uses 512bytes on the stack... maybe optimise this later
 	native_method_function_t rtc_method_start_addresses[256];
@@ -73,12 +77,8 @@ void rtc_compile_lib(dj_infusion *infusion) {
 
 	const DJ_PROGMEM native_method_function_t *handlers = infusion->native_handlers;
 	DEBUG_LOG(DBG_RTC, "[rtc] handler list is at %p\n", infusion->native_handlers);
-	DEBUG_LOG(DBG_RTC, "[rtc] handler list is at %p\n", handlers);
-	DEBUG_LOG(DBG_RTC, "[rtc] handler list is at %x\n", (uint16_t)handlers);
 	for (uint16_t i=0; i<number_of_methodimpls; i++) {		
 		DEBUG_LOG(DBG_RTC, "[rtc] (compile) pointer for method %i %p\n", i, infusion->native_handlers[i]);	
-		DEBUG_LOG(DBG_RTC, "[rtc] (compile) pointer for method %i %p\n", i, handlers[i]);
-		DEBUG_LOG(DBG_RTC, "[rtc] (compile) pointer for method %i %x\n", i, dj_di_getU16(((uint16_t)handlers)+2*i));	
 
 		dj_di_pointer methodimpl = dj_infusion_getMethodImplementation(infusion, i);
 		if (dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_NATIVE) {
@@ -199,10 +199,10 @@ void rtc_compile_lib(dj_infusion *infusion) {
 					emit( asm_MUL(R25, R22) );
 					emit( asm_ADD(R19, R0) );
 					// gcc generates "clr r1" here, but it doesn't seem necessary?
-					emit( asm_MOVW(R24, R18) );
+					// emit( asm_MOVW(R24, R18) );
 
-					emit( asm_PUSH(R24) );
-					emit( asm_PUSH(R25) );
+					emit( asm_PUSH(R18) );
+					emit( asm_PUSH(R19) );
 				break;
 				case JVM_SSUB:
 					emit( asm_POP(R21) );
@@ -213,6 +213,22 @@ void rtc_compile_lib(dj_infusion *infusion) {
 					emit( asm_SBC(R19, R21) );
 					emit( asm_PUSH(R18) );
 					emit( asm_PUSH(R19) );				
+				break;
+				case JVM_SDIV:
+				case JVM_SREM:
+					emit( asm_POP(R23) );
+					emit( asm_POP(R22) );
+					emit( asm_POP(R25) );
+					emit( asm_POP(R24) );
+					emit( asm_CALL1((uint16_t)&__divmodhi4) );
+					emit( asm_CALL2((uint16_t)&__divmodhi4) );
+					if (opcode == JVM_SDIV) {
+						emit( asm_PUSH(R22) );
+						emit( asm_PUSH(R23) );
+					} else { // JVM_SREM
+						emit( asm_PUSH(R24) );
+						emit( asm_PUSH(R25) );
+					}
 				break;
 				case JVM_RETURN:
 					// epilogue (is this the right way?)

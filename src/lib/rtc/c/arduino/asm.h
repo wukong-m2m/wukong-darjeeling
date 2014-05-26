@@ -69,6 +69,10 @@
 // SBC                0000 10rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_SBC    0x0800
 
+// CALL               1001 010k kkkk 111k
+//                    kkkk kkkk kkkk kkkk
+#define OPCODE_CALL   0x940E
+
 // RET  	            1001 0101 0000 1000
 #define OPCODE_RET		0x9508
 
@@ -111,7 +115,11 @@
 #define asm_SUB(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_SUB, destreg, srcreg)
 #define asm_SBC(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_SBC, destreg, srcreg)
 #define asm_MOVW(destreg, srcreg)       opcodeWithSrcAndDestRegOperand(OPCODE_MOVW, (destreg/2), (srcreg/2))
-#define asm_RET                         OPCODE_RET 
+// TODO: support addresses > 128K
+#define asm_CALL1(address)              OPCODE_CALL
+#define asm_CALL2(address)              (address/2)
+#define asm_RET                         OPCODE_RET
+
 
 
 
