@@ -950,11 +950,13 @@ class DIDService:
         
         with self._global_lock:
             if self._is_insertable:
-                mac_addr = ":".join(map(lambda x:"%02X"%x,map(ord,mac_addr)))
-                self._device_macs[mac_addr] = did
+                if mac_addr is not None:
+                    mac_addr = ":".join(map(lambda x:"%02X"%x,map(ord,mac_addr)))
+                    self._device_macs[mac_addr] = did
                 prefix_bit_len = self.get_gateway_prefix_bit_len(gateway_did)
                 raddr = (did << prefix_bit_len) >> prefix_bit_len
-                self._device_dids[did] = json.dumps({"gtwdid":gateway_did,"raddr":raddr,"mac":mac_addr})
+                tmp_dict = {"gtwdid":gateway_did,"raddr":raddr,"mac":mac_addr}
+                self._device_dids[did] = json.dumps()
             return did
         return 0xFFFFFFFF
 

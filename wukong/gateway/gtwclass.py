@@ -6,6 +6,7 @@ import mptn as MPTN
 import utils
 from rpcservice import RPCService
 from didservice import DIDService
+from autonet import AutoNet
 
 import struct
 import logging
@@ -21,11 +22,19 @@ class Gateway(object):
         self._greenlet = None
         self._no_dump = False
 
+        # Wrap up funtions of transport device
         function_lists = self._transport_function_init()
+
+        # Initialize RPC service
         self._rpc_service = RPCService(function_lists)
         self._rpc_handler = self._rpc_service.handle_message
 
-        self._did_service = DIDService(self._transport.get_radio_address(), self._transport.get_radio_addr_len())
+        # Initialize AutoNet
+        self._autonet = AutoNet(self._transport_learn_handler[MPTN.MULT_PROTO_MSG_SUBTYPE_RAD_ADD], self._transport_learn_handler[MPTN.MULT_PROTO_MSG_SUBTYPE_RAD_DEL], self._transport_learn_handler[MPTN.MULT_PROTO_MSG_SUBTYPE_RAD_STOP]) if CONFIG.ENABLE_AUTONET else None
+        autonet_mac_address = self._autonet.get_gateway_mac_address() if CONFIG.ENABLE_AUTONET else None
+
+        # Initialize DID service
+        self._did_service = DIDService(self._transport.get_radio_address(), self._transport.get_radio_addr_len(), autonet_mac_address)
         self._did_req_handler = self._did_service.handle_did_req_message
         self._fwd_handler = self._did_service.handle_fwd_message
         self._pfx_upd_handler = self._did_service.handle_pfx_upd_message
@@ -42,7 +51,7 @@ class Gateway(object):
             self._ip_server.close()
             logger.error("cannot start due to socket error: %s" % msg)
             return False
-        self._greenlet = [gevent.spawn(self._serve_transport_forever), gevent.spawn(self._serve_socket_forever)]
+        self._greenlet = [gevent.spawn(self._serve_transport_forever), gevent.spawn(self._serve_socket_forever), gevent.spawn(self.autonet.serve_autonet)]
         gevent.sleep(0) # Make the greenlet start first and return
         logger.info("started on %s:%s" % self._ip_server.getsockname()[:2])
         return True

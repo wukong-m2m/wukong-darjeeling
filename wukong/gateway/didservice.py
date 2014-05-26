@@ -21,15 +21,16 @@ logger = logging.getLogger( __name__ )
 
 MAX_DID_LEN = MPTN.MULT_PROTO_LEN_DID
 AUTONET_MAC_ADDR_LEN = 8
+NONE_MAC_ADDRESS = [0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00]
 
 class DIDService(object):
-    def __init__(self, transport_radio_addr, radio_addr_len):
+    def __init__(self, transport_radio_addr, transport_radio_addr_len, autonet_mac_addr=None):
         self._db = dbdict.DBDict("gtw.sqlite")
         self._did_nodes = dbdict.DBDict("gtw_alloc_did.sqlite")
         self._ok_nets = dbdict.DBDict("gtw_ok_nets.sqlite")
 
         if not self._is_db_init():
-            self._db_init(transport_radio_addr, radio_addr_len)
+            self._db_init(transport_radio_addr, transport_radio_addr_len, autonet_mac_addr)
 
         # Check whether master is connectable and its did/prefix is valid or not
         self._get_prefix_from_master()
@@ -42,7 +43,7 @@ class DIDService(object):
 
         logger.info("initialized")
 
-    def _db_init(self, transport_radio_addr, radio_addr_len):
+    def _db_init(self, transport_radio_addr, radio_addr_len, autonet_mac_addr=None):
         self._db["MASTER_IP_ADDR"] = CONFIG.MASTER_IP
         self._db["MASTER_TCP_PORT"] = CONFIG.MASTER_TCP_PORT
         self._db["MASTER_DID"] = 0 # 0.0.0.0
@@ -77,7 +78,7 @@ class DIDService(object):
         self._db["GTWSELF_DID_PREFIX_LEN"] = (MAX_DID_LEN-radio_addr_len)*8
         self._db["GTWSELF_DID_NETMASK"] = int(("1"*(MAX_DID_LEN-radio_addr_len)*8)+("0"*radio_addr_len*8), 2)
         self._db["GTWSELF_DID_HOSTMASK"] = int(("0"*(MAX_DID_LEN-radio_addr_len)*8)+("1"*radio_addr_len*8), 2)
-        self._db["GTWSELF_MAC_ADDR"] = self._get_mac_address()
+        self._db["GTWSELF_MAC_ADDR"] = autonet_mac_addr if autonet_mac_addr is not None else NONE_MAC_ADDRESS
 
         # set_self_ip_addr and tcp_port
         # Not test for IPv6
@@ -94,10 +95,6 @@ class DIDService(object):
             self._clear_db()
             exit(-1)
         self._db["GTWSELF_TCP_PORT"] = CONFIG.SELF_TCP_PORT
-
-    def _get_mac_address(self):
-        mac = [0xFF, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07]
-        return mac
 
     def _is_db_init(self):
         if len(self._db) == 0:
