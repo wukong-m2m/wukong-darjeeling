@@ -1,4 +1,5 @@
 import serial
+import time
 import gevent
 
 class AutoNet:
@@ -25,6 +26,7 @@ class AutoNet:
                     # TODO: mac_address should be a list with 8 items of 1 byte!
                     gateway_mac_address = device_list[0]
                     break
+                time.sleep(0.01)
             return gateway_mac_address
 
         def serve_autonet(self):
