@@ -118,6 +118,7 @@ void rtc_compile_lib(dj_infusion *infusion) {
 		DEBUG_LOG(DBG_RTC, "[rtc] method length %d\n", method_length);
 
 		uint8_t jvm_operand_byte0;
+		uint8_t jvm_operand_byte1;
 		for (uint16_t pc=0; pc<method_length; pc++) {
 			uint8_t opcode = dj_di_getU8(code + pc);
 			DEBUG_LOG(DBG_RTC, "[rtc] JVM opcode %d\n", opcode);
@@ -136,8 +137,14 @@ void rtc_compile_lib(dj_infusion *infusion) {
 					emit( asm_LDD(R18, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)+1) );
 					emit( asm_PUSH(R18) );
 				break;
+				case JVM_SCONST_0:
+				case JVM_SCONST_1:
 				case JVM_SCONST_2:
-					emit( asm_LDI(R18, 2) );
+				case JVM_SCONST_3:
+				case JVM_SCONST_4:
+				case JVM_SCONST_5:
+					jvm_operand_byte0 = opcode - JVM_SCONST_0;
+					emit( asm_LDI(R18, jvm_operand_byte0) );
 					emit( asm_PUSH(R18) );
 					emit( asm_LDI(R18, 0) );
 					emit( asm_PUSH(R18) );
@@ -147,6 +154,15 @@ void rtc_compile_lib(dj_infusion *infusion) {
 					emit( asm_LDI(R18, jvm_operand_byte0) );
 					emit( asm_PUSH(R18) );
 					emit( asm_LDI(R18, 0) );
+					emit( asm_PUSH(R18) );
+				break;
+				case JVM_SSPUSH:
+					// bytecode is big endian, but I've been pushing LSB first. (maybe change that later)
+					jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+					jvm_operand_byte1 = dj_di_getU8(code + ++pc);
+					emit( asm_LDI(R18, jvm_operand_byte1) );
+					emit( asm_PUSH(R18) );
+					emit( asm_LDI(R18, jvm_operand_byte0) );
 					emit( asm_PUSH(R18) );
 				break;
 				case JVM_SADD:
