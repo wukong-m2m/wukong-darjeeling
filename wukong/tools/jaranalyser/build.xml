@@ -1,0 +1,49 @@
+<project default="jar">
+	<property name="bcelpath" value="../../../src/infuser/lib/bcel-5.2.jar"/>
+
+	<property name="build" value="build"/>
+	<property name="classes" value="${build}/class"/>
+	<property name="jar" value="${build}/jaranalyser.jar"/>
+
+	<property name="src" value="java"/>
+	
+	<!-- compile the sources -->
+	<target name="compile">
+		<mkdir dir="${classes}"/>
+		<javac
+			srcdir="${src}"
+			destdir="${classes}"
+			classpath="${bcelpath}"
+			source="1.5"
+			debug="true"
+			encoding="iso-8859-1"		
+			includeantruntime="true"
+		>
+		</javac>
+	</target>
+
+	<!-- package the tools into a single .jar file -->
+	<target name="jar" depends="compile"> 
+		<mkdir dir="${build}"/>
+		<jar destfile="${jar}"> 
+			<fileset dir="${classes}"><include name="**/*.class"/></fileset>
+			<zipfileset src="${bcelpath}" excludes="META-INF/*"/>
+			<manifest><attribute name="Main-Class" value="JarAnalyser"/></manifest>
+		</jar>
+	</target>
+
+	<!-- clean -->
+	<target name="clean">
+		<delete dir="${build}"/>
+		<delete file="${jar}"/>
+	</target>
+
+	<!-- package the tools into a single .jar file -->
+	<target name="testjar" depends="compile"> 
+		<jar destfile="test.jar"> 
+			<fileset dir="${classes}"><include name="**/*.class"/></fileset>
+			<manifest><attribute name="Main-Class" value="JarAnalyser"/></manifest>
+		</jar>
+	</target>
+
+</project>
