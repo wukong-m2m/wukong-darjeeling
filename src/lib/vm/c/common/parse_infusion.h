@@ -123,8 +123,9 @@ enum JavaTypeID
 #define dj_di_methodImplementation_getMaxStack(pointer) dj_di_getU8(pointer + 5)
 #define dj_di_methodImplementation_getFlags(pointer) dj_di_getU8(pointer + 6)
 #define dj_di_methodImplementation_getReturnType(pointer) dj_di_getU8(pointer + 7)
-#define dj_di_methodImplementation_getLength(pointer) dj_di_getU16(pointer + 8)
-#define dj_di_methodImplementation_getData(pointer) (pointer + 10)
+#define dj_di_methodImplementation_getNumberOfBranchTargets(pointer) dj_di_getU16(pointer + 8)
+#define dj_di_methodImplementation_getLength(pointer) dj_di_getU16(pointer + 10)
+#define dj_di_methodImplementation_getData(pointer) (pointer + 12)
 
 #define dj_di_methodImplementation_getNrExceptionHandlers(pointer) \
 	dj_di_getU8((pointer + 10 + dj_di_getU16(pointer + 8)))
