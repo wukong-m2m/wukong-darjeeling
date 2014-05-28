@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.csiro.darjeeling.infuser.bytecode.instructions.BranchInstruction;
+import org.csiro.darjeeling.infuser.bytecode.instructions.BranchTargetInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.SwitchInstruction;
 
 /**
@@ -290,6 +291,22 @@ public class InstructionList
 			}
 		}
 	}	
+
+
+	public void setBranchTargetIndexes()
+	{
+		for (InstructionHandle handle : instructions)
+		{
+			Opcode opcode = handle.getInstruction().getOpcode();
+			
+			if (opcode.isBranch())
+			{
+				BranchInstruction branch = (BranchInstruction)handle.getInstruction();
+				BranchTargetInstruction branchTarget = (BranchTargetInstruction)handle.getBranchHandle().getInstruction();
+				branch.setBranchTargetIndex(branchTarget.getBranchTargetIndex());
+			}
+		}
+	}
 	
 	@SuppressWarnings("unchecked")
 	public Object clone() throws CloneNotSupportedException

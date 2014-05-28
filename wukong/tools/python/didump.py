@@ -86,6 +86,9 @@ def print_method_impl_list(rawdata):
 		flags = methoddata.pop(0)
 		print "\t\t\tflags:", ("NATIVE" if flags & 1 != 0 else ""), ("STATIC" if flags & 2 != 0 else "")
 		print "\t\t\treturn type:", methoddata.pop(0)
+		number_of_branch_targets = little_endian(methoddata[0:2])
+		print "\t\t\tnumber of branch targets:", number_of_branch_targets
+		methoddata = methoddata[2:]
 		code_length = little_endian(methoddata[0:2])
 		print "\t\t\tcode length:", code_length
 		print "\t\t\tcode:", methoddata[2:2+code_length]

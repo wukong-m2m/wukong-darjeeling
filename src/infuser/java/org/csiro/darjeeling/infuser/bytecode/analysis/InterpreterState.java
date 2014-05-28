@@ -442,6 +442,10 @@ public class InterpreterState implements Comparable<InterpreterState>
 				// nothing
 				break;
 			
+			case BRTARGET:				
+				// nothing
+				break;
+
 			default:
 				throw new IllegalArgumentException("Unimplemented opcode: " + handle.getInstruction().getOpcode().getName());
 				

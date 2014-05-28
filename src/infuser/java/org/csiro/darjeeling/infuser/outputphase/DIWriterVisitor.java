@@ -215,6 +215,9 @@ public class DIWriterVisitor extends DescendingVisitor
 			
 			// Write return type
 			out.writeUINT8(element.getMethodDefinition().getReturnType().getTType());
+
+			// Write the number of branch targets
+			out.writeUINT16(element.getNumberOfBranchTargets());
 			
 			// write code block
 			if (element.getCode()==null)

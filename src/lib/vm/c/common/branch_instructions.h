@@ -41,6 +41,8 @@ static inline void IF_ICMPEQ()
 	offset = fetch16();
 	if (temp1==temp2)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -56,6 +58,8 @@ static inline void IF_ICMPNE()
 	offset = fetch16();
 	if (temp1!=temp2)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -71,6 +75,8 @@ static inline void IF_ICMPLT()
 	offset = fetch16();
 	if (temp1<temp2)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -86,6 +92,8 @@ static inline void IF_ICMPGE()
 	offset = fetch16();
 	if (temp1>=temp2)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -101,6 +109,8 @@ static inline void IF_ICMPGT()
 	offset = fetch16();
 	if (temp1>temp2)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -116,6 +126,8 @@ static inline void IF_ICMPLE()
 	offset = fetch16();
 	if (temp1<=temp2)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -131,6 +143,8 @@ static inline void IF_SCMPEQ()
 	offset = fetch16();
 	if (temp1==temp2)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -146,6 +160,8 @@ static inline void IF_SCMPNE()
 	offset = fetch16();
 	if (temp1!=temp2)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -161,6 +177,8 @@ static inline void IF_SCMPLT()
 	offset = fetch16();
 	if (temp1<temp2)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -176,6 +194,8 @@ static inline void IF_SCMPGE()
 	offset = fetch16();
 	if (temp1>=temp2)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -191,6 +211,8 @@ static inline void IF_SCMPGT()
 	offset = fetch16();
 	if (temp1>temp2)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -206,6 +228,8 @@ static inline void IF_SCMPLE()
 	offset = fetch16();
 	if (temp1<=temp2)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -217,6 +241,8 @@ static inline void IIFEQ()
 	uint16_t offset = fetch16();
 	if (popInt()==0)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -228,6 +254,8 @@ static inline void IIFNE()
 	uint16_t offset = fetch16();
 	if (popInt()!=0)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -239,6 +267,8 @@ static inline void IIFLT()
 	uint16_t offset = fetch16();
 	if (popInt()<0)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -250,6 +280,8 @@ static inline void IIFGE()
 	uint16_t offset = fetch16();
 	if (popInt()>=0)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -261,6 +293,8 @@ static inline void IIFGT()
 	uint16_t offset = fetch16();
 	if (popInt()>0)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -272,6 +306,8 @@ static inline void IIFLE()
 	uint16_t offset = fetch16();
 	if (popInt()<=0)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 
@@ -284,6 +320,8 @@ static inline void SIFEQ()
 	uint16_t offset = fetch16();
 	if (popShort()==0)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -295,6 +333,8 @@ static inline void SIFNE()
 	uint16_t offset = fetch16();
 	if (popShort()!=0)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -306,6 +346,8 @@ static inline void SIFLT()
 	uint16_t offset = fetch16();
 	if (popShort()<0)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -317,6 +359,8 @@ static inline void SIFGE()
 	uint16_t offset = fetch16();
 	if (popShort()>=0)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -328,6 +372,8 @@ static inline void SIFGT()
 	uint16_t offset = fetch16();
 	if (popShort()>0)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -339,6 +385,8 @@ static inline void SIFLE()
 	uint16_t offset = fetch16();
 	if (popShort()<=0)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 
@@ -351,6 +399,8 @@ static inline void IFNULL()
 	uint16_t offset = fetch16();
 	if (popRef()==nullref)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 /**
@@ -362,6 +412,8 @@ static inline void IFNONNULL()
 	uint16_t offset = fetch16();
 	if (popRef()!=nullref)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 static inline void IF_ACMPNE()
@@ -374,6 +426,8 @@ static inline void IF_ACMPNE()
 	offset = fetch16();
 	if (a!=b)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 static inline void IF_ACMPEQ()
@@ -385,6 +439,8 @@ static inline void IF_ACMPEQ()
 	offset = fetch16();
 	if (a==b)
 		branch(offset-3);
+	else
+		fetch16(); // Branch not taken: skip over BranchTargetIndex. It's only used for rtc compiled code.
 }
 
 static inline void ATHROW()

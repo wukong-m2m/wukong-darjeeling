@@ -99,6 +99,12 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 	{
 		return isNative;
 	}
+
+	public int getNumberOfBranchTargets()
+	{
+		if (codeBlock==null) return 0; else
+			return codeBlock.getNumberOfBranchTargets();
+	}
 	
 	public int getReferenceLocalVariableCount()
 	{

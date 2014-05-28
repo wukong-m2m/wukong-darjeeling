@@ -120,7 +120,14 @@ public class InstructionHandle implements Comparable<InstructionHandle>
 	
 	public void setNextHandle(InstructionHandle nextHandle)
 	{
-		this.nextHandle = nextHandle;
+		// GOTO shouldn't have a next handle, just a branch handle.
+		if (this.instruction.getOpcode() != Opcode.GOTO)
+			this.nextHandle = nextHandle;
+	}
+
+	public InstructionHandle getNextHandle()
+	{
+		return this.nextHandle;
 	}
 	
 	public void setBranchHandle(InstructionHandle branchHandle)

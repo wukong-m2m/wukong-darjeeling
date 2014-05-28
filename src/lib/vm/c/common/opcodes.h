@@ -242,6 +242,7 @@
 #define JVM_I2L 216
 #define JVM_S2L 217
 #define JVM_LCMP 218
+#define JVM_BRTARGET 219
 
 #endif // __opcodes__h
 

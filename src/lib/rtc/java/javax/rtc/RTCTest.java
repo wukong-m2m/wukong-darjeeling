@@ -2,8 +2,12 @@ package javax.rtc;
 
 public class RTCTest {
 	public static short AddFortyTwo(short x) {
-		// return (short)(x%42);
-		return (short)(x&(short)42);
+		if (x==0)
+			return (short)42;
+		else if (x==2)
+			return (short)43;
+		else
+			return (short)100;
 	}
 	public static native short GetFortyThree();
 	public static short Add(short a, short b, short c, short d, short e) {

@@ -1,5 +1,5 @@
 /*
- * BranchInstruction.java
+ * BranchTargetInstruction.java
  * 
  * Copyright (c) 2008-2010 CSIRO, Delft University of Technology.
  * 
@@ -21,62 +21,31 @@
  
 package org.csiro.darjeeling.infuser.bytecode.instructions;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import org.csiro.darjeeling.infuser.bytecode.Instruction;
 import org.csiro.darjeeling.infuser.bytecode.Opcode;
 
-
-public class BranchInstruction extends Instruction
+public class BranchTargetInstruction extends SimpleInstruction
 {
-	
-	protected int branchAdress;
 	protected int branchTargetIndex;
 
-	public BranchInstruction(Opcode opcode, int branchAdress)
+	public BranchTargetInstruction(Opcode opcode)
 	{
 		super(opcode);
-		this.branchAdress = branchAdress;
 	}
 
-	public void dump(DataOutputStream out) throws IOException
-	{
-		out.write(opcode.getOpcode());
-		out.writeShort(branchAdress);
-		out.writeShort(branchTargetIndex);
-	}
-	
-	public int getBranchAdress()
-	{
-		return branchAdress;
-	}
-	
-	public void setBranchAdress(int branchAdress)
-	{
-		this.branchAdress = branchAdress;
-	}
-	
 	public int getBranchTargetIndex()
 	{
 		return branchTargetIndex;
 	}
-	
+
 	public void setBranchTargetIndex(int branchTargetIndex)
 	{
 		this.branchTargetIndex = branchTargetIndex;
 	}
 	
 	@Override
-	public int getLength()
-	{
-		return 5;
-	}
-	
-	@Override
 	public String toString()
 	{
-		return opcode.getName() + "(" + branchAdress + "," + branchTargetIndex + ")";
+		return opcode.getName() + "(" + branchTargetIndex + ")";
 	}
-
 }

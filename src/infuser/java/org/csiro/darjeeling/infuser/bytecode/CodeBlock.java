@@ -30,6 +30,7 @@ import org.apache.bcel.classfile.Code;
 import org.apache.bcel.classfile.CodeException;
 import org.apache.bcel.classfile.ConstantClass;
 import org.apache.bcel.generic.ConstantPoolGen;
+import org.csiro.darjeeling.infuser.bytecode.transformations.AddBranchTargetInstructions;
 import org.csiro.darjeeling.infuser.bytecode.transformations.AnalyseTypes;
 import org.csiro.darjeeling.infuser.bytecode.transformations.CalculateMaxStack;
 import org.csiro.darjeeling.infuser.bytecode.transformations.InsertExplicitCasts;
@@ -164,6 +165,21 @@ public class CodeBlock
 	{
 		return localVariables.size();
 	}
+
+	/**
+	 * @return the number of branch targets
+	 */
+	public int getNumberOfBranchTargets()
+	{
+		int count = 0;
+		for (int i=0; i<instructions.size(); i++)
+		{			
+			InstructionHandle handle = instructions.get(i);
+			if (handle.getInstruction().getOpcode() == Opcode.BRTARGET)
+				count++;
+		}
+		return count;
+	}
 	
 	/**
 	 * Creates a new CodeBlock from an existing BCEL Code object. Code is transformed and optimised.
@@ -267,8 +283,11 @@ public class CodeBlock
 
 		// thread states, creating incoming and outgoing links between instruction handles
 		ret.instructions.threadStates();
-		
-		// fix the branch addresses in the branch instructions
+
+		ret.instructions.fixBranchAddresses();
+		// insert BRTARGET instructions just before each branch target
+		new AddBranchTargetInstructions(ret).transform();
+		ret.instructions.reThreadStates();
 		ret.instructions.fixBranchAddresses();
 		
 		// perform type analysis
@@ -298,6 +317,7 @@ public class CodeBlock
 
 		// fix the branch addresses in the branch instructions
 		ret.instructions.fixBranchAddresses();
+		ret.instructions.setBranchTargetIndexes();
 		
 		return ret;
 	}
