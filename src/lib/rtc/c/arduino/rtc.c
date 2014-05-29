@@ -24,15 +24,6 @@ uint16_t *rtc_codebuffer;
 uint16_t *rtc_codebuffer_position; // A pointer to somewhere within the buffer
 
 
-
-// USED DURING RUNTIME:
-// We'll store the location of the function locals here just before calling the rtc compiled method.
-// The function prologue will retrieve it and set the Y register
-// It gets set by execution.c in the vm lib. Still need to reorganise these dependencies.
-uint16_t rtc_frame_locals_start;
-
-
-
 void rtc_flush() {
 	uint8_t *instructiondata = (uint8_t *)rtc_codebuffer;
 	uint16_t count = rtc_codebuffer_position - rtc_codebuffer;
@@ -116,11 +107,7 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
 	// prologue (is this the right way?)
 	emit( asm_PUSH(R28) ); // Push Y
 	emit( asm_PUSH(R29) );
-	emit( asm_LDI(R26, ((uint16_t)&rtc_frame_locals_start)&0xFF) ); // Load address OF rtc_frame_locals_start in X
-	emit( asm_LDI(R27, (((uint16_t)&rtc_frame_locals_start)>>8)&0xFF) );
-	emit( asm_LDXINC(R28) ); // Load the address STORED IN rtc_frame_locals_start in Y
-	emit( asm_LDXINC(R29) );
-
+	emit( asm_MOVW(R28, R24) );
 
 	// translate the method
 	dj_di_pointer code = dj_di_methodImplementation_getData(methodimpl);
