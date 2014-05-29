@@ -35,7 +35,6 @@
 #define Z			0
 
 
-
 // LDD  	            10q0 qq0d dddd yqqq, with d=dest register, q=offset from Y or Z, y=1 for Y 0 for Z
 #define OPCODE_LDD 		0x8000
 
@@ -78,6 +77,13 @@
 // EOR                0010 01rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_EOR    0x2400
 
+// RJMP               1100 kkkk kkkk kkkk, with k the signed offset to jump to, in WORDS, not bytes. PC <- PC + k + 1
+#define SIZEOF_RJMP   2
+#define OPCODE_RJMP   0xC000
+
+// BREQ               1111 00kk kkkk k001, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
+#define OPCODE_BREQ   0xF001
+
 // CALL               1001 010k kkkk 111k
 //                    kkkk kkkk kkkk kkkk
 #define OPCODE_CALL   0x940E
@@ -92,6 +98,11 @@
                ((offset) & 0x07) \
             + (((offset) & 0x18) << 7) \
             + (((offset) & 0x20) << 8))
+
+// 0000 00kk kkkk k000
+#define makeBranchOffset(offset) ( \
+                (offset) << 3)
+
 
 // 0000 KKKK 0000 KKKK
 #define makeLDIconstant(constant) ( \
@@ -131,6 +142,9 @@
 // TODO: support addresses > 128K
 #define asm_CALL1(address)              OPCODE_CALL
 #define asm_CALL2(address)              (address/2)
+#define asm_RJMP(offset)                (OPCODE_RJMP + (((offset)/2) & 0xFFF))
+#define asm_BREQ(offset)                (OPCODE_BREQ + makeBranchOffset(((offset)/2)))
+
 #define asm_RET                         OPCODE_RET
 
 

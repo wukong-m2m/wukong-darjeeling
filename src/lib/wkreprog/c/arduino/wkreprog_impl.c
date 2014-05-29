@@ -26,6 +26,12 @@ uint16_t wkreprog_impl_get_page_size() {
 	return SPM_PAGESIZE;
 }
 
+dj_di_pointer wkreprog_impl_get_raw_position() {
+	return avr_flash_pageaddress // The start address of the current page
+			+ avr_flash_buf_len; // The offset within the page
+}
+
+
 // Open reprogramming at a position within the app archive
 bool wkreprog_impl_open_app_archive(uint16_t start_write_position) {
 	return wkreprog_impl_open_raw(avr_flash_pageaddress+start_write_position);

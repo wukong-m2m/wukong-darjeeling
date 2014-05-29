@@ -18,6 +18,9 @@ extern bool wkreprog_open_file(uint8_t filenumber, uint16_t start_write_position
 // Finish writing to flash and flush the page currently being written to
 #define wkreprog_close wkreprog_impl_close
 
+// Get the position of the next byte to be written
+#define wkreprog_get_raw_position wkreprog_impl_get_raw_position
+
 
 
 #endif // WKREPROG_H

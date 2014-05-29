@@ -10,4 +10,6 @@ extern void wkreprog_impl_write(uint8_t size, uint8_t* data);
 extern void wkreprog_impl_close();
 extern void wkreprog_impl_reboot();
 
+extern dj_di_pointer wkreprog_impl_get_raw_position();
+
 #endif // WKREPROG_IMPL_H

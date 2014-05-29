@@ -11,10 +11,47 @@
 #include <avr/boot.h>
 #include <stddef.h>
 
-const unsigned char PROGMEM __attribute__ ((aligned (SPM_PAGESIZE))) rtc_compiled_code_buffer[RTC_COMPILED_CODE_BUFFER_SIZE] = {};
+
 
 // avr-libgcc functions used by translation
 extern void* __divmodhi4;
+
+// USED AT COMPILE TIME:
+const unsigned char PROGMEM __attribute__ ((aligned (SPM_PAGESIZE))) rtc_compiled_code_buffer[RTC_COMPILED_CODE_BUFFER_SIZE] = {};
+// Buffer for emitting code.
+#define RTC_MAX_SIZE_FOR_SINGLE_JVM_INSTRUCTION 10 // Used to check when we need to flush the buffer (when rtc_codebuffer_position-rtc_codebuffer < RTC_MAX_SIZE_FOR_SINGLE_JVM_INSTRUCTION)
+uint16_t *rtc_codebuffer;
+uint16_t *rtc_codebuffer_position; // A pointer to somewhere within the buffer
+
+
+
+// USED DURING RUNTIME:
+// We'll store the location of the function locals here just before calling the rtc compiled method.
+// The function prologue will retrieve it and set the Y register
+// It gets set by execution.c in the vm lib. Still need to reorganise these dependencies.
+uint16_t rtc_frame_locals_start;
+
+
+
+void rtc_flush() {
+	uint8_t *instructiondata = (uint8_t *)rtc_codebuffer;
+	uint16_t count = rtc_codebuffer_position - rtc_codebuffer;
+#ifdef DARJEELING_DEBUG
+	for (int i=0; i<count; i++) {
+		DEBUG_LOG(DBG_RTC, "[rtc]    %x  (%x %x)\n", rtc_codebuffer[i], instructiondata[i*2], instructiondata[i*2+1]);
+	}
+#endif // DARJEELING_DEBUG
+	// Write to flash
+    wkreprog_write(2*count, instructiondata);
+    // Buffer is now empty
+    rtc_codebuffer_position = rtc_codebuffer;
+}
+
+static inline void emit(uint16_t wordopcode) {
+	*(rtc_codebuffer_position++) = wordopcode;
+}
+
+
 
 uint8_t offset_for_intlocal(dj_di_pointer methodimpl, uint8_t local) {
 	return (dj_di_methodImplementation_getReferenceLocalVariableCount(methodimpl) * sizeof(ref_t)) +
@@ -25,7 +62,6 @@ uint8_t offset_for_reflocal(dj_di_pointer methodimpl, uint8_t local) {
 	return (local * sizeof(ref_t));
 }
 
-dj_di_pointer rtc_compiled_code_next_free_byte;
 
 void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t *rtc_method_start_addresses) {
 	DEBUG_LOG(DBG_RTC, "[rtc] handler list is at %p\n", infusion->native_handlers);
@@ -53,46 +89,28 @@ void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t 
 	wkreprog_close();
 }
 
-// We'll store the location of the function locals here just before calling the rtc compiled method.
-// The function prologue will retrieve it and set the Y register
-// It gets set by execution.c in the vm lib. Still need to reorganise these dependencies.
-uint16_t rtc_frame_locals_start;
-
-
-// Used to check when we need to flush the buffer
-// (when rtc_codebuffer_position-rtc_codebuffer < RTC_MAX_SIZE_FOR_SINGLE_JVM_INSTRUCTION)
-#define RTC_MAX_SIZE_FOR_SINGLE_JVM_INSTRUCTION 10
-uint16_t *rtc_codebuffer;
-uint16_t *rtc_codebuffer_position;
-
-void rtc_flush() {
-	uint8_t *instructiondata = (uint8_t *)rtc_codebuffer;
-	uint16_t count = rtc_codebuffer_position - rtc_codebuffer;
-#ifdef DARJEELING_DEBUG
-	for (int i=0; i<count; i++) {
-		DEBUG_LOG(DBG_RTC, "[rtc]    %x  (%x %x)\n", rtc_codebuffer[i], instructiondata[i*2], instructiondata[i*2+1]);
-	}
-#endif // DARJEELING_DEBUG
-	// Write to flash
-    wkreprog_write(2*count, instructiondata);
-    // Update last written position to keep track of method function pointers
-    rtc_compiled_code_next_free_byte += 2*count;
-    // Buffer is now empty
-    rtc_codebuffer_position = rtc_codebuffer;
-}
-
-static inline void emit(uint16_t wordopcode) {
-	*(rtc_codebuffer_position++) = wordopcode;
-}
-
+#define rtc_branch_table_size(methodimpl) (dj_di_methodImplementation_getNumberOfBranchTargets(methodimpl)*SIZEOF_RJMP)
+#define rtc_branch_target_table_address(i) (branch_target_table_start_ptr + i*SIZEOF_RJMP)
 void rtc_compile_method(dj_di_pointer methodimpl) {
 	uint8_t jvm_operand_byte0;
 	uint8_t jvm_operand_byte1;
+	uint16_t jvm_operand_word;
+	dj_di_pointer tmp_current_position; // Used to temporarily store the current position when processing brtarget instructions.
 
-	// Buffer to hold the code we're building
+	uint16_t branch_target_count = 0; // Keep track of how many branch targets we've seen
+
+	// Buffer to hold the code we're building (want to keep this on the stack so it doesn't take up space at runtime)
 	uint16_t codebuffer[16];
 	rtc_codebuffer = codebuffer;
 	rtc_codebuffer_position = codebuffer;
+
+	// Reserve space for the branch table
+	uint16_t branchTableSize = rtc_branch_table_size(methodimpl);
+	// Remember the start of the branch table
+	dj_di_pointer branch_target_table_start_ptr = wkreprog_get_raw_position();
+	DEBUG_LOG(DBG_RTC, "[rtc] Reserving %d bytes for %d branch targets at address %p\n", branchTableSize, dj_di_methodImplementation_getNumberOfBranchTargets(methodimpl), branch_target_table_start_ptr);
+	// Skip this number of bytes (actually it doesn't matter what we write here, but I just use the same data so nothing changes)
+	wkreprog_write(branchTableSize, (uint8_t *)branch_target_table_start_ptr);
 
 	// prologue (is this the right way?)
 	emit( asm_PUSH(R28) ); // Push Y
@@ -101,6 +119,7 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
 	emit( asm_LDI(R27, (((uint16_t)&rtc_frame_locals_start)>>8)&0xFF) );
 	emit( asm_LDXINC(R28) ); // Load the address STORED IN rtc_frame_locals_start in Y
 	emit( asm_LDXINC(R29) );
+
 
 	// translate the method
 	dj_di_pointer code = dj_di_methodImplementation_getData(methodimpl);
@@ -289,6 +308,36 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
 				emit( asm_POP(R28) );
 				emit( asm_RET );
 			break;
+
+			// BRANCHES
+			case JVM_SIFNE:
+				// Branch instructions first have a bytecode offset, used by the interpreter,
+				// followed by a branch target index used when compiling to native code.
+				jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+				pc += 4;
+
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_OR(R24, R25) );
+				emit( asm_BREQ(SIZEOF_RJMP) ); // Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
+				rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
+				emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+			break;
+			case JVM_BRTARGET:
+				// This is a noop, but we need to record the address of the next instruction
+				// in the branch table as a RJMP instruction.
+				tmp_current_position = wkreprog_get_raw_position();
+				rtc_flush(); // Not strictly necessary at the moment
+				wkreprog_close();
+				wkreprog_open_raw(rtc_branch_target_table_address(branch_target_count));
+				emit( asm_RJMP(tmp_current_position - rtc_branch_target_table_address(branch_target_count) - 2) ); // Relative jump to tmp_current_position from the branch target table. -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+				rtc_flush();
+				wkreprog_close();
+				wkreprog_open_raw(tmp_current_position);
+				branch_target_count++;
+			break;
+
+			// Not implemented
 			default:
 				DEBUG_LOG(DBG_RTC, "Unimplemented Java opcode %d at pc=%d\n", opcode, pc);
 				dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
@@ -305,8 +354,7 @@ void rtc_compile_lib(dj_infusion *infusion) {
 	for (uint16_t i=0; i<256; i++)
 		rtc_method_start_addresses[i] = 0;
 
-	rtc_compiled_code_next_free_byte = (dj_di_pointer)rtc_compiled_code_buffer;
-	wkreprog_open_raw(rtc_compiled_code_next_free_byte);
+	wkreprog_open_raw((dj_di_pointer)rtc_compiled_code_buffer);
 
 	uint16_t number_of_methodimpls = dj_di_parentElement_getListSize(infusion->methodImplementationList);
 	DEBUG_LOG(DBG_RTC, "[rtc] infusion contains %d methods\n", number_of_methodimpls);
@@ -338,7 +386,8 @@ void rtc_compile_lib(dj_infusion *infusion) {
 		// store the starting address for this method;
 		// IMPORTANT!!!! the PC in AVR stores WORD addresses, so we need to divide the address
 		// of a function by 2 in order to get a function pointer!
-		rtc_method_start_addresses[i] = (native_method_function_t)(rtc_compiled_code_next_free_byte/2);
+		dj_di_pointer method_address = wkreprog_get_raw_position() + rtc_branch_table_size(methodimpl);
+		rtc_method_start_addresses[i] = (native_method_function_t)(method_address/2);
 
 		rtc_compile_method(methodimpl);
 	}
