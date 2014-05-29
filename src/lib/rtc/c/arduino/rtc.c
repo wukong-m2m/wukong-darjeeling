@@ -400,8 +400,8 @@ void rtc_compile_lib(dj_infusion *infusion) {
 		}
 
 		// TMPRTC
-		if (i!=1 && i!=3) {
-			DEBUG_LOG(DBG_RTC, "[rtc] skipping method %i for now\n", i);
+		if (i==0) {
+			DEBUG_LOG(DBG_RTC, "[rtc] skipping method 0 for now\n", i);
 			continue;
 		}
 		
