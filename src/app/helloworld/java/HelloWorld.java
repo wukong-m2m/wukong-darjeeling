@@ -25,8 +25,20 @@ public class HelloWorld
 {
 	public static void main(String args[])
 	{
-		System.out.println("Hello, world! " + RTCTest.AddFortyTwo((short)252));
-		System.out.println("Hello, world! " + RTCTest.AddFortyTwo((short)0));
-		// System.out.println("Hello, world! " + RTCTest.Add((short)100, (short)300, (short)0, (short)0, (short)0));
+		System.out.println("Hello, world! LT" + RTCTest.f_LT((short)-1));
+		System.out.println("Hello, world! LT" + RTCTest.f_LT((short)0));
+		System.out.println("Hello, world! LT" + RTCTest.f_LT((short)1));
+
+		System.out.println("Hello, world! LE" + RTCTest.f_LE((short)-1));
+		System.out.println("Hello, world! LE" + RTCTest.f_LE((short)0));
+		System.out.println("Hello, world! LE" + RTCTest.f_LE((short)1));
+
+		System.out.println("Hello, world! GT" + RTCTest.f_GT((short)-1));
+		System.out.println("Hello, world! GT" + RTCTest.f_GT((short)0));
+		System.out.println("Hello, world! GT" + RTCTest.f_GT((short)1));
+
+		System.out.println("Hello, world! GE" + RTCTest.f_GE((short)-1));
+		System.out.println("Hello, world! GE" + RTCTest.f_GE((short)0));
+		System.out.println("Hello, world! GE" + RTCTest.f_GE((short)1));
 	}
 }

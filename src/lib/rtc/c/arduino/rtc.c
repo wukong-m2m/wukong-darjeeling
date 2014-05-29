@@ -89,6 +89,7 @@ void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t 
 	wkreprog_close();
 }
 
+
 #define rtc_branch_table_size(methodimpl) (dj_di_methodImplementation_getNumberOfBranchTargets(methodimpl)*SIZEOF_RJMP)
 #define rtc_branch_target_table_address(i) (branch_target_table_start_ptr + i*SIZEOF_RJMP)
 void rtc_compile_method(dj_di_pointer methodimpl) {
@@ -144,10 +145,10 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
 					jvm_operand_byte0 = dj_di_getU8(code + ++pc);
 				else
 					jvm_operand_byte0 = opcode - JVM_SLOAD_0;
-				emit( asm_LDD(R18, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)) );
-				emit( asm_PUSH(R18) );
-				emit( asm_LDD(R18, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)+1) );
-				emit( asm_PUSH(R18) );
+				emit( asm_LDD(R24, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)) );
+				emit( asm_LDD(R25, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)+1) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
 			break;
 			case JVM_SCONST_0:
 			case JVM_SCONST_1:
@@ -156,36 +157,36 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
 			case JVM_SCONST_4:
 			case JVM_SCONST_5:
 				jvm_operand_byte0 = opcode - JVM_SCONST_0;
-				emit( asm_LDI(R18, jvm_operand_byte0) );
-				emit( asm_PUSH(R18) );
-				emit( asm_LDI(R18, 0) );
-				emit( asm_PUSH(R18) );
+				emit( asm_LDI(R24, jvm_operand_byte0) );
+				emit( asm_LDI(R25, 0) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
 			break;
 			case JVM_BSPUSH:
 				jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-				emit( asm_LDI(R18, jvm_operand_byte0) );
-				emit( asm_PUSH(R18) );
-				emit( asm_LDI(R18, 0) );
-				emit( asm_PUSH(R18) );
+				emit( asm_LDI(R24, jvm_operand_byte0) );
+				emit( asm_LDI(R25, 0) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
 			break;
 			case JVM_SSPUSH:
 				// bytecode is big endian, but I've been pushing LSB first. (maybe change that later)
 				jvm_operand_byte0 = dj_di_getU8(code + ++pc);
 				jvm_operand_byte1 = dj_di_getU8(code + ++pc);
-				emit( asm_LDI(R18, jvm_operand_byte1) );
-				emit( asm_PUSH(R18) );
-				emit( asm_LDI(R18, jvm_operand_byte0) );
-				emit( asm_PUSH(R18) );
+				emit( asm_LDI(R24, jvm_operand_byte1) );
+				emit( asm_LDI(R25, jvm_operand_byte0) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
 			break;
 			case JVM_SADD:
-				emit( asm_POP(R21) );
-				emit( asm_POP(R20) );
-				emit( asm_POP(R19) );
-				emit( asm_POP(R18) );
-				emit( asm_ADD(R18, R20) );
-				emit( asm_ADC(R19, R21) );
-				emit( asm_PUSH(R18) );
-				emit( asm_PUSH(R19) );
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_POP(R23) );
+				emit( asm_POP(R22) );
+				emit( asm_ADD(R24, R22) );
+				emit( asm_ADC(R25, R23) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
 			break;
 			case JVM_SMUL:
 				emit( asm_POP(R25) );
@@ -211,20 +212,19 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
 				emit( asm_MUL(R25, R22) );
 				emit( asm_ADD(R19, R0) );
 				// gcc generates "clr r1" here, but it doesn't seem necessary?
-				// emit( asm_MOVW(R24, R18) );
-
-				emit( asm_PUSH(R18) );
-				emit( asm_PUSH(R19) );
+				emit( asm_MOVW(R24, R18) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
 			break;
 			case JVM_SSUB:
-				emit( asm_POP(R21) );
-				emit( asm_POP(R20) );
-				emit( asm_POP(R19) );
-				emit( asm_POP(R18) );
-				emit( asm_SUB(R18, R20) );
-				emit( asm_SBC(R19, R21) );
-				emit( asm_PUSH(R18) );
-				emit( asm_PUSH(R19) );				
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_POP(R23) );
+				emit( asm_POP(R22) );
+				emit( asm_SUB(R22, R24) );
+				emit( asm_SBC(R23, R25) );
+				emit( asm_PUSH(R22) );
+				emit( asm_PUSH(R23) );				
 			break;
 			case JVM_SDIV:
 			case JVM_SREM:
@@ -245,42 +245,42 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
 			case JVM_SNEG:
 				emit( asm_POP(R25) );
 				emit( asm_POP(R24) );
-				emit( asm_CLR(R18) );
-				emit( asm_CLR(R19) );
-				emit( asm_SUB(R18, R24) );
-				emit( asm_SBC(R19, R25) );
-				emit( asm_PUSH(R18) );
-				emit( asm_PUSH(R19) );
+				emit( asm_CLR(R23) );
+				emit( asm_CLR(R22) );
+				emit( asm_SUB(R22, R24) );
+				emit( asm_SBC(R23, R25) );
+				emit( asm_PUSH(R22) );
+				emit( asm_PUSH(R23) );
 			break;
 			case JVM_SAND:
 				emit( asm_POP(R25) );
 				emit( asm_POP(R24) );
-				emit( asm_POP(R19) );
-				emit( asm_POP(R18) );
-				emit( asm_AND(R18, R24) );
-				emit( asm_AND(R19, R25) );
-				emit( asm_PUSH(R18) );
-				emit( asm_PUSH(R19) );
+				emit( asm_POP(R23) );
+				emit( asm_POP(R22) );
+				emit( asm_AND(R24, R22) );
+				emit( asm_AND(R25, R23) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
 			break;
 			case JVM_SOR:
 				emit( asm_POP(R25) );
 				emit( asm_POP(R24) );
-				emit( asm_POP(R19) );
-				emit( asm_POP(R18) );
-				emit( asm_OR(R18, R24) );
-				emit( asm_OR(R19, R25) );
-				emit( asm_PUSH(R18) );
-				emit( asm_PUSH(R19) );
+				emit( asm_POP(R23) );
+				emit( asm_POP(R22) );
+				emit( asm_OR(R24, R22) );
+				emit( asm_OR(R25, R23) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
 			break;
 			case JVM_SXOR:
 				emit( asm_POP(R25) );
 				emit( asm_POP(R24) );
-				emit( asm_POP(R19) );
-				emit( asm_POP(R18) );
-				emit( asm_EOR(R18, R24) );
-				emit( asm_EOR(R19, R25) );
-				emit( asm_PUSH(R18) );
-				emit( asm_PUSH(R19) );
+				emit( asm_POP(R23) );
+				emit( asm_POP(R22) );
+				emit( asm_EOR(R24, R22) );
+				emit( asm_EOR(R25, R23) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
 			break;
 			case JVM_RETURN:
 				// epilogue (is this the right way?)
@@ -310,7 +310,12 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
 			break;
 
 			// BRANCHES
+			case JVM_SIFEQ:
 			case JVM_SIFNE:
+			case JVM_SIFLT:
+			case JVM_SIFGE:
+			case JVM_SIFGT:
+			case JVM_SIFLE:
 				// Branch instructions first have a bytecode offset, used by the interpreter,
 				// followed by a branch target index used when compiling to native code.
 				jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
@@ -318,8 +323,27 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
 
 				emit( asm_POP(R25) );
 				emit( asm_POP(R24) );
-				emit( asm_OR(R24, R25) );
-				emit( asm_BREQ(SIZEOF_RJMP) ); // Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
+				// Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
+				if (opcode == JVM_SIFEQ) {
+					emit( asm_OR(R24, R25) );
+					emit( asm_BRNE(SIZEOF_RJMP) );
+				} else if (opcode == JVM_SIFNE) {
+					emit( asm_OR(R24, R25) );
+					emit( asm_BREQ(SIZEOF_RJMP) );
+				} else if (opcode == JVM_SIFLT) {
+					emit( asm_SBRC(R25, 7) ); // value is >0 if the highest bit is cleared
+				} else if (opcode == JVM_SIFGE) {
+					emit( asm_SBRS(R25, 7) ); // value is <0 if the highest bit is set
+				} else if (opcode == JVM_SIFGT) {
+					emit( asm_CP(ZERO_REG, R24) );
+					emit( asm_CPC(ZERO_REG, R25) );
+					emit( asm_BRGE(SIZEOF_RJMP) ); // if (0 >= x), then NOT (x > 0)
+				} else if (opcode == JVM_SIFLE) {
+					emit( asm_CP(ZERO_REG, R24) );
+					emit( asm_CPC(ZERO_REG, R25) );
+					emit( asm_BRLT(SIZEOF_RJMP) ); // if (0 < x), then NOT (x <= 0)
+				}
+
 				rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
 				emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
 			break;
