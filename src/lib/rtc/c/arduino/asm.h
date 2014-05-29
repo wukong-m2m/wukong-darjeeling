@@ -39,7 +39,7 @@
 
 // 6 bit offset q has to be inserted in the opcode like this:
 // 00q0 qq00 0000 0qqq
-#define makeLDDoffset(offset) ( \
+#define makeLDDSTDoffset(offset) ( \
                ((offset) & 0x07) \
             + (((offset) & 0x18) << 7) \
             + (((offset) & 0x20) << 8))
@@ -123,7 +123,7 @@
 #define asm_LDD(reg, xy, offset)        (OPCODE_LDD \
                                          + ((reg) << 4) \
                                          + ((xy) << 3) \
-                                         + makeLDDoffset(offset))
+                                         + makeLDDSTDoffset(offset))
 
 // LDI                                  1110 KKKK dddd KKKK, with K=constant to load, d=dest register-16 (can only load to r16-r31)
 #define OPCODE_LDI                      0xE000
@@ -171,6 +171,13 @@
 // SBRS                                 1111 111r rrrr 0bbb, with r=a register and b=the bit to test
 #define OPCODE_SBRS                     0xFE00
 #define asm_SBRS(reg, bit)              (OPCODE_SBRS + (reg << 4) + bit)
+
+// STD                                  10q0 qq1r rrrr yqqq, with r=source register, q=offset from Y or Z, y=1 for Y 0 for Z
+#define OPCODE_STD                      0x8200
+#define asm_STD(reg, xy, offset)        (OPCODE_STD \
+                                         + ((reg) << 4) \
+                                         + ((xy) << 3) \
+                                         + makeLDDSTDoffset(offset))
 
 // SUB                                  0001 10rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_SUB                      0x1800

@@ -860,9 +860,9 @@ static inline void returnFromMethod() {
 
 }
 
-typedef void     (*native_void_method_function_t)(uint16_t rtc_frame_locals_start);
-typedef uint16_t (*native_16bit_method_function_t)(uint16_t rtc_frame_locals_start);
-typedef uint32_t (*native_32bit_method_function_t)(uint16_t rtc_frame_locals_start);
+typedef void     (*native_void_method_function_t) (uint16_t rtc_frame_locals_start, uint16_t rtc_statics_start);
+typedef uint16_t (*native_16bit_method_function_t)(uint16_t rtc_frame_locals_start, uint16_t rtc_statics_start);
+typedef uint32_t (*native_32bit_method_function_t)(uint16_t rtc_frame_locals_start, uint16_t rtc_statics_start);
 
 /**
  * Enters a method. The method may be either Java or native. If the method is
@@ -1006,8 +1006,8 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 			// RTC compiled method
 			// execute it directly
 
-			// TODO: setup Z register
 			uint16_t rtc_frame_locals_start = (uint16_t)dj_frame_getLocalReferenceVariables(frame); // Will be stored in Y by the function prologue
+			uint16_t rtc_statics_start = (uint16_t)methodImplId.infusion->staticReferenceFields; // Will be stored in Z by the function prologue
 
 			volatile int16_t ret16;
 			int32_t ret32;
@@ -1015,18 +1015,18 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 			DEBUG_LOG(DBG_RTC, "[rtc] starting rtc compiled method %i at %p with return type %i\n", methodImplId.entity_id, handler, rettype);
 			switch (rettype) {
 				case JTID_VOID:
-					((native_void_method_function_t)handler)(rtc_frame_locals_start);
+					((native_void_method_function_t)handler)(rtc_frame_locals_start, rtc_statics_start);
 					returnFromMethod();
 					DEBUG_LOG(DBG_RTC, "[rtc] call returned (void)\n");
 					break;
 				case JTID_SHORT:
-					ret16 = ((native_16bit_method_function_t)handler)(rtc_frame_locals_start);
+					ret16 = ((native_16bit_method_function_t)handler)(rtc_frame_locals_start, rtc_statics_start);
 					returnFromMethod();
 					pushShort(ret16);
 					DEBUG_LOG(DBG_RTC, "[rtc] call returned %d\n", ret16);
 					break;
 				case JTID_INT:
-					ret32 = ((native_32bit_method_function_t)handler)(rtc_frame_locals_start);
+					ret32 = ((native_32bit_method_function_t)handler)(rtc_frame_locals_start, rtc_statics_start);
 					returnFromMethod();
 					pushInt(ret32);
 					DEBUG_LOG(DBG_RTC, "[rtc] call returned %d\n", ret32);

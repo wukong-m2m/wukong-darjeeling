@@ -11,7 +11,12 @@
 #include <avr/boot.h>
 #include <stddef.h>
 
-
+// Offsets for static variables in an infusion, relative to the start of infusion->staticReferencesFields
+#define offset_for_static_ref(infusion_ptr, variable_index)   ((uint16_t)((void*)(&((infusion)->staticReferenceFields[variable_index])) - (void *)((infusion)->staticReferenceFields)))
+#define offset_for_static_byte(infusion_ptr, variable_index)  ((uint16_t)((void*)(&((infusion)->staticByteFields[variable_index]))      - (void *)((infusion)->staticReferenceFields)))
+#define offset_for_static_short(infusion_ptr, variable_index) ((uint16_t)((void*)(&((infusion)->staticShortFields[variable_index]))     - (void *)((infusion)->staticReferenceFields)))
+#define offset_for_static_int(infusion_ptr, variable_index)   ((uint16_t)((void*)(&((infusion)->staticIntFields[variable_index]))       - (void *)((infusion)->staticReferenceFields)))
+#define offset_for_static_long(infusion_ptr, variable_index)  ((uint16_t)((void*)(&((infusion)->staticLonFields[variable_index]))       - (void *)((infusion)->staticReferenceFields)))
 
 // avr-libgcc functions used by translation
 extern void* __divmodhi4;
@@ -83,7 +88,7 @@ void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t 
 
 #define rtc_branch_table_size(methodimpl) (dj_di_methodImplementation_getNumberOfBranchTargets(methodimpl)*SIZEOF_RJMP)
 #define rtc_branch_target_table_address(i) (branch_target_table_start_ptr + i*SIZEOF_RJMP)
-void rtc_compile_method(dj_di_pointer methodimpl) {
+void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 	uint8_t jvm_operand_byte0;
 	uint8_t jvm_operand_byte1;
 	uint16_t jvm_operand_word;
@@ -107,7 +112,8 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
 	// prologue (is this the right way?)
 	emit( asm_PUSH(R28) ); // Push Y
 	emit( asm_PUSH(R29) );
-	emit( asm_MOVW(R28, R24) );
+	emit( asm_MOVW(R28, R24) ); // Pointer to locals in Y
+	emit( asm_MOVW(R30, R22) ); // Pointer to static in Z
 
 	// translate the method
 	dj_di_pointer code = dj_di_methodImplementation_getData(methodimpl);
@@ -123,6 +129,30 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
 		uint8_t opcode = dj_di_getU8(code + pc);
 		DEBUG_LOG(DBG_RTC, "[rtc] JVM opcode %d\n", opcode);
 		switch (opcode) {
+			case JVM_GETSTATIC_S:
+				jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion. Should be 0.
+				if (jvm_operand_byte0 != 0) {
+					DEBUG_LOG(DBG_RTC, "JVM_GETSTATIC_S only supported within current infusion. infusion=%d pc=%d\n", jvm_operand_byte0, pc);
+					dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
+				}
+				jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the field.
+				emit( asm_LDD(R24, Z, offset_for_static_short(infusion, jvm_operand_byte0)) );
+				emit( asm_LDD(R25, Z, offset_for_static_short(infusion, jvm_operand_byte0)+1) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
+			break;
+			case JVM_PUTSTATIC_S:
+				jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion. Should be 0.
+				if (jvm_operand_byte0 != 0) {
+					DEBUG_LOG(DBG_RTC, "JVM_GETSTATIC_S only supported within current infusion. infusion=%d pc=%d\n", jvm_operand_byte0, pc);
+					dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
+				}
+				jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the field.
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_STD(R24, Z, offset_for_static_short(infusion, jvm_operand_byte0)) );
+				emit( asm_STD(R25, Z, offset_for_static_short(infusion, jvm_operand_byte0)+1) );
+			break;
 			case JVM_SLOAD:
 			case JVM_SLOAD_0:
 			case JVM_SLOAD_1:
@@ -400,7 +430,7 @@ void rtc_compile_lib(dj_infusion *infusion) {
 		dj_di_pointer method_address = wkreprog_get_raw_position() + rtc_branch_table_size(methodimpl);
 		rtc_method_start_addresses[i] = (native_method_function_t)(method_address/2);
 
-		rtc_compile_method(methodimpl);
+		rtc_compile_method(methodimpl, infusion);
 	}
 
 	wkreprog_close();

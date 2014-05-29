@@ -25,20 +25,42 @@ public class HelloWorld
 {
 	public static void main(String args[])
 	{
-		System.out.println("Hello, world! LT" + RTCTest.f_LT((short)-1));
-		System.out.println("Hello, world! LT" + RTCTest.f_LT((short)0));
-		System.out.println("Hello, world! LT" + RTCTest.f_LT((short)1));
+		// checkCompareShort0();
+		checkStaticShortVariables();
+		System.out.println("Doet hij het?\n");
+	}
 
-		System.out.println("Hello, world! LE" + RTCTest.f_LE((short)-1));
-		System.out.println("Hello, world! LE" + RTCTest.f_LE((short)0));
-		System.out.println("Hello, world! LE" + RTCTest.f_LE((short)1));
+	public static void checkStaticShortVariables()
+	{
+		System.out.println("test static short -1 ->" + RTCTest.test_static_short((short)-1));
+		System.out.println("test static short 42 ->" + RTCTest.test_static_short((short)42));
+		System.out.println("test static short  3 ->" + RTCTest.test_static_short((short)3));
+	}
 
-		System.out.println("Hello, world! GT" + RTCTest.f_GT((short)-1));
-		System.out.println("Hello, world! GT" + RTCTest.f_GT((short)0));
-		System.out.println("Hello, world! GT" + RTCTest.f_GT((short)1));
+	public static void checkCompareShort0()
+	{
+		System.out.println("-1 EQ" + RTCTest.compare_short_EQ((short)-1));
+		System.out.println(" 0 EQ" + RTCTest.compare_short_EQ((short)0));
+		System.out.println(" 1 EQ" + RTCTest.compare_short_EQ((short)1));
 
-		System.out.println("Hello, world! GE" + RTCTest.f_GE((short)-1));
-		System.out.println("Hello, world! GE" + RTCTest.f_GE((short)0));
-		System.out.println("Hello, world! GE" + RTCTest.f_GE((short)1));
+		System.out.println("-1 NE" + RTCTest.compare_short_NE((short)-1));
+		System.out.println(" 0 NE" + RTCTest.compare_short_NE((short)0));
+		System.out.println(" 1 NE" + RTCTest.compare_short_NE((short)1));
+
+		System.out.println("-1 LT" + RTCTest.compare_short_LT((short)-1));
+		System.out.println(" 0 LT" + RTCTest.compare_short_LT((short)0));
+		System.out.println(" 1 LT" + RTCTest.compare_short_LT((short)1));
+
+		System.out.println("-1 LE" + RTCTest.compare_short_LE((short)-1));
+		System.out.println(" 0 LE" + RTCTest.compare_short_LE((short)0));
+		System.out.println(" 1 LE" + RTCTest.compare_short_LE((short)1));
+
+		System.out.println("-1 GT" + RTCTest.compare_short_GT((short)-1));
+		System.out.println(" 0 GT" + RTCTest.compare_short_GT((short)0));
+		System.out.println(" 1 GT" + RTCTest.compare_short_GT((short)1));
+
+		System.out.println("-1 GE" + RTCTest.compare_short_GE((short)-1));
+		System.out.println(" 0 GE" + RTCTest.compare_short_GE((short)0));
+		System.out.println(" 1 GE" + RTCTest.compare_short_GE((short)1));
 	}
 }
