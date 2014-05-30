@@ -27,7 +27,25 @@ public class HelloWorld
 	{
 		// checkCompareShort0();
 		// checkStaticShortVariables();
-		checkStaticInstanceVariables();
+		// checkStaticInstanceVariables();
+		// checkFib();
+		checkCompareShort();
+		checkFib();
+	}
+
+	public static void checkFib()
+	{
+		System.out.println("Fibonacci numbers:");
+		System.out.println("" + RTCTest.test_fib((short)0));
+		System.out.println("" + RTCTest.test_fib((short)1));
+		System.out.println("" + RTCTest.test_fib((short)2));
+		System.out.println("" + RTCTest.test_fib((short)3));
+		System.out.println("" + RTCTest.test_fib((short)4));
+		System.out.println("" + RTCTest.test_fib((short)5));
+		System.out.println("" + RTCTest.test_fib((short)6));
+		System.out.println("" + RTCTest.test_fib((short)7));
+		System.out.println("" + RTCTest.test_fib((short)8));
+		System.out.println("" + RTCTest.test_fib((short)9));
 	}
 
 	public static void checkStaticInstanceVariables()
@@ -56,28 +74,55 @@ public class HelloWorld
 
 	public static void checkCompareShort0()
 	{
-		System.out.println("-1 EQ" + RTCTest.compare_short_EQ((short)-1));
-		System.out.println(" 0 EQ" + RTCTest.compare_short_EQ((short)0));
-		System.out.println(" 1 EQ" + RTCTest.compare_short_EQ((short)1));
+		System.out.println("-1 EQ" + RTCTest.compare_short_0_EQ((short)-1));
+		System.out.println(" 0 EQ" + RTCTest.compare_short_0_EQ((short)0));
+		System.out.println(" 1 EQ" + RTCTest.compare_short_0_EQ((short)1));
 
-		System.out.println("-1 NE" + RTCTest.compare_short_NE((short)-1));
-		System.out.println(" 0 NE" + RTCTest.compare_short_NE((short)0));
-		System.out.println(" 1 NE" + RTCTest.compare_short_NE((short)1));
+		System.out.println("-1 NE" + RTCTest.compare_short_0_NE((short)-1));
+		System.out.println(" 0 NE" + RTCTest.compare_short_0_NE((short)0));
+		System.out.println(" 1 NE" + RTCTest.compare_short_0_NE((short)1));
 
-		System.out.println("-1 LT" + RTCTest.compare_short_LT((short)-1));
-		System.out.println(" 0 LT" + RTCTest.compare_short_LT((short)0));
-		System.out.println(" 1 LT" + RTCTest.compare_short_LT((short)1));
+		System.out.println("-1 LT" + RTCTest.compare_short_0_LT((short)-1));
+		System.out.println(" 0 LT" + RTCTest.compare_short_0_LT((short)0));
+		System.out.println(" 1 LT" + RTCTest.compare_short_0_LT((short)1));
 
-		System.out.println("-1 LE" + RTCTest.compare_short_LE((short)-1));
-		System.out.println(" 0 LE" + RTCTest.compare_short_LE((short)0));
-		System.out.println(" 1 LE" + RTCTest.compare_short_LE((short)1));
+		System.out.println("-1 LE" + RTCTest.compare_short_0_LE((short)-1));
+		System.out.println(" 0 LE" + RTCTest.compare_short_0_LE((short)0));
+		System.out.println(" 1 LE" + RTCTest.compare_short_0_LE((short)1));
 
-		System.out.println("-1 GT" + RTCTest.compare_short_GT((short)-1));
-		System.out.println(" 0 GT" + RTCTest.compare_short_GT((short)0));
-		System.out.println(" 1 GT" + RTCTest.compare_short_GT((short)1));
+		System.out.println("-1 GT" + RTCTest.compare_short_0_GT((short)-1));
+		System.out.println(" 0 GT" + RTCTest.compare_short_0_GT((short)0));
+		System.out.println(" 1 GT" + RTCTest.compare_short_0_GT((short)1));
 
-		System.out.println("-1 GE" + RTCTest.compare_short_GE((short)-1));
-		System.out.println(" 0 GE" + RTCTest.compare_short_GE((short)0));
-		System.out.println(" 1 GE" + RTCTest.compare_short_GE((short)1));
+		System.out.println("-1 GE" + RTCTest.compare_short_0_GE((short)-1));
+		System.out.println(" 0 GE" + RTCTest.compare_short_0_GE((short)0));
+		System.out.println(" 1 GE" + RTCTest.compare_short_0_GE((short)1));
+	}
+
+	public static void checkCompareShort()
+	{
+		System.out.println("-1 EQ" + RTCTest.compare_short_EQ((short)-101, (short)-100));
+		System.out.println(" 0 EQ" + RTCTest.compare_short_EQ((short)-100, (short)-100));
+		System.out.println(" 1 EQ" + RTCTest.compare_short_EQ((short)-99, (short)-100));
+
+		System.out.println("-1 NE" + RTCTest.compare_short_NE((short)-101, (short)-100));
+		System.out.println(" 0 NE" + RTCTest.compare_short_NE((short)-100, (short)-100));
+		System.out.println(" 1 NE" + RTCTest.compare_short_NE((short)-99, (short)-100));
+
+		System.out.println("-1 LT" + RTCTest.compare_short_LT((short)-101, (short)-100));
+		System.out.println(" 0 LT" + RTCTest.compare_short_LT((short)-100, (short)-100));
+		System.out.println(" 1 LT" + RTCTest.compare_short_LT((short)-99, (short)-100));
+
+		System.out.println("-1 LE" + RTCTest.compare_short_LE((short)-101, (short)-100));
+		System.out.println(" 0 LE" + RTCTest.compare_short_LE((short)-100, (short)-100));
+		System.out.println(" 1 LE" + RTCTest.compare_short_LE((short)-99, (short)-100));
+
+		System.out.println("-1 GT" + RTCTest.compare_short_GT((short)-101, (short)-100));
+		System.out.println(" 0 GT" + RTCTest.compare_short_GT((short)-100, (short)-100));
+		System.out.println(" 1 GT" + RTCTest.compare_short_GT((short)-99, (short)-100));
+
+		System.out.println("-1 GE" + RTCTest.compare_short_GE((short)-101, (short)-100));
+		System.out.println(" 0 GE" + RTCTest.compare_short_GE((short)-100, (short)-100));
+		System.out.println(" 1 GE" + RTCTest.compare_short_GE((short)-99, (short)-100));
 	}
 }

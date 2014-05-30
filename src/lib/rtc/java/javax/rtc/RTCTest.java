@@ -8,6 +8,22 @@ public class RTCTest {
 	public int instance_int;
 	public short instance_short2;
 
+	public static short test_fib(short x) {
+		if (x == 0)
+			return 0;
+		if (x == 1)
+			return 1;
+		short previous = 0;
+		short current = 1;
+		while (x != 1) {
+			short new_current = (short)(previous + current);
+			previous = current;
+			current = new_current;
+			x--;
+		}
+		return current;
+	}
+
 	public short test_instance_short1(short x) {
 		this.instance_short1 += x;
 		return this.instance_short1;
@@ -23,47 +39,96 @@ public class RTCTest {
 		return static_short2;
 	}
 
-	public static short compare_short_EQ(short x) {
+	public static short compare_short_0_EQ(short x) {
 		if (x == 0)
 			return (short)1;
 		else
 			return (short)0;
 	}
 
-	public static short compare_short_NE(short x) {
+	public static short compare_short_0_NE(short x) {
 		if (x != 0)
 			return (short)1;
 		else
 			return (short)0;
 	}
 
-	public static short compare_short_LT(short x) {
+	public static short compare_short_0_LT(short x) {
 		if (x < 0)
 			return (short)1;
 		else
 			return (short)0;
 	}
 
-	public static short compare_short_LE(short x) {
+	public static short compare_short_0_LE(short x) {
 		if (x <= 0)
 			return (short)1;
 		else
 			return (short)0;
 	}
 
-	public static short compare_short_GT(short x) {
+	public static short compare_short_0_GT(short x) {
 		if (x > 0)
 			return (short)1;
 		else
 			return (short)0;
 	}
 
-	public static short compare_short_GE(short x) {
+	public static short compare_short_0_GE(short x) {
 		if (x >= 0)
 			return (short)1;
 		else
 			return (short)0;
 	}
+
+
+
+
+	public static short compare_short_EQ(short x, short y) {
+		if (x == y)
+			return (short)1;
+		else
+			return (short)0;
+	}
+
+	public static short compare_short_NE(short x, short y) {
+		if (x != y)
+			return (short)1;
+		else
+			return (short)0;
+	}
+
+	public static short compare_short_LT(short x, short y) {
+		if (x < y)
+			return (short)1;
+		else
+			return (short)0;
+	}
+
+	public static short compare_short_LE(short x, short y) {
+		if (x <= y)
+			return (short)1;
+		else
+			return (short)0;
+	}
+
+	public static short compare_short_GT(short x, short y) {
+		if (x > y)
+			return (short)1;
+		else
+			return (short)0;
+	}
+
+	public static short compare_short_GE(short x, short y) {
+		if (x >= y)
+			return (short)1;
+		else
+			return (short)0;
+	}
+
+
+
+
 
 	public static native short GetFortyThree();
 	// public static short Add(short a, short b, short c, short d, short e) {

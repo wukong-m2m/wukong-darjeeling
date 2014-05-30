@@ -187,6 +187,20 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 				emit( asm_x_PUSHREF(R24) );
 				emit( asm_x_PUSHREF(R25) );
 			break;
+			case JVM_SSTORE:
+			case JVM_SSTORE_0:
+			case JVM_SSTORE_1:
+			case JVM_SSTORE_2:
+			case JVM_SSTORE_3:
+				if (opcode == JVM_SSTORE)
+					jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+				else
+					jvm_operand_byte0 = opcode - JVM_SSTORE_0;
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_STD(R24, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)) );
+				emit( asm_STD(R25, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)+1) );
+			break;
 			case JVM_ADUP:
 				emit( asm_x_POPREF(R25) );
 				emit( asm_x_POPREF(R24) );
@@ -344,6 +358,59 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 				emit( asm_EOR(R25, R23) );
 				emit( asm_PUSH(R24) );
 				emit( asm_PUSH(R25) );
+			break;
+			case JVM_IF_SCMPEQ:
+			case JVM_IF_SCMPNE:
+			case JVM_IF_SCMPLT:
+			case JVM_IF_SCMPGE:
+			case JVM_IF_SCMPGT:
+			case JVM_IF_SCMPLE:
+				// Branch instructions first have a bytecode offset, used by the interpreter,
+				// followed by a branch target index used when compiling to native code.
+				jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+				pc += 4;
+
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_POP(R23) );
+				emit( asm_POP(R22) );
+				// Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
+				if (opcode == JVM_IF_SCMPEQ) {
+					emit( asm_CP(R22, R24) );
+					emit( asm_CPC(R23, R25) );
+					emit( asm_BRNE(SIZEOF_RJMP) );
+				} else if (opcode == JVM_IF_SCMPNE) {
+					emit( asm_CP(R22, R24) );
+					emit( asm_CPC(R23, R25) );
+					emit( asm_BREQ(SIZEOF_RJMP) );
+				} else if (opcode == JVM_IF_SCMPLT) {
+					emit( asm_CP(R22, R24) );
+					emit( asm_CPC(R23, R25) );
+					emit( asm_BRGE(SIZEOF_RJMP) );
+				} else if (opcode == JVM_IF_SCMPGE) {
+					emit( asm_CP(R22, R24) );
+					emit( asm_CPC(R23, R25) );
+					emit( asm_BRLT(SIZEOF_RJMP) );
+				} else if (opcode == JVM_IF_SCMPGT) {
+					emit( asm_CP(R24, R22) );
+					emit( asm_CPC(R25, R23) );
+					emit( asm_BRGE(SIZEOF_RJMP) );
+				} else if (opcode == JVM_IF_SCMPLE) {
+					emit( asm_CP(R24, R22) );
+					emit( asm_CPC(R25, R23) );
+					emit( asm_BRLT(SIZEOF_RJMP) );
+				}
+				rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
+				emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+			break;
+			case JVM_GOTO:
+				// Branch instructions first have a bytecode offset, used by the interpreter,
+				// followed by a branch target index used when compiling to native code.
+				jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+				pc += 4;
+
+				rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
+				emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
 			break;
 			case JVM_SRETURN:
 				emit( asm_POP(R25) );
