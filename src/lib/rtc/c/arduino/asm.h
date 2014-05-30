@@ -114,9 +114,9 @@
 #define OPCODE_EOR                      0x2400
 #define asm_EOR(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_EOR, destreg, srcreg)
 
-// LD Rd  ,X+                           1001 000d dddd 1101
-#define OPCODE_LDXINC                   0x900D
-#define asm_LDXINC(reg)                 opcodeWithSingleRegOperand(OPCODE_LDXINC, reg)
+// LD Rd, X+                            1001 000d dddd 1101
+#define OPCODE_LD_XINC                  0x900D
+#define asm_LD_XINC(reg)                opcodeWithSingleRegOperand(OPCODE_LD_XINC, reg)
 
 // LDD                                  10q0 qq0d dddd yqqq, with d=dest register, q=offset from Y or Z, y=1 for Y 0 for Z
 #define OPCODE_LDD                      0x8000
@@ -143,13 +143,19 @@
 #define OPCODE_OR                       0x2800
 #define asm_OR(destreg, srcreg)         opcodeWithSrcAndDestRegOperand(OPCODE_OR, destreg, srcreg)
 
-// PUSH 	                              1001 001d dddd 1111, with d=source register
-#define OPCODE_PUSH		                  0x920F
+// PUSH 	                            1001 001d dddd 1111, with d=source register
+#define OPCODE_PUSH		                0x920F
 #define asm_PUSH(reg)                   opcodeWithSingleRegOperand(OPCODE_PUSH, reg)
 
-// POP  	                              1001 000d dddd 1111
-#define OPCODE_POP		                  0x900F
+// PUSHREF
+#define asm_x_PUSHREF(reg)              asm_ST_DECX(reg)
+
+// POP  	                            1001 000d dddd 1111
+#define OPCODE_POP		                0x900F
 #define asm_POP(reg)                    opcodeWithSingleRegOperand(OPCODE_POP, reg)
+
+// POPREF
+#define asm_x_POPREF(reg)               asm_LD_XINC(reg)
 
 // RET                                  1001 0101 0000 1000
 #define OPCODE_RET                      0x9508
@@ -171,6 +177,10 @@
 // SBRS                                 1111 111r rrrr 0bbb, with r=a register and b=the bit to test
 #define OPCODE_SBRS                     0xFE00
 #define asm_SBRS(reg, bit)              (OPCODE_SBRS + (reg << 4) + bit)
+
+// ST Rs, -X                            1001 001r rrrr 1110, with r=the register to store
+#define OPCODE_ST_DECX                  0x920E
+#define asm_ST_DECX(reg)                (OPCODE_ST_DECX + (reg << 4))
 
 // STD                                  10q0 qq1r rrrr yqqq, with r=source register, q=offset from Y or Z, y=1 for Y 0 for Z
 #define OPCODE_STD                      0x8200

@@ -26,8 +26,25 @@ public class HelloWorld
 	public static void main(String args[])
 	{
 		// checkCompareShort0();
-		checkStaticShortVariables();
-		System.out.println("Doet hij het?\n");
+		// checkStaticShortVariables();
+		checkStaticInstanceVariables();
+	}
+
+	public static void checkStaticInstanceVariables()
+	{
+		RTCTest obj1 = new RTCTest();
+		RTCTest obj2 = new RTCTest();
+		System.out.println("test instance1 short1   -1 ->" + obj1.test_instance_short1((short)-1));
+		System.out.println("test instance1 short1   42 ->" + obj1.test_instance_short1((short)42));
+		System.out.println("test instance1 short1    3 ->" + obj1.test_instance_short1((short)3));
+		System.out.println("test instance2 short1    5 ->" + obj2.test_instance_short1((short)5));
+		System.out.println("test instance2 short1  -10 ->" + obj2.test_instance_short1((short)-10));
+		System.out.println("test instance2 short1    3 ->" + obj2.test_instance_short1((short)3));
+		System.out.println("test instance2 short2  300 ->" + obj2.test_instance_short2((short)300));
+		System.out.println("test instance2 short2  500 ->" + obj2.test_instance_short2((short)500));
+		System.out.println("test instance1 short1 direct access " + obj1.instance_short1);
+		System.out.println("test instance2 short1 direct access " + obj2.instance_short1);
+		System.out.println("test instance2 short2 direct access " + obj2.instance_short2);
 	}
 
 	public static void checkStaticShortVariables()

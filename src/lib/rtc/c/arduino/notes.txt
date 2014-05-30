@@ -1,0 +1,13 @@
+GCC calling convention
+---
+Call used:  r0, r18-r25, r26:r27 (X), r30:r31 (Z)
+Call saved: r1, r2-r17, r28:r29 (Y)
+
+
+
+register allocations
+---
+r2:r3       : contains pointer to this infusion's static fields
+X (r26:r27) : reference stack pointer
+Y (r28:r29) : frame pointer
+Z (r30:r31) : pointer to infusion static fields or to an object (need to load at each operation)

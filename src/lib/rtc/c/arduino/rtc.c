@@ -18,6 +18,16 @@
 #define offset_for_static_int(infusion_ptr, variable_index)   ((uint16_t)((void*)(&((infusion)->staticIntFields[variable_index]))       - (void *)((infusion)->staticReferenceFields)))
 #define offset_for_static_long(infusion_ptr, variable_index)  ((uint16_t)((void*)(&((infusion)->staticLonFields[variable_index]))       - (void *)((infusion)->staticReferenceFields)))
 
+uint8_t offset_for_intlocal(dj_di_pointer methodimpl, uint8_t local) {
+	return (dj_di_methodImplementation_getReferenceLocalVariableCount(methodimpl) * sizeof(ref_t)) +
+		   (local * sizeof(int16_t));
+}
+
+uint8_t offset_for_reflocal(dj_di_pointer methodimpl, uint8_t local) {
+	return (local * sizeof(ref_t));
+}
+
+
 // avr-libgcc functions used by translation
 extern void* __divmodhi4;
 
@@ -45,17 +55,6 @@ void rtc_flush() {
 
 static inline void emit(uint16_t wordopcode) {
 	*(rtc_codebuffer_position++) = wordopcode;
-}
-
-
-
-uint8_t offset_for_intlocal(dj_di_pointer methodimpl, uint8_t local) {
-	return (dj_di_methodImplementation_getReferenceLocalVariableCount(methodimpl) * sizeof(ref_t)) +
-		   (local * sizeof(int16_t));
-}
-
-uint8_t offset_for_reflocal(dj_di_pointer methodimpl, uint8_t local) {
-	return (local * sizeof(ref_t));
 }
 
 
@@ -110,10 +109,13 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 	wkreprog_write(branchTableSize, (uint8_t *)branch_target_table_start_ptr);
 
 	// prologue (is this the right way?)
+	emit( asm_PUSH(R2) );
+	emit( asm_PUSH(R3) );
 	emit( asm_PUSH(R28) ); // Push Y
 	emit( asm_PUSH(R29) );
 	emit( asm_MOVW(R28, R24) ); // Pointer to locals in Y
-	emit( asm_MOVW(R30, R22) ); // Pointer to static in Z
+	emit( asm_MOVW(R26, R22) ); // Pointer to ref stack in X
+	emit( asm_MOVW(R2, R20) ); // Pointer to static in R2 (will be MOVWed to R30 when necessary)
 
 	// translate the method
 	dj_di_pointer code = dj_di_methodImplementation_getData(methodimpl);
@@ -171,6 +173,48 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 				emit( asm_PUSH(R24) );
 				emit( asm_PUSH(R25) );
 			break;
+			case JVM_ALOAD:
+			case JVM_ALOAD_0:
+			case JVM_ALOAD_1:
+			case JVM_ALOAD_2:
+			case JVM_ALOAD_3:
+				if (opcode == JVM_ALOAD)
+					jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+				else
+					jvm_operand_byte0 = opcode - JVM_ALOAD_0;
+				emit( asm_LDD(R24, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0)) );
+				emit( asm_LDD(R25, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0)+1) );
+				emit( asm_x_PUSHREF(R24) );
+				emit( asm_x_PUSHREF(R25) );
+			break;
+			case JVM_ADUP:
+				emit( asm_x_POPREF(R25) );
+				emit( asm_x_POPREF(R24) );
+				emit( asm_x_PUSHREF(R24) );
+				emit( asm_x_PUSHREF(R25) );
+				emit( asm_x_PUSHREF(R24) );
+				emit( asm_x_PUSHREF(R25) );
+			break;
+			case JVM_GETFIELD_S:
+				jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
+				pc += 2;
+				emit( asm_x_POPREF(R31) ); // POP the reference into Z
+				emit( asm_x_POPREF(R30) );
+				emit( asm_LDD(R24, Z, jvm_operand_word) );
+				emit( asm_LDD(R25, Z, jvm_operand_word+1) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
+			break;
+			case JVM_PUTFIELD_S:
+				jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
+				pc += 2;
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_x_POPREF(R31) ); // POP the reference into Z
+				emit( asm_x_POPREF(R30) );
+				emit( asm_STD(R24, Z, jvm_operand_word) );
+				emit( asm_STD(R25, Z, jvm_operand_word+1) );
+			break;
 			case JVM_GETSTATIC_S:
 				jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion. Should be 0.
 				if (jvm_operand_byte0 != 0) {
@@ -178,6 +222,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 					dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
 				}
 				jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the field.
+				emit( asm_MOVW(R30, R2) );
 				emit( asm_LDD(R24, Z, offset_for_static_short(infusion, jvm_operand_byte0)) );
 				emit( asm_LDD(R25, Z, offset_for_static_short(infusion, jvm_operand_byte0)+1) );
 				emit( asm_PUSH(R24) );
@@ -190,6 +235,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 					dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
 				}
 				jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the field.
+				emit( asm_MOVW(R30, R2) );
 				emit( asm_POP(R25) );
 				emit( asm_POP(R24) );
 				emit( asm_STD(R24, Z, offset_for_static_short(infusion, jvm_operand_byte0)) );
@@ -306,6 +352,8 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 				// epilogue (is this the right way?)
 				emit( asm_POP(R29) ); // Pop Y
 				emit( asm_POP(R28) );
+				emit( asm_POP(R3) );
+				emit( asm_POP(R2) );
 				emit( asm_RET );
 			break;
 			case JVM_IRETURN:
@@ -317,12 +365,16 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 				// epilogue (is this the right way?)
 				emit( asm_POP(R29) ); // Pop Y
 				emit( asm_POP(R28) );
+				emit( asm_POP(R3) );
+				emit( asm_POP(R2) );
 				emit( asm_RET );
 			break;
 			case JVM_RETURN:
 				// epilogue (is this the right way?)
 				emit( asm_POP(R29) ); // Pop Y
 				emit( asm_POP(R28) );
+				emit( asm_POP(R3) );
+				emit( asm_POP(R2) );
 				emit( asm_RET );
 			break;
 			// BRANCHES

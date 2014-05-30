@@ -1,12 +1,26 @@
 package javax.rtc;
 
 public class RTCTest {
-	private static short test;
-	private static short test_static;
+	private static short static_short1;
+	private static short static_short2;
+
+	public short instance_short1;
+	public int instance_int;
+	public short instance_short2;
+
+	public short test_instance_short1(short x) {
+		this.instance_short1 += x;
+		return this.instance_short1;
+	}
+
+	public short test_instance_short2(short x) {
+		this.instance_short2 += x;
+		return this.instance_short2;
+	}
 
 	public static short test_static_short(short x) {
-		test_static += x;
-		return test_static;
+		static_short2 += x;
+		return static_short2;
 	}
 
 	public static short compare_short_EQ(short x) {

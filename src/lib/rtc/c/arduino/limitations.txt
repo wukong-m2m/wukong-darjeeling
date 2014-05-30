@@ -1,0 +1,4 @@
+- Can't access static fields in a different infusion
+- Instance/static/local variables limited to 64 bytes because of limited offset for LDD instruction (easy to fix)
+- Not checking for null pointers (unsafe)
+- TODO: check r0 r1 during mul. may need to push/pop it
