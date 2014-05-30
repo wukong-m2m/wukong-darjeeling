@@ -640,8 +640,8 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 				emit( asm_PUSH(R25) );
 			break;
 			case JVM_S2I:
-				emit( asm_POP(ZERO_REG) );
-				emit( asm_POP(ZERO_REG) );
+				emit( asm_PUSH(ZERO_REG) );
+				emit( asm_PUSH(ZERO_REG) );
 			break;
 			case JVM_IF_SCMPEQ:
 			case JVM_IF_SCMPNE:

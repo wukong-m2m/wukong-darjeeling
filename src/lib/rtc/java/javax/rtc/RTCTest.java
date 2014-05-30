@@ -9,24 +9,17 @@ public class RTCTest {
 	public short instance_short2;
 
 	public static void test_bubblesort(short[] numbers) {
-		numbers[0]++;
-		short tmp =	numbers[1];
-		numbers[1] = numbers[2];
-		numbers[2] = tmp;
+		short NUMNUMBERS = (short)numbers.length;
+		for (short i=0; i<(short)NUMNUMBERS; i++) {
+			for (short j=0; j<((short)(NUMNUMBERS-i-1)); j++) {
+				if (numbers[j]>numbers[j+1]) {
+					short temp = numbers[j];
+					numbers[j] = numbers[j+1];
+					numbers[((short)(j+1))] = temp;
+				}
+			}
+		}
 	}
-
-	// public static void test_bubblesort(short[] numbers) {
-	// 	short NUMNUMBERS = (short)numbers.length;
-	// 	for (short i=0; i<(short)NUMNUMBERS; i++) {
-	// 		for (short j=0; j<((short)(NUMNUMBERS-i-1)); j++) {
-	// 			if (numbers[j]>numbers[j+1]) {
-	// 				short temp = numbers[j];
-	// 				numbers[j] = numbers[j+1];
-	// 				numbers[((short)(j+1))] = temp;
-	// 			}
-	// 		}
-	// 	}
-	// }
 
 	// public static int test_int_ops(int x, int y, short op) {
 	// 	if (op==0) return  -x;

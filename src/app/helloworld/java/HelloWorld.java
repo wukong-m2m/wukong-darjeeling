@@ -36,14 +36,21 @@ public class HelloWorld
 	}
 
 	public static void checkBubbleSort() {
-		short numbers[] = new short[3];
-		numbers[0] = 1000;
-		numbers[1] = 3000;
-		numbers[2] = 20000;
+		short NUMNUMBERS = 256;
+		short numbers[] = new short[NUMNUMBERS];
+
+		for (int i=0; i<NUMNUMBERS; i++)
+			numbers[i] = (short)(NUMNUMBERS - 1 - i);
 		RTCTest.test_bubblesort(numbers);
-		System.out.println("" + numbers[0]);
-		System.out.println("" + numbers[1]);
-		System.out.println("" + numbers[2]);
+		for (int i=0; i<NUMNUMBERS; i++)
+			System.out.print(" " + numbers[i]);
+		System.out.println();
+
+		numbers = new short[] { 8924, 6871, 8880, 3847, -691, -7175, -1877, -7482, 161, -4453, -1353, -7387, -178, -9993, 9746, -4730, -5821, 3272, 5597, 2545, 4077, -177, 8040, -7893, 6526, 4943, 7817, -8654, 1791, -2290, -2888, -6876, 2419, 1664, 1401, 9189, -2888, -7559, -3089, 2463, 9195, 2396, 3625, 3054, 9244, 9932, 1780, -8524, 2345, 1323, 1939, 2412, 7854, -5885, 1423, -5392, -7251, -3664, -5654, -3302, 496, -2388, -5971, -5358, -8205, 9127, 9710, 1123, 2101, 2976, 3381, 7523, -2622, -6532, -7377, 3057, 6422, -2660, 534, -9285, 364, 1616, -7795, -4094, 8336, 3635, 821, 209, -4964, -5920, 9552, 9488, 5992, 3250, 192, 5516, -7495, 3987, -2245, -1663 };
+		RTCTest.test_bubblesort(numbers);
+		for (int i=0; i<numbers.length; i++)
+			System.out.print(" " + numbers[i]);
+		System.out.println();
 	}
 
 	// public static void checkFib()
