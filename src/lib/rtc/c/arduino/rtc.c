@@ -129,44 +129,6 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 		uint8_t opcode = dj_di_getU8(code + pc);
 		DEBUG_LOG(DBG_RTC, "[rtc] JVM opcode %d\n", opcode);
 		switch (opcode) {
-			case JVM_GETSTATIC_S:
-				jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion. Should be 0.
-				if (jvm_operand_byte0 != 0) {
-					DEBUG_LOG(DBG_RTC, "JVM_GETSTATIC_S only supported within current infusion. infusion=%d pc=%d\n", jvm_operand_byte0, pc);
-					dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
-				}
-				jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the field.
-				emit( asm_LDD(R24, Z, offset_for_static_short(infusion, jvm_operand_byte0)) );
-				emit( asm_LDD(R25, Z, offset_for_static_short(infusion, jvm_operand_byte0)+1) );
-				emit( asm_PUSH(R24) );
-				emit( asm_PUSH(R25) );
-			break;
-			case JVM_PUTSTATIC_S:
-				jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion. Should be 0.
-				if (jvm_operand_byte0 != 0) {
-					DEBUG_LOG(DBG_RTC, "JVM_GETSTATIC_S only supported within current infusion. infusion=%d pc=%d\n", jvm_operand_byte0, pc);
-					dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
-				}
-				jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the field.
-				emit( asm_POP(R25) );
-				emit( asm_POP(R24) );
-				emit( asm_STD(R24, Z, offset_for_static_short(infusion, jvm_operand_byte0)) );
-				emit( asm_STD(R25, Z, offset_for_static_short(infusion, jvm_operand_byte0)+1) );
-			break;
-			case JVM_SLOAD:
-			case JVM_SLOAD_0:
-			case JVM_SLOAD_1:
-			case JVM_SLOAD_2:
-			case JVM_SLOAD_3:
-				if (opcode == JVM_SLOAD)
-					jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-				else
-					jvm_operand_byte0 = opcode - JVM_SLOAD_0;
-				emit( asm_LDD(R24, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)) );
-				emit( asm_LDD(R25, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)+1) );
-				emit( asm_PUSH(R24) );
-				emit( asm_PUSH(R25) );
-			break;
 			case JVM_SCONST_0:
 			case JVM_SCONST_1:
 			case JVM_SCONST_2:
@@ -195,6 +157,44 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 				emit( asm_PUSH(R24) );
 				emit( asm_PUSH(R25) );
 			break;
+			case JVM_SLOAD:
+			case JVM_SLOAD_0:
+			case JVM_SLOAD_1:
+			case JVM_SLOAD_2:
+			case JVM_SLOAD_3:
+				if (opcode == JVM_SLOAD)
+					jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+				else
+					jvm_operand_byte0 = opcode - JVM_SLOAD_0;
+				emit( asm_LDD(R24, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)) );
+				emit( asm_LDD(R25, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)+1) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
+			break;
+			case JVM_GETSTATIC_S:
+				jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion. Should be 0.
+				if (jvm_operand_byte0 != 0) {
+					DEBUG_LOG(DBG_RTC, "JVM_GETSTATIC_S only supported within current infusion. infusion=%d pc=%d\n", jvm_operand_byte0, pc);
+					dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
+				}
+				jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the field.
+				emit( asm_LDD(R24, Z, offset_for_static_short(infusion, jvm_operand_byte0)) );
+				emit( asm_LDD(R25, Z, offset_for_static_short(infusion, jvm_operand_byte0)+1) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
+			break;
+			case JVM_PUTSTATIC_S:
+				jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion. Should be 0.
+				if (jvm_operand_byte0 != 0) {
+					DEBUG_LOG(DBG_RTC, "JVM_GETSTATIC_S only supported within current infusion. infusion=%d pc=%d\n", jvm_operand_byte0, pc);
+					dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
+				}
+				jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the field.
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_STD(R24, Z, offset_for_static_short(infusion, jvm_operand_byte0)) );
+				emit( asm_STD(R25, Z, offset_for_static_short(infusion, jvm_operand_byte0)+1) );
+			break;
 			case JVM_SADD:
 				emit( asm_POP(R25) );
 				emit( asm_POP(R24) );
@@ -204,6 +204,16 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 				emit( asm_ADC(R25, R23) );
 				emit( asm_PUSH(R24) );
 				emit( asm_PUSH(R25) );
+			break;
+			case JVM_SSUB:
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_POP(R23) );
+				emit( asm_POP(R22) );
+				emit( asm_SUB(R22, R24) );
+				emit( asm_SBC(R23, R25) );
+				emit( asm_PUSH(R22) );
+				emit( asm_PUSH(R23) );				
 			break;
 			case JVM_SMUL:
 				emit( asm_POP(R25) );
@@ -232,16 +242,6 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 				emit( asm_MOVW(R24, R18) );
 				emit( asm_PUSH(R24) );
 				emit( asm_PUSH(R25) );
-			break;
-			case JVM_SSUB:
-				emit( asm_POP(R25) );
-				emit( asm_POP(R24) );
-				emit( asm_POP(R23) );
-				emit( asm_POP(R22) );
-				emit( asm_SUB(R22, R24) );
-				emit( asm_SBC(R23, R25) );
-				emit( asm_PUSH(R22) );
-				emit( asm_PUSH(R23) );				
 			break;
 			case JVM_SDIV:
 			case JVM_SREM:
@@ -299,12 +299,6 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 				emit( asm_PUSH(R24) );
 				emit( asm_PUSH(R25) );
 			break;
-			case JVM_RETURN:
-				// epilogue (is this the right way?)
-				emit( asm_POP(R29) ); // Pop Y
-				emit( asm_POP(R28) );
-				emit( asm_RET );
-			break;
 			case JVM_SRETURN:
 				emit( asm_POP(R25) );
 				emit( asm_POP(R24) );
@@ -325,7 +319,12 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 				emit( asm_POP(R28) );
 				emit( asm_RET );
 			break;
-
+			case JVM_RETURN:
+				// epilogue (is this the right way?)
+				emit( asm_POP(R29) ); // Pop Y
+				emit( asm_POP(R28) );
+				emit( asm_RET );
+			break;
 			// BRANCHES
 			case JVM_SIFEQ:
 			case JVM_SIFNE:
