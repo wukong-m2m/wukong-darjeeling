@@ -145,6 +145,20 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 				emit( asm_PUSH(R24) );
 				emit( asm_PUSH(R25) );
 			break;
+			case JVM_ICONST_0:
+			case JVM_ICONST_1:
+			case JVM_ICONST_2:
+			case JVM_ICONST_3:
+			case JVM_ICONST_4:
+			case JVM_ICONST_5:
+				jvm_operand_byte0 = opcode - JVM_ICONST_0;
+				emit( asm_LDI(R24, jvm_operand_byte0) );
+				emit( asm_LDI(R25, 0) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
+				emit( asm_PUSH(R25) );
+				emit( asm_PUSH(R25) );
+			break;
 			case JVM_BSPUSH:
 				jvm_operand_byte0 = dj_di_getU8(code + ++pc);
 				emit( asm_LDI(R24, jvm_operand_byte0) );
@@ -249,6 +263,76 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 				emit( asm_STD(R23, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)+1) );
 				emit( asm_STD(R24, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)+2) );
 				emit( asm_STD(R25, Y, offset_for_intlocal(methodimpl, jvm_operand_byte0)+3) );
+			break;
+			case JVM_SALOAD:
+				// Arrays are indexed by a 32bit int. But we don't have enough memory to hold arrays that large, so just ignore the upper two.
+				// Should check that they are 0 when implementing bounds checks.
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_POP(R23) );
+				emit( asm_POP(R22) );
+
+				// POP the array reference into Z.
+				emit( asm_x_POPREF(RZH) );
+				emit( asm_x_POPREF(RZL) ); // Z now pointer to the base of the array object.
+				// Multiply the index by 2, since we're indexing 16 bit shorts.
+				emit( asm_LSL(R22) );
+				emit( asm_ROL(R23) );
+				// Add 2*the index to Z
+				emit( asm_ADD(RZL, R22) );
+				emit( asm_ADC(RZH, R23) );
+				// Add 3 to skip 2 bytes for array length and 1 byte for array type.
+				emit( asm_ADIW(RZ, 3) ); 
+				// Now Z points to the target element
+
+				emit( asm_LD_ZINC(R24) );
+				emit( asm_LD_Z(R25) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
+			break;
+			case JVM_SASTORE:
+				// Pop the value we need to store in the array.
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				// Arrays are indexed by a 32bit int. But we don't have enough memory to hold arrays that large, so just ignore the upper two.
+				// We'll pop twice to R22:R23 here, but to R22:R25 in SALOAD, just to make it easier for the SALOAD sequence to be optimised against
+				// the previous instruction.
+				// Should check that they are 0 when implementing bounds checks.
+				emit( asm_POP(R23) );
+				emit( asm_POP(R22) );
+				emit( asm_POP(R23) );
+				emit( asm_POP(R22) );
+
+				// POP the array reference into Z.
+				emit( asm_x_POPREF(RZH) );
+				emit( asm_x_POPREF(RZL) ); // Z now pointer to the base of the array object.
+				// Multiply the index by 2, since we're indexing 16 bit shorts.
+				emit( asm_LSL(R22) );
+				emit( asm_ROL(R23) );
+				// Add 2*the index to Z
+				emit( asm_ADD(RZL, R22) );
+				emit( asm_ADC(RZH, R23) );
+				// Add 3 to skip 2 bytes for array length and 1 byte for array type.
+				emit( asm_ADIW(RZ, 3) ); 
+				// Now Z points to the target element
+
+				emit( asm_ST_ZINC(R24) );
+				emit( asm_ST_Z(R25) );
+			break;
+			case JVM_IDUP2:
+				// IDUP2 duplicates the top two SLOTS on the integer stack, not the top two ints. So IDUP2 is actually IDUP, and IDUP is actually SDUP.
+				emit( asm_POP(R25) );
+				emit( asm_POP(R24) );
+				emit( asm_POP(R23) );
+				emit( asm_POP(R22) );
+				emit( asm_PUSH(R22) );
+				emit( asm_PUSH(R23) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
+				emit( asm_PUSH(R22) );
+				emit( asm_PUSH(R23) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
 			break;
 			case JVM_ADUP:
 				emit( asm_x_POPREF(R25) );
@@ -554,6 +638,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 				emit( asm_PUSH(R23) );
 				emit( asm_PUSH(R24) );
 				emit( asm_PUSH(R25) );
+			break;
+			case JVM_S2I:
+				emit( asm_POP(ZERO_REG) );
+				emit( asm_POP(ZERO_REG) );
 			break;
 			case JVM_IF_SCMPEQ:
 			case JVM_IF_SCMPNE:

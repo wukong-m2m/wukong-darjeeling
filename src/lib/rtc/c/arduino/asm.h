@@ -32,6 +32,16 @@
 #define R30      30
 #define R31      31
 
+#define RX       26
+#define RY       28
+#define RZ       30
+#define RXL      RX
+#define RYL      RY
+#define RZL      RZ
+#define RXH      RX+1
+#define RYH      RY+1
+#define RZH      RZ+1
+
 #define Y  1
 #define Z  0 
 
@@ -54,6 +64,11 @@
                ((constant) & 0x0F) \
             + (((constant) & 0xF0) << 4))
 
+// 0000 0000 KK00 KKKK
+#define makeADIWconstant(constant) ( \
+               ((constant) & 0x0F) \
+            + (((constant) & 0x30) << 4))
+
 // 0000 00r0 0000 rrrr, with d=dest register, r=source register
 #define makeSourceRegister(src_register) ( \
                ((src_register) & 0x0F) \
@@ -71,6 +86,10 @@
 // ADD                                  0000 11rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_ADD                      0x0C00
 #define asm_ADD(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_ADD, destreg, srcreg)
+
+// ADIW                                 1001 0110 KKdd KKKK, with d=r24, r26, r28, or r30
+#define OPCODE_ADIW                     0x9600
+#define asm_ADIW(reg, constant)         (OPCODE_ADIW + ((((reg)-24)/2)<<4) + makeADIWconstant(constant))
 
 // AND                                  0010 00rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_AND                      0x2000
@@ -139,6 +158,9 @@
                                          + (((reg) - 16) << 4) \
                                          + makeLDIconstant(constant))
 
+// LSL
+#define asm_LSL(destreg)                asm_ADD(destreg, destreg)
+
 // MOVW                                 0000 0001 dddd rrrr, with d=dest register/2, r=source register/2
 #define OPCODE_MOVW                     0x0100
 #define asm_MOVW(destreg, srcreg)       opcodeWithSrcAndDestRegOperand(OPCODE_MOVW, (destreg/2), (srcreg/2))
@@ -174,6 +196,9 @@
 #define OPCODE_RJMP                     0xC000
 #define asm_RJMP(offset)                (OPCODE_RJMP + (((offset)/2) & 0xFFF))
 
+// ROL
+#define asm_ROL(destreg)                asm_ADC(destreg, destreg)
+
 // SBC                                  0000 10rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_SBC                      0x0800
 #define asm_SBC(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_SBC, destreg, srcreg)
@@ -186,9 +211,17 @@
 #define OPCODE_SBRS                     0xFE00
 #define asm_SBRS(reg, bit)              (OPCODE_SBRS + (reg << 4) + bit)
 
-// ST Rs, -X                            1001 001r rrrr 1110, with r=the register to store
+// ST -X, Rs                            1001 001r rrrr 1110, with r=the register to store
 #define OPCODE_ST_DECX                  0x920E
 #define asm_ST_DECX(reg)                (OPCODE_ST_DECX + (reg << 4))
+
+// ST Z, Rs                             1000 001r rrrr 0000, with r=the register to store
+#define OPCODE_ST_Z                     0x8200
+#define asm_ST_Z(reg)                   (OPCODE_ST_Z + (reg << 4))
+
+// ST Z+, Rs                            1001 001r rrrr 0001, with r=the register to store
+#define OPCODE_ST_ZINC                  0x9201
+#define asm_ST_ZINC(reg)                (OPCODE_ST_ZINC + (reg << 4))
 
 // STD                                  10q0 qq1r rrrr yqqq, with r=source register, q=offset from Y or Z, y=1 for Y 0 for Z
 #define OPCODE_STD                      0x8200

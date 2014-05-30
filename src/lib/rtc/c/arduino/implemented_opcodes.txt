@@ -1,0 +1,224 @@
+Not implemented:                        Implemented:
+
+JVM_NOP 0
+JVM_SCONST_M1 1
+                                        JVM_SCONST_0 2
+                                        JVM_SCONST_1 3
+                                        JVM_SCONST_2 4
+                                        JVM_SCONST_3 5
+                                        JVM_SCONST_4 6
+                                        JVM_SCONST_5 7
+JVM_ICONST_M1 8
+                                        JVM_ICONST_0 9
+                                        JVM_ICONST_1 10
+                                        JVM_ICONST_2 11
+                                        JVM_ICONST_3 12
+                                        JVM_ICONST_4 13
+                                        JVM_ICONST_5 14
+JVM_ACONST_NULL 15
+                                        JVM_BSPUSH 16
+JVM_BIPUSH 17
+                                        JVM_SSPUSH 18
+JVM_SIPUSH 19
+JVM_IIPUSH 20
+JVM_LDS 21
+                                        JVM_SLOAD 22
+                                        JVM_SLOAD_0 23
+                                        JVM_SLOAD_1 24
+                                        JVM_SLOAD_2 25
+                                        JVM_SLOAD_3 26
+                                        JVM_ILOAD 27
+                                        JVM_ILOAD_0 28
+                                        JVM_ILOAD_1 29
+                                        JVM_ILOAD_2 30
+                                        JVM_ILOAD_3 31
+                                        JVM_ALOAD 32
+                                        JVM_ALOAD_0 33
+                                        JVM_ALOAD_1 34
+                                        JVM_ALOAD_2 35
+                                        JVM_ALOAD_3 36
+                                        JVM_SSTORE 37
+                                        JVM_SSTORE_0 38
+                                        JVM_SSTORE_1 39
+                                        JVM_SSTORE_2 40
+                                        JVM_SSTORE_3 41
+                                        JVM_ISTORE 42
+                                        JVM_ISTORE_0 43
+                                        JVM_ISTORE_1 44
+                                        JVM_ISTORE_2 45
+                                        JVM_ISTORE_3 46
+JVM_ASTORE 47
+JVM_ASTORE_0 48
+JVM_ASTORE_1 49
+JVM_ASTORE_2 50
+JVM_ASTORE_3 51
+JVM_BALOAD 52
+JVM_CALOAD 53
+                                        JVM_SALOAD 54
+JVM_IALOAD 55
+JVM_AALOAD 56
+JVM_BASTORE 57
+JVM_CASTORE 58
+                                        JVM_SASTORE 59
+JVM_IASTORE 60
+JVM_AASTORE 61
+JVM_IPOP 62
+JVM_IPOP2 63
+JVM_IDUP 64
+                                        JVM_IDUP2 65
+JVM_IDUP_X1 66
+JVM_ISWAP_X 67
+JVM_APOP 68
+JVM_APOP2 69
+                                        JVM_ADUP 70
+JVM_ADUP2 71
+JVM_ADUP_X1 72
+JVM_ADUP_X2 73
+JVM_ASWAP 74
+JVM_GETFIELD_B 75
+JVM_GETFIELD_C 76
+                                        JVM_GETFIELD_S 77
+JVM_GETFIELD_I 78
+JVM_GETFIELD_A 79
+JVM_PUTFIELD_B 80
+JVM_PUTFIELD_C 81
+                                        JVM_PUTFIELD_S 82
+JVM_PUTFIELD_I 83
+JVM_PUTFIELD_A 84
+JVM_GETSTATIC_B 85
+JVM_GETSTATIC_C 86
+                                        JVM_GETSTATIC_S 87
+JVM_GETSTATIC_I 88
+JVM_GETSTATIC_A 89
+JVM_PUTSTATIC_B 90
+JVM_PUTSTATIC_C 91
+                                        JVM_PUTSTATIC_S 92
+JVM_PUTSTATIC_I 93
+JVM_PUTSTATIC_A 94
+                                        JVM_SADD 95
+                                        JVM_SSUB 96
+                                        JVM_SMUL 97
+                                        JVM_SDIV 98
+                                        JVM_SREM 99
+                                        JVM_SNEG 100
+JVM_SSHL 101
+JVM_SSHR 102
+JVM_SUSHR 103
+                                        JVM_SAND 104
+                                        JVM_SOR 105
+                                        JVM_SXOR 106
+                                        JVM_IADD 107
+                                        JVM_ISUB 108
+                                        JVM_IMUL 109
+                                        JVM_IDIV 110
+                                        JVM_IREM 111
+                                        JVM_INEG 112
+JVM_ISHL 113
+JVM_ISHR 114
+JVM_IUSHR 115
+                                        JVM_IAND 116
+                                        JVM_IOR 117
+                                        JVM_IXOR 118
+JVM_BINC 119
+JVM_SINC 120
+JVM_IINC 121
+JVM_S2B 122
+                                        JVM_S2I 123
+JVM_I2B 124
+JVM_I2S 125
+JVM_IIFEQ 126
+JVM_IIFNE 127
+JVM_IIFLT 128
+JVM_IIFGE 129
+JVM_IIFGT 130
+JVM_IIFLE 131
+JVM_IFNULL 132
+JVM_IFNONNULL 133
+                                        JVM_IF_SCMPEQ 134
+                                        JVM_IF_SCMPNE 135
+                                        JVM_IF_SCMPLT 136
+                                        JVM_IF_SCMPGE 137
+                                        JVM_IF_SCMPGT 138
+                                        JVM_IF_SCMPLE 139
+JVM_IF_ICMPEQ 140
+JVM_IF_ICMPNE 141
+JVM_IF_ICMPLT 142
+JVM_IF_ICMPGE 143
+JVM_IF_ICMPGT 144
+JVM_IF_ICMPLE 145
+JVM_IF_ACMPEQ 146
+JVM_IF_ACMPNE 147
+                                        JVM_GOTO 148
+JVM_GOTO_W 149
+JVM_TABLESWITCH 150
+JVM_LOOKUPSWITCH 151
+                                        JVM_SRETURN 152
+                                        JVM_IRETURN 153
+JVM_ARETURN 154
+                                        JVM_RETURN 155
+JVM_INVOKEVIRTUAL 156
+JVM_INVOKESPECIAL 157
+JVM_INVOKESTATIC 158
+JVM_INVOKEINTERFACE 159
+JVM_NEW 160
+JVM_NEWARRAY 161
+JVM_ANEWARRAY 162
+                                        JVM_ARRAYLENGTH 163
+JVM_ATHROW 164
+JVM_CHECKCAST 165
+JVM_INSTANCEOF 166
+JVM_MONITORENTER 167
+JVM_MONITOREXIT 168
+JVM_IDUP_X2 169
+JVM_IINC_W 170
+JVM_SINC_W 171
+JVM_I2C 172
+JVM_S2C 173
+JVM_B2C 174
+JVM_IDUP_X 175
+                                        JVM_SIFEQ 176
+                                        JVM_SIFNE 177
+                                        JVM_SIFLT 178
+                                        JVM_SIFGE 179
+                                        JVM_SIFGT 180
+                                        JVM_SIFLE 181
+JVM_LCONST_0 182
+JVM_LCONST_1 183
+JVM_LLOAD 184
+JVM_LLOAD_0 185
+JVM_LLOAD_1 186
+JVM_LLOAD_2 187
+JVM_LLOAD_3 188
+JVM_LLPUSH 189
+JVM_LSTORE 190
+JVM_LSTORE_0 191
+JVM_LSTORE_1 192
+JVM_LSTORE_2 193
+JVM_LSTORE_3 194
+JVM_LALOAD 195
+JVM_LASTORE 196
+JVM_GETFIELD_L 197
+JVM_PUTFIELD_L 198
+JVM_GETSTATIC_L 199
+JVM_PUTSTATIC_L 200
+JVM_LADD 201
+JVM_LSUB 202
+JVM_LMUL 203
+JVM_LDIV 204
+JVM_LREM 205
+JVM_LNEG 206
+JVM_LSHL 207
+JVM_LSHR 208
+JVM_LUSHR 209
+JVM_LAND 210
+JVM_LOR 211
+JVM_LXOR 212
+JVM_LRETURN 213
+JVM_L2I 214
+JVM_L2S 215
+JVM_I2L 216
+JVM_S2L 217
+JVM_LCMP 218
+                                        JVM_BRTARGET 219
+
+

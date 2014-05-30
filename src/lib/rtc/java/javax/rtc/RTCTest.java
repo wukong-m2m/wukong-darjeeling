@@ -8,17 +8,11 @@ public class RTCTest {
 	public int instance_int;
 	public short instance_short2;
 
-	public static int test_int_ops(int x, int y, short op) {
-		if (op==0) return  -x;
-		if (op==1) return x + y;
-		if (op==2) return x - y;
-		if (op==3) return x * y;
-		if (op==4) return x / y;
-		if (op==5) return x % y;
-		if (op==6) return x & y;
-		if (op==7) return x | y;
-		if (op==8) return x ^ y;
-		return -42;
+	public static void test_bubblesort(short[] numbers) {
+		numbers[0]++;
+		short tmp =	numbers[1];
+		numbers[1] = numbers[2];
+		numbers[2] = tmp;
 	}
 
 	// public static void test_bubblesort(short[] numbers) {
@@ -32,6 +26,19 @@ public class RTCTest {
 	// 			}
 	// 		}
 	// 	}
+	// }
+
+	// public static int test_int_ops(int x, int y, short op) {
+	// 	if (op==0) return  -x;
+	// 	if (op==1) return x + y;
+	// 	if (op==2) return x - y;
+	// 	if (op==3) return x * y;
+	// 	if (op==4) return x / y;
+	// 	if (op==5) return x % y;
+	// 	if (op==6) return x & y;
+	// 	if (op==7) return x | y;
+	// 	if (op==8) return x ^ y;
+	// 	return -42;
 	// }
 
 	// public static short test_fib(short x) {
