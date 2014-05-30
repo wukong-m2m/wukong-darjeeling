@@ -444,6 +444,14 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 				emit( asm_POP(R2) );
 				emit( asm_RET );
 			break;
+			case JVM_ARRAYLENGTH: // The length of an array is stored as 16 bit at the start of the array
+				emit( asm_x_POPREF(R31) ); // POP the reference into Z
+				emit( asm_x_POPREF(R30) );
+				emit( asm_LD_ZINC(R24) );
+				emit( asm_LD_Z(R25) );
+				emit( asm_PUSH(R24) );
+				emit( asm_PUSH(R25) );
+			break;
 			// BRANCHES
 			case JVM_SIFEQ:
 			case JVM_SIFNE:

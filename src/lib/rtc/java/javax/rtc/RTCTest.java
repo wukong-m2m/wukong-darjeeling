@@ -24,6 +24,23 @@ public class RTCTest {
 		return current;
 	}
 
+	public static short test_arraylength(short[] array) {
+		return (short)array.length;
+	}
+
+	// public static void test_bubblesort(short[] numbers) {
+	// 	short NUMNUMBERS = (short)numbers.length;
+	// 	for (short i=0; i<NUMNUMBERS; i++) {
+	// 		for (short j=0; j<NUMNUMBERS-i-1; j++) {
+	// 			if (numbers[j]>numbers[j+1]) {
+	// 				short temp = numbers[j];
+	// 				numbers[j] = numbers[j+1];
+	// 				numbers[j+1] = temp;
+	// 			}
+	// 		}
+	// 	}
+	// }
+
 	public short test_instance_short1(short x) {
 		this.instance_short1 += x;
 		return this.instance_short1;

@@ -29,8 +29,11 @@ public class HelloWorld
 		// checkStaticShortVariables();
 		// checkStaticInstanceVariables();
 		// checkFib();
-		checkCompareShort();
-		checkFib();
+		// checkCompareShort();
+		// checkFib();
+		System.out.println("" + RTCTest.test_arraylength(new short[10]));
+		System.out.println("" + RTCTest.test_arraylength(new short[1]));
+		System.out.println("" + RTCTest.test_arraylength(new short[42]));
 	}
 
 	public static void checkFib()

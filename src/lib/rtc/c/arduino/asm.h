@@ -118,6 +118,14 @@
 #define OPCODE_LD_XINC                  0x900D
 #define asm_LD_XINC(reg)                opcodeWithSingleRegOperand(OPCODE_LD_XINC, reg)
 
+// LD Rd, Z                             1000 000d dddd 0000
+#define OPCODE_LD_Z                     0x8000
+#define asm_LD_Z(reg)                   opcodeWithSingleRegOperand(OPCODE_LD_Z, reg)
+
+// LD Rd, Z+                            1001 000d dddd 0001
+#define OPCODE_LD_ZINC                  0x9001
+#define asm_LD_ZINC(reg)                opcodeWithSingleRegOperand(OPCODE_LD_ZINC, reg)
+
 // LDD                                  10q0 qq0d dddd yqqq, with d=dest register, q=offset from Y or Z, y=1 for Y 0 for Z
 #define OPCODE_LDD                      0x8000
 #define asm_LDD(reg, xy, offset)        (OPCODE_LDD \
