@@ -228,10 +228,6 @@ uint8_t radio_zwave_send(radio_zwave_address_t zwave_addr, uint8_t *payload, uin
     }
     DEBUG_LOG(DBG_WKCOMM, "\n");
 #endif // DBG_WKCOMM
-	DEBUG_LOG(true, "send %d bytes to %d\n", length,zwave_addr);
-    for (int16_t i=0; i<length; ++i) {
-        DEBUG_LOG(true, " %02x", payload[i]);
-    }
 
     return ZW_sendData(zwave_addr, payload, length, txoptions);
 }
@@ -247,10 +243,6 @@ uint8_t radio_zwave_send_raw(radio_zwave_address_t zwave_addr, uint8_t *payload,
     }
     DEBUG_LOG(DBG_WKCOMM, "\n");
 #endif // DBG_WKCOMM
-	DEBUG_LOG(true, "send %d bytes to %d\n", length,zwave_addr);
-    for (int16_t i=0; i<length; ++i) {
-        DEBUG_LOG(true, " %02x", payload[i]);
-    }
 
     return ZW_sendDataRaw(zwave_addr, payload, length, txoptions);
 }
@@ -346,7 +338,7 @@ void Zwave_receive(int processmessages) {
                     radio_zwave_my_address = radio_zwave_receive_buffer[4];
                     radio_zwave_my_address_loaded = true;
                 } else
-                    DEBUG_LOG(true, "!!!! ignore unexpected FUNC_ID_MEMORY_GET_ID\n");
+                    DEBUG_LOG(DBG_WKCOMM, "!!!! ignore unexpected FUNC_ID_MEMORY_GET_ID\n");
             }
             // if (cmd == 0x49 && f_nodeinfo)
             //     f_nodeinfo(radio_zwave_receive_buffer, payload_length);

@@ -261,11 +261,11 @@ void wuclass_light_sensor_update(wuobject_t *wuobject) {
 	  while(!(ADCSRA & _BV(ADIF)));         // wait for conversion complete
 	  ADCSRA |= _BV(ADIF);                  // clear ADCIF
 	  v = ADCH;
-  	  DEBUG_LOG(true, "LS(A): %d\n", v);
+  	  DEBUG_LOG(DBG_WKPFUPDATE, "LS(A): %d\n", v);
   } else {
 
 	int lv = bh1750_getlux();
-  	DEBUG_LOG(true, "LS(D): %d\n", lv);
+  	DEBUG_LOG(DBG_WKPFUPDATE, "LS(D): %d\n", lv);
 	v = lv>>8;
   }
   

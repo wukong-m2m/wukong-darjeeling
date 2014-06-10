@@ -28,7 +28,7 @@
 
 void dj_panic(int32_t panictype)
 {
-    switch(panictype)
+/*    switch(panictype)
     {
         case DJ_PANIC_OUT_OF_MEMORY:
         	DEBUG_LOG(true, "PANIC: out of memory!\n");
@@ -63,7 +63,8 @@ void dj_panic(int32_t panictype)
         default:
             DEBUG_LOG(true, "PANIC: unknown panic type %d!\n", panictype);
             break;
-    }
+    }*/
+    DEBUG_LOG(true, "PANIC: %d!\n", panictype);
     if (dj_exec_getRunlevel() < RUNLEVEL_PANIC) {
         dj_exec_setRunlevel(panictype);
         while (true) // Still allow remote access through wkcomm when in panic state.

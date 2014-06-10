@@ -90,7 +90,7 @@ void vm_mem_preGC() { // This is called from vm_mem_markRootSet, which is early 
 	dj_vm *vm = dj_exec_getVM();
 	if (vm == NULL)
 	{
-		DARJEELING_PRINTF("Garbage collection cannot start, the VM is not yet initialized\n");
+		DEBUG_LOG(DBG_DARJEELING, "GC: VM not yet init\n");
 		dj_panic(DJ_PANIC_OUT_OF_MEMORY);
 	}
 

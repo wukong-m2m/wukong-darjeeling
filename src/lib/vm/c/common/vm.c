@@ -94,7 +94,7 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 	obj = dj_vm_createSysLibObject(vm, BASE_CDEF_java_lang_OutOfMemoryError);
 	vm_mem_setPanicExceptionObject(obj);
 
-	DEBUG_LOG(true, "Darjeeling is go!\n\r");
+	DEBUG_LOG(true, "DJ Go!\n");
 
 	// start the main execution loop
 	while (dj_vm_countLiveThreads(vm)>0)
@@ -104,7 +104,7 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 			if (vm->currentThread->status==THREADSTATUS_RUNNING)
 				dj_exec_run(RUNSIZE);
 	}
-	DEBUG_LOG(true, "All threads terminated.\n\r");
+	DEBUG_LOG(true, "DJ Done!\n");
 }
 
 
@@ -358,7 +358,7 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 
 	dj_infusion_getName(infusion, name, 64);
 
-	DEBUG_LOG(DBG_DARJEELING, "Loaded infusion %s.\n", name);
+	DEBUG_LOG(DBG_DARJEELING, "Loaded inf %s.\n", name);
 #endif
 
 	for (i=0; i<numHandlers; i++)
@@ -369,7 +369,7 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 			infusion->native_handlers = native_handlers[i].handlers;
 
 #ifdef DARJEELING_DEBUG
-			DEBUG_LOG(DBG_DARJEELING, "Attached native handler to infusion %s.\n", name);
+			DEBUG_LOG(DBG_DARJEELING, "Attached nat. handler to  %s.\n", name);
 #endif
 		}
 	}
@@ -512,7 +512,7 @@ void dj_vm_loadInfusionArchive(dj_vm * vm, dj_di_pointer archive, dj_named_nativ
 		if (dj_archive_filetype(file) == DJ_FILETYPE_LIB_INFUSION) {
 			dj_infusion * infusion = dj_vm_loadInfusion(vm, file, native_handlers, numHandlers);
 			if (infusion == NULL) {
-				DARJEELING_PRINTF("Not enough space to create the infusion nr %d in archive.\n", i);
+				DEBUG_LOG(DBG_DARJEELING, "No memory to create infusion %d in archive.\n", i);
 		        dj_panic(DJ_PANIC_OUT_OF_MEMORY);
 		    }
 		}
@@ -1052,7 +1052,6 @@ inline dj_global_id dj_vm_getRuntimeClass(dj_vm *vm, runtime_id_t id)
 
 	// TODO raise error, class not found
 	DEBUG_LOG(DBG_DARJEELING, "error: class not found: %d\n", id);
-	DARJEELING_PRINTF("error: class not found: %d\n", id);
 #ifdef DARJEELING_DEBUG_FRAME
 	dj_exec_debugCurrentFrame();
 #endif
@@ -1100,7 +1099,7 @@ dj_infusion* dj_vm_runClassInitialisers(dj_vm *vm, dj_infusion *infusion)
 
 	if (thread == NULL)
 	{
-		DARJEELING_PRINTF("Not enough space for class initializer in infusion %s\n", (char *) dj_di_header_getInfusionName(infusion->header));
+		DEBUG_LOG(DBG_DARJEELING, "No memory for class init,infusion %s\n", (char *) dj_di_header_getInfusionName(infusion->header));
 		dj_panic(DJ_PANIC_OUT_OF_MEMORY);
 	}
 
@@ -1126,8 +1125,7 @@ dj_infusion* dj_vm_runClassInitialisers(dj_vm *vm, dj_infusion *infusion)
 			// if we're out of memory, panic
 		    if (frame==NULL)
 		    {
-		        DEBUG_LOG(DBG_DARJEELING, "dj_vm_runClassInitialisers: could not create frame. Panicking\n");
-		        DARJEELING_PRINTF("Not enough space to create a frame\n");
+		        DEBUG_LOG(DBG_DARJEELING, "ClassInitialisers: no frame\n");
 		        dj_panic(DJ_PANIC_OUT_OF_MEMORY);
 		    }
 

@@ -7,7 +7,7 @@ void dj_hook_add(dj_hook **list, dj_hook *callback) {
 	dj_hook *tmp = *list;
 	while (tmp) {
 		if (tmp == callback) {
-			DEBUG_LOG(true, "dj_hook_add: Hook already in list!");
+			DEBUG_LOG(true, "Hook already in list!");
 			return;
 		}
 		tmp = tmp->next;

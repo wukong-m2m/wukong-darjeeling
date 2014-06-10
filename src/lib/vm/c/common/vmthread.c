@@ -52,7 +52,7 @@ dj_thread *dj_thread_create_and_run(dj_global_id methodImplId)
 	// if we're out of memory, let the caller deal with it
     if (frame==NULL)
     {
-        DEBUG_LOG(DBG_DARJEELING, "dj_thread_create_and_run: could not create top frame. Returning null\n");
+        // message already printed in dj_frame_create (if DBG_DARJEELING is true)
         return NULL;
     }
 
@@ -65,7 +65,7 @@ dj_thread *dj_thread_create_and_run(dj_global_id methodImplId)
     if (ret==NULL)
     {
         // free the frame object (if we get here, its allocation was successful)
-        DEBUG_LOG(DBG_DARJEELING, "dj_thread_create_and_run: could create the top frame but not the Thread object. Aborting\n");
+        // message already printed in dj_thread_create (if DBG_DARJEELING is true)
         dj_mem_free(frame);
 
     } else
@@ -90,7 +90,7 @@ dj_thread *dj_thread_create()
 	// if we're out of memory, let the caller handle it
 	if (ret==NULL)
     {
-        DEBUG_LOG(DBG_DARJEELING, "dj_thread_create: could not create Thread object frame. Returning null\n");
+        DEBUG_LOG(DBG_DARJEELING, "can't create thread:null\n");
         return NULL;
     }
 
@@ -174,7 +174,7 @@ void dj_frame_updatePointers(dj_frame * frame)
 	// update pointers to the infusion and parent frame
 	// NOTE these have to be updated AFTER the stack and local variable frame
 	frame->method.infusion = dj_mem_getUpdatedPointer(frame->method.infusion);
-	DEBUG_LOG(DBG_DARJEELING, "parent is changed from %p to %p\n", frame->parent, dj_mem_getUpdatedPointer(frame->parent));
+	DEBUG_LOG(DBG_DARJEELING, "parent changed: %p to %p\n", frame->parent, dj_mem_getUpdatedPointer(frame->parent));
 	frame->parent = dj_mem_getUpdatedPointer(frame->parent);
 
 }
@@ -259,7 +259,7 @@ dj_frame *dj_frame_create(dj_global_id methodImplId)
 	// in case of null, return and let the caller deal with it
 	if (ret==NULL)
     {
-        DEBUG_LOG(DBG_DARJEELING, "dj_frame_create: could not create frame. Returning null\n");
+        DEBUG_LOG(DBG_DARJEELING, "could not create frame:null\n");
     } else
     {
     	// restore a potentially invalid infusion pointer

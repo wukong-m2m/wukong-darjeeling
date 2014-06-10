@@ -93,10 +93,15 @@ static int nrOpcodesLeft;
 #ifdef DARJEELING_DEBUG
 static uint32_t totalNrOpcodes;
 static uint16_t oldPc;
+char name[16];
 #endif
 #ifdef DARJEELING_DEBUG_TRACE
 static int callDepth = 0;
 #endif
+
+
+
+
 //if it is tossim we need a bunch of getter setters,
 //because tossim considers global variables in all nodes to be shared
 /**
@@ -176,7 +181,7 @@ static dj_frame *getCurrentFrame() {
 	dj_frame *ret = NULL;
 	dj_thread *thread = dj_exec_getCurrentThread();
 	if( thread==NULL ) {
-		DEBUG_LOG(DBG_DARJEELING, "Thread is NULL. Couldn't determine current frame.\n");
+		DEBUG_LOG(DBG_DARJEELING, "Thread NULL. No frame.\n");
 	} else {
 		ret = thread->frameStack;
 	}
@@ -220,7 +225,6 @@ static void dj_exec_debugRef( const char *desc, ref_t *data, uint8_t num ) {
 }
 
 void dj_exec_dumpFrame( dj_frame *frame ) {
-	char name[16];
 	int numLocalInts, numLocalRefs, numIntParams, numRefParams;
 	int16_t *intParams;
 	ref_t *refParams;
@@ -373,7 +377,7 @@ void dj_exec_activate_thread(dj_thread *thread) {
 	if (thread->frameStack != NULL)
 		dj_exec_loadLocalState(thread->frameStack);
 	else {
-		DARJEELING_PRINTF("Thread frame is NULL, thread cannot be activated\n");
+		DEBUG_LOG(DBG_DARJEELING, "Thread frame NULL, cannot activate\n");
 		dj_panic(DJ_PANIC_ILLEGAL_INTERNAL_STATE);
 	}
 #if defined(DARJEELING_DEBUG_FRAME) && 0
@@ -394,7 +398,7 @@ void dj_exec_updatePointers() {
  */
 dj_infusion * dj_exec_getCurrentInfusion() {
 #ifndef DARJEELING_DEBUG_FRAME
-	DEBUG_LOG(DBG_DARJEELING, "\tCurrent infusion is being read from %p->%p\n", dj_exec_getCurrentThread(), dj_exec_getCurrentThread()->frameStack);
+	DEBUG_LOG(DBG_DARJEELING, "\tCur. infusion read from %p->%p\n", dj_exec_getCurrentThread(), dj_exec_getCurrentThread()->frameStack);
 #endif
 	return dj_exec_getCurrentThread()->frameStack->method.infusion;
 }
@@ -802,17 +806,17 @@ static inline void dj_exec_passParameters(dj_frame *frame, dj_global_id methodIm
 	uint8_t numberOfRefArguments = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
 									+ ((dj_di_methodImplementation_getFlags(methodImpl) & FLAGS_STATIC) ? 0 : 1);
 
-	DEBUG_LOG(DBG_DARJEELING, " number of refs %d number of ints %d\n", numberOfRefArguments, numberOfIntArguments);
+	DEBUG_LOG(DBG_DARJEELING, " refs %d ints %d\n", numberOfRefArguments, numberOfIntArguments);
 	for (int i=0; i<numberOfIntArguments; i++) {
 		// int stack grows up
 		uint16_t intValue = intStack[-numberOfIntArguments + i];
-		DEBUG_LOG(DBG_DARJEELING, " copy int parameter %d\n", intValue);
+		DEBUG_LOG(DBG_DARJEELING, " copy int %d\n", intValue);
 		newFrameLocalIntegerVariables[i] = intValue;
 	}
 	for (int i=0; i<numberOfRefArguments; i++) {
 		// ref stack grows down
 		ref_t refValue = refStack[numberOfRefArguments-1 - i]; // -1 since refStack points at the top reference, while intStack points to the free space
-		DEBUG_LOG(DBG_DARJEELING, " copy ref parameter %d\n",refValue);
+		DEBUG_LOG(DBG_DARJEELING, " copy ref %d\n",refValue);
 		newFrameLocalReferenceVariables[i] = refValue;
 	}
 }
@@ -885,10 +889,9 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 	native_method_function_t handler = (handlers != NULL ? methodImplId.infusion->native_handlers[methodImplId.entity_id] : NULL);
 
 #ifdef DARJEELING_DEBUG
-	char name[64];
-	dj_infusion_getName(methodImplId.infusion, name, 64);
+	dj_infusion_getName(methodImplId.infusion, name, 16);
 
-	DEBUG_LOG(DBG_DARJEELING, ">>>>> callMethod infusion %s, entity %d, virtualCall %d\n",
+	DEBUG_LOG(DBG_DARJEELING, ">>>>> callMethod inf %s, ent %d, vir %d\n",
 								name,
 								methodImplId.entity_id,
 								virtualCall);
@@ -904,7 +907,7 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 	{
 
 #ifndef DARJEELING_DEBUG_FRAME
-		DEBUG_LOG(DBG_DARJEELING, "Invoking native method ... \n");
+		DEBUG_LOG(DBG_DARJEELING, "Invoking native.\n");
 #endif
 
 		// the method is native, check if we have a native handler
@@ -972,7 +975,7 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 		}
 		else
 		{
-			DEBUG_LOG(DBG_DARJEELING, "No native method handler for this infusion! \n");
+			DEBUG_LOG(DBG_DARJEELING, "No native handler! \n");
 			// there is no native handler for this method's infusion.
 			// Throw an exception
 			dj_exec_createAndThrow(
@@ -1066,7 +1069,7 @@ void dj_exec_createAndThrow(int exceptionId)
 
 	// in case we didn't preallocate an exception object for this corner case, simply panic
 	if (obj == NULL) {
-		DARJEELING_PRINTF("Not enough space to create an exception\n");
+		DEBUG_LOG(DBG_DARJEELING, "No memory to create exception\n");
 		dj_panic(DJ_PANIC_OUT_OF_MEMORY);
 	}
 
@@ -1103,11 +1106,9 @@ void dj_exec_throw(dj_object *obj, uint16_t throw_pc)
 	dj_global_id classGlobalId = dj_vm_getRuntimeClass(vm, classRuntimeId);
 
 #ifdef DARJEELING_DEBUG
+	dj_infusion_getName(classGlobalId.infusion, name, 16);
 
-	char name[64];
-	dj_infusion_getName(classGlobalId.infusion, name, 64);
-
-	DARJEELING_PRINTF("Throwing exception, infusion=%s, entity_id=%d\n", name, classGlobalId.entity_id);
+	DEBUG_LOG(DBG_DARJEELING, "Throwing ex., infusion=%s, entity_id=%d\n", name, classGlobalId.entity_id);
 
 #endif
 

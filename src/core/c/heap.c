@@ -137,14 +137,14 @@ void * dj_mem_alloc(uint16_t size, uint16_t id)
 	if (right_pointer-left_pointer<size)
 	{
 		// not enough memory
-        DEBUG_LOG(DBG_DARJEELING, "dj_mem_alloc: not enough free space, triggering a collection\n");
+        DEBUG_LOG(DBG_DARJEELING, "dj_mem_alloc: triggering a collection\n");
 		dj_mem_gc();
 	}
 
 	if (right_pointer-left_pointer<size)
 	{
 		// still not enough memory, return null
-        DEBUG_LOG(DBG_DARJEELING, "Not enough memory, returning NULL\n");
+        DEBUG_LOG(DBG_DARJEELING, "dj_mem_alloc: NULL!\n");
         return nullref;
 	}
 
@@ -405,15 +405,13 @@ void dj_mem_compact()
 
 void dj_mem_gc()
 {
-	DEBUG_LOG(DBG_DARJEELING_GC, "(GC)");
-
-	DEBUG_LOG(DBG_DARJEELING, "GC start\n");
+	DEBUG_LOG(DBG_DARJEELING | DBG_DARJEELING_GC, "GC start\n");
 
 	dj_mem_mark();
 	dj_mem_compact();
 	dj_hook_call(dj_mem_postGCHook, NULL);
 
-	DEBUG_LOG(DBG_DARJEELING, "GC done\n");
+	DEBUG_LOG(DBG_DARJEELING | DBG_DARJEELING_GC, "GC done\n");
 }
 
 //void dj_mem_thread_dump()
