@@ -39,6 +39,8 @@ void dj_exec_throw(dj_object *obj, uint16_t throw_pc);
 void dj_exec_throwHere(dj_object *obj);
 void dj_exec_createAndThrow(int exceptionId);
 
+uint16_t dj_exec_getNumberOfObjectsOnReferenceStack();
+
 void dj_exec_stackPushShort(int16_t value);
 void dj_exec_stackPushInt(int32_t value);
 void dj_exec_stackPushLong(int64_t value);

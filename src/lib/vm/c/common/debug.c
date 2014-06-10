@@ -69,7 +69,7 @@ void dj_dump_stack(dj_frame *frame)
 
 
     DEBUG_LOG(DBG_DARJEELING, "          |----------|\n");
-    DEBUG_LOG(DBG_DARJEELING, "%10p|%4d  %4d| saved pc / saved nr_stack_elements\n",&(frame->pc),frame->nr_int_stack);
+    DEBUG_LOG(DBG_DARJEELING, "%10p|%4d  %4d| saved pc / saved nr_stack_elements\n",&(frame->pc),(dj_frame_getIntegerStackBase(frame) - frame->saved_intStack);
     DEBUG_LOG(DBG_DARJEELING, "%10p|%10p| infusion\n",&(frame->infusion),frame->infusion);
     DEBUG_LOG(DBG_DARJEELING, "%10p|%10d| method\n",&(frame->method),(uint32_t)frame->method);
     DEBUG_LOG(DBG_DARJEELING, "%10p|%10p| parent\n",frame,frame->parent);

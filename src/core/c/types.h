@@ -113,8 +113,8 @@ struct _dj_frame
 	dj_global_id method;
 
 	uint16_t pc;								// program counter, return adress
-	uint8_t nr_int_stack;						// the number of values on the integer stack
-	uint8_t nr_ref_stack;						// the number of values on the reference stack
+	int16_t* saved_intStack;					// the saved value of intStack, replaces nr_int_stack because for RTC methods, intStack doesn't point to the stack frame, and thus can't be calculated from nr_int_stack
+	ref_t* saved_refStack;						// same for refStack, just to be consistent (it's still in the stack frame, so actually we could still calculate it, for RTC methods as well)
 }
 #ifdef PACK_STRUCTS
 __attribute__ ((__packed__))

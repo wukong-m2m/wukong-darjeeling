@@ -65,13 +65,15 @@ void dj_monitor_markRootSet(dj_monitor_block * monitor_block);
 
 #define dj_frame_stackStartOffset(frame) ((char*)frame + sizeof(dj_frame))
 #define dj_frame_stackEndOffset(frame) (dj_frame_stackStartOffset(frame) + (sizeof(int16_t) * dj_di_methodImplementation_getMaxStack(dj_global_id_getMethodImplementation(frame->method))))
-#define dj_frame_stackLocalIntegerOffset(frame) (dj_frame_stackEndOffset(frame) + (sizeof(ref_t) * dj_di_methodImplementation_getReferenceLocalVariableCount(dj_global_id_getMethodImplementation(frame->method))))
+#define dj_frame_stackLocalIntegerOffset(frame) (dj_frame_stackEndOffset(frame) \
+												 + (sizeof(ref_t) * dj_di_methodImplementation_getReferenceLocalVariableCount(dj_global_id_getMethodImplementation(frame->method))) \
+												 + (sizeof(int16_t) * (dj_di_methodImplementation_getIntegerLocalVariableCount(dj_global_id_getMethodImplementation(frame->method))-1)))
 
 #define dj_frame_getStackStart(frame) ((void*)dj_frame_stackStartOffset(frame))
 #define dj_frame_getStackEnd(frame) ((void*)dj_frame_stackEndOffset(frame))
 
-#define dj_frame_getReferenceStack(frame) ((ref_t*)(dj_frame_stackEndOffset(frame) - frame->nr_ref_stack * sizeof(ref_t)))
-#define dj_frame_getIntegerStack(frame) ((int16_t*)(dj_frame_stackStartOffset(frame) + frame->nr_int_stack * sizeof(int16_t)))
+#define dj_frame_getReferenceStackBase(frame) ((ref_t*)(dj_frame_getStackStart(frame)))
+#define dj_frame_getIntegerStackBase(frame) ((int16_t*)(dj_frame_getStackEnd(frame) - sizeof(int16_t)))
 
 #define dj_frame_getLocalReferenceVariables(frame) ((ref_t*)(dj_frame_stackEndOffset(frame)))
 #define dj_frame_getLocalIntegerVariables(frame) ((int16_t*)(dj_frame_stackLocalIntegerOffset(frame)))

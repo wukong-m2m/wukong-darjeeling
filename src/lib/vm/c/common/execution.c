@@ -141,10 +141,8 @@ inline void dj_exec_breakExecution() {
  */
 static inline void dj_exec_saveLocalState(dj_frame *frame) {
 	frame->pc = pc;
-	frame->nr_int_stack = ((char*) intStack - dj_frame_stackStartOffset(frame))
-			/ sizeof(int16_t);
-	frame->nr_ref_stack = (dj_frame_stackEndOffset(frame) - (char*) refStack)
-			/ sizeof(ref_t);
+	frame->saved_intStack = intStack;
+	frame->saved_refStack = refStack;
 }
 
 /**
@@ -159,8 +157,8 @@ static inline void dj_exec_loadLocalState(dj_frame *frame) {
 	code = dj_di_methodImplementation_getData(methodImpl);
 	pc = frame->pc;
 
-	intStack = dj_frame_getIntegerStack(frame);
-	refStack = dj_frame_getReferenceStack(frame);
+	intStack = frame->saved_intStack;
+	refStack = frame->saved_refStack;
 
 	localReferenceVariables = dj_frame_getLocalReferenceVariables(frame);
 	localIntegerVariables = dj_frame_getLocalIntegerVariables(frame);
@@ -200,14 +198,14 @@ static void dj_exec_debugInt16( const char *desc, int16_t *data, uint8_t num, in
 			if( idx>0 ) {
 				DARJEELING_PRINTF(", ");
 			}
-			DARJEELING_PRINTF("%#x", (increment<0 ? *(data-1-idx) : data[idx]) );
+			DARJEELING_PRINTF("%#x", data[idx*increment] );
 		}
 		DARJEELING_PRINTF(")");
 	}
 	DARJEELING_PRINTF(".\n");
 }
 
-static void dj_exec_debugRef( const char *desc, ref_t *data, uint8_t num ) {
+static void dj_exec_debugRef( const char *desc, ref_t *data, uint8_t num, int increment ) {
 	int idx;
 
 	DARJEELING_PRINTF("%s: %p, %d values", desc, data, num);
@@ -217,7 +215,7 @@ static void dj_exec_debugRef( const char *desc, ref_t *data, uint8_t num ) {
 			if( idx>0 ) {
 				DARJEELING_PRINTF(", ");
 			}
-			DARJEELING_PRINTF("%p", data[idx] );
+			DARJEELING_PRINTF("%p", data[idx*increment] );
 		}
 		DARJEELING_PRINTF(")");
 	}
@@ -231,8 +229,9 @@ void dj_exec_dumpFrame( dj_frame *frame ) {
 
 	DARJEELING_PRINTF("Frame = %p.\n", frame);
 	if( frame!=NULL ) {
-		DARJEELING_PRINTF(" PC=%#x, NrIntStack=%d, NrRefStack=%d, Parent=%p\n",
-					frame->pc, frame->nr_int_stack, frame->nr_ref_stack, frame->parent );
+		DARJEELING_PRINTF(" PC=%#x, saved_IntStack=%p, saved_RefStack=%p, Parent=%p\n",
+					frame->pc,
+					frame->saved_intStack, frame->saved_refStack, frame->parent );
 		dj_infusion_getName(frame->method.infusion, name, 16);
 		DARJEELING_PRINTF(" Method.infusion=%s, Method.id=%d\n", name, frame->method.entity_id);
 
@@ -247,7 +246,7 @@ void dj_exec_dumpFrame( dj_frame *frame ) {
 			sizeof(dj_frame) +
 			(dj_di_methodImplementation_getMaxStack(methodImpl) * sizeof(int16_t)) +
 			localVariablesSize;
-		DARJEELING_PRINTF(" Size of struct: %d, max.stack: %d, local var's: %d bytes.\n",
+		DARJEELING_PRINTF(" Size of struct: %lu, max.stack: %d, local var's: %d bytes.\n",
 				sizeof(dj_frame),
 				(dj_di_methodImplementation_getMaxStack(methodImpl) * sizeof(int16_t)),
 				localVariablesSize );
@@ -255,9 +254,10 @@ void dj_exec_dumpFrame( dj_frame *frame ) {
 
 		dj_exec_debugInt16(" local int variables ",
 							dj_frame_getLocalIntegerVariables(frame),
-							numLocalInts, 1);
+							numLocalInts, -1);
 		dj_exec_debugRef(  " local ref. variables",
-							dj_frame_getLocalReferenceVariables(frame), numLocalRefs);
+							dj_frame_getLocalReferenceVariables(frame),
+							numLocalRefs, 1);
 
 		numIntParams
 				= dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
@@ -266,23 +266,20 @@ void dj_exec_dumpFrame( dj_frame *frame ) {
 						+ ((dj_di_methodImplementation_getFlags(methodImpl)
 								& FLAGS_STATIC) ? 0 : 1);
 		if (frame->parent != NULL) {
-			intParams = dj_frame_getIntegerStack(frame->parent) - numIntParams;
-			refParams = dj_frame_getReferenceStack(frame->parent) + numRefParams - 1;
+			intParams = dj_frame_getIntegerStack(frame->parent) + numIntParams;
+			refParams = dj_frame_getReferenceStack(frame->parent) - numRefParams;
 		} else {
 			intParams = NULL;
 			refParams = NULL;
 		}
-		dj_exec_debugInt16(" integer   parameters", intParams, numIntParams, 1);
-		dj_exec_debugRef(  " reference parameters", refParams, numRefParams);
+		dj_exec_debugInt16(" integer   parameters", intParams, numIntParams, -1);
+		dj_exec_debugRef(  " reference parameters", refParams, numRefParams, 1);
 
-		DARJEELING_PRINTF(" local int stack base: %p.\n", dj_frame_getStackStart(frame));
-		dj_exec_debugInt16(" local integer stack ",
-							dj_frame_getIntegerStack(frame), frame->nr_int_stack, -1);
+		DARJEELING_PRINTF(" local int stack base: %p.\n", dj_frame_getStackEnd(frame));
+		dj_exec_debugInt16(" local integer stack ", dj_frame_getIntegerStackBase(frame), dj_frame_getIntegerStackBase(frame) - frame->saved_intStack, -1);
 
-		DARJEELING_PRINTF(" local ref stack base: %p.\n", dj_frame_getStackEnd(frame));
-		dj_exec_debugRef(  " local referenc stack",
-						  dj_frame_getReferenceStack(frame),
-						  frame->nr_ref_stack );
+		DARJEELING_PRINTF(" local ref stack base: %p.\n", dj_frame_getStackStart(frame));
+		dj_exec_debugRef(  " local reference stack", dj_frame_getReferenceStackBase(frame), frame->saved_refStack - dj_frame_getReferenceStackBase(frame), 1);
 	}
 }
 
@@ -301,16 +298,16 @@ dj_frame *dj_exec_dumpExecutionState() {
 
 	DARJEELING_PRINTF("--- Current execution state follows ---\n");
 	if( frame!=NULL ) {
-		orgIntStack = dj_frame_getStackStart(frame);
+		orgIntStack = dj_frame_getIntegerStackBase(frame);
 		DARJEELING_PRINTF(" current int stack base: %p.\n", orgIntStack);
-		dj_exec_debugInt16(" current integer stack ", intStack, (intStack-orgIntStack), -1);
+		dj_exec_debugInt16(" current integer stack ", intStack, (orgIntStack - intStack), 1);
 
-		orgRefStack = dj_frame_getStackEnd(frame);
+		orgRefStack = dj_frame_getReferenceStackBase(frame);
 		DARJEELING_PRINTF(" current ref stack base: %p.\n", orgRefStack);
-		dj_exec_debugRef(  " current referenc stack", refStack, (orgRefStack-refStack) );
+		dj_exec_debugRef(  " current reference stack", refStack, (refStack - orgRefStack), -1);
 	} else {
 		DARJEELING_PRINTF(" current integer stack : %p\n", intStack);
-		DARJEELING_PRINTF(" current referenc stack: %p\n", refStack);
+		DARJEELING_PRINTF(" current reference stack: %p\n", refStack);
 		DARJEELING_PRINTF(" Couldn't determine stack depths, because frame==NULL.\n");
 	}
 	DARJEELING_PRINTF(" local integer   variables: %p\n", localIntegerVariables);
@@ -334,7 +331,7 @@ void dj_exec_debugFrameTrace() {
 	dj_exec_dumpFrameTrace( frame );
 	DARJEELING_PRINTF("---- End of frame trace ----\n\n");
 }
-#endif
+#endif // DARJEELING_DEBUG_FRAME
 
 /**
  * Deactivates a thread by saving the execution state (program counter, stack, etc) into the top execution frame.
@@ -500,32 +497,32 @@ static inline dj_local_id dj_fetchLocalId() {
  * Pushes a short (16 bit) onto the runtime stack
  */
 static inline void pushShort(int16_t value) {
-	*intStack = value;
-	intStack++;
+	intStack--;	
+	*(intStack+1) = value;
 }
 
 /**
  * Pushes an int (32 bit) onto the runtime stack
  */
 static inline void pushInt(int32_t value) {
-	*((int32_t*) intStack) = value;
-	intStack += 2;
+	intStack -= 2;
+	*((int32_t*) (intStack+1)) = value;
 }
 
 /**
  * Pushes a long (64 bit) onto the runtime stack
  */
 static inline void pushLong(int64_t value) {
-	*((int64_t*) intStack) = value;
-	intStack += 4;
+	intStack -= 4;
+	*((int64_t*) (intStack+1)) = value;
 }
 
 /**
  * Pushes a reference onto the runtime stack
  */
 static inline void pushRef(ref_t value) {
-	refStack--;
-	*refStack = value;
+	refStack++;
+	*(refStack-1) = value;
 }
 
 /**
@@ -533,32 +530,37 @@ static inline void pushRef(ref_t value) {
  */
 static inline int16_t popShort()
 {
-	intStack--;
-	return *intStack;
+	intStack++;
+	int16_t ret = *intStack;
+	return ret;
 }
 
 /**
  * Pops an int (32 bit) from the runtime stack
  */
 static inline int32_t popInt() {
-	intStack -= 2;
-	return *(int32_t*) intStack;
+	intStack++;
+	int32_t ret = *(int32_t*) intStack;
+	intStack += 1; // Popping an Int frees up an additional 16bit slot
+	return ret;
 }
 
 /**
  * Pops a long (64 bit) from the runtime stack
  */
 static inline int64_t popLong() {
-	intStack -= 4;
-	return *(int64_t*) intStack;
+	intStack++;
+	int64_t ret = *(int64_t*) intStack;
+	intStack += 3; // Popping an Int frees up three additional 16bit slots
+	return ret;
 }
 
 /**
  * Pops a reference from the runtime stack
  */
 static inline ref_t popRef() {
+	refStack--;
 	ref_t ret = *refStack;
-	refStack++;
 	return ret;
 }
 
@@ -566,14 +568,14 @@ static inline ref_t popRef() {
  * Returns the topmost 16 bit short element on the integer stack, does not change the stackpointer.
  */
 static inline int16_t peekShort() {
-	return *(intStack - 1);
+	return *(intStack+1);
 }
 
 /**
  * Returns the topmost 32 bit integer element on the integer stack, does not change the stackpointer.
  */
 static inline int32_t peekInt() {
-	return *(int32_t*) (intStack - 2);
+	return *(int32_t*) (intStack+1);
 }
 
 /**
@@ -581,7 +583,7 @@ static inline int32_t peekInt() {
  */
 // 20140410 NR: Comment unused function
 //static inline int64_t peekLong() {
-//	return *(int64_t*) (intStack - 4);
+//	return *(int64_t*) (intStack+1);
 //}
 
 
@@ -589,7 +591,7 @@ static inline int32_t peekInt() {
  * Returns the topmost element on the reference stack, does not change the stackpointer.
  */
 static inline ref_t peekRef() {
-	return *refStack;
+	return *(refStack-1);
 }
 
 /**
@@ -598,7 +600,11 @@ static inline ref_t peekRef() {
  * Does not change the stackpointer
  */
 static inline ref_t peekDeepRef(int depth) {
-	return *(refStack + depth);
+	return *(refStack - depth - 1);
+}
+
+uint16_t dj_exec_getNumberOfObjectsOnReferenceStack(dj_frame * frame) {
+	return frame->saved_refStack - dj_frame_getReferenceStackBase(frame);	
 }
 
 /**
@@ -702,10 +708,10 @@ int32_t dj_exec_stackPeekInt() {
  * Returns the top of the stack as a long value, but does not change the stackpointer. Can be used by functions outside
  * the execution module to interact with the running program.
  * @return the top value of the runtime stack.
- */
+ * /
 int64_t dj_exec_stackPeekLong() {
-	return peekInt();
-}
+	return peekLong();
+}*/
 
 /**
  * Returns the top of the stack as a reference value, but does not change the stackpointer. Can be used by functions outside
@@ -722,7 +728,8 @@ ref_t dj_exec_stackPeekRef() {
  * @param value 16 bit short value
  */
 static inline void setLocalShort(int index, int16_t value) {
-	localIntegerVariables[index] = value;
+	// local ints grow down (so we don't need to know the types of the int arguments and worry about flipping the endianness)
+  	localIntegerVariables[-index] = value;
 }
 
 /**
@@ -730,7 +737,8 @@ static inline void setLocalShort(int index, int16_t value) {
  * @param index local variable slot number
  */
 static inline int16_t getLocalShort(int index) {
-	return localIntegerVariables[index];
+	// local ints grow down (so we don't need to know the types of the int arguments and worry about flipping the endianness)
+  	return localIntegerVariables[-index];
 }
 
 /**
@@ -739,14 +747,18 @@ static inline int16_t getLocalShort(int index) {
  * @param value 32 bit integer value
  */
 static inline void setLocalInt(int index, int32_t value) {
-	*(int32_t*) (localIntegerVariables + index) = value;
+	// local ints grow down (so we don't need to know the types of the int arguments and worry about flipping the endianness)
+	// substract -1 to find the start of the 32 bit int.
+	*(int32_t*) (localIntegerVariables - index - 1) = value;
 }
 /**
  * Returns 32 bit integer local variable at index
  * @param index local variable slot number
  */
 static inline int32_t getLocalInt(int index) {
-	return *(int32_t*) (localIntegerVariables + index);
+	// local ints grow down (so we don't need to know the types of the int arguments and worry about flipping the endianness)
+	// substract -1 to find the start of the 32 bit int.
+	return *(int32_t*) (localIntegerVariables - index - 1);
 }
 
 /**
@@ -755,14 +767,18 @@ static inline int32_t getLocalInt(int index) {
  * @param value 64-bit long value
  */
 static inline void setLocalLong(int index, int64_t value) {
-	*(int64_t*) (localIntegerVariables + index) = value;
+	// local ints grow down (so we don't need to know the types of the int arguments and worry about flipping the endianness)
+	// substract -3 to find the start of the 64 bit int.
+	*(int64_t*) (localIntegerVariables - index - 3) = value;
 }
 /**
  * Returns 64-bit long local variable at index
  * @param index local variable slot number
  */
 static inline int64_t getLocalLong(int index) {
-	return *(int64_t*) (localIntegerVariables + index);
+	// local ints grow down (so we don't need to know the types of the int arguments and worry about flipping the endianness)
+	// substract -3 to find the start of the 64 bit int.
+	return *(int64_t*) (localIntegerVariables - index - 3);
 }
 
 /**
@@ -807,20 +823,20 @@ static inline void dj_exec_passParameters(dj_frame *frame, dj_global_id methodIm
 									+ ((dj_di_methodImplementation_getFlags(methodImpl) & FLAGS_STATIC) ? 0 : 1);
 
 	DEBUG_LOG(DBG_DARJEELING, " refs %d ints %d\n", numberOfRefArguments, numberOfIntArguments);
+	DEBUG_LOG(DBG_DARJEELING, " intStack %p, refStack %p\n", intStack, refStack);
 	for (int i=0; i<numberOfIntArguments; i++) {
-		// int stack grows up
-		uint16_t intValue = intStack[-numberOfIntArguments + i];
+		// int stack grows down
+		uint16_t intValue = intStack[ +numberOfIntArguments - i ];
 		DEBUG_LOG(DBG_DARJEELING, " copy int %d\n", intValue);
-		newFrameLocalIntegerVariables[i] = intValue;
+		newFrameLocalIntegerVariables[-i] = intValue; // local ints grow down (so we don't need to know the types of the int arguments and worry about flipping the endianness)
 	}
 	for (int i=0; i<numberOfRefArguments; i++) {
-		// ref stack grows down
-		ref_t refValue = refStack[numberOfRefArguments-1 - i]; // -1 since refStack points at the top reference, while intStack points to the free space
+		// ref stack grows up
+		ref_t refValue = refStack[ -numberOfRefArguments + i ];
 		DEBUG_LOG(DBG_DARJEELING, " copy ref %d\n",refValue);
 		newFrameLocalReferenceVariables[i] = refValue;
 	}
 }
-
 
 /**
  * Returns from a method. The current execution frame is popped off the thread's frame stack. If there are no other
@@ -847,11 +863,11 @@ static inline void returnFromMethod() {
 
 		// pop arguments off the stack
 		refStack
-				+= dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
+				-= dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
 						+ ((dj_di_methodImplementation_getFlags(methodImpl)
 								& FLAGS_STATIC) ? 0 : 1);
 		intStack
-				-= dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
+				+= dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
 	}
 
 #ifdef DARJEELING_DEBUG_TRACE
@@ -863,6 +879,7 @@ static inline void returnFromMethod() {
 #endif
 
 }
+
 
 typedef void     (*native_void_method_function_t) (uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
 typedef uint16_t (*native_16bit_method_function_t)(uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
@@ -879,7 +896,7 @@ typedef uint32_t (*native_32bit_method_function_t)(uint16_t rtc_frame_locals_sta
  * case of a virtual call the object the method belongs to is on the stack and
  * should be handled as an additional parameter. Should be either 1 or 0.
  */
-static inline void callMethod(dj_global_id methodImplId, int virtualCall)
+static void callMethod(dj_global_id methodImplId, int virtualCall)
 {
 	dj_frame *frame;
 	bool isReturnReference=false;
@@ -916,7 +933,7 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 		{
 			// Observe the number of reference elements on the ref. stack:
 			frame = getCurrentFrame();
-			oldNumRefStack = (ref_t *)dj_frame_getStackEnd(frame) - refStack;
+			oldNumRefStack = refStack - dj_frame_getReferenceStackBase(frame);
 
 			// execute the method by calling the infusion's native handler
 			handler();
@@ -933,10 +950,8 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 
 			// Again, compute number of reference elements on the ref. stack:
 			frame = getCurrentFrame();
-			numRefStack = (ref_t *)dj_frame_getStackEnd(frame) - refStack;
-			diffRefArgs = dj_di_methodImplementation_getReferenceArgumentCount(
-																	methodImpl)
-						  - (oldNumRefStack - numRefStack);
+			numRefStack = refStack - dj_frame_getReferenceStackBase(frame);
+			diffRefArgs = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl) - (oldNumRefStack - numRefStack);
 
 			if(dj_di_methodImplementation_getReturnType(methodImpl)==JTID_REF) {
 				diffRefArgs--;
@@ -1010,7 +1025,7 @@ static inline void callMethod(dj_global_id methodImplId, int virtualCall)
 			// execute it directly
 
 			uint16_t rtc_frame_locals_start = (uint16_t)dj_frame_getLocalReferenceVariables(frame); // Will be stored in Y by the function prologue
-			uint16_t rtc_ref_stack_start = (uint16_t)dj_frame_getReferenceStack(frame); // Will be stored in X by the function prologue
+			uint16_t rtc_ref_stack_start = (uint16_t)dj_frame_getReferenceStackBase(frame); // Will be stored in X by the function prologue
 			uint16_t rtc_statics_start = (uint16_t)methodImplId.infusion->staticReferenceFields; // Will be stored in Z by the function prologue
 
 			int16_t ret16;
@@ -1147,8 +1162,8 @@ void dj_exec_throw(dj_object *obj, uint16_t throw_pc)
 
 				// TODO is this correct?
 				// pop all operands from the integer and reference stacks
-				intStack = (int16_t*) dj_frame_stackStartOffset(dj_exec_getCurrentThread()->frameStack);
-				refStack = (ref_t*) dj_frame_stackEndOffset(dj_exec_getCurrentThread()->frameStack);
+				intStack = (int16_t*) dj_frame_getIntegerStackBase(dj_exec_getCurrentThread()->frameStack);
+				refStack = (ref_t*) dj_frame_getReferenceStackBase(dj_exec_getCurrentThread()->frameStack);
 
 				pushRef(VOIDP_TO_REF(obj));
 				caught = 1;
@@ -1425,18 +1440,18 @@ int dj_exec_run(int nrOpcodes)
 		case JVM_ASTORE_3: setLocalRef(3, popRef()); break;
 
 		// Integer stack operations
-		case JVM_IPOP: intStack--; break;
-		case JVM_IPOP2: intStack -= 2; break;
+		case JVM_IPOP: intStack++; break;
+		case JVM_IPOP2: intStack += 2; break;
 
 		case JVM_IDUP:
-			*intStack = *(intStack - 1);
-			intStack++;
+			*intStack = *(intStack + 1);
+			intStack--;
 			break;
 
 		case JVM_IDUP2:
-			*(intStack + 1) = *(intStack - 1);
-			*(intStack) = *(intStack - 2);
-			intStack += 2;
+			*(intStack - 1) = *(intStack + 1);
+			*(intStack) = *(intStack + 2);
+			intStack -= 2;
 			break;
 
 		case JVM_IDUP_X:
@@ -1445,21 +1460,21 @@ int dj_exec_run(int nrOpcodes)
 			m >>= 4;
 
 			// reserve space on the stack for the duplicated data
-			intStack += m;
-
+			intStack -= m;
+			// 20140603 I wonder if this is correct, but for now just keep the code equivalent and change it to the reversed direction of the integer stack
 			if (n == 0) {
 				// perform normal dup
 				for (i = 0; i < m; i++)
-					intStack[-i - m - 1] = intStack[-i - 1];
+					intStack[+i + m + 1] = intStack[+i + 1];
 
 			} else {
 				// move existing stuff forwards
 				for (i = 0; i < n; i++)
-					intStack[-i - 1] = intStack[-i - m - 1];
+					intStack[+i + 1] = intStack[+i + m + 1];
 
 				// copy duplicated value into place
 				for (i = 0; i < m; i++)
-					intStack[-i - n - 1] = intStack[-i - 1];
+					intStack[+i + n + 1] = intStack[+i + 1];
 			}
 
 			break;
@@ -1485,18 +1500,18 @@ int dj_exec_run(int nrOpcodes)
 			break;
 
 		// Reference stack operations
-		case JVM_APOP: refStack++; break;
-		case JVM_APOP2:	refStack += 2; break;
+		case JVM_APOP: refStack--; break;
+		case JVM_APOP2:	refStack -= 2; break;
 
 		case JVM_ADUP:
-			refStack--;
-			*refStack = *(refStack + 1);
+			*refStack = *(refStack - 1);
+			refStack++;
 			break;
 
 		case JVM_ADUP2:
-			refStack -= 2;
-			*(refStack) = *(refStack + 2);
-			*(refStack + 1) = *(refStack + 3);
+			*(refStack) = *(refStack - 2);
+			*(refStack + 1) = *(refStack - 1);
+			refStack += 2;
 			break;
 
 		// TODO make faster
@@ -1683,20 +1698,23 @@ int dj_exec_run(int nrOpcodes)
 		DEBUG_LOG(DBG_DARJEELING, "\tR(");
 
 
-		// abuse this method to calculate nr_int_stack and nr_ref_stack for us
-		dj_exec_saveLocalState(current_frame);
+		// // abuse this method to calculate nr_int_stack and nr_ref_stack for us
+		// dj_exec_saveLocalState(current_frame);
 
-		ref_t *refStackStart = (ref_t*)((int)dj_frame_getStackEnd(current_frame) - current_frame->nr_ref_stack * sizeof(ref_t));
-		for (i=0; i<current_frame->nr_ref_stack; i++)
+		uint8_t nr_ref_stack = refStack - dj_frame_getReferenceStackBase(current_frame);
+		uint8_t nr_int_stack = dj_frame_getIntegerStack(current_frame) - intStack;
+
+		ref_t *refStackStart = dj_frame_getReferenceStackBase(current_frame);
+		for (i=0; i<nr_ref_stack; i++)
 			DEBUG_LOG(DBG_DARJEELING, "%-6d,", refStackStart[i]);
 
 		DEBUG_LOG(DBG_DARJEELING, ")");
 
 		DEBUG_LOG(DBG_DARJEELING, "\tI(");
 
-		int16_t *intStackStart = dj_frame_getStackStart(current_frame);
-		for (i=0; i<current_frame->nr_int_stack; i++)
-			DEBUG_LOG(DBG_DARJEELING, "%-6d,", intStackStart[i]);
+		int16_t *intStackStart = dj_frame_getIntegerStackBase(current_frame);
+		for (i=0; i<nr_int_stack; i++)
+			DEBUG_LOG(DBG_DARJEELING, "%-6d,", intStackStart[-i]);
 
 		DEBUG_LOG(DBG_DARJEELING, ")");
 

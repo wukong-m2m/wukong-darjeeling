@@ -145,8 +145,9 @@ void dj_frame_markRootSet(dj_frame *frame)
 	dj_mem_setChunkColor(frame, TCM_BLACK);
 
 	// Mark every object on the reference stack
-	stack = dj_frame_getReferenceStack(frame);
-	for (i=0; i<frame->nr_ref_stack; i++)
+	stack = dj_frame_getReferenceStackBase(frame);
+	uint16_t nr_ref_stack = dj_exec_getNumberOfObjectsOnReferenceStack(frame);
+	for (i=0; i<nr_ref_stack; i++)
 		dj_mem_setRefGrayIfWhite(stack[i]);
 
 	// Mark every object in the local variables
@@ -162,9 +163,18 @@ void dj_frame_updatePointers(dj_frame * frame)
 	ref_t *stack, *locals;
 
 	// Update references on the reference stack
-	stack = dj_frame_getReferenceStack(frame);
-	for (i=0; i<frame->nr_ref_stack; i++)
+	stack = dj_frame_getReferenceStackBase(frame);
+	uint16_t nr_ref_stack = dj_exec_getNumberOfObjectsOnReferenceStack(frame);
+	for (i=0; i<nr_ref_stack; i++)
 		stack[i] = dj_mem_getUpdatedReference(stack[i]);
+
+	// Update the saved refStack and intStack pointers
+	// (note that intStack may point to the real stack or the reference stack, depending on if this method is rtc compiled or not)
+	// DEBUG_LOG(DBG_DARJEELING, "dj_frame_updatePointers before frame %p ref %p int %p shift %d\n", frame, frame->saved_refStack, frame->saved_intStack, frame_shift);
+	uint16_t frame_shift = dj_mem_getChunkShift(frame);
+	frame->saved_refStack = (ref_t *)(((void *)frame->saved_refStack) - frame_shift);
+	frame->saved_intStack = (int16_t *)(((void *)frame->saved_intStack) - frame_shift);
+	// DEBUG_LOG(DBG_DARJEELING, "dj_frame_updatePointers after  frame %p ref %p int %p\n", frame, frame->saved_refStack, frame->saved_intStack);
 
 	// Update the local variables
 	locals = dj_frame_getLocalReferenceVariables(frame);
@@ -269,8 +279,8 @@ dj_frame *dj_frame_create(dj_global_id methodImplId)
 		ret->method = methodImplId;
 		ret->parent = NULL;
 		ret->pc = 0;
-		ret->nr_int_stack = 0;
-		ret->nr_ref_stack = 0;
+		ret->saved_intStack = dj_frame_getIntegerStackBase(ret);
+		ret->saved_refStack = dj_frame_getReferenceStackBase(ret);
 
 		// set local variables to 0/null
 		memset(dj_frame_getLocalReferenceVariables(ret), 0, localVariablesSize);

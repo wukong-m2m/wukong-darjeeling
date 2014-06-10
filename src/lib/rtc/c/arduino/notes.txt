@@ -3,11 +3,117 @@ GCC calling convention
 Call used:  r0, r18-r25, r26:r27 (X), r30:r31 (Z)
 Call saved: r1, r2-r17, r28:r29 (Y)
 
+          
 
+                             DVM stack frame layout         offset
+                             +---------------------------+
+                             |              int1 16b     | stackLocalIntegerOffset
+                             | local ints   int2 32b,msb |      ^
+                             |              int2 32b,lsb |      | getReferenceLocalVariableCount*sizeof(ref_t)
+                             +---------------------------+      | + (getIntegerLocalVariableCount-1)*sizeof(int16_t)
+                             |                           |      |
+                             | local refs   ref2         |      v
+                             |              ref1         | getLocalRefVariables, stackEndOffset
+                             +---------------------------+
+       integerStackBase      |  int1 16b   |             |
+                             |  int2 32msb |             |
+                             |  int2 32lsb |             |
+               intStack -->  |             V             |
+                             |                           |
+                             | STACK                     |
+                             |                           |
+               refStack -->  |             ^             |
+                             |  ref3       |             |
+                             |  ref2       |             |
+     referenceStackBase      |  ref1       |             | sizeof(dj_frame), stackStartOffset
+                             +---------------------------+
+                             | uint8_t nr_ref_stack      |
+                             +---------------------------+
+                             | uint8_t nr_int_stack      |
+                             +---------------------------+
+                             | uint16_t pc               |
+                             +---------------------------+
+                             | dj_global_id method       |  ^
+                             +---------------------------+  |  +offsets
+                             | dj_frame *parent          |  0
+                             +---------------------------+  
+
+
+System stack grows DOWN. SP points to the next empty location. PUSH Rr: (SP) <- Rr, SP <- SP-1 
+
+Old:
+DVM ref stack grows DOWN. SP points to the last pushed reference. PUSH Ref: SP <- SP-1, (SP) <- Ref
+DVM int stack grows UP. SP points to the next empty location. PUSH Int: (SP) <- Rr, SP <- SP+1 
+
+
+New:
+DVM ref stack grows UP. SP points to the next empty slot. PUSH Ref: (SP) <- Ref, SP <- SP+1
+DVM int stack grows DOWN. SP points to the next empty slot. PUSH Int16: (SP) <- Int, SP <- SP-1
+
+NOTE: System stack points to next empty BYTE, DVM stack points to next empty SHORT. So DVM intStack should point to 1 byte lower than the system stack
+      (when pointing to the system stack instead of DVM stack frame)
 
 register allocations
 ---
-r2:r3       : contains pointer to this infusion's static fields
-X (r26:r27) : reference stack pointer
-Y (r28:r29) : frame pointer
-Z (r30:r31) : pointer to infusion static fields or to an object (need to load at each operation)
+r2:r3           : contains pointer to this infusion's static fields
+X (r26:r27)     : reference stack pointer
+Y (r28:r29)     : frame pointer
+Z (r30:r31)     : pointer to infusion static fields or to an object (need to load at each operation)
+SP (0x3E, 0x3F) : int stack
+
+
+branches
+---
+Approach 1: maintain a list of
+ - branches for forward branches where the target is not know and the branch address needs to be inserted later
+ - branch targets for backward branches where we need to remember the address to generate the right branch later
+Issues:
+ - requires memory linear in the maximum number of concurrently 'active' branches, where a branch is considered active in the range of opcodes between the branch and the target
+ - for forward branches, can't decide whether to RJMP or JMP until the target is known (but could make a conservative safe guess)
+
+Approach 2: send a list of converted bytecode sizes to the master before it sends the bytecode so it can calculate the offset beforehand.
+Issue:
+ - not safe. we can easily check if the target is within the method, but not if it jumps to the start of a bytecode instruction. an attacker could for instance jump to the operand of a SSPUSH and thus execute any instrucion.
+
+Approach 3: insert BRTARGET opcodes to mark the targets of branch instructions. The method starts with a jump table, with one jump for each BRTARGET. Method header contains the number of BRTARGET instructions, so we know how much space to reserve. Branches jump to the table instead of to the target directly. The jumps can easily be filled in each time a BRTARGET is encountered.
+Issues:
+ - "wastes" some space and cycles: 4 bytes, 1 cycle if not taken, 3 if taken.
+ - for forward branches, can't decide whether to RJMP or JMP until the target is known (but could make a conservative safe guess)
+
+
+
+changes to bytecode
+---
+* Added brtarget instruction (noop)
+* Added brtarget index to branch instructions
+
+
+
+
+function calls
+---
+Call: X points to ref stack, SP points to int stack
+	set intStack and refStack to X and SP
+    RTC -> JVM/RTC : can create a new stack frame and fill the locals with the right values (even though ints aren't read from the current frame)
+    RTC -> C       : will pop from ref as usual, popping ints will be reading from the real stack, but that should work as well
+
+Return:
+    RTC -> JVM/RTC : return value will be pushed on the ref stack for methods that return an object, and on the int stack for methods that return an int.
+                     since the int stack for rtc methods is the same as the real stack, we need to reserve space for it, otherwise the returned value may
+                     overwrite part of the stack frame above the current RTC method's frame.
+	set X and SP to intStack and refStack
+
+
+RTC -> JVM
+RTC -> RTC
+Pre: need to set the pointers to int and ref stacks (since intStack and refStack won't be set by rtc code)
+Post: need to pop the appropriate number of arguments of both stacks
+
+RTC -> C
+Pre: need to set the pointers to int and ref stacks (since intStack and refStack won't be set by rtc code)
+Popping will work fine once these variables are set.
+For pushes to the int stack, we need to reserve some space on the real stack ((number of pushes slots - number of popped slots) * 2 bytes)
+
+Post:
+
+
