@@ -429,6 +429,20 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_PUSH(R25) );
                 emit( asm_PUSH(R24) );
             break;
+            case JVM_GETFIELD_I:
+                jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
+                pc += 2;
+                emit( asm_x_POPREF(R31) ); // POP the reference into Z
+                emit( asm_x_POPREF(R30) );
+                emit( asm_LDD(R22, Z, jvm_operand_word) );
+                emit( asm_LDD(R23, Z, jvm_operand_word+1) );
+                emit( asm_LDD(R24, Z, jvm_operand_word+2) );
+                emit( asm_LDD(R25, Z, jvm_operand_word+3) );
+                emit( asm_PUSH(R25) );
+                emit( asm_PUSH(R24) );
+                emit( asm_PUSH(R23) );
+                emit( asm_PUSH(R22) );
+            break;
             case JVM_PUTFIELD_S:
                 jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
                 pc += 2;
@@ -438,6 +452,20 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_x_POPREF(R30) );
                 emit( asm_STD(R24, Z, jvm_operand_word) );
                 emit( asm_STD(R25, Z, jvm_operand_word+1) );
+            break;
+            case JVM_PUTFIELD_I:
+                jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
+                pc += 2;
+                emit( asm_POP(R22) );
+                emit( asm_POP(R23) );
+                emit( asm_POP(R24) );
+                emit( asm_POP(R25) );
+                emit( asm_x_POPREF(R31) ); // POP the reference into Z
+                emit( asm_x_POPREF(R30) );
+                emit( asm_STD(R22, Z, jvm_operand_word) );
+                emit( asm_STD(R23, Z, jvm_operand_word+1) );
+                emit( asm_STD(R24, Z, jvm_operand_word+2) );
+                emit( asm_STD(R25, Z, jvm_operand_word+3) );
             break;
             case JVM_GETSTATIC_S:
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion. Should be 0.
@@ -793,6 +821,17 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_POP(R23) );
                 emit( asm_POP(R24) );
                 emit( asm_POP(R25) );
+
+                // epilogue (is this the right way?)
+                emit( asm_POP(R28) ); // Pop Y
+                emit( asm_POP(R29) );
+                emit( asm_POP(R2) );
+                emit( asm_POP(R3) );
+                emit( asm_RET );
+            break;
+            case JVM_ARETURN:
+                emit( asm_x_POPREF(R25) ); // POP the reference into Z
+                emit( asm_x_POPREF(R24) );
 
                 // epilogue (is this the right way?)
                 emit( asm_POP(R28) ); // Pop Y

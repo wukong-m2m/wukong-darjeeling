@@ -61,20 +61,20 @@ public class RTCTest {
 	// 	}
 	// }
 
-	public static int test_int_ops(int x, int y, short op) {
-		if (op==0) return  -x;
-		if (op==1) return x + y;
-		if (op==2) return x - y;
-		if (op==3) return x * y;
-		if (op==4) return x / y;
-		if (op==5) return x % y;
-		if (op==6) return x & y;
-		if (op==7) return x | y;
-		if (op==8) return x ^ y;
-		if (op==9) return x + (-1);
-		if (op==10) return x + 42;
-		return -42;
-	}
+	// public static int test_int_ops(int x, int y, short op) {
+	// 	if (op==0) return  -x;
+	// 	if (op==1) return x + y;
+	// 	if (op==2) return x - y;
+	// 	if (op==3) return x * y;
+	// 	if (op==4) return x / y;
+	// 	if (op==5) return x % y;
+	// 	if (op==6) return x & y;
+	// 	if (op==7) return x | y;
+	// 	if (op==8) return x ^ y;
+	// 	if (op==9) return x + (-1);
+	// 	if (op==10) return x + 42;
+	// 	return -42;
+	// }
 
 	// public static short test_fib(short x) {
 	// 	if (x == 0)
@@ -91,6 +91,11 @@ public class RTCTest {
 	// 	}
 	// 	return current;
 	// }
+
+	public static RTCTest test_return_object(RTCTest obj) {
+		obj.instance_int++;
+		return obj;
+	}
 
 	// public short test_instance_short1(short x) {
 	// 	this.instance_short1 += x;

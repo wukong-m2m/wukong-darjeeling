@@ -32,9 +32,17 @@ public class HelloWorld
 		// checkFib();
 		// checkCompareShort();
 		// checkFib();
-		checkIntOps();
+		// checkIntOps();
 		// checkBubbleSort();
 		// checkMethodCall();
+		checkReturnObject();
+	}
+
+	public static void checkReturnObject() {
+		RTCTest obj = new RTCTest();
+		obj.instance_int = 123455;
+		RTCTest obj2 = RTCTest.test_return_object(obj);
+		System.out.println("123456 " + obj2.instance_int);
 	}
 
 	// public static void checkMethodCall() {
@@ -80,33 +88,33 @@ public class HelloWorld
 	// 	System.out.println("" + RTCTest.test_fib((short)9));
 	// }
 
-	public static void checkIntOps()
-	{
-		System.out.println("-(-452345) = 452345 " + RTCTest.test_int_ops(-452345, 0, (short)0));
-		System.out.println("-(100000) = -100000 " + RTCTest.test_int_ops(100000, 0, (short)0));
+	// public static void checkIntOps()
+	// {
+	// 	System.out.println("-(-452345) = 452345 " + RTCTest.test_int_ops(-452345, 0, (short)0));
+	// 	System.out.println("-(100000) = -100000 " + RTCTest.test_int_ops(100000, 0, (short)0));
 
-		System.out.println("100000+320000 = 420000 " + RTCTest.test_int_ops(100000, 320000, (short)1));
-		System.out.println("100000+(-320000) = -220000 " + RTCTest.test_int_ops(100000, -320000, (short)1));
+	// 	System.out.println("100000+320000 = 420000 " + RTCTest.test_int_ops(100000, 320000, (short)1));
+	// 	System.out.println("100000+(-320000) = -220000 " + RTCTest.test_int_ops(100000, -320000, (short)1));
 
-		// broken
-		System.out.println("100000-320000 = -220000 " + RTCTest.test_int_ops(100000, 320000, (short)2));
-		System.out.println("100000-(-320000) = 420000 " + RTCTest.test_int_ops(100000, -320000, (short)2));
+	// 	// broken
+	// 	System.out.println("100000-320000 = -220000 " + RTCTest.test_int_ops(100000, 320000, (short)2));
+	// 	System.out.println("100000-(-320000) = 420000 " + RTCTest.test_int_ops(100000, -320000, (short)2));
 
-		System.out.println("2*320000 = 640000 " + RTCTest.test_int_ops(2, 320000, (short)3));
-		System.out.println("100000*(-3) = -300000 " + RTCTest.test_int_ops(100000, -3, (short)3));
+	// 	System.out.println("2*320000 = 640000 " + RTCTest.test_int_ops(2, 320000, (short)3));
+	// 	System.out.println("100000*(-3) = -300000 " + RTCTest.test_int_ops(100000, -3, (short)3));
 
-		System.out.println("320000/1000 = 320 " + RTCTest.test_int_ops(320000, 1000, (short)4));
-		System.out.println("700000/(-200000) = -3 " + RTCTest.test_int_ops(700000, -200000, (short)4));
+	// 	System.out.println("320000/1000 = 320 " + RTCTest.test_int_ops(320000, 1000, (short)4));
+	// 	System.out.println("700000/(-200000) = -3 " + RTCTest.test_int_ops(700000, -200000, (short)4));
 
-		System.out.println("320023 % 100000 = 20023 " + RTCTest.test_int_ops(320023, 100000, (short)5));
+	// 	System.out.println("320023 % 100000 = 20023 " + RTCTest.test_int_ops(320023, 100000, (short)5));
 
-		System.out.println("0x0FFF0000 & 0x0F00FF00 = 0x0F000000 = 251658240 " + RTCTest.test_int_ops(0x0FFF0000, 0x0F00FF00, (short)6));
-		System.out.println("0x0FFF0000 | 0x0F00FF00 = 0x0FFFFF00 = 268435200 " + RTCTest.test_int_ops(0x0FFF0000, 0x0F00FF00, (short)7));
-		System.out.println("0x0FFF0000 ^ 0x0F00FF00 = 0x00FFFF00 = 16776960 " + RTCTest.test_int_ops(0x0FFF0000, 0x0F00FF00, (short)8));
+	// 	System.out.println("0x0FFF0000 & 0x0F00FF00 = 0x0F000000 = 251658240 " + RTCTest.test_int_ops(0x0FFF0000, 0x0F00FF00, (short)6));
+	// 	System.out.println("0x0FFF0000 | 0x0F00FF00 = 0x0FFFFF00 = 268435200 " + RTCTest.test_int_ops(0x0FFF0000, 0x0F00FF00, (short)7));
+	// 	System.out.println("0x0FFF0000 ^ 0x0F00FF00 = 0x00FFFF00 = 16776960 " + RTCTest.test_int_ops(0x0FFF0000, 0x0F00FF00, (short)8));
 
-		System.out.println("42 + (-1) = 41 " + RTCTest.test_int_ops(42, 0, (short)9));
-		System.out.println("42 + (42) = 84 " + RTCTest.test_int_ops(42, 0, (short)10));
-	}
+	// 	System.out.println("42 + (-1) = 41 " + RTCTest.test_int_ops(42, 0, (short)9));
+	// 	System.out.println("42 + (42) = 84 " + RTCTest.test_int_ops(42, 0, (short)10));
+	// }
 
 	// public static void checkStaticInstanceVariables()
 	// {

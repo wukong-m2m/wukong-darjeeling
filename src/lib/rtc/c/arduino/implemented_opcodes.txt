@@ -78,12 +78,12 @@ JVM_ASWAP 74
 JVM_GETFIELD_B 75
 JVM_GETFIELD_C 76
                                         JVM_GETFIELD_S 77
-JVM_GETFIELD_I 78
+                                        JVM_GETFIELD_I 78
 JVM_GETFIELD_A 79
 JVM_PUTFIELD_B 80
 JVM_PUTFIELD_C 81
                                         JVM_PUTFIELD_S 82
-JVM_PUTFIELD_I 83
+                                        JVM_PUTFIELD_I 83
 JVM_PUTFIELD_A 84
 JVM_GETSTATIC_B 85
 JVM_GETSTATIC_C 86
@@ -154,7 +154,7 @@ JVM_TABLESWITCH 150
 JVM_LOOKUPSWITCH 151
                                         JVM_SRETURN 152
                                         JVM_IRETURN 153
-JVM_ARETURN 154
+                                        JVM_ARETURN 154
                                         JVM_RETURN 155
 JVM_INVOKEVIRTUAL 156
 JVM_INVOKESPECIAL 157

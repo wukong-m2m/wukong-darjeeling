@@ -882,6 +882,7 @@ static inline void returnFromMethod() {
 
 
 typedef void     (*native_void_method_function_t) (uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
+typedef ref_t    (*native_ref_method_function_t)  (uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
 typedef int16_t  (*native_16bit_method_function_t)(uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
 typedef int32_t  (*native_32bit_method_function_t)(uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
 
@@ -1030,6 +1031,7 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 
 			int16_t ret16;
 			int32_t ret32;
+			ref_t retref;
 			uint8_t rettype = dj_di_methodImplementation_getReturnType(methodImpl);
 			DEBUG_LOG(DBG_RTC, "[rtc] starting rtc compiled method %i at %p with return type %i\n", methodImplId.entity_id, handler, rettype);
 			switch (rettype) {
@@ -1048,7 +1050,13 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 					ret32 = ((native_32bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
 					returnFromMethod();
 					pushInt(ret32);
-					DEBUG_LOG(DBG_RTC, "[rtc] 32b call returned %i %ld\n", sizeof(int), ret32);
+					DEBUG_LOG(DBG_RTC, "[rtc] 32b call returned %ld\n", ret32);
+					break;
+				case JTID_REF:
+					retref = ((native_ref_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
+					returnFromMethod();
+					pushRef(retref);
+					DEBUG_LOG(DBG_RTC, "[rtc] ref call returned %p\n", (void*)retref);
 					break;
 				default:
 					dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
