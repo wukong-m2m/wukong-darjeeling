@@ -35,16 +35,18 @@
 #define RX       26
 #define RY       28
 #define RZ       30
-#define RXL      RX
-#define RYL      RY
-#define RZL      RZ
-#define RXH      RX+1
-#define RYH      RY+1
-#define RZH      RZ+1
+#define RXL      (RX)
+#define RYL      (RY)
+#define RZL      (RZ)
+#define RXH      (RX+1)
+#define RYH      (RY+1)
+#define RZH      (RZ+1)
 
 #define Y  1
 #define Z  0 
 
+#define SPaddress_L 0x5D
+#define SPaddress_H 0x5E
 
 
 // 6 bit offset q has to be inserted in the opcode like this:
@@ -73,6 +75,11 @@
 #define makeSourceRegister(src_register) ( \
                ((src_register) & 0x0F) \
             + (((src_register) & 0x10) << 5))
+
+// 0000 0AA0 0000 AAAA
+#define makeINaddress(address) ( \
+               ((address) & 0x0F) \
+            + (((address) & 0x30) << 5))
 
 #define opcodeWithSingleRegOperand(opcode, reg)                 ((opcode) + ((reg) << 4))
 #define opcodeWithSrcAndDestRegOperand(opcode, destreg, srcreg) ((opcode) + ((destreg) << 4) + makeSourceRegister(srcreg))
@@ -116,7 +123,7 @@
 // TODO: support addresses > 128K
 #define OPCODE_CALL                     0x940E
 #define asm_CALL1(address)              OPCODE_CALL
-#define asm_CALL2(address)              (address/2)
+#define asm_CALL2(address)              (address)
 
 // CLR
 #define asm_CLR(destreg)                asm_EOR(destreg, destreg)
@@ -132,6 +139,16 @@
 // EOR                                  0010 01rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_EOR                      0x2400
 #define asm_EOR(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_EOR, destreg, srcreg)
+
+// IN                                   1011 0AAd dddd AAAA, with d=dest register, A the address of the IO location to read 0<=A<=63 (63==0x3F)
+#define OPCODE_IN                       0xB000
+#define asm_IN(destreg, address)        (OPCODE_IN \
+                                         + ((destreg) << 4) \
+                                         + makeINaddress(address))
+
+// LD Rd, -X                            1001 000d dddd 1110, with d=dest register
+#define OPCODE_LD_DECX                  0x900E
+#define asm_LD_DECX(reg)                opcodeWithSingleRegOperand(OPCODE_LD_DECX, reg)
 
 // LD Rd, X+                            1001 000d dddd 1101
 #define OPCODE_LD_XINC                  0x900D
@@ -158,6 +175,12 @@
                                          + (((reg) - 16) << 4) \
                                          + makeLDIconstant(constant))
 
+// LDS                                  1001 000d dddd 0000
+//                                      kkkk kkkk kkkk kkkk
+#define OPCODE_LDS                      0x9000
+#define asm_LDS1(reg, address)          opcodeWithSingleRegOperand(OPCODE_LDS, reg)
+#define asm_LDS2(reg, address)          (address)
+
 // LSL
 #define asm_LSL(destreg)                asm_ADD(destreg, destreg)
 
@@ -173,19 +196,17 @@
 #define OPCODE_OR                       0x2800
 #define asm_OR(destreg, srcreg)         opcodeWithSrcAndDestRegOperand(OPCODE_OR, destreg, srcreg)
 
-// PUSH 	                            1001 001d dddd 1111, with d=source register
-#define OPCODE_PUSH		                0x920F
+// PUSH                                 1001 001d dddd 1111, with d=source register
+#define OPCODE_PUSH                     0x920F
 #define asm_PUSH(reg)                   opcodeWithSingleRegOperand(OPCODE_PUSH, reg)
 
-// PUSHREF
-#define asm_x_PUSHREF(reg)              asm_ST_DECX(reg)
-
-// POP  	                            1001 000d dddd 1111
-#define OPCODE_POP		                0x900F
+// POP                                  1001 000d dddd 1111
+#define OPCODE_POP                      0x900F
 #define asm_POP(reg)                    opcodeWithSingleRegOperand(OPCODE_POP, reg)
 
-// POPREF
-#define asm_x_POPREF(reg)               asm_LD_XINC(reg)
+// RCALL                                1101 kkkk kkkk kkkk, with k relative in words, not bytes. PC <- PC + k + 1
+#define OPCODE_RCALL                    0xD000
+#define asm_RCALL(offset)               (OPCODE_RCALL + offset)
 
 // RET                                  1001 0101 0000 1000
 #define OPCODE_RET                      0x9508
@@ -213,15 +234,19 @@
 
 // ST -X, Rs                            1001 001r rrrr 1110, with r=the register to store
 #define OPCODE_ST_DECX                  0x920E
-#define asm_ST_DECX(reg)                (OPCODE_ST_DECX + (reg << 4))
+#define asm_ST_DECX(reg)                opcodeWithSingleRegOperand(OPCODE_ST_DECX, reg)
+
+// ST X+, Rs                            1001 001r rrrr 1101, with r=the register to store
+#define OPCODE_ST_XINC                  0x920D
+#define asm_ST_XINC(reg)                opcodeWithSingleRegOperand(OPCODE_ST_XINC, reg)
 
 // ST Z, Rs                             1000 001r rrrr 0000, with r=the register to store
 #define OPCODE_ST_Z                     0x8200
-#define asm_ST_Z(reg)                   (OPCODE_ST_Z + (reg << 4))
+#define asm_ST_Z(reg)                   opcodeWithSingleRegOperand(OPCODE_ST_Z, reg)
 
 // ST Z+, Rs                            1001 001r rrrr 0001, with r=the register to store
 #define OPCODE_ST_ZINC                  0x9201
-#define asm_ST_ZINC(reg)                (OPCODE_ST_ZINC + (reg << 4))
+#define asm_ST_ZINC(reg)                opcodeWithSingleRegOperand(OPCODE_ST_ZINC, reg)
 
 // STD                                  10q0 qq1r rrrr yqqq, with r=source register, q=offset from Y or Z, y=1 for Y 0 for Z
 #define OPCODE_STD                      0x8200
@@ -229,6 +254,12 @@
                                          + ((reg) << 4) \
                                          + ((xy) << 3) \
                                          + makeLDDSTDoffset(offset))
+
+// STS                                  1001 001d dddd 0000
+//                                      kkkk kkkk kkkk kkkk
+#define OPCODE_STS                      0x9200
+#define asm_STS1(address, reg)          opcodeWithSingleRegOperand(OPCODE_STS, reg)
+#define asm_STS2(address, reg)          (address)
 
 // SUB                                  0001 10rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_SUB                      0x1800

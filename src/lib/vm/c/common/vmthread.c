@@ -173,7 +173,10 @@ void dj_frame_updatePointers(dj_frame * frame)
 	// DEBUG_LOG(DBG_DARJEELING, "dj_frame_updatePointers before frame %p ref %p int %p shift %d\n", frame, frame->saved_refStack, frame->saved_intStack, frame_shift);
 	uint16_t frame_shift = dj_mem_getChunkShift(frame);
 	frame->saved_refStack = (ref_t *)(((void *)frame->saved_refStack) - frame_shift);
-	frame->saved_intStack = (int16_t *)(((void *)frame->saved_intStack) - frame_shift);
+	if (dj_mem_isHeapPointer(frame->saved_intStack)) {
+		// the intStack is in the frame, so update the pointer. (DON'T UPDATE THE POINTER IF IT POINTS TO THE ACTUAL STACK!)
+		frame->saved_intStack = (int16_t *)(((void *)frame->saved_intStack) - frame_shift);
+	}
 	// DEBUG_LOG(DBG_DARJEELING, "dj_frame_updatePointers after  frame %p ref %p int %p\n", frame, frame->saved_refStack, frame->saved_intStack);
 
 	// Update the local variables

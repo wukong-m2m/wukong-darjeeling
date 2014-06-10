@@ -8,18 +8,58 @@ public class RTCTest {
 	public int instance_int;
 	public short instance_short2;
 
-	public static void test_bubblesort(short[] numbers) {
-		short NUMNUMBERS = (short)numbers.length;
-		for (short i=0; i<(short)NUMNUMBERS; i++) {
-			for (short j=0; j<((short)(NUMNUMBERS-i-1)); j++) {
-				if (numbers[j]>numbers[j+1]) {
-					short temp = numbers[j];
-					numbers[j] = numbers[j+1];
-					numbers[((short)(j+1))] = temp;
-				}
-			}
-		}
+	public static int test_method_call_1(int a, short b, short c, int d) {
+		return test_method_call_1b(a, b, c, d);
 	}
+	public static int test_method_call_1b(int a, short b, short c, int d) {
+		// Just test a bunch of ints.
+		// This should be OK even without reserving space on the int stack since we pass more than will be returned, thus ensuring enough stack space for the return value.
+		return (a - b) + 1 + (d - c);
+	}
+	public static int test_method_call_2(int a, short b, RTCTest obj, short c, int d) {
+		return test_method_call_2b(a, b, obj, c, d);
+	}
+	public static int test_method_call_2b(int a, short b, RTCTest obj, short c, int d) {
+		// Add passing an object
+		return (a - b) + 1 + (d - c) + obj.instance_short1;
+	}
+	public static int test_method_call_3(RTCTest obj) {
+		return test_method_call_3b(obj);
+	}
+	public static int test_method_call_3b(RTCTest obj) {
+		// This method returns more than it gets passed on the int stack
+		// This will crash the VM if we don't reserve extra space on the system stack
+		return 100000+obj.instance_short1;
+	}
+
+	// public static short test_method_call(short a, RTCTest obj) {
+	// 	// return test_method_call2(a, (short)42, obj);
+	// 	return (short)(test_method_call2(a, (short)42, obj) % (short)100);
+	// }
+
+	// public static short test_method_call2(short a, short b, RTCTest obj) {
+	// 	// This should be OK even without reserving space on the int stack since we pass more than will be returned.
+	// 	return (short)(a + b + obj.instance_short1);
+	// }
+
+	// public static int test_method_call2(short a, RTCTest obj) {
+	// 	// Will return an int (4 bytes), but only consumer a short (2 bytes)
+	// 	// This means we need to reserve 2 bytes on the real/int stack.
+	// 	return a + 42 + obj.instance_short1;
+	// }
+
+	// public static void test_bubblesort(short[] numbers) {
+	// 	short NUMNUMBERS = (short)numbers.length;
+	// 	for (short i=0; i<(short)NUMNUMBERS; i++) {
+	// 		for (short j=0; j<((short)(NUMNUMBERS-i-1)); j++) {
+	// 			if (numbers[j]>numbers[j+1]) {
+	// 				short temp = numbers[j];
+	// 				numbers[j] = numbers[j+1];
+	// 				numbers[((short)(j+1))] = temp;
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	// public static int test_int_ops(int x, int y, short op) {
 	// 	if (op==0) return  -x;

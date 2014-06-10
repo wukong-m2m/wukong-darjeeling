@@ -20,7 +20,7 @@ JVM_ACONST_NULL 15
 JVM_BIPUSH 17
                                         JVM_SSPUSH 18
 JVM_SIPUSH 19
-JVM_IIPUSH 20
+                                        JVM_IIPUSH 20
 JVM_LDS 21
                                         JVM_SLOAD 22
                                         JVM_SLOAD_0 23
@@ -158,7 +158,7 @@ JVM_ARETURN 154
                                         JVM_RETURN 155
 JVM_INVOKEVIRTUAL 156
 JVM_INVOKESPECIAL 157
-JVM_INVOKESTATIC 158
+                                        JVM_INVOKESTATIC 158
 JVM_INVOKEINTERFACE 159
 JVM_NEW 160
 JVM_NEWARRAY 161

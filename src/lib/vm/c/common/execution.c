@@ -81,8 +81,8 @@ static dj_vm *vm;
 static uint16_t pc;
 static dj_di_pointer code;
 
-static int16_t *intStack;
-static ref_t *refStack;
+int16_t *intStack;
+ref_t *refStack;
 
 static ref_t *localReferenceVariables;
 static int16_t *localIntegerVariables;
@@ -882,8 +882,8 @@ static inline void returnFromMethod() {
 
 
 typedef void     (*native_void_method_function_t) (uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
-typedef uint16_t (*native_16bit_method_function_t)(uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
-typedef uint32_t (*native_32bit_method_function_t)(uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
+typedef int16_t  (*native_16bit_method_function_t)(uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
+typedef int32_t  (*native_32bit_method_function_t)(uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
 
 /**
  * Enters a method. The method may be either Java or native. If the method is
@@ -896,7 +896,7 @@ typedef uint32_t (*native_32bit_method_function_t)(uint16_t rtc_frame_locals_sta
  * case of a virtual call the object the method belongs to is on the stack and
  * should be handled as an additional parameter. Should be either 1 or 0.
  */
-static void callMethod(dj_global_id methodImplId, int virtualCall)
+void callMethod(dj_global_id methodImplId, int virtualCall)
 {
 	dj_frame *frame;
 	bool isReturnReference=false;
@@ -1036,19 +1036,19 @@ static void callMethod(dj_global_id methodImplId, int virtualCall)
 				case JTID_VOID:
 					((native_void_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
 					returnFromMethod();
-					DEBUG_LOG(DBG_RTC, "[rtc] call returned (void)\n");
+					DEBUG_LOG(DBG_RTC, "[rtc] void call returned (void)\n");
 					break;
 				case JTID_SHORT:
 					ret16 = ((native_16bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
 					returnFromMethod();
 					pushShort(ret16);
-					DEBUG_LOG(DBG_RTC, "[rtc] call returned %d\n", ret16);
+					DEBUG_LOG(DBG_RTC, "[rtc] 16b call returned %d\n", ret16);
 					break;
 				case JTID_INT:
 					ret32 = ((native_32bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
 					returnFromMethod();
 					pushInt(ret32);
-					DEBUG_LOG(DBG_RTC, "[rtc] call returned %i\n", ret32);
+					DEBUG_LOG(DBG_RTC, "[rtc] 32b call returned %i %ld\n", sizeof(int), ret32);
 					break;
 				default:
 					dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);

@@ -30,6 +30,12 @@
 
 #include "config.h"
 
+// Exported for RTC only
+extern int16_t *intStack;
+extern ref_t *refStack;
+void callMethod(dj_global_id methodImplId, int virtualCall);
+// End Exported for RTC only
+
 int dj_exec_run();
 void dj_exec_breakExecution();
 void dj_exec_activate_thread(dj_thread *thread);

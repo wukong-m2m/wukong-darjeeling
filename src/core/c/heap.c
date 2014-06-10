@@ -414,6 +414,10 @@ void dj_mem_gc()
 	DEBUG_LOG(DBG_DARJEELING | DBG_DARJEELING_GC, "GC done\n");
 }
 
+bool dj_mem_isHeapPointer(void *ptr) {
+	return (void *)heap_base <= ptr && ptr <= (void *)right_pointer;
+}
+
 //void dj_mem_thread_dump()
 //{
 //

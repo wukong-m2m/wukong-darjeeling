@@ -1,4 +1,12 @@
 - Can't access static fields in a different infusion
 - Instance/static/local variables limited to 64 bytes because of limited offset for LDD instruction (easy to fix)
 - Not checking for null pointers (unsafe)
+- Not checking for array bounds
+- Not checking stack state when pushing/popping
 - TODO: check r0 r1 during mul. may need to push/pop it
+- branches are RJMPs: limited to 4K
+
+
+
+--- performance only
+- RTC_INVOKESTATIC does a lookup for every call. we could store the global_id directly, but this would depend on the infusion struct being at the same address every time.
