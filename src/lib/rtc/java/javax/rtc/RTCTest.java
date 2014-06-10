@@ -8,29 +8,29 @@ public class RTCTest {
 	public int instance_int;
 	public short instance_short2;
 
-	public static int test_method_call_1(int a, short b, short c, int d) {
-		return test_method_call_1b(a, b, c, d);
-	}
-	public static int test_method_call_1b(int a, short b, short c, int d) {
-		// Just test a bunch of ints.
-		// This should be OK even without reserving space on the int stack since we pass more than will be returned, thus ensuring enough stack space for the return value.
-		return (a - b) + 1 + (d - c);
-	}
-	public static int test_method_call_2(int a, short b, RTCTest obj, short c, int d) {
-		return test_method_call_2b(a, b, obj, c, d);
-	}
-	public static int test_method_call_2b(int a, short b, RTCTest obj, short c, int d) {
-		// Add passing an object
-		return (a - b) + 1 + (d - c) + obj.instance_short1;
-	}
-	public static int test_method_call_3(RTCTest obj) {
-		return test_method_call_3b(obj);
-	}
-	public static int test_method_call_3b(RTCTest obj) {
-		// This method returns more than it gets passed on the int stack
-		// This will crash the VM if we don't reserve extra space on the system stack
-		return 100000+obj.instance_short1;
-	}
+	// public static int test_method_call_1(int a, short b, short c, int d) {
+	// 	return test_method_call_1b(a, b, c, d);
+	// }
+	// public static int test_method_call_1b(int a, short b, short c, int d) {
+	// 	// Just test a bunch of ints.
+	// 	// This should be OK even without reserving space on the int stack since we pass more than will be returned, thus ensuring enough stack space for the return value.
+	// 	return (a - b) + 1 + (d - c);
+	// }
+	// public static int test_method_call_2(int a, short b, RTCTest obj, short c, int d) {
+	// 	return test_method_call_2b(a, b, obj, c, d);
+	// }
+	// public static int test_method_call_2b(int a, short b, RTCTest obj, short c, int d) {
+	// 	// Add passing an object
+	// 	return (a - b) + 1 + (d - c) + obj.instance_short1;
+	// }
+	// public static int test_method_call_3(RTCTest obj) {
+	// 	return test_method_call_3b(obj);
+	// }
+	// public static int test_method_call_3b(RTCTest obj) {
+	// 	// This method returns more than it gets passed on the int stack
+	// 	// This will crash the VM if we don't reserve extra space on the system stack
+	// 	return 100000+obj.instance_short1;
+	// }
 
 	// public static short test_method_call(short a, RTCTest obj) {
 	// 	// return test_method_call2(a, (short)42, obj);
@@ -61,18 +61,20 @@ public class RTCTest {
 	// 	}
 	// }
 
-	// public static int test_int_ops(int x, int y, short op) {
-	// 	if (op==0) return  -x;
-	// 	if (op==1) return x + y;
-	// 	if (op==2) return x - y;
-	// 	if (op==3) return x * y;
-	// 	if (op==4) return x / y;
-	// 	if (op==5) return x % y;
-	// 	if (op==6) return x & y;
-	// 	if (op==7) return x | y;
-	// 	if (op==8) return x ^ y;
-	// 	return -42;
-	// }
+	public static int test_int_ops(int x, int y, short op) {
+		if (op==0) return  -x;
+		if (op==1) return x + y;
+		if (op==2) return x - y;
+		if (op==3) return x * y;
+		if (op==4) return x / y;
+		if (op==5) return x % y;
+		if (op==6) return x & y;
+		if (op==7) return x | y;
+		if (op==8) return x ^ y;
+		if (op==9) return x + (-1);
+		if (op==10) return x + 42;
+		return -42;
+	}
 
 	// public static short test_fib(short x) {
 	// 	if (x == 0)

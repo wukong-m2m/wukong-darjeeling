@@ -1,14 +1,14 @@
 Not implemented:                        Implemented:
 
 JVM_NOP 0
-JVM_SCONST_M1 1
+                                        JVM_SCONST_M1 1
                                         JVM_SCONST_0 2
                                         JVM_SCONST_1 3
                                         JVM_SCONST_2 4
                                         JVM_SCONST_3 5
                                         JVM_SCONST_4 6
                                         JVM_SCONST_5 7
-JVM_ICONST_M1 8
+                                        JVM_ICONST_M1 8
                                         JVM_ICONST_0 9
                                         JVM_ICONST_1 10
                                         JVM_ICONST_2 11

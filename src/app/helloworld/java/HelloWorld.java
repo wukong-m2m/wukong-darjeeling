@@ -32,20 +32,20 @@ public class HelloWorld
 		// checkFib();
 		// checkCompareShort();
 		// checkFib();
-		// checkIntOps();
+		checkIntOps();
 		// checkBubbleSort();
-		checkMethodCall();
+		// checkMethodCall();
 	}
 
-	public static void checkMethodCall() {
-		System.out.println("100109 " + RTCTest.test_method_call_1(10, (short)2, (short)10, 100110));
+	// public static void checkMethodCall() {
+	// 	System.out.println("100109 " + RTCTest.test_method_call_1(10, (short)2, (short)10, 100110));
 
-		RTCTest obj = new RTCTest();
-		obj.instance_short1 = 5;
-		System.out.println("100114 " + RTCTest.test_method_call_2(10, (short)2, obj, (short)10, 100110));
+	// 	RTCTest obj = new RTCTest();
+	// 	obj.instance_short1 = 5;
+	// 	System.out.println("100114 " + RTCTest.test_method_call_2(10, (short)2, obj, (short)10, 100110));
 
-		System.out.println("100005 " + RTCTest.test_method_call_3(obj));
-	}
+	// 	System.out.println("100005 " + RTCTest.test_method_call_3(obj));
+	// }
 
 	// public static void checkBubbleSort() {
 	// 	short NUMNUMBERS = 256;
@@ -80,30 +80,33 @@ public class HelloWorld
 	// 	System.out.println("" + RTCTest.test_fib((short)9));
 	// }
 
-	// public static void checkIntOps()
-	// {
-	// 	System.out.println("-(-452345) = 452345 " + RTCTest.test_int_ops(-452345, 0, (short)0));
-	// 	System.out.println("-(100000) = -100000 " + RTCTest.test_int_ops(100000, 0, (short)0));
+	public static void checkIntOps()
+	{
+		System.out.println("-(-452345) = 452345 " + RTCTest.test_int_ops(-452345, 0, (short)0));
+		System.out.println("-(100000) = -100000 " + RTCTest.test_int_ops(100000, 0, (short)0));
 
-	// 	System.out.println("100000+320000 = 420000 " + RTCTest.test_int_ops(100000, 320000, (short)1));
-	// 	System.out.println("100000+(-320000) = -220000 " + RTCTest.test_int_ops(100000, -320000, (short)1));
+		System.out.println("100000+320000 = 420000 " + RTCTest.test_int_ops(100000, 320000, (short)1));
+		System.out.println("100000+(-320000) = -220000 " + RTCTest.test_int_ops(100000, -320000, (short)1));
 
-	// 	// broken
-	// 	System.out.println("100000-320000 = -220000 " + RTCTest.test_int_ops(100000, 320000, (short)2));
-	// 	System.out.println("100000-(-320000) = 420000 " + RTCTest.test_int_ops(100000, -320000, (short)2));
+		// broken
+		System.out.println("100000-320000 = -220000 " + RTCTest.test_int_ops(100000, 320000, (short)2));
+		System.out.println("100000-(-320000) = 420000 " + RTCTest.test_int_ops(100000, -320000, (short)2));
 
-	// 	System.out.println("2*320000 = 640000 " + RTCTest.test_int_ops(2, 320000, (short)3));
-	// 	System.out.println("100000*(-3) = -300000 " + RTCTest.test_int_ops(100000, -3, (short)3));
+		System.out.println("2*320000 = 640000 " + RTCTest.test_int_ops(2, 320000, (short)3));
+		System.out.println("100000*(-3) = -300000 " + RTCTest.test_int_ops(100000, -3, (short)3));
 
-	// 	System.out.println("320000/1000 = 320 " + RTCTest.test_int_ops(320000, 1000, (short)4));
-	// 	System.out.println("700000/(-200000) = -3 " + RTCTest.test_int_ops(700000, -200000, (short)4));
+		System.out.println("320000/1000 = 320 " + RTCTest.test_int_ops(320000, 1000, (short)4));
+		System.out.println("700000/(-200000) = -3 " + RTCTest.test_int_ops(700000, -200000, (short)4));
 
-	// 	System.out.println("320023 % 100000 = 20023 " + RTCTest.test_int_ops(320023, 100000, (short)5));
+		System.out.println("320023 % 100000 = 20023 " + RTCTest.test_int_ops(320023, 100000, (short)5));
 
-	// 	System.out.println("0x0FFF0000 & 0x0F00FF00 = 0x0F000000 = 251658240 " + RTCTest.test_int_ops(0x0FFF0000, 0x0F00FF00, (short)6));
-	// 	System.out.println("0x0FFF0000 | 0x0F00FF00 = 0x0FFFFF00 = 268435200 " + RTCTest.test_int_ops(0x0FFF0000, 0x0F00FF00, (short)7));
-	// 	System.out.println("0x0FFF0000 ^ 0x0F00FF00 = 0x00FFFF00 = 16776960 " + RTCTest.test_int_ops(0x0FFF0000, 0x0F00FF00, (short)8));
-	// }
+		System.out.println("0x0FFF0000 & 0x0F00FF00 = 0x0F000000 = 251658240 " + RTCTest.test_int_ops(0x0FFF0000, 0x0F00FF00, (short)6));
+		System.out.println("0x0FFF0000 | 0x0F00FF00 = 0x0FFFFF00 = 268435200 " + RTCTest.test_int_ops(0x0FFF0000, 0x0F00FF00, (short)7));
+		System.out.println("0x0FFF0000 ^ 0x0F00FF00 = 0x00FFFF00 = 16776960 " + RTCTest.test_int_ops(0x0FFF0000, 0x0F00FF00, (short)8));
+
+		System.out.println("42 + (-1) = 41 " + RTCTest.test_int_ops(42, 0, (short)9));
+		System.out.println("42 + (42) = 84 " + RTCTest.test_int_ops(42, 0, (short)10));
+	}
 
 	// public static void checkStaticInstanceVariables()
 	// {
