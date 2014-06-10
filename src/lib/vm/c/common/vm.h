@@ -43,7 +43,7 @@ void dj_vm_setSystemInfusion(dj_vm *vm, dj_infusion * infusion);
 dj_infusion * dj_vm_getSystemInfusion(dj_vm * vm);
 void dj_vm_loadInfusionArchive(dj_vm * vm, dj_di_pointer archive_start, dj_named_native_handler native_handlers[], unsigned char numHandlers);
 
-dj_infusion* dj_vm_runClassInitialisers(dj_vm * vm, dj_infusion * infusion);
+void dj_vm_runClassInitialisers(dj_vm * vm, dj_infusion * infusion);
 
 void dj_vm_addThread(dj_vm * vm, dj_thread * thread);
 int dj_vm_countThreads(dj_vm * vm);

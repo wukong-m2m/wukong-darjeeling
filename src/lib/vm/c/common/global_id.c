@@ -414,9 +414,9 @@ dj_di_pointer dj_global_id_getClassDefinition(dj_global_id class)
  * @param class a global id pointing to a method imlementation
  * @return a pointer to the referenced method implementation
  */
-dj_di_pointer dj_global_id_getMethodImplementation(dj_global_id dj_global_id)
+dj_di_pointer dj_global_id_getMethodImplementation(dj_global_id gid)
 {
-	return dj_infusion_getMethodImplementation(dj_global_id.infusion, dj_global_id.entity_id);
+	return dj_infusion_getMethodImplementation(gid.infusion, gid.entity_id);
 }
 
 /**
@@ -424,8 +424,8 @@ dj_di_pointer dj_global_id_getMethodImplementation(dj_global_id dj_global_id)
  * @param class a global id pointing to a string
  * @return a pointer to the referenced string
  */
-dj_di_pointer dj_global_id_getString(dj_global_id dj_global_id)
+dj_di_pointer dj_global_id_getString(dj_global_id gid)
 {
-	return dj_infusion_getString(dj_global_id.infusion, dj_global_id.entity_id);
+	return dj_infusion_getString(gid.infusion, gid.entity_id);
 }
 

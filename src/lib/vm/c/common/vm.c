@@ -292,6 +292,7 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 
 	// allocate the Infusion struct
 	infusion = dj_infusion_create(staticFieldInfo, dj_di_infusionList_getSize(infusionList));
+	dj_mem_addSafePointer((void**)&infusion); // Since the GC may be called when running the class initialisers.
 
 	// if we're out of memory, let the caller handle it
 	if (infusion==NULL) return NULL;
@@ -375,7 +376,7 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 	}
 
 	// run class initialisers for this infusion
-	infusion = dj_vm_runClassInitialisers(vm, infusion);
+	dj_vm_runClassInitialisers(vm, infusion);
 
 	// find the entry point for the infusion
 	if ((entryPoint.entity_id=dj_di_header_getEntryPoint(infusion->header))!=255)
@@ -390,6 +391,7 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 		dj_vm_addThread(vm, thread);
 	}
 
+	dj_mem_removeSafePointer((void**)&infusion);
 	return infusion;
 }
 
@@ -1081,21 +1083,17 @@ dj_infusion *dj_vm_getSystemInfusion(dj_vm *vm)
  * @param vm the virtual machine context
  */
 // TODO niels clean up this function
-dj_infusion* dj_vm_runClassInitialisers(dj_vm *vm, dj_infusion *infusion)
+void dj_vm_runClassInitialisers(dj_vm *vm, dj_infusion *infusion)
 {
 	int i, threadId;
 	dj_thread * thread;
 	dj_frame * frame;
 	dj_global_id methodImplId;
-	uint8_t infusionId;
 
-	// store infusion ID so that we can get an up-to-date infusion pointer later
-	infusionId = dj_vm_getInfusionId(vm, infusion);
+	dj_mem_addSafePointer((void**)&infusion); // Since the GC may be called when running the class initialisers, or when creating the thread.
 
 	// create a new thread object to run the <CLINIT> methods in
 	thread = dj_thread_create();
-
-	infusion = dj_vm_getInfusion(vm, infusionId);
 
 	if (thread == NULL)
 	{
@@ -1110,8 +1108,6 @@ dj_infusion* dj_vm_runClassInitialisers(dj_vm *vm, dj_infusion *infusion)
 	int size = dj_di_parentElement_getListSize(infusion->classList);
 	for (i=0; i<size; i++)
 	{
-		infusion = dj_vm_getInfusion(dj_exec_getVM(), infusionId);
-
 		dj_di_pointer classDef = dj_di_parentElement_getChild(infusion->classList, i);
 		methodImplId.entity_id = dj_di_classDefinition_getCLInit(classDef);
 		methodImplId.infusion = infusion;
@@ -1144,11 +1140,12 @@ dj_infusion* dj_vm_runClassInitialisers(dj_vm *vm, dj_infusion *infusion)
 		}
 	}
 
+	dj_mem_removeSafePointer((void**)&infusion);
+
 	// clean up the thread
 	thread = dj_vm_getThreadById(dj_exec_getVM(), threadId);
 	dj_vm_removeThread(vm, thread);
 	dj_thread_destroy(thread);
 	vm->currentThread = NULL;
-	return infusion;
 }
 
