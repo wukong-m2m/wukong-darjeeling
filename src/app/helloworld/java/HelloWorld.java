@@ -34,26 +34,30 @@ public class HelloWorld
 		// checkFib();
 		// checkIntOps();
 		// checkBubbleSort();
-		// checkMethodCall();
-		checkReturnObject();
+		checkMethodCall();
+		// checkReturnObject();
 	}
 
-	public static void checkReturnObject() {
-		RTCTest obj = new RTCTest();
-		obj.instance_int = 123455;
-		RTCTest obj2 = RTCTest.test_return_object(obj);
-		System.out.println("123456 " + obj2.instance_int);
-	}
-
-	// public static void checkMethodCall() {
-	// 	System.out.println("100109 " + RTCTest.test_method_call_1(10, (short)2, (short)10, 100110));
-
+	// public static void checkReturnObject() {
 	// 	RTCTest obj = new RTCTest();
-	// 	obj.instance_short1 = 5;
-	// 	System.out.println("100114 " + RTCTest.test_method_call_2(10, (short)2, obj, (short)10, 100110));
-
-	// 	System.out.println("100005 " + RTCTest.test_method_call_3(obj));
+	// 	obj.instance_int = 123455;
+	// 	RTCTest obj2 = RTCTest.test_return_object(obj);
+	// 	System.out.println("123456 " + obj2.instance_int);
 	// }
+
+	public static void checkMethodCall() {
+		System.out.println("100109 " + RTCTest.test_method_call_1(10, (short)2, (short)10, 100110));
+
+		RTCTest obj = new RTCTest();
+		obj.instance_short1 = 5;
+		System.out.println("100114 " + RTCTest.test_method_call_2(10, (short)2, obj, (short)10, 100110));
+
+		System.out.println("100005 " + RTCTest.test_method_call_3(obj));
+
+		obj.instance_int = 654320;
+		RTCTest obj2 = RTCTest.test_method_call_4(obj);
+		System.out.println("654321 " + obj2.instance_int);		
+	}
 
 	// public static void checkBubbleSort() {
 	// 	short NUMNUMBERS = 256;
