@@ -47,11 +47,11 @@ JVM_LDS 21
                                         JVM_ISTORE_1 44
                                         JVM_ISTORE_2 45
                                         JVM_ISTORE_3 46
-JVM_ASTORE 47
-JVM_ASTORE_0 48
-JVM_ASTORE_1 49
-JVM_ASTORE_2 50
-JVM_ASTORE_3 51
+                                        JVM_ASTORE 47
+                                        JVM_ASTORE_0 48
+                                        JVM_ASTORE_1 49
+                                        JVM_ASTORE_2 50
+                                        JVM_ASTORE_3 51
 JVM_BALOAD 52
 JVM_CALOAD 53
                                         JVM_SALOAD 54
@@ -89,12 +89,12 @@ JVM_GETSTATIC_B 85
 JVM_GETSTATIC_C 86
                                         JVM_GETSTATIC_S 87
                                         JVM_GETSTATIC_I 88
-JVM_GETSTATIC_A 89
+                                        JVM_GETSTATIC_A 89
 JVM_PUTSTATIC_B 90
 JVM_PUTSTATIC_C 91
                                         JVM_PUTSTATIC_S 92
                                         JVM_PUTSTATIC_I 93
-JVM_PUTSTATIC_A 94
+                                        JVM_PUTSTATIC_A 94
                                         JVM_SADD 95
                                         JVM_SSUB 96
                                         JVM_SMUL 97

@@ -67,9 +67,6 @@
 	<!-- compile the java sources -->
 	<target name="compile-java" if="${contains-java-code}">
 		<mkdir dir="${classes}"/>
-		<echo message="CLASSPATH IS ${javac-classpath}"/>
-		<echo message="lib-java-depends IS ${lib-java-depends}"/>
-		<echo message="libpath IS ${libpath}"/>
 		<javac
 			srcdir="${javasrc}"
 			destdir="${classes}"
