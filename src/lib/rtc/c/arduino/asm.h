@@ -58,7 +58,7 @@
 
 // 0000 00kk kkkk k000
 #define makeBranchOffset(offset) ( \
-                (offset) << 3)
+                ((offset) & 0x7F) << 3)
 
 
 // 0000 KKKK 0000 KKKK
@@ -102,6 +102,10 @@
 #define OPCODE_AND                      0x2000
 #define asm_AND(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_AND, destreg, srcreg)
 
+// ASR                                  1001 010d dddd 0101
+#define OPCODE_ASR                      0x9405
+#define asm_ASR(reg)                    opcodeWithSingleRegOperand(OPCODE_ASR, reg)
+
 // BREQ                                 1111 00kk kkkk k001, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
 #define OPCODE_BREQ                     0xF001
 #define asm_BREQ(offset)                (OPCODE_BREQ + makeBranchOffset(((offset)/2)))
@@ -117,6 +121,10 @@
 // BRNE                                 1111 01kk kkkk k001, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
 #define OPCODE_BRNE                     0xF401
 #define asm_BRNE(offset)                (OPCODE_BRNE + makeBranchOffset(((offset)/2)))
+
+// BRPL                                 1111 01kk kkkk k010
+#define OPCODE_BRPL                     0xF402
+#define asm_BRPL(offset)                (OPCODE_BRPL + makeBranchOffset(((offset)/2)))
 
 // CALL                                 1001 010k kkkk 111k
 //                                      kkkk kkkk kkkk kkkk
@@ -135,6 +143,10 @@
 // CPC                                  0000 01rd dddd rrrr, with r,d=the registers to compare
 #define OPCODE_CPC                      0x0400
 #define asm_CPC(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_CPC, destreg, srcreg)
+
+// DEC                                  1001 010d dddd 1010
+#define OPCODE_DEC                      0x940A
+#define asm_DEC(reg)                    opcodeWithSingleRegOperand(OPCODE_DEC, reg)
 
 // EOR                                  0010 01rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_EOR                      0x2400
@@ -184,6 +196,11 @@
 // LSL
 #define asm_LSL(destreg)                asm_ADD(destreg, destreg)
 
+
+// LSR                                  1001 010d dddd 0110
+#define OPCODE_LSR                      0x9406
+#define asm_LSR(reg)                    opcodeWithSingleRegOperand(OPCODE_LSR, reg)
+
 // MOVW                                 0000 0001 dddd rrrr, with d=dest register/2, r=source register/2
 #define OPCODE_MOVW                     0x0100
 #define asm_MOVW(destreg, srcreg)       opcodeWithSrcAndDestRegOperand(OPCODE_MOVW, (destreg/2), (srcreg/2))
@@ -218,7 +235,11 @@
 #define asm_RJMP(offset)                (OPCODE_RJMP + (((offset)/2) & 0xFFF))
 
 // ROL
-#define asm_ROL(destreg)                asm_ADC(destreg, destreg)
+#define asm_ROL(reg)                    asm_ADC(reg, reg)
+
+// ROR                                  1001 010d dddd 0111
+#define OPCODE_ROR                      0x9407
+#define asm_ROR(reg)                    opcodeWithSingleRegOperand(OPCODE_ROR, reg)
 
 // SBC                                  0000 10rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_SBC                      0x0800

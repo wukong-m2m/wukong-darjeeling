@@ -690,6 +690,73 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_PUSH(R19) );
                 emit( asm_PUSH(R18) );
             break;
+            case JVM_ISHL:
+                emit( asm_POP(R18) );
+                emit( asm_POP(R19) );
+                emit( asm_POP(R20) );
+                emit( asm_POP(R21) );
+                emit( asm_POP(R22) );
+                emit( asm_POP(R23) );
+                emit( asm_POP(R24) );
+                emit( asm_POP(R25) );
+
+                emit( asm_RJMP(8) );
+                emit( asm_LSL(R22) );
+                emit( asm_ROL(R23) );
+                emit( asm_ROL(R24) );
+                emit( asm_ROL(R25) );
+                emit( asm_DEC(R18) );
+                emit( asm_BRPL(-12) );
+
+                emit( asm_PUSH(R25) );
+                emit( asm_PUSH(R24) );
+                emit( asm_PUSH(R23) );
+                emit( asm_PUSH(R22) );
+            break;
+            case JVM_ISHR:
+                emit( asm_POP(R18) );
+                emit( asm_POP(R19) );
+                emit( asm_POP(R20) );
+                emit( asm_POP(R21) );
+                emit( asm_POP(R22) );
+                emit( asm_POP(R23) );
+                emit( asm_POP(R24) );
+                emit( asm_POP(R25) );
+
+                emit( asm_RJMP(8) );
+                emit( asm_ASR(R25) );
+                emit( asm_ROR(R24) );
+                emit( asm_ROR(R23) );
+                emit( asm_ROR(R22) );
+                emit( asm_DEC(R18) );
+                emit( asm_BRPL(-12) );
+
+                emit( asm_PUSH(R25) );
+                emit( asm_PUSH(R24) );
+                emit( asm_PUSH(R23) );
+                emit( asm_PUSH(R22) );
+            break;
+            case JVM_IUSHR: // x >>> y
+                emit( asm_POP(R20) ); // short y
+                emit( asm_POP(R21) );
+                emit( asm_POP(R22) ); // int x
+                emit( asm_POP(R23) );
+                emit( asm_POP(R24) );
+                emit( asm_POP(R25) );
+
+                emit( asm_RJMP(8) );
+                emit( asm_LSR(R25) );
+                emit( asm_ROR(R24) );
+                emit( asm_ROR(R23) );
+                emit( asm_ROR(R22) );
+                emit( asm_DEC(R20) );
+                emit( asm_BRPL(-12) );
+
+                emit( asm_PUSH(R25) );
+                emit( asm_PUSH(R24) );
+                emit( asm_PUSH(R23) );
+                emit( asm_PUSH(R22) );
+            break;
             case JVM_IAND:
                 emit( asm_POP(R22) );
                 emit( asm_POP(R23) );
@@ -751,6 +818,14 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_PUSH(ZERO_REG) );
                 emit( asm_PUSH(R25) );
                 emit( asm_PUSH(R24) );
+            break;
+            case JVM_I2S:
+                emit( asm_POP(R22) );
+                emit( asm_POP(R23) );
+                emit( asm_POP(R24) );
+                emit( asm_POP(R25) );
+                emit( asm_PUSH(R23) );
+                emit( asm_PUSH(R22) );
             break;
             case JVM_IF_SCMPEQ:
             case JVM_IF_SCMPNE:

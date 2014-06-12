@@ -113,9 +113,9 @@ JVM_SUSHR 103
                                         JVM_IDIV 110
                                         JVM_IREM 111
                                         JVM_INEG 112
-JVM_ISHL 113
-JVM_ISHR 114
-JVM_IUSHR 115
+                                        JVM_ISHL 113
+                                        JVM_ISHR 114
+                                        JVM_IUSHR 115
                                         JVM_IAND 116
                                         JVM_IOR 117
                                         JVM_IXOR 118
@@ -125,7 +125,7 @@ JVM_IINC 121
 JVM_S2B 122
                                         JVM_S2I 123
 JVM_I2B 124
-JVM_I2S 125
+                                        JVM_I2S 125
 JVM_IIFEQ 126
 JVM_IIFNE 127
 JVM_IIFLT 128
