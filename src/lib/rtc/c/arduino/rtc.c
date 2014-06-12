@@ -22,7 +22,7 @@
 #define offset_for_static_short(infusion_ptr, variable_index)               ((uint16_t)((void*)(&((infusion_ptr)->staticShortFields[variable_index]))     - (void *)((infusion_ptr)->staticReferenceFields)))
 #define offset_for_static_int(infusion_ptr, variable_index)                 ((uint16_t)((void*)(&((infusion_ptr)->staticIntFields[variable_index]))       - (void *)((infusion_ptr)->staticReferenceFields)))
 #define offset_for_static_long(infusion_ptr, variable_index)                ((uint16_t)((void*)(&((infusion_ptr)->staticLongFields[variable_index]))      - (void *)((infusion_ptr)->staticReferenceFields)))
-#define offset_for_referenced_infusion(infusion_ptr, ref_inf)               ((uint16_t)((void*)(&((infusion_ptr)->referencedInfusions[ref_inf-1]))          - (void *)((infusion_ptr)->staticReferenceFields)))
+#define offset_for_referenced_infusion(infusion_ptr, ref_inf)               ((uint16_t)((void*)(&((infusion_ptr)->referencedInfusions[ref_inf-1]))        - (void *)((infusion_ptr)->staticReferenceFields)))
 
                              // +---------------------------+
                              // |1             int1 16b     | stackLocalIntegerOffset
@@ -474,9 +474,6 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
                 emit( asm_MOVW(RZ, R2) ); // Z now points to the current infusion (0)
 
-                DEBUG_LOG(DBG_RTC, "sizeof(dj_infusion): %d\n", sizeof(dj_infusion));
-                DEBUG_LOG(DBG_RTC, "&(infusion->staticReferenceFields) - infusion: %d\n", ((void*)&(infusion->staticReferenceFields)) - ((void *)infusion));
-
                 if (jvm_operand_byte0 == 0) {
                     target_infusion = infusion;
                 } else {
@@ -496,6 +493,35 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_LDD(R25, Z, offset_for_static_short(target_infusion, jvm_operand_byte1)+1) );
                 emit( asm_PUSH(R25) );
                 emit( asm_PUSH(R24) );
+            break;
+            case JVM_GETSTATIC_I:
+                jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
+                jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
+                emit( asm_MOVW(RZ, R2) ); // Z now points to the current infusion (0)
+
+                if (jvm_operand_byte0 == 0) {
+                    target_infusion = infusion;
+                } else {
+                    // We need to read from another infusion. Get that infusion's address first.
+                    // Load the address of the referenced infusion into R24:R25
+                    emit( asm_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)) );
+                    emit( asm_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1) );
+                    // Then move R24:R25 to Z
+                    emit( asm_MOVW(RZ, R24) );
+                    // Z now points to the target infusion, but it should point to the start of the static variables
+                    emit( asm_ADIW(RZ, sizeof(dj_infusion)) );
+                    // Find the target infusion to calculate the right offset in the next step
+                    target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
+                }
+
+                emit( asm_LDD(R22, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)) );
+                emit( asm_LDD(R23, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+1) );
+                emit( asm_LDD(R24, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+2) );
+                emit( asm_LDD(R25, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+3) );
+                emit( asm_PUSH(R25) );
+                emit( asm_PUSH(R24) );
+                emit( asm_PUSH(R23) );
+                emit( asm_PUSH(R22) );
             break;
             case JVM_PUTSTATIC_S:
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
@@ -521,6 +547,35 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_POP(R25) );
                 emit( asm_STD(R24, Z, offset_for_static_short(target_infusion, jvm_operand_byte1)) );
                 emit( asm_STD(R25, Z, offset_for_static_short(target_infusion, jvm_operand_byte1)+1) );
+            break;
+            case JVM_PUTSTATIC_I:
+                jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
+                jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
+                emit( asm_MOVW(RZ, R2) ); // Z now points to the current infusion (0)
+
+                if (jvm_operand_byte0 == 0) {
+                    target_infusion = infusion;
+                } else {
+                    // We need to read from another infusion. Get that infusion's address first.
+                    // Load the address of the referenced infusion into R24:R25
+                    emit( asm_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)) );
+                    emit( asm_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1) );
+                    // Then move R24:R25 to Z
+                    emit( asm_MOVW(RZ, R24) );
+                    // Z now points to the target infusion, but it should point to the start of the static variables
+                    emit( asm_ADIW(RZ, sizeof(dj_infusion)) );
+                    // Find the target infusion to calculate the right offset in the next step
+                    target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
+                }
+
+                emit( asm_POP(R22) );
+                emit( asm_POP(R23) );
+                emit( asm_POP(R24) );
+                emit( asm_POP(R25) );
+                emit( asm_STD(R22, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)) );
+                emit( asm_STD(R23, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+1) );
+                emit( asm_STD(R24, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+2) );
+                emit( asm_STD(R25, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+3) );
             break;
             case JVM_SADD:
                 emit( asm_POP(R22) );

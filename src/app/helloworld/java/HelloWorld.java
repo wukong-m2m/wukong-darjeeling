@@ -28,7 +28,8 @@ public class HelloWorld
 	{
 		System.out.println("Hello world.");
 		// checkCompareShort0();
-		checkStaticShortVariables();
+		// checkStaticShortVariables();
+		checkStaticIntVariables();
 		// checkInstanceVariables();
 		// checkFib();
 		// checkCompareShort();
@@ -182,27 +183,50 @@ public class HelloWorld
 	// 	System.out.println("test instance2 short2 direct access " + obj2.instance_short2);
 	// }
 
-	public static void checkStaticShortVariables()
+	// public static void checkStaticShortVariables()
+	// {
+	// 	System.out.println("test static short -1 -> " + RTCTest.test_static_short((short)-1));
+	// 	System.out.println("test static short 42 -> " + RTCTest.test_static_short((short)42));
+	// 	System.out.println("test static short  3 -> " + RTCTest.test_static_short((short)3));
+
+	// 	Darjeeling.rtc_test_short1 = 101;
+	// 	Darjeeling.rtc_test_short2 = 102;
+
+	// 	System.out.println("Darjeeling.rtc_test_short1 = " + Darjeeling.rtc_test_short1);
+	// 	System.out.println("Darjeeling.rtc_test_short2 = " + Darjeeling.rtc_test_short2);
+	// 	System.out.println("test static short in other infusion(1) -1 -> 101-1=100 " + RTCTest.test_static_short_in_other_infusion_1((short)-1));
+	// 	System.out.println("Darjeeling.rtc_test_short1 = " + Darjeeling.rtc_test_short1);
+	// 	System.out.println("test static short in other infusion(1) 42 -> 101-1+42=142 " + RTCTest.test_static_short_in_other_infusion_1((short)42));
+	// 	System.out.println("Darjeeling.rtc_test_short1 = " + Darjeeling.rtc_test_short1);
+	// 	System.out.println("test static short in other infusion(2) 3 -> 102+3=105 " + RTCTest.test_static_short_in_other_infusion_2((short)3));
+	// 	System.out.println("Darjeeling.rtc_test_short2 = " + Darjeeling.rtc_test_short2);
+	// 	System.out.println("test static short in other infusion(1) 10 -> 101-1+42+10=152 " + RTCTest.test_static_short_in_other_infusion_1((short)10));
+	// 	System.out.println("Darjeeling.rtc_test_short1 = " + Darjeeling.rtc_test_short1);
+	// 	System.out.println("test static short in other infusion(2)  3 -> 102+3+3=108 " + RTCTest.test_static_short_in_other_infusion_2((short)3));
+	// 	System.out.println("Darjeeling.rtc_test_short2 = " + Darjeeling.rtc_test_short2);
+	// }
+
+	public static void checkStaticIntVariables()
 	{
-		System.out.println("test static short -1 -> " + RTCTest.test_static_short((short)-1));
-		System.out.println("test static short 42 -> " + RTCTest.test_static_short((short)42));
-		System.out.println("test static short  3 -> " + RTCTest.test_static_short((short)3));
+		System.out.println("test static int -1 -> " + RTCTest.test_static_int(-1));
+		System.out.println("test static int 100042 -> " + RTCTest.test_static_int(100042));
+		System.out.println("test static int 3 -> " + RTCTest.test_static_int(3));
 
-		Darjeeling.rtc_test_short1 = 101;
-		Darjeeling.rtc_test_short2 = 102;
+		Darjeeling.rtc_test_int1 = 100101;
+		Darjeeling.rtc_test_int2 = 100102;
 
-		System.out.println("Darjeeling.rtc_test_short1 = " + Darjeeling.rtc_test_short1);
-		System.out.println("Darjeeling.rtc_test_short2 = " + Darjeeling.rtc_test_short2);
-		System.out.println("test static short in other infusion(1) -1 -> 101-1=100 " + RTCTest.test_static_short_in_other_infusion_1((short)-1));
-		System.out.println("Darjeeling.rtc_test_short1 = " + Darjeeling.rtc_test_short1);
-		System.out.println("test static short in other infusion(1) 42 -> 101-1+42=142 " + RTCTest.test_static_short_in_other_infusion_1((short)42));
-		System.out.println("Darjeeling.rtc_test_short1 = " + Darjeeling.rtc_test_short1);
-		System.out.println("test static short in other infusion(2) 3 -> 102+3=105 " + RTCTest.test_static_short_in_other_infusion_2((short)3));
-		System.out.println("Darjeeling.rtc_test_short2 = " + Darjeeling.rtc_test_short2);
-		System.out.println("test static short in other infusion(1) 10 -> 101-1+42+10=152 " + RTCTest.test_static_short_in_other_infusion_1((short)10));
-		System.out.println("Darjeeling.rtc_test_short1 = " + Darjeeling.rtc_test_short1);
-		System.out.println("test static short in other infusion(2)  3 -> 102+3+3=108 " + RTCTest.test_static_short_in_other_infusion_2((short)3));
-		System.out.println("Darjeeling.rtc_test_short2 = " + Darjeeling.rtc_test_short2);
+		System.out.println("Darjeeling.rtc_test_int1 = " + Darjeeling.rtc_test_int1);
+		System.out.println("Darjeeling.rtc_test_int2 = " + Darjeeling.rtc_test_int2);
+		System.out.println("test static int in other infusion(1) -1 -> 100101-1=100100 " + RTCTest.test_static_int_in_other_infusion_1(-1));
+		System.out.println("Darjeeling.rtc_test_int1 = " + Darjeeling.rtc_test_int1);
+		System.out.println("test static int in other infusion(1) 42 -> 100101-1+42=100142 " + RTCTest.test_static_int_in_other_infusion_1(42));
+		System.out.println("Darjeeling.rtc_test_int1 = " + Darjeeling.rtc_test_int1);
+		System.out.println("test static int in other infusion(2) 3 -> 100102+3=100105 " + RTCTest.test_static_int_in_other_infusion_2(3));
+		System.out.println("Darjeeling.rtc_test_int2 = " + Darjeeling.rtc_test_int2);
+		System.out.println("test static int in other infusion(1) 10 -> 100101-1+42+100000=200142 " + RTCTest.test_static_int_in_other_infusion_1(100000));
+		System.out.println("Darjeeling.rtc_test_int1 = " + Darjeeling.rtc_test_int1);
+		System.out.println("test static int in other infusion(2)  3 -> 100102+3+3=100108 " + RTCTest.test_static_int_in_other_infusion_2(3));
+		System.out.println("Darjeeling.rtc_test_int2 = " + Darjeeling.rtc_test_int2);
 	}
 
 	// public static void checkCompareShort0()

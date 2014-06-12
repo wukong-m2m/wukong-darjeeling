@@ -5,6 +5,9 @@ import javax.darjeeling.Darjeeling;
 public class RTCTest {
 	private static short static_short1;
 	private static short static_short2;
+	private static short static_short3;
+	private static int static_int1;
+	private static int static_int2;
 
 	public short instance_short1;
 	public int instance_int;
@@ -143,20 +146,34 @@ public class RTCTest {
 	// 	return this.instance_short2;
 	// }
 
-	public static short test_static_short(short x) {
-		static_short2 += x;
-		return static_short2;
+	// public static short test_static_short(short x) {
+	// 	static_short2 += x;
+	// 	return static_short2;
+	// }
+	// public static short test_static_short_in_other_infusion_1(short x) {
+	// 	Darjeeling.rtc_test_short1 += x;
+	// 	return Darjeeling.rtc_test_short1;
+	// }
+	// public static short test_static_short_in_other_infusion_2(short x) {
+	// 	Darjeeling.rtc_test_short2 += x;
+	// 	return Darjeeling.rtc_test_short2;
+	// }
+
+	public static int test_static_int(int x) {
+		static_int2 += x;
+		return static_int2;
 	}
 
-	public static short test_static_short_in_other_infusion_1(short x) {
-		Darjeeling.rtc_test_short1 += x;
-		return Darjeeling.rtc_test_short1;
+	public static int test_static_int_in_other_infusion_1(int x) {
+		Darjeeling.rtc_test_int1 += x;
+		return Darjeeling.rtc_test_int1;
 	}
 
-	public static short test_static_short_in_other_infusion_2(short x) {
-		Darjeeling.rtc_test_short2 += x;
-		return Darjeeling.rtc_test_short2;
+	public static int test_static_int_in_other_infusion_2(int x) {
+		Darjeeling.rtc_test_int2 += x;
+		return Darjeeling.rtc_test_int2;
 	}
+
 
 	// public static short compare_short_0_EQ(short x) {
 	// 	if (x == 0)
