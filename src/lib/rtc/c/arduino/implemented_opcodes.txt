@@ -101,9 +101,9 @@ JVM_PUTSTATIC_A 94
                                         JVM_SDIV 98
                                         JVM_SREM 99
                                         JVM_SNEG 100
-JVM_SSHL 101
-JVM_SSHR 102
-JVM_SUSHR 103
+                                        JVM_SSHL 101
+                                        JVM_SSHR 102
+                                        JVM_SUSHR 103
                                         JVM_SAND 104
                                         JVM_SOR 105
                                         JVM_SXOR 106

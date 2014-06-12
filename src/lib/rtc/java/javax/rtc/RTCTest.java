@@ -72,25 +72,43 @@ public class RTCTest {
 	// 			}
 	// 		}
 	// 	}
-	// }
+	// // }
 
-	public static int test_int_ops(int x, int y, short op) {
-		if (op==0) return  -x;
-		if (op==1) return x + y;
-		if (op==2) return x - y;
-		if (op==3) return x * y;
-		if (op==4) return x / y;
-		if (op==5) return x % y;
-		if (op==6) return x & y;
-		if (op==7) return x | y;
-		if (op==8) return x ^ y;
-		if (op==9) return x + (-1);
-		if (op==10) return x + 42;
-		if (op==11) return x << y;
-		if (op==12) return x >> y;
-		if (op==13) return x >>> y;
-		return -42;
+	public static short test_short_ops(short x, short y, short op) {
+		if (op==0) return (short) ( -x);
+		if (op==1) return (short) (x + y);
+		if (op==2) return (short) (x - y);
+		if (op==3) return (short) (x * y);
+		if (op==4) return (short) (x / y);
+		if (op==5) return (short) (x % y);
+		if (op==6) return (short) (x & y);
+		if (op==7) return (short) (x | y);
+		if (op==8) return (short) (x ^ y);
+		if (op==9) return (short) (x + (-1));
+		if (op==10) return (short) (x + 42);
+		if (op==11) return (short) (x << y);
+		if (op==12) return (short) (x >> y);
+		if (op==13) return (short) (x >>> y);
+		return (short) (-42);
 	}
+
+	// public static int test_int_ops(int x, int y, short op) {
+	// 	if (op==0) return  -x;
+	// 	if (op==1) return x + y;
+	// 	if (op==2) return x - y;
+	// 	if (op==3) return x * y;
+	// 	if (op==4) return x / y;
+	// 	if (op==5) return x % y;
+	// 	if (op==6) return x & y;
+	// 	if (op==7) return x | y;
+	// 	if (op==8) return x ^ y;
+	// 	if (op==9) return x + (-1);
+	// 	if (op==10) return x + 42;
+	// 	if (op==11) return x << y;
+	// 	if (op==12) return x >> y;
+	// 	if (op==13) return x >>> y;
+	// 	return -42;
+	// }
 
 	// public static short test_fib(short x) {
 	// 	if (x == 0)

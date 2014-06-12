@@ -508,10 +508,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_POP(R25) );
                 emit( asm_POP(R22) );
                 emit( asm_POP(R23) );
-                emit( asm_SUB(R24, R22) );
-                emit( asm_SBC(R25, R23) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R25) );
+                emit( asm_SUB(R22, R24) );
+                emit( asm_SBC(R23, R25) );
+                emit( asm_PUSH(R23) );
+                emit( asm_PUSH(R22) );
             break;
             case JVM_SMUL:
                 emit( asm_POP(R22) );
@@ -536,7 +536,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_ADD(R19, R0) );
                 emit( asm_MUL(R25, R22) );
                 emit( asm_ADD(R19, R0) );
-                // gcc generates "clr r1" here, but it doesn't seem necessary?
+                emit( asm_CLR(R1) );
                 emit( asm_MOVW(R24, R18) );
                 emit( asm_PUSH(R25) );
                 emit( asm_PUSH(R24) );
@@ -566,6 +566,51 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_SBC(R23, R25) );
                 emit( asm_PUSH(R23) );
                 emit( asm_PUSH(R22) );
+            break;
+            case JVM_SSHL:
+                emit( asm_POP(R22) );
+                emit( asm_POP(R23) );
+                emit( asm_POP(R24) );
+                emit( asm_POP(R25) );
+
+                emit( asm_RJMP(4) );
+                emit( asm_LSL(R24) );
+                emit( asm_ROL(R25) );
+                emit( asm_DEC(R22) );
+                emit( asm_BRPL(-8) );
+
+                emit( asm_PUSH(R25) );
+                emit( asm_PUSH(R24) );
+            break;
+            case JVM_SSHR:
+                emit( asm_POP(R22) );
+                emit( asm_POP(R23) );
+                emit( asm_POP(R24) );
+                emit( asm_POP(R25) );
+
+                emit( asm_RJMP(4) );
+                emit( asm_ASR(R25) );
+                emit( asm_ROR(R24) );
+                emit( asm_DEC(R22) );
+                emit( asm_BRPL(-8) );
+
+                emit( asm_PUSH(R25) );
+                emit( asm_PUSH(R24) );
+            break;
+            case JVM_SUSHR:
+                emit( asm_POP(R22) );
+                emit( asm_POP(R23) );
+                emit( asm_POP(R24) );
+                emit( asm_POP(R25) );
+
+                emit( asm_RJMP(4) );
+                emit( asm_LSR(R25) );
+                emit( asm_ROR(R24) );
+                emit( asm_DEC(R22) );
+                emit( asm_BRPL(-8) );
+
+                emit( asm_PUSH(R25) );
+                emit( asm_PUSH(R24) );
             break;
             case JVM_SAND:
                 emit( asm_POP(R22) );
