@@ -69,7 +69,7 @@
 // 0000 0000 KK00 KKKK
 #define makeADIWconstant(constant) ( \
                ((constant) & 0x0F) \
-            + (((constant) & 0x30) << 4))
+            + (((constant) & 0x30) << 2))
 
 // 0000 00r0 0000 rrrr, with d=dest register, r=source register
 #define makeSourceRegister(src_register) ( \

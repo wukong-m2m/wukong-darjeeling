@@ -33,6 +33,11 @@ import java.io.PrintStream;
  */
 public class Darjeeling
 {
+	// RTCTMP
+	public static short rtc_test_short1;
+	public static int rtc_test_int1;
+	public static short rtc_test_short2;
+
 	static {
 		System.out = new PrintStream(new ConsoleOutputStream());
 	}

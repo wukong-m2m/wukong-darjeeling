@@ -1,5 +1,7 @@
 package javax.rtc;
 
+import javax.darjeeling.Darjeeling;
+
 public class RTCTest {
 	private static short static_short1;
 	private static short static_short2;
@@ -7,6 +9,11 @@ public class RTCTest {
 	public short instance_short1;
 	public int instance_int;
 	public short instance_short2;
+
+
+	// public static void check_calling_println() {
+	// 	System.out.println("Avenues all lined with trees.");
+	// }
 
 	// public static RTCTest test_return_object(RTCTest obj) {
 	// 	obj.instance_int++;
@@ -74,23 +81,23 @@ public class RTCTest {
 	// 	}
 	// // }
 
-	public static short test_short_ops(short x, short y, short op) {
-		if (op==0) return (short) ( -x);
-		if (op==1) return (short) (x + y);
-		if (op==2) return (short) (x - y);
-		if (op==3) return (short) (x * y);
-		if (op==4) return (short) (x / y);
-		if (op==5) return (short) (x % y);
-		if (op==6) return (short) (x & y);
-		if (op==7) return (short) (x | y);
-		if (op==8) return (short) (x ^ y);
-		if (op==9) return (short) (x + (-1));
-		if (op==10) return (short) (x + 42);
-		if (op==11) return (short) (x << y);
-		if (op==12) return (short) (x >> y);
-		if (op==13) return (short) (x >>> y);
-		return (short) (-42);
-	}
+	// public static short test_short_ops(short x, short y, short op) {
+	// 	if (op==0) return (short) ( -x);
+	// 	if (op==1) return (short) (x + y);
+	// 	if (op==2) return (short) (x - y);
+	// 	if (op==3) return (short) (x * y);
+	// 	if (op==4) return (short) (x / y);
+	// 	if (op==5) return (short) (x % y);
+	// 	if (op==6) return (short) (x & y);
+	// 	if (op==7) return (short) (x | y);
+	// 	if (op==8) return (short) (x ^ y);
+	// 	if (op==9) return (short) (x + (-1));
+	// 	if (op==10) return (short) (x + 42);
+	// 	if (op==11) return (short) (x << y);
+	// 	if (op==12) return (short) (x >> y);
+	// 	if (op==13) return (short) (x >>> y);
+	// 	return (short) (-42);
+	// }
 
 	// public static int test_int_ops(int x, int y, short op) {
 	// 	if (op==0) return  -x;
@@ -136,10 +143,20 @@ public class RTCTest {
 	// 	return this.instance_short2;
 	// }
 
-	// public static short test_static_short(short x) {
-	// 	static_short2 += x;
-	// 	return static_short2;
-	// }
+	public static short test_static_short(short x) {
+		static_short2 += x;
+		return static_short2;
+	}
+
+	public static short test_static_short_in_other_infusion_1(short x) {
+		Darjeeling.rtc_test_short1 += x;
+		return Darjeeling.rtc_test_short1;
+	}
+
+	public static short test_static_short_in_other_infusion_2(short x) {
+		Darjeeling.rtc_test_short2 += x;
+		return Darjeeling.rtc_test_short2;
+	}
 
 	// public static short compare_short_0_EQ(short x) {
 	// 	if (x == 0)

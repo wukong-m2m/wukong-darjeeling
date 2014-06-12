@@ -1027,7 +1027,7 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 
 			uint16_t rtc_frame_locals_start = (uint16_t)dj_frame_getLocalReferenceVariables(frame); // Will be stored in Y by the function prologue
 			uint16_t rtc_ref_stack_start = (uint16_t)dj_frame_getReferenceStackBase(frame); // Will be stored in X by the function prologue
-			uint16_t rtc_statics_start = (uint16_t)methodImplId.infusion->staticReferenceFields; // Will be stored in Z by the function prologue
+			uint16_t rtc_statics_start = (uint16_t)methodImplId.infusion->staticReferenceFields; // Will be stored in R2 by the function prologue
 
 			int16_t ret16;
 			int32_t ret32;

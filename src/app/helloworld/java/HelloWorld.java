@@ -20,6 +20,7 @@
  */
 
 import javax.rtc.RTCTest;
+import javax.darjeeling.Darjeeling;
 
 public class HelloWorld
 {
@@ -27,17 +28,22 @@ public class HelloWorld
 	{
 		System.out.println("Hello world.");
 		// checkCompareShort0();
-		// checkStaticShortVariables();
-		// checkStaticInstanceVariables();
+		checkStaticShortVariables();
+		// checkInstanceVariables();
 		// checkFib();
 		// checkCompareShort();
 		// checkFib();
-		checkShortOps();
+		// checkShortOps();
 		// checkIntOps();
 		// checkBubbleSort();
 		// checkMethodCall();
 		// checkReturnObject();
+		// checkCallingPrintln();
 	}
+
+	// public static void checkCallingPrintln() {
+	// 	RTCTest.check_calling_println();
+	// }
 
 	// public static void checkReturnObject() {
 	// 	RTCTest obj = new RTCTest();
@@ -93,38 +99,38 @@ public class HelloWorld
 	// 	System.out.println("" + RTCTest.test_fib((short)9));
 	// }
 
-	public static void checkShortOps()
-	{
-		System.out.println("-(-4534) = 4534 " + RTCTest.test_short_ops((short)-4534, (short)0, (short)0));
-		System.out.println("-(10000) = -10000 " + RTCTest.test_short_ops((short)10000, (short)0, (short)0));
+	// public static void checkShortOps()
+	// {
+	// 	System.out.println("-(-4534) = 4534 " + RTCTest.test_short_ops((short)-4534, (short)0, (short)0));
+	// 	System.out.println("-(10000) = -10000 " + RTCTest.test_short_ops((short)10000, (short)0, (short)0));
 
-		System.out.println("10000+12000 = 22000 " + RTCTest.test_short_ops((short)10000, (short)12000, (short)1));
-		System.out.println("10000+(-32000) = -22000 " + RTCTest.test_short_ops((short)10000, (short)-32000, (short)1));
+	// 	System.out.println("10000+12000 = 22000 " + RTCTest.test_short_ops((short)10000, (short)12000, (short)1));
+	// 	System.out.println("10000+(-32000) = -22000 " + RTCTest.test_short_ops((short)10000, (short)-32000, (short)1));
 
-		System.out.println("10000-32000 = -22000 " + RTCTest.test_short_ops((short)10000, (short)32000, (short)2));
-		System.out.println("10000-(-2000) = 12000 " + RTCTest.test_short_ops((short)10000, (short)-2000, (short)2));
+	// 	System.out.println("10000-32000 = -22000 " + RTCTest.test_short_ops((short)10000, (short)32000, (short)2));
+	// 	System.out.println("10000-(-2000) = 12000 " + RTCTest.test_short_ops((short)10000, (short)-2000, (short)2));
 
-		System.out.println("2*3200 = 6400 " + RTCTest.test_short_ops((short)2, (short)3200, (short)3));
-		System.out.println("1000*(-3) = -3000 " + RTCTest.test_short_ops((short)1000, (short)-3, (short)3));
+	// 	System.out.println("2*3200 = 6400 " + RTCTest.test_short_ops((short)2, (short)3200, (short)3));
+	// 	System.out.println("1000*(-3) = -3000 " + RTCTest.test_short_ops((short)1000, (short)-3, (short)3));
 
-		System.out.println("32000/100 = 320 " + RTCTest.test_short_ops((short)32000, (short)100, (short)4));
-		System.out.println("7000/(-2000) = -3 " + RTCTest.test_short_ops((short)7000, (short)-2000, (short)4));
+	// 	System.out.println("32000/100 = 320 " + RTCTest.test_short_ops((short)32000, (short)100, (short)4));
+	// 	System.out.println("7000/(-2000) = -3 " + RTCTest.test_short_ops((short)7000, (short)-2000, (short)4));
 
-		System.out.println("32023 % 10000 = 2023 " + RTCTest.test_short_ops((short)32023, (short)10000, (short)5));
+	// 	System.out.println("32023 % 10000 = 2023 " + RTCTest.test_short_ops((short)32023, (short)10000, (short)5));
 
-		System.out.println("0x0FF0 & 0x00FF = 0x00F0 = 240 " + RTCTest.test_short_ops((short)0x0FF0, (short)0x00FF, (short)6));
-		System.out.println("0x0FF0 | 0x00FF = 0x0FFF = 4095 " + RTCTest.test_short_ops((short)0x0FF0, (short)0x00FF, (short)7));
-		System.out.println("0x0FF0 ^ 0x00FF = 0x0F0F = 3855 " + RTCTest.test_short_ops((short)0x0FF0, (short)0x00FF, (short)8));
+	// 	System.out.println("0x0FF0 & 0x00FF = 0x00F0 = 240 " + RTCTest.test_short_ops((short)0x0FF0, (short)0x00FF, (short)6));
+	// 	System.out.println("0x0FF0 | 0x00FF = 0x0FFF = 4095 " + RTCTest.test_short_ops((short)0x0FF0, (short)0x00FF, (short)7));
+	// 	System.out.println("0x0FF0 ^ 0x00FF = 0x0F0F = 3855 " + RTCTest.test_short_ops((short)0x0FF0, (short)0x00FF, (short)8));
 
-		System.out.println("42 + (-1) = 41 " + RTCTest.test_short_ops((short)42, (short)0, (short)9));
-		System.out.println("42 + (42) = 84 " + RTCTest.test_short_ops((short)42, (short)0, (short)10));
+	// 	System.out.println("42 + (-1) = 41 " + RTCTest.test_short_ops((short)42, (short)0, (short)9));
+	// 	System.out.println("42 + (42) = 84 " + RTCTest.test_short_ops((short)42, (short)0, (short)10));
 
-		System.out.println("0x1 << 4 = 0x10 = 16 " + RTCTest.test_short_ops((short)1, (short)4, (short)11));
-		System.out.println("-1 (0xFFFF) >>  8 = 0xFFFF = -1 " + RTCTest.test_short_ops((short)-1, (short)8, (short)12));
-		System.out.println("-1 (0xFFFF) >>> 8 = 0xFF = 255 " + RTCTest.test_short_ops((short)-1, (short)8, (short)13));
-		System.out.println("-0xFF0 (0xF010) >> 4 = 0xFF01 = -0xFF = -255 " + RTCTest.test_short_ops((short)-0xFF0, (short)4, (short)12));
-		System.out.println("-0xFF0 (0xF010) >>> 4 = 0x0F01 = 3841 " + RTCTest.test_short_ops((short)-0xFF0, (short)4, (short)13));
-	}
+	// 	System.out.println("0x1 << 4 = 0x10 = 16 " + RTCTest.test_short_ops((short)1, (short)4, (short)11));
+	// 	System.out.println("-1 (0xFFFF) >>  8 = 0xFFFF = -1 " + RTCTest.test_short_ops((short)-1, (short)8, (short)12));
+	// 	System.out.println("-1 (0xFFFF) >>> 8 = 0xFF = 255 " + RTCTest.test_short_ops((short)-1, (short)8, (short)13));
+	// 	System.out.println("-0xFF0 (0xF010) >> 4 = 0xFF01 = -0xFF = -255 " + RTCTest.test_short_ops((short)-0xFF0, (short)4, (short)12));
+	// 	System.out.println("-0xFF0 (0xF010) >>> 4 = 0x0F01 = 3841 " + RTCTest.test_short_ops((short)-0xFF0, (short)4, (short)13));
+	// }
 
 	// public static void checkIntOps()
 	// {
@@ -159,7 +165,7 @@ public class HelloWorld
 	// 	System.out.println("-0xFF00 (0xFFFF0100) >>> 8 = 0x00FFFF01 = 16776961 " + RTCTest.test_int_ops(-0xFF00, 8, (short)13));
 	// }
 
-	// public static void checkStaticInstanceVariables()
+	// public static void checkInstanceVariables()
 	// {
 	// 	RTCTest obj1 = new RTCTest();
 	// 	RTCTest obj2 = new RTCTest();
@@ -176,12 +182,28 @@ public class HelloWorld
 	// 	System.out.println("test instance2 short2 direct access " + obj2.instance_short2);
 	// }
 
-	// public static void checkStaticShortVariables()
-	// {
-	// 	System.out.println("test static short -1 ->" + RTCTest.test_static_short((short)-1));
-	// 	System.out.println("test static short 42 ->" + RTCTest.test_static_short((short)42));
-	// 	System.out.println("test static short  3 ->" + RTCTest.test_static_short((short)3));
-	// }
+	public static void checkStaticShortVariables()
+	{
+		System.out.println("test static short -1 -> " + RTCTest.test_static_short((short)-1));
+		System.out.println("test static short 42 -> " + RTCTest.test_static_short((short)42));
+		System.out.println("test static short  3 -> " + RTCTest.test_static_short((short)3));
+
+		Darjeeling.rtc_test_short1 = 101;
+		Darjeeling.rtc_test_short2 = 102;
+
+		System.out.println("Darjeeling.rtc_test_short1 = " + Darjeeling.rtc_test_short1);
+		System.out.println("Darjeeling.rtc_test_short2 = " + Darjeeling.rtc_test_short2);
+		System.out.println("test static short in other infusion(1) -1 -> 101-1=100 " + RTCTest.test_static_short_in_other_infusion_1((short)-1));
+		System.out.println("Darjeeling.rtc_test_short1 = " + Darjeeling.rtc_test_short1);
+		System.out.println("test static short in other infusion(1) 42 -> 101-1+42=142 " + RTCTest.test_static_short_in_other_infusion_1((short)42));
+		System.out.println("Darjeeling.rtc_test_short1 = " + Darjeeling.rtc_test_short1);
+		System.out.println("test static short in other infusion(2) 3 -> 102+3=105 " + RTCTest.test_static_short_in_other_infusion_2((short)3));
+		System.out.println("Darjeeling.rtc_test_short2 = " + Darjeeling.rtc_test_short2);
+		System.out.println("test static short in other infusion(1) 10 -> 101-1+42+10=152 " + RTCTest.test_static_short_in_other_infusion_1((short)10));
+		System.out.println("Darjeeling.rtc_test_short1 = " + Darjeeling.rtc_test_short1);
+		System.out.println("test static short in other infusion(2)  3 -> 102+3+3=108 " + RTCTest.test_static_short_in_other_infusion_2((short)3));
+		System.out.println("Darjeeling.rtc_test_short2 = " + Darjeeling.rtc_test_short2);
+	}
 
 	// public static void checkCompareShort0()
 	// {
