@@ -30,7 +30,7 @@ public class HelloWorld
 		// checkCompareShort0();
 		// checkStaticShortVariables();
 		// checkStaticIntVariables();
-		checkStaticRefVariables();
+		// checkStaticRefVariables();
 		// checkInstanceVariables();
 		// checkFib();
 		// checkCompareShort();
@@ -38,7 +38,7 @@ public class HelloWorld
 		// checkShortOps();
 		// checkIntOps();
 		// checkBubbleSort();
-		// checkMethodCall();
+		checkMethodCall();
 		// checkReturnObject();
 		// checkCallingPrintln();
 	}
@@ -54,19 +54,29 @@ public class HelloWorld
 	// 	System.out.println("123456 " + obj2.instance_int);
 	// }
 
-	// public static void checkMethodCall() {
-	// 	System.out.println("100109 " + RTCTest.test_method_call_1(10, (short)2, (short)10, 100110));
+	public static void checkMethodCall() {
+		System.out.println("100109 " + RTCTest.test_method_call_1(10, (short)2, (short)10, 100110));
 
-	// 	RTCTest obj = new RTCTest();
-	// 	obj.instance_short1 = 5;
-	// 	System.out.println("100114 " + RTCTest.test_method_call_2(10, (short)2, obj, (short)10, 100110));
+		RTCTest obj = new RTCTest();
+		obj.instance_short1 = 5;
+		System.out.println("100114 " + RTCTest.test_method_call_2(10, (short)2, obj, (short)10, 100110));
 
-	// 	System.out.println("100005 " + RTCTest.test_method_call_3(obj));
+		System.out.println("100005 " + RTCTest.test_method_call_3(obj));
 
-	// 	obj.instance_int = 654320;
-	// 	RTCTest obj2 = RTCTest.test_method_call_4(obj);
-	// 	System.out.println("654321 " + obj2.instance_int);		
-	// }
+		obj.instance_int = 654320;
+		RTCTest obj2 = RTCTest.test_method_call_4(obj);
+		System.out.println("654321 " + obj2.instance_int);
+
+		obj2 = new RTCTest();
+		RTCTest.test_method_call_5(obj, -321);
+		System.out.println("654000 " + obj.instance_int);
+		RTCTest.test_method_call_5(obj2, 123456);
+		System.out.println("123456 " + obj2.instance_int);
+
+		obj.instance_int = -455;
+		RTCTest.test_method_call_6(obj2, obj);
+		System.out.println("123001 " + obj2.instance_int);		
+	}
 
 	// public static void checkBubbleSort() {
 	// 	short NUMNUMBERS = 256;
@@ -230,20 +240,20 @@ public class HelloWorld
 	// 	System.out.println("Darjeeling.rtc_test_int2 = " + Darjeeling.rtc_test_int2);
 	// }
 
-	public static void checkStaticRefVariables()
-	{
-		RTCTest.static_ref1 = new RTCTest();
-		RTCTest.static_ref1.instance_short1 = 101;
-		RTCTest.static_ref2 = new RTCTest();
-		RTCTest.static_ref2.instance_short1 = 102;
+	// public static void checkStaticRefVariables()
+	// {
+	// 	RTCTest.static_ref1 = new RTCTest();
+	// 	RTCTest.static_ref1.instance_short1 = 101;
+	// 	RTCTest.static_ref2 = new RTCTest();
+	// 	RTCTest.static_ref2.instance_short1 = 102;
 
-		System.out.println("RTCTest.static_ref1.instance_short1 = " + RTCTest.static_ref1.instance_short1);
-		System.out.println("RTCTest.static_ref2.instance_short1 = " + RTCTest.static_ref2.instance_short1);
-		System.out.println("Calling RTCTest.test_static_ref_swap()");
-		RTCTest.test_static_ref_swap();
-		System.out.println("RTCTest.static_ref1.instance_short1 = " + RTCTest.static_ref1.instance_short1);
-		System.out.println("RTCTest.static_ref2.instance_short1 = " + RTCTest.static_ref2.instance_short1);
-	}
+	// 	System.out.println("RTCTest.static_ref1.instance_short1 = " + RTCTest.static_ref1.instance_short1);
+	// 	System.out.println("RTCTest.static_ref2.instance_short1 = " + RTCTest.static_ref2.instance_short1);
+	// 	System.out.println("Calling RTCTest.test_static_ref_swap()");
+	// 	RTCTest.test_static_ref_swap();
+	// 	System.out.println("RTCTest.static_ref1.instance_short1 = " + RTCTest.static_ref1.instance_short1);
+	// 	System.out.println("RTCTest.static_ref2.instance_short1 = " + RTCTest.static_ref2.instance_short1);
+	// }
 
 	// public static void checkCompareShort0()
 	// {

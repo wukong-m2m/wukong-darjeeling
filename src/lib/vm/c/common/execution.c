@@ -722,6 +722,16 @@ ref_t dj_exec_stackPeekRef() {
 	return peekRef();
 }
 
+
+/**
+ * Returns the n's element of the stack as a reference value, but does not change the stackpointer. Can be used by functions outside
+ * the execution module to interact with the running program.
+ * @return the top value of the runtime stack.
+ */
+ref_t dj_exec_stackPeekDeepRef(int depth) {
+	return peekDeepRef(depth);
+}
+
 /**
  * Set local reference variable at index
  * @param index local variable slot number

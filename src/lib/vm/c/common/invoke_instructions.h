@@ -18,7 +18,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Darjeeling.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
+#include "execution_instructions.h"
 
 /**
  * Return from function
@@ -115,46 +116,11 @@ static inline void INVOKEVIRTUAL()
 	// fetch the number of arguments for the method.
 	uint8_t nr_ref_args = fetch();
 
-	// peek the object on the stack
-	dj_object *object = REF_TO_VOIDP(peekDeepRef(nr_ref_args));
-
-	// if null, throw exception
-	if (object==NULL)
-	{
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
-		return;
-	}
-
-	// check if the object is still valid
-	if (dj_object_getRuntimeId(object)==CHUNKID_INVALID)
-	{
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_ClassUnloadedException);
-		return;
-	}
-
-	dj_global_id resolvedMethodDefId = dj_global_id_resolve(dj_exec_getCurrentInfusion(), dj_local_id);
-
-	DEBUG_LOG(DBG_DARJEELING, ">>>>> invokevirtual METHOD DEF %p.%d\n", resolvedMethodDefId.infusion, resolvedMethodDefId.entity_id);
-
-	// lookup the virtual method
-	dj_global_id methodImplId = dj_global_id_lookupVirtualMethod(resolvedMethodDefId, object);
-
-	DEBUG_LOG(DBG_DARJEELING, ">>>>> invokevirtual METHOD IMPL %p.%d\n", methodImplId.infusion, methodImplId.entity_id);
-
-	// check if method not found, and throw an error if this is the case. else, invoke the method
-	if (methodImplId.infusion==NULL)
-	{
-		DEBUG_LOG(DBG_DARJEELING, "methodImplId.infusion is NULL at INVOKEVIRTUAL %p.%d\n", resolvedMethodDefId.infusion, resolvedMethodDefId.entity_id);
-
-		dj_exec_throwHere(dj_vm_createSysLibObject(dj_exec_getVM(), BASE_CDEF_java_lang_VirtualMachineError));
-	} else
-	{
-		callMethod(methodImplId, true);
-	}
+	DO_INVOKEVIRTUAL(dj_local_id, nr_ref_args);
 }
-
 
 static inline void INVOKEINTERFACE()
 {
 	INVOKEVIRTUAL();
 }
+

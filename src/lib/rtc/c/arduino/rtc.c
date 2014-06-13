@@ -68,6 +68,7 @@ extern void __mulsi3(void);
 extern void __divmodsi4(void);
 
 // rtc_instruction.c functions
+extern void RTC_INVOKEVIRTUAL(void);
 extern void RTC_INVOKESTATIC(void);
 
 // the stack pointers used by execution.c
@@ -1116,7 +1117,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_POP(R3) );
                 emit( asm_RET );
             break;
+            case JVM_INVOKEVIRTUAL:
             case JVM_INVOKESTATIC:
+            case JVM_INVOKEINTERFACE:
                 // set intStack and refStack pointers to SP and X resp.
                 emit( asm_PUSH(ZERO_REG) ); // NOTE: THE DVM STACK IS A 16 BIT POINTER, SP IS 8 BIT. 
                                             // BOTH POINT TO THE NEXT free SLOT, BUT SINCE THEY GROW down THIS MEANS THE DVM POINTER SHOULD POINT TO TWO BYTES BELOW THE LAST VALUE,
@@ -1155,9 +1158,16 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
                 emit( asm_LDI(R24, jvm_operand_byte0) ); // infusion id
                 emit( asm_LDI(R25, jvm_operand_byte1) ); // entity id
-                emit( asm_CALL1((uint16_t)&RTC_INVOKESTATIC) );
-                emit( asm_CALL2((uint16_t)&RTC_INVOKESTATIC) );
-
+                if (opcode == JVM_INVOKEVIRTUAL
+                        || opcode == JVM_INVOKEINTERFACE) {
+                    jvm_operand_byte2 = dj_di_getU8(code + ++pc);
+                    emit( asm_LDI(R22, jvm_operand_byte2) ); // nr_ref_args
+                    emit( asm_CALL1((uint16_t)&RTC_INVOKEVIRTUAL) );
+                    emit( asm_CALL2((uint16_t)&RTC_INVOKEVIRTUAL) );
+                } else if (opcode == JVM_INVOKESTATIC) {
+                    emit( asm_CALL1((uint16_t)&RTC_INVOKESTATIC) );
+                    emit( asm_CALL2((uint16_t)&RTC_INVOKESTATIC) );
+                }
                 // POP important stuff
 
                 // set SP and X to intStack and refStack resp.

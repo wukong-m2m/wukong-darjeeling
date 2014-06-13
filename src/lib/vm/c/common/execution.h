@@ -60,6 +60,7 @@ ref_t dj_exec_stackPopRef();
 int16_t dj_exec_stackPeekShort();
 int32_t dj_exec_stackPeekInt();
 ref_t dj_exec_stackPeekRef();
+ref_t dj_exec_stackPeekDeepRef(int depth);
 
 dj_thread *dj_exec_getCurrentThread();
 dj_infusion *dj_exec_getCurrentInfusion();
