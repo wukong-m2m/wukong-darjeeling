@@ -593,8 +593,8 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
                 emit( asm_LDD(R24, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1)) );
                 emit( asm_LDD(R25, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1)+1) );
-                emit( asm_x_PUSHREF(R25) );
                 emit( asm_x_PUSHREF(R24) );
+                emit( asm_x_PUSHREF(R25) );
             break;
             case JVM_PUTSTATIC_S:
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
@@ -670,8 +670,8 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
                 }
 
-                emit( asm_x_POPREF(R24) );
                 emit( asm_x_POPREF(R25) );
+                emit( asm_x_POPREF(R24) );
                 emit( asm_STD(R24, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1)) );
                 emit( asm_STD(R25, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1)+1) );
             break;
