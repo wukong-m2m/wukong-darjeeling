@@ -1,6 +1,6 @@
-Not implemented:                        Implemented:
+Not implemented:                        Implemented:                            Won't support:
 
-JVM_NOP 0
+                                        JVM_NOP 0
                                         JVM_SCONST_M1 1
                                         JVM_SCONST_0 2
                                         JVM_SCONST_1 3
@@ -149,7 +149,7 @@ JVM_IF_ICMPLE 145
                                         JVM_IF_ACMPEQ 146
                                         JVM_IF_ACMPNE 147
                                         JVM_GOTO 148
-JVM_GOTO_W 149
+                                                                                JVM_GOTO_W 149
 JVM_TABLESWITCH 150
 JVM_LOOKUPSWITCH 151
                                         JVM_SRETURN 152
@@ -164,11 +164,11 @@ JVM_LOOKUPSWITCH 151
 JVM_NEWARRAY 161
 JVM_ANEWARRAY 162
                                         JVM_ARRAYLENGTH 163
-JVM_ATHROW 164
+                                                                                JVM_ATHROW 164
 JVM_CHECKCAST 165
 JVM_INSTANCEOF 166
-JVM_MONITORENTER 167
-JVM_MONITOREXIT 168
+                                                                                JVM_MONITORENTER 167
+                                                                                JVM_MONITOREXIT 168
 JVM_IDUP_X2 169
 JVM_IINC_W 170
 JVM_SINC_W 171
@@ -182,43 +182,43 @@ JVM_IDUP_X 175
                                         JVM_SIFGE 179
                                         JVM_SIFGT 180
                                         JVM_SIFLE 181
-JVM_LCONST_0 182
-JVM_LCONST_1 183
-JVM_LLOAD 184
-JVM_LLOAD_0 185
-JVM_LLOAD_1 186
-JVM_LLOAD_2 187
-JVM_LLOAD_3 188
-JVM_LLPUSH 189
-JVM_LSTORE 190
-JVM_LSTORE_0 191
-JVM_LSTORE_1 192
-JVM_LSTORE_2 193
-JVM_LSTORE_3 194
-JVM_LALOAD 195
-JVM_LASTORE 196
-JVM_GETFIELD_L 197
-JVM_PUTFIELD_L 198
-JVM_GETSTATIC_L 199
-JVM_PUTSTATIC_L 200
-JVM_LADD 201
-JVM_LSUB 202
-JVM_LMUL 203
-JVM_LDIV 204
-JVM_LREM 205
-JVM_LNEG 206
-JVM_LSHL 207
-JVM_LSHR 208
-JVM_LUSHR 209
-JVM_LAND 210
-JVM_LOR 211
-JVM_LXOR 212
-JVM_LRETURN 213
-JVM_L2I 214
-JVM_L2S 215
-JVM_I2L 216
-JVM_S2L 217
-JVM_LCMP 218
+                                                                                JVM_LCONST_0 182
+                                                                                JVM_LCONST_1 183
+                                                                                JVM_LLOAD 184
+                                                                                JVM_LLOAD_0 185
+                                                                                JVM_LLOAD_1 186
+                                                                                JVM_LLOAD_2 187
+                                                                                JVM_LLOAD_3 188
+                                                                                JVM_LLPUSH 189
+                                                                                JVM_LSTORE 190
+                                                                                JVM_LSTORE_0 191
+                                                                                JVM_LSTORE_1 192
+                                                                                JVM_LSTORE_2 193
+                                                                                JVM_LSTORE_3 194
+                                                                                JVM_LALOAD 195
+                                                                                JVM_LASTORE 196
+                                                                                JVM_GETFIELD_L 197
+                                                                                JVM_PUTFIELD_L 198
+                                                                                JVM_GETSTATIC_L 199
+                                                                                JVM_PUTSTATIC_L 200
+                                                                                JVM_LADD 201
+                                                                                JVM_LSUB 202
+                                                                                JVM_LMUL 203
+                                                                                JVM_LDIV 204
+                                                                                JVM_LREM 205
+                                                                                JVM_LNEG 206
+                                                                                JVM_LSHL 207
+                                                                                JVM_LSHR 208
+                                                                                JVM_LUSHR 209
+                                                                                JVM_LAND 210
+                                                                                JVM_LOR 211
+                                                                                JVM_LXOR 212
+                                                                                JVM_LRETURN 213
+                                                                                JVM_L2I 214
+                                                                                JVM_L2S 215
+                                                                                JVM_I2L 216
+                                                                                JVM_S2L 217
+                                                                                JVM_LCMP 218
                                         JVM_BRTARGET 219
 
 

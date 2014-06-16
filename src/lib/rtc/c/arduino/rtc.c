@@ -177,6 +177,8 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
         uint8_t opcode = dj_di_getU8(code + pc);
         DEBUG_LOG(DBG_RTC, "[rtc] JVM opcode %d (pc=%d, method length=%d)\n", opcode, pc, method_length);
         switch (opcode) {
+            case JVM_NOP:
+            break;
             case JVM_SCONST_M1:
                 emit( asm_LDI(R25, 0xFF) );
                 emit( asm_PUSH(R25) );
