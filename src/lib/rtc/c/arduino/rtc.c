@@ -270,6 +270,28 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_PUSH(R23) );
                 emit( asm_PUSH(R22) );
             break;
+            case JVM_LDS:
+                // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
+                // PUSH important stuff
+                emit( asm_PUSH(RXH) );
+                emit( asm_PUSH(RXL) );
+
+                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                jvm_operand_byte1 = dj_di_getU8(code + ++pc);
+                emit( asm_LDI(R24, jvm_operand_byte0) ); // infusion id
+                emit( asm_LDI(R25, jvm_operand_byte1) ); // entity id
+                // make the call
+                emit( asm_CALL1((uint16_t)&RTC_LDS) );
+                emit( asm_CALL2((uint16_t)&RTC_LDS) );
+
+                // POP important stuff
+                emit( asm_POP(RXL) );
+                emit( asm_POP(RXH) );
+
+                // push the reference to the string onto the ref stack
+                emit( asm_x_PUSHREF(R24) );
+                emit( asm_x_PUSHREF(R25) );
+            break;
             case JVM_SLOAD:
             case JVM_SLOAD_0:
             case JVM_SLOAD_1:

@@ -21,7 +21,7 @@ JVM_BIPUSH 17
                                         JVM_SSPUSH 18
                                         JVM_SIPUSH 19
                                         JVM_IIPUSH 20
-JVM_LDS 21
+                                        JVM_LDS 21
                                         JVM_SLOAD 22
                                         JVM_SLOAD_0 23
                                         JVM_SLOAD_1 24

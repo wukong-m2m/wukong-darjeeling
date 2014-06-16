@@ -40,18 +40,18 @@ public class HelloWorld
 		// checkBubbleSort();
 		// checkMethodCall();
 		// checkReturnObject();
-		// checkCallingPrintln();
-		checkNew();
+		checkCallingPrintln();
+		// checkNew();
 	}
 
-	public static void checkNew() {
-		RTCTest obj = RTCTest.check_new();
-		System.out.println("2914 " + obj.instance_int);
-	}
-
-	// public static void checkCallingPrintln() {
-	// 	RTCTest.check_calling_println();
+	// public static void checkNew() {
+	// 	RTCTest obj = RTCTest.check_new();
+	// 	System.out.println("2914 " + obj.instance_int);
 	// }
+
+	public static void checkCallingPrintln() {
+		RTCTest.check_calling_println();
+	}
 
 	// public static void checkReturnObject() {
 	// 	RTCTest obj = new RTCTest();

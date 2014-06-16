@@ -20,14 +20,14 @@ public class RTCTest implements IRTCTest {
 		this.instance_int = init_int_value;
 	}
 
-	public static RTCTest check_new() {
-		RTCTest obj = new RTCTest(2914);
-		return obj;
-	}
-
-	// public static void check_calling_println() {
-	// 	System.out.println("Avenues all lined with trees.");
+	// public static RTCTest check_new() {
+	// 	RTCTest obj = new RTCTest(2914);
+	// 	return obj;
 	// }
+
+	public static void check_calling_println() {
+		System.out.println("Avenues all lined with trees.");
+	}
 
 	// public static RTCTest test_return_object(RTCTest obj) {
 	// 	obj.instance_int++;

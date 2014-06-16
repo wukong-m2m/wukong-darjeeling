@@ -31,19 +31,10 @@
 
 static inline void LDS()
 {
-	dj_object * string;
-
-	// fetch and resolve the string id
 	dj_local_id localStringId = dj_fetchLocalId();
-	dj_global_id globalStringId = dj_global_id_resolve(dj_exec_getCurrentInfusion(), localStringId);
-
-	string = dj_jstring_createFromGlobalId(dj_exec_getVM(), globalStringId);
-
-	if (string==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
-	else
-		pushRef(VOIDP_TO_REF(string));
-
+	ref_t obj = DO_LDS(localStringId);
+	if (obj!=0)
+		pushRef(obj);
 }
 
 static inline void NEW()

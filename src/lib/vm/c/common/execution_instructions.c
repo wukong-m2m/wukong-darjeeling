@@ -1,9 +1,25 @@
 #include "types.h"
 #include "debug.h"
 #include "execution.h"
+#include "jstring.h"
 
 // generated at infusion time
 #include "jlib_base.h"
+
+ref_t DO_LDS(dj_local_id localStringId) {
+	// resolve the string id
+	dj_global_id globalStringId = dj_global_id_resolve(dj_exec_getCurrentInfusion(), localStringId);
+
+	dj_object *string = dj_jstring_createFromGlobalId(dj_exec_getVM(), globalStringId);
+
+	if (string==NULL) {
+		dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
+		return 0;
+	}
+
+	return VOIDP_TO_REF(string);
+}
+
 
 void DO_INVOKEVIRTUAL(dj_local_id dj_local_id, uint8_t nr_ref_args) {
 	// peek the object on the stack
@@ -58,8 +74,7 @@ ref_t DO_NEW(dj_local_id dj_local_id) {
 			);
 
 	// if create returns null, throw out of memory error
-	if (object==NULL)
-	{
+	if (object==NULL) {
 		dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
 		return 0;
 	}

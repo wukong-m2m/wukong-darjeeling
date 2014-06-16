@@ -48,3 +48,7 @@ ref_t RTC_NEW(dj_local_id localId) {
     return DO_NEW(localId);
 }
 
+ref_t RTC_LDS(dj_local_id localId) {
+    DEBUG_LOG(DBG_RTC, "RTC_LDS %d %d\n", localId.infusion_id, localId.entity_id);
+    return DO_LDS(localId);
+}
