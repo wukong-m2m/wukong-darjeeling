@@ -15,7 +15,7 @@ JVM_NOP 0
                                         JVM_ICONST_3 12
                                         JVM_ICONST_4 13
                                         JVM_ICONST_5 14
-JVM_ACONST_NULL 15
+                                        JVM_ACONST_NULL 15
                                         JVM_BSPUSH 16
 JVM_BIPUSH 17
                                         JVM_SSPUSH 18
@@ -132,8 +132,8 @@ JVM_IIFLT 128
 JVM_IIFGE 129
 JVM_IIFGT 130
 JVM_IIFLE 131
-JVM_IFNULL 132
-JVM_IFNONNULL 133
+                                        JVM_IFNULL 132
+                                        JVM_IFNONNULL 133
                                         JVM_IF_SCMPEQ 134
                                         JVM_IF_SCMPNE 135
                                         JVM_IF_SCMPLT 136
@@ -146,8 +146,8 @@ JVM_IF_ICMPLT 142
 JVM_IF_ICMPGE 143
 JVM_IF_ICMPGT 144
 JVM_IF_ICMPLE 145
-JVM_IF_ACMPEQ 146
-JVM_IF_ACMPNE 147
+                                        JVM_IF_ACMPEQ 146
+                                        JVM_IF_ACMPNE 147
                                         JVM_GOTO 148
 JVM_GOTO_W 149
 JVM_TABLESWITCH 150

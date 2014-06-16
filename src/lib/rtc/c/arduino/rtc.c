@@ -215,6 +215,11 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_PUSH(R25) );
                 emit( asm_PUSH(R24) );
             break;
+            case JVM_ACONST_NULL:
+                emit( asm_LDI(R25, 0) );
+                emit( asm_x_PUSHREF(R25) );                
+                emit( asm_x_PUSHREF(R25) );                
+            break;
             case JVM_BSPUSH:
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 emit( asm_LDI(R24, jvm_operand_byte0) );
@@ -1054,6 +1059,26 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_PUSH(R23) );
                 emit( asm_PUSH(R22) );
             break;
+            case JVM_IFNULL:
+            case JVM_IFNONNULL:
+                // Branch instructions first have a bytecode offset, used by the interpreter,
+                // followed by a branch target index used when compiling to native code.
+                jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                pc += 4;
+
+                emit( asm_x_POPREF(R25) );
+                emit( asm_x_POPREF(R24) );
+                // Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
+                if (opcode == JVM_IFNULL) {
+                    emit( asm_OR(R24, R25) );
+                    emit( asm_BRNE(SIZEOF_RJMP) );                    
+                } else if (opcode == JVM_IFNONNULL) {
+                    emit( asm_OR(R24, R25) );
+                    emit( asm_BREQ(SIZEOF_RJMP) );                    
+                }
+                rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
+                emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+            break;
             case JVM_IF_SCMPEQ:
             case JVM_IF_SCMPNE:
             case JVM_IF_SCMPLT:
@@ -1094,6 +1119,30 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     emit( asm_CP(R24, R22) );
                     emit( asm_CPC(R25, R23) );
                     emit( asm_BRLT(SIZEOF_RJMP) );
+                }
+                rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
+                emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+            break;
+            case JVM_IF_ACMPEQ:
+            case JVM_IF_ACMPNE:
+                // Branch instructions first have a bytecode offset, used by the interpreter,
+                // followed by a branch target index used when compiling to native code.
+                jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                pc += 4;
+
+                emit( asm_x_POPREF(R25) );
+                emit( asm_x_POPREF(R24) );
+                emit( asm_x_POPREF(R23) );
+                emit( asm_x_POPREF(R22) );
+                // Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
+                if (opcode == JVM_IF_ACMPEQ) {
+                    emit( asm_CP(R22, R24) );
+                    emit( asm_CPC(R23, R25) );
+                    emit( asm_BRNE(SIZEOF_RJMP) );
+                } else if (opcode == JVM_IF_ACMPNE) {
+                    emit( asm_CP(R22, R24) );
+                    emit( asm_CPC(R23, R25) );
+                    emit( asm_BREQ(SIZEOF_RJMP) );
                 }
                 rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
                 emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset

@@ -21,14 +21,30 @@ public class RTCTest implements IRTCTest {
 		this.instance_int = init_int_value;
 	}
 
+	public static int check_obj_tests(RTCTest obj1, RTCTest obj2, short test) {
+		if (test == 0)
+			return obj1 == obj2 ? 1 : 0;
+		if (test == 1)
+			return obj1 != obj2 ? 1 : 0;
+		if (test == 2)
+			return obj1 == null ? 1 : 0;
+		if (test == 3)
+			return obj1 != null ? 1 : 0;
+		if (test == 4) {
+			RTCTest tmpobj = null;
+			return obj1 == tmpobj ? 1 : 0;
+		}
+		return 2;
+	}
+
 	// public static RTCTest check_new() {
 	// 	RTCTest obj = new RTCTest(2914);
 	// 	return obj;
 	// }
 
-	public static void check_calling_println() {
-		System.out.println("Avenues all lined with trees.");
-	}
+	// public static void check_calling_println() {
+	// 	System.out.println("Avenues all lined with trees.");
+	// }
 
 	// public static RTCTest test_return_object(RTCTest obj) {
 	// 	obj.instance_int++;

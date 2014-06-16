@@ -39,8 +39,30 @@ public class RTCApp
 		// checkBubbleSort();
 		// checkMethodCall();
 		// checkReturnObject();
-		checkCallingPrintln();
+		// checkCallingPrintln();
 		// checkNew();
+		checkObjTests();
+	}
+
+	public static void checkObjTests() {
+		RTCTest obj1 = new RTCTest();
+		RTCTest obj2 = new RTCTest();
+		RTCTest obj3 = null;
+
+		System.out.println("obj1==obj2 0 " + RTCTest.check_obj_tests(obj1, obj2, (short)0));
+		System.out.println("obj1==obj1 1 " + RTCTest.check_obj_tests(obj1, obj1, (short)0));
+		System.out.println("null==null 1 " + RTCTest.check_obj_tests(null, null, (short)0));
+		System.out.println("obj1!=obj2 1 " + RTCTest.check_obj_tests(obj1, obj2, (short)1));
+		System.out.println("obj1!=obj1 0 " + RTCTest.check_obj_tests(obj1, obj1, (short)1));
+		System.out.println("null!=null 0 " + RTCTest.check_obj_tests(null, null, (short)1));
+		System.out.println("ifnull obj1 0 " + RTCTest.check_obj_tests(obj1, null, (short)2));
+		System.out.println("ifnull null 1 " + RTCTest.check_obj_tests(null, null, (short)2));
+		System.out.println("ifnull obj3(null) 1 " + RTCTest.check_obj_tests(obj3, null, (short)2));
+		System.out.println("ifnonnull obj1 1 " + RTCTest.check_obj_tests(obj1, null, (short)3));
+		System.out.println("ifnonnull null 0 " + RTCTest.check_obj_tests(null, null, (short)3));
+		System.out.println("ifnonnull obj3(null) 0 " + RTCTest.check_obj_tests(obj3, null, (short)3));
+		System.out.println("obj1==tmpobj(null) 0 " + RTCTest.check_obj_tests(obj1, null, (short)4));
+		System.out.println("null==tmpobj(null) 1 " + RTCTest.check_obj_tests(null, null, (short)4));		
 	}
 
 	// public static void checkNew() {
@@ -48,9 +70,9 @@ public class RTCApp
 	// 	System.out.println("2914 " + obj.instance_int);
 	// }
 
-	public static void checkCallingPrintln() {
-		RTCTest.check_calling_println();
-	}
+	// public static void checkCallingPrintln() {
+	// 	RTCTest.check_calling_println();
+	// }
 
 	// public static void checkReturnObject() {
 	// 	RTCTest obj = new RTCTest();
