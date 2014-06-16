@@ -3,10 +3,10 @@
 	<!-- include native code for libraries -->
 	<!-- note that libraries should come after libraries they depend on
 		 (wkcomm first, the wkpf), or else loading the archive will fail -->
-	<property name="libs" value="uart, wkcomm, wkreprog, vm, base, darjeeling3, rtc"/>
+	<property name="libs" value="uart, wkcomm, wkreprog, vm, base, darjeeling3, rtc, rtctest2, rtctest1"/>
 
 	<!-- Compile these applications -->
-	<property name="apps" value="helloworld"/>
+	<property name="apps" value="rtcapp"/>
 
 	<!-- Platform and architecture selection -->
 	<property name="platform" value="arduino"/>

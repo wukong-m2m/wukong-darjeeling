@@ -1,6 +1,7 @@
-package javax.rtc;
+package javax.rtctest;
 
-import javax.darjeeling.Darjeeling;
+// This won't be RTC compiled. Used to test access to static variables in other infusions, and calls from RTC to JVM code.
+import javax.rtctest2.RTCTest2;
 
 public class RTCTest implements IRTCTest {
 	private static short static_short1;
@@ -81,7 +82,7 @@ public class RTCTest implements IRTCTest {
 		return this.instance_int;
 	}
 	// public static int test_method_call_7(int a) {
-	// 	return Darjeeling.test_method_call_7b(a);
+	// 	return RTCTest2.test_method_call_7b(a);
 	// }
 
 	// public static short test_method_call(short a, RTCTest obj) {
@@ -180,12 +181,12 @@ public class RTCTest implements IRTCTest {
 	// 	return static_short2;
 	// }
 	// public static short test_static_short_in_other_infusion_1(short x) {
-	// 	Darjeeling.rtc_test_short1 += x;
-	// 	return Darjeeling.rtc_test_short1;
+	// 	RTCTest2.rtc_test_short1 += x;
+	// 	return RTCTest2.rtc_test_short1;
 	// }
 	// public static short test_static_short_in_other_infusion_2(short x) {
-	// 	Darjeeling.rtc_test_short2 += x;
-	// 	return Darjeeling.rtc_test_short2;
+	// 	RTCTest2.rtc_test_short2 += x;
+	// 	return RTCTest2.rtc_test_short2;
 	// }
 
 	// public static int test_static_int(int x) {
@@ -194,13 +195,13 @@ public class RTCTest implements IRTCTest {
 	// }
 
 	// public static int test_static_int_in_other_infusion_1(int x) {
-	// 	Darjeeling.rtc_test_int1 += x;
-	// 	return Darjeeling.rtc_test_int1;
+	// 	RTCTest2.rtc_test_int1 += x;
+	// 	return RTCTest2.rtc_test_int1;
 	// }
 
 	// public static int test_static_int_in_other_infusion_2(int x) {
-	// 	Darjeeling.rtc_test_int2 += x;
-	// 	return Darjeeling.rtc_test_int2;
+	// 	RTCTest2.rtc_test_int2 += x;
+	// 	return RTCTest2.rtc_test_int2;
 	// }
 
 	// public static void test_static_ref_swap() {

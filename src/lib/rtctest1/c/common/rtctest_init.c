@@ -1,0 +1,1 @@
+void rtctest1_init(void) {}
