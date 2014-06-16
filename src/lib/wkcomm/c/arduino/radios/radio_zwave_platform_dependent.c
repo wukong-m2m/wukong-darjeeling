@@ -26,7 +26,15 @@ void radio_zwave_platform_dependent_init(void) {
 	DDRG &= ~_BV(5);
 	PORTG |= _BV(5);
 	PORTK = 0xf;
-
+        //PK7 reset of the zwave module
+        //PA1 CS of the eeprom for the zwave module
+	//Both of them must be high so that the
+	DDRK |= (1<<7);
+	PORTK &= ~(1<<7);
+	dj_timer_delay(100);
+	PORTK |= (1<<7);
+	DDRA &= ~(1<<1);
+	PORTA |= (1<<1);
 }
 
 static uint32_t zwave_pg5_press=0;
