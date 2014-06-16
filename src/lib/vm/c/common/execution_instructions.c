@@ -43,3 +43,26 @@ void DO_INVOKEVIRTUAL(dj_local_id dj_local_id, uint8_t nr_ref_args) {
 		callMethod(methodImplId, true);
 	}
 }
+
+ref_t DO_NEW(dj_local_id dj_local_id) {
+	dj_di_pointer classDef;
+	dj_global_id dj_global_id = dj_global_id_resolve(dj_exec_getCurrentInfusion(), dj_local_id);
+
+	// get class definition
+	classDef = dj_global_id_getClassDefinition(dj_global_id);
+
+	dj_object * object = dj_object_create(
+			dj_global_id_getRuntimeClassId(dj_global_id),
+			dj_di_classDefinition_getNrRefs(classDef),
+			dj_di_classDefinition_getOffsetOfFirstReference(classDef)
+			);
+
+	// if create returns null, throw out of memory error
+	if (object==NULL)
+	{
+		dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
+		return 0;
+	}
+
+	return VOIDP_TO_REF(object);
+}

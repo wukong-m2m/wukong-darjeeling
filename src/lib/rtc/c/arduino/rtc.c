@@ -8,6 +8,7 @@
 #include "asm.h"
 #include "opcodes.h"
 #include "rtc.h"
+#include "rtc_instructions.h"
 #include <avr/pgmspace.h>
 #include <avr/boot.h>
 #include <stddef.h>
@@ -66,10 +67,6 @@ uint8_t offset_for_reflocal(dj_di_pointer methodimpl, uint8_t local) {
 extern void __divmodhi4(void);
 extern void __mulsi3(void);
 extern void __divmodsi4(void);
-
-// rtc_instruction.c functions
-extern void RTC_INVOKEVIRTUAL(void);
-extern void RTC_INVOKESTATIC(void);
 
 // the stack pointers used by execution.c
 extern int16_t *intStack;
@@ -245,7 +242,21 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_PUSH(R25) );
                 emit( asm_PUSH(R24) );
             break;
+            case JVM_SIPUSH:
+                // bytecode is big endian
+                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                jvm_operand_byte1 = dj_di_getU8(code + ++pc);
+                emit( asm_LDI(R22, jvm_operand_byte1) );
+                emit( asm_LDI(R23, jvm_operand_byte0) );
+                emit( asm_LDI(R24, 0) );
+                emit( asm_LDI(R25, 0) );
+                emit( asm_PUSH(R25) );
+                emit( asm_PUSH(R24) );
+                emit( asm_PUSH(R23) );
+                emit( asm_PUSH(R22) );
+            break;
             case JVM_IIPUSH:
+                // bytecode is big endian
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte2 = dj_di_getU8(code + ++pc);
@@ -1118,6 +1129,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_RET );
             break;
             case JVM_INVOKEVIRTUAL:
+            case JVM_INVOKESPECIAL:
             case JVM_INVOKESTATIC:
             case JVM_INVOKEINTERFACE:
                 // set intStack and refStack pointers to SP and X resp.
@@ -1158,12 +1170,15 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
                 emit( asm_LDI(R24, jvm_operand_byte0) ); // infusion id
                 emit( asm_LDI(R25, jvm_operand_byte1) ); // entity id
-                if (opcode == JVM_INVOKEVIRTUAL
+                if        (opcode == JVM_INVOKEVIRTUAL
                         || opcode == JVM_INVOKEINTERFACE) {
                     jvm_operand_byte2 = dj_di_getU8(code + ++pc);
                     emit( asm_LDI(R22, jvm_operand_byte2) ); // nr_ref_args
-                    emit( asm_CALL1((uint16_t)&RTC_INVOKEVIRTUAL) );
-                    emit( asm_CALL2((uint16_t)&RTC_INVOKEVIRTUAL) );
+                    emit( asm_CALL1((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE) );
+                    emit( asm_CALL2((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE) );
+                } else if (opcode == JVM_INVOKESPECIAL) {
+                    emit( asm_CALL1((uint16_t)&RTC_INVOKESPECIAL) );
+                    emit( asm_CALL2((uint16_t)&RTC_INVOKESPECIAL) );
                 } else if (opcode == JVM_INVOKESTATIC) {
                     emit( asm_CALL1((uint16_t)&RTC_INVOKESTATIC) );
                     emit( asm_CALL2((uint16_t)&RTC_INVOKESTATIC) );
@@ -1187,6 +1202,28 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_LDI(RZH, (((uint16_t)&(refStack)) >> 8) & 0xFF) );
                 emit( asm_LD_ZINC(RXL) ); // Load refStack into X
                 emit( asm_LD_Z(RXH) );
+            break;
+            case JVM_NEW:
+                // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
+                // PUSH important stuff
+                emit( asm_PUSH(RXH) );
+                emit( asm_PUSH(RXL) );
+
+                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                jvm_operand_byte1 = dj_di_getU8(code + ++pc);
+                emit( asm_LDI(R24, jvm_operand_byte0) ); // infusion id
+                emit( asm_LDI(R25, jvm_operand_byte1) ); // entity id
+                // make the call
+                emit( asm_CALL1((uint16_t)&RTC_NEW) );
+                emit( asm_CALL2((uint16_t)&RTC_NEW) );
+
+                // POP important stuff
+                emit( asm_POP(RXL) );
+                emit( asm_POP(RXH) );
+
+                // push the reference to the new object onto the ref stack
+                emit( asm_x_PUSHREF(R24) );
+                emit( asm_x_PUSHREF(R25) );
             break;
             case JVM_ARRAYLENGTH: // The length of an array is stored as 16 bit at the start of the array
                 emit( asm_x_POPREF(R31) ); // POP the reference into Z

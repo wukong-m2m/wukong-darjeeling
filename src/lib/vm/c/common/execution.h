@@ -70,6 +70,9 @@ dj_vm *dj_exec_getVM();
 
 void dj_exec_updatePointers();
 
+dj_frame *dj_exec_getCurrentFrame();
+bool dj_exec_currentMethodIsRTCCompiled();
+
 #ifdef DARJEELING_DEBUG_FRAME
 void dj_exec_dumpFrame( dj_frame *frame );
 void dj_exec_dumpFrameTrace( dj_frame *frame );

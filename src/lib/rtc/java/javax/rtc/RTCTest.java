@@ -15,6 +15,15 @@ public class RTCTest implements IRTCTest {
 	public int instance_int;
 	public short instance_short2;
 
+	public RTCTest() {}
+	public RTCTest(int init_int_value) {
+		this.instance_int = init_int_value;
+	}
+
+	public static RTCTest check_new() {
+		RTCTest obj = new RTCTest(2914);
+		return obj;
+	}
 
 	// public static void check_calling_println() {
 	// 	System.out.println("Avenues all lined with trees.");
@@ -25,52 +34,55 @@ public class RTCTest implements IRTCTest {
 	// 	return obj;
 	// }
 
-	public static int test_method_call_1(int a, short b, short c, int d) {
-		return test_method_call_1b(a, b, c, d);
-	}
-	public static int test_method_call_1b(int a, short b, short c, int d) {
-		// Just test a bunch of ints.
-		// This should be OK even without reserving space on the int stack since we pass more than will be returned, thus ensuring enough stack space for the return value.
-		return (a - b) + 1 + (d - c);
-	}
-	public static int test_method_call_2(int a, short b, RTCTest obj, short c, int d) {
-		return test_method_call_2b(a, b, obj, c, d);
-	}
-	public static int test_method_call_2b(int a, short b, RTCTest obj, short c, int d) {
-		// Add passing an object
-		return (a - b) + 1 + (d - c) + obj.instance_short1;
-	}
-	public static int test_method_call_3(RTCTest obj) {
-		return test_method_call_3b(obj);
-	}
-	public static int test_method_call_3b(RTCTest obj) {
-		// This method returns more than it gets passed on the int stack
-		// This will crash the VM if we don't reserve extra space on the system stack
-		return 100000+obj.instance_short1;
-	}
-	public static RTCTest test_method_call_4(RTCTest obj) {
-		return test_method_call_4b(obj);
-	}
-	public static RTCTest test_method_call_4b(RTCTest obj) {
-		// Test returning objects from rtc to rtc
-		obj.instance_int++;
-		return obj;
-	}
-	public static int test_method_call_5(RTCTest obj, int a) {
-		return obj.test_method_call_5b(a);
-	}
-	public int test_method_call_5b(int a) {
-		this.instance_int += a;
-		return this.instance_int;
-	}
-
+	// public static int test_method_call_1(int a, short b, short c, int d) {
+	// 	return test_method_call_1b(a, b, c, d);
+	// }
+	// public static int test_method_call_1b(int a, short b, short c, int d) {
+	// 	// Just test a bunch of ints.
+	// 	// This should be OK even without reserving space on the int stack since we pass more than will be returned, thus ensuring enough stack space for the return value.
+	// 	return (a - b) + 1 + (d - c);
+	// }
+	// public static int test_method_call_2(int a, short b, RTCTest obj, short c, int d) {
+	// 	return test_method_call_2b(a, b, obj, c, d);
+	// }
+	// public static int test_method_call_2b(int a, short b, RTCTest obj, short c, int d) {
+	// 	// Add passing an object
+	// 	return (a - b) + 1 + (d - c) + obj.instance_short1;
+	// }
+	// public static int test_method_call_3(RTCTest obj) {
+	// 	return test_method_call_3b(obj);
+	// }
+	// public static int test_method_call_3b(RTCTest obj) {
+	// 	// This method returns more than it gets passed on the int stack
+	// 	// This will crash the VM if we don't reserve extra space on the system stack
+	// 	return 100000+obj.instance_short1;
+	// }
+	// public static RTCTest test_method_call_4(RTCTest obj) {
+	// 	return test_method_call_4b(obj);
+	// }
+	// public static RTCTest test_method_call_4b(RTCTest obj) {
+	// 	// Test returning objects from rtc to rtc
+	// 	obj.instance_int++;
+	// 	return obj;
+	// }
+	// public static int test_method_call_5(RTCTest obj, int a) {
+	// 	return obj.test_method_call_5b(a);
+	// }
+	// public int test_method_call_5b(int a) {
+	// 	this.instance_int += a;
+	// 	return this.instance_int;
+	// }
+	// public static int test_method_call_6(IRTCTest obj, RTCTest obj2) {
+	// 	return obj.test_method_call_6b(obj2);
+	// }
+	// Can't comment this because we wouldn't be implemening IRTCTest anymore.
 	public int test_method_call_6b(RTCTest obj) {
 		this.instance_int += obj.instance_int;
 		return this.instance_int;
 	}
-	public static int test_method_call_6(IRTCTest obj, RTCTest obj2) {
-		return obj.test_method_call_6b(obj2);
-	}
+	// public static int test_method_call_7(int a) {
+	// 	return Darjeeling.test_method_call_7b(a);
+	// }
 
 	// public static short test_method_call(short a, RTCTest obj) {
 	// 	// return test_method_call2(a, (short)42, obj);

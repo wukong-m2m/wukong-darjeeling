@@ -175,7 +175,7 @@ static inline void dj_exec_loadLocalState(dj_frame *frame) {
 	}
 }
 
-static dj_frame *getCurrentFrame() {
+dj_frame *dj_exec_getCurrentFrame() {
 	dj_frame *ret = NULL;
 	dj_thread *thread = dj_exec_getCurrentThread();
 	if( thread==NULL ) {
@@ -294,7 +294,7 @@ void dj_exec_dumpFrameTrace( dj_frame *frame ) {
 dj_frame *dj_exec_dumpExecutionState() {
 	int16_t *orgIntStack;
 	ref_t *orgRefStack;
-	dj_frame *frame = getCurrentFrame();
+	dj_frame *frame = dj_exec_getCurrentFrame();
 
 	DARJEELING_PRINTF("--- Current execution state follows ---\n");
 	if( frame!=NULL ) {
@@ -346,7 +346,7 @@ void dj_exec_deactivateThread(dj_thread *thread) {
 #if defined(DARJEELING_DEBUG_FRAME) && 0
 	DARJEELING_PRINTF("%s:%d\n", __FILE__, __LINE__ );
 	DARJEELING_PRINTF("---- Frame before 'save' follows ----\n");
-	dj_exec_dumpFrame( getCurrentFrame() );
+	dj_exec_dumpFrame( dj_exec_getCurrentFrame() );
 	DARJEELING_PRINTF("---- Frame before 'save' ends    ----\n");
 #endif
 
@@ -890,6 +890,13 @@ static inline void returnFromMethod() {
 
 }
 
+/**
+ * Returns true if the current frame belongs to a RTC compiled method.
+ * Used by dj_exec_run to return control to RTC code after running a JVM method called from RTC code.
+ */
+bool dj_exec_currentMethodIsRTCCompiled() {
+	return !dj_mem_isHeapPointer(intStack);
+}
 
 typedef void     (*native_void_method_function_t) (uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
 typedef ref_t    (*native_ref_method_function_t)  (uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
@@ -943,7 +950,7 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 		if (handler != NULL)
 		{
 			// Observe the number of reference elements on the ref. stack:
-			frame = getCurrentFrame();
+			frame = dj_exec_getCurrentFrame();
 			oldNumRefStack = refStack - dj_frame_getReferenceStackBase(frame);
 
 			// execute the method by calling the infusion's native handler
@@ -960,7 +967,7 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 			// to be removed from the stack now afterwards.
 
 			// Again, compute number of reference elements on the ref. stack:
-			frame = getCurrentFrame();
+			frame = dj_exec_getCurrentFrame();
 			numRefStack = refStack - dj_frame_getReferenceStackBase(frame);
 			diffRefArgs = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl) - (oldNumRefStack - numRefStack);
 
@@ -1233,7 +1240,10 @@ void dj_exec_throw(dj_object *obj, uint16_t throw_pc)
         pushLong((int64_t)(ltemp1 op ltemp2)); } while(0)
 
 /**
- * The execution engine's main run function. Executes [nrOpcodes] instructions, or until execution is stopped explicitly.
+ * The execution engine's main run function. Executes [nrOpcodes] instructions, or until execution is stopped explicitly,
+ * or until the current method finishes if it was called by RTC compiled code.
+ * When a RTC compiled method calls a normal JVM method. We should only execute instructions until the current method is
+ * finished, then return control to the RTC code. (RTC_INVOKEsomething)
  * @param nrOpcodes the amount of opcodes to execute in one 'run'.
  */
 int dj_exec_run(int nrOpcodes)
@@ -1253,6 +1263,9 @@ int dj_exec_run(int nrOpcodes)
 	dj_hook_call(dj_core_pollingHook, NULL);
 
 	while (nrOpcodesLeft > 0 && dj_exec_runlevel == RUNLEVEL_RUNNING) {
+		if (dj_exec_currentMethodIsRTCCompiled()) {
+			return 0;
+		}
 		nrOpcodesLeft--;
 		opcode = fetch();
 

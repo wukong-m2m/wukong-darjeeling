@@ -26,7 +26,7 @@ public class HelloWorld
 {
 	public static void main(String args[])
 	{
-		System.out.println("Hello world.");
+		// System.out.println("Hello world.");
 		// checkCompareShort0();
 		// checkStaticShortVariables();
 		// checkStaticIntVariables();
@@ -38,9 +38,15 @@ public class HelloWorld
 		// checkShortOps();
 		// checkIntOps();
 		// checkBubbleSort();
-		checkMethodCall();
+		// checkMethodCall();
 		// checkReturnObject();
 		// checkCallingPrintln();
+		checkNew();
+	}
+
+	public static void checkNew() {
+		RTCTest obj = RTCTest.check_new();
+		System.out.println("2914 " + obj.instance_int);
 	}
 
 	// public static void checkCallingPrintln() {
@@ -54,29 +60,31 @@ public class HelloWorld
 	// 	System.out.println("123456 " + obj2.instance_int);
 	// }
 
-	public static void checkMethodCall() {
-		System.out.println("100109 " + RTCTest.test_method_call_1(10, (short)2, (short)10, 100110));
+	// public static void checkMethodCall() {
+	// 	System.out.println("100109 " + RTCTest.test_method_call_1(10, (short)2, (short)10, 100110));
 
-		RTCTest obj = new RTCTest();
-		obj.instance_short1 = 5;
-		System.out.println("100114 " + RTCTest.test_method_call_2(10, (short)2, obj, (short)10, 100110));
+	// 	RTCTest obj = new RTCTest();
+	// 	obj.instance_short1 = 5;
+	// 	System.out.println("100114 " + RTCTest.test_method_call_2(10, (short)2, obj, (short)10, 100110));
 
-		System.out.println("100005 " + RTCTest.test_method_call_3(obj));
+	// 	System.out.println("100005 " + RTCTest.test_method_call_3(obj));
 
-		obj.instance_int = 654320;
-		RTCTest obj2 = RTCTest.test_method_call_4(obj);
-		System.out.println("654321 " + obj2.instance_int);
+	// 	obj.instance_int = 654320;
+	// 	RTCTest obj2 = RTCTest.test_method_call_4(obj);
+	// 	System.out.println("654321 " + obj2.instance_int);
 
-		obj2 = new RTCTest();
-		RTCTest.test_method_call_5(obj, -321);
-		System.out.println("654000 " + obj.instance_int);
-		RTCTest.test_method_call_5(obj2, 123456);
-		System.out.println("123456 " + obj2.instance_int);
+	// 	obj2 = new RTCTest();
+	// 	RTCTest.test_method_call_5(obj, -321);
+	// 	System.out.println("654000 " + obj.instance_int);
+	// 	RTCTest.test_method_call_5(obj2, 123456);
+	// 	System.out.println("123456 " + obj2.instance_int);
 
-		obj.instance_int = -455;
-		RTCTest.test_method_call_6(obj2, obj);
-		System.out.println("123001 " + obj2.instance_int);		
-	}
+	// 	obj.instance_int = -455;
+	// 	RTCTest.test_method_call_6(obj2, obj);
+	// 	System.out.println("123001 " + obj2.instance_int);		
+
+	// 	System.out.println("142 " + RTCTest.test_method_call_7(100));
+	// }
 
 	// public static void checkBubbleSort() {
 	// 	short NUMNUMBERS = 256;
