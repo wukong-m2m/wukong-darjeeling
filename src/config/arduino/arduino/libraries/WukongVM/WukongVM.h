@@ -81,13 +81,13 @@ class Wukong {
 		void setPropertyBool(int port, unsigned char property,bool value) {
 			wuobject_t *obj;
 		       	if (wkpf_get_wuobject_by_port(port,&obj)==WKPF_OK) {
-				wkpf_internal_write_property_refresh_rate(obj, property, value);
+				wkpf_internal_write_property_boolean(obj, property, value);
 			}
 		}
 		void setPropertyShort(int port, unsigned char property,short value) {
 			wuobject_t *obj;
 		       	if (wkpf_get_wuobject_by_port(port,&obj)==WKPF_OK) {
-				wkpf_internal_write_property_refresh_rate(obj, property, value);
+				wkpf_internal_write_property_int16(obj, property, value);
 			}
 		}
 		void setPropertyRefreshRate(int port, unsigned char property,short value) {
@@ -96,22 +96,22 @@ class Wukong {
 				wkpf_internal_write_property_refresh_rate(obj, property, value);
 			}
 		}
-		void getPropertyBool(int port, unsigned char property,bool &value) {
+		void getPropertyBool(int port, unsigned char property,bool *value) {
 			wuobject_t *obj;
 		       	if (wkpf_get_wuobject_by_port(port,&obj)==WKPF_OK) {
-				wkpf_internal_write_property_refresh_rate(obj, property, value);
+				wkpf_internal_read_property_boolean(obj, property, value);
 			}
 		}
-		void getPropertyShort(int port, unsigned char property,short &value) {
+		void getPropertyShort(int port, unsigned char property,int *value) {
 			wuobject_t *obj;
 		       	if (wkpf_get_wuobject_by_port(port,&obj)==WKPF_OK) {
-				wkpf_internal_write_property_refresh_rate(obj, property, value);
+				wkpf_internal_read_property_int16(obj, property, value);
 			}
 		}
-		void getPropertyRefreshRate(int port, unsigned char property,short &value) {
+		void getPropertyRefreshRate(int port, unsigned char property,int *value) {
 			wuobject_t *obj;
 		       	if (wkpf_get_wuobject_by_port(port,&obj)==WKPF_OK) {
-				wkpf_internal_write_property_refresh_rate(obj, property, value);
+				wkpf_internal_read_property_refresh_rate(obj, property, value);
 			}
 		}
 };
