@@ -136,6 +136,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     uint8_t jvm_operand_byte2;
     uint8_t jvm_operand_byte3;
     uint16_t jvm_operand_word;
+    int16_t jvm_operand_signed_word;
     dj_infusion *target_infusion;
     dj_di_pointer tmp_current_position; // Used to temporarily store the current position when processing brtarget instructions.
 
@@ -1045,13 +1046,66 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_PUSH(R23) );
                 emit( asm_PUSH(R22) );
             break;
-            case JVM_S2I:
+            case JVM_IINC:
+            case JVM_IINC_W:
+                // -129 -> JVM_IINC_W
+                // -128 -> JVM_IINC
+                // +127 -> JVM_IINC
+                // +128 -> JVM_IINC_W
+                jvm_operand_byte0 = dj_di_getU8(code + ++pc); // index of int local
+                if (opcode == JVM_IINC) {
+                    jvm_operand_signed_word = (int8_t)dj_di_getU8(code + ++pc);
+                } else {
+                    jvm_operand_signed_word = (int16_t)(((uint16_t)dj_di_getU8(code + ++pc) << 8) + dj_di_getU8(code + ++pc));
+                }
+                emit( asm_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)) );
+                emit( asm_LDD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1) );
+                emit( asm_LDD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2) );
+                emit( asm_LDD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3) );
+                if (jvm_operand_signed_word > 0) {
+                    // Positive operand
+                    emit( asm_SUBI(R22, -(jvm_operand_signed_word & 0xFF)) );
+                    emit( asm_SBCI(R23, -((jvm_operand_signed_word >> 8) & 0xFF)-1) );
+                    emit( asm_SBCI(R24, -1) );
+                    emit( asm_SBCI(R25, -1) );
+                } else {
+                    // Negative operand
+                    emit( asm_SUBI(R22, (-jvm_operand_signed_word) & 0xFF) );
+                    emit( asm_SBCI(R23, ((-jvm_operand_signed_word) >> 8) & 0xFF) );
+                    emit( asm_SBCI(R24, 0) );
+                    emit( asm_SBCI(R25, 0) );
+                }
+                emit( asm_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)) );
+                emit( asm_STD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1) );
+                emit( asm_STD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2) );
+                emit( asm_STD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3) );
+            break;
+            case JVM_S2B:
                 emit( asm_POP(R24) );
                 emit( asm_POP(R25) );
-                emit( asm_PUSH(ZERO_REG) );
-                emit( asm_PUSH(ZERO_REG) );
+
+                // need to extend the sign
+                emit( asm_CLR(R25) );
+                emit( asm_SBRC(R24, 7) ); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
+                emit( asm_COM(R25) ); // otherwise: flip R24 to 0xFF to extend the sign
+
                 emit( asm_PUSH(R25) );
                 emit( asm_PUSH(R24) );
+            break;
+            case JVM_S2I:
+                emit( asm_POP(R22) );
+                emit( asm_POP(R23) );
+
+                // need to extend the sign
+                emit( asm_CLR(R24) );
+                emit( asm_SBRC(R23, 7) ); // highest bit of MSB R23 cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
+                emit( asm_COM(R24) ); // otherwise: flip R24 to 0xFF to extend the sign
+                emit( asm_MOV(R25, R24) );
+
+                emit( asm_PUSH(R25) );
+                emit( asm_PUSH(R24) );
+                emit( asm_PUSH(R23) );
+                emit( asm_PUSH(R22) );
             break;
             case JVM_I2S:
                 emit( asm_POP(R22) );

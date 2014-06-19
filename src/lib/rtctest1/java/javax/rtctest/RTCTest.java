@@ -21,21 +21,55 @@ public class RTCTest implements IRTCTest {
 		this.instance_int = init_int_value;
 	}
 
-	public static int check_obj_tests(RTCTest obj1, RTCTest obj2, short test) {
-		if (test == 0)
-			return obj1 == obj2 ? 1 : 0;
-		if (test == 1)
-			return obj1 != obj2 ? 1 : 0;
-		if (test == 2)
-			return obj1 == null ? 1 : 0;
-		if (test == 3)
-			return obj1 != null ? 1 : 0;
-		if (test == 4) {
-			RTCTest tmpobj = null;
-			return obj1 == tmpobj ? 1 : 0;
+	public static int check_some_int_operations(int a, short b, byte c, short test) {
+		if (test == 0) {
+			// test IINC +127
+			a += 127;
+			return a;
 		}
-		return 2;
+		if (test == 1) {
+			// test IINC -128
+			a -= 128;
+			return a;
+		}
+		if (test == 2) {
+			// test IINC_W +128
+			a += 0x1234;
+			return a;
+		}
+		if (test == 3) {
+			// test IINC_W -129
+			a -= 0x1234;
+			return a;
+		}
+		if (test == 4) {
+			// test BIPUSH
+			return a+42;
+		}
+		if (test == 5) {
+			// test S2B, S2I (S2I for return value. should sign extend.)
+			return (byte)a;
+		}
+
+		return 0;
 	}
+
+
+	// public static int check_obj_tests(RTCTest obj1, RTCTest obj2, short test) {
+	// 	if (test == 0)
+	// 		return obj1 == obj2 ? 1 : 0;
+	// 	if (test == 1)
+	// 		return obj1 != obj2 ? 1 : 0;
+	// 	if (test == 2)
+	// 		return obj1 == null ? 1 : 0;
+	// 	if (test == 3)
+	// 		return obj1 != null ? 1 : 0;
+	// 	if (test == 4) {
+	// 		RTCTest tmpobj = null;
+	// 		return obj1 == tmpobj ? 1 : 0;
+	// 	}
+	// 	return 2;
+	// }
 
 	// public static RTCTest check_new() {
 	// 	RTCTest obj = new RTCTest(2914);

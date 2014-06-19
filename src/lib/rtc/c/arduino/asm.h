@@ -65,6 +65,8 @@
 #define makeLDIconstant(constant) ( \
                ((constant) & 0x0F) \
             + (((constant) & 0xF0) << 4))
+#define makeSBCIconstant(constant) makeLDIconstant(constant)
+#define makeSUBIconstant(constant) makeLDIconstant(constant)
 
 // 0000 0000 KK00 KKKK
 #define makeADIWconstant(constant) ( \
@@ -136,6 +138,10 @@
 // CLR
 #define asm_CLR(destreg)                asm_EOR(destreg, destreg)
 
+// COM                                  1001 010d dddd 0000, with d=dest register
+#define OPCODE_COM                      0x9400
+#define asm_COM(reg)                    opcodeWithSingleRegOperand(OPCODE_COM, reg)
+
 // CP                                   0001 01rd dddd rrrr, with r,d=the registers to compare
 #define OPCODE_CP                       0x1400
 #define asm_CP(destreg, srcreg)         opcodeWithSrcAndDestRegOperand(OPCODE_CP, destreg, srcreg)
@@ -201,6 +207,10 @@
 #define OPCODE_LSR                      0x9406
 #define asm_LSR(reg)                    opcodeWithSingleRegOperand(OPCODE_LSR, reg)
 
+// MOV                                  0010 11rd dddd rrrr, with d=dest register, r=source register
+#define OPCODE_MOV                      0x2C00
+#define asm_MOV(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_MOV, destreg, srcreg)
+
 // MOVW                                 0000 0001 dddd rrrr, with d=dest register/2, r=source register/2
 #define OPCODE_MOVW                     0x0100
 #define asm_MOVW(destreg, srcreg)       opcodeWithSrcAndDestRegOperand(OPCODE_MOVW, (destreg/2), (srcreg/2))
@@ -245,6 +255,12 @@
 #define OPCODE_SBC                      0x0800
 #define asm_SBC(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_SBC, destreg, srcreg)
 
+// SBCI                                 0100 KKKK dddd KKKK, with K a constant <= 255,d the destination register - 16
+#define OPCODE_SBCI                     0x4000
+#define asm_SBCI(reg, constant)         (OPCODE_SBCI \
+                                         + (((reg) - 16) << 4) \
+                                         + makeSBCIconstant(constant))
+
 // SBRC                                 1111 110r rrrr 0bbb, with r=a register and b=the bit to test
 #define OPCODE_SBRC                     0xFC00
 #define asm_SBRC(reg, bit)              (OPCODE_SBRC + (reg << 4) + bit)
@@ -286,3 +302,8 @@
 #define OPCODE_SUB                      0x1800
 #define asm_SUB(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_SUB, destreg, srcreg)
 
+// SUBI                                 0101 KKKK dddd KKKK, with K a constant <= 255,d the destination register - 16
+#define OPCODE_SUBI                     0x5000
+#define asm_SUBI(reg, constant)         (OPCODE_SUBI \
+                                         + (((reg) - 16) << 4) \
+                                         + makeSUBIconstant(constant))

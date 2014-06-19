@@ -41,29 +41,40 @@ public class RTCApp
 		// checkReturnObject();
 		// checkCallingPrintln();
 		// checkNew();
-		checkObjTests();
+		// checkObjTests();
+		checkSomeIntOperations();
 	}
 
-	public static void checkObjTests() {
-		RTCTest obj1 = new RTCTest();
-		RTCTest obj2 = new RTCTest();
-		RTCTest obj3 = null;
-
-		System.out.println("obj1==obj2 0 " + RTCTest.check_obj_tests(obj1, obj2, (short)0));
-		System.out.println("obj1==obj1 1 " + RTCTest.check_obj_tests(obj1, obj1, (short)0));
-		System.out.println("null==null 1 " + RTCTest.check_obj_tests(null, null, (short)0));
-		System.out.println("obj1!=obj2 1 " + RTCTest.check_obj_tests(obj1, obj2, (short)1));
-		System.out.println("obj1!=obj1 0 " + RTCTest.check_obj_tests(obj1, obj1, (short)1));
-		System.out.println("null!=null 0 " + RTCTest.check_obj_tests(null, null, (short)1));
-		System.out.println("ifnull obj1 0 " + RTCTest.check_obj_tests(obj1, null, (short)2));
-		System.out.println("ifnull null 1 " + RTCTest.check_obj_tests(null, null, (short)2));
-		System.out.println("ifnull obj3(null) 1 " + RTCTest.check_obj_tests(obj3, null, (short)2));
-		System.out.println("ifnonnull obj1 1 " + RTCTest.check_obj_tests(obj1, null, (short)3));
-		System.out.println("ifnonnull null 0 " + RTCTest.check_obj_tests(null, null, (short)3));
-		System.out.println("ifnonnull obj3(null) 0 " + RTCTest.check_obj_tests(obj3, null, (short)3));
-		System.out.println("obj1==tmpobj(null) 0 " + RTCTest.check_obj_tests(obj1, null, (short)4));
-		System.out.println("null==tmpobj(null) 1 " + RTCTest.check_obj_tests(null, null, (short)4));		
+	public static void checkSomeIntOperations() {
+		System.out.println("1127 " +  RTCTest.check_some_int_operations(1000, (short)0, (byte)0, (short)0)); // +127
+		System.out.println("872 " +  RTCTest.check_some_int_operations(1000, (short)0, (byte)0, (short)1)); // -128
+		System.out.println("2000 " +  RTCTest.check_some_int_operations(2000-0x1234, (short)0, (byte)0, (short)2)); // +0x1234
+		System.out.println("-3000 " +  RTCTest.check_some_int_operations(-3000+0x01234, (short)0, (byte)0, (short)3)); // -0x1234
+		System.out.println("1042 " +  RTCTest.check_some_int_operations(1000, (short)0, (byte)0, (short)4)); // +42
+		System.out.println("42 " +  RTCTest.check_some_int_operations(0x1234562a, (short)0, (byte)0, (short)5)); // cast to byte
+		System.out.println("-128 " +  RTCTest.check_some_int_operations(0x80, (short)0, (byte)0, (short)5)); // cast to byte, interpreting 0x80 as a byte makes it negative
 	}
+
+	// public static void checkObjTests() {
+	// 	RTCTest obj1 = new RTCTest();
+	// 	RTCTest obj2 = new RTCTest();
+	// 	RTCTest obj3 = null;
+
+	// 	System.out.println("obj1==obj2 0 " + RTCTest.check_obj_tests(obj1, obj2, (short)0));
+	// 	System.out.println("obj1==obj1 1 " + RTCTest.check_obj_tests(obj1, obj1, (short)0));
+	// 	System.out.println("null==null 1 " + RTCTest.check_obj_tests(null, null, (short)0));
+	// 	System.out.println("obj1!=obj2 1 " + RTCTest.check_obj_tests(obj1, obj2, (short)1));
+	// 	System.out.println("obj1!=obj1 0 " + RTCTest.check_obj_tests(obj1, obj1, (short)1));
+	// 	System.out.println("null!=null 0 " + RTCTest.check_obj_tests(null, null, (short)1));
+	// 	System.out.println("ifnull obj1 0 " + RTCTest.check_obj_tests(obj1, null, (short)2));
+	// 	System.out.println("ifnull null 1 " + RTCTest.check_obj_tests(null, null, (short)2));
+	// 	System.out.println("ifnull obj3(null) 1 " + RTCTest.check_obj_tests(obj3, null, (short)2));
+	// 	System.out.println("ifnonnull obj1 1 " + RTCTest.check_obj_tests(obj1, null, (short)3));
+	// 	System.out.println("ifnonnull null 0 " + RTCTest.check_obj_tests(null, null, (short)3));
+	// 	System.out.println("ifnonnull obj3(null) 0 " + RTCTest.check_obj_tests(obj3, null, (short)3));
+	// 	System.out.println("obj1==tmpobj(null) 0 " + RTCTest.check_obj_tests(obj1, null, (short)4));
+	// 	System.out.println("null==tmpobj(null) 1 " + RTCTest.check_obj_tests(null, null, (short)4));		
+	// }
 
 	// public static void checkNew() {
 	// 	RTCTest obj = RTCTest.check_new();
