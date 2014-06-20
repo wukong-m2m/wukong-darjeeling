@@ -161,7 +161,7 @@ JVM_LOOKUPSWITCH 151
                                         JVM_INVOKESTATIC 158
                                         JVM_INVOKEINTERFACE 159
                                         JVM_NEW 160
-JVM_NEWARRAY 161
+                                        JVM_NEWARRAY 161
 JVM_ANEWARRAY 162
                                         JVM_ARRAYLENGTH 163
                                                                                 JVM_ATHROW 164
@@ -171,7 +171,7 @@ JVM_INSTANCEOF 166
                                                                                 JVM_MONITOREXIT 168
 JVM_IDUP_X2 169
                                         JVM_IINC_W 170
-JVM_SINC_W 171
+JVM_SINC_W 171 // Can't find test code. Compiler seems to prefer SSPUSH/SADD instead.
 JVM_I2C 172
 JVM_S2C 173
 JVM_B2C 174

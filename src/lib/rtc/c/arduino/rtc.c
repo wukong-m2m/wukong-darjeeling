@@ -4,6 +4,7 @@
 #include "execution.h"
 #include "parse_infusion.h"
 #include "infusion.h"
+#include "array.h"
 #include "wkreprog.h"
 #include "asm.h"
 #include "opcodes.h"
@@ -1449,6 +1450,30 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 // make the call
                 emit( asm_CALL1((uint16_t)&RTC_NEW) );
                 emit( asm_CALL2((uint16_t)&RTC_NEW) );
+
+                // POP important stuff
+                emit( asm_POP(RXL) );
+                emit( asm_POP(RXH) );
+
+                // push the reference to the new object onto the ref stack
+                emit( asm_x_PUSHREF(R24) );
+                emit( asm_x_PUSHREF(R25) );
+            break;
+            case JVM_NEWARRAY:
+                // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
+
+                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                emit( asm_POP(R22) ); // size
+                emit( asm_POP(R23) );
+                emit( asm_LDI(R24, jvm_operand_byte0) ); // (int) element type
+
+                // PUSH important stuff
+                emit( asm_PUSH(RXH) );
+                emit( asm_PUSH(RXL) );
+
+                // make the call
+                emit( asm_CALL1((uint16_t)&dj_int_array_create) );
+                emit( asm_CALL2((uint16_t)&dj_int_array_create) );
 
                 // POP important stuff
                 emit( asm_POP(RXL) );

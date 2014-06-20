@@ -21,6 +21,13 @@ public class RTCTest implements IRTCTest {
 		this.instance_int = init_int_value;
 	}
 
+	public static short[] check_new_array() {
+		short[] arr = new short[3];
+		arr[0] = 2;
+		arr[1] = 8000;
+		return arr;
+	}
+
 	// public static int check_some_int_operations(int a, short b, byte c, short test) {
 	// 	if (test == 0) {
 	// 		// test IINC +127
@@ -260,42 +267,42 @@ public class RTCTest implements IRTCTest {
 	// 	RTCTest.static_ref2 = obj;
 	// }
 
-	public static int compare_int_0_EQ(int x) {
-		if (x == 0)
-			return 1;
-		else
-			return 0;
-	}
-	public static int compare_int_0_NE(int x) {
-		if (x != 0)
-			return 1;
-		else
-			return 0;
-	}
-	public static int compare_int_0_LT(int x) {
-		if (x < 0)
-			return 1;
-		else
-			return 0;
-	}
-	public static int compare_int_0_LE(int x) {
-		if (x <= 0)
-			return 1;
-		else
-			return 0;
-	}
-	public static int compare_int_0_GT(int x) {
-		if (x > 0)
-			return 1;
-		else
-			return 0;
-	}
-	public static int compare_int_0_GE(int x) {
-		if (x >= 0)
-			return 1;
-		else
-			return 0;
-	}
+	// public static int compare_int_0_EQ(int x) {
+	// 	if (x == 0)
+	// 		return 1;
+	// 	else
+	// 		return 0;
+	// }
+	// public static int compare_int_0_NE(int x) {
+	// 	if (x != 0)
+	// 		return 1;
+	// 	else
+	// 		return 0;
+	// }
+	// public static int compare_int_0_LT(int x) {
+	// 	if (x < 0)
+	// 		return 1;
+	// 	else
+	// 		return 0;
+	// }
+	// public static int compare_int_0_LE(int x) {
+	// 	if (x <= 0)
+	// 		return 1;
+	// 	else
+	// 		return 0;
+	// }
+	// public static int compare_int_0_GT(int x) {
+	// 	if (x > 0)
+	// 		return 1;
+	// 	else
+	// 		return 0;
+	// }
+	// public static int compare_int_0_GE(int x) {
+	// 	if (x >= 0)
+	// 		return 1;
+	// 	else
+	// 		return 0;
+	// }
 
 	// public static short compare_short_0_EQ(short x) {
 	// 	if (x == 0)
