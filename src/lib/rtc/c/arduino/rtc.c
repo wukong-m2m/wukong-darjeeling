@@ -1152,28 +1152,87 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_POP(R25) );
                 // Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
                 if (opcode == JVM_IF_SCMPEQ) {
-                    emit( asm_CP(R22, R24) );
-                    emit( asm_CPC(R23, R25) );
+                    emit( asm_CP(R24, R22) );
+                    emit( asm_CPC(R25, R23) );
                     emit( asm_BRNE(SIZEOF_RJMP) );
                 } else if (opcode == JVM_IF_SCMPNE) {
-                    emit( asm_CP(R22, R24) );
-                    emit( asm_CPC(R23, R25) );
+                    emit( asm_CP(R24, R22) );
+                    emit( asm_CPC(R25, R23) );
                     emit( asm_BREQ(SIZEOF_RJMP) );
                 } else if (opcode == JVM_IF_SCMPLT) {
+                    emit( asm_CP(R24, R22) );
+                    emit( asm_CPC(R25, R23) );
+                    emit( asm_BRGE(SIZEOF_RJMP) );
+                } else if (opcode == JVM_IF_SCMPGE) {
+                    emit( asm_CP(R24, R22) );
+                    emit( asm_CPC(R25, R23) );
+                    emit( asm_BRLT(SIZEOF_RJMP) );
+                } else if (opcode == JVM_IF_SCMPGT) {
                     emit( asm_CP(R22, R24) );
                     emit( asm_CPC(R23, R25) );
                     emit( asm_BRGE(SIZEOF_RJMP) );
-                } else if (opcode == JVM_IF_SCMPGE) {
+                } else if (opcode == JVM_IF_SCMPLE) {
                     emit( asm_CP(R22, R24) );
                     emit( asm_CPC(R23, R25) );
                     emit( asm_BRLT(SIZEOF_RJMP) );
-                } else if (opcode == JVM_IF_SCMPGT) {
-                    emit( asm_CP(R24, R22) );
-                    emit( asm_CPC(R25, R23) );
+                }
+                rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
+                emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+            break;
+            case JVM_IF_ICMPEQ:
+            case JVM_IF_ICMPNE:
+            case JVM_IF_ICMPLT:
+            case JVM_IF_ICMPGE:
+            case JVM_IF_ICMPGT:
+            case JVM_IF_ICMPLE:
+                // Branch instructions first have a bytecode offset, used by the interpreter,
+                // followed by a branch target index used when compiling to native code.
+                jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                pc += 4;
+                emit( asm_POP(R18) );
+                emit( asm_POP(R19) );
+                emit( asm_POP(R20) );
+                emit( asm_POP(R21) );
+                emit( asm_POP(R22) );
+                emit( asm_POP(R23) );
+                emit( asm_POP(R24) );
+                emit( asm_POP(R25) );
+                // Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
+                if (opcode == JVM_IF_ICMPEQ) {
+                    emit( asm_CP(R22, R18) );
+                    emit( asm_CPC(R23, R19) );
+                    emit( asm_CPC(R24, R20) );
+                    emit( asm_CPC(R25, R21) );
+                    emit( asm_BRNE(SIZEOF_RJMP) );
+                } else if (opcode == JVM_IF_ICMPNE) {
+                    emit( asm_CP(R22, R18) );
+                    emit( asm_CPC(R23, R19) );
+                    emit( asm_CPC(R24, R20) );
+                    emit( asm_CPC(R25, R21) );
+                    emit( asm_BREQ(SIZEOF_RJMP) );
+                } else if (opcode == JVM_IF_ICMPLT) {
+                    emit( asm_CP(R22, R18) );
+                    emit( asm_CPC(R23, R19) );
+                    emit( asm_CPC(R24, R20) );
+                    emit( asm_CPC(R25, R21) );
                     emit( asm_BRGE(SIZEOF_RJMP) );
-                } else if (opcode == JVM_IF_SCMPLE) {
-                    emit( asm_CP(R24, R22) );
-                    emit( asm_CPC(R25, R23) );
+                } else if (opcode == JVM_IF_ICMPGE) {
+                    emit( asm_CP(R22, R18) );
+                    emit( asm_CPC(R23, R19) );
+                    emit( asm_CPC(R24, R20) );
+                    emit( asm_CPC(R25, R21) );
+                    emit( asm_BRLT(SIZEOF_RJMP) );
+                } else if (opcode == JVM_IF_ICMPGT) {
+                    emit( asm_CP(R18, R22) );
+                    emit( asm_CPC(R19, R23) );
+                    emit( asm_CPC(R20, R24) );
+                    emit( asm_CPC(R21, R25) );
+                    emit( asm_BRGE(SIZEOF_RJMP) );
+                } else if (opcode == JVM_IF_ICMPLE) {
+                    emit( asm_CP(R18, R22) );
+                    emit( asm_CPC(R19, R23) );
+                    emit( asm_CPC(R20, R24) );
+                    emit( asm_CPC(R21, R25) );
                     emit( asm_BRLT(SIZEOF_RJMP) );
                 }
                 rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;

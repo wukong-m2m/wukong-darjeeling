@@ -21,38 +21,38 @@ public class RTCTest implements IRTCTest {
 		this.instance_int = init_int_value;
 	}
 
-	public static int check_some_int_operations(int a, short b, byte c, short test) {
-		if (test == 0) {
-			// test IINC +127
-			a += 127;
-			return a;
-		}
-		if (test == 1) {
-			// test IINC -128
-			a -= 128;
-			return a;
-		}
-		if (test == 2) {
-			// test IINC_W +128
-			a += 0x1234;
-			return a;
-		}
-		if (test == 3) {
-			// test IINC_W -129
-			a -= 0x1234;
-			return a;
-		}
-		if (test == 4) {
-			// test BIPUSH
-			return a+42;
-		}
-		if (test == 5) {
-			// test S2B, S2I (S2I for return value. should sign extend.)
-			return (byte)a;
-		}
+	// public static int check_some_int_operations(int a, short b, byte c, short test) {
+	// 	if (test == 0) {
+	// 		// test IINC +127
+	// 		a += 127;
+	// 		return a;
+	// 	}
+	// 	if (test == 1) {
+	// 		// test IINC -128
+	// 		a -= 128;
+	// 		return a;
+	// 	}
+	// 	if (test == 2) {
+	// 		// test IINC_W +128
+	// 		a += 0x1234;
+	// 		return a;
+	// 	}
+	// 	if (test == 3) {
+	// 		// test IINC_W -129
+	// 		a -= 0x1234;
+	// 		return a;
+	// 	}
+	// 	if (test == 4) {
+	// 		// test BIPUSH
+	// 		return a+42;
+	// 	}
+	// 	if (test == 5) {
+	// 		// test S2B, S2I (S2I for return value. should sign extend.)
+	// 		return (byte)a;
+	// 	}
 
-		return 0;
-	}
+	// 	return 0;
+	// }
 
 
 	// public static int check_obj_tests(RTCTest obj1, RTCTest obj2, short test) {
@@ -302,8 +302,42 @@ public class RTCTest implements IRTCTest {
 	// 		return (short)0;
 	// }
 
-
-
+	public static int compare_int_EQ(int x, int y) {
+		if (x == y)
+			return 1;
+		else
+			return 0;
+	}
+	public static int compare_int_NE(int x, int y) {
+		if (x != y)
+			return 1;
+		else
+			return 0;
+	}
+	public static int compare_int_LT(int x, int y) {
+		if (x < y)
+			return 1;
+		else
+			return 0;
+	}
+	public static int compare_int_LE(int x, int y) {
+		if (x <= y)
+			return 1;
+		else
+			return 0;
+	}
+	public static int compare_int_GT(int x, int y) {
+		if (x > y)
+			return 1;
+		else
+			return 0;
+	}
+	public static int compare_int_GE(int x, int y) {
+		if (x >= y)
+			return 1;
+		else
+			return 0;
+	}
 
 	// public static short compare_short_EQ(short x, short y) {
 	// 	if (x == y)

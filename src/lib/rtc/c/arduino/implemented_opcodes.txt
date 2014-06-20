@@ -140,12 +140,12 @@ JVM_IIFLE 131
                                         JVM_IF_SCMPGE 137
                                         JVM_IF_SCMPGT 138
                                         JVM_IF_SCMPLE 139
-JVM_IF_ICMPEQ 140
-JVM_IF_ICMPNE 141
-JVM_IF_ICMPLT 142
-JVM_IF_ICMPGE 143
-JVM_IF_ICMPGT 144
-JVM_IF_ICMPLE 145
+                                        JVM_IF_ICMPEQ 140
+                                        JVM_IF_ICMPNE 141
+                                        JVM_IF_ICMPLT 142
+                                        JVM_IF_ICMPGE 143
+                                        JVM_IF_ICMPGT 144
+                                        JVM_IF_ICMPLE 145
                                         JVM_IF_ACMPEQ 146
                                         JVM_IF_ACMPNE 147
                                         JVM_GOTO 148
