@@ -5,6 +5,7 @@
 #include "parse_infusion.h"
 #include "infusion.h"
 #include "array.h"
+#include "object.h"
 #include "wkreprog.h"
 #include "asm.h"
 #include "opcodes.h"
@@ -540,6 +541,32 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_PUSH(R23) );
                 emit( asm_PUSH(R22) );
             break;
+            case JVM_GETFIELD_A:
+                jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
+                pc += 2;
+                emit( asm_x_POPREF(R25) ); // POP the reference
+                emit( asm_x_POPREF(R24) );
+
+                // First find the location of reference fields
+                // PUSH important stuff
+                emit( asm_PUSH(RXH) );
+                emit( asm_PUSH(RXL) );
+
+                // make the call
+                emit( asm_CALL1((uint16_t)&dj_object_getReferences) );
+                emit( asm_CALL2((uint16_t)&dj_object_getReferences) );
+
+                // POP important stuff
+                emit( asm_POP(RXL) );
+                emit( asm_POP(RXH) );
+
+                // R24:R25 now points to the location of the instance references
+                emit( asm_MOVW(RZ, R24) ); // Move the location to Z
+                emit( asm_LDD(R24, Z, (jvm_operand_word*2)) ); // jvm_operand_word is an index in the (16 bit) array, so multiply by 2
+                emit( asm_LDD(R25, Z, (jvm_operand_word*2)+1) );
+                emit( asm_x_PUSHREF(R24) );
+                emit( asm_x_PUSHREF(R25) );
+            break;
             case JVM_PUTFIELD_B:
             case JVM_PUTFIELD_C:
                 jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
@@ -573,6 +600,32 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_STD(R23, Z, jvm_operand_word+1) );
                 emit( asm_STD(R24, Z, jvm_operand_word+2) );
                 emit( asm_STD(R25, Z, jvm_operand_word+3) );
+            break;
+            case JVM_PUTFIELD_A:
+                jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
+                pc += 2;
+                emit( asm_x_POPREF(R17) ); // POP the value to store (store in in call-saved R16-R17)
+                emit( asm_x_POPREF(R16) );
+                emit( asm_x_POPREF(R25) ); // POP the reference to the object to store it in.
+                emit( asm_x_POPREF(R24) );
+
+                // First find the location of reference fields
+                // PUSH important stuff
+                emit( asm_PUSH(RXH) );
+                emit( asm_PUSH(RXL) );
+
+                // make the call
+                emit( asm_CALL1((uint16_t)&dj_object_getReferences) );
+                emit( asm_CALL2((uint16_t)&dj_object_getReferences) );
+
+                // POP important stuff
+                emit( asm_POP(RXL) );
+                emit( asm_POP(RXH) );
+
+                // R24:R25 now points to the location of the instance references
+                emit( asm_MOVW(RZ, R24) ); // Move the location to Z
+                emit( asm_STD(R16, Z, (jvm_operand_word*2)) ); // jvm_operand_word is an index in the (16 bit) array, so multiply by 2
+                emit( asm_STD(R17, Z, (jvm_operand_word*2)+1) );
             break;
             case JVM_GETSTATIC_B:
             case JVM_GETSTATIC_C:

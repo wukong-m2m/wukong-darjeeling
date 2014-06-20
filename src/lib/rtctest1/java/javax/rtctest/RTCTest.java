@@ -19,6 +19,7 @@ public class RTCTest implements IRTCTest {
 	public short instance_short2;
 	public byte instance_byte1;
 	public char instance_char1;
+	private RTCTest instance_ref0;
 	public RTCTest instance_ref1;
 
 	public RTCTest() {}
@@ -34,6 +35,15 @@ public class RTCTest implements IRTCTest {
 		// chars
 		static_char1++;
 		obj.instance_char1++;
+
+		// refs
+		int x = static_ref1.instance_int;
+		RTCTest new_instance = new RTCTest(x+1);
+		static_ref1 = new_instance;
+
+		x = obj.instance_ref1.instance_int;
+		new_instance = new RTCTest(x+1);
+		obj.instance_ref1 = new_instance;
 	}
 
 	// public static RTCTest[] check_new_object_array() {

@@ -60,12 +60,17 @@ public class RTCApp
 		RTCTest.static_char1 = 10; // char is just byte in Darjeeling
 		obj.instance_char1 = 20;
 
+		RTCTest.static_ref1 = new RTCTest(100000);
+		obj.instance_ref1 = new RTCTest(200000);
+
 		RTCTest.check_char_byte_obj_static_instance_access(obj);
 
 		System.out.println("-100 " + RTCTest.static_byte1);
 		System.out.println("-50 " + obj.instance_byte1);
 		System.out.println("11 " + (int)RTCTest.static_char1);
 		System.out.println("21 " + (int)obj.instance_char1);
+		System.out.println("100001 " + RTCTest.static_ref1.instance_int);
+		System.out.println("200001 " + obj.instance_ref1.instance_int);
 	}
 
 	// public static void checkNewObjectArray() {

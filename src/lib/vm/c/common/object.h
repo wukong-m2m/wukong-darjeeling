@@ -34,15 +34,6 @@ runtime_id_t dj_object_getRuntimeId(dj_object * object);
 
 dj_vm * dj_exec_getVM();
 
-static inline ref_t * dj_object_getReferences(dj_object * object)
-{
-	uint16_t refOffset = dj_di_classDefinition_getOffsetOfFirstReference(dj_vm_getRuntimeClassDefinition(dj_exec_getVM(), dj_mem_getChunkId(object)));
-
-#ifdef ALIGN_16
-	if (refOffset&1) refOffset++;
-#endif
-	
-	return (ref_t*)((size_t)object + refOffset);
-}
+ref_t * dj_object_getReferences(dj_object * object);
 
 #endif
