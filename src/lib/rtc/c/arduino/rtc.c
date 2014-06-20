@@ -394,6 +394,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_STD(R25, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0)+1) );
             break;
             case JVM_SALOAD:
+            case JVM_AALOAD:
                 // Arrays are indexed by a 32bit int. But we don't have enough memory to hold arrays that large, so just ignore the upper two.
                 // Should check that they are 0 when implementing bounds checks.
                 emit( asm_POP(R22) );
@@ -413,19 +414,35 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_ADD(RZL, R22) );
                 emit( asm_ADC(RZH, R23) );
 
-                // Add 3 to skip 2 bytes for array length and 1 byte for array type.
-                emit( asm_ADIW(RZ, 3) ); 
+                if (opcode == JVM_SALOAD) {
+                    // Add 3 to skip 2 bytes for array length and 1 byte for array type.
+                    emit( asm_ADIW(RZ, 3) ); 
+                } else if (opcode == JVM_AALOAD) {
+                    // Add 3 to skip 2 bytes for array length and 2 bytes for array type.
+                    emit( asm_ADIW(RZ, 4) ); 
+                }
 
                 // Now Z points to the target element
                 emit( asm_LD_ZINC(R24) );
                 emit( asm_LD_Z(R25) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                if (opcode == JVM_SALOAD) {
+                    emit( asm_PUSH(R25) );
+                    emit( asm_PUSH(R24) );
+                } else if (opcode == JVM_AALOAD) {
+                    emit( asm_x_PUSHREF(R24) );
+                    emit( asm_x_PUSHREF(R25) );
+                }
             break;
             case JVM_SASTORE:
+            case JVM_AASTORE:
                 // Pop the value we need to store in the array.
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                if (opcode == JVM_SASTORE) {
+                    emit( asm_POP(R24) );
+                    emit( asm_POP(R25) );
+                } else if (opcode == JVM_AASTORE) {
+                    emit( asm_x_POPREF(R25) );
+                    emit( asm_x_POPREF(R24) );
+                }
 
                 // Arrays are indexed by a 32bit int. But we don't have enough memory to hold arrays that large, so just ignore the upper two.
                 // We'll pop the index to R22:R23 here, but to R22:R25 in SALOAD. This is just to make it easier for the SALOAD sequence to be
@@ -448,8 +465,13 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_ADD(RZL, R22) );
                 emit( asm_ADC(RZH, R23) );
 
-                // Add 3 to skip 2 bytes for array length and 1 byte for array type.
-                emit( asm_ADIW(RZ, 3) ); 
+                if (opcode == JVM_SASTORE) {
+                    // Add 3 to skip 2 bytes for array length and 1 byte for array type.
+                    emit( asm_ADIW(RZ, 3) ); 
+                } else if (opcode == JVM_AASTORE) {
+                    // Add 3 to skip 2 bytes for array length and 2 bytes for array type.
+                    emit( asm_ADIW(RZ, 4) ); 
+                }
 
                 // Now Z points to the target element
                 emit( asm_ST_ZINC(R24) );

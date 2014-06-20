@@ -46,15 +46,23 @@ public class RTCApp
 		// checkNew();
 		// checkObjTests();
 		// checkSomeIntOperations();
-		checkNewArray();
+		// checkNewArray();
+		checkNewObjectArray();
 	}
 
-	public static void checkNewArray() {
-		short[] arr = RTCTest.check_new_array();
-		System.out.println("2 " + arr[0]);
-		System.out.println("8000 " + arr[1]);
-		System.out.println("3 " + arr.length);
+	public static void checkNewObjectArray() {
+		RTCTest[] arr = RTCTest.check_new_object_array();
+		System.out.println("2 " + arr.length);
+		System.out.println("2 " + arr[0].instance_int);
+		System.out.println("7000 " + arr[1].instance_int);
 	}
+
+	// public static void checkNewArray() {
+	// 	short[] arr = RTCTest.check_new_array();
+	// 	System.out.println("2 " + arr[0]);
+	// 	System.out.println("8000 " + arr[1]);
+	// 	System.out.println("3 " + arr.length);
+	// }
 
 	// public static void checkSomeIntOperations() {
 	// 	System.out.println("1127 " +  RTCTest.check_some_int_operations(1000, (short)0, (byte)0, (short)0)); // +127

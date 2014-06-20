@@ -22,7 +22,11 @@ public class RTCTest implements IRTCTest {
 	}
 
 	public static RTCTest[] check_new_object_array() {
-		return new RTCTest[2];
+		RTCTest[] arr = new RTCTest[2];
+		arr[0] = new RTCTest(2);
+		arr[1] = new RTCTest(6000);
+		arr[1].instance_int += 1000; // test AALOAD as well
+		return arr;
 	}
 
 	// public static short[] check_new_array() {
