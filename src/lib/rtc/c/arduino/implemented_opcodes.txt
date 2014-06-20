@@ -126,12 +126,12 @@ JVM_SINC 120 // Can't find test code.
                                         JVM_S2I 123
 JVM_I2B 124 // Can't find test code. Compiler seems to insist on I2S S2B instead.
                                         JVM_I2S 125
-JVM_IIFEQ 126
-JVM_IIFNE 127
-JVM_IIFLT 128
-JVM_IIFGE 129
-JVM_IIFGT 130
-JVM_IIFLE 131
+                                        JVM_IIFEQ 126
+                                        JVM_IIFNE 127
+                                        JVM_IIFLT 128
+                                        JVM_IIFGE 129
+                                        JVM_IIFGT 130
+                                        JVM_IIFLE 131
                                         JVM_IFNULL 132
                                         JVM_IFNONNULL 133
                                         JVM_IF_SCMPEQ 134

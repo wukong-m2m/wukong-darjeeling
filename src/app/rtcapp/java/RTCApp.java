@@ -27,8 +27,9 @@ public class RTCApp
 	{
 		// System.out.println("Hello world.");
 		// checkCompareShort();
-		checkCompareInt();
+		// checkCompareInt();
 		// checkCompareShort0();
+		checkCompareInt0();
 		// checkStaticShortVariables();
 		// checkStaticIntVariables();
 		// checkStaticRefVariables();
@@ -297,86 +298,86 @@ public class RTCApp
 	// 	System.out.println("RTCTest.static_ref2.instance_short1 = " + RTCTest.static_ref2.instance_short1);
 	// }
 
-	// public static void checkCompareInt0()
-	// {
-	// 	System.out.println("-1 EQ" + RTCTest.compare_int_0_EQ(-1));
-	// 	System.out.println(" 0 EQ" + RTCTest.compare_int_0_EQ(0));
-	// 	System.out.println(" 1 EQ" + RTCTest.compare_int_0_EQ(1));
+	public static void checkCompareInt0()
+	{
+		System.out.println("-1 EQ 0 " + RTCTest.compare_int_0_EQ(-1));
+		System.out.println(" 0 EQ 1 " + RTCTest.compare_int_0_EQ(0));
+		System.out.println(" 1 EQ 0 " + RTCTest.compare_int_0_EQ(1));
 
-	// 	System.out.println("-1 NE" + RTCTest.compare_int_0_NE(-1));
-	// 	System.out.println(" 0 NE" + RTCTest.compare_int_0_NE(0));
-	// 	System.out.println(" 1 NE" + RTCTest.compare_int_0_NE(1));
+		System.out.println("-1 NE 1 " + RTCTest.compare_int_0_NE(-1));
+		System.out.println(" 0 NE 0 " + RTCTest.compare_int_0_NE(0));
+		System.out.println(" 1 NE 1 " + RTCTest.compare_int_0_NE(1));
 
-	// 	System.out.println("-1 LT" + RTCTest.compare_int_0_LT(-1));
-	// 	System.out.println(" 0 LT" + RTCTest.compare_int_0_LT(0));
-	// 	System.out.println(" 1 LT" + RTCTest.compare_int_0_LT(1));
+		System.out.println("-1 LT 1 " + RTCTest.compare_int_0_LT(-1));
+		System.out.println(" 0 LT 0 " + RTCTest.compare_int_0_LT(0));
+		System.out.println(" 1 LT 0 " + RTCTest.compare_int_0_LT(1));
 
-	// 	System.out.println("-1 LE" + RTCTest.compare_int_0_LE(-1));
-	// 	System.out.println(" 0 LE" + RTCTest.compare_int_0_LE(0));
-	// 	System.out.println(" 1 LE" + RTCTest.compare_int_0_LE(1));
+		System.out.println("-1 LE 1 " + RTCTest.compare_int_0_LE(-1));
+		System.out.println(" 0 LE 1 " + RTCTest.compare_int_0_LE(0));
+		System.out.println(" 1 LE 0 " + RTCTest.compare_int_0_LE(1));
 
-	// 	System.out.println("-1 GT" + RTCTest.compare_int_0_GT(-1));
-	// 	System.out.println(" 0 GT" + RTCTest.compare_int_0_GT(0));
-	// 	System.out.println(" 1 GT" + RTCTest.compare_int_0_GT(1));
+		System.out.println("-1 GT 0 " + RTCTest.compare_int_0_GT(-1));
+		System.out.println(" 0 GT 0 " + RTCTest.compare_int_0_GT(0));
+		System.out.println(" 1 GT 1 " + RTCTest.compare_int_0_GT(1));
 
-	// 	System.out.println("-1 GE" + RTCTest.compare_int_0_GE(-1));
-	// 	System.out.println(" 0 GE" + RTCTest.compare_int_0_GE(0));
-	// 	System.out.println(" 1 GE" + RTCTest.compare_int_0_GE(1));
-	// }
+		System.out.println("-1 GE 0 " + RTCTest.compare_int_0_GE(-1));
+		System.out.println(" 0 GE 1 " + RTCTest.compare_int_0_GE(0));
+		System.out.println(" 1 GE 1 " + RTCTest.compare_int_0_GE(1));
+	}
 
 	// public static void checkCompareShort0()
 	// {
-	// 	System.out.println("-1 EQ" + RTCTest.compare_short_0_EQ((short)-1));
-	// 	System.out.println(" 0 EQ" + RTCTest.compare_short_0_EQ((short)0));
-	// 	System.out.println(" 1 EQ" + RTCTest.compare_short_0_EQ((short)1));
+	// 	System.out.println("-1 EQ 0 " + RTCTest.compare_short_0_EQ((short)-1));
+	// 	System.out.println(" 0 EQ 1 " + RTCTest.compare_short_0_EQ((short)0));
+	// 	System.out.println(" 1 EQ 0 " + RTCTest.compare_short_0_EQ((short)1));
 
-	// 	System.out.println("-1 NE" + RTCTest.compare_short_0_NE((short)-1));
-	// 	System.out.println(" 0 NE" + RTCTest.compare_short_0_NE((short)0));
-	// 	System.out.println(" 1 NE" + RTCTest.compare_short_0_NE((short)1));
+	// 	System.out.println("-1 NE 1 " + RTCTest.compare_short_0_NE((short)-1));
+	// 	System.out.println(" 0 NE 0 " + RTCTest.compare_short_0_NE((short)0));
+	// 	System.out.println(" 1 NE 1 " + RTCTest.compare_short_0_NE((short)1));
 
-	// 	System.out.println("-1 LT" + RTCTest.compare_short_0_LT((short)-1));
-	// 	System.out.println(" 0 LT" + RTCTest.compare_short_0_LT((short)0));
-	// 	System.out.println(" 1 LT" + RTCTest.compare_short_0_LT((short)1));
+	// 	System.out.println("-1 LT 1 " + RTCTest.compare_short_0_LT((short)-1));
+	// 	System.out.println(" 0 LT 0 " + RTCTest.compare_short_0_LT((short)0));
+	// 	System.out.println(" 1 LT 0 " + RTCTest.compare_short_0_LT((short)1));
 
-	// 	System.out.println("-1 LE" + RTCTest.compare_short_0_LE((short)-1));
-	// 	System.out.println(" 0 LE" + RTCTest.compare_short_0_LE((short)0));
-	// 	System.out.println(" 1 LE" + RTCTest.compare_short_0_LE((short)1));
+	// 	System.out.println("-1 LE 1 " + RTCTest.compare_short_0_LE((short)-1));
+	// 	System.out.println(" 0 LE 1 " + RTCTest.compare_short_0_LE((short)0));
+	// 	System.out.println(" 1 LE 0 " + RTCTest.compare_short_0_LE((short)1));
 
-	// 	System.out.println("-1 GT" + RTCTest.compare_short_0_GT((short)-1));
-	// 	System.out.println(" 0 GT" + RTCTest.compare_short_0_GT((short)0));
-	// 	System.out.println(" 1 GT" + RTCTest.compare_short_0_GT((short)1));
+	// 	System.out.println("-1 GT 0 " + RTCTest.compare_short_0_GT((short)-1));
+	// 	System.out.println(" 0 GT 0 " + RTCTest.compare_short_0_GT((short)0));
+	// 	System.out.println(" 1 GT 1 " + RTCTest.compare_short_0_GT((short)1));
 
-	// 	System.out.println("-1 GE" + RTCTest.compare_short_0_GE((short)-1));
-	// 	System.out.println(" 0 GE" + RTCTest.compare_short_0_GE((short)0));
-	// 	System.out.println(" 1 GE" + RTCTest.compare_short_0_GE((short)1));
+	// 	System.out.println("-1 GE 0 " + RTCTest.compare_short_0_GE((short)-1));
+	// 	System.out.println(" 0 GE 1 " + RTCTest.compare_short_0_GE((short)0));
+	// 	System.out.println(" 1 GE 1 " + RTCTest.compare_short_0_GE((short)1));
 	// }
 
-	public static void checkCompareInt()
-	{
-		System.out.println("-1 EQ 0 " + RTCTest.compare_int_EQ(-100001, -100000));
-		System.out.println(" 0 EQ 1 " + RTCTest.compare_int_EQ(-100000, -100000));
-		System.out.println(" 1 EQ 0 " + RTCTest.compare_int_EQ(-99999, -100000));
+	// public static void checkCompareInt()
+	// {
+	// 	System.out.println("-1 EQ 0 " + RTCTest.compare_int_EQ(-100001, -100000));
+	// 	System.out.println(" 0 EQ 1 " + RTCTest.compare_int_EQ(-100000, -100000));
+	// 	System.out.println(" 1 EQ 0 " + RTCTest.compare_int_EQ(-99999, -100000));
 
-		System.out.println("-1 NE 1 " + RTCTest.compare_int_NE(-100001, -100000));
-		System.out.println(" 0 NE 0 " + RTCTest.compare_int_NE(-100000, -100000));
-		System.out.println(" 1 NE 1 " + RTCTest.compare_int_NE(-99999, -100000));
+	// 	System.out.println("-1 NE 1 " + RTCTest.compare_int_NE(-100001, -100000));
+	// 	System.out.println(" 0 NE 0 " + RTCTest.compare_int_NE(-100000, -100000));
+	// 	System.out.println(" 1 NE 1 " + RTCTest.compare_int_NE(-99999, -100000));
 
-		System.out.println("-1 LT 1 " + RTCTest.compare_int_LT(-100001, -100000));
-		System.out.println(" 0 LT 0 " + RTCTest.compare_int_LT(-100000, -100000));
-		System.out.println(" 1 LT 0 " + RTCTest.compare_int_LT(-99999, -100000));
+	// 	System.out.println("-1 LT 1 " + RTCTest.compare_int_LT(-100001, -100000));
+	// 	System.out.println(" 0 LT 0 " + RTCTest.compare_int_LT(-100000, -100000));
+	// 	System.out.println(" 1 LT 0 " + RTCTest.compare_int_LT(-99999, -100000));
 
-		System.out.println("-1 LE 1 " + RTCTest.compare_int_LE(-100001, -100000));
-		System.out.println(" 0 LE 1 " + RTCTest.compare_int_LE(-100000, -100000));
-		System.out.println(" 1 LE 0 " + RTCTest.compare_int_LE(-99999, -100000));
+	// 	System.out.println("-1 LE 1 " + RTCTest.compare_int_LE(-100001, -100000));
+	// 	System.out.println(" 0 LE 1 " + RTCTest.compare_int_LE(-100000, -100000));
+	// 	System.out.println(" 1 LE 0 " + RTCTest.compare_int_LE(-99999, -100000));
 
-		System.out.println("-1 GT 0 " + RTCTest.compare_int_GT(-100001, -100000));
-		System.out.println(" 0 GT 0 " + RTCTest.compare_int_GT(-100000, -100000));
-		System.out.println(" 1 GT 1 " + RTCTest.compare_int_GT(-99999, -100000));
+	// 	System.out.println("-1 GT 0 " + RTCTest.compare_int_GT(-100001, -100000));
+	// 	System.out.println(" 0 GT 0 " + RTCTest.compare_int_GT(-100000, -100000));
+	// 	System.out.println(" 1 GT 1 " + RTCTest.compare_int_GT(-99999, -100000));
 
-		System.out.println("-1 GE 0 " + RTCTest.compare_int_GE(-100001, -100000));
-		System.out.println(" 0 GE 1 " + RTCTest.compare_int_GE(-100000, -100000));
-		System.out.println(" 1 GE 1 " + RTCTest.compare_int_GE(-99999, -100000));
-	}
+	// 	System.out.println("-1 GE 0 " + RTCTest.compare_int_GE(-100001, -100000));
+	// 	System.out.println(" 0 GE 1 " + RTCTest.compare_int_GE(-100000, -100000));
+	// 	System.out.println(" 1 GE 1 " + RTCTest.compare_int_GE(-99999, -100000));
+	// }
 
 	// public static void checkCompareShort()
 	// {

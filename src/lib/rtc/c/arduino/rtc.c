@@ -1115,6 +1115,53 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_PUSH(R23) );
                 emit( asm_PUSH(R22) );
             break;
+            case JVM_IIFEQ:
+            case JVM_IIFNE:
+            case JVM_IIFLT:
+            case JVM_IIFGE:
+            case JVM_IIFGT:
+            case JVM_IIFLE:
+                // Branch instructions first have a bytecode offset, used by the interpreter,
+                // followed by a branch target index used when compiling to native code.
+                jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                pc += 4;
+
+                emit( asm_POP(R22) );
+                emit( asm_POP(R23) );
+                emit( asm_POP(R24) );
+                emit( asm_POP(R25) );
+                // Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
+                if (opcode == JVM_IIFEQ) {
+                    emit( asm_OR(R22, R23) );
+                    emit( asm_OR(R22, R24) );
+                    emit( asm_OR(R22, R25) );
+                    emit( asm_BRNE(SIZEOF_RJMP) );
+                } else if (opcode == JVM_IIFNE) {
+                    emit( asm_OR(R22, R23) );
+                    emit( asm_OR(R22, R24) );
+                    emit( asm_OR(R22, R25) );
+                    emit( asm_BREQ(SIZEOF_RJMP) );
+                } else if (opcode == JVM_IIFLT) {
+                    emit( asm_SBRC(R25, 7) ); // value is >=0 if the highest bit is cleared
+                } else if (opcode == JVM_IIFGE) {
+                    emit( asm_SBRS(R25, 7) ); // value is <0 if the highest bit is set
+                } else if (opcode == JVM_IIFGT) {
+                    emit( asm_CP(ZERO_REG, R22) );
+                    emit( asm_CPC(ZERO_REG, R23) );
+                    emit( asm_CPC(ZERO_REG, R24) );
+                    emit( asm_CPC(ZERO_REG, R25) );
+                    emit( asm_BRGE(SIZEOF_RJMP) ); // if (0 >= x), then NOT (x > 0)
+                } else if (opcode == JVM_IIFLE) {
+                    emit( asm_CP(ZERO_REG, R22) );
+                    emit( asm_CPC(ZERO_REG, R23) );
+                    emit( asm_CPC(ZERO_REG, R24) );
+                    emit( asm_CPC(ZERO_REG, R25) );
+                    emit( asm_BRLT(SIZEOF_RJMP) ); // if (0 < x), then NOT (x <= 0)
+                }
+
+                rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
+                emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+            break;
             case JVM_IFNULL:
             case JVM_IFNONNULL:
                 // Branch instructions first have a bytecode offset, used by the interpreter,
@@ -1441,7 +1488,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     emit( asm_OR(R24, R25) );
                     emit( asm_BREQ(SIZEOF_RJMP) );
                 } else if (opcode == JVM_SIFLT) {
-                    emit( asm_SBRC(R25, 7) ); // value is >0 if the highest bit is cleared
+                    emit( asm_SBRC(R25, 7) ); // value is >=0 if the highest bit is cleared
                 } else if (opcode == JVM_SIFGE) {
                     emit( asm_SBRS(R25, 7) ); // value is <0 if the highest bit is set
                 } else if (opcode == JVM_SIFGT) {

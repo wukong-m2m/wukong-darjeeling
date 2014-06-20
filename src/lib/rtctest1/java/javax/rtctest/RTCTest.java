@@ -260,41 +260,73 @@ public class RTCTest implements IRTCTest {
 	// 	RTCTest.static_ref2 = obj;
 	// }
 
+	public static int compare_int_0_EQ(int x) {
+		if (x == 0)
+			return 1;
+		else
+			return 0;
+	}
+	public static int compare_int_0_NE(int x) {
+		if (x != 0)
+			return 1;
+		else
+			return 0;
+	}
+	public static int compare_int_0_LT(int x) {
+		if (x < 0)
+			return 1;
+		else
+			return 0;
+	}
+	public static int compare_int_0_LE(int x) {
+		if (x <= 0)
+			return 1;
+		else
+			return 0;
+	}
+	public static int compare_int_0_GT(int x) {
+		if (x > 0)
+			return 1;
+		else
+			return 0;
+	}
+	public static int compare_int_0_GE(int x) {
+		if (x >= 0)
+			return 1;
+		else
+			return 0;
+	}
+
 	// public static short compare_short_0_EQ(short x) {
 	// 	if (x == 0)
 	// 		return (short)1;
 	// 	else
 	// 		return (short)0;
 	// }
-
 	// public static short compare_short_0_NE(short x) {
 	// 	if (x != 0)
 	// 		return (short)1;
 	// 	else
 	// 		return (short)0;
 	// }
-
 	// public static short compare_short_0_LT(short x) {
 	// 	if (x < 0)
 	// 		return (short)1;
 	// 	else
 	// 		return (short)0;
 	// }
-
 	// public static short compare_short_0_LE(short x) {
 	// 	if (x <= 0)
 	// 		return (short)1;
 	// 	else
 	// 		return (short)0;
 	// }
-
 	// public static short compare_short_0_GT(short x) {
 	// 	if (x > 0)
 	// 		return (short)1;
 	// 	else
 	// 		return (short)0;
 	// }
-
 	// public static short compare_short_0_GE(short x) {
 	// 	if (x >= 0)
 	// 		return (short)1;
@@ -302,42 +334,42 @@ public class RTCTest implements IRTCTest {
 	// 		return (short)0;
 	// }
 
-	public static int compare_int_EQ(int x, int y) {
-		if (x == y)
-			return 1;
-		else
-			return 0;
-	}
-	public static int compare_int_NE(int x, int y) {
-		if (x != y)
-			return 1;
-		else
-			return 0;
-	}
-	public static int compare_int_LT(int x, int y) {
-		if (x < y)
-			return 1;
-		else
-			return 0;
-	}
-	public static int compare_int_LE(int x, int y) {
-		if (x <= y)
-			return 1;
-		else
-			return 0;
-	}
-	public static int compare_int_GT(int x, int y) {
-		if (x > y)
-			return 1;
-		else
-			return 0;
-	}
-	public static int compare_int_GE(int x, int y) {
-		if (x >= y)
-			return 1;
-		else
-			return 0;
-	}
+	// public static int compare_int_EQ(int x, int y) {
+	// 	if (x == y)
+	// 		return 1;
+	// 	else
+	// 		return 0;
+	// }
+	// public static int compare_int_NE(int x, int y) {
+	// 	if (x != y)
+	// 		return 1;
+	// 	else
+	// 		return 0;
+	// }
+	// public static int compare_int_LT(int x, int y) {
+	// 	if (x < y)
+	// 		return 1;
+	// 	else
+	// 		return 0;
+	// }
+	// public static int compare_int_LE(int x, int y) {
+	// 	if (x <= y)
+	// 		return 1;
+	// 	else
+	// 		return 0;
+	// }
+	// public static int compare_int_GT(int x, int y) {
+	// 	if (x > y)
+	// 		return 1;
+	// 	else
+	// 		return 0;
+	// }
+	// public static int compare_int_GE(int x, int y) {
+	// 	if (x >= y)
+	// 		return 1;
+	// 	else
+	// 		return 0;
+	// }
 
 	// public static short compare_short_EQ(short x, short y) {
 	// 	if (x == y)
