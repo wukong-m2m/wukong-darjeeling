@@ -39,14 +39,11 @@ static inline void NEWARRAY()
 static inline void ANEWARRAY()
 {
 	dj_local_id classLocalId = dj_fetchLocalId();
-	dj_global_id classGlobalId = dj_global_id_resolve(dj_exec_getCurrentInfusion(), classLocalId);
-	uint16_t id = dj_global_id_getRuntimeClassId(classGlobalId);
-	dj_ref_array *arr = dj_ref_array_create(id, popShort());
+	uint16_t size = popShort();
 
-	if (arr==nullref)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
-	else
-		pushRef(VOIDP_TO_REF(arr));
+	ref_t arr = DO_ANEWARRAY(classLocalId, size);
+	if (arr!=nullref)
+		pushRef(arr);
 }
 
 /**

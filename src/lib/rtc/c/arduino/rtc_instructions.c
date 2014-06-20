@@ -52,3 +52,8 @@ ref_t RTC_LDS(dj_local_id localId) {
     DEBUG_LOG(DBG_RTC, "RTC_LDS %d %d\n", localId.infusion_id, localId.entity_id);
     return DO_LDS(localId);
 }
+
+ref_t RTC_ANEWARRAY(dj_local_id localId, uint16_t size) {
+    DEBUG_LOG(DBG_RTC, "RTC_NEWARRAY %d %d %d\n", localId.infusion_id, localId.entity_id, size);
+    return DO_ANEWARRAY(localId, size);
+}

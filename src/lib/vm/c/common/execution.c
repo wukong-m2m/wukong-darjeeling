@@ -45,6 +45,7 @@
  */
 
 #include "execution.h"
+#include "execution_instructions.h"
 #include "types.h"
 #include "parse_infusion.h"
 #include "infusion.h"

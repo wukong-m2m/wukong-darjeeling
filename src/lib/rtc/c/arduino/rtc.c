@@ -1483,6 +1483,32 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_x_PUSHREF(R24) );
                 emit( asm_x_PUSHREF(R25) );
             break;
+            case JVM_ANEWARRAY:
+                // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
+
+                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                jvm_operand_byte1 = dj_di_getU8(code + ++pc);
+                emit( asm_POP(R22) ); // size
+                emit( asm_POP(R23) );
+                emit( asm_LDI(R24, jvm_operand_byte0) ); // infusion id
+                emit( asm_LDI(R25, jvm_operand_byte1) ); // entity id
+
+                // PUSH important stuff
+                emit( asm_PUSH(RXH) );
+                emit( asm_PUSH(RXL) );
+
+                // make the call
+                emit( asm_CALL1((uint16_t)&RTC_ANEWARRAY) );
+                emit( asm_CALL2((uint16_t)&RTC_ANEWARRAY) );
+
+                // POP important stuff
+                emit( asm_POP(RXL) );
+                emit( asm_POP(RXH) );
+
+                // push the reference to the new object onto the ref stack
+                emit( asm_x_PUSHREF(R24) );
+                emit( asm_x_PUSHREF(R25) );
+            break;
             case JVM_ARRAYLENGTH: // The length of an array is stored as 16 bit at the start of the array
                 emit( asm_x_POPREF(R31) ); // POP the reference into Z
                 emit( asm_x_POPREF(R30) );

@@ -162,7 +162,7 @@ JVM_LOOKUPSWITCH 151
                                         JVM_INVOKEINTERFACE 159
                                         JVM_NEW 160
                                         JVM_NEWARRAY 161
-JVM_ANEWARRAY 162
+                                        JVM_ANEWARRAY 162
                                         JVM_ARRAYLENGTH 163
                                                                                 JVM_ATHROW 164
 JVM_CHECKCAST 165

@@ -21,12 +21,16 @@ public class RTCTest implements IRTCTest {
 		this.instance_int = init_int_value;
 	}
 
-	public static short[] check_new_array() {
-		short[] arr = new short[3];
-		arr[0] = 2;
-		arr[1] = 8000;
-		return arr;
+	public static RTCTest[] check_new_object_array() {
+		return new RTCTest[2];
 	}
+
+	// public static short[] check_new_array() {
+	// 	short[] arr = new short[3];
+	// 	arr[0] = 2;
+	// 	arr[1] = 8000;
+	// 	return arr;
+	// }
 
 	// public static int check_some_int_operations(int a, short b, byte c, short test) {
 	// 	if (test == 0) {

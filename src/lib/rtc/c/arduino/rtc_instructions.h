@@ -8,3 +8,4 @@ void RTC_INVOKESPECIAL(dj_local_id localId);
 void RTC_INVOKESTATIC(dj_local_id localId);
 ref_t RTC_NEW(dj_local_id localId);
 ref_t RTC_LDS(dj_local_id localId);
+ref_t RTC_ANEWARRAY(dj_local_id localId, uint16_t size);

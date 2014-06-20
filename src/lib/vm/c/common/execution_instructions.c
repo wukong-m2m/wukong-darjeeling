@@ -2,6 +2,7 @@
 #include "debug.h"
 #include "execution.h"
 #include "jstring.h"
+#include "array.h"
 
 // generated at infusion time
 #include "jlib_base.h"
@@ -81,3 +82,17 @@ ref_t DO_NEW(dj_local_id dj_local_id) {
 
 	return VOIDP_TO_REF(object);
 }
+
+ref_t DO_ANEWARRAY(dj_local_id dj_local_id, uint16_t size) {
+	dj_global_id dj_global_id = dj_global_id_resolve(dj_exec_getCurrentInfusion(), dj_local_id);
+	uint16_t id = dj_global_id_getRuntimeClassId(dj_global_id);
+	dj_ref_array *arr = dj_ref_array_create(id, size);
+
+	if (arr==nullref) {
+		dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
+		return 0;
+	}
+	else
+		return VOIDP_TO_REF(arr);
+}
+
