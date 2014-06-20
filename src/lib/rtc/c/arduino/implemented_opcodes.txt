@@ -75,23 +75,23 @@ JVM_ADUP2 71
 JVM_ADUP_X1 72
 JVM_ADUP_X2 73
 JVM_ASWAP 74
-JVM_GETFIELD_B 75
-JVM_GETFIELD_C 76
+                                        JVM_GETFIELD_B 75
+                                        JVM_GETFIELD_C 76
                                         JVM_GETFIELD_S 77
                                         JVM_GETFIELD_I 78
 JVM_GETFIELD_A 79
-JVM_PUTFIELD_B 80
-JVM_PUTFIELD_C 81
+                                        JVM_PUTFIELD_B 80
+                                        JVM_PUTFIELD_C 81
                                         JVM_PUTFIELD_S 82
                                         JVM_PUTFIELD_I 83
 JVM_PUTFIELD_A 84
-JVM_GETSTATIC_B 85
-JVM_GETSTATIC_C 86
+                                        JVM_GETSTATIC_B 85
+                                        JVM_GETSTATIC_C 86
                                         JVM_GETSTATIC_S 87
                                         JVM_GETSTATIC_I 88
                                         JVM_GETSTATIC_A 89
-JVM_PUTSTATIC_B 90
-JVM_PUTSTATIC_C 91
+                                        JVM_PUTSTATIC_B 90
+                                        JVM_PUTSTATIC_C 91
                                         JVM_PUTSTATIC_S 92
                                         JVM_PUTSTATIC_I 93
                                         JVM_PUTSTATIC_A 94
@@ -173,7 +173,7 @@ JVM_IDUP_X2 169
                                         JVM_IINC_W 170
 JVM_SINC_W 171 // Can't find test code. Compiler seems to prefer SSPUSH/SADD instead.
 JVM_I2C 172
-JVM_S2C 173
+                                        JVM_S2C 173
 JVM_B2C 174
 JVM_IDUP_X 175
                                         JVM_SIFEQ 176

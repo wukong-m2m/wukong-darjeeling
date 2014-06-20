@@ -47,15 +47,33 @@ public class RTCApp
 		// checkObjTests();
 		// checkSomeIntOperations();
 		// checkNewArray();
-		checkNewObjectArray();
+		// checkNewObjectArray();
+		checkCharByteObjStaticInstanceAccess();
 	}
 
-	public static void checkNewObjectArray() {
-		RTCTest[] arr = RTCTest.check_new_object_array();
-		System.out.println("2 " + arr.length);
-		System.out.println("2 " + arr[0].instance_int);
-		System.out.println("7000 " + arr[1].instance_int);
+	public static void checkCharByteObjStaticInstanceAccess() {
+		RTCTest obj = new RTCTest();
+
+		RTCTest.static_byte1 = -101;
+		obj.instance_byte1 = -51;
+
+		RTCTest.static_char1 = 10; // char is just byte in Darjeeling
+		obj.instance_char1 = 20;
+
+		RTCTest.check_char_byte_obj_static_instance_access(obj);
+
+		System.out.println("-100 " + RTCTest.static_byte1);
+		System.out.println("-50 " + obj.instance_byte1);
+		System.out.println("11 " + (int)RTCTest.static_char1);
+		System.out.println("21 " + (int)obj.instance_char1);
 	}
+
+	// public static void checkNewObjectArray() {
+	// 	RTCTest[] arr = RTCTest.check_new_object_array();
+	// 	System.out.println("2 " + arr.length);
+	// 	System.out.println("2 " + arr[0].instance_int);
+	// 	System.out.println("7000 " + arr[1].instance_int);
+	// }
 
 	// public static void checkNewArray() {
 	// 	short[] arr = RTCTest.check_new_array();

@@ -11,23 +11,38 @@ public class RTCTest implements IRTCTest {
 	private static int static_int2;
 	public static RTCTest static_ref1;
 	public static RTCTest static_ref2;
+	public static byte static_byte1;
+	public static char static_char1;
 
 	public short instance_short1;
 	public int instance_int;
 	public short instance_short2;
+	public byte instance_byte1;
+	public char instance_char1;
+	public RTCTest instance_ref1;
 
 	public RTCTest() {}
 	public RTCTest(int init_int_value) {
 		this.instance_int = init_int_value;
 	}
 
-	public static RTCTest[] check_new_object_array() {
-		RTCTest[] arr = new RTCTest[2];
-		arr[0] = new RTCTest(2);
-		arr[1] = new RTCTest(6000);
-		arr[1].instance_int += 1000; // test AALOAD as well
-		return arr;
+	public static void check_char_byte_obj_static_instance_access(RTCTest obj) {
+		// bytes
+		static_byte1++;
+		obj.instance_byte1++;
+
+		// chars
+		static_char1++;
+		obj.instance_char1++;
 	}
+
+	// public static RTCTest[] check_new_object_array() {
+	// 	RTCTest[] arr = new RTCTest[2];
+	// 	arr[0] = new RTCTest(2);
+	// 	arr[1] = new RTCTest(6000);
+	// 	arr[1].instance_int += 1000; // test AALOAD as well
+	// 	return arr;
+	// }
 
 	// public static short[] check_new_array() {
 	// 	short[] arr = new short[3];
