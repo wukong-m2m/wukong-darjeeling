@@ -27,24 +27,32 @@ public class RTCTest implements IRTCTest {
 		this.instance_int = init_int_value;
 	}
 
-	public static void check_char_byte_obj_static_instance_access(RTCTest obj) {
-		// bytes
-		static_byte1++;
-		obj.instance_byte1++;
-
-		// chars
-		static_char1++;
-		obj.instance_char1++;
-
-		// refs
-		int x = static_ref1.instance_int;
-		RTCTest new_instance = new RTCTest(x+1);
-		static_ref1 = new_instance;
-
-		x = obj.instance_ref1.instance_int;
-		new_instance = new RTCTest(x+1);
-		obj.instance_ref1 = new_instance;
+	public static void check_int_array_load_store(byte[] barr, char[] carr, short[] sarr, RTCTest[] aarr, int[] iarr) {
+		barr[0]++;
+		carr[0]++;
+		sarr[0]++;
+		aarr[0] = new RTCTest(aarr[0].instance_int+1);
+		iarr[0]++;
 	}
+
+	// public static void check_char_byte_obj_static_instance_access(RTCTest obj) {
+	// 	// bytes
+	// 	static_byte1++;
+	// 	obj.instance_byte1++;
+
+	// 	// chars
+	// 	static_char1++;
+	// 	obj.instance_char1++;
+
+	// 	// refs
+	// 	int x = static_ref1.instance_int;
+	// 	RTCTest new_instance = new RTCTest(x+1);
+	// 	static_ref1 = new_instance;
+
+	// 	x = obj.instance_ref1.instance_int;
+	// 	new_instance = new RTCTest(x+1);
+	// 	obj.instance_ref1 = new_instance;
+	// }
 
 	// public static RTCTest[] check_new_object_array() {
 	// 	RTCTest[] arr = new RTCTest[2];

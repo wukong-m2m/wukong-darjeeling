@@ -52,15 +52,15 @@ Not implemented:                        Implemented:                            
                                         JVM_ASTORE_1 49
                                         JVM_ASTORE_2 50
                                         JVM_ASTORE_3 51
-JVM_BALOAD 52
-JVM_CALOAD 53
+                                        JVM_BALOAD 52
+                                        JVM_CALOAD 53
                                         JVM_SALOAD 54
-JVM_IALOAD 55
+                                        JVM_IALOAD 55
                                         JVM_AALOAD 56
-JVM_BASTORE 57
-JVM_CASTORE 58
+                                        JVM_BASTORE 57
+                                        JVM_CASTORE 58
                                         JVM_SASTORE 59
-JVM_IASTORE 60
+                                        JVM_IASTORE 60
                                         JVM_AASTORE 61
 JVM_IPOP 62
 JVM_IPOP2 63

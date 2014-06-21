@@ -394,7 +394,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_STD(R24, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0)) );
                 emit( asm_STD(R25, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0)+1) );
             break;
+            case JVM_BALOAD:
+            case JVM_CALOAD:
             case JVM_SALOAD:
+            case JVM_IALOAD:
             case JVM_AALOAD:
                 // Arrays are indexed by a 32bit int. But we don't have enough memory to hold arrays that large, so just ignore the upper two.
                 // Should check that they are 0 when implementing bounds checks.
@@ -407,76 +410,143 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_x_POPREF(RZH) );
                 emit( asm_x_POPREF(RZL) ); // Z now pointer to the base of the array object.
 
-                // Multiply the index by 2, since we're indexing 16 bit shorts.
-                emit( asm_LSL(R22) );
-                emit( asm_ROL(R23) );
+                if (opcode==JVM_SALOAD || opcode==JVM_AALOAD) {
+                    // Multiply the index by 2, since we're indexing 16 bit shorts.
+                    emit( asm_LSL(R22) );
+                    emit( asm_ROL(R23) );
+                } else if (opcode==JVM_IALOAD) {
+                    // Multiply the index by 4, since we're indexing 16 bit shorts.
+                    emit( asm_LSL(R22) );
+                    emit( asm_ROL(R23) );
+                    emit( asm_LSL(R22) );
+                    emit( asm_ROL(R23) );
+                }
 
-                // Add 2*the index to Z
+                // Add (1/2/4)*the index to Z
                 emit( asm_ADD(RZL, R22) );
                 emit( asm_ADC(RZH, R23) );
 
-                if (opcode == JVM_SALOAD) {
+                if (opcode == JVM_AALOAD) {
+                    // Add 4 to skip 2 bytes for array length and 2 bytes for array type.
+                    emit( asm_ADIW(RZ, 4) ); 
+                } else { // all types of int array
                     // Add 3 to skip 2 bytes for array length and 1 byte for array type.
                     emit( asm_ADIW(RZ, 3) ); 
-                } else if (opcode == JVM_AALOAD) {
-                    // Add 3 to skip 2 bytes for array length and 2 bytes for array type.
-                    emit( asm_ADIW(RZ, 4) ); 
                 }
 
                 // Now Z points to the target element
-                emit( asm_LD_ZINC(R24) );
-                emit( asm_LD_Z(R25) );
-                if (opcode == JVM_SALOAD) {
-                    emit( asm_PUSH(R25) );
-                    emit( asm_PUSH(R24) );
-                } else if (opcode == JVM_AALOAD) {
-                    emit( asm_x_PUSHREF(R24) );
-                    emit( asm_x_PUSHREF(R25) );
+                switch (opcode) {
+                    case JVM_BALOAD:
+                    case JVM_CALOAD:
+                        emit( asm_LD_Z(R24) );
+                        emit( asm_CLR(R25) );
+                        emit( asm_SBRC(R24, 7) ); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
+                        emit( asm_COM(R25) ); // otherwise: flip R24 to 0xFF to extend the sign
+                        emit( asm_PUSH(R25) );
+                        emit( asm_PUSH(R24) );
+                    break;
+                    case JVM_SALOAD:
+                        emit( asm_LD_ZINC(R24) );
+                        emit( asm_LD_Z(R25) );
+                        emit( asm_PUSH(R25) );
+                        emit( asm_PUSH(R24) );
+                    break;
+                    case JVM_IALOAD:
+                        emit( asm_LD_ZINC(R22) );
+                        emit( asm_LD_ZINC(R23) );
+                        emit( asm_LD_ZINC(R24) );
+                        emit( asm_LD_Z(R25) );
+                        emit( asm_PUSH(R25) );
+                        emit( asm_PUSH(R24) );
+                        emit( asm_PUSH(R23) );
+                        emit( asm_PUSH(R22) );
+                    break;
+                    case JVM_AALOAD:
+                        emit( asm_LD_ZINC(R24) );
+                        emit( asm_LD_Z(R25) );
+                        emit( asm_x_PUSHREF(R24) );
+                        emit( asm_x_PUSHREF(R25) );
+                    break;
                 }
             break;
+            case JVM_BASTORE:
+            case JVM_CASTORE:
             case JVM_SASTORE:
+            case JVM_IASTORE:
             case JVM_AASTORE:
                 // Pop the value we need to store in the array.
-                if (opcode == JVM_SASTORE) {
-                    emit( asm_POP(R24) );
-                    emit( asm_POP(R25) );
-                } else if (opcode == JVM_AASTORE) {
-                    emit( asm_x_POPREF(R25) );
-                    emit( asm_x_POPREF(R24) );
+                switch (opcode) {
+                    case JVM_BASTORE:
+                    case JVM_CASTORE:
+                    case JVM_SASTORE:
+                        emit( asm_POP(R24) );
+                        emit( asm_POP(R25) );
+                    break;
+                    case JVM_IASTORE:
+                        emit( asm_POP(R22) );
+                        emit( asm_POP(R23) );
+                        emit( asm_POP(R24) );
+                        emit( asm_POP(R25) );
+                    break;
+                    case JVM_AASTORE:
+                        emit( asm_x_POPREF(R25) );
+                        emit( asm_x_POPREF(R24) );
+                    break;
                 }
 
                 // Arrays are indexed by a 32bit int. But we don't have enough memory to hold arrays that large, so just ignore the upper two.
-                // We'll pop the index to R22:R23 here, but to R22:R25 in SALOAD. This is just to make it easier for the SALOAD sequence to be
-                // optimised against the previous instruction.
                 // Should check that they are 0 when implementing bounds checks.
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
                 emit( asm_POP(R18) );
-                emit( asm_POP(R18) );
+                emit( asm_POP(R19) );
+                emit( asm_POP(R20) );
+                emit( asm_POP(R21) );
 
                 // POP the array reference into Z.
                 emit( asm_x_POPREF(RZH) );
                 emit( asm_x_POPREF(RZL) ); // Z now pointer to the base of the array object.
 
-                // Multiply the index by 2, since we're indexing 16 bit shorts.
-                emit( asm_LSL(R22) );
-                emit( asm_ROL(R23) );
+                if (opcode==JVM_SASTORE || opcode==JVM_AASTORE) {
+                    // Multiply the index by 2, since we're indexing 16 bit shorts.
+                    emit( asm_LSL(R18) );
+                    emit( asm_ROL(R19) );
+                } else if (opcode==JVM_IASTORE) {
+                    // Multiply the index by 4, since we're indexing 16 bit shorts.
+                    emit( asm_LSL(R18) );
+                    emit( asm_ROL(R19) );
+                    emit( asm_LSL(R18) );
+                    emit( asm_ROL(R19) );
+                }
 
-                // Add 2*the index to Z
-                emit( asm_ADD(RZL, R22) );
-                emit( asm_ADC(RZH, R23) );
+                // Add (1/2/4)*the index to Z
+                emit( asm_ADD(RZL, R18) );
+                emit( asm_ADC(RZH, R19) );
 
-                if (opcode == JVM_SASTORE) {
+                if (opcode == JVM_AASTORE) {
+                    // Add 4 to skip 2 bytes for array length and 2 bytes for array type.
+                    emit( asm_ADIW(RZ, 4) ); 
+                } else { // all types of int array
                     // Add 3 to skip 2 bytes for array length and 1 byte for array type.
                     emit( asm_ADIW(RZ, 3) ); 
-                } else if (opcode == JVM_AASTORE) {
-                    // Add 3 to skip 2 bytes for array length and 2 bytes for array type.
-                    emit( asm_ADIW(RZ, 4) ); 
                 }
 
                 // Now Z points to the target element
-                emit( asm_ST_ZINC(R24) );
-                emit( asm_ST_Z(R25) );
+                switch (opcode) {
+                    case JVM_BASTORE:
+                    case JVM_CASTORE:
+                        emit( asm_ST_Z(R24) );
+                    break;
+                    case JVM_SASTORE:
+                    case JVM_AASTORE:
+                        emit( asm_ST_ZINC(R24) );
+                        emit( asm_ST_Z(R25) );
+                    break;
+                    case JVM_IASTORE:
+                        emit( asm_ST_ZINC(R22) );
+                        emit( asm_ST_ZINC(R23) );
+                        emit( asm_ST_ZINC(R24) );
+                        emit( asm_ST_Z(R25) );
+                    break;
+                }
             break;
             case JVM_IDUP2:
                 // IDUP2 duplicates the top two SLOTS on the integer stack, not the top two ints. So IDUP2 is actually IDUP, and IDUP is actually SDUP.

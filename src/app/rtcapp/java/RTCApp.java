@@ -48,30 +48,53 @@ public class RTCApp
 		// checkSomeIntOperations();
 		// checkNewArray();
 		// checkNewObjectArray();
-		checkCharByteObjStaticInstanceAccess();
+		// checkCharByteObjStaticInstanceAccess();
+		checkArrayLoadStore();
 	}
 
-	public static void checkCharByteObjStaticInstanceAccess() {
-		RTCTest obj = new RTCTest();
+	public static void checkArrayLoadStore() {
+		byte[] barr = new byte[1];
+		barr[0] = (byte)10;
+		char[] carr = new char[1];
+		carr[0] = (char)100;
+		short[] sarr = new short[1];
+		sarr[0] = (short)1000;
+		RTCTest[] aarr = new RTCTest[1];
+		aarr[0] = new RTCTest(10000);
+		int[] iarr = new int[1];
+		iarr[0] = 100000;
 
-		RTCTest.static_byte1 = -101;
-		obj.instance_byte1 = -51;
+		RTCTest.check_int_array_load_store(barr, carr, sarr, aarr, iarr);
 
-		RTCTest.static_char1 = 10; // char is just byte in Darjeeling
-		obj.instance_char1 = 20;
-
-		RTCTest.static_ref1 = new RTCTest(100000);
-		obj.instance_ref1 = new RTCTest(200000);
-
-		RTCTest.check_char_byte_obj_static_instance_access(obj);
-
-		System.out.println("-100 " + RTCTest.static_byte1);
-		System.out.println("-50 " + obj.instance_byte1);
-		System.out.println("11 " + (int)RTCTest.static_char1);
-		System.out.println("21 " + (int)obj.instance_char1);
-		System.out.println("100001 " + RTCTest.static_ref1.instance_int);
-		System.out.println("200001 " + obj.instance_ref1.instance_int);
+		System.out.println("11 " + barr[0]);
+		System.out.println("101 " + (int)carr[0]);
+		System.out.println("1001 " + sarr[0]);
+		System.out.println("10001 " + aarr[0].instance_int);
+		System.out.println("100001 " + iarr[0]);
 	}
+
+
+	// public static void checkCharByteObjStaticInstanceAccess() {
+	// 	RTCTest obj = new RTCTest();
+
+	// 	RTCTest.static_byte1 = -101;
+	// 	obj.instance_byte1 = -51;
+
+	// 	RTCTest.static_char1 = 10; // char is just byte in Darjeeling
+	// 	obj.instance_char1 = 20;
+
+	// 	RTCTest.static_ref1 = new RTCTest(100000);
+	// 	obj.instance_ref1 = new RTCTest(200000);
+
+	// 	RTCTest.check_char_byte_obj_static_instance_access(obj);
+
+	// 	System.out.println("-100 " + RTCTest.static_byte1);
+	// 	System.out.println("-50 " + obj.instance_byte1);
+	// 	System.out.println("11 " + (int)RTCTest.static_char1);
+	// 	System.out.println("21 " + (int)obj.instance_char1);
+	// 	System.out.println("100001 " + RTCTest.static_ref1.instance_int);
+	// 	System.out.println("200001 " + obj.instance_ref1.instance_int);
+	// }
 
 	// public static void checkNewObjectArray() {
 	// 	RTCTest[] arr = RTCTest.check_new_object_array();
