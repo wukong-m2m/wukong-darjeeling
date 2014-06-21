@@ -166,15 +166,15 @@ JVM_LOOKUPSWITCH 151
                                         JVM_ARRAYLENGTH 163
                                                                                 JVM_ATHROW 164
 JVM_CHECKCAST 165
-JVM_INSTANCEOF 166
+                                        JVM_INSTANCEOF 166
                                                                                 JVM_MONITORENTER 167
                                                                                 JVM_MONITOREXIT 168
 JVM_IDUP_X2 169
                                         JVM_IINC_W 170
 JVM_SINC_W 171 // Can't find test code. Compiler seems to prefer SSPUSH/SADD instead.
-JVM_I2C 172
+JVM_I2C 172 // Can't find test code. Compiler seems to prefer I2S/S2C instead.
                                         JVM_S2C 173
-JVM_B2C 174
+JVM_B2C 174 // Can't find test code. Compiler seems to use S2C instead.
 JVM_IDUP_X 175
                                         JVM_SIFEQ 176
                                         JVM_SIFNE 177

@@ -57,3 +57,9 @@ ref_t RTC_ANEWARRAY(dj_local_id localId, uint16_t size) {
     DEBUG_LOG(DBG_RTC, "RTC_NEWARRAY %d %d %d\n", localId.infusion_id, localId.entity_id, size);
     return DO_ANEWARRAY(localId, size);
 }
+
+int16_t RTC_INSTANCEOF(dj_local_id localId, ref_t ref) {
+    DEBUG_LOG(DBG_RTC, "RTC_INSTANCEOF %d %d %d\n", localId.infusion_id, localId.entity_id, ref);
+    return DO_INSTANCEOF(localId, ref);
+}
+

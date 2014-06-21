@@ -49,34 +49,7 @@ static inline void INSTANCEOF()
 {
 	dj_local_id localClassId = dj_fetchLocalId();
 	ref_t ref = popRef();
-
-	dj_object * object = REF_TO_VOIDP(ref);
-
-    DEBUG_ENTER_NEST(DBG_DARJEELING, "INSTANCEOF()");
-	// if the reference is null, result should be 0 (FALSE).
-    // Else use dj_global_id_testType to dermine
-	// if the ref on the stack is of the desired type
-	if (ref==nullref)
-    {
-		pushShort(0);
-    } else if (dj_object_getRuntimeId(object)==CHUNKID_INVALID)
-	{
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_ClassUnloadedException);
-		return;
-	}
-
-	else if (dj_global_id_isJavaLangObject(dj_global_id_resolve(dj_exec_getCurrentInfusion(), localClassId)))
-    {
-        DEBUG_LOG(DBG_DARJEELING, "Ich bin a j.l.Object\n");
-        // a   check  against   a  non-null   object   for  instanceof
-        // java.lang.Object should always return true
-        pushShort(1);
-    }
-	else
-    {
-		pushShort(dj_global_id_testType(object, localClassId));
-    }
-    DEBUG_EXIT_NEST(DBG_DARJEELING, "INSTANCEOF()");
+	pushShort(DO_INSTANCEOF(localClassId, ref));
 }
 
 static inline void CHECKCAST()

@@ -49,29 +49,38 @@ public class RTCApp
 		// checkNewArray();
 		// checkNewObjectArray();
 		// checkCharByteObjStaticInstanceAccess();
-		checkArrayLoadStore();
+		// checkArrayLoadStore();
+		checkInstanceOf();
 	}
 
-	public static void checkArrayLoadStore() {
-		byte[] barr = new byte[1];
-		barr[0] = (byte)10;
-		char[] carr = new char[1];
-		carr[0] = (char)100;
-		short[] sarr = new short[1];
-		sarr[0] = (short)1000;
-		RTCTest[] aarr = new RTCTest[1];
-		aarr[0] = new RTCTest(10000);
-		int[] iarr = new int[1];
-		iarr[0] = 100000;
+	public static void checkInstanceOf() {
+		Object obj1 = new RTCTest();
+		Object obj2 = new Object();
 
-		RTCTest.check_int_array_load_store(barr, carr, sarr, aarr, iarr);
-
-		System.out.println("11 " + barr[0]);
-		System.out.println("101 " + (int)carr[0]);
-		System.out.println("1001 " + sarr[0]);
-		System.out.println("10001 " + aarr[0].instance_int);
-		System.out.println("100001 " + iarr[0]);
+		System.out.println("1 " + RTCTest.check_instance_of(obj1));
+		System.out.println("0 " + RTCTest.check_instance_of(obj2));
 	}
+
+	// public static void checkArrayLoadStore() {
+	// 	byte[] barr = new byte[1];
+	// 	barr[0] = (byte)10;
+	// 	char[] carr = new char[1];
+	// 	carr[0] = (char)100;
+	// 	short[] sarr = new short[1];
+	// 	sarr[0] = (short)1000;
+	// 	RTCTest[] aarr = new RTCTest[1];
+	// 	aarr[0] = new RTCTest(10000);
+	// 	int[] iarr = new int[1];
+	// 	iarr[0] = 100000;
+
+	// 	RTCTest.check_int_array_load_store(barr, carr, sarr, aarr, iarr);
+
+	// 	System.out.println("11 " + barr[0]);
+	// 	System.out.println("101 " + (int)carr[0]);
+	// 	System.out.println("1001 " + sarr[0]);
+	// 	System.out.println("10001 " + aarr[0].instance_int);
+	// 	System.out.println("100001 " + iarr[0]);
+	// }
 
 
 	// public static void checkCharByteObjStaticInstanceAccess() {
