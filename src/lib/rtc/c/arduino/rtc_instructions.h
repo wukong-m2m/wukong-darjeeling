@@ -10,3 +10,4 @@ ref_t RTC_NEW(dj_local_id localId);
 ref_t RTC_LDS(dj_local_id localId);
 ref_t RTC_ANEWARRAY(dj_local_id localId, uint16_t size);
 int16_t RTC_INSTANCEOF(dj_local_id localClassId, ref_t ref);
+void RTC_CHECKCAST(dj_local_id localId, ref_t ref);

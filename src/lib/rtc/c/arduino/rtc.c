@@ -1743,6 +1743,30 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit( asm_PUSH(R25) );
                 emit( asm_PUSH(R24) );
             break;
+            case JVM_CHECKCAST:
+                // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
+
+                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                jvm_operand_byte1 = dj_di_getU8(code + ++pc);
+                emit( asm_x_POPREF(R23) ); // reference to the object
+                emit( asm_x_POPREF(R22) );
+                emit( asm_x_PUSHREF(R22) ); // TODO: optimise this. CHECKCAST should only peek.
+                emit( asm_x_PUSHREF(R23) );
+                emit( asm_LDI(R24, jvm_operand_byte0) ); // infusion id
+                emit( asm_LDI(R25, jvm_operand_byte1) ); // entity id
+
+                // PUSH important stuff
+                emit( asm_PUSH(RXH) );
+                emit( asm_PUSH(RXL) );
+
+                // make the call
+                emit( asm_CALL1((uint16_t)&RTC_CHECKCAST) );
+                emit( asm_CALL2((uint16_t)&RTC_CHECKCAST) );
+
+                // POP important stuff
+                emit( asm_POP(RXL) );
+                emit( asm_POP(RXH) );
+            break;
             case JVM_INSTANCEOF:
                 // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
 

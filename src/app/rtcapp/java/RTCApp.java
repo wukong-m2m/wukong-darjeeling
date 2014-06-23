@@ -50,16 +50,29 @@ public class RTCApp
 		// checkNewObjectArray();
 		// checkCharByteObjStaticInstanceAccess();
 		// checkArrayLoadStore();
-		checkInstanceOf();
+		// checkInstanceOf();
+		checkCheckCast();
 	}
 
-	public static void checkInstanceOf() {
-		Object obj1 = new RTCTest();
+	public static void checkCheckCast() {
+		RTCTest obj1 = new RTCTest();
 		Object obj2 = new Object();
 
-		System.out.println("1 " + RTCTest.check_instance_of(obj1));
-		System.out.println("0 " + RTCTest.check_instance_of(obj2));
+		System.out.println("Testing correct cast:...");
+		RTCTest.check_checkcast(obj1);
+		System.out.println("Ok.");
+		System.out.println("Testing incorrect cast: Now the VM should panic...");
+		RTCTest.check_checkcast(obj2);
+		System.out.println("Oops, we're still here.");
 	}
+
+	// public static void checkInstanceOf() {
+	// 	Object obj1 = new RTCTest();
+	// 	Object obj2 = new Object();
+
+	// 	System.out.println("1 " + RTCTest.check_instance_of(obj1));
+	// 	System.out.println("0 " + RTCTest.check_instance_of(obj2));
+	// }
 
 	// public static void checkArrayLoadStore() {
 	// 	byte[] barr = new byte[1];

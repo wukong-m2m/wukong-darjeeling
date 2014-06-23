@@ -1,5 +1,6 @@
 #include "debug.h"
 #include "types.h"
+#include "panic.h"
 #include "global_id.h"
 #include "execution.h"
 #include "execution_instructions.h"
@@ -63,3 +64,8 @@ int16_t RTC_INSTANCEOF(dj_local_id localId, ref_t ref) {
     return DO_INSTANCEOF(localId, ref);
 }
 
+void RTC_CHECKCAST(dj_local_id localId, ref_t ref) {
+    DEBUG_LOG(DBG_RTC, "RTC_CHECKCAST %d %d %d\n", localId.infusion_id, localId.entity_id, ref);
+    if (DO_INSTANCEOF(localId, ref) == 0)
+        dj_panic(DJ_PANIC_UNCAUGHT_EXCEPTION);
+}

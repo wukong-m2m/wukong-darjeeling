@@ -165,7 +165,7 @@ JVM_LOOKUPSWITCH 151
                                         JVM_ANEWARRAY 162
                                         JVM_ARRAYLENGTH 163
                                                                                 JVM_ATHROW 164
-JVM_CHECKCAST 165
+                                        JVM_CHECKCAST 165
                                         JVM_INSTANCEOF 166
                                                                                 JVM_MONITORENTER 167
                                                                                 JVM_MONITOREXIT 168

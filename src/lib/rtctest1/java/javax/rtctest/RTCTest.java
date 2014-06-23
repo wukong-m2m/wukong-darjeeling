@@ -27,12 +27,16 @@ public class RTCTest implements IRTCTest {
 		this.instance_int = init_int_value;
 	}
 
-	public static int check_instance_of(Object obj) {
-		if (obj instanceof RTCTest)
-			return 1;
-		else
-			return 0;
+	public static RTCTest check_checkcast(Object obj) {
+		return (RTCTest)obj; // Should just return obj if it's an RTCTest, or panic if it's not (since we won't implement exceptions)
 	}
+
+	// public static int check_instance_of(Object obj) {
+	// 	if (obj instanceof RTCTest)
+	// 		return 1;
+	// 	else
+	// 		return 0;
+	// }
 
 	// public static void check_int_array_load_store(byte[] barr, char[] carr, short[] sarr, RTCTest[] aarr, int[] iarr) {
 	// 	barr[0]++;
