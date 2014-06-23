@@ -457,11 +457,13 @@ static inline void TABLESWITCH()
 {
 	uint32_t key = popInt();
 	uint16_t branchAdress = fetch16();
+	fetch16(); // skip over BranchTargetIndex. It's only used for rtc compiled code.
+
 	uint32_t low = fetch32();
 	uint32_t high = fetch32();
 
-	if ((key>=low)&&(key<=high)) branchAdress = peekn16((key-low) * 2);
-	branch(branchAdress - 11);
+	if ((key>=low)&&(key<=high)) branchAdress = peekn16((key-low) * 4);
+	branch(branchAdress - 13);
 }
 
 /**
@@ -472,6 +474,7 @@ static inline void LOOKUPSWITCH()
 	int i;
 	uint32_t key = popInt();
 	uint16_t branchAdress = fetch16();
+	fetch16(); // skip over BranchTargetIndex. It's only used for rtc compiled code.
 	uint16_t npairs = fetch16();
 
 	// look for the key in the key/adress list
@@ -479,9 +482,9 @@ static inline void LOOKUPSWITCH()
 	{
 		if (peekn32(i*6)==key)
 		{
-			branchAdress=peekn16(i*6+4);
+			branchAdress=peekn16(i*8+4);
 			continue;
 		}
 	}
-	branch(branchAdress - 5);
+	branch(branchAdress - 7);
 }

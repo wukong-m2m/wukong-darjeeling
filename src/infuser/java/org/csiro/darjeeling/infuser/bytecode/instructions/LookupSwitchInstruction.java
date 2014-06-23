@@ -37,6 +37,7 @@ public class LookupSwitchInstruction extends SwitchInstruction
 		assert(targets.length==values.length) : "value and target adress arrays should be of the same size";
 		this.values = values;
 		this.switchAddresses = targets;
+		this.switchBranchTargetIndexes = new int[targets.length];
 	}
 	
 	public void dump(DataOutputStream out) throws IOException
@@ -47,12 +48,12 @@ public class LookupSwitchInstruction extends SwitchInstruction
 		{
 			out.writeInt(values[i]);
 			out.writeShort(switchAddresses[i]);
+			out.writeShort(switchBranchTargetIndexes[i]);
 		}
 	}
 	
 	public int getLength()
 	{
-		return 1 + 2 + 2 + values.length * 4 + switchAddresses.length * 2;
+		return 1 + 2 + 2 + 2 + values.length * 4 + switchAddresses.length * (2+2);
 	}
-
 }

@@ -27,6 +27,7 @@ public abstract class SwitchInstruction extends BranchInstruction
 {
 
 	protected int[] switchAddresses;
+	protected int[] switchBranchTargetIndexes;
 
 	public SwitchInstruction(Opcode opcode, int branchAdress)
 	{
@@ -42,6 +43,14 @@ public abstract class SwitchInstruction extends BranchInstruction
 	{
 		this.switchAddresses[index] = address;
 	}
-	
 
+	public int[] getSwitchBranchTargetIndexes()
+	{
+		return switchBranchTargetIndexes;
+	}
+
+	public void setSwitchBranchTargetIndex(int index, int branchTargetIndex)
+	{
+		this.switchBranchTargetIndexes[index] = branchTargetIndex;
+	}
 }

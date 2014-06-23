@@ -305,6 +305,15 @@ public class InstructionList
 				BranchTargetInstruction branchTarget = (BranchTargetInstruction)handle.getBranchHandle().getInstruction();
 				branch.setBranchTargetIndex(branchTarget.getBranchTargetIndex());
 			}
+
+			if (opcode.isSwitch())
+			{
+				SwitchInstruction switchInstruction = (SwitchInstruction)handle.getInstruction();
+				for (int i=0; i<handle.getSwitchTargets().size(); i++) {
+					BranchTargetInstruction branchTarget = (BranchTargetInstruction)handle.getSwitchTargets().get(i).getInstruction();
+					switchInstruction.setSwitchBranchTargetIndex(i, branchTarget.getBranchTargetIndex());
+				}
+			}
 		}
 	}
 	

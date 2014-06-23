@@ -51,20 +51,43 @@ public class RTCApp
 		// checkCharByteObjStaticInstanceAccess();
 		// checkArrayLoadStore();
 		// checkInstanceOf();
-		checkCheckCast();
+		// checkCheckCast();
+		checkTableSwitch();
 	}
 
-	public static void checkCheckCast() {
-		RTCTest obj1 = new RTCTest();
-		Object obj2 = new Object();
-
-		System.out.println("Testing correct cast:...");
-		RTCTest.check_checkcast(obj1);
-		System.out.println("Ok.");
-		System.out.println("Testing incorrect cast: Now the VM should panic...");
-		RTCTest.check_checkcast(obj2);
-		System.out.println("Oops, we're still here.");
+	public static void checkTableSwitch() {
+		System.out.println("2914 " + RTCApp.check_tableswitch(0x12345677));
+		System.out.println("100 " + RTCApp.check_tableswitch(0x12345678));
+		System.out.println("42 " + RTCApp.check_tableswitch(0x12345679));
+		System.out.println("1000000 " + RTCApp.check_tableswitch(0x1234567a));
+		System.out.println("2914 " + RTCApp.check_tableswitch(0x1234567b));
 	}
+
+	public static int check_tableswitch(int a) {
+		switch(a) {
+			case 0x12345678:
+				return 100;
+			case 0x12345679:
+				return 42;
+			case 0x1234567a:
+				return 1000000;
+			default:
+				return 2914;
+		}
+	}
+
+
+	// public static void checkCheckCast() {
+	// 	RTCTest obj1 = new RTCTest();
+	// 	Object obj2 = new Object();
+
+	// 	System.out.println("Testing correct cast:...");
+	// 	RTCTest.check_checkcast(obj1);
+	// 	System.out.println("Ok.");
+	// 	System.out.println("Testing incorrect cast: Now the VM should panic...");
+	// 	RTCTest.check_checkcast(obj2);
+	// 	System.out.println("Oops, we're still here.");
+	// }
 
 	// public static void checkInstanceOf() {
 	// 	Object obj1 = new RTCTest();

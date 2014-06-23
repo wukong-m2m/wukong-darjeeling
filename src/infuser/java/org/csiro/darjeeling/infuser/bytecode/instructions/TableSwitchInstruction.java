@@ -38,6 +38,7 @@ public class TableSwitchInstruction extends SwitchInstruction
 		this.low = low;
 		this.high = high;
 		this.switchAddresses = branchOffsets;
+		this.switchBranchTargetIndexes = new int[branchOffsets.length];
 	}
 	
 	public int getLow()
@@ -55,13 +56,14 @@ public class TableSwitchInstruction extends SwitchInstruction
 		super.dump(out);
 		out.writeInt(low);
 		out.writeInt(high);
-		for (int i=0; i<switchAddresses.length; i++)
+		for (int i=0; i<switchAddresses.length; i++) {
 			out.writeShort(switchAddresses[i]);
+			out.writeShort(switchBranchTargetIndexes[i]);
+		}
 	}
 
 	public int getLength()
 	{
-		return 1 + 2 + 4 + 4 + switchAddresses.length*2;
+		return 1 + 2 + 2 + 4 + 4 + switchAddresses.length*(2+2);
 	}
-
 }
