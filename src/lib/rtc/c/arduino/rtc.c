@@ -1623,6 +1623,48 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 }
             }
             break;
+            case JVM_LOOKUPSWITCH: {
+                // Branch instructions first have a bytecode offset, used by the interpreter,
+                // followed by a branch target index used when compiling to native code.
+                uint16_t default_branch_target = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                pc += 4;
+
+                // Pop the key value
+                emit( asm_POP(R22) );
+                emit( asm_POP(R23) );
+                emit( asm_POP(R24) );
+                emit( asm_POP(R25) );
+
+                uint16_t number_of_cases = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
+                pc += 2;
+                for (int i=0; i<number_of_cases; i++) {
+                    // Get the case label
+                    jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                    jvm_operand_byte1 = dj_di_getU8(code + ++pc);
+                    jvm_operand_byte2 = dj_di_getU8(code + ++pc);
+                    jvm_operand_byte3 = dj_di_getU8(code + ++pc);
+                    // Get the branch target (and skip the branch address used by the interpreter)
+                    jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                    pc += 4;
+                    emit( asm_LDI(R21, jvm_operand_byte0)); // Bytecode is big endian
+                    emit( asm_LDI(R20, jvm_operand_byte1));
+                    emit( asm_LDI(R19, jvm_operand_byte2));
+                    emit( asm_LDI(R18, jvm_operand_byte3));
+                    emit( asm_CP(R18, R22) );
+                    emit( asm_CPC(R19, R23) );
+                    emit( asm_CPC(R20, R24) );
+                    emit( asm_CPC(R21, R25) );
+                    emit( asm_BRNE(SIZEOF_RJMP) );  
+
+                  
+                    rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
+                    emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+                }
+
+                rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
+                emit( asm_RJMP(rtc_branch_target_table_address(default_branch_target) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+            }
+            break;
             case JVM_SRETURN:
                 emit( asm_POP(R24) );
                 emit( asm_POP(R25) );

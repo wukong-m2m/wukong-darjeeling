@@ -27,18 +27,31 @@ public class RTCTest implements IRTCTest {
 		this.instance_int = init_int_value;
 	}
 
-	public static int check_tableswitch(int a) {
+	public static int check_lookupswitch(int a) {
 		switch(a) {
-			case 0x12345678:
+			case 0:
 				return 100;
-			case 0x12345679:
+			case 0x12000000:
 				return 42;
-			case 0x1234567a:
+			case -1000:
 				return 1000000;
 			default:
 				return 2914;
 		}
 	}
+
+	// public static int check_tableswitch(int a) {
+	// 	switch(a) {
+	// 		case 0x12345678:
+	// 			return 100;
+	// 		case 0x12345679:
+	// 			return 42;
+	// 		case 0x1234567a:
+	// 			return 1000000;
+	// 		default:
+	// 			return 2914;
+	// 	}
+	// }
 
 	// public static RTCTest check_checkcast(Object obj) {
 	// 	return (RTCTest)obj; // Should just return obj if it's an RTCTest, or panic if it's not (since we won't implement exceptions)

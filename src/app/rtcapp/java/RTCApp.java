@@ -52,16 +52,24 @@ public class RTCApp
 		// checkArrayLoadStore();
 		// checkInstanceOf();
 		// checkCheckCast();
-		checkTableSwitch();
+		// checkTableSwitch();
+		checkLookupSwitch();
 	}
 
-	public static void checkTableSwitch() {
-		System.out.println("2914 " + RTCApp.check_tableswitch(0x12345677));
-		System.out.println("100 " + RTCApp.check_tableswitch(0x12345678));
-		System.out.println("42 " + RTCApp.check_tableswitch(0x12345679));
-		System.out.println("1000000 " + RTCApp.check_tableswitch(0x1234567a));
-		System.out.println("2914 " + RTCApp.check_tableswitch(0x1234567b));
+	public static void checkLookupSwitch() {
+		System.out.println("100 " + RTCTest.check_lookupswitch(0));
+		System.out.println("42 " + RTCTest.check_lookupswitch(0x12000000));
+		System.out.println("1000000 " + RTCTest.check_lookupswitch(-1000));
+		System.out.println("2914 " + RTCTest.check_lookupswitch(0x12345678));
 	}
+
+	// public static void checkTableSwitch() {
+	// 	System.out.println("2914 " + RTCTest.check_tableswitch(0x12345677));
+	// 	System.out.println("100 " + RTCTest.check_tableswitch(0x12345678));
+	// 	System.out.println("42 " + RTCTest.check_tableswitch(0x12345679));
+	// 	System.out.println("1000000 " + RTCTest.check_tableswitch(0x1234567a));
+	// 	System.out.println("2914 " + RTCTest.check_tableswitch(0x1234567b));
+	// }
 
 	// public static void checkCheckCast() {
 	// 	RTCTest obj1 = new RTCTest();
