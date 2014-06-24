@@ -5,7 +5,7 @@
 - Not checking stack state when pushing/popping
 - TODO: check r0 r1 during mul. may need to push/pop it
 - branches are RJMPs: limited to 4K
-
+- switch: also limited to 4K branches, and RJMP/POP sequence to jump to the right entry discards the highest PC byte, so this only works in the lower 128K of memory
 
 
 --- performance only

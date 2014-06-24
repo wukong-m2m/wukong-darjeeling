@@ -158,6 +158,10 @@
 #define OPCODE_EOR                      0x2400
 #define asm_EOR(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_EOR, destreg, srcreg)
 
+// IJMP                                 1001 0100 0000 1001
+#define OPCODE_IJMP                     0x9409
+#define asm_IJMP()                      OPCODE_IJMP
+
 // IN                                   1011 0AAd dddd AAAA, with d=dest register, A the address of the IO location to read 0<=A<=63 (63==0x3F)
 #define OPCODE_IN                       0xB000
 #define asm_IN(destreg, address)        (OPCODE_IN \

@@ -1545,6 +1545,84 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
                 emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
             break;
+            case JVM_TABLESWITCH: {
+                // Branch instructions first have a bytecode offset, used by the interpreter,
+                // followed by a branch target index used when compiling to native code.
+                jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                pc += 4;
+
+                // Pop the key value
+                emit( asm_POP(R22) );
+                emit( asm_POP(R23) );
+                emit( asm_POP(R24) );
+                emit( asm_POP(R25) );
+                // Load the upper bound
+                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                jvm_operand_byte1 = dj_di_getU8(code + ++pc);
+                jvm_operand_byte2 = dj_di_getU8(code + ++pc);
+                jvm_operand_byte3 = dj_di_getU8(code + ++pc);
+                int32_t upperbound = (int32_t)(((uint32_t)jvm_operand_byte0 << 24) | ((uint32_t)jvm_operand_byte1 << 16) | ((uint32_t)jvm_operand_byte2 << 8) | ((uint32_t)jvm_operand_byte3 << 0));
+                emit( asm_LDI(R21, jvm_operand_byte0)); // Bytecode is big endian
+                emit( asm_LDI(R20, jvm_operand_byte1));
+                emit( asm_LDI(R19, jvm_operand_byte2));
+                emit( asm_LDI(R18, jvm_operand_byte3));
+                emit( asm_CP(R18, R22) );
+                emit( asm_CPC(R19, R23) );
+                emit( asm_CPC(R20, R24) );
+                emit( asm_CPC(R21, R25) );
+                emit( asm_BRGE(SIZEOF_RJMP) );
+                rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
+                emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+
+                // Lower than or equal to the upper bound: load the lower bound
+                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                jvm_operand_byte1 = dj_di_getU8(code + ++pc);
+                jvm_operand_byte2 = dj_di_getU8(code + ++pc);
+                jvm_operand_byte3 = dj_di_getU8(code + ++pc);
+                int32_t lowerbound = (int32_t)(((uint32_t)jvm_operand_byte0 << 24) | ((uint32_t)jvm_operand_byte1 << 16) | ((uint32_t)jvm_operand_byte2 << 8) | ((uint32_t)jvm_operand_byte3 << 0));
+                emit( asm_LDI(R21, jvm_operand_byte0)); // Bytecode is big endian
+                emit( asm_LDI(R20, jvm_operand_byte1));
+                emit( asm_LDI(R19, jvm_operand_byte2));
+                emit( asm_LDI(R18, jvm_operand_byte3));
+                emit( asm_CP(R22, R18) );
+                emit( asm_CPC(R23, R19) );
+                emit( asm_CPC(R24, R20) );
+                emit( asm_CPC(R25, R21) );
+                emit( asm_BRGE(SIZEOF_RJMP) );
+                rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
+                emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+
+                // Also higher than or equal to the lower bound: branch through the switch table
+                // Substract lower bound from the key to find the index (assume 16b will be enough)
+                emit( asm_SUB(R22, R18) );
+                emit( asm_SBC(R23, R19) );
+
+                // R22:R23 now contains the index
+                // The branch targets may not have consecutive numbers, for example if there are branches within a switch case
+                // We'll do a double jump instead, first IJMPing to a table of RJMPs to the branch target table
+                // So a total of 3 jmps instead of 2 for a normal branch. This could be optimised a bit by making sure the branch targets
+                // are consecutive, which we could enforce in the infuser, but that would only save a few cycles and given the
+                // amount of work we're already doing here, it won't speed things up by much, so I can't be bothered.
+
+                emit( asm_RCALL(0) ); // RCALL to offset 0 does nothing, except get the PC on the stack, which we need here
+
+                emit( asm_POP(RZH) ); // POP PC into Z (ignore the highest (>128K) byte for now)
+                emit( asm_POP(RZH) );
+                emit( asm_POP(RZL) );
+                emit( asm_ADIW(RZ, 7) ); // Will need to compensate here for the instructions inbetween RCALL(0) and the table. Now Z will point to the start of the RJMP table.
+                emit( asm_ADD(RZL, R22) ); // Add the index to get the target address in the RJMP table
+                emit( asm_ADC(RZH, R23) );
+                emit( asm_IJMP() ); // All this fuss because there's no relative indirect jump...
+
+                // Now emit the RJMP table itself
+                for (int i=0; i<(upperbound-lowerbound+1); i++) { // +1 since both bounds are inclusive
+                    jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                    pc += 4;
+                    rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
+                    emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+                }
+            }
+            break;
             case JVM_SRETURN:
                 emit( asm_POP(R24) );
                 emit( asm_POP(R25) );

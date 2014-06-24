@@ -63,20 +63,6 @@ public class RTCApp
 		System.out.println("2914 " + RTCApp.check_tableswitch(0x1234567b));
 	}
 
-	public static int check_tableswitch(int a) {
-		switch(a) {
-			case 0x12345678:
-				return 100;
-			case 0x12345679:
-				return 42;
-			case 0x1234567a:
-				return 1000000;
-			default:
-				return 2914;
-		}
-	}
-
-
 	// public static void checkCheckCast() {
 	// 	RTCTest obj1 = new RTCTest();
 	// 	Object obj2 = new Object();

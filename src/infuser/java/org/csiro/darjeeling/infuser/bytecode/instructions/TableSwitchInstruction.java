@@ -54,8 +54,8 @@ public class TableSwitchInstruction extends SwitchInstruction
 	public void dump(DataOutputStream out) throws IOException
 	{
 		super.dump(out);
-		out.writeInt(low);
 		out.writeInt(high);
+		out.writeInt(low);
 		for (int i=0; i<switchAddresses.length; i++) {
 			out.writeShort(switchAddresses[i]);
 			out.writeShort(switchBranchTargetIndexes[i]);

@@ -74,7 +74,7 @@ JVM_APOP2 69
 JVM_ADUP2 71
 JVM_ADUP_X1 72
 JVM_ADUP_X2 73
-JVM_ASWAP 74
+                                                                                JVM_ASWAP 74 // Not implemented in DJ either
                                         JVM_GETFIELD_B 75
                                         JVM_GETFIELD_C 76
                                         JVM_GETFIELD_S 77
@@ -150,7 +150,7 @@ JVM_I2B 124 // Can't find test code. Compiler seems to insist on I2S S2B instead
                                         JVM_IF_ACMPNE 147
                                         JVM_GOTO 148
                                                                                 JVM_GOTO_W 149
-JVM_TABLESWITCH 150
+                                        JVM_TABLESWITCH 150
 JVM_LOOKUPSWITCH 151
                                         JVM_SRETURN 152
                                         JVM_IRETURN 153
