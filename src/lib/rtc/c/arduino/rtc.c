@@ -16,8 +16,8 @@
 #include <stddef.h>
 
 // PUSHREF
-#define asm_x_PUSHREF(reg)              asm_ST_XINC(reg)
-#define asm_x_POPREF(reg)               asm_LD_DECX(reg)
+#define emit_x_PUSHREF(reg)              emit_ST_XINC(reg)
+#define emit_x_POPREF(reg)               emit_LD_DECX(reg)
 
 // Offsets for static variables in an infusion, relative to the start of infusion->staticReferencesFields. (referenced infusion pointers follow the static variables)
 #define offset_for_static_ref(infusion_ptr, variable_index)                 ((uint16_t)((void*)(&((infusion_ptr)->staticReferenceFields[variable_index])) - (void *)((infusion_ptr)->staticReferenceFields)))
@@ -98,8 +98,12 @@ void rtc_flush() {
     rtc_codebuffer_position = rtc_codebuffer;
 }
 
-static inline void emit(uint16_t wordopcode) {
+static void emit(uint16_t wordopcode) {
     *(rtc_codebuffer_position++) = wordopcode;
+}
+static void emit2(uint16_t wordopcode1, uint16_t wordopcode2) {
+    *(rtc_codebuffer_position++) = wordopcode1;
+    *(rtc_codebuffer_position++) = wordopcode2;
 }
 
 
@@ -158,13 +162,13 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     wkreprog_write(branchTableSize, (uint8_t *)branch_target_table_start_ptr);
 
     // prologue (is this the right way?)
-    emit( asm_PUSH(R3) );
-    emit( asm_PUSH(R2) );
-    emit( asm_PUSH(R29) ); // Push Y
-    emit( asm_PUSH(R28) );
-    emit( asm_MOVW(R28, R24) ); // Pointer to locals in Y
-    emit( asm_MOVW(R26, R22) ); // Pointer to ref stack in X
-    emit( asm_MOVW(R2, R20) ); // Pointer to static in R2 (will be MOVWed to R30 when necessary)
+    emit_PUSH(R3);
+    emit_PUSH(R2);
+    emit_PUSH(R29); // Push Y
+    emit_PUSH(R28);
+    emit_MOVW(R28, R24); // Pointer to locals in Y
+    emit_MOVW(R26, R22); // Pointer to ref stack in X
+    emit_MOVW(R2, R20); // Pointer to static in R2 (will be MOVWed to R30 when necessary)
 
     // translate the method
     dj_di_pointer code = dj_di_methodImplementation_getData(methodimpl);
@@ -183,9 +187,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_NOP:
             break;
             case JVM_SCONST_M1:
-                emit( asm_LDI(R25, 0xFF) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R25) );
+                emit_LDI(R25, 0xFF);
+                emit_PUSH(R25);
+                emit_PUSH(R25);
             break;
             case JVM_SCONST_0:
             case JVM_SCONST_1:
@@ -194,17 +198,17 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_SCONST_4:
             case JVM_SCONST_5:
                 jvm_operand_byte0 = opcode - JVM_SCONST_0;
-                emit( asm_LDI(R24, jvm_operand_byte0) );
-                emit( asm_LDI(R25, 0) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_LDI(R24, jvm_operand_byte0);
+                emit_LDI(R25, 0);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_ICONST_M1:
-                emit( asm_LDI(R25, 0xFF) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R25) );
+                emit_LDI(R25, 0xFF);
+                emit_PUSH(R25);
+                emit_PUSH(R25);
+                emit_PUSH(R25);
+                emit_PUSH(R25);
             break;
             case JVM_ICONST_0:
             case JVM_ICONST_1:
@@ -213,57 +217,57 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_ICONST_4:
             case JVM_ICONST_5:
                 jvm_operand_byte0 = opcode - JVM_ICONST_0;
-                emit( asm_LDI(R24, jvm_operand_byte0) );
-                emit( asm_LDI(R25, 0) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_LDI(R24, jvm_operand_byte0);
+                emit_LDI(R25, 0);
+                emit_PUSH(R25);
+                emit_PUSH(R25);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_ACONST_NULL:
-                emit( asm_LDI(R25, 0) );
-                emit( asm_x_PUSHREF(R25) );                
-                emit( asm_x_PUSHREF(R25) );                
+                emit_LDI(R25, 0);
+                emit_x_PUSHREF(R25);                
+                emit_x_PUSHREF(R25);                
             break;
             case JVM_BSPUSH:
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-                emit( asm_LDI(R24, jvm_operand_byte0) );
-                emit( asm_LDI(R25, 0) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_LDI(R24, jvm_operand_byte0);
+                emit_LDI(R25, 0);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_BIPUSH:
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-                emit( asm_LDI(R22, jvm_operand_byte0) );
-                emit( asm_LDI(R23, 0) );
-                emit( asm_LDI(R24, 0) );
-                emit( asm_LDI(R25, 0) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_LDI(R22, jvm_operand_byte0);
+                emit_LDI(R23, 0);
+                emit_LDI(R24, 0);
+                emit_LDI(R25, 0);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_SSPUSH:
                 // bytecode is big endian
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
-                emit( asm_LDI(R24, jvm_operand_byte1) );
-                emit( asm_LDI(R25, jvm_operand_byte0) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_LDI(R24, jvm_operand_byte1);
+                emit_LDI(R25, jvm_operand_byte0);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_SIPUSH:
                 // bytecode is big endian
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
-                emit( asm_LDI(R22, jvm_operand_byte1) );
-                emit( asm_LDI(R23, jvm_operand_byte0) );
-                emit( asm_LDI(R24, 0) );
-                emit( asm_LDI(R25, 0) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_LDI(R22, jvm_operand_byte1);
+                emit_LDI(R23, jvm_operand_byte0);
+                emit_LDI(R24, 0);
+                emit_LDI(R25, 0);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_IIPUSH:
                 // bytecode is big endian
@@ -271,36 +275,35 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte2 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte3 = dj_di_getU8(code + ++pc);
-                emit( asm_LDI(R22, jvm_operand_byte3) );
-                emit( asm_LDI(R23, jvm_operand_byte2) );
-                emit( asm_LDI(R24, jvm_operand_byte1) );
-                emit( asm_LDI(R25, jvm_operand_byte0) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_LDI(R22, jvm_operand_byte3);
+                emit_LDI(R23, jvm_operand_byte2);
+                emit_LDI(R24, jvm_operand_byte1);
+                emit_LDI(R25, jvm_operand_byte0);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_LDS:
                 // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
                 // PUSH important stuff
-                emit( asm_PUSH(RXH) );
-                emit( asm_PUSH(RXL) );
+                emit_PUSH(RXH);
+                emit_PUSH(RXL);
 
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
-                emit( asm_LDI(R24, jvm_operand_byte0) ); // infusion id
-                emit( asm_LDI(R25, jvm_operand_byte1) ); // entity id
+                emit_LDI(R24, jvm_operand_byte0); // infusion id
+                emit_LDI(R25, jvm_operand_byte1); // entity id
                 // make the call
-                emit( asm_CALL1((uint16_t)&RTC_LDS) );
-                emit( asm_CALL2((uint16_t)&RTC_LDS) );
+                emit_2_CALL((uint16_t)&RTC_LDS);
 
                 // POP important stuff
-                emit( asm_POP(RXL) );
-                emit( asm_POP(RXH) );
+                emit_POP(RXL);
+                emit_POP(RXH);
 
                 // push the reference to the string onto the ref stack
-                emit( asm_x_PUSHREF(R24) );
-                emit( asm_x_PUSHREF(R25) );
+                emit_x_PUSHREF(R24);
+                emit_x_PUSHREF(R25);
             break;
             case JVM_SLOAD:
             case JVM_SLOAD_0:
@@ -311,10 +314,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 else
                     jvm_operand_byte0 = opcode - JVM_SLOAD_0;
-                emit( asm_LDD(R24, Y, offset_for_intlocal_short(methodimpl, jvm_operand_byte0)) );
-                emit( asm_LDD(R25, Y, offset_for_intlocal_short(methodimpl, jvm_operand_byte0)+1) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_LDD(R24, Y, offset_for_intlocal_short(methodimpl, jvm_operand_byte0));
+                emit_LDD(R25, Y, offset_for_intlocal_short(methodimpl, jvm_operand_byte0)+1);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_ILOAD:
             case JVM_ILOAD_0:
@@ -325,14 +328,14 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 else
                     jvm_operand_byte0 = opcode - JVM_ILOAD_0;
-                emit( asm_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)) );
-                emit( asm_LDD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1) );
-                emit( asm_LDD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2) );
-                emit( asm_LDD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0));
+                emit_LDD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1);
+                emit_LDD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2);
+                emit_LDD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_ALOAD:
             case JVM_ALOAD_0:
@@ -343,10 +346,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 else
                     jvm_operand_byte0 = opcode - JVM_ALOAD_0;
-                emit( asm_LDD(R24, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0)) );
-                emit( asm_LDD(R25, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0)+1) );
-                emit( asm_x_PUSHREF(R24) );
-                emit( asm_x_PUSHREF(R25) );
+                emit_LDD(R24, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0));
+                emit_LDD(R25, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0)+1);
+                emit_x_PUSHREF(R24);
+                emit_x_PUSHREF(R25);
             break;
             case JVM_SSTORE:
             case JVM_SSTORE_0:
@@ -357,10 +360,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 else
                     jvm_operand_byte0 = opcode - JVM_SSTORE_0;
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_STD(R24, Y, offset_for_intlocal_short(methodimpl, jvm_operand_byte0)) );
-                emit( asm_STD(R25, Y, offset_for_intlocal_short(methodimpl, jvm_operand_byte0)+1) );
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_STD(R24, Y, offset_for_intlocal_short(methodimpl, jvm_operand_byte0));
+                emit_STD(R25, Y, offset_for_intlocal_short(methodimpl, jvm_operand_byte0)+1);
             break;
             case JVM_ISTORE:
             case JVM_ISTORE_0:
@@ -371,14 +374,14 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 else
                     jvm_operand_byte0 = opcode - JVM_ISTORE_0;
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)) );
-                emit( asm_STD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1) );
-                emit( asm_STD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2) );
-                emit( asm_STD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0));
+                emit_STD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1);
+                emit_STD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2);
+                emit_STD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3);
             break;
             case JVM_ASTORE:
             case JVM_ASTORE_0:
@@ -389,10 +392,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 else
                     jvm_operand_byte0 = opcode - JVM_ASTORE_0;
-                emit( asm_x_POPREF(R25) );
-                emit( asm_x_POPREF(R24) );
-                emit( asm_STD(R24, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0)) );
-                emit( asm_STD(R25, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0)+1) );
+                emit_x_POPREF(R25);
+                emit_x_POPREF(R24);
+                emit_STD(R24, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0));
+                emit_STD(R25, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0)+1);
             break;
             case JVM_BALOAD:
             case JVM_CALOAD:
@@ -401,71 +404,71 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_AALOAD:
                 // Arrays are indexed by a 32bit int. But we don't have enough memory to hold arrays that large, so just ignore the upper two.
                 // Should check that they are 0 when implementing bounds checks.
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
 
                 // POP the array reference into Z.
-                emit( asm_x_POPREF(RZH) );
-                emit( asm_x_POPREF(RZL) ); // Z now pointer to the base of the array object.
+                emit_x_POPREF(RZH);
+                emit_x_POPREF(RZL); // Z now pointer to the base of the array object.
 
                 if (opcode==JVM_SALOAD || opcode==JVM_AALOAD) {
                     // Multiply the index by 2, since we're indexing 16 bit shorts.
-                    emit( asm_LSL(R22) );
-                    emit( asm_ROL(R23) );
+                    emit_LSL(R22);
+                    emit_ROL(R23);
                 } else if (opcode==JVM_IALOAD) {
                     // Multiply the index by 4, since we're indexing 16 bit shorts.
-                    emit( asm_LSL(R22) );
-                    emit( asm_ROL(R23) );
-                    emit( asm_LSL(R22) );
-                    emit( asm_ROL(R23) );
+                    emit_LSL(R22);
+                    emit_ROL(R23);
+                    emit_LSL(R22);
+                    emit_ROL(R23);
                 }
 
                 // Add (1/2/4)*the index to Z
-                emit( asm_ADD(RZL, R22) );
-                emit( asm_ADC(RZH, R23) );
+                emit_ADD(RZL, R22);
+                emit_ADC(RZH, R23);
 
                 if (opcode == JVM_AALOAD) {
                     // Add 4 to skip 2 bytes for array length and 2 bytes for array type.
-                    emit( asm_ADIW(RZ, 4) ); 
+                    emit_ADIW(RZ, 4); 
                 } else { // all types of int array
                     // Add 3 to skip 2 bytes for array length and 1 byte for array type.
-                    emit( asm_ADIW(RZ, 3) ); 
+                    emit_ADIW(RZ, 3); 
                 }
 
                 // Now Z points to the target element
                 switch (opcode) {
                     case JVM_BALOAD:
                     case JVM_CALOAD:
-                        emit( asm_LD_Z(R24) );
-                        emit( asm_CLR(R25) );
-                        emit( asm_SBRC(R24, 7) ); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
-                        emit( asm_COM(R25) ); // otherwise: flip R24 to 0xFF to extend the sign
-                        emit( asm_PUSH(R25) );
-                        emit( asm_PUSH(R24) );
+                        emit_LD_Z(R24);
+                        emit_CLR(R25);
+                        emit_SBRC(R24, 7); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
+                        emit_COM(R25); // otherwise: flip R24 to 0xFF to extend the sign
+                        emit_PUSH(R25);
+                        emit_PUSH(R24);
                     break;
                     case JVM_SALOAD:
-                        emit( asm_LD_ZINC(R24) );
-                        emit( asm_LD_Z(R25) );
-                        emit( asm_PUSH(R25) );
-                        emit( asm_PUSH(R24) );
+                        emit_LD_ZINC(R24);
+                        emit_LD_Z(R25);
+                        emit_PUSH(R25);
+                        emit_PUSH(R24);
                     break;
                     case JVM_IALOAD:
-                        emit( asm_LD_ZINC(R22) );
-                        emit( asm_LD_ZINC(R23) );
-                        emit( asm_LD_ZINC(R24) );
-                        emit( asm_LD_Z(R25) );
-                        emit( asm_PUSH(R25) );
-                        emit( asm_PUSH(R24) );
-                        emit( asm_PUSH(R23) );
-                        emit( asm_PUSH(R22) );
+                        emit_LD_ZINC(R22);
+                        emit_LD_ZINC(R23);
+                        emit_LD_ZINC(R24);
+                        emit_LD_Z(R25);
+                        emit_PUSH(R25);
+                        emit_PUSH(R24);
+                        emit_PUSH(R23);
+                        emit_PUSH(R22);
                     break;
                     case JVM_AALOAD:
-                        emit( asm_LD_ZINC(R24) );
-                        emit( asm_LD_Z(R25) );
-                        emit( asm_x_PUSHREF(R24) );
-                        emit( asm_x_PUSHREF(R25) );
+                        emit_LD_ZINC(R24);
+                        emit_LD_Z(R25);
+                        emit_x_PUSHREF(R24);
+                        emit_x_PUSHREF(R25);
                     break;
                 }
             break;
@@ -479,461 +482,459 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     case JVM_BASTORE:
                     case JVM_CASTORE:
                     case JVM_SASTORE:
-                        emit( asm_POP(R24) );
-                        emit( asm_POP(R25) );
+                        emit_POP(R24);
+                        emit_POP(R25);
                     break;
                     case JVM_IASTORE:
-                        emit( asm_POP(R22) );
-                        emit( asm_POP(R23) );
-                        emit( asm_POP(R24) );
-                        emit( asm_POP(R25) );
+                        emit_POP(R22);
+                        emit_POP(R23);
+                        emit_POP(R24);
+                        emit_POP(R25);
                     break;
                     case JVM_AASTORE:
-                        emit( asm_x_POPREF(R25) );
-                        emit( asm_x_POPREF(R24) );
+                        emit_x_POPREF(R25);
+                        emit_x_POPREF(R24);
                     break;
                 }
 
                 // Arrays are indexed by a 32bit int. But we don't have enough memory to hold arrays that large, so just ignore the upper two.
                 // Should check that they are 0 when implementing bounds checks.
-                emit( asm_POP(R18) );
-                emit( asm_POP(R19) );
-                emit( asm_POP(R20) );
-                emit( asm_POP(R21) );
+                emit_POP(R18);
+                emit_POP(R19);
+                emit_POP(R20);
+                emit_POP(R21);
 
                 // POP the array reference into Z.
-                emit( asm_x_POPREF(RZH) );
-                emit( asm_x_POPREF(RZL) ); // Z now pointer to the base of the array object.
+                emit_x_POPREF(RZH);
+                emit_x_POPREF(RZL); // Z now pointer to the base of the array object.
 
                 if (opcode==JVM_SASTORE || opcode==JVM_AASTORE) {
                     // Multiply the index by 2, since we're indexing 16 bit shorts.
-                    emit( asm_LSL(R18) );
-                    emit( asm_ROL(R19) );
+                    emit_LSL(R18);
+                    emit_ROL(R19);
                 } else if (opcode==JVM_IASTORE) {
                     // Multiply the index by 4, since we're indexing 16 bit shorts.
-                    emit( asm_LSL(R18) );
-                    emit( asm_ROL(R19) );
-                    emit( asm_LSL(R18) );
-                    emit( asm_ROL(R19) );
+                    emit_LSL(R18);
+                    emit_ROL(R19);
+                    emit_LSL(R18);
+                    emit_ROL(R19);
                 }
 
                 // Add (1/2/4)*the index to Z
-                emit( asm_ADD(RZL, R18) );
-                emit( asm_ADC(RZH, R19) );
+                emit_ADD(RZL, R18);
+                emit_ADC(RZH, R19);
 
                 if (opcode == JVM_AASTORE) {
                     // Add 4 to skip 2 bytes for array length and 2 bytes for array type.
-                    emit( asm_ADIW(RZ, 4) ); 
+                    emit_ADIW(RZ, 4); 
                 } else { // all types of int array
                     // Add 3 to skip 2 bytes for array length and 1 byte for array type.
-                    emit( asm_ADIW(RZ, 3) ); 
+                    emit_ADIW(RZ, 3); 
                 }
 
                 // Now Z points to the target element
                 switch (opcode) {
                     case JVM_BASTORE:
                     case JVM_CASTORE:
-                        emit( asm_ST_Z(R24) );
+                        emit_ST_Z(R24);
                     break;
                     case JVM_SASTORE:
                     case JVM_AASTORE:
-                        emit( asm_ST_ZINC(R24) );
-                        emit( asm_ST_Z(R25) );
+                        emit_ST_ZINC(R24);
+                        emit_ST_Z(R25);
                     break;
                     case JVM_IASTORE:
-                        emit( asm_ST_ZINC(R22) );
-                        emit( asm_ST_ZINC(R23) );
-                        emit( asm_ST_ZINC(R24) );
-                        emit( asm_ST_Z(R25) );
+                        emit_ST_ZINC(R22);
+                        emit_ST_ZINC(R23);
+                        emit_ST_ZINC(R24);
+                        emit_ST_Z(R25);
                     break;
                 }
             break;
             case JVM_IDUP2:
                 // IDUP2 duplicates the top two SLOTS on the integer stack, not the top two ints. So IDUP2 is actually IDUP, and IDUP is actually SDUP.
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_ADUP:
-                emit( asm_x_POPREF(R25) );
-                emit( asm_x_POPREF(R24) );
-                emit( asm_x_PUSHREF(R24) );
-                emit( asm_x_PUSHREF(R25) );
-                emit( asm_x_PUSHREF(R24) );
-                emit( asm_x_PUSHREF(R25) );
+                emit_x_POPREF(R25);
+                emit_x_POPREF(R24);
+                emit_x_PUSHREF(R24);
+                emit_x_PUSHREF(R25);
+                emit_x_PUSHREF(R24);
+                emit_x_PUSHREF(R25);
             break;
             case JVM_GETFIELD_B:
             case JVM_GETFIELD_C:
                 jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
                 pc += 2;
-                emit( asm_x_POPREF(R31) ); // POP the reference into Z
-                emit( asm_x_POPREF(R30) );
-                emit( asm_LDD(R24, Z, jvm_operand_word) );
+                emit_x_POPREF(R31); // POP the reference into Z
+                emit_x_POPREF(R30);
+                emit_LDD(R24, Z, jvm_operand_word);
 
                 // need to extend the sign to push it as a short
-                emit( asm_CLR(R25) );
-                emit( asm_SBRC(R24, 7) ); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
-                emit( asm_COM(R25) ); // otherwise: flip R24 to 0xFF to extend the sign
+                emit_CLR(R25);
+                emit_SBRC(R24, 7); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
+                emit_COM(R25); // otherwise: flip R24 to 0xFF to extend the sign
 
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_GETFIELD_S:
                 jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
                 pc += 2;
-                emit( asm_x_POPREF(R31) ); // POP the reference into Z
-                emit( asm_x_POPREF(R30) );
-                emit( asm_LDD(R24, Z, jvm_operand_word) );
-                emit( asm_LDD(R25, Z, jvm_operand_word+1) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_x_POPREF(R31); // POP the reference into Z
+                emit_x_POPREF(R30);
+                emit_LDD(R24, Z, jvm_operand_word);
+                emit_LDD(R25, Z, jvm_operand_word+1);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_GETFIELD_I:
                 jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
                 pc += 2;
-                emit( asm_x_POPREF(R31) ); // POP the reference into Z
-                emit( asm_x_POPREF(R30) );
-                emit( asm_LDD(R22, Z, jvm_operand_word) );
-                emit( asm_LDD(R23, Z, jvm_operand_word+1) );
-                emit( asm_LDD(R24, Z, jvm_operand_word+2) );
-                emit( asm_LDD(R25, Z, jvm_operand_word+3) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_x_POPREF(R31); // POP the reference into Z
+                emit_x_POPREF(R30);
+                emit_LDD(R22, Z, jvm_operand_word);
+                emit_LDD(R23, Z, jvm_operand_word+1);
+                emit_LDD(R24, Z, jvm_operand_word+2);
+                emit_LDD(R25, Z, jvm_operand_word+3);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_GETFIELD_A:
                 jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
                 pc += 2;
-                emit( asm_x_POPREF(R25) ); // POP the reference
-                emit( asm_x_POPREF(R24) );
+                emit_x_POPREF(R25); // POP the reference
+                emit_x_POPREF(R24);
 
                 // First find the location of reference fields
                 // PUSH important stuff
-                emit( asm_PUSH(RXH) );
-                emit( asm_PUSH(RXL) );
+                emit_PUSH(RXH);
+                emit_PUSH(RXL);
 
                 // make the call
-                emit( asm_CALL1((uint16_t)&dj_object_getReferences) );
-                emit( asm_CALL2((uint16_t)&dj_object_getReferences) );
+                emit_2_CALL((uint16_t)&dj_object_getReferences);
 
                 // POP important stuff
-                emit( asm_POP(RXL) );
-                emit( asm_POP(RXH) );
+                emit_POP(RXL);
+                emit_POP(RXH);
 
                 // R24:R25 now points to the location of the instance references
-                emit( asm_MOVW(RZ, R24) ); // Move the location to Z
-                emit( asm_LDD(R24, Z, (jvm_operand_word*2)) ); // jvm_operand_word is an index in the (16 bit) array, so multiply by 2
-                emit( asm_LDD(R25, Z, (jvm_operand_word*2)+1) );
-                emit( asm_x_PUSHREF(R24) );
-                emit( asm_x_PUSHREF(R25) );
+                emit_MOVW(RZ, R24); // Move the location to Z
+                emit_LDD(R24, Z, (jvm_operand_word*2)); // jvm_operand_word is an index in the (16 bit) array, so multiply by 2
+                emit_LDD(R25, Z, (jvm_operand_word*2)+1);
+                emit_x_PUSHREF(R24);
+                emit_x_PUSHREF(R25);
             break;
             case JVM_PUTFIELD_B:
             case JVM_PUTFIELD_C:
                 jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
                 pc += 2;
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_x_POPREF(R31) ); // POP the reference into Z
-                emit( asm_x_POPREF(R30) );
-                emit( asm_STD(R24, Z, jvm_operand_word) );
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_x_POPREF(R31); // POP the reference into Z
+                emit_x_POPREF(R30);
+                emit_STD(R24, Z, jvm_operand_word);
             break;
             case JVM_PUTFIELD_S:
                 jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
                 pc += 2;
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_x_POPREF(R31) ); // POP the reference into Z
-                emit( asm_x_POPREF(R30) );
-                emit( asm_STD(R24, Z, jvm_operand_word) );
-                emit( asm_STD(R25, Z, jvm_operand_word+1) );
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_x_POPREF(R31); // POP the reference into Z
+                emit_x_POPREF(R30);
+                emit_STD(R24, Z, jvm_operand_word);
+                emit_STD(R25, Z, jvm_operand_word+1);
             break;
             case JVM_PUTFIELD_I:
                 jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
                 pc += 2;
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_x_POPREF(R31) ); // POP the reference into Z
-                emit( asm_x_POPREF(R30) );
-                emit( asm_STD(R22, Z, jvm_operand_word) );
-                emit( asm_STD(R23, Z, jvm_operand_word+1) );
-                emit( asm_STD(R24, Z, jvm_operand_word+2) );
-                emit( asm_STD(R25, Z, jvm_operand_word+3) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_x_POPREF(R31); // POP the reference into Z
+                emit_x_POPREF(R30);
+                emit_STD(R22, Z, jvm_operand_word);
+                emit_STD(R23, Z, jvm_operand_word+1);
+                emit_STD(R24, Z, jvm_operand_word+2);
+                emit_STD(R25, Z, jvm_operand_word+3);
             break;
             case JVM_PUTFIELD_A:
                 jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
                 pc += 2;
-                emit( asm_x_POPREF(R17) ); // POP the value to store (store in in call-saved R16-R17)
-                emit( asm_x_POPREF(R16) );
-                emit( asm_x_POPREF(R25) ); // POP the reference to the object to store it in.
-                emit( asm_x_POPREF(R24) );
+                emit_x_POPREF(R17); // POP the value to store (store in in call-saved R16-R17)
+                emit_x_POPREF(R16);
+                emit_x_POPREF(R25); // POP the reference to the object to store it in.
+                emit_x_POPREF(R24);
 
                 // First find the location of reference fields
                 // PUSH important stuff
-                emit( asm_PUSH(RXH) );
-                emit( asm_PUSH(RXL) );
+                emit_PUSH(RXH);
+                emit_PUSH(RXL);
 
                 // make the call
-                emit( asm_CALL1((uint16_t)&dj_object_getReferences) );
-                emit( asm_CALL2((uint16_t)&dj_object_getReferences) );
+                emit_2_CALL((uint16_t)&dj_object_getReferences);
 
                 // POP important stuff
-                emit( asm_POP(RXL) );
-                emit( asm_POP(RXH) );
+                emit_POP(RXL);
+                emit_POP(RXH);
 
                 // R24:R25 now points to the location of the instance references
-                emit( asm_MOVW(RZ, R24) ); // Move the location to Z
-                emit( asm_STD(R16, Z, (jvm_operand_word*2)) ); // jvm_operand_word is an index in the (16 bit) array, so multiply by 2
-                emit( asm_STD(R17, Z, (jvm_operand_word*2)+1) );
+                emit_MOVW(RZ, R24); // Move the location to Z
+                emit_STD(R16, Z, (jvm_operand_word*2)); // jvm_operand_word is an index in the (16 bit) array, so multiply by 2
+                emit_STD(R17, Z, (jvm_operand_word*2)+1);
             break;
             case JVM_GETSTATIC_B:
             case JVM_GETSTATIC_C:
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
-                emit( asm_MOVW(RZ, R2) ); // Z now points to the current infusion (0)
+                emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
 
                 if (jvm_operand_byte0 == 0) {
                     target_infusion = infusion;
                 } else {
                     // We need to read from another infusion. Get that infusion's address first.
                     // Load the address of the referenced infusion into R24:R25
-                    emit( asm_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)) );
-                    emit( asm_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1) );
+                    emit_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0));
+                    emit_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1);
                     // Then move R24:R25 to Z
-                    emit( asm_MOVW(RZ, R24) );
+                    emit_MOVW(RZ, R24);
                     // Z now points to the target infusion, but it should point to the start of the static variables
-                    emit( asm_ADIW(RZ, sizeof(dj_infusion)) );
+                    emit_ADIW(RZ, sizeof(dj_infusion));
                     // Find the target infusion to calculate the right offset in the next step
                     target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
                 }
 
-                emit( asm_LDD(R24, Z, offset_for_static_byte(target_infusion, jvm_operand_byte1)) );
+                emit_LDD(R24, Z, offset_for_static_byte(target_infusion, jvm_operand_byte1));
                 // need to extend the sign to push the byte as a short
-                emit( asm_CLR(R25) );
-                emit( asm_SBRC(R24, 7) ); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
-                emit( asm_COM(R25) ); // otherwise: flip R24 to 0xFF to extend the sign
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_CLR(R25);
+                emit_SBRC(R24, 7); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
+                emit_COM(R25); // otherwise: flip R24 to 0xFF to extend the sign
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_GETSTATIC_S:
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
-                emit( asm_MOVW(RZ, R2) ); // Z now points to the current infusion (0)
+                emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
 
                 if (jvm_operand_byte0 == 0) {
                     target_infusion = infusion;
                 } else {
                     // We need to read from another infusion. Get that infusion's address first.
                     // Load the address of the referenced infusion into R24:R25
-                    emit( asm_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)) );
-                    emit( asm_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1) );
+                    emit_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0));
+                    emit_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1);
                     // Then move R24:R25 to Z
-                    emit( asm_MOVW(RZ, R24) );
+                    emit_MOVW(RZ, R24);
                     // Z now points to the target infusion, but it should point to the start of the static variables
-                    emit( asm_ADIW(RZ, sizeof(dj_infusion)) );
+                    emit_ADIW(RZ, sizeof(dj_infusion));
                     // Find the target infusion to calculate the right offset in the next step
                     target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
                 }
 
-                emit( asm_LDD(R24, Z, offset_for_static_short(target_infusion, jvm_operand_byte1)) );
-                emit( asm_LDD(R25, Z, offset_for_static_short(target_infusion, jvm_operand_byte1)+1) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_LDD(R24, Z, offset_for_static_short(target_infusion, jvm_operand_byte1));
+                emit_LDD(R25, Z, offset_for_static_short(target_infusion, jvm_operand_byte1)+1);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_GETSTATIC_I:
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
-                emit( asm_MOVW(RZ, R2) ); // Z now points to the current infusion (0)
+                emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
 
                 if (jvm_operand_byte0 == 0) {
                     target_infusion = infusion;
                 } else {
                     // We need to read from another infusion. Get that infusion's address first.
                     // Load the address of the referenced infusion into R24:R25
-                    emit( asm_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)) );
-                    emit( asm_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1) );
+                    emit_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0));
+                    emit_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1);
                     // Then move R24:R25 to Z
-                    emit( asm_MOVW(RZ, R24) );
+                    emit_MOVW(RZ, R24);
                     // Z now points to the target infusion, but it should point to the start of the static variables
-                    emit( asm_ADIW(RZ, sizeof(dj_infusion)) );
+                    emit_ADIW(RZ, sizeof(dj_infusion));
                     // Find the target infusion to calculate the right offset in the next step
                     target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
                 }
 
-                emit( asm_LDD(R22, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)) );
-                emit( asm_LDD(R23, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+1) );
-                emit( asm_LDD(R24, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+2) );
-                emit( asm_LDD(R25, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+3) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_LDD(R22, Z, offset_for_static_int(target_infusion, jvm_operand_byte1));
+                emit_LDD(R23, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+1);
+                emit_LDD(R24, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+2);
+                emit_LDD(R25, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+3);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_GETSTATIC_A:
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
-                emit( asm_MOVW(RZ, R2) ); // Z now points to the current infusion (0)
+                emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
 
                 if (jvm_operand_byte0 == 0) {
                     target_infusion = infusion;
                 } else {
                     // We need to read from another infusion. Get that infusion's address first.
                     // Load the address of the referenced infusion into R24:R25
-                    emit( asm_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)) );
-                    emit( asm_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1) );
+                    emit_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0));
+                    emit_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1);
                     // Then move R24:R25 to Z
-                    emit( asm_MOVW(RZ, R24) );
+                    emit_MOVW(RZ, R24);
                     // Z now points to the target infusion, but it should point to the start of the static variables
-                    emit( asm_ADIW(RZ, sizeof(dj_infusion)) );
+                    emit_ADIW(RZ, sizeof(dj_infusion));
                     // Find the target infusion to calculate the right offset in the next step
                     target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
                 }
 
-                emit( asm_LDD(R24, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1)) );
-                emit( asm_LDD(R25, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1)+1) );
-                emit( asm_x_PUSHREF(R24) );
-                emit( asm_x_PUSHREF(R25) );
+                emit_LDD(R24, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1));
+                emit_LDD(R25, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1)+1);
+                emit_x_PUSHREF(R24);
+                emit_x_PUSHREF(R25);
             break;
             case JVM_PUTSTATIC_B:
             case JVM_PUTSTATIC_C:
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
-                emit( asm_MOVW(RZ, R2) ); // Z now points to the current infusion (0)
+                emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
 
                 if (jvm_operand_byte0 == 0) {
                     target_infusion = infusion;
                 } else {
                     // We need to read from another infusion. Get that infusion's address first.
                     // Load the address of the referenced infusion into R24:R25
-                    emit( asm_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)) );
-                    emit( asm_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1) );
+                    emit_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0));
+                    emit_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1);
                     // Then move R24:R25 to Z
-                    emit( asm_MOVW(RZ, R24) );
+                    emit_MOVW(RZ, R24);
                     // Z now points to the target infusion, but it should point to the start of the static variables
-                    emit( asm_ADIW(RZ, sizeof(dj_infusion)) );
+                    emit_ADIW(RZ, sizeof(dj_infusion));
                     // Find the target infusion to calculate the right offset in the next step
                     target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
                 }
 
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_STD(R24, Z, offset_for_static_byte(target_infusion, jvm_operand_byte1)) );
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_STD(R24, Z, offset_for_static_byte(target_infusion, jvm_operand_byte1));
             break;
             case JVM_PUTSTATIC_S:
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
-                emit( asm_MOVW(RZ, R2) ); // Z now points to the current infusion (0)
+                emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
 
                 if (jvm_operand_byte0 == 0) {
                     target_infusion = infusion;
                 } else {
                     // We need to read from another infusion. Get that infusion's address first.
                     // Load the address of the referenced infusion into R24:R25
-                    emit( asm_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)) );
-                    emit( asm_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1) );
+                    emit_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0));
+                    emit_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1);
                     // Then move R24:R25 to Z
-                    emit( asm_MOVW(RZ, R24) );
+                    emit_MOVW(RZ, R24);
                     // Z now points to the target infusion, but it should point to the start of the static variables
-                    emit( asm_ADIW(RZ, sizeof(dj_infusion)) );
+                    emit_ADIW(RZ, sizeof(dj_infusion));
                     // Find the target infusion to calculate the right offset in the next step
                     target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
                 }
 
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_STD(R24, Z, offset_for_static_short(target_infusion, jvm_operand_byte1)) );
-                emit( asm_STD(R25, Z, offset_for_static_short(target_infusion, jvm_operand_byte1)+1) );
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_STD(R24, Z, offset_for_static_short(target_infusion, jvm_operand_byte1));
+                emit_STD(R25, Z, offset_for_static_short(target_infusion, jvm_operand_byte1)+1);
             break;
             case JVM_PUTSTATIC_I:
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
-                emit( asm_MOVW(RZ, R2) ); // Z now points to the current infusion (0)
+                emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
 
                 if (jvm_operand_byte0 == 0) {
                     target_infusion = infusion;
                 } else {
                     // We need to read from another infusion. Get that infusion's address first.
                     // Load the address of the referenced infusion into R24:R25
-                    emit( asm_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)) );
-                    emit( asm_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1) );
+                    emit_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0));
+                    emit_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1);
                     // Then move R24:R25 to Z
-                    emit( asm_MOVW(RZ, R24) );
+                    emit_MOVW(RZ, R24);
                     // Z now points to the target infusion, but it should point to the start of the static variables
-                    emit( asm_ADIW(RZ, sizeof(dj_infusion)) );
+                    emit_ADIW(RZ, sizeof(dj_infusion));
                     // Find the target infusion to calculate the right offset in the next step
                     target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
                 }
 
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_STD(R22, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)) );
-                emit( asm_STD(R23, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+1) );
-                emit( asm_STD(R24, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+2) );
-                emit( asm_STD(R25, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+3) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_STD(R22, Z, offset_for_static_int(target_infusion, jvm_operand_byte1));
+                emit_STD(R23, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+1);
+                emit_STD(R24, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+2);
+                emit_STD(R25, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+3);
             break;
             case JVM_PUTSTATIC_A:
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
-                emit( asm_MOVW(RZ, R2) ); // Z now points to the current infusion (0)
+                emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
 
                 if (jvm_operand_byte0 == 0) {
                     target_infusion = infusion;
                 } else {
                     // We need to read from another infusion. Get that infusion's address first.
                     // Load the address of the referenced infusion into R24:R25
-                    emit( asm_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)) );
-                    emit( asm_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1) );
+                    emit_LDD(R24, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0));
+                    emit_LDD(R25, Z, offset_for_referenced_infusion(infusion, jvm_operand_byte0)+1);
                     // Then move R24:R25 to Z
-                    emit( asm_MOVW(RZ, R24) );
+                    emit_MOVW(RZ, R24);
                     // Z now points to the target infusion, but it should point to the start of the static variables
-                    emit( asm_ADIW(RZ, sizeof(dj_infusion)) );
+                    emit_ADIW(RZ, sizeof(dj_infusion));
                     // Find the target infusion to calculate the right offset in the next step
                     target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
                 }
 
-                emit( asm_x_POPREF(R25) );
-                emit( asm_x_POPREF(R24) );
-                emit( asm_STD(R24, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1)) );
-                emit( asm_STD(R25, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1)+1) );
+                emit_x_POPREF(R25);
+                emit_x_POPREF(R24);
+                emit_STD(R24, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1));
+                emit_STD(R25, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1)+1);
             break;
             case JVM_SADD:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_ADD(R24, R22) );
-                emit( asm_ADC(R25, R23) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_ADD(R24, R22);
+                emit_ADC(R25, R23);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_SSUB:
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_SUB(R22, R24) );
-                emit( asm_SBC(R23, R25) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_SUB(R22, R24);
+                emit_SBC(R23, R25);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_SMUL:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
 
                 // Code generated by avr-gcc -mmcu=atmega2560 -O3
                 // mul r24,r22
@@ -946,331 +947,328 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 // movw r24,r18
                 // ret
 
-                emit( asm_MUL(R24, R22) );
-                emit( asm_MOVW(R18, R0) );
-                emit( asm_MUL(R24, R23) );
-                emit( asm_ADD(R19, R0) );
-                emit( asm_MUL(R25, R22) );
-                emit( asm_ADD(R19, R0) );
-                emit( asm_CLR(R1) );
-                emit( asm_MOVW(R24, R18) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_MUL(R24, R22);
+                emit_MOVW(R18, R0);
+                emit_MUL(R24, R23);
+                emit_ADD(R19, R0);
+                emit_MUL(R25, R22);
+                emit_ADD(R19, R0);
+                emit_CLR(R1);
+                emit_MOVW(R24, R18);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_SDIV:
             case JVM_SREM:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_CALL1((uint16_t)&__divmodhi4) );
-                emit( asm_CALL2((uint16_t)&__divmodhi4) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_2_CALL((uint16_t)&__divmodhi4);
                 if (opcode == JVM_SDIV) {
-                    emit( asm_PUSH(R23) );
-                    emit( asm_PUSH(R22) );
+                    emit_PUSH(R23);
+                    emit_PUSH(R22);
                 } else { // JVM_SREM
-                    emit( asm_PUSH(R25) );
-                    emit( asm_PUSH(R24) );
+                    emit_PUSH(R25);
+                    emit_PUSH(R24);
                 }
             break;
             case JVM_SNEG:
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_CLR(R22) );
-                emit( asm_CLR(R23) );
-                emit( asm_SUB(R22, R24) );
-                emit( asm_SBC(R23, R25) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_CLR(R22);
+                emit_CLR(R23);
+                emit_SUB(R22, R24);
+                emit_SBC(R23, R25);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_SSHL:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
 
-                emit( asm_RJMP(4) );
-                emit( asm_LSL(R24) );
-                emit( asm_ROL(R25) );
-                emit( asm_DEC(R22) );
-                emit( asm_BRPL(-8) );
+                emit_RJMP(4);
+                emit_LSL(R24);
+                emit_ROL(R25);
+                emit_DEC(R22);
+                emit_BRPL(-8);
 
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_SSHR:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
 
-                emit( asm_RJMP(4) );
-                emit( asm_ASR(R25) );
-                emit( asm_ROR(R24) );
-                emit( asm_DEC(R22) );
-                emit( asm_BRPL(-8) );
+                emit_RJMP(4);
+                emit_ASR(R25);
+                emit_ROR(R24);
+                emit_DEC(R22);
+                emit_BRPL(-8);
 
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_SUSHR:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
 
-                emit( asm_RJMP(4) );
-                emit( asm_LSR(R25) );
-                emit( asm_ROR(R24) );
-                emit( asm_DEC(R22) );
-                emit( asm_BRPL(-8) );
+                emit_RJMP(4);
+                emit_LSR(R25);
+                emit_ROR(R24);
+                emit_DEC(R22);
+                emit_BRPL(-8);
 
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_SAND:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_AND(R24, R22) );
-                emit( asm_AND(R25, R23) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_AND(R24, R22);
+                emit_AND(R25, R23);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_SOR:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_OR(R24, R22) );
-                emit( asm_OR(R25, R23) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_OR(R24, R22);
+                emit_OR(R25, R23);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_SXOR:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_EOR(R24, R22) );
-                emit( asm_EOR(R25, R23) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_EOR(R24, R22);
+                emit_EOR(R25, R23);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_IADD:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_POP(R18) );
-                emit( asm_POP(R19) );
-                emit( asm_POP(R20) );
-                emit( asm_POP(R21) );
-                emit( asm_ADD(R22, R18) );
-                emit( asm_ADC(R23, R19) );
-                emit( asm_ADC(R24, R20) );
-                emit( asm_ADC(R25, R21) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_POP(R18);
+                emit_POP(R19);
+                emit_POP(R20);
+                emit_POP(R21);
+                emit_ADD(R22, R18);
+                emit_ADC(R23, R19);
+                emit_ADC(R24, R20);
+                emit_ADC(R25, R21);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_ISUB:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_POP(R18) );
-                emit( asm_POP(R19) );
-                emit( asm_POP(R20) );
-                emit( asm_POP(R21) );
-                emit( asm_SUB(R18, R22) );
-                emit( asm_SBC(R19, R23) );
-                emit( asm_SBC(R20, R24) );
-                emit( asm_SBC(R21, R25) );
-                emit( asm_PUSH(R21) );
-                emit( asm_PUSH(R20) );
-                emit( asm_PUSH(R19) );
-                emit( asm_PUSH(R18) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_POP(R18);
+                emit_POP(R19);
+                emit_POP(R20);
+                emit_POP(R21);
+                emit_SUB(R18, R22);
+                emit_SBC(R19, R23);
+                emit_SBC(R20, R24);
+                emit_SBC(R21, R25);
+                emit_PUSH(R21);
+                emit_PUSH(R20);
+                emit_PUSH(R19);
+                emit_PUSH(R18);
             break;
             case JVM_IMUL:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_POP(R18) );
-                emit( asm_POP(R19) );
-                emit( asm_POP(R20) );
-                emit( asm_POP(R21) );
-                emit( asm_CALL1((uint16_t)&__mulsi3) );
-                emit( asm_CALL2((uint16_t)&__mulsi3) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_POP(R18);
+                emit_POP(R19);
+                emit_POP(R20);
+                emit_POP(R21);
+                emit_2_CALL((uint16_t)&__mulsi3);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_IDIV:
             case JVM_IREM:
-                emit( asm_POP(R18) );
-                emit( asm_POP(R19) );
-                emit( asm_POP(R20) );
-                emit( asm_POP(R21) );
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_CALL1((uint16_t)&__divmodsi4) );
-                emit( asm_CALL2((uint16_t)&__divmodsi4) );
+                emit_POP(R18);
+                emit_POP(R19);
+                emit_POP(R20);
+                emit_POP(R21);
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_2_CALL((uint16_t)&__divmodsi4);
                 if (opcode == JVM_IDIV) {
-                    emit( asm_PUSH(R21) );
-                    emit( asm_PUSH(R20) );
-                    emit( asm_PUSH(R19) );
-                    emit( asm_PUSH(R18) );
+                    emit_PUSH(R21);
+                    emit_PUSH(R20);
+                    emit_PUSH(R19);
+                    emit_PUSH(R18);
                 } else { // JVM_IREM
-                    emit( asm_PUSH(R25) );
-                    emit( asm_PUSH(R24) );
-                    emit( asm_PUSH(R23) );
-                    emit( asm_PUSH(R22) );
+                    emit_PUSH(R25);
+                    emit_PUSH(R24);
+                    emit_PUSH(R23);
+                    emit_PUSH(R22);
                 }
             break;
             case JVM_INEG:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_CLR(R18) );
-                emit( asm_CLR(R19) );
-                emit( asm_MOVW(R20, R18) );
-                emit( asm_SUB(R18, R22) );
-                emit( asm_SBC(R19, R23) );
-                emit( asm_SBC(R20, R24) );
-                emit( asm_SBC(R21, R25) );
-                emit( asm_PUSH(R21) );
-                emit( asm_PUSH(R20) );
-                emit( asm_PUSH(R19) );
-                emit( asm_PUSH(R18) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_CLR(R18);
+                emit_CLR(R19);
+                emit_MOVW(R20, R18);
+                emit_SUB(R18, R22);
+                emit_SBC(R19, R23);
+                emit_SBC(R20, R24);
+                emit_SBC(R21, R25);
+                emit_PUSH(R21);
+                emit_PUSH(R20);
+                emit_PUSH(R19);
+                emit_PUSH(R18);
             break;
             case JVM_ISHL:
-                emit( asm_POP(R18) );
-                emit( asm_POP(R19) );
-                emit( asm_POP(R20) );
-                emit( asm_POP(R21) );
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R18);
+                emit_POP(R19);
+                emit_POP(R20);
+                emit_POP(R21);
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
 
-                emit( asm_RJMP(8) );
-                emit( asm_LSL(R22) );
-                emit( asm_ROL(R23) );
-                emit( asm_ROL(R24) );
-                emit( asm_ROL(R25) );
-                emit( asm_DEC(R18) );
-                emit( asm_BRPL(-12) );
+                emit_RJMP(8);
+                emit_LSL(R22);
+                emit_ROL(R23);
+                emit_ROL(R24);
+                emit_ROL(R25);
+                emit_DEC(R18);
+                emit_BRPL(-12);
 
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_ISHR:
-                emit( asm_POP(R18) );
-                emit( asm_POP(R19) );
-                emit( asm_POP(R20) );
-                emit( asm_POP(R21) );
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R18);
+                emit_POP(R19);
+                emit_POP(R20);
+                emit_POP(R21);
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
 
-                emit( asm_RJMP(8) );
-                emit( asm_ASR(R25) );
-                emit( asm_ROR(R24) );
-                emit( asm_ROR(R23) );
-                emit( asm_ROR(R22) );
-                emit( asm_DEC(R18) );
-                emit( asm_BRPL(-12) );
+                emit_RJMP(8);
+                emit_ASR(R25);
+                emit_ROR(R24);
+                emit_ROR(R23);
+                emit_ROR(R22);
+                emit_DEC(R18);
+                emit_BRPL(-12);
 
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_IUSHR: // x >>> y
-                emit( asm_POP(R20) ); // short y
-                emit( asm_POP(R21) );
-                emit( asm_POP(R22) ); // int x
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R20); // short y
+                emit_POP(R21);
+                emit_POP(R22); // int x
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
 
-                emit( asm_RJMP(8) );
-                emit( asm_LSR(R25) );
-                emit( asm_ROR(R24) );
-                emit( asm_ROR(R23) );
-                emit( asm_ROR(R22) );
-                emit( asm_DEC(R20) );
-                emit( asm_BRPL(-12) );
+                emit_RJMP(8);
+                emit_LSR(R25);
+                emit_ROR(R24);
+                emit_ROR(R23);
+                emit_ROR(R22);
+                emit_DEC(R20);
+                emit_BRPL(-12);
 
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_IAND:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_POP(R18) );
-                emit( asm_POP(R19) );
-                emit( asm_POP(R20) );
-                emit( asm_POP(R21) );
-                emit( asm_AND(R22, R18) );
-                emit( asm_AND(R23, R19) );
-                emit( asm_AND(R24, R20) );
-                emit( asm_AND(R25, R21) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_POP(R18);
+                emit_POP(R19);
+                emit_POP(R20);
+                emit_POP(R21);
+                emit_AND(R22, R18);
+                emit_AND(R23, R19);
+                emit_AND(R24, R20);
+                emit_AND(R25, R21);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_IOR:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_POP(R18) );
-                emit( asm_POP(R19) );
-                emit( asm_POP(R20) );
-                emit( asm_POP(R21) );
-                emit( asm_OR(R22, R18) );
-                emit( asm_OR(R23, R19) );
-                emit( asm_OR(R24, R20) );
-                emit( asm_OR(R25, R21) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_POP(R18);
+                emit_POP(R19);
+                emit_POP(R20);
+                emit_POP(R21);
+                emit_OR(R22, R18);
+                emit_OR(R23, R19);
+                emit_OR(R24, R20);
+                emit_OR(R25, R21);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_IXOR:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_POP(R18) );
-                emit( asm_POP(R19) );
-                emit( asm_POP(R20) );
-                emit( asm_POP(R21) );
-                emit( asm_EOR(R22, R18) );
-                emit( asm_EOR(R23, R19) );
-                emit( asm_EOR(R24, R20) );
-                emit( asm_EOR(R25, R21) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_POP(R18);
+                emit_POP(R19);
+                emit_POP(R20);
+                emit_POP(R21);
+                emit_EOR(R22, R18);
+                emit_EOR(R23, R19);
+                emit_EOR(R24, R20);
+                emit_EOR(R25, R21);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_IINC:
             case JVM_IINC_W:
@@ -1284,63 +1282,63 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 } else {
                     jvm_operand_signed_word = (int16_t)(((uint16_t)dj_di_getU8(code + ++pc) << 8) + dj_di_getU8(code + ++pc));
                 }
-                emit( asm_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)) );
-                emit( asm_LDD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1) );
-                emit( asm_LDD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2) );
-                emit( asm_LDD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3) );
+                emit_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0));
+                emit_LDD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1);
+                emit_LDD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2);
+                emit_LDD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3);
                 if (jvm_operand_signed_word > 0) {
                     // Positive operand
-                    emit( asm_SUBI(R22, -(jvm_operand_signed_word & 0xFF)) );
-                    emit( asm_SBCI(R23, -((jvm_operand_signed_word >> 8) & 0xFF)-1) );
-                    emit( asm_SBCI(R24, -1) );
-                    emit( asm_SBCI(R25, -1) );
+                    emit_SUBI(R22, -(jvm_operand_signed_word & 0xFF));
+                    emit_SBCI(R23, -((jvm_operand_signed_word >> 8) & 0xFF)-1);
+                    emit_SBCI(R24, -1);
+                    emit_SBCI(R25, -1);
                 } else {
                     // Negative operand
-                    emit( asm_SUBI(R22, (-jvm_operand_signed_word) & 0xFF) );
-                    emit( asm_SBCI(R23, ((-jvm_operand_signed_word) >> 8) & 0xFF) );
-                    emit( asm_SBCI(R24, 0) );
-                    emit( asm_SBCI(R25, 0) );
+                    emit_SUBI(R22, (-jvm_operand_signed_word) & 0xFF);
+                    emit_SBCI(R23, ((-jvm_operand_signed_word) >> 8) & 0xFF);
+                    emit_SBCI(R24, 0);
+                    emit_SBCI(R25, 0);
                 }
-                emit( asm_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)) );
-                emit( asm_STD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1) );
-                emit( asm_STD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2) );
-                emit( asm_STD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3) );
+                emit_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0));
+                emit_STD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1);
+                emit_STD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2);
+                emit_STD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3);
             break;
             case JVM_S2B:
             case JVM_S2C:
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R24);
+                emit_POP(R25);
 
                 // need to extend the sign
-                emit( asm_CLR(R25) );
-                emit( asm_SBRC(R24, 7) ); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
-                emit( asm_COM(R25) ); // otherwise: flip R24 to 0xFF to extend the sign
+                emit_CLR(R25);
+                emit_SBRC(R24, 7); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
+                emit_COM(R25); // otherwise: flip R24 to 0xFF to extend the sign
 
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_S2I:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
+                emit_POP(R22);
+                emit_POP(R23);
 
                 // need to extend the sign
-                emit( asm_CLR(R24) );
-                emit( asm_SBRC(R23, 7) ); // highest bit of MSB R23 cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
-                emit( asm_COM(R24) ); // otherwise: flip R24 to 0xFF to extend the sign
-                emit( asm_MOV(R25, R24) );
+                emit_CLR(R24);
+                emit_SBRC(R23, 7); // highest bit of MSB R23 cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
+                emit_COM(R24); // otherwise: flip R24 to 0xFF to extend the sign
+                emit_MOV(R25, R24);
 
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_I2S:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
-                emit( asm_PUSH(R23) );
-                emit( asm_PUSH(R22) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_IIFEQ:
             case JVM_IIFNE:
@@ -1353,41 +1351,41 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
                 pc += 4;
 
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
                 // Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
                 if (opcode == JVM_IIFEQ) {
-                    emit( asm_OR(R22, R23) );
-                    emit( asm_OR(R22, R24) );
-                    emit( asm_OR(R22, R25) );
-                    emit( asm_BRNE(SIZEOF_RJMP) );
+                    emit_OR(R22, R23);
+                    emit_OR(R22, R24);
+                    emit_OR(R22, R25);
+                    emit_BRNE(SIZEOF_RJMP);
                 } else if (opcode == JVM_IIFNE) {
-                    emit( asm_OR(R22, R23) );
-                    emit( asm_OR(R22, R24) );
-                    emit( asm_OR(R22, R25) );
-                    emit( asm_BREQ(SIZEOF_RJMP) );
+                    emit_OR(R22, R23);
+                    emit_OR(R22, R24);
+                    emit_OR(R22, R25);
+                    emit_BREQ(SIZEOF_RJMP);
                 } else if (opcode == JVM_IIFLT) {
-                    emit( asm_SBRC(R25, 7) ); // value is >=0 if the highest bit is cleared
+                    emit_SBRC(R25, 7); // value is >=0 if the highest bit is cleared
                 } else if (opcode == JVM_IIFGE) {
-                    emit( asm_SBRS(R25, 7) ); // value is <0 if the highest bit is set
+                    emit_SBRS(R25, 7); // value is <0 if the highest bit is set
                 } else if (opcode == JVM_IIFGT) {
-                    emit( asm_CP(ZERO_REG, R22) );
-                    emit( asm_CPC(ZERO_REG, R23) );
-                    emit( asm_CPC(ZERO_REG, R24) );
-                    emit( asm_CPC(ZERO_REG, R25) );
-                    emit( asm_BRGE(SIZEOF_RJMP) ); // if (0 >= x), then NOT (x > 0)
+                    emit_CP(ZERO_REG, R22);
+                    emit_CPC(ZERO_REG, R23);
+                    emit_CPC(ZERO_REG, R24);
+                    emit_CPC(ZERO_REG, R25);
+                    emit_BRGE(SIZEOF_RJMP); // if (0 >= x), then NOT (x > 0)
                 } else if (opcode == JVM_IIFLE) {
-                    emit( asm_CP(ZERO_REG, R22) );
-                    emit( asm_CPC(ZERO_REG, R23) );
-                    emit( asm_CPC(ZERO_REG, R24) );
-                    emit( asm_CPC(ZERO_REG, R25) );
-                    emit( asm_BRLT(SIZEOF_RJMP) ); // if (0 < x), then NOT (x <= 0)
+                    emit_CP(ZERO_REG, R22);
+                    emit_CPC(ZERO_REG, R23);
+                    emit_CPC(ZERO_REG, R24);
+                    emit_CPC(ZERO_REG, R25);
+                    emit_BRLT(SIZEOF_RJMP); // if (0 < x), then NOT (x <= 0)
                 }
 
                 rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
-                emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+                emit_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
             break;
             case JVM_IFNULL:
             case JVM_IFNONNULL:
@@ -1396,18 +1394,18 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
                 pc += 4;
 
-                emit( asm_x_POPREF(R25) );
-                emit( asm_x_POPREF(R24) );
+                emit_x_POPREF(R25);
+                emit_x_POPREF(R24);
                 // Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
                 if (opcode == JVM_IFNULL) {
-                    emit( asm_OR(R24, R25) );
-                    emit( asm_BRNE(SIZEOF_RJMP) );                    
+                    emit_OR(R24, R25);
+                    emit_BRNE(SIZEOF_RJMP);                    
                 } else if (opcode == JVM_IFNONNULL) {
-                    emit( asm_OR(R24, R25) );
-                    emit( asm_BREQ(SIZEOF_RJMP) );                    
+                    emit_OR(R24, R25);
+                    emit_BREQ(SIZEOF_RJMP);                    
                 }
                 rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
-                emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+                emit_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
             break;
             case JVM_IF_SCMPEQ:
             case JVM_IF_SCMPNE:
@@ -1420,38 +1418,38 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
                 pc += 4;
 
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
                 // Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
                 if (opcode == JVM_IF_SCMPEQ) {
-                    emit( asm_CP(R24, R22) );
-                    emit( asm_CPC(R25, R23) );
-                    emit( asm_BRNE(SIZEOF_RJMP) );
+                    emit_CP(R24, R22);
+                    emit_CPC(R25, R23);
+                    emit_BRNE(SIZEOF_RJMP);
                 } else if (opcode == JVM_IF_SCMPNE) {
-                    emit( asm_CP(R24, R22) );
-                    emit( asm_CPC(R25, R23) );
-                    emit( asm_BREQ(SIZEOF_RJMP) );
+                    emit_CP(R24, R22);
+                    emit_CPC(R25, R23);
+                    emit_BREQ(SIZEOF_RJMP);
                 } else if (opcode == JVM_IF_SCMPLT) {
-                    emit( asm_CP(R24, R22) );
-                    emit( asm_CPC(R25, R23) );
-                    emit( asm_BRGE(SIZEOF_RJMP) );
+                    emit_CP(R24, R22);
+                    emit_CPC(R25, R23);
+                    emit_BRGE(SIZEOF_RJMP);
                 } else if (opcode == JVM_IF_SCMPGE) {
-                    emit( asm_CP(R24, R22) );
-                    emit( asm_CPC(R25, R23) );
-                    emit( asm_BRLT(SIZEOF_RJMP) );
+                    emit_CP(R24, R22);
+                    emit_CPC(R25, R23);
+                    emit_BRLT(SIZEOF_RJMP);
                 } else if (opcode == JVM_IF_SCMPGT) {
-                    emit( asm_CP(R22, R24) );
-                    emit( asm_CPC(R23, R25) );
-                    emit( asm_BRGE(SIZEOF_RJMP) );
+                    emit_CP(R22, R24);
+                    emit_CPC(R23, R25);
+                    emit_BRGE(SIZEOF_RJMP);
                 } else if (opcode == JVM_IF_SCMPLE) {
-                    emit( asm_CP(R22, R24) );
-                    emit( asm_CPC(R23, R25) );
-                    emit( asm_BRLT(SIZEOF_RJMP) );
+                    emit_CP(R22, R24);
+                    emit_CPC(R23, R25);
+                    emit_BRLT(SIZEOF_RJMP);
                 }
                 rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
-                emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+                emit_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
             break;
             case JVM_IF_ICMPEQ:
             case JVM_IF_ICMPNE:
@@ -1463,54 +1461,54 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 // followed by a branch target index used when compiling to native code.
                 jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
                 pc += 4;
-                emit( asm_POP(R18) );
-                emit( asm_POP(R19) );
-                emit( asm_POP(R20) );
-                emit( asm_POP(R21) );
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R18);
+                emit_POP(R19);
+                emit_POP(R20);
+                emit_POP(R21);
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
                 // Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
                 if (opcode == JVM_IF_ICMPEQ) {
-                    emit( asm_CP(R22, R18) );
-                    emit( asm_CPC(R23, R19) );
-                    emit( asm_CPC(R24, R20) );
-                    emit( asm_CPC(R25, R21) );
-                    emit( asm_BRNE(SIZEOF_RJMP) );
+                    emit_CP(R22, R18);
+                    emit_CPC(R23, R19);
+                    emit_CPC(R24, R20);
+                    emit_CPC(R25, R21);
+                    emit_BRNE(SIZEOF_RJMP);
                 } else if (opcode == JVM_IF_ICMPNE) {
-                    emit( asm_CP(R22, R18) );
-                    emit( asm_CPC(R23, R19) );
-                    emit( asm_CPC(R24, R20) );
-                    emit( asm_CPC(R25, R21) );
-                    emit( asm_BREQ(SIZEOF_RJMP) );
+                    emit_CP(R22, R18);
+                    emit_CPC(R23, R19);
+                    emit_CPC(R24, R20);
+                    emit_CPC(R25, R21);
+                    emit_BREQ(SIZEOF_RJMP);
                 } else if (opcode == JVM_IF_ICMPLT) {
-                    emit( asm_CP(R22, R18) );
-                    emit( asm_CPC(R23, R19) );
-                    emit( asm_CPC(R24, R20) );
-                    emit( asm_CPC(R25, R21) );
-                    emit( asm_BRGE(SIZEOF_RJMP) );
+                    emit_CP(R22, R18);
+                    emit_CPC(R23, R19);
+                    emit_CPC(R24, R20);
+                    emit_CPC(R25, R21);
+                    emit_BRGE(SIZEOF_RJMP);
                 } else if (opcode == JVM_IF_ICMPGE) {
-                    emit( asm_CP(R22, R18) );
-                    emit( asm_CPC(R23, R19) );
-                    emit( asm_CPC(R24, R20) );
-                    emit( asm_CPC(R25, R21) );
-                    emit( asm_BRLT(SIZEOF_RJMP) );
+                    emit_CP(R22, R18);
+                    emit_CPC(R23, R19);
+                    emit_CPC(R24, R20);
+                    emit_CPC(R25, R21);
+                    emit_BRLT(SIZEOF_RJMP);
                 } else if (opcode == JVM_IF_ICMPGT) {
-                    emit( asm_CP(R18, R22) );
-                    emit( asm_CPC(R19, R23) );
-                    emit( asm_CPC(R20, R24) );
-                    emit( asm_CPC(R21, R25) );
-                    emit( asm_BRGE(SIZEOF_RJMP) );
+                    emit_CP(R18, R22);
+                    emit_CPC(R19, R23);
+                    emit_CPC(R20, R24);
+                    emit_CPC(R21, R25);
+                    emit_BRGE(SIZEOF_RJMP);
                 } else if (opcode == JVM_IF_ICMPLE) {
-                    emit( asm_CP(R18, R22) );
-                    emit( asm_CPC(R19, R23) );
-                    emit( asm_CPC(R20, R24) );
-                    emit( asm_CPC(R21, R25) );
-                    emit( asm_BRLT(SIZEOF_RJMP) );
+                    emit_CP(R18, R22);
+                    emit_CPC(R19, R23);
+                    emit_CPC(R20, R24);
+                    emit_CPC(R21, R25);
+                    emit_BRLT(SIZEOF_RJMP);
                 }
                 rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
-                emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+                emit_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
             break;
             case JVM_IF_ACMPEQ:
             case JVM_IF_ACMPNE:
@@ -1519,22 +1517,22 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
                 pc += 4;
 
-                emit( asm_x_POPREF(R25) );
-                emit( asm_x_POPREF(R24) );
-                emit( asm_x_POPREF(R23) );
-                emit( asm_x_POPREF(R22) );
+                emit_x_POPREF(R25);
+                emit_x_POPREF(R24);
+                emit_x_POPREF(R23);
+                emit_x_POPREF(R22);
                 // Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
                 if (opcode == JVM_IF_ACMPEQ) {
-                    emit( asm_CP(R22, R24) );
-                    emit( asm_CPC(R23, R25) );
-                    emit( asm_BRNE(SIZEOF_RJMP) );
+                    emit_CP(R22, R24);
+                    emit_CPC(R23, R25);
+                    emit_BRNE(SIZEOF_RJMP);
                 } else if (opcode == JVM_IF_ACMPNE) {
-                    emit( asm_CP(R22, R24) );
-                    emit( asm_CPC(R23, R25) );
-                    emit( asm_BREQ(SIZEOF_RJMP) );
+                    emit_CP(R22, R24);
+                    emit_CPC(R23, R25);
+                    emit_BREQ(SIZEOF_RJMP);
                 }
                 rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
-                emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+                emit_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
             break;
             case JVM_GOTO:
                 // Branch instructions first have a bytecode offset, used by the interpreter,
@@ -1543,7 +1541,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 pc += 4;
 
                 rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
-                emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+                emit_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
             break;
             case JVM_TABLESWITCH: {
                 // Branch instructions first have a bytecode offset, used by the interpreter,
@@ -1552,27 +1550,27 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 pc += 4;
 
                 // Pop the key value
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
                 // Load the upper bound
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte2 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte3 = dj_di_getU8(code + ++pc);
                 int32_t upperbound = (int32_t)(((uint32_t)jvm_operand_byte0 << 24) | ((uint32_t)jvm_operand_byte1 << 16) | ((uint32_t)jvm_operand_byte2 << 8) | ((uint32_t)jvm_operand_byte3 << 0));
-                emit( asm_LDI(R21, jvm_operand_byte0)); // Bytecode is big endian
-                emit( asm_LDI(R20, jvm_operand_byte1));
-                emit( asm_LDI(R19, jvm_operand_byte2));
-                emit( asm_LDI(R18, jvm_operand_byte3));
-                emit( asm_CP(R18, R22) );
-                emit( asm_CPC(R19, R23) );
-                emit( asm_CPC(R20, R24) );
-                emit( asm_CPC(R21, R25) );
-                emit( asm_BRGE(SIZEOF_RJMP) );
+                emit_LDI(R21, jvm_operand_byte0); // Bytecode is big endian
+                emit_LDI(R20, jvm_operand_byte1);
+                emit_LDI(R19, jvm_operand_byte2);
+                emit_LDI(R18, jvm_operand_byte3);
+                emit_CP(R18, R22);
+                emit_CPC(R19, R23);
+                emit_CPC(R20, R24);
+                emit_CPC(R21, R25);
+                emit_BRGE(SIZEOF_RJMP);
                 rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
-                emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+                emit_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
 
                 // Lower than or equal to the upper bound: load the lower bound
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
@@ -1580,22 +1578,22 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 jvm_operand_byte2 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte3 = dj_di_getU8(code + ++pc);
                 int32_t lowerbound = (int32_t)(((uint32_t)jvm_operand_byte0 << 24) | ((uint32_t)jvm_operand_byte1 << 16) | ((uint32_t)jvm_operand_byte2 << 8) | ((uint32_t)jvm_operand_byte3 << 0));
-                emit( asm_LDI(R21, jvm_operand_byte0)); // Bytecode is big endian
-                emit( asm_LDI(R20, jvm_operand_byte1));
-                emit( asm_LDI(R19, jvm_operand_byte2));
-                emit( asm_LDI(R18, jvm_operand_byte3));
-                emit( asm_CP(R22, R18) );
-                emit( asm_CPC(R23, R19) );
-                emit( asm_CPC(R24, R20) );
-                emit( asm_CPC(R25, R21) );
-                emit( asm_BRGE(SIZEOF_RJMP) );
+                emit_LDI(R21, jvm_operand_byte0); // Bytecode is big endian
+                emit_LDI(R20, jvm_operand_byte1);
+                emit_LDI(R19, jvm_operand_byte2);
+                emit_LDI(R18, jvm_operand_byte3);
+                emit_CP(R22, R18);
+                emit_CPC(R23, R19);
+                emit_CPC(R24, R20);
+                emit_CPC(R25, R21);
+                emit_BRGE(SIZEOF_RJMP);
                 rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
-                emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+                emit_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
 
                 // Also higher than or equal to the lower bound: branch through the switch table
                 // Substract lower bound from the key to find the index (assume 16b will be enough)
-                emit( asm_SUB(R22, R18) );
-                emit( asm_SBC(R23, R19) );
+                emit_SUB(R22, R18);
+                emit_SBC(R23, R19);
 
                 // R22:R23 now contains the index
                 // The branch targets may not have consecutive numbers, for example if there are branches within a switch case
@@ -1604,22 +1602,22 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 // are consecutive, which we could enforce in the infuser, but that would only save a few cycles and given the
                 // amount of work we're already doing here, it won't speed things up by much, so I can't be bothered.
 
-                emit( asm_RCALL(0) ); // RCALL to offset 0 does nothing, except get the PC on the stack, which we need here
+                emit_RCALL(0); // RCALL to offset 0 does nothing, except get the PC on the stack, which we need here
 
-                emit( asm_POP(RZH) ); // POP PC into Z (ignore the highest (>128K) byte for now)
-                emit( asm_POP(RZH) );
-                emit( asm_POP(RZL) );
-                emit( asm_ADIW(RZ, 7) ); // Will need to compensate here for the instructions inbetween RCALL(0) and the table. Now Z will point to the start of the RJMP table.
-                emit( asm_ADD(RZL, R22) ); // Add the index to get the target address in the RJMP table
-                emit( asm_ADC(RZH, R23) );
-                emit( asm_IJMP() ); // All this fuss because there's no relative indirect jump...
+                emit_POP(RZH); // POP PC into Z (ignore the highest (>128K) byte for now)
+                emit_POP(RZH);
+                emit_POP(RZL);
+                emit_ADIW(RZ, 7); // Will need to compensate here for the instructions inbetween RCALL(0) and the table. Now Z will point to the start of the RJMP table.
+                emit_ADD(RZL, R22); // Add the index to get the target address in the RJMP table
+                emit_ADC(RZH, R23);
+                emit_IJMP(); // All this fuss because there's no relative indirect jump...
 
                 // Now emit the RJMP table itself
                 for (int i=0; i<(upperbound-lowerbound+1); i++) { // +1 since both bounds are inclusive
                     jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
                     pc += 4;
                     rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
-                    emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+                    emit_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
                 }
             }
             break;
@@ -1630,10 +1628,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 pc += 4;
 
                 // Pop the key value
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
 
                 uint16_t number_of_cases = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
                 pc += 2;
@@ -1646,90 +1644,88 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     // Get the branch target (and skip the branch address used by the interpreter)
                     jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
                     pc += 4;
-                    emit( asm_LDI(R21, jvm_operand_byte0)); // Bytecode is big endian
-                    emit( asm_LDI(R20, jvm_operand_byte1));
-                    emit( asm_LDI(R19, jvm_operand_byte2));
-                    emit( asm_LDI(R18, jvm_operand_byte3));
-                    emit( asm_CP(R18, R22) );
-                    emit( asm_CPC(R19, R23) );
-                    emit( asm_CPC(R20, R24) );
-                    emit( asm_CPC(R21, R25) );
-                    emit( asm_BRNE(SIZEOF_RJMP) );  
+                    emit_LDI(R21, jvm_operand_byte0); // Bytecode is big endian
+                    emit_LDI(R20, jvm_operand_byte1);
+                    emit_LDI(R19, jvm_operand_byte2);
+                    emit_LDI(R18, jvm_operand_byte3);
+                    emit_CP(R18, R22);
+                    emit_CPC(R19, R23);
+                    emit_CPC(R20, R24);
+                    emit_CPC(R21, R25);
+                    emit_BRNE(SIZEOF_RJMP);  
 
                   
                     rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
-                    emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+                    emit_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
                 }
 
                 rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
-                emit( asm_RJMP(rtc_branch_target_table_address(default_branch_target) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+                emit_RJMP(rtc_branch_target_table_address(default_branch_target) - wkreprog_get_raw_position() - 2); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
             }
             break;
             case JVM_SRETURN:
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R24);
+                emit_POP(R25);
 
                 // epilogue (is this the right way?)
-                emit( asm_POP(R28) ); // Pop Y
-                emit( asm_POP(R29) );
-                emit( asm_POP(R2) );
-                emit( asm_POP(R3) );
-                emit( asm_RET );
+                emit_POP(R28); // Pop Y
+                emit_POP(R29);
+                emit_POP(R2);
+                emit_POP(R3);
+                emit_RET();
             break;
             case JVM_IRETURN:
-                emit( asm_POP(R22) );
-                emit( asm_POP(R23) );
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R22);
+                emit_POP(R23);
+                emit_POP(R24);
+                emit_POP(R25);
 
                 // epilogue (is this the right way?)
-                emit( asm_POP(R28) ); // Pop Y
-                emit( asm_POP(R29) );
-                emit( asm_POP(R2) );
-                emit( asm_POP(R3) );
-                emit( asm_RET );
+                emit_POP(R28); // Pop Y
+                emit_POP(R29);
+                emit_POP(R2);
+                emit_POP(R3);
+                emit_RET();
             break;
             case JVM_ARETURN:
-                emit( asm_x_POPREF(R25) ); // POP the reference into Z
-                emit( asm_x_POPREF(R24) );
+                emit_x_POPREF(R25); // POP the reference into Z
+                emit_x_POPREF(R24);
 
                 // epilogue (is this the right way?)
-                emit( asm_POP(R28) ); // Pop Y
-                emit( asm_POP(R29) );
-                emit( asm_POP(R2) );
-                emit( asm_POP(R3) );
-                emit( asm_RET );
+                emit_POP(R28); // Pop Y
+                emit_POP(R29);
+                emit_POP(R2);
+                emit_POP(R3);
+                emit_RET();
             break;
             case JVM_RETURN:
                 // epilogue (is this the right way?)
-                emit( asm_POP(R28) ); // Pop Y
-                emit( asm_POP(R29) );
-                emit( asm_POP(R2) );
-                emit( asm_POP(R3) );
-                emit( asm_RET );
+                emit_POP(R28); // Pop Y
+                emit_POP(R29);
+                emit_POP(R2);
+                emit_POP(R3);
+                emit_RET();
             break;
             case JVM_INVOKEVIRTUAL:
             case JVM_INVOKESPECIAL:
             case JVM_INVOKESTATIC:
             case JVM_INVOKEINTERFACE:
                 // set intStack and refStack pointers to SP and X resp.
-                emit( asm_PUSH(ZERO_REG) ); // NOTE: THE DVM STACK IS A 16 BIT POINTER, SP IS 8 BIT. 
+                emit_PUSH(ZERO_REG); // NOTE: THE DVM STACK IS A 16 BIT POINTER, SP IS 8 BIT. 
                                             // BOTH POINT TO THE NEXT free SLOT, BUT SINCE THEY GROW down THIS MEANS THE DVM POINTER SHOULD POINT TO TWO BYTES BELOW THE LAST VALUE,
                                             // WHILE CURRENTLY THE NATIVE SP POINTS TO THE BYTE DIRECTLY BELOW IT. RESERVE AN EXTRA BYTE TO FIX THIS.
 
-                emit( asm_LDS1(R24, SPaddress_L) ); // Load SP into R24:R25
-                emit( asm_LDS2(R24, SPaddress_L) ); // Load SP into R24:R25
-                emit( asm_LDS1(R25, SPaddress_H) ); // Load SP into R24:R25
-                emit( asm_LDS2(R25, SPaddress_H) ); // Load SP into R24:R25
-                emit( asm_LDI(RZL, ((uint16_t)&(intStack)) & 0xFF) ); // Load the address of intStack into Z
-                emit( asm_LDI(RZH, (((uint16_t)&(intStack)) >> 8) & 0xFF) );
-                emit( asm_ST_ZINC(R24) ); // Store SP into intStack
-                emit( asm_ST_Z(R25) );
+                emit_2_LDS(R24, SPaddress_L); // Load SP into R24:R25
+                emit_2_LDS(R25, SPaddress_H); // Load SP into R24:R25
+                emit_LDI(RZL, ((uint16_t)&(intStack)) & 0xFF); // Load the address of intStack into Z
+                emit_LDI(RZH, (((uint16_t)&(intStack)) >> 8) & 0xFF);
+                emit_ST_ZINC(R24); // Store SP into intStack
+                emit_ST_Z(R25);
 
-                emit( asm_LDI(RZL, ((uint16_t)&(refStack)) & 0xFF) ); // Load the address of refStack into Z
-                emit( asm_LDI(RZH, (((uint16_t)&(refStack)) >> 8) & 0xFF) );
-                emit( asm_ST_ZINC(RXL) ); // Store X into refStack
-                emit( asm_ST_Z(RXH) );
+                emit_LDI(RZL, ((uint16_t)&(refStack)) & 0xFF); // Load the address of refStack into Z
+                emit_LDI(RZH, (((uint16_t)&(refStack)) >> 8) & 0xFF);
+                emit_ST_ZINC(RXL); // Store X into refStack
+                emit_ST_Z(RXH);
 
 
                 // Reserve 8 bytes of space on the stack, in case the returned int is large than passed ints
@@ -1738,180 +1734,170 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 //       reserve the space that's needed.
                 //       This is for the worst case, where no ints are passed, so there's no space reserved, and
                 //       a 64 bit long is returned.
-                emit( asm_RCALL(0) ); // RCALL to offset 0 does nothing, except reserving 2 bytes on the stack. cheaper than two useless pushes.
-                emit( asm_RCALL(0) );
-                emit( asm_RCALL(0) );
-                emit( asm_RCALL(0) );
+                emit_RCALL(0); // RCALL to offset 0 does nothing, except reserving 2 bytes on the stack. cheaper than two useless pushes.
+                emit_RCALL(0);
+                emit_RCALL(0);
+                emit_RCALL(0);
 
                 // PUSH important stuff
                 
                 // make the call
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
-                emit( asm_LDI(R24, jvm_operand_byte0) ); // infusion id
-                emit( asm_LDI(R25, jvm_operand_byte1) ); // entity id
+                emit_LDI(R24, jvm_operand_byte0); // infusion id
+                emit_LDI(R25, jvm_operand_byte1); // entity id
                 if        (opcode == JVM_INVOKEVIRTUAL
                         || opcode == JVM_INVOKEINTERFACE) {
                     jvm_operand_byte2 = dj_di_getU8(code + ++pc);
-                    emit( asm_LDI(R22, jvm_operand_byte2) ); // nr_ref_args
-                    emit( asm_CALL1((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE) );
-                    emit( asm_CALL2((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE) );
+                    emit_LDI(R22, jvm_operand_byte2); // nr_ref_args
+                    emit_2_CALL((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE);
                 } else if (opcode == JVM_INVOKESPECIAL) {
-                    emit( asm_CALL1((uint16_t)&RTC_INVOKESPECIAL) );
-                    emit( asm_CALL2((uint16_t)&RTC_INVOKESPECIAL) );
+                    emit_2_CALL((uint16_t)&RTC_INVOKESPECIAL);
                 } else if (opcode == JVM_INVOKESTATIC) {
-                    emit( asm_CALL1((uint16_t)&RTC_INVOKESTATIC) );
-                    emit( asm_CALL2((uint16_t)&RTC_INVOKESTATIC) );
+                    emit_2_CALL((uint16_t)&RTC_INVOKESTATIC);
                 }
                 // POP important stuff
 
                 // set SP and X to intStack and refStack resp.
-                emit( asm_LDI(RZL, ((uint16_t)&(intStack)) & 0xFF) ); // Load the address of intStack into Z
-                emit( asm_LDI(RZH, (((uint16_t)&(intStack)) >> 8) & 0xFF) );
-                emit( asm_LD_ZINC(R24) ); // Load intStack into R24:25
-                emit( asm_LD_Z(R25) );
+                emit_LDI(RZL, ((uint16_t)&(intStack)) & 0xFF); // Load the address of intStack into Z
+                emit_LDI(RZH, (((uint16_t)&(intStack)) >> 8) & 0xFF);
+                emit_LD_ZINC(R24); // Load intStack into R24:25
+                emit_LD_Z(R25);
 
-                emit( asm_STS1(SPaddress_L, R24) ); // Store R24:25 into SP
-                emit( asm_STS2(SPaddress_L, R24) ); // Store R24:25 into SP
-                emit( asm_STS1(SPaddress_H, R25) ); // Store R24:25 into SP
-                emit( asm_STS2(SPaddress_H, R25) ); // Store R24:25 into SP
+                emit_2_STS(SPaddress_L, R24); // Store R24:25 into SP
+                emit_2_STS(SPaddress_H, R25); // Store R24:25 into SP
 
-                emit( asm_POP(R25) ); // JUST POP AND DISCARD TO CLEAR THE BYTE WE RESERVED IN THE FIRST LINE FOR INVOKESTATIC. SEE COMMENT ABOVE.
+                emit_POP(R25); // JUST POP AND DISCARD TO CLEAR THE BYTE WE RESERVED IN THE FIRST LINE FOR INVOKESTATIC. SEE COMMENT ABOVE.
 
-                emit( asm_LDI(RZL, ((uint16_t)&(refStack)) & 0xFF) ); // Load the address of refStack into Z
-                emit( asm_LDI(RZH, (((uint16_t)&(refStack)) >> 8) & 0xFF) );
-                emit( asm_LD_ZINC(RXL) ); // Load refStack into X
-                emit( asm_LD_Z(RXH) );
+                emit_LDI(RZL, ((uint16_t)&(refStack)) & 0xFF); // Load the address of refStack into Z
+                emit_LDI(RZH, (((uint16_t)&(refStack)) >> 8) & 0xFF);
+                emit_LD_ZINC(RXL); // Load refStack into X
+                emit_LD_Z(RXH);
             break;
             case JVM_NEW:
                 // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
                 // PUSH important stuff
-                emit( asm_PUSH(RXH) );
-                emit( asm_PUSH(RXL) );
+                emit_PUSH(RXH);
+                emit_PUSH(RXL);
 
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
-                emit( asm_LDI(R24, jvm_operand_byte0) ); // infusion id
-                emit( asm_LDI(R25, jvm_operand_byte1) ); // entity id
+                emit_LDI(R24, jvm_operand_byte0); // infusion id
+                emit_LDI(R25, jvm_operand_byte1); // entity id
                 // make the call
-                emit( asm_CALL1((uint16_t)&RTC_NEW) );
-                emit( asm_CALL2((uint16_t)&RTC_NEW) );
+                emit_2_CALL((uint16_t)&RTC_NEW);
 
                 // POP important stuff
-                emit( asm_POP(RXL) );
-                emit( asm_POP(RXH) );
+                emit_POP(RXL);
+                emit_POP(RXH);
 
                 // push the reference to the new object onto the ref stack
-                emit( asm_x_PUSHREF(R24) );
-                emit( asm_x_PUSHREF(R25) );
+                emit_x_PUSHREF(R24);
+                emit_x_PUSHREF(R25);
             break;
             case JVM_NEWARRAY:
                 // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
 
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-                emit( asm_POP(R22) ); // size
-                emit( asm_POP(R23) );
-                emit( asm_LDI(R24, jvm_operand_byte0) ); // (int) element type
+                emit_POP(R22); // size
+                emit_POP(R23);
+                emit_LDI(R24, jvm_operand_byte0); // (int) element type
 
                 // PUSH important stuff
-                emit( asm_PUSH(RXH) );
-                emit( asm_PUSH(RXL) );
+                emit_PUSH(RXH);
+                emit_PUSH(RXL);
 
                 // make the call
-                emit( asm_CALL1((uint16_t)&dj_int_array_create) );
-                emit( asm_CALL2((uint16_t)&dj_int_array_create) );
+                emit_2_CALL((uint16_t)&dj_int_array_create);
 
                 // POP important stuff
-                emit( asm_POP(RXL) );
-                emit( asm_POP(RXH) );
+                emit_POP(RXL);
+                emit_POP(RXH);
 
                 // push the reference to the new object onto the ref stack
-                emit( asm_x_PUSHREF(R24) );
-                emit( asm_x_PUSHREF(R25) );
+                emit_x_PUSHREF(R24);
+                emit_x_PUSHREF(R25);
             break;
             case JVM_ANEWARRAY:
                 // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
 
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
-                emit( asm_POP(R22) ); // size
-                emit( asm_POP(R23) );
-                emit( asm_LDI(R24, jvm_operand_byte0) ); // infusion id
-                emit( asm_LDI(R25, jvm_operand_byte1) ); // entity id
+                emit_POP(R22); // size
+                emit_POP(R23);
+                emit_LDI(R24, jvm_operand_byte0); // infusion id
+                emit_LDI(R25, jvm_operand_byte1); // entity id
 
                 // PUSH important stuff
-                emit( asm_PUSH(RXH) );
-                emit( asm_PUSH(RXL) );
+                emit_PUSH(RXH);
+                emit_PUSH(RXL);
 
                 // make the call
-                emit( asm_CALL1((uint16_t)&RTC_ANEWARRAY) );
-                emit( asm_CALL2((uint16_t)&RTC_ANEWARRAY) );
+                emit_2_CALL((uint16_t)&RTC_ANEWARRAY);
 
                 // POP important stuff
-                emit( asm_POP(RXL) );
-                emit( asm_POP(RXH) );
+                emit_POP(RXL);
+                emit_POP(RXH);
 
                 // push the reference to the new object onto the ref stack
-                emit( asm_x_PUSHREF(R24) );
-                emit( asm_x_PUSHREF(R25) );
+                emit_x_PUSHREF(R24);
+                emit_x_PUSHREF(R25);
             break;
             case JVM_ARRAYLENGTH: // The length of an array is stored as 16 bit at the start of the array
-                emit( asm_x_POPREF(R31) ); // POP the reference into Z
-                emit( asm_x_POPREF(R30) );
-                emit( asm_LD_ZINC(R24) );
-                emit( asm_LD_Z(R25) );
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_x_POPREF(R31); // POP the reference into Z
+                emit_x_POPREF(R30);
+                emit_LD_ZINC(R24);
+                emit_LD_Z(R25);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             case JVM_CHECKCAST:
                 // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
 
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
-                emit( asm_x_POPREF(R23) ); // reference to the object
-                emit( asm_x_POPREF(R22) );
-                emit( asm_x_PUSHREF(R22) ); // TODO: optimise this. CHECKCAST should only peek.
-                emit( asm_x_PUSHREF(R23) );
-                emit( asm_LDI(R24, jvm_operand_byte0) ); // infusion id
-                emit( asm_LDI(R25, jvm_operand_byte1) ); // entity id
+                emit_x_POPREF(R23); // reference to the object
+                emit_x_POPREF(R22);
+                emit_x_PUSHREF(R22); // TODO: optimise this. CHECKCAST should only peek.
+                emit_x_PUSHREF(R23);
+                emit_LDI(R24, jvm_operand_byte0); // infusion id
+                emit_LDI(R25, jvm_operand_byte1); // entity id
 
                 // PUSH important stuff
-                emit( asm_PUSH(RXH) );
-                emit( asm_PUSH(RXL) );
+                emit_PUSH(RXH);
+                emit_PUSH(RXL);
 
                 // make the call
-                emit( asm_CALL1((uint16_t)&RTC_CHECKCAST) );
-                emit( asm_CALL2((uint16_t)&RTC_CHECKCAST) );
+                emit_2_CALL((uint16_t)&RTC_CHECKCAST);
 
                 // POP important stuff
-                emit( asm_POP(RXL) );
-                emit( asm_POP(RXH) );
+                emit_POP(RXL);
+                emit_POP(RXH);
             break;
             case JVM_INSTANCEOF:
                 // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
 
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
-                emit( asm_x_POPREF(R23) ); // reference to the object
-                emit( asm_x_POPREF(R22) );
-                emit( asm_LDI(R24, jvm_operand_byte0) ); // infusion id
-                emit( asm_LDI(R25, jvm_operand_byte1) ); // entity id
+                emit_x_POPREF(R23); // reference to the object
+                emit_x_POPREF(R22);
+                emit_LDI(R24, jvm_operand_byte0); // infusion id
+                emit_LDI(R25, jvm_operand_byte1); // entity id
 
                 // PUSH important stuff
-                emit( asm_PUSH(RXH) );
-                emit( asm_PUSH(RXL) );
+                emit_PUSH(RXH);
+                emit_PUSH(RXL);
 
                 // make the call
-                emit( asm_CALL1((uint16_t)&RTC_INSTANCEOF) );
-                emit( asm_CALL2((uint16_t)&RTC_INSTANCEOF) );
+                emit_2_CALL((uint16_t)&RTC_INSTANCEOF);
 
                 // POP important stuff
-                emit( asm_POP(RXL) );
-                emit( asm_POP(RXH) );
+                emit_POP(RXL);
+                emit_POP(RXH);
 
                 // push the reference to the new object onto the ref stack
-                emit( asm_PUSH(R25) );
-                emit( asm_PUSH(R24) );
+                emit_PUSH(R25);
+                emit_PUSH(R24);
             break;
             // BRANCHES
             case JVM_SIFEQ:
@@ -1925,31 +1911,31 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
                 pc += 4;
 
-                emit( asm_POP(R24) );
-                emit( asm_POP(R25) );
+                emit_POP(R24);
+                emit_POP(R25);
                 // Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
                 if (opcode == JVM_SIFEQ) {
-                    emit( asm_OR(R24, R25) );
-                    emit( asm_BRNE(SIZEOF_RJMP) );
+                    emit_OR(R24, R25);
+                    emit_BRNE(SIZEOF_RJMP);
                 } else if (opcode == JVM_SIFNE) {
-                    emit( asm_OR(R24, R25) );
-                    emit( asm_BREQ(SIZEOF_RJMP) );
+                    emit_OR(R24, R25);
+                    emit_BREQ(SIZEOF_RJMP);
                 } else if (opcode == JVM_SIFLT) {
-                    emit( asm_SBRC(R25, 7) ); // value is >=0 if the highest bit is cleared
+                    emit_SBRC(R25, 7); // value is >=0 if the highest bit is cleared
                 } else if (opcode == JVM_SIFGE) {
-                    emit( asm_SBRS(R25, 7) ); // value is <0 if the highest bit is set
+                    emit_SBRS(R25, 7); // value is <0 if the highest bit is set
                 } else if (opcode == JVM_SIFGT) {
-                    emit( asm_CP(ZERO_REG, R24) );
-                    emit( asm_CPC(ZERO_REG, R25) );
-                    emit( asm_BRGE(SIZEOF_RJMP) ); // if (0 >= x), then NOT (x > 0)
+                    emit_CP(ZERO_REG, R24);
+                    emit_CPC(ZERO_REG, R25);
+                    emit_BRGE(SIZEOF_RJMP); // if (0 >= x), then NOT (x > 0)
                 } else if (opcode == JVM_SIFLE) {
-                    emit( asm_CP(ZERO_REG, R24) );
-                    emit( asm_CPC(ZERO_REG, R25) );
-                    emit( asm_BRLT(SIZEOF_RJMP) ); // if (0 < x), then NOT (x <= 0)
+                    emit_CP(ZERO_REG, R24);
+                    emit_CPC(ZERO_REG, R25);
+                    emit_BRLT(SIZEOF_RJMP); // if (0 < x), then NOT (x <= 0)
                 }
 
                 rtc_flush(); // To make sure wkreprog_get_raw_position returns the right value;
-                emit( asm_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2) ); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+                emit_RJMP(rtc_branch_target_table_address(jvm_operand_word) - wkreprog_get_raw_position() - 2); // -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
             break;
             case JVM_BRTARGET:
                 // This is a noop, but we need to record the address of the next instruction
@@ -1958,7 +1944,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 rtc_flush(); // Not strictly necessary at the moment
                 wkreprog_close();
                 wkreprog_open_raw(rtc_branch_target_table_address(branch_target_count));
-                emit( asm_RJMP(tmp_current_position - rtc_branch_target_table_address(branch_target_count) - 2) ); // Relative jump to tmp_current_position from the branch target table. -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
+                emit_RJMP(tmp_current_position - rtc_branch_target_table_address(branch_target_count) - 2); // Relative jump to tmp_current_position from the branch target table. -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
                 rtc_flush();
                 wkreprog_close();
                 wkreprog_open_raw(tmp_current_position);

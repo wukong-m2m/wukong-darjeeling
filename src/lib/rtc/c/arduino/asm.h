@@ -241,7 +241,7 @@
 
 // RET                                  1001 0101 0000 1000
 #define OPCODE_RET                      0x9508
-#define asm_RET                         OPCODE_RET
+#define asm_RET()                       OPCODE_RET
 
 // RJMP                                 1100 kkkk kkkk kkkk, with k the signed offset to jump to, in WORDS, not bytes. PC <- PC + k + 1
 #define SIZEOF_RJMP                     2
@@ -311,3 +311,58 @@
 #define asm_SUBI(reg, constant)         (OPCODE_SUBI \
                                          + (((reg) - 16) << 4) \
                                          + makeSUBIconstant(constant))
+
+
+// emit functions
+#define emit_ADC(destreg, srcreg)       emit ( asm_ADC(destreg, srcreg) )
+#define emit_ADD(destreg, srcreg)       emit ( asm_ADD(destreg, srcreg) )
+#define emit_ADIW(reg, constant)        emit ( asm_ADIW(reg, constant) )
+#define emit_AND(destreg, srcreg)       emit ( asm_AND(destreg, srcreg) )
+#define emit_ASR(reg)                   emit ( asm_ASR(reg) )
+#define emit_BREQ(offset)               emit ( asm_BREQ(offset) )
+#define emit_BRGE(offset)               emit ( asm_BRGE(offset) )
+#define emit_BRLT(offset)               emit ( asm_BRLT(offset) )
+#define emit_BRNE(offset)               emit ( asm_BRNE(offset) )
+#define emit_BRPL(offset)               emit ( asm_BRPL(offset) )
+#define emit_2_CALL(address)            emit2( asm_CALL1(address) , asm_CALL2(address) )
+#define emit_CLR(destreg)               emit ( asm_CLR(destreg) )
+#define emit_COM(reg)                   emit ( asm_COM(reg) )
+#define emit_CP(destreg, srcreg)        emit ( asm_CP(destreg, srcreg) )
+#define emit_CPC(destreg, srcreg)       emit ( asm_CPC(destreg, srcreg) )
+#define emit_DEC(reg)                   emit ( asm_DEC(reg) )
+#define emit_EOR(destreg, srcreg)       emit ( asm_EOR(destreg, srcreg) )
+#define emit_IJMP()                     emit ( asm_IJMP()  )
+#define emit_IN(destreg, address)       emit ( asm_IN(destreg, address) )
+#define emit_LD_DECX(reg)               emit ( asm_LD_DECX(reg) )
+#define emit_LD_XINC(reg)               emit ( asm_LD_XINC(reg) )
+#define emit_LD_Z(reg)                  emit ( asm_LD_Z(reg) )
+#define emit_LD_ZINC(reg)               emit ( asm_LD_ZINC(reg) )
+#define emit_LDD(reg, xy, offset)       emit ( asm_LDD(reg, xy, offset) )
+#define emit_LDI(reg, constant)         emit ( asm_LDI(reg, constant) )
+#define emit_2_LDS(reg, address)        emit2( asm_LDS1(reg, address) , asm_LDS2(reg, address) )
+#define emit_LSL(destreg)               emit ( asm_LSL(destreg) )
+#define emit_LSR(reg)                   emit ( asm_LSR(reg) )
+#define emit_MOV(destreg, srcreg)       emit ( asm_MOV(destreg, srcreg) )
+#define emit_MOVW(destreg, srcreg)      emit ( asm_MOVW(destreg, srcreg) )
+#define emit_MUL(destreg, srcreg)       emit ( asm_MUL(destreg, srcreg) )
+#define emit_OR(destreg, srcreg)        emit ( asm_OR(destreg, srcreg) )
+#define emit_PUSH(reg)                  emit ( asm_PUSH(reg) )
+#define emit_POP(reg)                   emit ( asm_POP(reg) )
+#define emit_RCALL(offset)              emit ( asm_RCALL(offset) )
+#define emit_RET()                      emit ( asm_RET()  )
+#define emit_RJMP(offset)               emit ( asm_RJMP(offset) )
+#define emit_ROL(reg)                   emit ( asm_ROL(reg) )
+#define emit_ROR(reg)                   emit ( asm_ROR(reg) )
+#define emit_SBC(destreg, srcreg)       emit ( asm_SBC(destreg, srcreg) )
+#define emit_SBCI(reg, constant)        emit ( asm_SBCI(reg, constant) )
+#define emit_SBRC(reg, bit)             emit ( asm_SBRC(reg, bit) )
+#define emit_SBRS(reg, bit)             emit ( asm_SBRS(reg, bit) )
+#define emit_ST_DECX(reg)               emit ( asm_ST_DECX(reg) )
+#define emit_ST_XINC(reg)               emit ( asm_ST_XINC(reg) )
+#define emit_ST_Z(reg)                  emit ( asm_ST_Z(reg) )
+#define emit_ST_ZINC(reg)               emit ( asm_ST_ZINC(reg) )
+#define emit_STD(reg, xy, offset)       emit ( asm_STD(reg, xy, offset) )
+#define emit_2_STS(address, reg)        emit2( asm_STS1(address, reg) , asm_STS2(address, reg) )
+#define emit_SUB(destreg, srcreg)       emit ( asm_SUB(destreg, srcreg) )
+#define emit_SUBI(reg, constant)        emit ( asm_SUBI(reg, constant) )
+
