@@ -295,6 +295,7 @@ class WuApplication:
         if not os.path.exists(os.path.join(JAVA_OUTPUT_DIR, filename)):
           self.errorDeployStatus("An error has encountered while copying %s to java dir in wkdeploy!" % (filename))
 
+      
   def generateJava(self):
       Generator.generate(self.name, self.changesets)
 

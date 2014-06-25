@@ -23,7 +23,6 @@ class Generator:
         print '[generator] generate Java App'
         Generator.generateJavaApplication(name, changesets)
         
-
     @staticmethod
     def generateJavaApplication(name, changesets):
         # i is the number to be transform into byte array, n is the number of bytes to use (little endian)
@@ -121,8 +120,42 @@ class Generator:
         links = ElementTree.SubElement(root, 'links')
         components = ElementTree.SubElement(root, 'components')
         initvalues = ElementTree.SubElement(root, 'initvalues')
+     
         
         for link in changesets.links:
+            #print str(link.from_component.deployid) +"to"+str(link.to_component.deployid)
+            
+            if (link.to_component.type == 'Multiplexer' and link.to_property_name != 'selector'):
+                #for multiplexers, ignore links to inputs and output, and set default values to mapped wucomponent id in FBP.
+                #assumption: component id < 65535/100, property id < 100
+                #so we can put component
+                link.to_component.properties["id"] = str(link.to_component.deployid);
+                link.to_component.properties[link.to_property.name] = str(link.from_component.deployid * 100 + link.from_property.id)
+                #print "after", link.to_component.properties
+                print "multiplexer input value:"+link.to_component.properties[link.to_property.name]
+                #if current_link is not selected yet, randomly pick the current one
+                if "current_src" not in link.to_component.properties.keys():
+                    link.to_component.properties["current_src"] = str(link.to_component.properties[link.to_property.name])
+                #if both src and dest are filled, add an initial link for later change
+                if  "current_dest" in link.from_component.properties.keys(): 
+                    link_element = ElementTree.SubElement(links, 'link')
+                    link_element.attrib['fromComponent'] = str(int(link.to_component.properties["current_src"])//100)
+                    link_element.attrib['fromProperty'] = str(int(link.to_component.properties["current_src"])%100)
+                    link_element.attrib['toComponent'] = str(int(link.to_component.properties["current_dest"])//100)
+                    link_element.attrib['toProperty'] = str(int(link.to_component.properties["current_dest"])%100)
+                continue        #ignore code for normal wuclasses other than "multiplexer"
+            elif link.from_component.type == 'Multiplexer'  and link.from_property_name == 'output': 
+                link.from_component.properties[link.to_property.name] = str(link.to_component.deployid * 100 + link.to_property.id)
+                link.from_component.properties["current_dest"] = str(link.from_component.properties[link.to_property.name])
+                #print "multiplexer+output:"+link.from_property.value
+                #if both src and dest are filled, add an initial link for later change(happen only once)
+                if "current_src" in link.from_component.properties.keys():   
+                    link_element = ElementTree.SubElement(links, 'link')
+                    link_element.attrib['fromComponent'] = str(int(link.from_component.properties["current_src"])//100)
+                    link_element.attrib['fromProperty'] = str(int(link.from_component.properties["current_src"])%100)
+                    link_element.attrib['toComponent'] = str(int(link.from_component.properties["current_dest"])//100)
+                    link_element.attrib['toProperty'] = str(int(link.from_component.properties["current_dest"])%100)
+                continue        #ignore code for normal wuclasses other than "multiplexer"
             link_element = ElementTree.SubElement(links, 'link')
             link_element.attrib['fromComponent'] = str(link.from_component.deployid)
             link_element.attrib['fromProperty'] = str(link.from_property.id)
@@ -156,7 +189,7 @@ class Generator:
                     enumtype = property.wutype
                     enumvalues = [wuvalue.upper() for wuvalue in enumtype.values]
                     initvalue.attrib['value'] = str(enumvalues.index(property.value.upper())) # Translate the string representation to an integer
-        #tree.write(os.path.join(JAVA_OUTPUT_DIR, "WKDeploy.xml"))
+        #write to a well-formatted xml file
         rough_stri = ElementTree.tostring(root, 'utf-8')
         xml_content = xml.dom.minidom.parseString(rough_stri)
         pretty_stri = xml_content.toprettyxml()

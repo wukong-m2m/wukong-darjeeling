@@ -143,7 +143,7 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                 wuobject.mapped = True
                 component.instances.append(wuobject)
                   
-            elif (not wuobj_found) and node.type != 'native' and node.type != 'picokong' and node.type != 'virtualdevice' and wuclassdef.virtual==True:
+            elif (not wuobj_found) and node.type != 'native' and node.type != 'picokong' and node.type != 'virtualdevice' and node.id != 1 and wuclassdef.virtual==True:
                 # create a new virtual wuobject where the node 
                 # doesn't have the wuclass for it
                 sensorNode = locTree.sensor_dict[node.id]

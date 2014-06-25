@@ -166,4 +166,27 @@
         <property name="high" access="readwrite" datatype="short" default="0"  />
         <property name="low" access="readwrite" datatype="short" default="1000"  />
     </WuClass>
+    <WuClass name="Multiplexer" id="46" virtual="true" type="soft">
+        <property name="selector" access="readwrite" datatype="short" default="0"  />
+        <property name="input1" access="readwrite" datatype="short" default="1"  />
+        <property name="input2" access="readwrite" datatype="short" default="2"  />
+        <property name="input3" access="readwrite" datatype="short" visible="false" default="3"  />
+        <property name="input4" access="readwrite" datatype="short" visible="false" default="4"  />
+        <property name="current_src" access="readwrite" datatype="short" visible="false" default="0" />
+        <property name="current_dest" access="readwrite" datatype="short" visible="false" default="0" />
+        <property name="id" access="readwrite" datatype="short" visible="true" default="0" />
+        <property name="output" access="readwrite" datatype="short" default="1"  />
+    </WuClass>
+    <WuClass name="Multiplexer2" id="47" virtual="true" type="soft">
+        <property name="selector" access="readwrite" datatype="short" default="0"  />
+        <property name="input" access="readwrite" datatype="short" default="1"  />
+        
+        <property name="input3" access="readwrite" datatype="short" visible="false" default="3"  />
+        <property name="input4" access="readwrite" datatype="short" visible="false" default="4"  />
+        <property name="current_src" access="readwrite" datatype="short" visible="false" default="0" />
+        <property name="current_dest" access="readwrite" datatype="short" visible="false" default="0" />
+        <property name="id" access="readwrite" datatype="short" visible="true" default="0" />
+        <property name="output1" access="readwrite" datatype="short" default="1"  />
+        <property name="output2" access="readwrite" datatype="short" default="2"  />
+    </WuClass>
 </WuKong>

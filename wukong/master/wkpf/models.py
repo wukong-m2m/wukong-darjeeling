@@ -293,7 +293,7 @@ class WuObject:
     self.wunode = wunode
     self.virtual = virtual
     self.created = False
-    self.mapped = 0   #self-identify if a wuobject is mapped, set to True in mapper
+    self.mapped = False   #self-identify if a wuobject is mapped, set to True in mapper
     self.properties = wuclassdef.properties
     if property_values == None:
       property_values = {}

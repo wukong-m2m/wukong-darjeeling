@@ -3,11 +3,13 @@ function {{ func_name }}()
   Block.prototype.init.call(this);
   this.type='{{ func_name }}';
   {% for property in properties %}
-    {% if property.getAttribute('access') != 'readonly' %}
-      this.addAction( new Action('{{ property.getAttribute('name') }}'));
-    {% endif %}
-    {% if property.getAttribute('access') != 'writeonly' %}
-      this.addSignal( new Signal('{{ property.getAttribute('name') }}'));
+    {% if property.getAttribute('visible') != 'false' %}
+      {% if property.getAttribute('access') != 'readonly' %}
+        this.addAction( new Action('{{ property.getAttribute('name') }}'));
+      {% endif %}
+      {% if property.getAttribute('access') != 'writeonly' %}
+        this.addSignal( new Signal('{{ property.getAttribute('name') }}'));
+      {% endif %}
     {% endif %}
   {% endfor %}
 }
