@@ -26,6 +26,13 @@ public class WKPF {
   public static native byte getPortNumberForComponent(short componentId);
   public static native boolean isLocalComponent(short componentId);
 
+  // dynamic change mapping
+  public static native boolean updateMapping(short componentId, short origNodeId, byte origPortNumber, short newNodeId, byte newPortNumber);
+  
+  // dynamic change linking
+  public static native boolean updateLinking(short setter_component_id, short orig_src_component_id, byte orig_src_property_id, 
+                                  short orig_dest_component_id, byte orig_dest_property_id, short new_src_component_id, 
+                                  byte new_src_property_id, short new_dest_component_id, byte new_dest_property_id);
   // Who am I?
   public static native short getMyNodeId();
 

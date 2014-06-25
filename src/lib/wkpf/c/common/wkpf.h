@@ -37,6 +37,9 @@ typedef int16_t   wkpf_refresh_rate_t; // TODONR: should be changed later when I
 #define WKPF_ERR_LINK_NOT_FOUND                              18
 #define WKPF_ERR_ENDPOINT_NOT_FOUND                          19
 #define WKPF_ERR_CANT_CREATE_INSTANCE_OF_WUCLASS			 20
+#define WKPF_ERR_LOCK_FAIL                                   21
+#define WKPF_ERR_UNLOCK_FAIL                                 22
+#define WKPF_LOCKED                                          23
 #define WKPF_ERR_SHOULDNT_HAPPEN                           0xFF
 
 // Need to make sure these codes don't overlap with other libs or the definitions in panic.h

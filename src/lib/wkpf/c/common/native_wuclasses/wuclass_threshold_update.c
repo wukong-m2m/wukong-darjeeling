@@ -16,10 +16,10 @@ void wuclass_threshold_update(wuobject_t *wuobject) {
 	 || ((operator == WKPF_ENUM_THRESHOLD_OPERATOR_LT || operator == WKPF_ENUM_THRESHOLD_OPERATOR_LTE) && value < threshold)
 	 || ((operator == WKPF_ENUM_THRESHOLD_OPERATOR_GTE || operator == WKPF_ENUM_THRESHOLD_OPERATOR_LTE) && value == threshold)) {
     wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_THRESHOLD_OUTPUT, true);
-    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Threshold): operator %x thr %x value %x -> TRUE\n", operator, threshold, value);
+    DEBUG_LOG(true, "WKPFUPDATE(Threshold): operator %x thr %x value %x -> TRUE\n", operator, threshold, value);
   }
 	else {
     wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_THRESHOLD_OUTPUT, false);
-    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Threshold): operator %x thr %x value %x -> FALSE\n", operator, threshold, value);
+    DEBUG_LOG(true, "WKPFUPDATE(Threshold): operator %x thr %x value %x -> FALSE\n", operator, threshold, value);
   }
 }

@@ -10,6 +10,7 @@
 
 void wkpf_initLinkTableAndComponentMap(dj_di_pointer archive) {
 	bool found_linktable = false, found_componentmap = false;
+	wkpf_init_token();
 	for (uint8_t i=0; i<dj_archive_number_of_files(archive); i++) {
 		dj_di_pointer file = dj_archive_get_file(archive, i);
 		if (dj_archive_filetype(file) == DJ_FILETYPE_WKPF_LINK_TABLE) {

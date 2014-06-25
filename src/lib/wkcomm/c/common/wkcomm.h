@@ -4,6 +4,7 @@
 #include "types.h"
 #include "hooks.h"
 
+
 // Size of the frame that will be sent to the radio by wkcomm is WKCOMM_MESSAGE_PAYLOAD_SIZE+3
 // 1 byte: command
 // 2 bytes: seqnr
@@ -16,6 +17,9 @@
 
 // Need to make sure these codes don't overlap with other libs or the definitions in panic.h
 #define WKCOMM_PANIC_INIT_FAILED 100
+
+// Defines max number of locks in a node ---Sen
+#define WKPF_MAX_NUM_OF_TOKENS 5
 
 // WuKong address. For now it's just a byte, but this will probably change.
 // When it does, we need to change the component-node map as well

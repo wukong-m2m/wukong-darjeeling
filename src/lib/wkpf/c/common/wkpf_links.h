@@ -10,6 +10,14 @@ extern uint8_t wkpf_get_node_and_port_for_component(uint16_t component_id, wkcom
 
 extern bool wkpf_node_is_leader(uint16_t component_id, wkcomm_address_t node_id);
 
+uint8_t wkpf_init_token();
+uint8_t wkpf_set_token (uint16_t lock_component_id, uint16_t src_component_id, uint16_t dest_component_id);
+uint8_t wkpf_release_token(uint16_t token_id);
+uint8_t wkpf_update_token_table (uint16_t* component_ids, int length, uint16_t src_component, uint16_t dest_component);
+uint8_t wkpf_update_token_table_with_piggyback (uint8_t* piggyback_message);
+int wkpf_find_token(uint16_t dest_component_id);
+bool wkpf_component_is_locked(uint16_t dest_component_id);
+
 uint8_t wkpf_load_links(dj_di_pointer links);
 uint8_t wkpf_load_component_to_wuobject_map(dj_di_pointer map);
 uint8_t wkpf_create_local_wuobjects_from_app_tables();
@@ -20,5 +28,9 @@ uint8_t wkpf_process_initvalues_list(dj_di_pointer initvalues);
 // if there's no initvalue, this function won't create an entry,
 // so it's a noop in that case)
 void wkpf_update_initvalue_in_flash(wuobject_t *wuobject, uint8_t object_property_number);
-
+uint8_t wkpf_update_link(uint16_t orig_src_component_id, uint8_t orig_src_property_id, uint16_t orig_dest_component_id, uint8_t orig_dest_property_id, 
+                                  uint16_t new_src_component_id, uint8_t new_src_property_id, uint16_t new_dest_component_id, uint8_t new_dest_property_id);
+uint8_t wkpf_propagate_link_change( uint16_t orig_src_component_id, uint8_t orig_src_property_id, 
+                                                                uint16_t orig_dest_component_id, uint8_t orig_dest_property_id, uint16_t new_src_component_id, 
+                                                                uint8_t new_src_property_id, uint16_t new_dest_component_id, uint8_t new_dest_property_id);
 #endif // WKPF_LINKSH

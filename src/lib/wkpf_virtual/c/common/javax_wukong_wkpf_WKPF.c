@@ -138,3 +138,55 @@ void javax_wukong_wkpf_WKPF_boolean_isLocalComponent_short() {
 void javax_wukong_wkpf_WKPF_short_getMyNodeId() {
 	dj_exec_stackPushShort(wkcomm_get_node_id());
 }
+
+void javax_wukong_wkpf_WKPF_boolean_updateMapping_short_short_byte_short_byte () {
+	uint8_t new_port_number = (uint8_t)dj_exec_stackPopShort();
+	uint16_t new_node_id = dj_exec_stackPopShort();
+	uint8_t orig_port_number = (uint8_t)dj_exec_stackPopShort();
+	uint16_t orig_node_id = dj_exec_stackPopShort();
+	uint16_t component_id = dj_exec_stackPopShort();
+	uint8_t rt_val = wkpf_update_map_in_flash(component_id, orig_node_id, orig_port_number, new_node_id, new_port_number);
+	bool value = (bool)rt_val;
+	dj_exec_stackPushShort(value);
+}
+
+void javax_wukong_wkpf_WKPF_boolean_updateLinking_short_short_byte_short_byte_short_byte_short_byte () {
+	uint8_t new_dest_property_id = (uint8_t)dj_exec_stackPopShort();
+	uint16_t new_dest_component_id = dj_exec_stackPopShort();
+	uint8_t new_src_property_id = (uint8_t)dj_exec_stackPopShort();
+	uint16_t new_src_component_id = dj_exec_stackPopShort();
+	uint8_t orig_dest_property_id = (uint8_t)dj_exec_stackPopShort();
+	uint16_t orig_dest_component_id = dj_exec_stackPopShort();
+	uint8_t orig_src_property_id = (uint8_t)dj_exec_stackPopShort();
+	uint16_t orig_src_component_id = dj_exec_stackPopShort();
+	uint16_t setter_component_id = dj_exec_stackPopShort();
+	
+	DEBUG_LOG(true, "set msg orig_src_component_id:%u:%u, new_src_component_id:%u:%u, dest:%u:%u == %u:%u\n", orig_src_component_id, 
+            orig_src_property_id, new_src_component_id, new_src_property_id,orig_dest_component_id,orig_dest_property_id, new_dest_component_id,new_dest_property_id);
+	//identify node id and port through mapping table, component_id correspond to the seq no. of component in maptable
+	wkcomm_address_t orig_src_node_id, new_src_node_id;
+	uint8_t orig_src_port, new_src_port;
+	//self_node_id = wkcomm_get_node_id();
+	wkpf_get_node_and_port_for_component(orig_src_component_id, &orig_src_node_id, &orig_src_port);
+	wkpf_get_node_and_port_for_component(new_src_component_id, &new_src_node_id, &new_src_port);
+	DEBUG_LOG(true, "set msg orig_src_node_id:%d, new_src_node_id:%d\n", orig_src_node_id, new_src_node_id);
+	//set_token spread out with the message of cancelling original link
+	wkpf_set_token (setter_component_id, setter_component_id, orig_src_node_id);
+
+	wkpf_send_set_linktable(orig_src_node_id, setter_component_id, orig_src_component_id, orig_src_component_id, orig_src_property_id, 
+	                                orig_dest_component_id, orig_dest_property_id, new_src_component_id, 
+	                                new_src_property_id, new_dest_component_id, new_dest_property_id);
+	//release_token spread out with the message of adding new link
+	wkpf_release_token (setter_component_id);
+	wkpf_send_set_linktable(new_src_node_id, setter_component_id, new_src_component_id, orig_src_component_id, orig_src_property_id, 
+	                                orig_dest_component_id, orig_dest_property_id, new_src_component_id, 
+	                                new_src_property_id, new_dest_component_id, new_dest_property_id);
+	DEBUG_LOG(true, "about to update_link", orig_src_node_id, new_src_node_id);
+	uint8_t rt_val = wkpf_update_link(orig_src_component_id, orig_src_property_id, orig_dest_component_id, orig_dest_property_id, 
+	                                  new_src_component_id, new_src_property_id, new_dest_component_id, new_dest_property_id);
+
+
+	bool value = ! ((bool)rt_val);		//rt_val == 0 (WKPF_OK)
+	dj_exec_stackPushShort(value);
+
+}

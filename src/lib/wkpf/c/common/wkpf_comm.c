@@ -10,8 +10,10 @@
 #include "wkpf_wuobjects.h"
 #include "wkpf_properties.h"
 
+#define SIZE_OF_COMPONENT_ID 2
 #define NUMBER_OF_WUCLASSES_PER_MESSAGE 9
 #define NUMBER_OF_WUOBJECTS_PER_MESSAGE 9
+
 
 uint8_t send_message(wkcomm_address_t dest_node_id, uint8_t command, uint8_t *payload, uint8_t length) {
 	// Print some debug info
@@ -68,8 +70,10 @@ uint8_t wkpf_call_adaptor(wkcomm_address_t dest_node_id, uint16_t wuclass_id, ui
 }
 
 
-uint8_t wkpf_send_set_property_int16(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, int16_t value) {
-	uint8_t message_buffer[7];
+
+
+uint8_t wkpf_send_set_property_int16(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, int16_t value, uint16_t src_component_id) {
+	uint8_t message_buffer[7 + WKPF_MAX_NUM_OF_TOKENS * 2 +5];
 	if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH) {
 		return wkpf_call_adaptor(dest_node_id, wuclass_id, property_number, value);
 	} else {
@@ -80,13 +84,21 @@ uint8_t wkpf_send_set_property_int16(wkcomm_address_t dest_node_id, uint8_t port
 		message_buffer[4] = WKPF_PROPERTY_TYPE_SHORT;
 		message_buffer[5] = (uint8_t)(value >> 8);
 		message_buffer[6] = (uint8_t)(value);
-		return send_message(dest_node_id, WKPF_COMM_CMD_WRITE_PROPERTY, message_buffer, 7);
+
+		int piggy_message_length = 0;
+		uint16_t dest_component_id;
+		uint8_t* data = (uint8_t*)(message_buffer+7);
+		wkpf_get_component_id(port_number, &dest_component_id);
+		wkpf_generate_piggyback_token(src_component_id, dest_component_id, data, &piggy_message_length);
+
+		return send_message(dest_node_id, WKPF_COMM_CMD_WRITE_PROPERTY, message_buffer, 7 + piggy_message_length);
 	}
 }
 
 
-uint8_t wkpf_send_set_property_boolean(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, bool value) {
-	uint8_t message_buffer[6];
+uint8_t wkpf_send_set_property_boolean(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, bool value, uint16_t src_component_id) {
+	uint8_t message_buffer[6 + WKPF_MAX_NUM_OF_TOKENS * 2 +5];
+	uint16_t dest_component_id;
 	if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH) {
 		return wkpf_call_adaptor(dest_node_id, wuclass_id, property_number, value? 255:0);
 	} else {
@@ -96,12 +108,19 @@ uint8_t wkpf_send_set_property_boolean(wkcomm_address_t dest_node_id, uint8_t po
 		message_buffer[3] = property_number;
 		message_buffer[4] = WKPF_PROPERTY_TYPE_BOOLEAN;
 		message_buffer[5] = (uint8_t)(value);
-		return send_message(dest_node_id, WKPF_COMM_CMD_WRITE_PROPERTY, message_buffer, 6);
+
+		int piggy_message_length = 0;
+		uint8_t* data = (uint8_t*)(message_buffer + 6);
+		wkpf_get_component_id(port_number, &dest_component_id);
+		wkpf_generate_piggyback_token(src_component_id, dest_component_id, data, &piggy_message_length);
+		
+		return send_message(dest_node_id, WKPF_COMM_CMD_WRITE_PROPERTY, message_buffer, 6 + piggy_message_length);
 	}
 }
 
-uint8_t wkpf_send_set_property_refresh_rate(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, wkpf_refresh_rate_t value) {
-	uint8_t message_buffer[8];
+uint8_t wkpf_send_set_property_refresh_rate(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, wkpf_refresh_rate_t value, uint16_t src_component_id) {
+	uint8_t message_buffer[7 + WKPF_MAX_NUM_OF_TOKENS * 2 +5];
+	uint16_t dest_component_id;
 	if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH) {
 		return WKPF_COMM_CMD_ERROR_R;
 	} else {
@@ -112,9 +131,64 @@ uint8_t wkpf_send_set_property_refresh_rate(wkcomm_address_t dest_node_id, uint8
 		message_buffer[4] = WKPF_PROPERTY_TYPE_REFRESH_RATE;
 		message_buffer[5] = (uint8_t)(value >> 8);
 		message_buffer[6] = (uint8_t)(value);
-		return send_message(dest_node_id, WKPF_COMM_CMD_WRITE_PROPERTY, message_buffer, 7);
+
+		int piggy_message_length = 0;
+		
+		uint8_t* data = (uint8_t*)(message_buffer + 7);
+		wkpf_get_component_id(port_number, &dest_component_id);
+		wkpf_generate_piggyback_token(src_component_id, dest_component_id, data, &piggy_message_length);
+		
+		return send_message(dest_node_id, WKPF_COMM_CMD_WRITE_PROPERTY, message_buffer, 7 + piggy_message_length);
 	}
 }
+
+/*/this function is not really used for now and is thus buggy---Sen
+uint8_t wkpf_send_set_maptable(wkcomm_address_t dest_node_id,  uint16_t component_id, wkcomm_address_t orig_node, 
+                                uint8_t orig_port_number, wkcomm_address_t new_node, uint8_t new_port_number) {
+	uint8_t message_buffer[19+SIZE_OF_COMPONENT_ID];
+	message_buffer[0] = (uint8_t)(component_id >> 8);
+	message_buffer[1] = (uint8_t)(component_id);
+	message_buffer[2] = (uint8_t)(orig_node >> 8);
+	message_buffer[3] = (uint8_t)(orig_node);
+	message_buffer[4] = orig_port_number;
+	message_buffer[5] = (uint8_t)(new_node >> 8);
+	message_buffer[6] = (uint8_t)(new_node);
+	message_buffer[7] = (uint8_t)(new_port_number);
+	int piggy_message_length = 0;
+	uint16_t dest_component_id;
+	uint8_t* data = (uint8_t*)(message_buffer+8);
+	wkpf_get_component_id(port_number, &dest_component_id);
+	wkpf_generate_piggyback_token(src_component_id, dest_component_id, data, piggy_message_length);
+	
+	return send_message(dest_node_id, WKPF_COMM_CMD_CHANGE_MAP, message_buffer, 8 + SIZE_OF_COMPONENT_ID + 2*piggy_message_length + 1);
+}
+*/
+
+uint8_t wkpf_send_set_linktable(wkcomm_address_t dest_node_id, uint16_t src_component_id, uint16_t dest_component_id, uint16_t orig_link_src_component_id, uint8_t orig_link_src_property_id, 
+                                uint16_t orig_link_dest_component_id, uint8_t orig_link_dest_property_id, uint16_t new_link_src_component_id, 
+                                uint8_t new_link_src_property_id, uint16_t new_link_dest_component_id, uint8_t new_link_dest_property_id) {
+	uint8_t message_buffer[12 + WKPF_MAX_NUM_OF_TOKENS * 2 +5];    
+	//first 6 bytes for original link info, latter 6 bytes for new link info to be changed to
+	message_buffer[0] = (uint8_t)(orig_link_src_component_id >> 8);
+	message_buffer[1] = (uint8_t)(orig_link_src_component_id);
+	message_buffer[2] = (uint8_t)(orig_link_src_property_id);
+	message_buffer[3] = (uint8_t)(orig_link_dest_component_id >> 8);
+	message_buffer[4] = (uint8_t)(orig_link_dest_component_id);
+	message_buffer[5] = (uint8_t)(orig_link_dest_property_id);
+	
+	message_buffer[6] = (uint8_t)(new_link_src_component_id >> 8);
+	message_buffer[7] = (uint8_t)(new_link_src_component_id);
+	message_buffer[8] = (uint8_t)(new_link_src_property_id);
+	message_buffer[9] = (uint8_t)(new_link_dest_component_id >> 8);
+	message_buffer[10] = (uint8_t)(new_link_dest_component_id);
+	message_buffer[11] = (uint8_t)(new_link_dest_property_id);
+	int piggy_message_length = 0;
+	uint8_t* data = (uint8_t*)(message_buffer+12);
+	wkpf_generate_piggyback_token(src_component_id, dest_component_id, data, &piggy_message_length);
+	
+	return send_message(dest_node_id, WKPF_COMM_CMD_CHANGE_LINK, message_buffer, 12 + piggy_message_length);
+}
+
 
 uint8_t wkpf_send_monitor_property_int16(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, int16_t value) {
     uint8_t message_buffer[6];
@@ -130,7 +204,6 @@ uint8_t wkpf_send_monitor_property_int16(wkcomm_address_t progression_server_id,
         send_message_withou_reply(progression_server_id, WUKONG_MONITOR_PROPERTY, message_buffer, 6);
         return WKPF_OK;
     }
-
 }
 
 uint8_t wkpf_send_monitor_property_boolean(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, bool value) {
@@ -173,7 +246,6 @@ uint8_t wkpf_send_request_property_init(wkcomm_address_t dest_node_id, uint8_t p
 	message_buffer[1] = property_number;
 	return send_message(dest_node_id, WKPF_COMM_CMD_REQUEST_PROPERTY_INIT, message_buffer, 2);
 }
-
 
 //void wkpf_comm_handle_message(wkcomm_address_t src, uint8_t nvmcomm_command, uint8_t *payload, uint8_t response_size, uint8_t response_cmd) {
 void wkpf_comm_handle_message(void *data) {
@@ -311,7 +383,7 @@ void wkpf_comm_handle_message(void *data) {
 				payload[4*i + 3] = (uint8_t)(wuobject->port_number);
 				payload[4*i + 4] = (uint8_t)(wuobject->wuclass->wuclass_id >> 8);
 				payload[4*i + 5] = (uint8_t)(wuobject->wuclass->wuclass_id);
-        payload[4*i + 6] = WKPF_IS_VIRTUAL_WUCLASS(wuobject->wuclass);
+				payload[4*i + 6] = WKPF_IS_VIRTUAL_WUCLASS(wuobject->wuclass);
 			}
 			response_size = 4*number_of_wuobjects_in_message + 3; // 4*wuobjects + 3 bytes for message nr, number of messages, number of wuobjects (max 39 bytes, barely over 40 bytes)
 			response_cmd = WKPF_COMM_CMD_GET_WUOBJECT_LIST_R;
@@ -375,14 +447,25 @@ void wkpf_comm_handle_message(void *data) {
 			// link_entry link;
 			// wkpf_get_link_by_dest_property_and_dest_wuclass_id(property_number, wuclass_id, &link);
 
-			// // TODO: should we do that now?
-			// // If the sender is not a leader
-			// if (!wkpf_node_is_leader(link.src_component_id, src)) {
-			// 	/*response_cmd = WKPF_COMM_CMD_ERROR_R;*/
-			// 	/*response_size = 3;*/
-			// 	/*break;*/
-			// }
-
+			//for each type, we need to check if the message is valid or not by checking the lock within it,if locked. do not set property
+			int piggyback_message_offset = -1;
+			if (payload[4] == WKPF_PROPERTY_TYPE_SHORT){
+				piggyback_message_offset  =7;
+			} else if (payload[4] == WKPF_PROPERTY_TYPE_BOOLEAN) {
+				piggyback_message_offset = 6;
+			} else if (payload[4] == WKPF_PROPERTY_TYPE_REFRESH_RATE) {
+				piggyback_message_offset = 7;
+			}
+			uint8_t retval = wkpf_update_token_table_with_piggyback(payload + piggyback_message_offset);
+			uint16_t dest_component_id = (uint16_t)payload[piggyback_message_offset+2];
+			dest_component_id = (uint16_t)(dest_component_id << 8) + (uint16_t)payload[piggyback_message_offset+3];
+			if (retval != WKPF_OK) {
+				DEBUG_LOG(true, "WKPF Error: %u, token unable to be updated, abort write property\n", retval); 
+				payload[0] = retval;
+				response_cmd = WKPF_COMM_CMD_ERROR_R;
+				response_size = 1;
+				break;
+			}
 			retval = wkpf_get_wuobject_by_port(port_number, &wuobject);
 			if (retval != WKPF_OK) {
 				payload[0] = retval;
@@ -394,20 +477,23 @@ void wkpf_comm_handle_message(void *data) {
 				int16_t value;
 				value = (int16_t)(payload[5]);
 				value = (int16_t)(value<<8) + (int16_t)(payload[6]);
-				retval = wkpf_external_write_property_int16(wuobject, property_number, value);
+				if (!wkpf_component_is_locked(dest_component_id))
+					retval = wkpf_external_write_property_int16(wuobject, property_number, value);
 				response_size = 4;
 				response_cmd = WKPF_COMM_CMD_WRITE_PROPERTY_R;        
 			} else if (payload[4] == WKPF_PROPERTY_TYPE_BOOLEAN) {
 				bool value;
 				value = (bool)(payload[5]);
-				retval = wkpf_external_write_property_boolean(wuobject, property_number, value);
+				if (!wkpf_component_is_locked(dest_component_id))
+					retval = wkpf_external_write_property_boolean(wuobject, property_number, value);
 				response_size = 4;
 				response_cmd = WKPF_COMM_CMD_WRITE_PROPERTY_R;                
 			} else if (payload[4] == WKPF_PROPERTY_TYPE_REFRESH_RATE) {
 				int16_t value;
 				value = (int16_t)(payload[5]);
 				value = (int16_t)(value<<8) + (int16_t)(payload[6]);
-				retval = wkpf_external_write_property_refresh_rate(wuobject, property_number, value);
+				if (!wkpf_component_is_locked(dest_component_id))
+					retval = wkpf_external_write_property_refresh_rate(wuobject, property_number, value);
 				response_size = 4;
 				response_cmd = WKPF_COMM_CMD_WRITE_PROPERTY_R;
 			} else
@@ -435,6 +521,71 @@ void wkpf_comm_handle_message(void *data) {
 			} else {
 				response_size = 4;
 				response_cmd = WKPF_COMM_CMD_REQUEST_PROPERTY_INIT_R;                
+			}
+		}
+		break;
+		case WKPF_COMM_CMD_CHANGE_MAP: {
+			uint16_t component_id; 
+			wkcomm_address_t orig_node, new_node;
+			uint8_t orig_port, new_port;
+			component_id = (uint16_t)(payload[0]);
+			component_id = (uint16_t)(component_id<<8) + (uint16_t)(payload[1]);
+			orig_node = (wkcomm_address_t)(payload[2]);
+			orig_node = (wkcomm_address_t)(orig_node<<8) + (uint16_t)(payload[3]);
+			orig_port = (uint16_t)(payload[4]);
+			new_node = (wkcomm_address_t)(payload[5]);
+			new_node = (wkcomm_address_t)(new_node<<8) + (uint16_t)(payload[6]);
+			new_port = (uint16_t)(payload[7]);
+			retval = wkpf_update_map_in_flash(component_id, orig_node, orig_port, new_node, new_port);
+			if (retval != WKPF_OK) {
+				payload[0] = retval;
+				response_cmd = WKPF_COMM_CMD_ERROR_R;
+				response_size = 1;
+			} else {
+				payload[0] = retval;
+				response_size = 1;
+				response_cmd = WKPF_COMM_CMD_CHANGE_MAP_R;
+			}
+		}
+		break;
+		case WKPF_COMM_CMD_CHANGE_LINK: {
+			int piggyback_message_offset = 12;
+			uint8_t retval = wkpf_update_token_table_with_piggyback(payload+piggyback_message_offset);
+			if (retval != WKPF_OK) {
+				DEBUG_LOG(true, "WKPF Error: %u, token unable to be updated in change_link, abort write property\n", retval); 
+				payload[0] = retval;
+				response_cmd = WKPF_COMM_CMD_ERROR_R;
+				response_size = 1;
+				break;
+			}
+			uint16_t orig_src_component_id, orig_dest_component_id, new_src_component_id, new_dest_component_id;
+			uint8_t orig_src_property_id, orig_dest_property_id, new_src_property_id, new_dest_property_id;
+			orig_src_component_id = (uint16_t)payload[0];
+			orig_src_component_id = (uint16_t)(orig_src_component_id<<8) + (uint16_t)payload[1];
+			orig_src_property_id = (uint16_t)payload[2];
+			orig_dest_component_id = (uint16_t)payload[3];
+			orig_dest_component_id = (uint16_t)(orig_src_component_id<<8) + (uint16_t)payload[4];
+			orig_dest_property_id = (uint16_t)payload[5];
+			new_src_component_id = (uint16_t)payload[6];
+			new_src_component_id = (uint16_t)(orig_src_component_id<<8) + (uint16_t)payload[7];
+			new_src_property_id = (uint16_t)payload[8];
+			new_dest_component_id = (uint16_t)payload[9];
+			new_dest_component_id = (uint16_t)(orig_src_component_id<<8) + (uint16_t)payload[10];
+			new_dest_property_id = (uint16_t)payload[11];
+			//for each link, send the new link table to them if it is related to current node.
+			wkpf_propagate_link_change(orig_src_component_id, orig_src_property_id, 
+			                                orig_dest_component_id, orig_dest_property_id, new_src_component_id, 
+			                                new_src_property_id, new_dest_component_id, new_dest_property_id);
+			
+			retval = wkpf_update_link_in_flash(payload, payload+6);
+			if (retval != WKPF_OK) {
+				payload[0] = retval;
+				response_cmd = WKPF_COMM_CMD_ERROR_R;
+				response_size = 1;
+			} else {
+				payload[0] = retval;
+				response_size = 1;
+				response_cmd = WKPF_COMM_CMD_CHANGE_LINK_R;
 			}
 		}
 		break;

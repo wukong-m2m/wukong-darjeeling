@@ -228,9 +228,9 @@ uint8_t radio_zwave_send(radio_zwave_address_t zwave_addr, uint8_t *payload, uin
     }
     DEBUG_LOG(DBG_WKCOMM, "\n");
 #endif // DBG_WKCOMM
-	DEBUG_LOG(true, "send %d bytes to %d\n", length,zwave_addr);
+	DEBUG_LOG(DBG_WKCOMM, "send %d bytes to %d\n", length,zwave_addr);
     for (int16_t i=0; i<length; ++i) {
-        DEBUG_LOG(true, " %02x", payload[i]);
+        DEBUG_LOG(DBG_WKCOMM, " %02x", payload[i]);
     }
 
     return ZW_sendData(zwave_addr, payload, length, txoptions);
@@ -247,9 +247,9 @@ uint8_t radio_zwave_send_raw(radio_zwave_address_t zwave_addr, uint8_t *payload,
     }
     DEBUG_LOG(DBG_WKCOMM, "\n");
 #endif // DBG_WKCOMM
-	DEBUG_LOG(true, "send %d bytes to %d\n", length,zwave_addr);
+	DEBUG_LOG(DBG_WKCOMM, "send %d bytes to %d\n", length,zwave_addr);
     for (int16_t i=0; i<length; ++i) {
-        DEBUG_LOG(true, " %02x", payload[i]);
+        DEBUG_LOG(DBG_WKCOMM, " %02x", payload[i]);
     }
 
     return ZW_sendDataRaw(zwave_addr, payload, length, txoptions);
