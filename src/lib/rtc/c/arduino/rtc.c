@@ -1718,19 +1718,12 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_PUSH(ZERO_REG); // NOTE: THE DVM STACK IS A 16 BIT POINTER, SP IS 8 BIT. 
                                             // BOTH POINT TO THE NEXT free SLOT, BUT SINCE THEY GROW down THIS MEANS THE DVM POINTER SHOULD POINT TO TWO BYTES BELOW THE LAST VALUE,
                                             // WHILE CURRENTLY THE NATIVE SP POINTS TO THE BYTE DIRECTLY BELOW IT. RESERVE AN EXTRA BYTE TO FIX THIS.
-
                 emit_2_LDS(R24, SPaddress_L); // Load SP into R24:R25
                 emit_2_LDS(R25, SPaddress_H); // Load SP into R24:R25
-                emit_LDI(RZL, ((uint16_t)&(intStack)) & 0xFF); // Load the address of intStack into Z
-                emit_LDI(RZH, (((uint16_t)&(intStack)) >> 8) & 0xFF);
-                emit_ST_ZINC(R24); // Store SP into intStack
-                emit_ST_Z(R25);
-
-                emit_LDI(RZL, ((uint16_t)&(refStack)) & 0xFF); // Load the address of refStack into Z
-                emit_LDI(RZH, (((uint16_t)&(refStack)) >> 8) & 0xFF);
-                emit_ST_ZINC(RXL); // Store X into refStack
-                emit_ST_Z(RXH);
-
+                emit_2_STS((uint16_t)&(intStack), R24); // Store SP into intStack
+                emit_2_STS((uint16_t)&(intStack)+1, R25); // Store SP into intStack
+                emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
+                emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
 
                 // Reserve 8 bytes of space on the stack, in case the returned int is large than passed ints
                 // TODO: make this more efficient by looking up the method, and seeing if the return type is int,
@@ -1763,20 +1756,13 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 // POP important stuff
 
                 // set SP and X to intStack and refStack resp.
-                emit_LDI(RZL, ((uint16_t)&(intStack)) & 0xFF); // Load the address of intStack into Z
-                emit_LDI(RZH, (((uint16_t)&(intStack)) >> 8) & 0xFF);
-                emit_LD_ZINC(R24); // Load intStack into R24:25
-                emit_LD_Z(R25);
-
+                emit_2_LDS(R24, (uint16_t)&(intStack)); // Load intStack into R24:R25
+                emit_2_LDS(R25, (uint16_t)&(intStack)+1); // Load intStack into R24:R25
                 emit_2_STS(SPaddress_L, R24); // Store R24:25 into SP
                 emit_2_STS(SPaddress_H, R25); // Store R24:25 into SP
-
                 emit_POP(R25); // JUST POP AND DISCARD TO CLEAR THE BYTE WE RESERVED IN THE FIRST LINE FOR INVOKESTATIC. SEE COMMENT ABOVE.
-
-                emit_LDI(RZL, ((uint16_t)&(refStack)) & 0xFF); // Load the address of refStack into Z
-                emit_LDI(RZH, (((uint16_t)&(refStack)) >> 8) & 0xFF);
-                emit_LD_ZINC(RXL); // Load refStack into X
-                emit_LD_Z(RXH);
+                emit_2_LDS(RXL, (uint16_t)&(refStack)); // Load refStack into X
+                emit_2_LDS(RXH, (uint16_t)&(refStack)+1); // Load refStack into X
             break;
             case JVM_NEW:
                 // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
