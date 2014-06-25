@@ -338,7 +338,7 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 		dj_di_pointer name = dj_di_infusionList_getChild(infusionList, i);
 		dj_infusion *referenced_infusion = dj_vm_lookupInfusion(vm, name);
 
-		if (infusion==NULL)
+		if (referenced_infusion==NULL)
 			dj_panic(DJ_PANIC_UNSATISFIED_LINK);
 
 		infusion->referencedInfusions[i] = referenced_infusion;

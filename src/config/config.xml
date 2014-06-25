@@ -137,7 +137,10 @@
 		</pathconvert>
 		<!-- Some libraries don't contain Java code, so they won't have an infusion. Filter only the existing infusions. -->
 		<pathconvert property="dilibs-exist" pathsep=" ">
-			<fileset dir="${configpath}/../lib/" includes="${dilibs-all}"/>
+			<restrict> 
+				<filelist dir="${configpath}/../lib/" files="${dilibs-all}"/>
+				<exists /> 
+			</restrict> 
 		</pathconvert>
 
 		<!-- Construct a list of application .dja files based on a comma separated list of applications (ie 'blink, hello world') -->
