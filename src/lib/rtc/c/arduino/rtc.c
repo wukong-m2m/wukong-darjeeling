@@ -73,7 +73,7 @@ extern void __divmodsi4(void);
 // the stack pointers used by execution.c
 extern int16_t *intStack;
 extern ref_t *refStack;
-
+extern ref_t *localReferenceVariables;
 
 // USED AT COMPILE TIME:
 const unsigned char PROGMEM __attribute__ ((aligned (SPM_PAGESIZE))) rtc_compiled_code_buffer[RTC_COMPILED_CODE_BUFFER_SIZE] = {};
@@ -285,21 +285,26 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_PUSH(R22);
             break;
             case JVM_LDS:
-                // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
-                // PUSH important stuff
-                emit_PUSH(RXH);
-                emit_PUSH(RXL);
+                // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
+                emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
+                emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
 
+
+                // make the call
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
                 emit_LDI(R24, jvm_operand_byte0); // infusion id
                 emit_LDI(R25, jvm_operand_byte1); // entity id
-                // make the call
                 emit_2_CALL((uint16_t)&RTC_LDS);
 
-                // POP important stuff
-                emit_POP(RXL);
-                emit_POP(RXH);
+
+                // Post possible GC: need to reset Y to the start of the stack frame's local references (the frame may have moved, so the old value may not be correct)
+                emit_2_LDS(RYL, (uint16_t)&(localReferenceVariables)); // Load localReferenceVariables into Y
+                emit_2_LDS(RYH, (uint16_t)&(localReferenceVariables)+1); // Load localReferenceVariables into Y
+                // Post possible GC: need to restore X to refStack which may have changed either because of GC or because of passed/returned references
+                emit_2_LDS(RXL, (uint16_t)&(refStack)); // Load refStack into X
+                emit_2_LDS(RXH, (uint16_t)&(refStack)+1); // Load refStack into X
+
 
                 // push the reference to the string onto the ref stack
                 emit_x_PUSHREF(R24);
@@ -1714,7 +1719,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_INVOKESPECIAL:
             case JVM_INVOKESTATIC:
             case JVM_INVOKEINTERFACE:
-                // set intStack and refStack pointers to SP and X resp.
+                // set intStack to SP
                 emit_PUSH(ZERO_REG); // NOTE: THE DVM STACK IS A 16 BIT POINTER, SP IS 8 BIT. 
                                             // BOTH POINT TO THE NEXT free SLOT, BUT SINCE THEY GROW down THIS MEANS THE DVM POINTER SHOULD POINT TO TWO BYTES BELOW THE LAST VALUE,
                                             // WHILE CURRENTLY THE NATIVE SP POINTS TO THE BYTE DIRECTLY BELOW IT. RESERVE AN EXTRA BYTE TO FIX THIS.
@@ -1722,8 +1727,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_2_LDS(R25, SPaddress_H); // Load SP into R24:R25
                 emit_2_STS((uint16_t)&(intStack), R24); // Store SP into intStack
                 emit_2_STS((uint16_t)&(intStack)+1, R25); // Store SP into intStack
-                emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
-                emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
+
 
                 // Reserve 8 bytes of space on the stack, in case the returned int is large than passed ints
                 // TODO: make this more efficient by looking up the method, and seeing if the return type is int,
@@ -1736,7 +1740,11 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_RCALL(0);
                 emit_RCALL(0);
 
-                // PUSH important stuff
+
+                // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
+                emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
+                emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
+
                 
                 // make the call
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
@@ -1753,81 +1761,98 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 } else if (opcode == JVM_INVOKESTATIC) {
                     emit_2_CALL((uint16_t)&RTC_INVOKESTATIC);
                 }
-                // POP important stuff
 
-                // set SP and X to intStack and refStack resp.
+
+                // Post possible GC: need to reset Y to the start of the stack frame's local references (the frame may have moved, so the old value may not be correct)
+                emit_2_LDS(RYL, (uint16_t)&(localReferenceVariables)); // Load localReferenceVariables into Y
+                emit_2_LDS(RYH, (uint16_t)&(localReferenceVariables)+1); // Load localReferenceVariables into Y
+                // Post possible GC: need to restore X to refStack which may have changed either because of GC or because of passed/returned references
+                emit_2_LDS(RXL, (uint16_t)&(refStack)); // Load refStack into X
+                emit_2_LDS(RXH, (uint16_t)&(refStack)+1); // Load refStack into X
+
+
+                // get SP from intStack
                 emit_2_LDS(R24, (uint16_t)&(intStack)); // Load intStack into R24:R25
                 emit_2_LDS(R25, (uint16_t)&(intStack)+1); // Load intStack into R24:R25
                 emit_2_STS(SPaddress_L, R24); // Store R24:25 into SP
                 emit_2_STS(SPaddress_H, R25); // Store R24:25 into SP
                 emit_POP(R25); // JUST POP AND DISCARD TO CLEAR THE BYTE WE RESERVED IN THE FIRST LINE FOR INVOKESTATIC. SEE COMMENT ABOVE.
-                emit_2_LDS(RXL, (uint16_t)&(refStack)); // Load refStack into X
-                emit_2_LDS(RXH, (uint16_t)&(refStack)+1); // Load refStack into X
             break;
             case JVM_NEW:
-                // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
-                // PUSH important stuff
-                emit_PUSH(RXH);
-                emit_PUSH(RXL);
+                // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
+                emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
+                emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
 
+
+                // make the call
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
                 emit_LDI(R24, jvm_operand_byte0); // infusion id
                 emit_LDI(R25, jvm_operand_byte1); // entity id
-                // make the call
                 emit_2_CALL((uint16_t)&RTC_NEW);
 
-                // POP important stuff
-                emit_POP(RXL);
-                emit_POP(RXH);
+
+                // Post possible GC: need to reset Y to the start of the stack frame's local references (the frame may have moved, so the old value may not be correct)
+                emit_2_LDS(RYL, (uint16_t)&(localReferenceVariables)); // Load localReferenceVariables into Y
+                emit_2_LDS(RYH, (uint16_t)&(localReferenceVariables)+1); // Load localReferenceVariables into Y
+                // Post possible GC: need to restore X to refStack which may have changed either because of GC or because of passed/returned references
+                emit_2_LDS(RXL, (uint16_t)&(refStack)); // Load refStack into X
+                emit_2_LDS(RXH, (uint16_t)&(refStack)+1); // Load refStack into X
+
 
                 // push the reference to the new object onto the ref stack
                 emit_x_PUSHREF(R24);
                 emit_x_PUSHREF(R25);
             break;
             case JVM_NEWARRAY:
-                // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
+                // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
+                emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
+                emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
 
+
+                // make the call
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 emit_POP(R22); // size
                 emit_POP(R23);
                 emit_LDI(R24, jvm_operand_byte0); // (int) element type
-
-                // PUSH important stuff
-                emit_PUSH(RXH);
-                emit_PUSH(RXL);
-
-                // make the call
                 emit_2_CALL((uint16_t)&dj_int_array_create);
 
-                // POP important stuff
-                emit_POP(RXL);
-                emit_POP(RXH);
+
+                // Post possible GC: need to reset Y to the start of the stack frame's local references (the frame may have moved, so the old value may not be correct)
+                emit_2_LDS(RYL, (uint16_t)&(localReferenceVariables)); // Load localReferenceVariables into Y
+                emit_2_LDS(RYH, (uint16_t)&(localReferenceVariables)+1); // Load localReferenceVariables into Y
+                // Post possible GC: need to restore X to refStack which may have changed either because of GC or because of passed/returned references
+                emit_2_LDS(RXL, (uint16_t)&(refStack)); // Load refStack into X
+                emit_2_LDS(RXH, (uint16_t)&(refStack)+1); // Load refStack into X
+
 
                 // push the reference to the new object onto the ref stack
                 emit_x_PUSHREF(R24);
                 emit_x_PUSHREF(R25);
             break;
             case JVM_ANEWARRAY:
-                // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
+                // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
+                emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
+                emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
 
+
+                // make the call
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
                 emit_POP(R22); // size
                 emit_POP(R23);
                 emit_LDI(R24, jvm_operand_byte0); // infusion id
                 emit_LDI(R25, jvm_operand_byte1); // entity id
-
-                // PUSH important stuff
-                emit_PUSH(RXH);
-                emit_PUSH(RXL);
-
-                // make the call
                 emit_2_CALL((uint16_t)&RTC_ANEWARRAY);
 
-                // POP important stuff
-                emit_POP(RXL);
-                emit_POP(RXH);
+
+                // Post possible GC: need to reset Y to the start of the stack frame's local references (the frame may have moved, so the old value may not be correct)
+                emit_2_LDS(RYL, (uint16_t)&(localReferenceVariables)); // Load localReferenceVariables into Y
+                emit_2_LDS(RYH, (uint16_t)&(localReferenceVariables)+1); // Load localReferenceVariables into Y
+                // Post possible GC: need to restore X to refStack which may have changed either because of GC or because of passed/returned references
+                emit_2_LDS(RXL, (uint16_t)&(refStack)); // Load refStack into X
+                emit_2_LDS(RXH, (uint16_t)&(refStack)+1); // Load refStack into X
+
 
                 // push the reference to the new object onto the ref stack
                 emit_x_PUSHREF(R24);
@@ -1842,7 +1867,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_PUSH(R24);
             break;
             case JVM_CHECKCAST:
-                // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
+                // THIS WILL BREAK IF GC RUNS, BUT IT COULD ONLY RUN IF AN EXCEPTION IS THROWN, WHICH MEANS WE CRASH ANYWAY
 
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
@@ -1865,7 +1890,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_POP(RXH);
             break;
             case JVM_INSTANCEOF:
-                // THIS, AS WELL AS THE INVOKE INSTRUCTIONS, WILL BREAK IF GC RUNS!
+                // THIS WILL BREAK IF GC RUNS, BUT IT COULD ONLY RUN IF AN EXCEPTION IS THROWN, WHICH MEANS WE CRASH ANYWAY
 
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);

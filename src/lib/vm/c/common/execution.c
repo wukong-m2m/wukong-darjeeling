@@ -85,7 +85,7 @@ static dj_di_pointer code;
 int16_t *intStack;
 ref_t *refStack;
 
-static ref_t *localReferenceVariables;
+ref_t *localReferenceVariables;
 static int16_t *localIntegerVariables;
 
 static ref_t this;

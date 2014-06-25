@@ -291,6 +291,9 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 	if (staticFieldInfo==DJ_DI_NOT_SET||infusionList==DJ_DI_NOT_SET)
 		dj_panic(DJ_PANIC_MALFORMED_INFUSION);
 
+	// Run GC to make sure infusion structs are at the bottom of the heap and won't move later (so we don't need to worry about the pointer in RTC code)
+	dj_mem_gc();
+
 	// allocate the Infusion struct
 	infusion = dj_infusion_create(staticFieldInfo, dj_di_infusionList_getSize(infusionList));
 	dj_mem_addSafePointer((void**)&infusion); // Since the GC may be called when running the class initialisers.
