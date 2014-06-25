@@ -67,8 +67,8 @@ JVM_IPOP2 63
 JVM_IDUP 64
                                         JVM_IDUP2 65
 JVM_IDUP_X1 66
-JVM_ISWAP_X 67
-JVM_APOP 68
+                                                                                JVM_ISWAP_X 67 // Not implemented in DJ either
+                                        JVM_APOP 68
 JVM_APOP2 69
                                         JVM_ADUP 70
 JVM_ADUP2 71

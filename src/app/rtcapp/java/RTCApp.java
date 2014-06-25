@@ -53,15 +53,20 @@ public class RTCApp
 		// checkInstanceOf();
 		// checkCheckCast();
 		// checkTableSwitch();
-		checkLookupSwitch();
+		// checkLookupSwitch();
+		checkGC();
 	}
 
-	public static void checkLookupSwitch() {
-		System.out.println("100 " + RTCTest.check_lookupswitch(0));
-		System.out.println("42 " + RTCTest.check_lookupswitch(0x12000000));
-		System.out.println("1000000 " + RTCTest.check_lookupswitch(-1000));
-		System.out.println("2914 " + RTCTest.check_lookupswitch(0x12345678));
+	public static void checkGC() {
+		System.out.println("1234567 " + RTCTest.check_gc(1234567));
 	}
+
+	// public static void checkLookupSwitch() {
+	// 	System.out.println("100 " + RTCTest.check_lookupswitch(0));
+	// 	System.out.println("42 " + RTCTest.check_lookupswitch(0x12000000));
+	// 	System.out.println("1000000 " + RTCTest.check_lookupswitch(-1000));
+	// 	System.out.println("2914 " + RTCTest.check_lookupswitch(0x12345678));
+	// }
 
 	// public static void checkTableSwitch() {
 	// 	System.out.println("2914 " + RTCTest.check_tableswitch(0x12345677));

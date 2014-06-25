@@ -1,6 +1,7 @@
 #include "debug.h"
 #include "types.h"
 #include "panic.h"
+#include "heap.h"
 #include "global_id.h"
 #include "execution.h"
 #include "execution_instructions.h"
@@ -45,7 +46,7 @@ void RTC_INVOKESTATIC(dj_local_id localId) {
 
 
 ref_t RTC_NEW(dj_local_id localId) {
-    DEBUG_LOG(DBG_RTC, "RTC_NEW %d %d\n", localId.infusion_id, localId.entity_id);
+    DEBUG_LOG(DBG_RTC, "RTC_NEW %d %d free: %d\n", localId.infusion_id, localId.entity_id, dj_mem_getFree());
     return DO_NEW(localId);
 }
 

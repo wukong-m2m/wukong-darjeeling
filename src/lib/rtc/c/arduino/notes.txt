@@ -13,7 +13,7 @@ Call saved: r1, r2-r17, r28:r29 (Y)
                              +---------------------------+      | + (getIntegerLocalVariableCount-1)*sizeof(int16_t)
                              |                           |      |
                              | local refs   ref2         |      v
-                             |              ref1         | getLocalRefVariables, stackEndOffset
+                             |              ref1         | getLocalRefVariables, stackEndOffset, localReferenceVariables, Y
                              +---------------------------+
        integerStackBase      |  int1 16b   |             |
                              |  int2 32msb |             |
@@ -62,6 +62,23 @@ Z (r30:r31)     : pointer to infusion static fields or to an object (need to loa
 SP (0x3E, 0x3F) : int stack
 
 
+garbage collection
+---
+GC may trigger at:
+   - NEW, NEWARRAY, ANEWARRAY
+   - LDS
+   - INVOKEVIRTUAL, INVOKESTATIC, INVOKEINTERFACE, INVOKESPECIAL
+   - CHECKCAST, INSTANCEOF: but only to create an exception which will terminate the programme anyway.
+Data:
+   - r2:r3, the pointer to the infusion's static fields.
+        It's VERY unlikely/impossible that an infusion data structure will move.
+   - X, the ref stack pointer.
+        This will be set to the right value after a function call, but may be corrupted when GC runs when we create an object.
+         -> need to reload from refStack variable after NEW, NEWARRAY, ANEWARRAY and LDS (also need to set refStack before calling the runtime function)
+   - Y, the frame pointer.
+         -> need to reload from localReferenceVariables
+
+
 branches
 ---
 Approach 1: maintain a list of
@@ -86,6 +103,7 @@ changes to bytecode
 ---
 * Added brtarget instruction (noop)
 * Added brtarget index to branch instructions
+* Added brtarget to switch instructions, flipped the order of the upper and lower bound for tableswitch.
 
 
 

@@ -566,6 +566,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_PUSH(R23);
                 emit_PUSH(R22);
             break;
+            case JVM_APOP:
+                emit_x_POPREF(R25);
+                emit_x_POPREF(R24);                
+            break;
             case JVM_ADUP:
                 emit_x_POPREF(R25);
                 emit_x_POPREF(R24);
