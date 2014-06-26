@@ -1,0 +1,2 @@
+void javax_darjeeling_Stopwatch_void_resetAndStart();
+void javax_darjeeling_Stopwatch_void_measure();

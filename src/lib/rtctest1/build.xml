@@ -12,7 +12,7 @@
 	<property name="name" value="rtctest1"/>
 	
 	<!-- list of libraries this library depends on -->
-	<property name="lib-c-depends" value=""/>
+	<property name="lib-c-depends" value="darjeeling3"/>
 	<property name="lib-java-depends" value="base, darjeeling3, rtctest2"/>
 
 	<!-- include the library build template -->

@@ -19,7 +19,8 @@
  * along with Darjeeling.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import javax.rtctest.RTCTest;
+import javax.rtc.*;
+import javax.rtctest.*;
 
 public class RTCApp
 {
@@ -54,12 +55,25 @@ public class RTCApp
 		// checkCheckCast();
 		// checkTableSwitch();
 		// checkLookupSwitch();
-		checkGC();
+		// checkGC();
+		perftestBubbleSort();
 	}
 
-	public static void checkGC() {
-		System.out.println("1234567 " + RTCTest.check_gc(1234567));
+	public static void perftestBubbleSort() {
+		System.out.println("java:");
+		RTC.useRTC(false);
+		RTCTestBubbleSort.test_bubblesort();
+		System.out.println("rtc:");
+		RTC.useRTC(true);
+		RTCTestBubbleSort.test_bubblesort();
+		System.out.println("native:");
+		RTCTestBubbleSort.test_bubblesort_native();
+		System.out.println("done.");
 	}
+
+	// public static void checkGC() {
+	// 	System.out.println("1234567 " + RTCTest.check_gc(1234567));
+	// }
 
 	// public static void checkLookupSwitch() {
 	// 	System.out.println("100 " + RTCTest.check_lookupswitch(0));

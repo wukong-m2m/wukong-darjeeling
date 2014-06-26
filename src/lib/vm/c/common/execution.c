@@ -90,6 +90,8 @@ static int16_t *localIntegerVariables;
 
 static ref_t this;
 
+bool dj_exec_use_rtc = true;
+
 static int nrOpcodesLeft;
 #ifdef DARJEELING_DEBUG
 static uint32_t totalNrOpcodes;
@@ -1039,7 +1041,7 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 		// switch in newly created frame
 		dj_exec_loadLocalState(frame);
 
-		if (handler != NULL) {
+		if (handler != NULL && dj_exec_use_rtc) {
 			// RTC compiled method
 			// execute it directly
 

@@ -6,7 +6,7 @@
 - TODO: check r0 r1 during mul. may need to push/pop it
 - branches are RJMPs: limited to 4K
 - switch: also limited to 4K branches, and RJMP/POP sequence to jump to the right entry discards the highest PC byte, so this only works in the lower 128K of memory
-
+- garbage collection will break if the infusion data structure moves, but this shouldn't happen since the GC is run before loading each library to clean up any freed objects from the previous init code.
 
 --- performance only
 - RTC_INVOKESTATIC does a lookup for every call. we could store the global_id directly, but this would depend on the infusion struct being at the same address every time.

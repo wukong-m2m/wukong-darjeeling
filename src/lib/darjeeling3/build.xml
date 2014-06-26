@@ -10,4 +10,5 @@
 	<!-- include the library build template -->
 	<import file="../lib.xml"/>
 
+	<property name="public-headerfile" value="darjeeling3.h"/>
 </project>

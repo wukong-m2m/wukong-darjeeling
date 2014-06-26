@@ -13,7 +13,7 @@
 	
 	<!-- list of libraries this library depends on -->
 	<property name="lib-c-depends" value="vm, wkreprog"/>
-	<property name="lib-java-depends" value=""/>
+	<property name="lib-java-depends" value="base"/>
 
 	<!-- include the library build template -->
 	<import file="../lib.xml"/>
