@@ -27,17 +27,17 @@ public class RTCTest implements IRTCTest {
 		this.instance_int = init_int_value;
 	}
 
-	public static int check_gc(int a) {
-		Runtime.getRuntime().gc();
-		new RTCTest(); // allocate some memory and immediately release the object again
-		return check_gc2(a); // there will be empty space below check_gc2's stack frame, so triggering GC will cause it to shift down
-	}
-	public static int check_gc2(int a) {
-		Runtime.getRuntime().gc();
-		for (int i=0; i<5; i++)
-			new RTCTest(); // allocate some memory and immediately release the object again
-		return a+1;
-	}
+	// public static int check_gc(int a) {
+	// 	Runtime.getRuntime().gc();
+	// 	new RTCTest(); // allocate some memory and immediately release the object again
+	// 	return check_gc2(a); // there will be empty space below check_gc2's stack frame, so triggering GC will cause it to shift down
+	// }
+	// public static int check_gc2(int a) {
+	// 	Runtime.getRuntime().gc();
+	// 	for (int i=0; i<5; i++)
+	// 		new RTCTest(); // allocate some memory and immediately release the object again
+	// 	return a+1;
+	// }
 
 	// public static int check_lookupswitch(int a) {
 	// 	switch(a) {

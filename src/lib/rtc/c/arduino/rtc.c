@@ -78,7 +78,6 @@ extern ref_t *localReferenceVariables;
 // USED AT COMPILE TIME:
 const unsigned char PROGMEM __attribute__ ((aligned (SPM_PAGESIZE))) rtc_compiled_code_buffer[RTC_COMPILED_CODE_BUFFER_SIZE] = {};
 // Buffer for emitting code.
-#define RTC_MAX_SIZE_FOR_SINGLE_JVM_INSTRUCTION 32 // Used to check when we need to flush the buffer (when rtc_codebuffer_position-rtc_codebuffer < RTC_MAX_SIZE_FOR_SINGLE_JVM_INSTRUCTION)
 #define RTC_CODEBUFFER_SIZE 64
 uint16_t *rtc_codebuffer;
 uint16_t *rtc_codebuffer_position; // A pointer to somewhere within the buffer
@@ -89,7 +88,7 @@ void rtc_flush() {
     uint16_t count = rtc_codebuffer_position - rtc_codebuffer;
 #ifdef DARJEELING_DEBUG
     for (int i=0; i<count; i++) {
-        DEBUG_LOG(DBG_RTC, "[rtc]    %x  (%x %x)\n", rtc_codebuffer[i], instructiondata[i*2], instructiondata[i*2+1]);
+        DEBUG_LOG(DBG_RTCTRACE, "[rtc]    %x  (%x %x)\n", rtc_codebuffer[i], instructiondata[i*2], instructiondata[i*2+1]);
     }
 #endif // DARJEELING_DEBUG
     // Write to flash
@@ -98,14 +97,17 @@ void rtc_flush() {
     rtc_codebuffer_position = rtc_codebuffer;
 }
 
-static void emit(uint16_t wordopcode) {
-    *(rtc_codebuffer_position++) = wordopcode;
-}
-static void emit2(uint16_t wordopcode1, uint16_t wordopcode2) {
-    *(rtc_codebuffer_position++) = wordopcode1;
-    *(rtc_codebuffer_position++) = wordopcode2;
+static void emit(uint16_t opcode) {
+    *(rtc_codebuffer_position++) = opcode;
+
+    if (rtc_codebuffer_position >= rtc_codebuffer+RTC_CODEBUFFER_SIZE) // Buffer full, do a flush.
+        rtc_flush();
 }
 
+static void emit2(uint16_t opcode1, uint16_t opcode2) {
+    emit(opcode1);
+    emit(opcode2);
+}
 
 void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t *rtc_method_start_addresses) {
     DEBUG_LOG(DBG_RTC, "[rtc] handler list is at %p\n", infusion->native_handlers);
@@ -176,13 +178,8 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     DEBUG_LOG(DBG_RTC, "[rtc] method length %d\n", method_length);
 
     for (uint16_t pc=0; pc<method_length; pc++) {
-        if (RTC_CODEBUFFER_SIZE-(rtc_codebuffer_position-rtc_codebuffer) < RTC_MAX_SIZE_FOR_SINGLE_JVM_INSTRUCTION) {
-            // There may not be enough space in the buffer to hold the current opcode.
-            rtc_flush();
-        }
-
         uint8_t opcode = dj_di_getU8(code + pc);
-        DEBUG_LOG(DBG_RTC, "[rtc] JVM opcode %d (pc=%d, method length=%d)\n", opcode, pc, method_length);
+        DEBUG_LOG(DBG_RTCTRACE, "[rtc] JVM opcode %d (pc=%d, method length=%d)\n", opcode, pc, method_length);
         switch (opcode) {
             case JVM_NOP:
             break;
@@ -1955,8 +1952,8 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_BRTARGET:
                 // This is a noop, but we need to record the address of the next instruction
                 // in the branch table as a RJMP instruction.
+                rtc_flush(); // Finish writing, and also make sure we won't optimise across basic block boundaries.
                 tmp_current_position = wkreprog_get_raw_position();
-                rtc_flush(); // Not strictly necessary at the moment
                 wkreprog_close();
                 wkreprog_open_raw(rtc_branch_target_table_address(branch_target_count));
                 emit_RJMP(tmp_current_position - rtc_branch_target_table_address(branch_target_count) - 2); // Relative jump to tmp_current_position from the branch target table. -2 is because RJMP will add 1 WORD to the PC in addition to the jump offset
@@ -1972,10 +1969,8 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
             break;
         }
-        // For now, flush after each opcode
-        rtc_flush();
     }
-
+    rtc_flush();
 }
 
 void rtc_compile_lib(dj_infusion *infusion) {

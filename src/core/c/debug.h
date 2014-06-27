@@ -100,6 +100,9 @@
 #ifndef DBG_RTC
 #define DBG_RTC 0
 #endif
+#ifndef DBG_RTCTRACE
+#define DBG_RTCTRACE 0
+#endif
 
 #ifndef DARJEELING_DEBUG
 

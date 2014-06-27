@@ -50,6 +50,7 @@ typedef unsigned long long int dj_time_t;
 // #define DBG_WKREPROG true
 // #define DBG_ZWAVETRACE true
 #define DBG_RTC true
+// #define DBG_RTCTRACE true
 
 void avr_serialPrintf(char * format, ...);
 #define DARJEELING_PRINTF avr_serialPrintf
