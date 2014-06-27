@@ -19,7 +19,7 @@ void wkreprog_comm_handle_message(void *data) {
 		case WKREPROG_COMM_CMD_REPROG_OPEN: {
 			DEBUG_LOG(DBG_WKREPROG, "Initialise reprogramming.\n");
 			// uint16_t size_to_upload = (uint16_t)payload[0] + (((uint16_t)payload[1]) << 8);
-			if (wkreprog_impl_open_app_archive(0)) {
+			if (wkreprog_open_app_archive(0)) {
 				// TODONR: DEBUG_LOG(DBG_WKREPROG, "Setting master address to %x", src);
 			    // wkpf_config_set_master_node_id(src);
 				DEBUG_LOG(DBG_WKREPROG, "Going to runlevel RUNLEVEL_REPROGRAMMING.\n");
@@ -62,7 +62,7 @@ void wkreprog_comm_handle_message(void *data) {
 			}
 			if (pos_in_message == wkreprog_pos) {
 				DEBUG_LOG(DBG_WKREPROG, "Write %d bytes at position 0x%x.\n", codelength, wkreprog_pos);
-				wkreprog_impl_write(codelength, codepayload);
+				wkreprog_write(codelength, codepayload);
 				wkreprog_pos += codelength;
 			}
 		}
@@ -91,13 +91,13 @@ void wkreprog_comm_handle_message(void *data) {
 			response_cmd = WKREPROG_COMM_CMD_REPROG_COMMIT_R;
 
 			if (reprogramming_ok)
-				wkreprog_impl_close();
+				wkreprog_close();
 		}
 		break;
 		case WKREPROG_COMM_CMD_REPROG_REBOOT: {
 			DEBUG_LOG(DBG_WKREPROG, "Reboot the VM.\n");
 			dj_hook_call(dj_core_shutdownHook, NULL);
-			wkreprog_impl_reboot();
+			wkreprog_reboot();
 		}
 	}
 	if (response_cmd != 0)

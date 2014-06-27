@@ -46,14 +46,26 @@ bool wkreprog_impl_open_raw(uint16_t start_write_position) {
 	avr_flash_pageaddress = start_write_position - (start_write_position % SPM_PAGESIZE);
 	// Set the position within the current page
 	avr_flash_buf_len = start_write_position % SPM_PAGESIZE;
-	// Fill the beginning of the buffer with the old data currently in the file
-	for (int i=0; i<avr_flash_buf_len; i++)
+	// Fill the buffer with the data currently in the file
+	for (int i=0; i<SPM_PAGESIZE; i++)
 		avr_flash_pagebuffer[i] = dj_di_getU8(avr_flash_pageaddress+i);
 
 	return true;
 }
 
-void wkreprog_impl_write(uint8_t size, uint8_t* data) {
+void avr_flash_program_page_if_not_modified(uint32_t page, uint8_t *buf) {
+	// Don't wear out the flash unnecessarily
+	for (uint16_t i=0; i<SPM_PAGESIZE; i++) {
+		if (avr_flash_pagebuffer[i] != dj_di_getU8(page+i)) {
+			// Buffer and flash memory differ. Write the page.
+			avr_flash_program_page (page, buf);
+			return;
+		}
+	}
+}
+
+
+void wkreprog_impl_write(uint8_t size, uint8_t* data, bool skip) {
 	// TODONR: Check if the size fits in the allocated space for app archive
 	if (avr_flash_pageaddress == 0)
 		return;
@@ -65,11 +77,15 @@ void wkreprog_impl_write(uint8_t size, uint8_t* data) {
 			// Only 1 page at a time
 			bytes_on_this_page = SPM_PAGESIZE-avr_flash_buf_len;
 		}
-		memcpy(avr_flash_pagebuffer + avr_flash_buf_len, data, bytes_on_this_page); // Copy the data to the page buffer
+		if (!skip)
+			memcpy(avr_flash_pagebuffer + avr_flash_buf_len, data, bytes_on_this_page); // Copy the data to the page buffer
 		if (avr_flash_buf_len + bytes_on_this_page == SPM_PAGESIZE) { // If we filled a whole page, write it to flash
 			DEBUG_LOG(DBG_WKREPROG, "AVR: Flashing page at 0x%x.\n", avr_flash_pageaddress);
-			avr_flash_program_page(avr_flash_pageaddress, avr_flash_pagebuffer);
+			avr_flash_program_page_if_not_modified(avr_flash_pageaddress, avr_flash_pagebuffer);
 			avr_flash_pageaddress += SPM_PAGESIZE;
+			// Fill the buffer with the data currently in the file
+			for (int i=0; i<SPM_PAGESIZE; i++)
+				avr_flash_pagebuffer[i] = dj_di_getU8(avr_flash_pageaddress+i);
 		}
 		avr_flash_buf_len = (avr_flash_buf_len + bytes_on_this_page) % SPM_PAGESIZE;
 		size -= bytes_on_this_page;
@@ -85,7 +101,7 @@ void wkreprog_impl_close() {
 			avr_flash_pagebuffer[i] = dj_di_getU8(avr_flash_pageaddress+i);
 
 		DEBUG_LOG(DBG_WKREPROG, "AVR: Flashing page at 0x%x.\n", avr_flash_pageaddress);
-		avr_flash_program_page(avr_flash_pageaddress, avr_flash_pagebuffer);
+		avr_flash_program_page_if_not_modified(avr_flash_pageaddress, avr_flash_pagebuffer);
 	}
 	avr_flash_pageaddress = 0;
 }

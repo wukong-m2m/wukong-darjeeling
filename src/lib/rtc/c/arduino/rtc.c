@@ -160,8 +160,8 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     // Remember the start of the branch table
     dj_di_pointer branch_target_table_start_ptr = wkreprog_get_raw_position();
     DEBUG_LOG(DBG_RTC, "[rtc] Reserving %d bytes for %d branch targets at address %p\n", branchTableSize, dj_di_methodImplementation_getNumberOfBranchTargets(methodimpl), branch_target_table_start_ptr);
-    // Skip this number of bytes (actually it doesn't matter what we write here, but I just use the same data so nothing changes)
-    wkreprog_write(branchTableSize, (uint8_t *)branch_target_table_start_ptr);
+    // Skip this number of bytes
+    wkreprog_skip(branchTableSize);
 
     // prologue (is this the right way?)
     emit_PUSH(R3);

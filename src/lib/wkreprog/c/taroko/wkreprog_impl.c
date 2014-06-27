@@ -21,7 +21,7 @@ bool wkreprog_impl_open_raw(uint16_t start_write_position) {
 	return false;
 }
 
-void wkreprog_impl_write(uint8_t size, uint8_t* data) {
+void wkreprog_impl_write(uint8_t size, uint8_t* data, bool skip) {
 	dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
 }
 
