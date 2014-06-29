@@ -697,6 +697,7 @@ class RPCAgent(TransportAgent):
                                 print "[transport] RPC send() replies %s so retries %d time(s)" % (msg, retries)
                             except:
                                 print "[transport] RPC send() to DID(%d) and gateway(%d %s) fails" % (dev_did, gw_did, str((gw_ip, gw_port)))
+                            retries -= 1
 
                 if retries == 0 or len(defer.allowed_replies) == 0:
                     print "[transport] handler: returns immediately to handle failures, or defer has no expected replies"
@@ -956,7 +957,7 @@ class DIDService:
                 prefix_bit_len = self.get_gateway_prefix_bit_len(gateway_did)
                 raddr = (did << prefix_bit_len) >> prefix_bit_len
                 tmp_dict = {"gtwdid":gateway_did,"raddr":raddr,"mac":mac_addr}
-                self._device_dids[did] = json.dumps()
+                self._device_dids[did] = json.dumps(tmp_dict)
             return did
         return 0xFFFFFFFF
 
