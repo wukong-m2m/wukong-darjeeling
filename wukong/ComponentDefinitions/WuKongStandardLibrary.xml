@@ -80,6 +80,7 @@
     <WuClass name="Light_Sensor" id="1001" virtual="false" type="hard">
         <property name="current_value" access="readonly" datatype="short"  />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="10"  />
+        <property name="__pin" access="readonly" datatype="short" />
     </WuClass>
     <WuClass name="PIR_Sensor" id="1003" virtual="false" type="hard">
         <property name="current_value" access="readonly" datatype="boolean"  />

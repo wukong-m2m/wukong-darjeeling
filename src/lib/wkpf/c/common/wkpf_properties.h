@@ -2,6 +2,7 @@
 #define WKPF_PROPERTIESH
 
 #include "types.h"
+#include "wkpf.h"
 #include "wkpf_wuobjects.h"
 
 // Property state:

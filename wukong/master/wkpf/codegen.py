@@ -378,6 +378,7 @@ class CodeGen:
             '#include <string.h>\n',
             '#include "wkcomm.h"\n',
             '#include "wkpf_wuclasses.h"\n',
+            '#include "wkpf_properties.h"\n',
             '#include "native_wuclasses.h"\n'
         ]
         header_lines_posix = ['#include <debug.h>\n',
@@ -388,17 +389,19 @@ class CodeGen:
         ]
         init_function_lines = ['''
         uint8_t wkpf_native_wuclasses_init() {
+          uint8_t retval;
+          wuobject_t *wuobject;
           DEBUG_LOG(DBG_WKPF, "WKPF: (INIT) Running wkpf native init for node id: %x\\n", wkcomm_get_node_id());
         ''']
 
         init_function_lines_posix = ['''
-        uint8_t wkpf_process_enabled_wuclass(char* wuclassname, bool appCanCreateInstances, int createInstancesAtStartup) {
+        uint8_t wkpf_process_enabled_wuclass(char* wuclassname, bool appCanCreateInstances) {
             static int next_free_port = 1;
             printf("[posix init] Registering wuclass %s", wuclassname);
-            if (createInstancesAtStartup > 0)
-                printf(", and creating %d instance(s)\\n", createInstancesAtStartup);
-            else
-                printf("\\n");
+            // if (createInstancesAtStartup > 0)
+            //     printf(", and creating %d instance(s)\\n", createInstancesAtStartup);
+            // else
+            //     printf("\\n");
         ''']
 
         dom = parseString(open(enabled_wuclasses_filename).read())
@@ -417,7 +420,7 @@ class CodeGen:
             appCanCreateInstancesAtt = wuclass_element.getAttribute('appCanCreateInstances')
             appCanCreateInstances = True if (appCanCreateInstancesAtt.lower()=='true' or appCanCreateInstancesAtt=='1') else False
             print appCanCreateInstances, appCanCreateInstancesAtt
-            createInstancesAtStartup = int(wuclass_element.getAttribute('createInstancesAtStartup')) if wuclass_element.getAttribute('createInstancesAtStartup') != '' else 0
+            startup_instances = wuclass_element.getElementsByTagName("Instance");
 
             header_lines.append('#include "%s.h"\n' % wuclass.getCFileName())
 
@@ -426,18 +429,26 @@ class CodeGen:
                         wkpf_register_wuclass(&%s);''' % wuclass.getCName())
 
             # Create as many instances as the XML specifies
-            # TODO: we'll need some extra mechanism here later to set configuration properties like port number or
-            #       do some other config. This only works if all instances are equal.
-            if createInstancesAtStartup > 0:
-                for i in range(createInstancesAtStartup):
-                    init_function_lines.append('''
-					    {
-                        uint8_t retval;
+            for instance_element in startup_instances:
+                instance_properties = instance_element.getElementsByTagName("Property")
+                init_function_lines.append('''
                         retval = wkpf_create_wuobject(%s.wuclass_id, %d, 0, true);
                         if (retval != WKPF_OK)
                             return retval;
-						}
-                        ''' % (wuclass.getCName(), portCnt))
+                        wkpf_get_wuobject_by_port(%d, &wuobject);
+                        ''' % (wuclass.getCName(), portCnt, portCnt))
+                for instance_property_element in instance_properties:
+                    print 
+                    instance_property = wuclass.getPropertyByName(instance_property_element.getAttribute('name'))
+                    instance_property_value = instance_property_element.getAttribute('value')
+                    if instance_property.getWuType().getDataType() != 'short' and not instance_property.getWuType().isEnumTypedef():
+                        print 'unsupported type' + instance_property_datatype
+                        sys.exit()
+                    init_function_lines.append('''
+                        retval = wkpf_internal_write_property_int16(wuobject, %s, %s);
+                        if (retval != WKPF_OK)
+                            return retval;
+                        ''' % (instance_property.getCConstName(), instance_property_value))
                     portCnt += 1
                     assert portCnt < 256, 'number of wuobject exceeds 256'
 
