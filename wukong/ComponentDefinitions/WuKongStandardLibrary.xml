@@ -15,6 +15,11 @@
         <enum value="DIVIDE"/>
     </WuTypedef>
 
+    <WuTypedef name="WuDevicePin" type="enum">
+        <enum value="JP5"/>
+        <enum value="JP6"/>
+    </WuTypedef>
+
     <!-- Software -->
     <WuClass name="Threshold" id="1" virtual="true" type="soft">
         <property name="operator" access="readwrite" datatype="ThresholdOperator" default="lt"  />
@@ -80,7 +85,6 @@
     <WuClass name="Light_Sensor" id="1001" virtual="false" type="hard">
         <property name="current_value" access="readonly" datatype="short"  />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="10"  />
-        <property name="__pin" access="readonly" datatype="short" />
     </WuClass>
     <WuClass name="PIR_Sensor" id="1003" virtual="false" type="hard">
         <property name="current_value" access="readonly" datatype="boolean"  />
@@ -104,6 +108,7 @@
     <WuClass name="Magnetic_Sensor" id="1007" virtual="false" type="hard">
         <property name="output" access="readonly" datatype="boolean" default="false"/>
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
+        <property name="__pin" access="readonly" datatype="WuDevicePin" />
     </WuClass>
     <WuClass name="Pressure_Sensor_0" id="1008" virtual="false" type="hard">
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />

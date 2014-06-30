@@ -6,7 +6,7 @@
 	<property name="libs" value="vm, base, darjeeling3, uart, wkcomm, wkreprog, wkpf, wkpf_virtual"/>
 
 	<!-- Compile these applications -->
-	<property name="apps" value="helloworld"/>
+	<property name="apps" value="wkemptyapp"/>
 
 	<!-- Platform and architecture selection -->
 	<property name="platform" value="arduino"/>

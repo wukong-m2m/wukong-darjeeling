@@ -420,7 +420,7 @@ class CodeGen:
             appCanCreateInstancesAtt = wuclass_element.getAttribute('appCanCreateInstances')
             appCanCreateInstances = True if (appCanCreateInstancesAtt.lower()=='true' or appCanCreateInstancesAtt=='1') else False
             print appCanCreateInstances, appCanCreateInstancesAtt
-            startup_instances = wuclass_element.getElementsByTagName("Instance");
+            startup_instances = wuclass_element.getElementsByTagName('CreateInstance');
 
             header_lines.append('#include "%s.h"\n' % wuclass.getCFileName())
 
@@ -430,7 +430,7 @@ class CodeGen:
 
             # Create as many instances as the XML specifies
             for instance_element in startup_instances:
-                instance_properties = instance_element.getElementsByTagName("Property")
+                instance_properties = instance_element.getElementsByTagName('Property')
                 init_function_lines.append('''
                         retval = wkpf_create_wuobject(%s.wuclass_id, %d, 0, true);
                         if (retval != WKPF_OK)
@@ -440,17 +440,23 @@ class CodeGen:
                 for instance_property_element in instance_properties:
                     print 
                     instance_property = wuclass.getPropertyByName(instance_property_element.getAttribute('name'))
-                    instance_property_value = instance_property_element.getAttribute('value')
-                    if instance_property.getWuType().getDataType() != 'short' and not instance_property.getWuType().isEnumTypedef():
+                    instance_property_type = instance_property.getWuType()
+                    if instance_property_type.getDataType() != 'short' and not instance_property_type.isEnumTypedef():
                         print 'unsupported type' + instance_property_datatype
                         sys.exit()
-                    init_function_lines.append('''
-                        retval = wkpf_internal_write_property_int16(wuobject, %s, %s);
+                    if instance_property_type.isEnumTypedef():
+                        instance_property_value = instance_property_type.getValueInCConstant(instance_property_element.getAttribute('value'))
+                    else:
+                        instance_property_value = instance_property_element.getAttribute('value')
+
+                    init_function_lines.append('''retval = wkpf_internal_write_property_int16(wuobject, %s, %s);
                         if (retval != WKPF_OK)
                             return retval;
                         ''' % (instance_property.getCConstName(), instance_property_value))
-                    portCnt += 1
                     assert portCnt < 256, 'number of wuobject exceeds 256'
+                init_function_lines.append('''%s.setup(wuobject);
+                        ''' % (wuclass.getCName()))
+                portCnt += 1
 
             # Set the flag if the application is allowed to create instances
             if appCanCreateInstances:
