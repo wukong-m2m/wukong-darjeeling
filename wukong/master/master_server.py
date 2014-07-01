@@ -1042,6 +1042,7 @@ WuClassLibraryParser.read(COMPONENTXML_PATH)
 update_applications()
 import_wuXML()
 make_FBP()
+getComm()
 wukong.listen(MASTER_PORT)
 
 if __name__ == "__main__":

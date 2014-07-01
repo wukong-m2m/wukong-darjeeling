@@ -1,14 +1,17 @@
 # vi: ts=2 sw=2 expandtab
 import sys, time, copy
-from transport import *
 from locationTree import *
 from models import *
 from globals import *
 from configuration import *
 import simulator
+if WKPFCOMM_AGENT == "GATEWAY":
+  from transportv2 import *
+else:
+  from transport import *
 
 # MUST MATCH THE SIZE DEFINED IN wkcomm.h
-WKCOMM_MESSAGE_PAYLOAD_SIZE=40
+WKCOMM_MESSAGE_PAYLOAD_SIZE=30
 
 WKPF_PROPERTY_TYPE_SHORT         = 0
 WKPF_PROPERTY_TYPE_BOOLEAN       = 1
@@ -31,7 +34,9 @@ class Communication:
         if SIMULATION == "true":
           print "simulation mode"
           raise Exception('simulation', 'Set simulation in master.cfg to false if you do not want simulated discovery')
-        if WKPFCOMM_AGENT == "NETWORKSERVER":
+        if WKPFCOMM_AGENT == "GATEWAY":
+          self.zwave = getGatewayAgent()
+        elif WKPFCOMM_AGENT == "NETWORKSERVER":
           self.zwave = getNetworkServerAgent()
         else:
           self.zwave = getZwaveAgent()
@@ -52,7 +57,7 @@ class Communication:
 
     def verifyWKPFmsg(self, messageStart, minAdditionalBytes):
       # minPayloadLength should not include the command or the 2 byte sequence number
-      return lambda command, payload: (command == pynvc.WKPF_ERROR_R) or (payload != None and payload[0:len(messageStart)]==messageStart and len(payload) >= len(messageStart)+minAdditionalBytes)
+      return lambda command, payload: (command == pynvc.WKPF_ERROR_R) or (payload is not None and payload[0:len(messageStart)]==messageStart and len(payload) >= len(messageStart)+minAdditionalBytes)
 
     def getNodeIds(self):
       if SIMULATION == "true":
