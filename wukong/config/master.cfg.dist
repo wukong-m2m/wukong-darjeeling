@@ -29,8 +29,8 @@ DEPLOY_PLATFORM = avr_mega2560
 # port number for Wukong Master
 MASTER_PORT = 5000
 
-# Which agent to use in wkpfcomm. Either ZWAVE or NETWORKSERVER
-WKPFCOMM_AGENT = NETWORKSERVER
+# Which agent to use in wkpfcomm. Either ZWAVE, GATEWAY or NETWORKSERVER
+WKPFCOMM_AGENT = GATEWAY
 
 # The address to connect to for the NetworkServerAgent
 NETWORKSERVER_ADDRESS = 127.0.0.1
