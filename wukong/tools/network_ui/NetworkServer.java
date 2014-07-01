@@ -50,6 +50,10 @@ public class NetworkServer extends Thread
 		for (NetworkServerMessagesListener listener : this.listeners)
 			listener.clientDisconnected(client);
 	}
+	void fireDiscovery(Integer[] clients) {
+		for (NetworkServerMessagesListener listener : this.listeners)
+			listener.discovery(clients);
+	}
 
 	public Set<Integer> getConnectedClients() {
 		return NetworkServer.clients.keySet();
@@ -71,6 +75,15 @@ public class NetworkServer extends Thread
 		}
 		public void clientDisconnected(int client){
 			System.out.println("Node " + client + " disconnected.");
+		}
+		public void discovery(Integer[] ids) {
+			System.out.print("Discovery: " + ids.length + " clients (");
+			for (int i=0; i<ids.length; i++) {
+				System.out.print(ids[i].toString());
+				if (i != ids.length-1)
+					System.out.print(", ");
+			}
+			System.out.println(")");
 		}
 	}
 
@@ -118,7 +131,7 @@ public class NetworkServer extends Thread
 		public Socket clientSocket;
 		public BufferedInputStream in;
 		public BufferedOutputStream out;
-		public int clientId;
+		public int clientId = 0;
 		public boolean keepRunning;
 
 		public NetworkServerClientHandler (Socket clientSoc)
@@ -164,7 +177,6 @@ public class NetworkServer extends Thread
 				System.err.println(e);
 			} 
 			finally {
-				fireClientDisconnected(this.clientId);
 				if (NetworkServer.clients.get(this.clientId) == this)
 					NetworkServer.clients.remove(this.clientId);			
 			}
@@ -215,6 +227,7 @@ public class NetworkServer extends Thread
 					}
 				}
 			}
+			fireClientDisconnected(this.clientId);
 		}
 
 		private synchronized void sendMessage(int[] message) {
@@ -238,6 +251,7 @@ public class NetworkServer extends Thread
 			out.write(length%256);
 			out.write(length/256);
 			Integer[] ids = NetworkServer.clients.keySet().toArray(new Integer[0]);
+			fireDiscovery(ids);
 			for (int i=0; i<number_of_clients; i++) {
 				System.out.println("clients " + ids[i]);
 				out.write((ids[i]%256));

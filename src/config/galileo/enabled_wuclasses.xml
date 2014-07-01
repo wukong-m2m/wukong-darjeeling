@@ -1,5 +1,4 @@
 <WuKong>
     <WuClass name="Threshold" appCanCreateInstances="true"/>
     <WuClass name="Light_Actuator" appCanCreateInstances="false" createInstancesAtStartup="1" />
-    <WuClass name="PIR_Sensor" appCanCreateInstances="false" createInstancesAtStartup="1"/>
 </WuKong>

@@ -17,10 +17,12 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     private DirectoryWatcher directorywatcher;
 
     // UI
-    private JPanel sensorPanel;
-    private JTextField sensorTextField;
+    private JPanel sensorValuePanel;
+    private JTextField sensorValueTextField;
     private JTree tree;
     private DefaultTreeModel treemodel;
+    private NodeDetailsPanel nodeDetailsPanel;
+    private JSplitPane devicesPane, mainPane;
 
     //Optionally play with line styles.  Possible values are
     //"Angled" (the default), "Horizontal", and "None".
@@ -121,32 +123,48 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         //Create the scroll pane and add the tree to it. 
         JScrollPane treeView = new JScrollPane(tree);
 
-        //Create the HTML viewing pane.
-        sensorPanel = new JPanel();
-		sensorTextField = new JTextField("", 20);
-		sensorTextField.addActionListener(this);
-		sensorPanel.add(sensorTextField);
-        JScrollPane sensorView = new JScrollPane(sensorPanel);
+        sensorValuePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+		sensorValueTextField = new JTextField("", 5);
+		sensorValueTextField.addActionListener(this);
+        sensorValuePanel.add(new JLabel("Sensor value: "));
+        sensorValuePanel.add(sensorValueTextField);
+
+        nodeDetailsPanel = new NodeDetailsPanel();
+
+        JPanel detailsPanel = new JPanel(new BorderLayout());
+        detailsPanel.add(sensorValuePanel, BorderLayout.NORTH);
+        detailsPanel.add(nodeDetailsPanel, BorderLayout.CENTER);
+
+
+        // JScrollPane scrollPane = new JScrollPane(detailsPanel);
+
 
         //Add the scroll panes to a split pane.
-        JSplitPane devicesPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        devicesPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        devicesPane.setResizeWeight(0.5);
         devicesPane.setTopComponent(treeView);
-        devicesPane.setBottomComponent(sensorView);
+        devicesPane.setBottomComponent(detailsPanel);
 
-        Dimension minimumSize = new Dimension(100, 50);
-        sensorView.setMinimumSize(minimumSize);
-        treeView.setMinimumSize(minimumSize);
+        // Dimension minimumSize = new Dimension(100, 50);
+        // // scrollPane.setMinimumSize(minimumSize);
+        // detailsPanel.setMinimumSize(minimumSize);
+        // treeView.setMinimumSize(minimumSize);
 
-        JSplitPane mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        mainPane.setTopComponent(devicesPane);
-        TextArea textArea = new TextArea();
-        mainPane.setBottomComponent(textArea);
-
+        JTabbedPane logTabs = new JTabbedPane();
+        WKNetworkUI.childProcessManager.setLogTabbedPane(logTabs);
+        // Tab for network trace
+        LogTextArea networkTraceTextArea = new LogTextArea();
+        networkTraceTextArea.setEditable(false);
+        logTabs.addTab("Network", networkTraceTextArea);
         // Start the network server
-        WKNetworkUI.networkServer.addMessagesListener(new UIMessagesListener(textArea, WKNetworkUI.standardLibrary));
+        WKNetworkUI.networkServer.addMessagesListener(new UIMessagesListener(networkTraceTextArea, WKNetworkUI.standardLibrary));
         WKNetworkUI.networkServer.addMessagesListener(this);
 
         //Add the split pane to this panel.
+        mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        mainPane.setResizeWeight(0.5);
+        mainPane.setTopComponent(devicesPane);
+        mainPane.setBottomComponent(logTabs);
         add(mainPane);
     }
 
@@ -168,26 +186,35 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         } else {
         	this.setSelectedSensorTreeNode(null);
         }
+
+        TreePath path = tree.getSelectionPath();
+        for (Object pathcomponent : path.getPath()) {
+            if (pathcomponent instanceof DeviceTreeNode) {
+                nodeDetailsPanel.setDeviceTreeNode((DeviceTreeNode)pathcomponent);
+                return;
+            }            
+        }
+        nodeDetailsPanel.setDeviceTreeNode(null);
     }
     private void setSelectedSensorTreeNode(SensorTreeNode s) {
         if (s == null) {
-            sensorTextField.setText("");
-            sensorTextField.setEnabled(false);
-            sensorTextField.setVisible(false);
+            sensorValueTextField.setText("");
+            sensorValueTextField.setEnabled(false);
+            sensorValueTextField.setVisible(false);
         } else {
-            sensorTextField.setText(s.getValue().toString());
-            sensorTextField.setVisible(true);
-            sensorTextField.setEnabled(true);
+            sensorValueTextField.setText(s.getValue().toString());
+            sensorValueTextField.setVisible(true);
+            sensorValueTextField.setEnabled(true);
         }
         this.selectedSensorTreeNode = s;
     }
 
     /** Required by ActionListener interface */
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == sensorTextField) {
-            String text = sensorTextField.getText();
+        if (e.getSource() == sensorValueTextField) {
+            String text = sensorValueTextField.getText();
             try {
-                int newval = Integer.parseInt(sensorTextField.getText());
+                int newval = Integer.parseInt(sensorValueTextField.getText());
                 selectedSensorTreeNode.setValue(newval);
             } catch (NumberFormatException ex) {
             }
@@ -197,7 +224,6 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     /** Required by NetworkServerMessagesListener interface */
     public void messageDropped(int src, int dest, int[] message) {}
     public void messageSent(int src, int dest, int[] message) {}
-
     public void clientConnected(int client) {
         // Search for existing client
         DeviceTreeNode device = findDeviceTreeNode(client);
@@ -212,7 +238,6 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
             addExternalDeviceTreeNode(client);
         }
     }
-
     public void clientDisconnected(int client) {
         DeviceTreeNode device = findDeviceTreeNode(client);
         if (device != null) {
@@ -228,9 +253,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
             }
         }
     }
-
-    public void updateClientInTree(int client) {
-    }
+    public void discovery(Integer[] ids) {}
 
     private void rootNodeStructureChanged() {
         DefaultMutableTreeNode root = (DefaultMutableTreeNode)this.tree.getModel().getRoot();
@@ -288,6 +311,15 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     // Methods to scan the file system for nodes
     // Should probably be moved to a separate class (subclass of DefaultTreeModel? still not sure about how to properly do a tree in Java)
     public void directoryChanged(WatchKey signalledKey) {
+        try {
+            // The event we get is the start of the modification. If we read the file too quickly
+            // the VM may not have finished writing the value yet.
+            // There's probably a better way to do this, but for now just sleeping 50ms shouldn't
+            // be noticable to the user and will give the VM ample time to finish writing the new
+            // value
+            Thread.sleep(50);
+        } catch (InterruptedException e) {}
+
         // get list of events from key
         java.util.List<WatchEvent<?>> list = signalledKey.pollEvents();
 
@@ -328,6 +360,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
     private void createNodes() {
 		File folder = new File(this.networkdir);
 		File[] listOfFiles = folder.listFiles(); 
+        Arrays.sort(listOfFiles);
 		for (int i = 0; i < listOfFiles.length; i++) {
 			if (listOfFiles[i].getName().startsWith("node_")) {
                 addSimulatedDeviceTreeNode(listOfFiles[i].getName());
@@ -364,18 +397,30 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         frame.pack();
         frame.setVisible(true);
         ui.setSelectedSensorTreeNode(null);
+        ui.devicesPane.setDividerLocation(0.5);
+        ui.mainPane.setDividerLocation(0.7);
     }
 
-    public static void runMasterServer(String masterdir) {
-        WKNetworkUI.childProcessManager.addChildProcess("master server", "python master_server.py", masterdir, 1);
+    public static void runMasterServer(String masterdir, String appdir) {
+        ArrayList<String> commandline = new ArrayList<String>();
+        commandline.add("python");
+        commandline.add("-u");        
+        commandline.add("master_server.py");
+        if (appdir != null)
+            commandline.add("-appdir=" + appdir);
+        WKNetworkUI.childProcessManager.addChildProcess("master", commandline, masterdir, 1);
     }
 
     public static void runVMs(String vmdir, String networkdir, java.util.List<NetworkConfigParser.VMNode> vmsToStart) {
         for(NetworkConfigParser.VMNode vm : vmsToStart) {
-            String commandline = String.format("./darjeeling.elf -i %d -d %s -e %s",
-                                                vm.clientId,
-                                                networkdir,
-                                                vm.enabledWuClassesXML.getAbsolutePath());
+            ArrayList<String> commandline = new ArrayList<String>();
+            commandline.add("./darjeeling.elf");
+            commandline.add("-i");
+            commandline.add(new Integer(vm.clientId).toString());
+            commandline.add("-d");
+            commandline.add(networkdir);
+            commandline.add("-e");
+            commandline.add(vm.enabledWuClassesXML.getAbsolutePath());
             WKNetworkUI.childProcessManager.addChildProcess("vm " + vm.clientId, commandline, vmdir, vm.clientId);
         }
     }
@@ -387,46 +432,90 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         //creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                boolean start_vms = true;
+                boolean start_master = true;
+                String wukong_root = "../../..";
+                String scenario = "dollhouse";
                 String networkdir = null;
+                String scenarioname = null;
                 String masterdir = null;
                 String vmdir = null;
                 String standardlibraryxml = null;
+                String appdir = null;
                 java.util.List<NetworkConfigParser.VMNode> vmsToStart = null;
 
                 for (int i=0; i<args.length; i++) {
-                    if (args[i].equals("-d")) {
+                    if (args[i].equals("-w")) {
+                        // Override the wukong root if the simulator isn't started from <wkroot>/wukong/tools/network_ui
+                        wukong_root = args[i+1];
+                        i++; // skip wukong root dir
+                    } else if (args[i].equals("-s")) {
+                        // Load a network config
+                        scenarioname = args[i+1];
+                        i++; // skip master dir
+                    } else if (args[i].equals("-d")) {
+                        // Set a network directory to monitor if no network config is loaded (or override it, but that's not very useful)
                         networkdir = args[i+1];
                         i++; // skip network dir
                     } else if (args[i].equals("-m")) {
+                        // Override the master directory
                         masterdir = args[i+1];
                         i++; // skip master dir
-                    } else if (args[i].equals("-c")) {
-                        NetworkConfigParser config = new NetworkConfigParser(args[i+1]);
-                        networkdir = config.pathToNetworkDirectory.getAbsolutePath();
-                        masterdir = config.pathToMasterServer.getAbsolutePath();
-                        vmdir = config.pathToVM.getAbsolutePath();
-                        standardlibraryxml = config.pathToStandardLibrary.getAbsolutePath();
-                        vmsToStart = config.nodes;
-                        i++; // skip master dir
                     } else if (args[i].equals("-l")) {
+                        // Override the standard library
                         standardlibraryxml = args[i+1];
                         i++; // skip standard library
+                    } else if (args[i].equals("-no-vms")) {
+                        // Don't start the VMs in the network config (so we can start them manually)
+                        start_vms = false;
+                    } else if (args[i].equals("-no-master")) {
+                        // Don't start the master server (so we can start it manually)
+                        start_master = false;
+                    } else {
+                        System.out.println("Options:");
+                        System.out.println("\t-w <wkroot>\tOverride the wukong root if the simulator isn't started from <wkroot>/wukong/tools/network_ui");
+                        System.out.println("\t-s <scenario>\tSet the scenario to load to <wkroot>/simulator_scenarios/<scenario>. Defaults to <wkroot>/wukong/dollhouse");
+                        System.out.println("\t-d <dir>\tOverride the simulated IO directory to monitor. Defaults to the scenario directory.");
+                        System.out.println("\t-m <dir>\tOverride the directory where the master server is located. Defaults to <wkroot>/wukong/master");
+                        System.out.println("\t-l <file>\tOverride the standard library location. Defaults to <wkroot>/wukong/ComponentDefinitions/WuKongStandardLibrary.xml");
+                        System.out.println("\t-no-vms\t\tStop the network UI from starting the VMs, so they may be run separately, for instance in a debugger.");
+                        System.out.println("\t-no-master\tStop the network UI from starting the master, so it may be run separately.");
+                        System.exit(1);
                     }
                 }
+
+                if (networkdir == null && scenarioname == null) {
+                    System.out.println("USING DEFAULT DOLLHOUSE SCENARIO.");
+                    scenarioname = "dollhouse";
+                }
+                if (scenarioname != null) {
+                    System.out.println("LOADING " + scenarioname + ".");
+                    NetworkConfigParser config = new NetworkConfigParser(wukong_root + "/wukong/simulator_scenarios/" + scenarioname + "/networkconfig.xml");
+                    networkdir = config.pathToNetworkDirectory.getAbsolutePath();
+                    vmsToStart = config.nodes;
+                    if (config.pathToMasterApplicationsDirectory != null)
+                        appdir = config.pathToMasterApplicationsDirectory.getAbsolutePath();
+                }
+
+                if (masterdir == null)
+                    masterdir = new File(wukong_root + "/wukong/master").getAbsolutePath();
+                if (vmdir == null)
+                    vmdir = new File(wukong_root + "/src/config/native-simulator").getAbsolutePath();
+                if (standardlibraryxml == null)
+                    standardlibraryxml = new File(wukong_root + "/wukong/ComponentDefinitions/WuKongStandardLibrary.xml").getAbsolutePath();
 
                 if (networkdir == null) {
                     System.err.println("Please specify at least the network directory.");
                     System.exit(1);
                 }
 
-                if (standardlibraryxml != null)
-                    WKNetworkUI.standardLibrary = new StandardLibraryParser(standardlibraryxml);
+                WKNetworkUI.standardLibrary = new StandardLibraryParser(standardlibraryxml);
                 WKNetworkUI.networkServer = new NetworkServer();
                 WKNetworkUI.networkServer.start();
                 createAndShowGUI(networkdir);
-                if (masterdir != null)
-                    runMasterServer(masterdir);
-                if (vmsToStart != null)
+                if (start_master)
+                    runMasterServer(masterdir, appdir);
+                if (start_vms && vmsToStart != null)
                     runVMs(vmdir, networkdir, vmsToStart);
             }
         });

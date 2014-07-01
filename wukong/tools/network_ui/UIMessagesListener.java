@@ -240,11 +240,11 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 		return "(" + command_name + ") " + sb.toString();
 	}
 
-	public void messageDropped(int src, int dest, int[] message){
+	public void messageDropped(int src, int dest, int[] message) {
 		String parsedCommand = parseMessage(message);
 		this.println("DROPPED MESSAGE from " + src + " to " + dest + ": " + parsedCommand);
 	}
-	public void messageSent(int src, int dest, int[] message){
+	public void messageSent(int src, int dest, int[] message) {
 		if (false) { // Useful for debugging
 			this.print("            ");
 			for (int i=0; i<message[0]; i++) {
@@ -256,11 +256,21 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 		this.println("Msg from " + src + " to " + dest + ": " + parsedCommand);
 	}
 
-	public void clientConnected(int client){
+	public void clientConnected(int client) {
 		this.println("Node " + client + " connected.");
 	}
 
-	public void clientDisconnected(int client){
+	public void clientDisconnected(int client) {
 		this.println("Node " + client + " disconnected.");
+	}
+
+	public void discovery(Integer[] ids) {
+		this.print("Discovery: " + ids.length + " clients (");
+		for (int i=0; i<ids.length; i++) {
+			this.print(ids[i].toString());
+			if (i != ids.length-1)
+				this.print(", ");
+		}
+		this.println(")");
 	}
 }

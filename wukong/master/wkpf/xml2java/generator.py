@@ -3,7 +3,6 @@
 
 import os, sys
 from xml.etree import ElementTree
-import xml.dom.minidom
 sys.path.append(os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../..")))
 from jinja2 import Template, Environment, FileSystemLoader
 from struct import pack
@@ -98,6 +97,12 @@ class Generator:
           component.deployid = component_index
           component_index = component_index + 1
     @staticmethod
+    def isLinkDestination(componentId, propertyId, changesets):
+        for link in changesets.links:
+            if link.to_component.deployid == componentId and link.to_property.id == propertyId:
+                return True
+        return False
+    @staticmethod
     def generateTablesXML(name, changesets):
         def generateProperties(wuobject_properties, component):
             properties = wuobject_properties
@@ -140,6 +145,10 @@ class Generator:
         for component in changesets.components:
             wuobject = component.instances[0]
             for property in generateProperties(wuobject.properties.values(), component):
+                if (Generator.isLinkDestination(component.deployid, property.id, changesets)):
+                    # This property is the destination for a link, so we shouldn't generate an entry in the init value table
+                    # The framework will get the initial value from the source component instead.
+                    continue
                 initvalue = ElementTree.SubElement(initvalues, 'initvalue')
                 initvalue.attrib['componentId'] = str(component.deployid)
                 initvalue.attrib['propertyNumber'] = str(property.id)
@@ -156,10 +165,4 @@ class Generator:
                     enumtype = property.wutype
                     enumvalues = [wuvalue.upper() for wuvalue in enumtype.values]
                     initvalue.attrib['value'] = str(enumvalues.index(property.value.upper())) # Translate the string representation to an integer
-        #tree.write(os.path.join(JAVA_OUTPUT_DIR, "WKDeploy.xml"))
-        rough_stri = ElementTree.tostring(root, 'utf-8')
-        xml_content = xml.dom.minidom.parseString(rough_stri)
-        pretty_stri = xml_content.toprettyxml()
-        fileout = open (os.path.join(JAVA_OUTPUT_DIR, "WKDeploy.xml"), "w")
-        fileout.write(pretty_stri)
-        fileout.close()
+        tree.write(os.path.join(JAVA_OUTPUT_DIR, "WKDeploy.xml"))

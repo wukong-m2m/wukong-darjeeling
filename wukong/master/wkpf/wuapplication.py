@@ -53,7 +53,6 @@ class WuApplication:
     self.wuComponents = {}
     self.wuLinkList = {}
     self.instanceIds = []
-    self.monitorProperties = {}
 
     self.changesets = ChangeSets([], [], [])
 
@@ -145,7 +144,7 @@ class WuApplication:
     except:
         self.app_name='noname';
     self.desc = config['desc']
-    self.dir = config['dir']
+    # self.dir = config['dir']
     self.xml = config['xml']
     try:
       dom = parseString(self.xml)
@@ -212,33 +211,17 @@ class WuApplication:
           for propertyTag in componentTag.getElementsByTagName('signalProperty'):
             for attr in propertyTag.attributes.values():
               properties[attr.name] = attr.value.strip()
-
-          
           index = componentTag.getAttribute('instanceId')
-          self.monitorProperties[index] = {}
-          
-	  # set monitoring properties index for components in application
-          for propertyTag in componentTag.getElementsByTagName('monitorProperty'):
-            for attr in propertyTag.attributes.values():
-              self.monitorProperties[index][attr.name] = attr.value.strip()
-
-          if index in self.instanceIds:
-            
-            #wucomponent already appears in other pages, merge property requirement, suppose location etc are the same
+          if index in self.instanceIds:  #wucomponent already appears in other pages, merge property requirement, suppose location etc are the same
             self.wuComponents[index].properties = dict(self.wuComponents[index].properties.items() + properties.items())
           else:
-            component = WuComponent(index, location, group_size, reaction_time, type, application_hashed_name, properties)
+            component = WuComponent(index, location, group_size, reaction_time, type,
+                  application_hashed_name, properties)
             componentInstanceMap[componentTag.getAttribute('instanceId')] = component
             self.wuComponents[componentTag.getAttribute('instanceId')] = component
             self.changesets.components.append(component)
             self.instanceIds.append(index)
 
-      # add server as component in node 0
-      component = WuComponent(1, '/'+LOCATION_ROOT, 1, 2.0, 'Server', 0, {})
-      componentInstanceMap[0] = component
-      self.wuComponents[0] = component
-      self.changesets.components.append(component)
-      self.instanceIds.append(0)
 
       #assumption: at most 99 properties for each instance, at most 999 instances
       linkSet = []  #store hashed result of links to avoid duplicated links: (fromInstanceId*100+fromProperty)*100000+toInstanceId*100+toProperty
@@ -259,17 +242,8 @@ class WuApplication:
                     to_component, to_property_name)
             self.wuLinkList[hash_value] = link
           self.changesets.links.append(self.wuLinkList[hash_value])
-      
-      #add monitoring related links
-      if(MONITORING == 'true'):
-          for instanceId, properties in self.monitorProperties.items():
-              for name in properties:
-                  hash_value = (int(instanceId)*100 + int(properties[name])*100000 + 0 + 0)
-                  if hash_value not in self.wuLinkList.keys():
-                      link = WuLink(componentInstanceMap[instanceId], name, componentInstanceMap[0], 'input')
-                      self.wuLinkList[hash_value] = link
-                  self.changesets.links.append(self.wuLinkList[hash_value])
           
+
   def cleanAndCopyJava(self):
     # clean up the directory
     if os.path.exists(JAVA_OUTPUT_DIR):
@@ -374,9 +348,6 @@ class WuApplication:
       self.logDeployStatus('Preparing to deploy to nodes %s' % (str(destination_ids)))
       remaining_ids = copy.deepcopy(destination_ids)
       gevent.sleep(0)
-
-      destination_ids.remove(1)
-      remaining_ids.remove(1    )
 
       for node_id in destination_ids:
         node = WuNode.node_dict[node_id]

@@ -1089,7 +1089,7 @@ def getMockAgent():
 def getAgent():
     return BrokerAgent.init()
 
-def getZwaveAgent():
+def getGatewayAgent():
     return RPCAgent.init()
 
 def getDeferredQueue():

@@ -1,8 +1,9 @@
-import pyzwave
+from configuration import *
+if WKPFCOMM_AGENT == "ZWAVE":
+  import pyzwave
 import pyzigbee
 import sys
 import os
-from configuration import *
 
 
 REPRG_DJ_OPEN                = 0x10
@@ -62,7 +63,6 @@ WKPF_ERROR_R                 = 0xAF
 DEBUG_TRACE_PART             = 0xB0
 DEBUG_TRACE_FINAL            = 0xB2
 LOGGING                      = 0xB4
-MONITORING                   = 0xB5
 
 APPMSG_STATUS_WAIT_ACK       = 0x00
 APPMSG_STATUS_ACK            = 0x01

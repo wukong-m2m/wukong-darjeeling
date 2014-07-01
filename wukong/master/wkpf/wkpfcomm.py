@@ -1,11 +1,14 @@
 # vi: ts=2 sw=2 expandtab
 import sys, time, copy
-from transportv2 import *
 from locationTree import *
 from models import *
 from globals import *
 from configuration import *
 import simulator
+if WKPFCOMM_AGENT == "GATEWAY":
+  from transportv2 import *
+else:
+  from transport import *
 
 # MUST MATCH THE SIZE DEFINED IN wkcomm.h
 WKCOMM_MESSAGE_PAYLOAD_SIZE=30
@@ -31,7 +34,9 @@ class Communication:
         if SIMULATION == "true":
           print "simulation mode"
           raise Exception('simulation', 'Set simulation in master.cfg to false if you do not want simulated discovery')
-        if WKPFCOMM_AGENT == "NETWORKSERVER":
+        if WKPFCOMM_AGENT == "GATEWAY":
+          self.zwave = getGatewayAgent()
+        elif WKPFCOMM_AGENT == "NETWORKSERVER":
           self.zwave = getNetworkServerAgent()
         else:
           self.zwave = getZwaveAgent()
@@ -75,10 +80,12 @@ class Communication:
         print '[wkpfcomm] getting all nodes from node discovery'
         WuNode.clearNodes()
         self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
-        WuNode.addVirtualNodes(wkpf.globals.virtual_nodes)
+        # This doesn't work on SAC2014 branch (fix was cherry picked from develop)
+        # It's probably needed on develop though.
+        # WuNode.addVirtualNodes(wkpf.globals.virtual_nodes)
         WuNode.saveNodes()
-        
-      
+
+
       return self.all_node_infos
 
     def updateAllNodeInfos(self):

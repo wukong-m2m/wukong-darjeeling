@@ -12,14 +12,14 @@ from gevent.queue import Queue
 import wusignal
 import time
 from configuration import *
-import globals
 from globals import *
 import socket # for NetworkServerAgent
 import select # for NetworkServerAgent
-from storage.model import sensor
-import ast
+import traceback
+
 import pynvc # for message constants
-import pyzwave
+if WKPFCOMM_AGENT == "ZWAVE":
+    import pyzwave
 import pyzigbee
 
 Message = namedtuple('Message', 'destination command payload')
@@ -96,8 +96,8 @@ class TransportAgent:
         gevent.spawn(self.receive)
 
     def getNextSequenceNumberAsPrefixPayload(self):
-        self._seq = (self._seq + 1) % (2**16)
-        return [self._seq/256, self._seq%256]
+      self._seq = (self._seq + 1) % (2**16)
+      return [self._seq/256, self._seq%256]
 
     # to be overridden, non-blocking, send defer to greelet thread
     def deferSend(self, destination, command, payload, allowed_replies, cb):
@@ -491,6 +491,7 @@ class NetworkServerAgent(TransportAgent):
             except Exception as e:
                 print '[transport] receive exception'
                 print e
+                traceback.print_tb(e.__traceback__)
 
             getDeferredQueue().removeTimeoutDefer()
 
@@ -668,10 +669,6 @@ class MockAgent(TransportAgent):
     def poll(self):
         return "Not availble"
 
-    def receive(self, timeout_msec = 10):
-        return True
-
-
     # to be run in a thread, and others will use ioloop to monitor this thread
     def handler(self):
         while 1:
@@ -706,14 +703,7 @@ class BrokerAgent:
             print '[transport] getting messages from nodes'
             print '[transport] ' + str(deliver)
 
-            # insert monitoring message into database
-            if deliver.command == pynvc.MONITORING:
-                data_collection = sensor.SensorData.createByPayload(deliver.destination, deliver.payload)
-                print(data_collection.toDocument())
-                globals.mongoDBClient.wukong.readings.insert(ast.literal_eval(data_collection.toDocument()))
-
             # display logs from nodes if received
-            print deliver.command
             if deliver.command == pynvc.LOGGING:
                 print '[transport] node %d : %s' % (deliver.destination,
                             str(bytearray(deliver.payload)))
