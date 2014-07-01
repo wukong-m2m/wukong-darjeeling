@@ -8,7 +8,7 @@
 // 1 byte: command
 // 2 bytes: seqnr
 // TODONR: higher payload sizes seem to cause problems in the uart.
-#define WKCOMM_MESSAGE_PAYLOAD_SIZE     40
+#define WKCOMM_MESSAGE_PAYLOAD_SIZE     30
 
 #define WKCOMM_SEND_OK					 0
 #define WKCOMM_SEND_ERR_TOO_LONG		 3
@@ -19,7 +19,7 @@
 
 // WuKong address. For now it's just a byte, but this will probably change.
 // When it does, we need to change the component-node map as well
-typedef uint16_t wkcomm_address_t;
+typedef uint32_t wkcomm_address_t;
 
 typedef struct wkcomm_received_msg {
 	wkcomm_address_t src;

@@ -10,8 +10,8 @@
 #include "wkpf_wuobjects.h"
 #include "wkpf_properties.h"
 
-#define NUMBER_OF_WUCLASSES_PER_MESSAGE 9
-#define NUMBER_OF_WUOBJECTS_PER_MESSAGE 9
+#define NUMBER_OF_WUCLASSES_PER_MESSAGE ((WKCOMM_MESSAGE_PAYLOAD_SIZE-3)/3)
+#define NUMBER_OF_WUOBJECTS_PER_MESSAGE ((WKCOMM_MESSAGE_PAYLOAD_SIZE-3)/4)
 
 uint8_t send_message(wkcomm_address_t dest_node_id, uint8_t command, uint8_t *payload, uint8_t length) {
 	// Print some debug info
@@ -163,7 +163,7 @@ void wkpf_comm_handle_message(void *data) {
 			response_size = 1;
 		}
 		break;
-		case WKPF_COMM_CMD_GET_FEATURES: {
+		/*case WKPF_COMM_CMD_GET_FEATURES: {
 			int count = 0;
 			for (int i=0; i<WKPF_NUMBER_OF_FEATURES; i++) { // Needs to be changed if we have more features than fits in a single message, but for now it will work fine.
 				if (wkpf_config_get_feature_enabled(i)) {
@@ -186,7 +186,7 @@ void wkpf_comm_handle_message(void *data) {
 				response_size = 1;
 			}
 		}
-		break;
+		break;*/
 		case WKPF_COMM_CMD_GET_WUCLASS_LIST: {
 			// Request format: payload[0] request message number
 			// Response format: payload[0] response message number

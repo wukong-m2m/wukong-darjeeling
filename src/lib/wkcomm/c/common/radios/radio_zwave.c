@@ -24,9 +24,9 @@
 
 #define ZWAVE_TRANSMIT_OPTION_ACK                                0x01   //request acknowledge from destination node
 #define ZWAVE_TRANSMIT_OPTION_LOW_POWER                          0x02   // transmit at low output power level (1/3 of normal RF range)
-#define ZWAVE_TRANSMIT_OPTION_RETURN_ROUTE                       0x04   // request transmission via return route 
-#define ZWAVE_TRANSMIT_OPTION_AUTO_ROUTE                         0x04   // request retransmission via repeater nodes 
-#define ZWAVE_TRANSMIT_OPTION_NO_ROUTE                           0x10   // do not use response route - Even if available 
+#define ZWAVE_TRANSMIT_OPTION_RETURN_ROUTE                       0x04   // request transmission via return route
+#define ZWAVE_TRANSMIT_OPTION_AUTO_ROUTE                         0x04   // request retransmission via repeater nodes
+#define ZWAVE_TRANSMIT_OPTION_NO_ROUTE                           0x10   // do not use response route - Even if available
 
 #define ZWAVE_STATUS_WAIT_ACK        0
 #define ZWAVE_STATUS_WAIT_SOF        1
@@ -58,7 +58,7 @@
 // radio_zwave data
 radio_zwave_address_t radio_zwave_my_address = 0;
 bool radio_zwave_my_address_loaded = false;
-uint8_t radio_zwave_receive_buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+4+3]; // 4 for Zwave overhead, 3 for wkcomm overhead
+uint8_t radio_zwave_receive_buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+4+3+10]; // 4 for Zwave overhead, 3 for wkcomm overhead, 10 for MPTN overhead
 
 // zwave protocol data
 uint8_t state;        // Current state
@@ -105,40 +105,40 @@ void radio_zwave_poll(void) {
     if(zwave_mode==0 || zwave_learn_on)//normal mode or is learning
     {
         radio_zwave_platform_dependent_poll();
-	    if( zwave_btn_is_release==true )
-	    {
-		    if( (zwave_time_btn_release-zwave_time_btn_push)<5000 )//push btn <5s go to learning mode
-		    {
-			    if(zwave_learn_on)//push btn in learning mode -> stop learning
-				    zwave_time_learn_start=0;//timeout stop learning
-			    else//push btn in normal mode -> start learning
-				    zwave_mode=1;
-		    }				
-		    else//push btn >5s go to reset mode
-		    {
-			    zwave_mode=2;
-		    }
-		    zwave_btn_is_release=false;
-	    }
+        if( zwave_btn_is_release==true )
+        {
+            if( (zwave_time_btn_release-zwave_time_btn_push)<5000 )//push btn <5s go to learning mode
+            {
+                if(zwave_learn_on)//push btn in learning mode -> stop learning
+                    zwave_time_learn_start=0;//timeout stop learning
+                else//push btn in normal mode -> start learning
+                    zwave_mode=1;
+            }
+            else//push btn >5s go to reset mode
+            {
+                zwave_mode=2;
+            }
+            zwave_btn_is_release=false;
+        }
     }
     if(zwave_mode==1)//learning mode
     {
-	    DEBUG_LOG(DBG_ZWAVETRACE,"start zwave learn !!!!!!!!!");
-// see issue 115 		PORTK &=~_BV(1);
-	    radio_zwave_learn();//finish will set zwave mode=0
+        DEBUG_LOG(DBG_ZWAVETRACE,"start zwave learn !!!!!!!!!");
+        // see issue 115         PORTK &=~_BV(1);
+        radio_zwave_learn();//finish will set zwave mode=0
     }
     else if(zwave_mode==2)//reset mode
     {
-	    DEBUG_LOG(DBG_ZWAVETRACE,"start zwave reset !!!!!!!!!");
-	    radio_zwave_reset();
-	    zwave_mode=0;
+        DEBUG_LOG(DBG_ZWAVETRACE,"start zwave reset !!!!!!!!!");
+        radio_zwave_reset();
+        zwave_mode=0;
 
     }
     if (zwave_learn_on) {
-	    radio_zwave_learn();
+        radio_zwave_learn();
     }
     if (uart_available(ZWAVE_UART, 0))
-    {    
+    {
         DEBUG_LOG(DBG_ZWAVETRACE, "data_available\n");
         Zwave_receive(1);
     }
@@ -146,12 +146,12 @@ void radio_zwave_poll(void) {
 
 extern void radio_zwave_platform_dependent_init(void); // from radio_zwave_platform_dependent.c
 void radio_zwave_init(void) {
-// see issue 115     set_output(DDRK,0);
-// see issue 115     set_output(DDRK,1);
-// see issue 115     set_output(DDRK,2);
-// see issue 115     set_output(DDRK,3);
+    // see issue 115     set_output(DDRK,0);
+    // see issue 115     set_output(DDRK,1);
+    // see issue 115     set_output(DDRK,2);
+    // see issue 115     set_output(DDRK,3);
 
-// see issue 115     output_high(PORTK,0);
+    // see issue 115     output_high(PORTK,0);
     uart_inituart(ZWAVE_UART, ZWAVE_UART_BAUDRATE);
 
     // Clear existing queue on Zwave
@@ -162,8 +162,8 @@ void radio_zwave_init(void) {
         uart_read_byte(ZWAVE_UART);
     }
 
-// see issue 115     output_high(PORTK,1);
-   
+    // see issue 115     output_high(PORTK,1);
+
     // TODO: why is this here?
     // for(i=0;i<100;i++)
     //   mainloop();
@@ -188,34 +188,34 @@ void radio_zwave_init(void) {
             if (uart_available(ZWAVE_UART, 150))
                 radio_zwave_poll();
         }
-// see issue 115     	output_high(PORTK,2);
-        if(!radio_zwave_my_address_loaded) { // Can't read address -> panic 
-	    unsigned char softreset[] = {ZWAVE_TYPE_REQ, FUNC_ID_SERIAL_API_SOFT_RESET};
-	    SerialAPI_request(softreset, 2);
-	    while (uart_available(ZWAVE_UART, 150)) {
-		uart_read_byte(ZWAVE_UART);
-	    }
+        // see issue 115         output_high(PORTK,2);
+        if(!radio_zwave_my_address_loaded) { // Can't read address -> panic
+            unsigned char softreset[] = {ZWAVE_TYPE_REQ, FUNC_ID_SERIAL_API_SOFT_RESET};
+            SerialAPI_request(softreset, 2);
+            while (uart_available(ZWAVE_UART, 150)) {
+                uart_read_byte(ZWAVE_UART);
+            }
             //dj_panic(WKCOMM_PANIC_INIT_FAILED);
-	    retries=10;
-// see issue 115 	    output_low(PORTK,1);
-// see issue 115 	    output_low(PORTK,2);
-	}
+            retries=10;
+            // see issue 115         output_low(PORTK,1);
+            // see issue 115         output_low(PORTK,2);
+        }
         if (radio_zwave_my_address != previous_received_address) { // Sometimes I get the wrong address. Only accept if we get the same address twice in a row. No idea if this helps though, since I don't know what's going on exactly.
             radio_zwave_my_address_loaded = false;
             previous_received_address = radio_zwave_my_address;
         }
     }
-// see issue 115     output_high(PORTK,3);
+    // see issue 115     output_high(PORTK,3);
     //    if(!radio_zwave_my_address_loaded) // Can't read address -> panic
     DEBUG_LOG(DBG_WKCOMM, "My Zwave node_id: %d\n", radio_zwave_my_address);
     radio_zwave_platform_dependent_init();
 
     dj_timer_delay(wait_RF_ready);
-	radio_zwave_set_node_info(0,0xff, 0);
+    radio_zwave_set_node_info(0,0xff, 0);
 }
 
 radio_zwave_address_t radio_zwave_get_node_id() {
-	return radio_zwave_my_address;
+    return radio_zwave_my_address;
 }
 
 uint8_t radio_zwave_send(radio_zwave_address_t zwave_addr, uint8_t *payload, uint8_t length) {
@@ -228,7 +228,7 @@ uint8_t radio_zwave_send(radio_zwave_address_t zwave_addr, uint8_t *payload, uin
     }
     DEBUG_LOG(DBG_WKCOMM, "\n");
 #endif // DBG_WKCOMM
-	DEBUG_LOG(true, "send %d bytes to %d\n", length,zwave_addr);
+    DEBUG_LOG(true, "send %d bytes to %d\n", length,zwave_addr);
     for (int16_t i=0; i<length; ++i) {
         DEBUG_LOG(true, " %02x", payload[i]);
     }
@@ -247,7 +247,7 @@ uint8_t radio_zwave_send_raw(radio_zwave_address_t zwave_addr, uint8_t *payload,
     }
     DEBUG_LOG(DBG_WKCOMM, "\n");
 #endif // DBG_WKCOMM
-	DEBUG_LOG(true, "send %d bytes to %d\n", length,zwave_addr);
+    DEBUG_LOG(true, "send %d bytes to %d\n", length,zwave_addr);
     for (int16_t i=0; i<length; ++i) {
         DEBUG_LOG(true, " %02x", payload[i]);
     }
@@ -299,7 +299,7 @@ void Zwave_receive(int processmessages) {
                 ack_got=0;
             } else if (c == 1) {
                 state = ZWAVE_STATUS_WAIT_LEN;
-                len = 0;  
+                len = 0;
             } else {
                 DEBUG_LOG(DBG_WKCOMM, "Unexpected byte while waiting for ACK %x\n", c);
             }
@@ -338,8 +338,8 @@ void Zwave_receive(int processmessages) {
             }
             if (type == ZWAVE_TYPE_REQ && cmd == ZWAVE_CMD_APPLICATIONCOMMANDHANDLER) {
                 routing_handle_zwave_message(radio_zwave_receive_buffer[1],
-                                             radio_zwave_receive_buffer+4,
-                                             payload_length-4);
+                        radio_zwave_receive_buffer+4,
+                        payload_length-4);
             }
             if (cmd == FUNC_ID_MEMORY_GET_ID) {
                 if (!radio_zwave_my_address_loaded) {
@@ -353,7 +353,7 @@ void Zwave_receive(int processmessages) {
             if (cmd == 0x50) {
                 if(radio_zwave_receive_buffer[1]==0x01) {
                     zwave_learn_block = 1;
-                    //	   DEBUG_LOG(DBG_WKCOMM, "zwave radio_zwave_receive_buffer block !!!!!!!!!!!!!!!!");
+                    //       DEBUG_LOG(DBG_WKCOMM, "zwave radio_zwave_receive_buffer block !!!!!!!!!!!!!!!!");
                 }
                 else if(radio_zwave_receive_buffer[1]==6) {//network stop, learn off
                     unsigned char b[10];
@@ -376,7 +376,7 @@ void Zwave_receive(int processmessages) {
                     zwave_learn_on=0;
                     zwave_learn_block=0;
                     zwave_mode=0;
-// see issue 115 					PORTK |=_BV(1);
+                    // see issue 115                     PORTK |=_BV(1);
                 }
             }
         }
@@ -428,7 +428,7 @@ void radio_zwave_set_node_info(uint8_t devmask,uint8_t generic, uint8_t specific
 void radio_zwave_learn() {
     unsigned char b[10];
     unsigned char onoff=1;
-    int k;    
+    int k;
     if(zwave_learn_on==false)
     {
         zwave_time_learn_start=dj_timer_getTimeMillis();
@@ -458,11 +458,11 @@ void radio_zwave_learn() {
         b[4] = onoff;//off
         b[5] = seq;
         b[6] = 0xff^5^0^0x50^onoff^seq;
-        seq++;	   
+        seq++;
         for(k=0;k<7;k++)
         {
             uart_write_byte(ZWAVE_UART, b[k]);
-        }  
+        }
         zwave_learn_on=false;
         zwave_learn_block=0;
         zwave_mode=0;
@@ -487,7 +487,7 @@ int SerialAPI_request(unsigned char *buf, int len)
         // read out pending request from Z-Wave
         if (uart_available(ZWAVE_UART, 0))
             Zwave_receive(0); // Don't process received messages
-        if (state != ZWAVE_STATUS_WAIT_SOF) {	// wait for WAIT_SOF state (idle state)
+        if (state != ZWAVE_STATUS_WAIT_SOF) {    // wait for WAIT_SOF state (idle state)
             DEBUG_LOG(DBG_WKCOMM, "SerialAPI is not in ready state!!!!!!!!!! zstate=%d\n", state);
             DEBUG_LOG(DBG_WKCOMM, "Try to send SerialAPI command in a wrong state......\n");
             dj_timer_delay(100);
@@ -519,13 +519,13 @@ int SerialAPI_request(unsigned char *buf, int len)
 
         // get SerialAPI ack
         if (uart_available(ZWAVE_UART, 1000)) {
-            radio_zwave_poll();			
+            radio_zwave_poll();
             if (ack_got == 1) {
                 return 0;
             } else {
                 DEBUG_LOG(DBG_WKCOMM, "Ack error!!! zstate=%d ack_got=%d\n", state, ack_got);
             }
-        } 
+        }
         if (state == ZWAVE_STATUS_WAIT_ACK) {
             state = ZWAVE_STATUS_WAIT_SOF; // Give up and don't get stuck in the WAIT_ACK state
             DEBUG_LOG(DBG_WKCOMM, "Back to WAIT_SOF state.\n");
@@ -545,21 +545,21 @@ int SerialAPI_request(unsigned char *buf, int len)
 }
 
 /*
-int ZW_GetRoutingInformation(uint8_t id)
-{
-    unsigned char buf[255];
+   int ZW_GetRoutingInformation(uint8_t id)
+   {
+   unsigned char buf[255];
 
-    buf[0] = ZW_REQ;
-    buf[1] = GetRoutingInformation;
-    buf[2] = id;
-    if (SerialAPI_request(buf, 3) != 0)
-      return -1;
-}
-*/
+   buf[0] = ZW_REQ;
+   buf[1] = GetRoutingInformation;
+   buf[2] = id;
+   if (SerialAPI_request(buf, 3) != 0)
+   return -1;
+   }
+   */
 
 int ZW_sendData(uint8_t id, uint8_t *in, uint8_t len, uint8_t txoptions)
 {
-    unsigned char buf[WKCOMM_MESSAGE_PAYLOAD_SIZE+10];
+    unsigned char buf[WKCOMM_MESSAGE_PAYLOAD_SIZE+10+7+3]; // 10 for MPTN overhead, 7 for ZW overhead, 3 for wkcomm overhead
     int i;
     int timeout = 1000;
     zwsend_ack_got = -1;
@@ -583,12 +583,12 @@ int ZW_sendData(uint8_t id, uint8_t *in, uint8_t len, uint8_t txoptions)
         return 0;
     else {
         DEBUG_LOG(DBG_WKCOMM, "========================================ZW_sendDATA ack got: %x\n", zwsend_ack_got);
-        return -1;    
+        return -1;
     }
 }
 int ZW_sendDataRaw(uint8_t id, uint8_t *in, uint8_t len, uint8_t txoptions)
 {
-    unsigned char buf[WKCOMM_MESSAGE_PAYLOAD_SIZE+10];
+    unsigned char buf[WKCOMM_MESSAGE_PAYLOAD_SIZE+10+7+3]; // 10 for MPTN overhead, 7 for ZW overhead, 3 for wkcomm overhead
     int i;
     int timeout = 1000;
     zwsend_ack_got = -1;
@@ -611,7 +611,7 @@ int ZW_sendDataRaw(uint8_t id, uint8_t *in, uint8_t len, uint8_t txoptions)
         return 0;
     else {
         DEBUG_LOG(DBG_WKCOMM, "========================================ZW_sendDATA ack got: %x\n", zwsend_ack_got);
-        return -1;    
+        return -1;
     }
 }
 //===================================================================================================================
@@ -619,26 +619,26 @@ int ZW_sendDataRaw(uint8_t id, uint8_t *in, uint8_t len, uint8_t txoptions)
 //===================================================================================================================
 
 
-// 
+//
 // public:
 //   int getType() {
 //     return type;
 //   }
 //   void DisplayNodeInfo() {
 //     char buf[128];
-//     
+//
 //     snprintf(buf,64,"Status=%d Node=%d Device=%d:%d:%d\n", radio_zwave_receive_buffer[0],radio_zwave_receive_buffer[1],radio_zwave_receive_buffer[3],radio_zwave_receive_buffer[4],radio_zwave_receive_buffer[5]);
 //     Serial.write(buf);
 //   }
-//   
-// 
-// 
-//   
+//
+//
+//
+//
 //   // Include or exclude node from the network
 //   void networkIncludeExclude(byte t,byte m) {
 //     byte b[10];
 //     int k;
-//   
+//
 //     b[0] = 1;
 //     b[1] = 5;
 //     b[2] = 0;
@@ -650,13 +650,13 @@ int ZW_sendDataRaw(uint8_t id, uint8_t *in, uint8_t len, uint8_t txoptions)
 //     for(k=0;k<7;k++)
 //       Serial1.write(b[k]);
 //   }
-//   
+//
 //   // Reset the ZWave module to the factory default value. This must be called carefully since it will make
 //   // the network unusable.
 //   void reset() {
 //     byte b[10];
 //     int k;
-//   
+//
 //     b[0] = 1;
 //     b[1] = 4;
 //     b[2] = 0;
@@ -666,30 +666,30 @@ int ZW_sendDataRaw(uint8_t id, uint8_t *in, uint8_t len, uint8_t txoptions)
 //     seq++;
 //     for(k=0;k<6;k++)
 //       Serial1.write(b[k]);
-//         
+//
 //   }
 //   // Start inclusion procedure to add a new node
 //   void includeAny() {networkIncludeExclude(0x4A,1);}
-// 
+//
 //   // Stop inclusion/exclusion procedure
 //   void LearnStop() {networkIncludeExclude(0x4A,5);}
-// 
+//
 //   // Start exclusion procedure
 //   void excludeAny() {networkIncludeExclude(0x4B,1);}
-// 
+//
 //   // Set the value of a node
 //   void set(byte id,byte v,byte option) {
 //     byte b[3];
-//     
+//
 //     b[0] = 0x20;
 //     b[1] = 1;
 //     b[2] = v;
 //     send(id,b,3,option);
 //   }
 // };
-// 
+//
 // ZWaveClass ZWave;
-// 
+//
 // void offack(byte *b,int len)
 // {
 //   if (ZWave.getType() == 0) {
@@ -700,9 +700,9 @@ int ZW_sendDataRaw(uint8_t id, uint8_t *in, uint8_t len, uint8_t txoptions)
 //       Serial.write("Timeout\n");
 //       ZWave.callback(onack);
 //       ZWave.set(last_node,255,5);
-//   } 
+//   }
 // }
-// 
+//
 // void onack(byte *b,int len)
 // {
 //   if (ZWave.getType() == 0) {
@@ -715,21 +715,21 @@ int ZW_sendDataRaw(uint8_t id, uint8_t *in, uint8_t len, uint8_t txoptions)
 //       ZWave.set(last_node,0,5);
 //   }
 // }
-// 
+//
 // void include_cb(byte *b,int len)
 // {
 //   char buf[64];
-//   
+//
 //   snprintf(buf,64,"Status=%d Node=%d\n", b[0],b[1]);
 // }
-// 
+//
 // void exclude_cb(byte *b,int len)
 // {
 //   char buf[64];
-//   
+//
 //   snprintf(buf,64,"Status=%d Node=%d\n", b[0],b[1]);
 // }
-// 
+//
 // void help()
 // {
 //   Serial.write("a: Include a new node\n");
@@ -738,11 +738,11 @@ int ZW_sendDataRaw(uint8_t id, uint8_t *in, uint8_t len, uint8_t txoptions)
 //   Serial.write("t: test the current node\n");
 //   Serial.write("Press the program button of the node to change the current node\n");
 // }
-//   
+//
 // void loop()
 // {
 //   if (ZWave.mainloop()) {
-//     
+//
 //   }
 //   if (Serial.available()) {
 //     byte c = Serial.read();
@@ -763,7 +763,7 @@ int ZW_sendDataRaw(uint8_t id, uint8_t *in, uint8_t len, uint8_t txoptions)
 //     }
 //   }
 // }
-//   
+//
 
 
 
