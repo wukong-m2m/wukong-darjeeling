@@ -9,40 +9,40 @@ class AutoNet:
         self._delete_device = transport_delete
         self._stop_learning = transport_stop
 
-        def _read_number(self):
-            c = port.read()
-            if c != '':
-                return ord(c)
-            return 0
+    def _read_number(self):
+        c = port.read()
+        if c != '':
+            return ord(c)
+        return 0
 
-        def get_gateway_mac_address(self):
-            while True:
-                command = ReadNumber()
-                if command == 1:
-                    num = ReadNumber()
-                    device_list = []
-                    for i in xrange(num):
-                        device_list.append(ReadNumber())
-                    # TODO: mac_address should be a list with 8 items of 1 byte!
-                    gateway_mac_address = device_list[0]
-                    break
-                time.sleep(0.01)
-            return gateway_mac_address
+    def get_gateway_mac_address(self):
+        while True:
+            command = ReadNumber()
+            if command == 1:
+                num = ReadNumber()
+                device_list = []
+                for i in xrange(num):
+                    device_list.append(ReadNumber())
+                # TODO: mac_address should be a list with 8 items of 1 byte!
+                gateway_mac_address = device_list[0]
+                break
+            time.sleep(0.01)
+        return gateway_mac_address
 
-        def serve_autonet(self):
-            while True:
-                command = ReadNumber()
-                if command == 1:
-                    num = ReadNumber()
-                    device_list = []
-                    for i in xrange(num):
-                        device_list.append(ReadNumber())
+    def serve_autonet(self):
+        while True:
+            command = ReadNumber()
+            if command == 1:
+                num = ReadNumber()
+                device_list = []
+                for i in xrange(num):
+                    device_list.append(ReadNumber())
 
-                elif command == 2: # add
-                    new_device_mac_address = ReadNumber()
-                    self._add_device()
+            elif command == 2: # add
+                new_device_mac_address = ReadNumber()
+                self._add_device()
 
-                elif command == 3: # delete
-                    del_device_mac_address = ReadNumber()
-                    self._delete_device()
-                gevent.sleep(0.01)
+            elif command == 3: # delete
+                del_device_mac_address = ReadNumber()
+                self._delete_device()
+            gevent.sleep(0.01)
