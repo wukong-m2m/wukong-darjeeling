@@ -1,7 +1,7 @@
 try:
     import netifaces
 except:
-    print "Please install the bitarray module from pypi"
+    print "Please install the netifaces module from pypi"
     print "e.g. sudo pip install netifaces"
     exit(-1)
 
