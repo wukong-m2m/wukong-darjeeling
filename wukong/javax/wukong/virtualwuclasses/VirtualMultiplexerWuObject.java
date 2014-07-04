@@ -30,22 +30,21 @@ public class VirtualMultiplexerWuObject extends GENERATEDVirtualMultiplexerWuObj
         input_component[2] = (short)(input2/100);
         input_component[3] = (short)(input3/100);
         input_component[4] = (short)(input4/100);
-        //System.out.println("input1:"+input_component[1]+", input2:"+input_component[2]+", input3:"+input_component[3]+", input4:"+input_component[4]+", output:"+output_component+", currentsrc:"+current_src+", currentdest:"+current_dest);
+        System.out.println("input0:" + input_component[0] +", input1:"+input_component[1]+", input2:"+input_component[2]);
         boolean rtval = false;
-        if (selector< 10 && (input_component[0] !=input_component[2])){
+        System.out.println("WKPFUPDATE(Multiplexer): current_src is " + current_src +" input1:"+input1+" input2:"+input2 +", selector:"+selector);
+        if (selector< 10 && (input_component[0] !=input_component[2])) {
+          System.out.println("about to update from "+ input1+ " to " + input2);
           rtval = WKPF.updateLinking(multiplexer_component_id, input_component[1], input_port[1], output_component, output_port, 
                                            input_component[2], input_port[2], output_component, output_port);
-          if (rtval) {
-            WKPF.setPropertyShort(this, CURRENT_SRC, input2);
-            System.out.println("WKPFUPDATE(Multiplexer): current_src set to input[2]");
-          }
-        } else if (selector > 10 && (input_component[0] !=input_component[1])){
+          WKPF.setPropertyShort(this, CURRENT_SRC, input2);
+          System.out.println("WKPFUPDATE(Multiplexer): current_src set to input[2]:"+input2);
+        } else if (selector > 10 && (input_component[0] !=input_component[1])) {
+          System.out.println("about to update from "+ input2+ " to " + input1);
           rtval = WKPF.updateLinking(multiplexer_component_id, input_component[2], input_port[2], output_component, output_port, 
                                            input_component[1], input_port[1], output_component, output_port);
-          if (rtval) {
-            WKPF.setPropertyShort(this, CURRENT_SRC, input1);
-            System.out.println("WKPFUPDATE(Multiplexer): current_src set to input[1]");
-          }
+          WKPF.setPropertyShort(this, CURRENT_SRC, input1);
+          System.out.println("WKPFUPDATE(Multiplexer): current_src set to input[1]:"+input1);
         }
         
         System.out.println("WKPFUPDATE(Multiplexer): triggered"+ selector);
