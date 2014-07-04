@@ -18,6 +18,11 @@ extern bool wkpf_component_is_locked(uint16_t dest_component_id);
 extern uint8_t wkpf_send_set_linktable(wkcomm_address_t dest_node_id, uint16_t src_component_id, uint16_t dest_component_id, uint16_t orig_link_src_component_id, uint8_t orig_link_src_property_id, 
                                 uint16_t orig_link_dest_component_id, uint8_t orig_link_dest_property_id, uint16_t new_link_src_component_id, 
                                 uint8_t new_link_src_property_id, uint16_t new_link_dest_component_id, uint8_t new_link_dest_property_id);
+
+extern uint8_t wkpf_send_set_linktable_no_token(wkcomm_address_t dest_node_id, uint16_t src_component_id, uint16_t dest_component_id, uint16_t orig_link_src_component_id, uint8_t orig_link_src_property_id, 
+                                uint16_t orig_link_dest_component_id, uint8_t orig_link_dest_property_id, uint16_t new_link_src_component_id, 
+                                uint8_t new_link_src_property_id, uint16_t new_link_dest_component_id, uint8_t new_link_dest_property_id);
+
                                 
 extern uint8_t wkpf_send_monitor_property_int16(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t property_number, int16_t value);
 extern uint8_t wkpf_send_monitor_property_boolean(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t property_number, bool value);

@@ -3,5 +3,6 @@
     <WuClass name="Light_Sensor" appCanCreateInstances="false" createInstancesAtStartup="1" />
     <WuClass name="Light_Actuator" appCanCreateInstances="false" createInstancesAtStartup="1" />
     <WuClass name="Numeric_Controller" appCanCreateInstances="false" createInstancesAtStartup="1" />
+    <WuClass name="LED" appCanCreateInstances="false" createInstancesAtStartup="1" />
     <WuClass name="Slider" appCanCreateInstances="false" createInstancesAtStartup="1" />
 </WuKong>

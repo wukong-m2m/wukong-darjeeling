@@ -189,6 +189,33 @@ uint8_t wkpf_send_set_linktable(wkcomm_address_t dest_node_id, uint16_t src_comp
 	return send_message(dest_node_id, WKPF_COMM_CMD_CHANGE_LINK, message_buffer, 12 + piggy_message_length);
 }
 
+uint8_t wkpf_send_set_linktable_no_token(wkcomm_address_t dest_node_id, uint16_t src_component_id, uint16_t dest_component_id, uint16_t orig_link_src_component_id, uint8_t orig_link_src_property_id, 
+                                uint16_t orig_link_dest_component_id, uint8_t orig_link_dest_property_id, uint16_t new_link_src_component_id, 
+                                uint8_t new_link_src_property_id, uint16_t new_link_dest_component_id, uint8_t new_link_dest_property_id) {
+	uint8_t message_buffer[12 + WKPF_MAX_NUM_OF_TOKENS * 2 +5];    
+	//first 6 bytes for original link info, latter 6 bytes for new link info to be changed to
+	message_buffer[0] = (uint8_t)(orig_link_src_component_id >> 8);
+	message_buffer[1] = (uint8_t)(orig_link_src_component_id);
+	message_buffer[2] = (uint8_t)(orig_link_src_property_id);
+	message_buffer[3] = (uint8_t)(orig_link_dest_component_id >> 8);
+	message_buffer[4] = (uint8_t)(orig_link_dest_component_id);
+	message_buffer[5] = (uint8_t)(orig_link_dest_property_id);
+	
+	message_buffer[6] = (uint8_t)(new_link_src_component_id >> 8);
+	message_buffer[7] = (uint8_t)(new_link_src_component_id);
+	message_buffer[8] = (uint8_t)(new_link_src_property_id);
+	message_buffer[9] = (uint8_t)(new_link_dest_component_id >> 8);
+	message_buffer[10] = (uint8_t)(new_link_dest_component_id);
+	message_buffer[11] = (uint8_t)(new_link_dest_property_id);
+	//5 bytes of piggybackedmessage 
+	message_buffer[12] = (uint8_t)(src_component_id >> 8);
+	message_buffer[13] = (uint8_t)(src_component_id);
+	message_buffer[14] = (uint8_t)(dest_component_id >> 8);
+	message_buffer[15] = (uint8_t)(dest_component_id);
+	//how many tokens are to be exchanged
+	message_buffer[16] = 0;
+	return send_message(dest_node_id, WKPF_COMM_CMD_CHANGE_LINK, message_buffer, 12 + 5);
+}
 
 uint8_t wkpf_send_monitor_property_int16(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, int16_t value) {
     uint8_t message_buffer[6];
