@@ -19,6 +19,7 @@ void wuclass_binary_sensor_update(wuobject_t *wuobject) {
   bool currentValue = 0;
   currentValue = input_get(PINE, 3);
 
+/*
   short *delay;
   delay = wuclass_binary_sensor_getPrivateData(wuobject);
 
@@ -55,8 +56,9 @@ void wuclass_binary_sensor_update(wuobject_t *wuobject) {
     }
   }
 #endif
+*/
+  wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_BINARY_SENSOR_CURRENT_VALUE, currentValue);
 
-  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(BinarySensor): Sensed binary value hihihihihi: %d\n", currentValue);
-  DEBUG_LOG(DBG_WKPFUPDATE, "done %d\n", currentValue);
+  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(BinarySensor): Sensed binary value: %d\n", currentValue);
   
 }

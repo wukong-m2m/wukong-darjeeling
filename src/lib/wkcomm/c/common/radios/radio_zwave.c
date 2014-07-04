@@ -153,6 +153,7 @@ void radio_zwave_init(void) {
 
 // see issue 115     output_high(PORTK,0);
     uart_inituart(ZWAVE_UART, ZWAVE_UART_BAUDRATE);
+    radio_zwave_platform_dependent_init();
 
     // Clear existing queue on Zwave
     DEBUG_LOG(DBG_WKCOMM, "Sending NAK\n");
@@ -208,7 +209,7 @@ void radio_zwave_init(void) {
 // see issue 115     output_high(PORTK,3);
     //    if(!radio_zwave_my_address_loaded) // Can't read address -> panic
     DEBUG_LOG(DBG_WKCOMM, "My Zwave node_id: %d\n", radio_zwave_my_address);
-    radio_zwave_platform_dependent_init();
+    //radio_zwave_platform_dependent_init();
 
     dj_timer_delay(wait_RF_ready);
 	radio_zwave_set_node_info(0,0xff, 0);

@@ -25,6 +25,9 @@
 #include "types.h"
 #include "program_mem.h"
 
+
+#define INFUSION_FORMAT_VERSION 1
+
 enum ElementType
 {
 	HEADER = 0,
@@ -79,8 +82,8 @@ enum JavaTypeID
 #define dj_di_staticFieldInfo_getNrLongs(pointer) dj_di_getU8(pointer + 5)
 
 // getters for the Header record
-#define dj_di_header_getMajorVersion(pointer) dj_di_getU8(pointer + 1)
-#define dj_di_header_getMinorVersion(pointer) dj_di_getU8(pointer + 2)
+#define dj_di_header_getInfusionFormatVersion(pointer) dj_di_getU8(pointer + 1)
+#define dj_di_header_getInfusionVersion(pointer) dj_di_getU8(pointer + 2)
 #define dj_di_header_getEntryPoint(pointer) dj_di_getU8(pointer + 3)
 #define dj_di_header_getInfusionName(pointer) (pointer + 4)
 

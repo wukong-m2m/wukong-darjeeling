@@ -1,0 +1,31 @@
+<application name="33fa00a66f2edf0d1c5697a9f8693ba8">
+<page title="_first_">
+    <component type="Threshold" instanceId="33" x="536" y="168" w="120" h="100">
+        <link fromProperty="output" toInstanceId="32" toProperty="on_off"/>
+        <location requirement="/WuKong/Kitchen#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty operator="GT" threshold="" value="" output=""  />
+    </component>
+    <component type="Temperature_Humidity_Sensor" instanceId="34" x="287" y="243" w="120" h="100">
+        <link fromProperty="current_value_temperature" toInstanceId="33" toProperty="value"/>
+        <location requirement="/WuKong/Kitchen#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty current_value_temperature="" current_value_humidity="" refresh_rate="100"  />
+    </component>
+    <component type="Slider" instanceId="35" x="285" y="79" w="120" h="100">
+        <link fromProperty="output" toInstanceId="33" toProperty="threshold"/>
+        <location requirement="/WuKong/Kitchen#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty low_value="" high_value="" output="" refresh_rate="100"  />
+    </component>
+    <component type="Fan" instanceId="32" x="757" y="211" w="120" h="100">
+        <location requirement="/WuKong/Kitchen#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+    </component>
+</page>
+</application>

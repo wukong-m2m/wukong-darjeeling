@@ -596,9 +596,11 @@ static inline int32_t peekInt() {
 /**
  * Returns the topmost 64 bit long element on the integer stack, does not change the stackpointer.
  */
-static inline int64_t peekLong() {
-	return *(int64_t*) (intStack - 4);
-}
+// 20140410 NR: Comment unused function
+//static inline int64_t peekLong() {
+//	return *(int64_t*) (intStack - 4);
+//}
+
 
 /**
  * Returns the topmost element on the reference stack, does not change the stackpointer.

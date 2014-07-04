@@ -19,7 +19,7 @@ NANOVMTOOL = %(ROOT)s/nanovmtool/
 LOCATION_ROOT = WuKong
 
 SIMULATION = false
-MINITORING = false
+MONITORING = false
 
 DEPLOY_PLATFORM = avr_mega2560
 

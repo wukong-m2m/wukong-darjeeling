@@ -43,6 +43,10 @@ dj_di_pointer di_lib_archive;
 
 int main(int argc,char* argv[])
 {
+	// Disable buffering of stdout.
+	// Otherwise the output won't show up in the Java UI until we terminate the VM, or not at all
+	setbuf(stdout, NULL);
+
 	posix_parse_command_line(argc, argv);
 
 	// Read the lib and app infusion archives from file

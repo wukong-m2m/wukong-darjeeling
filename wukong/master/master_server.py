@@ -22,12 +22,19 @@ import glob
 import copy
 import fcntl, termios, struct
 
-try:
-  import pyzwave
-except:
-  print "Please install the pyzwave module in the wukong/tools/python/pyzwave by using"
-  print "cd ../tools/python/pyzwave; sudo python setup.py install"
-  sys.exit(-1)
+import tornado.options
+tornado.options.define("appdir", type=str, help="Directory that contains the applications")
+tornado.options.parse_command_line()
+from configuration import *
+
+if WKPFCOMM_AGENT == "ZWAVE":
+  try:
+    import pyzwave
+    m = pyzwave.getDeviceType
+  except:
+    print "Please install the pyzwave module in the wukong/tools/python/pyzwave by using"
+    print "cd ../tools/python/pyzwave; sudo python setup.py install"
+    sys.exit(-1)
 import wkpf.wusignal
 from wkpf.wuapplication import WuApplication
 from wkpf.wuclasslibraryparser import *
@@ -46,15 +53,6 @@ except:
   print "easy_install pymongo"
   sys.exit(-1)
 
-
-
-try:
-   m = pyzwave.getDeviceType
-except:
-  print "Please reinstall the pyzwave module in the wukong/tools/python/pyzwave by using"
-  print "cd ../tools/python/pyzwave; sudo python setup.py install"
-  sys.exit(-1)
-
 if(MONITORING == 'true'):
     try:
         wkpf.globals.mongoDBClient = MongoClient(MONGODB_URL)
@@ -63,7 +61,6 @@ if(MONITORING == 'true'):
       print "MongoDB instance " + MONGODB_URL + " can't be connected."
       print "Please install the mongDB, pymongo module."
       sys.exit(-1)
-
 
 tornado.options.parse_command_line()
 #tornado.options.enable_pretty_logging()
@@ -1083,5 +1080,6 @@ update_applications()
 import_wuXML()
 make_FBP()
 wukong.listen(MASTER_PORT)
+
 if __name__ == "__main__":
   ioloop.start()
