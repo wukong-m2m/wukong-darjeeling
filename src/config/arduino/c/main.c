@@ -45,7 +45,7 @@ extern dj_named_native_handler java_library_native_handlers[];
 extern uint8_t java_library_native_handlers_length;
 
 
-unsigned char mem[HEAPSIZE];
+unsigned char mem[2048];
 
 void wukong_setup()
 {
@@ -55,7 +55,7 @@ void wukong_setup()
 	// initialise serial port
 	avr_serialInit(115200);
 
-	core_init(mem, HEAPSIZE);
+	core_init(mem, 2048);
 	dj_vm_main_init((dj_di_pointer)di_lib_infusions_archive_data, (dj_di_pointer)di_app_infusion_archive_data, java_library_native_handlers, java_library_native_handlers_length);
 }
 
