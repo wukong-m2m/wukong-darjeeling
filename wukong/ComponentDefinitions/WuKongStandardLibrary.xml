@@ -20,7 +20,7 @@
         <enum value="MULTIPLY"/>
         <enum value="DIVIDE"/>
     </WuTypedef>
-    <WuClass name="Generic" id="0" virtual="false" type="hard">
+    <WuClass name="Generic" id="200" virtual="false" type="hard">
         <property name="dummy" access="readonly" datatype="short"  />
     </WuClass>
     <WuClass name="Threshold" id="1" virtual="true" type="soft">
