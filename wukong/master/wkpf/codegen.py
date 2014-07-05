@@ -389,20 +389,17 @@ class CodeGen:
         ]
         init_function_lines = ['''
         uint8_t wkpf_native_wuclasses_init() {
-          uint8_t retval;
+          uint8_t retval = WKPF_OK;
           wuobject_t *wuobject;
+          wuobject = NULL;
           DEBUG_LOG(DBG_WKPF, "WKPF: (INIT) Running wkpf native init for node id: %x\\n", wkcomm_get_node_id());
         ''']
 
-        init_function_lines_posix = ['''
-        uint8_t wkpf_process_enabled_wuclass(char* wuclassname, bool appCanCreateInstances) {
-            static int next_free_port = 1;
+        init_function_lines_posix_register_class = ['''
+        wuclass_t* wkpf_process_enabled_wuclasses_xml_register_class(char* wuclassname, bool appCanCreateInstances) {
             printf("[posix init] Registering wuclass %s", wuclassname);
-            // if (createInstancesAtStartup > 0)
-            //     printf(", and creating %d instance(s)\\n", createInstancesAtStartup);
-            // else
-            //     printf("\\n");
         ''']
+
 
         dom = parseString(open(enabled_wuclasses_filename).read())
 
@@ -464,34 +461,28 @@ class CodeGen:
                         %s.flags |= WKPF_WUCLASS_FLAG_APP_CAN_CREATE_INSTANCE;''' % wuclass.getCName())
 
             header_lines_posix.append('#include "../common/native_wuclasses/%s.h"\n' % wuclass.getCFileName())
-            init_function_lines_posix.append('''
+            init_function_lines_posix_register_class.append('''
             if (!strcmp(wuclassname, "%s")) {
                 wkpf_register_wuclass(&%s);
-                for (int i=0; i<createInstancesAtStartup; i++) {
-                    uint8_t retval;
-                    retval = wkpf_create_wuobject(%s.wuclass_id, next_free_port++, 0, true);
-                    if (retval != WKPF_OK)
-                        return retval;
-                }
                 if (appCanCreateInstances)
                     %s.flags |= WKPF_WUCLASS_FLAG_APP_CAN_CREATE_INSTANCE;
-                return WKPF_OK;
+                return &%s;
             }
             ''' % (wuclass.getName(), wuclass.getCName(), wuclass.getCName(), wuclass.getCName()))
 
         init_function_lines.append('''
-            return WKPF_OK;
+            return retval;
         }''')
-        init_function_lines_posix.append('''
+        init_function_lines_posix_register_class.append('''
             printf("Unknown wuclass %s\\n", wuclassname);
-            return WKPF_ERR_WUCLASS_NOT_FOUND;
+            return NULL;
         }''')
 
         native_wuclasses.writelines(header_lines)
         native_wuclasses.writelines(init_function_lines)
         native_wuclasses.close()
         native_wuclasses_posix.writelines(header_lines_posix)
-        native_wuclasses_posix.writelines(init_function_lines_posix)
+        native_wuclasses_posix.writelines(init_function_lines_posix_register_class)
         native_wuclasses_posix.close()
 
 
