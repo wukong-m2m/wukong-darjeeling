@@ -98,7 +98,7 @@
 #define DBG_ECO 0
 #endif
 #ifndef DBG_RELINK
-#define DBG_RELINK 1
+#define DBG_RELINK 0
 #endif
 
 #ifndef DARJEELING_DEBUG
