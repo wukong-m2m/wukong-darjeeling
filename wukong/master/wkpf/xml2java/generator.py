@@ -69,8 +69,8 @@ class Generator:
 
         def generateProperties(wuobject_properties, component_properties):
             properties = wuobject_properties
-
             for property in properties:
+                print property.name, "change from" ,property.value, "to", component_properties[property.name], "in generateProperties"
                 if property.name in component_properties:
                     property.value = component_properties[property.name]
             return properties
@@ -104,17 +104,19 @@ class Generator:
         return False
     @staticmethod
     def generateTablesXML(name, changesets):
+        #assign init values to wuobjects from components
         def generateProperties(wuobject_properties, component):
-            properties = wuobject_properties
-            component_properties = component.properties
-            for property in properties:
-                if property.name in component_properties and len(component_properties[property.name].strip())>0:
-                    property.value = component_properties[property.name]
+            all_properties = wuobject_properties
+            component_properties_with_values = component.properties
+            for property in all_properties:
+                if property.name in component_properties_with_values and len(component_properties_with_values[property.name].strip())>0:
+                    #print "set", property.name, "from default", property.value, "to", component_properties_with_values[property.name]
+                    property.value = component_properties_with_values[property.name]
                 else:   #if no value given, use default value of property
                     default_val = WuObjectFactory.wuclassdefsbyname[component.type].properties[property.name].value
                     if len(default_val) >0:
                         property.value = default_val
-            return [p for p in properties if p.access!='readonly']
+            return [p for p in all_properties if p.access!='readonly']
 
         # TODO: this should be in a higher level place somewhere.
         # TODO: is 'int' really a datatype? It was used in application2.java so keeping it here for now. should check if it can go later.
@@ -137,8 +139,7 @@ class Generator:
                 #so we can put component
                 link.to_component.properties["id"] = str(link.to_component.deployid);
                 link.to_component.properties[link.to_property.name] = str(link.from_component.deployid * 100 + link.from_property.id)
-                #print "after", link.to_component.properties
-                print "multiplexer input value:"+link.to_component.properties[link.to_property.name]
+                print "multiplexer input " + link.to_property.name+" value:"+link.to_component.properties[link.to_property.name]
                 #if current_link is not selected yet, randomly pick the current one
                 if "current_src" not in link.to_component.properties.keys():
                     link.to_component.properties["current_src"] = str(link.to_component.properties[link.to_property.name])
@@ -153,7 +154,6 @@ class Generator:
             elif link.from_component.type == 'Multiplexer'  and link.from_property_name == 'output': 
                 link.from_component.properties[link.to_property.name] = str(link.to_component.deployid * 100 + link.to_property.id)
                 link.from_component.properties["current_dest"] = str(link.from_component.properties[link.to_property.name])
-                #print "multiplexer+output:"+link.from_property.value
                 #if both src and dest are filled, add an initial link for later change(happen only once)
                 if "current_src" in link.from_component.properties.keys():   
                     link_element = ElementTree.SubElement(links, 'link')
@@ -178,11 +178,14 @@ class Generator:
                 endpoint_element.attrib['port'] = str(endpoint.port_number)
         for component in changesets.components:
             wuobject = component.instances[0]
+            print "in changesets.components"
             for property in generateProperties(wuobject.properties.values(), component):
                 if (Generator.isLinkDestination(component.deployid, property.id, changesets)):
-                    # This property is the destination for a link, so we shouldn't generate an entry in the init value table
-                    # The framework will get the initial value from the source component instead.
-                    continue
+                    if component.type != 'Multiplexer':
+                        # This property is the destination for a link, so we shouldn't generate an entry in the init value table
+                        # The framework will get the initial value from the source component instead.
+                        continue
+                
                 initvalue = ElementTree.SubElement(initvalues, 'initvalue')
                 initvalue.attrib['componentId'] = str(component.deployid)
                 initvalue.attrib['propertyNumber'] = str(property.id)

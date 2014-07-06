@@ -111,7 +111,7 @@ uint8_t wkpf_set_token (uint16_t lock_component_id, uint16_t src_component_id, u
 	}
 	wkpf_token_dest_component[index] = dest_component_id;
 	wkpf_token_src_component[index] = src_component_id;
-	DEBUG_LOG(true, "set wkpf_token_id[%d]: %d\n", index, wkpf_token_id[index]);
+	DEBUG_LOG(DBG_RELINK, "set wkpf_token_id[%d]: %d\n", index, wkpf_token_id[index]);
 	return WKPF_OK;
 }
 
@@ -122,7 +122,7 @@ uint8_t wkpf_release_token(uint16_t token_id) {
 			wkpf_token_setter_link[i] = TOKEN_NO_COMPONENT;
 			wkpf_token_dest_component[i] = TOKEN_NO_COMPONENT;
 			wkpf_token_src_component[i] = TOKEN_NO_COMPONENT;
-			DEBUG_LOG(true, "release wkpf_token_id[%d]\n", i);
+			DEBUG_LOG(DBG_RELINK, "release wkpf_token_id[%d]\n", i);
 			return WKPF_OK;
 		}
 	}
@@ -133,13 +133,14 @@ uint8_t wkpf_release_token(uint16_t token_id) {
 //component_ids includes all tokens that are from src_component to dest_component
 uint8_t wkpf_update_token_table (uint16_t* component_ids, int length, uint16_t src_component, uint16_t dest_component) {
 	//remove old locks
+	DEBUG_LOG(DBG_RELINK, "update token table\n");
 	for (int i = 0; i < WKPF_MAX_NUM_OF_TOKENS; i++) {
 		if (WKPF_LINK_SRC_COMPONENT_ID(wkpf_token_setter_link[i]) == src_component && WKPF_LINK_DEST_COMPONENT_ID(wkpf_token_setter_link[i]) == dest_component) {	//token from the same link
 			bool found_match = false;
 			for (int j = 0; j < length; j++) {
 				if (component_ids[j] == wkpf_token_id[i]) {
 					found_match = true;
-					DEBUG_LOG(true, "wkpf_token_id[%d]:%u is hit\n", i, wkpf_token_id[i]);
+					DEBUG_LOG(DBG_RELINK, "During update, wkpf_token_id[%d]:%u is hit\n", i, wkpf_token_id[i]);
 					break;
 				}
 			}
@@ -148,7 +149,7 @@ uint8_t wkpf_update_token_table (uint16_t* component_ids, int length, uint16_t s
 				wkpf_token_setter_link[i] = TOKEN_NO_COMPONENT;
 				wkpf_token_dest_component[i] = TOKEN_NO_COMPONENT;
 				wkpf_token_src_component[i] = TOKEN_NO_COMPONENT;
-				DEBUG_LOG(true, "update releasing wkpf_token_id[%d]\n", i);
+				DEBUG_LOG(DBG_RELINK, "During update, release wkpf_token_id[%d]\n", i);
 			}
 		}
 	}
@@ -158,7 +159,7 @@ uint8_t wkpf_update_token_table (uint16_t* component_ids, int length, uint16_t s
 		if (wkpf_set_token (component_ids[j], src_component, dest_component) != WKPF_OK) {
 			return WKPF_ERR_LOCK_FAIL;
 		}
-		DEBUG_LOG(true, "update setting wkpf_token_id[%d]: src_component %d->dest_component %d\n", component_ids[j], src_component, dest_component);
+		DEBUG_LOG(DBG_RELINK, "During update, set wkpf_token_id[%d]: src_component %d->dest_component %d\n", component_ids[j], src_component, dest_component);
 	}
 	return WKPF_OK;
 }
@@ -171,7 +172,7 @@ uint8_t wkpf_update_token_table_with_piggyback (uint8_t* piggyback_message) {
 	dest_component_id = (int16_t)(piggyback_message[2]);
 	dest_component_id = (int16_t)(dest_component_id<<8) + (int16_t)(piggyback_message[3]);
 	token_count = piggyback_message[4];
-	uint8_t ret_val = wkpf_update_token_table ((uint16_t*)(piggyback_message+5), token_count, src_component_id,dest_component_id);
+	uint8_t ret_val = wkpf_update_token_table ((uint16_t*)(piggyback_message+5), token_count, src_component_id, dest_component_id);
 	return ret_val;
 }
 int wkpf_find_token(uint16_t dest_component_id) {
@@ -254,7 +255,7 @@ uint8_t wkpf_propagate_property(wuobject_t *wuobject, uint8_t property_number, v
 		return WKPF_OK; // WuObject isn't used in the application.
 	
 	if (wkpf_component_is_locked(component_id) == true) {
-		DEBUG_LOG(true, "WKPF: propagate_property component %u is locked.token_id[0]:%u, [1]:%u\n", component_id,wkpf_token_id[0],wkpf_token_id[1]);
+		DEBUG_LOG(DBG_RELINK, "WKPF: propagate_property component %u is locked.token_id[0]:%u, [1]:%u\n", component_id,wkpf_token_id[0],wkpf_token_id[1]);
 		return WKPF_LOCKED;
 	}
 	
@@ -551,6 +552,7 @@ void wkpf_update_initvalue_in_flash(wuobject_t *wuobject, uint8_t object_propert
 	}
 }
 
+
 uint8_t wkpf_update_map_in_flash(uint16_t component_id, uint16_t orig_node_id, uint8_t orig_port_number, 
 								uint16_t new_node_id, uint8_t new_port_number){
 	// !!!!!!!!!!!!
@@ -581,7 +583,7 @@ uint8_t wkpf_update_map_in_flash(uint16_t component_id, uint16_t orig_node_id, u
 		}
 	}
 	if (update == false) {
-		DEBUG_LOG(DBG_WKPF, "------ UPDATE MAP FAILS: specified endpoint not found in file id %d\n", filenumber);
+		//DEBUG_LOG(DBG_WKPF, "------ UPDATE MAP FAILS: specified endpoint not found in file id %d\n", filenumber);
 		return WKPF_ERR_COMPONENT_NOT_FOUND;
 	}
 	return WKPF_OK;
@@ -610,14 +612,13 @@ uint8_t wkpf_update_link_in_flash(uint8_t* orig_link, uint8_t* new_link) {
 	new_src_property = *(new_link + 2);
 	new_dest_property = *(new_link + 5);
 
-	DEBUG_LOG(true, " \ntarget link to be found %u:%u->%u:%u\n", ((*orig_link)<<8)+*(orig_link + 1), *(uint8_t*)(orig_link + 2) , ((*(orig_link + 3))<<8)+*(orig_link + 4), *(uint8_t*)(orig_link + 5));
+	DEBUG_LOG(DBG_RELINK, " \ntarget link to be found %u:%u->%u:%u\n", ((*orig_link)<<8)+*(orig_link + 1), *(uint8_t*)(orig_link + 2) , ((*(orig_link + 3))<<8)+*(orig_link + 4), *(uint8_t*)(orig_link + 5));
 	for (int i=0; i<wkpf_number_of_links; i++) {
-		DEBUG_LOG(true, "link_table[%d]:%u:%u->%u:%u\n", i, WKPF_LINK_SRC_COMPONENT_ID(i), WKPF_LINK_SRC_PROPERTY(i), WKPF_LINK_DEST_COMPONENT_ID(i), WKPF_LINK_DEST_PROPERTY(i));
+		DEBUG_LOG(DBG_RELINK, "link_table[%d]:%u:%u->%u:%u\n", i, WKPF_LINK_SRC_COMPONENT_ID(i), WKPF_LINK_SRC_PROPERTY(i), WKPF_LINK_DEST_COMPONENT_ID(i), WKPF_LINK_DEST_PROPERTY(i));
 		if (WKPF_LINK_SRC_COMPONENT_ID(i) == ((*orig_link)<<8)+*(orig_link + 1)
 				&& WKPF_LINK_SRC_PROPERTY(i) == *(uint8_t*)(orig_link + 2) 
 				&& WKPF_LINK_DEST_COMPONENT_ID(i) == ((*(orig_link + 3))<<8)+*(orig_link + 4)
 				&& WKPF_LINK_DEST_PROPERTY(i) == *(uint8_t*)(orig_link + 5)){
-			DEBUG_LOG(true, "filenumber:%d, offset:%u\n");
 			wkreprog_open(filenumber, offset);
 			wkreprog_write(2, (uint8_t*)&new_src_component);
 			wkreprog_write(1, &new_src_property);
@@ -631,10 +632,10 @@ uint8_t wkpf_update_link_in_flash(uint8_t* orig_link, uint8_t* new_link) {
 		offset += WKPF_LINK_ENTRY_SIZE;
 	}
 	if (update == false) {
-		DEBUG_LOG(true, "------ UPDATE LINK FAILS: no satisfying link found in file id %d\n", filenumber);
+		DEBUG_LOG(DBG_RELINK, "------ NO LINK UPDATED: no satisfying link found in file id %d\n", filenumber);
 		return WKPF_ERR_LINK_NOT_FOUND;
 	}
-	DEBUG_LOG(true, "------ UPDATE LINK TO: %u -> %u\n", WKPF_LINK_SRC_COMPONENT_ID(index),WKPF_LINK_DEST_COMPONENT_ID(index));
+	DEBUG_LOG(DBG_RELINK, "------ UPDATE LINK TO: %u -> %u\n", WKPF_LINK_SRC_COMPONENT_ID(index),WKPF_LINK_DEST_COMPONENT_ID(index));
 	return WKPF_OK;
 }
 
@@ -654,6 +655,9 @@ uint8_t wkpf_update_link(uint16_t orig_src_component_id, uint8_t orig_src_proper
 	message_buffer[9] = (uint8_t)(new_dest_component_id >> 8);
 	message_buffer[10] = (uint8_t)(new_dest_component_id);
 	message_buffer[11] = (uint8_t)(new_dest_property_id);
+	DEBUG_LOG(DBG_RELINK, "target link to be updated upon wkpf_update_link %u:%u->%u:%u => %u:%u->%u:%u\n", 
+						orig_src_component_id, orig_src_property_id, orig_dest_component_id, orig_dest_property_id,
+						new_src_component_id, new_src_property_id, new_dest_component_id, new_dest_property_id);
 	uint8_t ret = wkpf_update_link_in_flash(message_buffer, message_buffer+6);
 	return ret;
 }
@@ -664,16 +668,20 @@ uint8_t wkpf_propagate_link_change(uint16_t orig_src_component_id, uint8_t orig_
 	wkcomm_address_t self_node_id = wkcomm_get_node_id();
 	for (int i=0; i<wkpf_number_of_links; i++) {
 		uint16_t src_comp_id = WKPF_LINK_SRC_COMPONENT_ID(i);
-		if (WKPF_COMPONENT_LEADER_ENDPOINT_NODE_ID(src_comp_id) == self_node_id) {
+		if (src_comp_id == orig_src_component_id || src_comp_id == orig_dest_component_id
+				|| src_comp_id == new_src_component_id || src_comp_id == new_dest_component_id) {
 			uint16_t dest_comp_id = WKPF_LINK_DEST_COMPONENT_ID(i);
 			wkcomm_address_t dest_node_id = WKPF_COMPONENT_LEADER_ENDPOINT_NODE_ID(dest_comp_id);
 			if (dest_node_id != self_node_id) {
-				wkpf_send_set_linktable(self_node_id, src_comp_id, dest_comp_id, orig_src_component_id, orig_src_property_id, 
-				                                orig_dest_component_id, orig_dest_property_id, new_src_component_id, 
-				                                new_src_property_id, new_dest_component_id, new_dest_property_id);
-				wkpf_send_set_linktable(self_node_id, src_comp_id, dest_comp_id, orig_src_component_id, orig_src_property_id, 
-				                                orig_dest_component_id, orig_dest_property_id, new_src_component_id, 
-				                                new_src_property_id, new_dest_component_id, new_dest_property_id);
+			//adding the following statements will freeze all nodes, no idea why is that....
+			//TODO: delete these statements
+			//	DEBUG_LOG(DBG_RELINK, "Propagating linktable to %u\n", dest_node_id);
+			//	DEBUG_LOG(DBG_RELINK, "target link to be updated upon wkpf_propagate_link_change %u:%u->%u:%u => %u:%u->%u:%u\n", 
+			//					orig_src_component_id, orig_src_property_id, orig_dest_component_id, orig_dest_property_id,
+			//						new_src_component_id, new_src_property_id, new_dest_component_id, new_dest_property_id);
+			//	wkpf_send_set_linktable(dest_node_id, src_comp_id, dest_comp_id, orig_src_component_id, orig_src_property_id, 
+				//                                orig_dest_component_id, orig_dest_property_id, new_src_component_id, 
+			//	                                new_src_property_id, new_dest_component_id, new_dest_property_id);
 			}
 			
 		}

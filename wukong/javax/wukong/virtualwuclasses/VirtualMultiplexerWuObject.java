@@ -9,8 +9,8 @@ public class VirtualMultiplexerWuObject extends GENERATEDVirtualMultiplexerWuObj
         short selector = WKPF.getPropertyShort(this, SELECTOR);
         short input1 = WKPF.getPropertyShort(this, INPUT1);
         short input2 = WKPF.getPropertyShort(this, INPUT2);
-        short input3 = WKPF.getPropertyShort(this, INPUT3);
-        short input4 = WKPF.getPropertyShort(this, INPUT4);
+        //short input3 = WKPF.getPropertyShort(this, INPUT3);
+        //short input4 = WKPF.getPropertyShort(this, INPUT4);
         short current_src = WKPF.getPropertyShort(this, CURRENT_SRC);
         short current_dest = WKPF.getPropertyShort(this, CURRENT_DEST);
         short multiplexer_component_id = WKPF.getPropertyShort(this, ID);
@@ -22,14 +22,14 @@ public class VirtualMultiplexerWuObject extends GENERATEDVirtualMultiplexerWuObj
         input_port[0] = (byte)(current_src%100);
         input_port[1] = (byte)(input1%100);
         input_port[2] = (byte)(input2%100);
-        input_port[3] = (byte)(input3%100);
-        input_port[4] = (byte)(input4%100);
+        //input_port[3] = (byte)(input3%100);
+        //input_port[4] = (byte)(input4%100);
 
         input_component[0] = (short)(current_src/100);
         input_component[1] = (short)(input1/100);
         input_component[2] = (short)(input2/100);
-        input_component[3] = (short)(input3/100);
-        input_component[4] = (short)(input4/100);
+        //input_component[3] = (short)(input3/100);
+        //input_component[4] = (short)(input4/100);
         System.out.println("input0:" + input_component[0] +", input1:"+input_component[1]+", input2:"+input_component[2]);
         boolean rtval = false;
         System.out.println("WKPFUPDATE(Multiplexer): current_src is " + current_src +" input1:"+input1+" input2:"+input2 +", selector:"+selector);

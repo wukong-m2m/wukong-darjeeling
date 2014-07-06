@@ -185,7 +185,10 @@ uint8_t wkpf_send_set_linktable(wkcomm_address_t dest_node_id, uint16_t src_comp
 	int piggy_message_length = 0;
 	uint8_t* data = (uint8_t*)(message_buffer+12);
 	wkpf_generate_piggyback_token(src_component_id, dest_component_id, data, &piggy_message_length);
-	
+	for (int i=0;i<12;++i){
+		DEBUG_LOG(DBG_RELINK,"%u ",message_buffer[i]);
+	}
+	DEBUG_LOG(DBG_RELINK,"  set_link_table sent\n");
 	return send_message(dest_node_id, WKPF_COMM_CMD_CHANGE_LINK, message_buffer, 12 + piggy_message_length);
 }
 
@@ -585,25 +588,32 @@ void wkpf_comm_handle_message(void *data) {
 				response_size = 1;
 				break;
 			}
+			for (int i=0;i<12;++i){
+				DEBUG_LOG(DBG_RELINK,"%u ",payload[i]);
+			}
+			DEBUG_LOG(DBG_RELINK,"  set_link_table received\n");
+			
 			uint16_t orig_src_component_id, orig_dest_component_id, new_src_component_id, new_dest_component_id;
 			uint8_t orig_src_property_id, orig_dest_property_id, new_src_property_id, new_dest_property_id;
 			orig_src_component_id = (uint16_t)payload[0];
 			orig_src_component_id = (uint16_t)(orig_src_component_id<<8) + (uint16_t)payload[1];
 			orig_src_property_id = (uint16_t)payload[2];
 			orig_dest_component_id = (uint16_t)payload[3];
-			orig_dest_component_id = (uint16_t)(orig_src_component_id<<8) + (uint16_t)payload[4];
+			orig_dest_component_id = (uint16_t)(orig_dest_component_id<<8) + (uint16_t)payload[4];
 			orig_dest_property_id = (uint16_t)payload[5];
 			new_src_component_id = (uint16_t)payload[6];
-			new_src_component_id = (uint16_t)(orig_src_component_id<<8) + (uint16_t)payload[7];
+			new_src_component_id = (uint16_t)(new_src_component_id<<8) + (uint16_t)payload[7];
 			new_src_property_id = (uint16_t)payload[8];
 			new_dest_component_id = (uint16_t)payload[9];
-			new_dest_component_id = (uint16_t)(orig_src_component_id<<8) + (uint16_t)payload[10];
+			new_dest_component_id = (uint16_t)(new_dest_component_id<<8) + (uint16_t)payload[10];
 			new_dest_property_id = (uint16_t)payload[11];
 			//for each link, send the new link table to them if it is related to current node.
-			wkpf_propagate_link_change(orig_src_component_id, orig_src_property_id, 
-			                                orig_dest_component_id, orig_dest_property_id, new_src_component_id, 
-			                                new_src_property_id, new_dest_component_id, new_dest_property_id);
-			
+			wkpf_propagate_link_change(orig_src_component_id, orig_src_property_id, orig_dest_component_id, 
+																	orig_dest_property_id, new_src_component_id, new_src_property_id, 
+																	new_dest_component_id, new_dest_property_id);
+			DEBUG_LOG(DBG_RELINK, "target link to be updated upon processing change_link %u:%u->%u:%u => %u:%u->%u:%u\n", 
+								orig_src_component_id, orig_src_property_id, orig_dest_component_id, orig_dest_property_id,
+								new_src_component_id, new_src_property_id, new_dest_component_id, new_dest_property_id);
 			retval = wkpf_update_link_in_flash(payload, payload+6);
 			if (retval != WKPF_OK) {
 				payload[0] = retval;

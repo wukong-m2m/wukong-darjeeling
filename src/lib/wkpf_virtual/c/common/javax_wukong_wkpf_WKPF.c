@@ -164,11 +164,13 @@ void javax_wukong_wkpf_WKPF_boolean_updateLinking_short_short_byte_short_byte_sh
 	DEBUG_LOG(true, "set msg orig_src_component_id:%u:%u, new_src_component_id:%u:%u, dest:%u:%u == %u:%u\n", orig_src_component_id, 
             orig_src_property_id, new_src_component_id, new_src_property_id,orig_dest_component_id,orig_dest_property_id, new_dest_component_id,new_dest_property_id);
 	//identify node id and port through mapping table, component_id correspond to the seq no. of component in maptable
-	wkcomm_address_t orig_src_node_id, new_src_node_id;
-	uint8_t orig_src_port, new_src_port;
+	wkcomm_address_t orig_src_node_id, new_src_node_id, orig_dest_node_id, new_dest_node_id;
+	uint8_t orig_src_port, new_src_port, orig_dest_port, new_dest_port;
 	//self_node_id = wkcomm_get_node_id();
 	wkpf_get_node_and_port_for_component(orig_src_component_id, &orig_src_node_id, &orig_src_port);
 	wkpf_get_node_and_port_for_component(new_src_component_id, &new_src_node_id, &new_src_port);
+	wkpf_get_node_and_port_for_component(orig_dest_component_id, &orig_dest_node_id, &orig_dest_port);
+	wkpf_get_node_and_port_for_component(new_dest_component_id, &new_dest_node_id, &new_dest_port);
 	DEBUG_LOG(true, "set msg orig_src_node_id:%d, new_src_node_id:%d\n", orig_src_node_id, new_src_node_id);
 	//set_token spread out with the message of cancelling original link
 	wkpf_set_token (setter_component_id, setter_component_id, orig_src_node_id);
@@ -176,12 +178,24 @@ void javax_wukong_wkpf_WKPF_boolean_updateLinking_short_short_byte_short_byte_sh
 	wkpf_send_set_linktable(orig_src_node_id, setter_component_id, orig_src_component_id, orig_src_component_id, orig_src_property_id, 
 	                                orig_dest_component_id, orig_dest_property_id, new_src_component_id, 
 	                                new_src_property_id, new_dest_component_id, new_dest_property_id);
+	//assuming orig_dest == new_dest
+	wkpf_send_set_linktable(orig_dest_node_id, setter_component_id, orig_dest_component_id, orig_src_component_id, orig_src_property_id, 
+	                                orig_dest_component_id, orig_dest_property_id, new_src_component_id, 
+	                                new_src_property_id, new_dest_component_id, new_dest_property_id);
 	//release_token spread out with the message of adding new link
 	wkpf_release_token (setter_component_id);
+	wkpf_send_set_linktable(new_dest_node_id, setter_component_id, new_dest_component_id, orig_src_component_id, orig_src_property_id, 
+	                                orig_dest_component_id, orig_dest_property_id, new_src_component_id, 
+	                                new_src_property_id, new_dest_component_id, new_dest_property_id);
 	wkpf_send_set_linktable(new_src_node_id, setter_component_id, new_src_component_id, orig_src_component_id, orig_src_property_id, 
 	                                orig_dest_component_id, orig_dest_property_id, new_src_component_id, 
 	                                new_src_property_id, new_dest_component_id, new_dest_property_id);
-	wkpf_send_set_linktable_no_token(orig_src_node_id, setter_component_id, new_src_component_id, orig_src_component_id, orig_src_property_id, 
+
+	//we need to set the token back
+	wkpf_send_set_linktable_no_token(orig_src_node_id, setter_component_id, orig_src_component_id, orig_src_component_id, orig_src_property_id, 
+	                                orig_dest_component_id, orig_dest_property_id, new_src_component_id, 
+	                                new_src_property_id, new_dest_component_id, new_dest_property_id);
+	wkpf_send_set_linktable_no_token(orig_dest_node_id, setter_component_id, orig_dest_component_id, orig_src_component_id, orig_src_property_id, 
 	                                orig_dest_component_id, orig_dest_property_id, new_src_component_id, 
 	                                new_src_property_id, new_dest_component_id, new_dest_property_id);
 	DEBUG_LOG(true, "about to update_link", orig_src_node_id, new_src_node_id);
