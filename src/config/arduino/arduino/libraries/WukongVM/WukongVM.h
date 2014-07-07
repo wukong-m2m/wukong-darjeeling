@@ -2,15 +2,19 @@
 #define __WUKONG_H
 
 extern "C" {
-	void wukong_setup(void);
-	void wukong_loop(void);
+	void nanokong_setup(void);
+	void nanokong_loop(void);
+	void picokong_setup(void);
+	void picokong_loop(void);
 #include "wkpf/wkpf.h"
+#include "wkpf/wkpf_main.h"
 #include "wkpf/wkpf_wuobjects.h"
 #include "wkpf/wkpf_wuclasses.h"
 #include "wkpf/wkpf_properties.h"
 #include "wkpf/native_wuclasses.h"
 #include "wkpf/native_wuclasses_privatedatatypes.h"
 #include "wkpf/wkcomm.h"
+#define WUKONG_HAS_VM
 };
 void wkpf_dump(wuobject_t *obj)
 {
@@ -47,22 +51,32 @@ class Wukong {
 	 	*/
 		#include "wkpf/GENERATEDwkpf_wuclass_library_arduinoIDE.h"     
 		void begin() {
-			wukong_setup();
+#ifdef WUKONG_HAS_VM			
+			nanokong_setup();
+#else
+			picokong_setup();
+#endif			
 		}
 
 		void loop() {
-			wukong_loop();
+#ifdef WUKONG_HAS_VM			
+			nanokong_loop();
+#else
+			picokong_loop();
+#endif			
 		}
 		bool send(int addr, char *payload,int len) {
 			return wkcomm_send_raw(addr, (uint8_t *)payload, len)==WKPF_OK;
 		}
-		bool enableWuClass(int clsID, WKPFCallback func) {
+		bool enableWuClass(int clsID, WKPFCallback func,bool can_create=false) {
 			int i;
 
 			i = 0;
 			while(classes[i].wuclass_id) {
 				if (classes[i].wuclass_id == clsID) {
 					classes[i].update = func;
+					if (can_create)
+						classes[i].flags = WKPF_WUCLASS_FLAG_APP_CAN_CREATE_INSTANCE;
 					wkpf_register_wuclass(&classes[i]);
 					return true;
 				}

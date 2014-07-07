@@ -46,8 +46,7 @@ extern uint8_t java_library_native_handlers_length;
 
 
 unsigned char mem[2048];
-
-void wukong_setup()
+void nanokong_setup()
 {
 	// Declared in djarchive.c so that the reprogramming code can find it.
 	di_app_archive = (dj_di_pointer)di_app_infusion_archive_data;
@@ -60,7 +59,7 @@ void wukong_setup()
 }
 
 
-void wukong_loop()
+void nanokong_loop()
 {
 	if  (dj_vm_loop()) {
 		wuobject_t *wuobject = NULL;
