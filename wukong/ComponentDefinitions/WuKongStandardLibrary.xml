@@ -166,4 +166,13 @@
         <property name="high" access="readwrite" datatype="short" default="0"  />
         <property name="low" access="readwrite" datatype="short" default="1000"  />
     </WuClass>
+    <WuClass name="Dimmer" id="46" virtual="false" type="hard">
+        <property name="level" access="readwrite" datatype="short" default="0"  />
+    </WuClass>
+    <WuClass name="Value" id="47" virtual="true" type="soft">
+	<property name="send" access="readwrite" datatype="boolean" default="0" />
+        <property name="current" access="readwrite" datatype="short" default="0"  />
+        <property name="onvalue" access="readwrite" datatype="short" default="0"  />
+        <property name="offvalue" access="readwrite" datatype="short" default="0"  />
+    </WuClass>
 </WuKong>
