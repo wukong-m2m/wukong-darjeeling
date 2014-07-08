@@ -4,8 +4,9 @@ all:
 	cp ../darjeeling.a ../../../../../../hardware/arduino/wudevice/libdarjeeling.a
 	rm -rf libraries/WukongVM/wkpf
 	-mkdir libraries/WukongVM/wkpf
-	find ../../.. -name '*.h' -exec cp \{} libraries/WukongVM/wkpf \;
+	find ../../.. -name '*.h' -exec cp \{} libraries/WukongVM/wkpf \; 2> /dev/null
 
 install: all
-	cp -a * ../../../../../../hardware/arduino/wudevice
+	cp -a * ../../../../../../hardware/arduino/wudevice > /dev/null
+	echo "Deploy successfully"
 		
