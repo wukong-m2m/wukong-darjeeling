@@ -179,6 +179,16 @@ WuIDE.prototype.initUI = function() {
 			self.refreshUpload();
 		})
 	});	
+	$('#upload_arduino').click(function() {
+		$('#log').html("uploading to arduino...");
+		$.get('/upload', {cmd:'start',target:'arduino'}, function(data) {
+			$('#log').val(data).animate({scrollTop:$("#log")[0].scrollHeight - $("#log").height()});
+			if (self.timer)
+				clearTimeout(self.timer)
+			self.uploadDone = false;
+			self.refreshUpload();
+		})
+	});	
 }
 
 
@@ -209,16 +219,14 @@ WuIDE.prototype.refreshBuild = function() {
 	});
 }
 
-
 WuIDE.prototype.refreshUpload = function() {
 	var self=this;
-
 	if(self.uploadDone) {
 		return;
 	}
 
 	self.timer = setTimeout(function () {
-	    self.refreshUpload();
+		self.refreshUpload();
 	},1000);
 
 	$.get('/upload', {cmd:'poll'}, function(data) {
@@ -232,9 +240,10 @@ WuIDE.prototype.refreshUpload = function() {
 				self.updateTimeout--;
 			}
 			self.data = data;
-		}
+	    }
 	});
 }
+
 
 WuIDE.prototype.generateNewID = function() {
 	var max = 0;

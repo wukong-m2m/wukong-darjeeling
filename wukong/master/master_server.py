@@ -992,27 +992,35 @@ class Upload(tornado.web.RequestHandler):
   def get(self):
     self.content_type = 'text/plain'
     cmd = self.get_argument('cmd')
+    build = self.get_argument('target','wunode')
+    if build != 'wunode' and build != 'arduino':
+      self.write('target is not supported')
+
     if cmd == 'start':
-      port = self.get_argument("port")
-      command = 'cd ../../src/config/wunode; rm -f tmp'
+      command = 'cd ../../src/config/%s; rm -f tmp' % build
       os.system(command)
-      f = open("../../src/settings.xml","w")
-      s = '<project name="settings">' + '\n' + \
-        '\t<property name="avrdude-programmer" value="' + port + '"/>' + '\n' + \
-        '</project>'
-      f.write(s)
-      f.close()
-      s = open(port)
-      dtr = struct.pack('I', termios.TIOCM_DTR)
-      fcntl.ioctl(s, termios.TIOCMBIS, dtr)
-      fcntl.ioctl(s, termios.TIOCMBIC, dtr)
-      s.close()
+      if build == 'wunode':
+        port = self.get_argument("port")
+        f = open("../../src/settings.xml","w")
+        s = '<project name="settings">' + '\n' + \
+          '\t<property name="avrdude-programmer" value="' + port + '"/>' + '\n' + \
+          '</project>'
+        f.write(s)
+        f.close()
+        s = open(port)
+        dtr = struct.pack('I', termios.TIOCM_DTR)
+        fcntl.ioctl(s, termios.TIOCMBIS, dtr)
+        fcntl.ioctl(s, termios.TIOCMBIC, dtr)
+        s.close()
       
-      command = 'killall avrdude;(cd ../../src/config/wunode; ant avrdude 2>&1 | cat> tmp)&'
-      os.system(command)
+        command = 'killall avrdude;(cd ../../src/config/wunode; ant avrdude 2>&1 | cat> tmp)&'
+        os.system(command)
+      elif build == 'arduino':
+        command = '(cd ../../src/config/arduino/arduino; make install 2>&1 | cat> tmp)&'
+        os.system(command)
       log='start'
     elif cmd == 'poll':
-      f = open("../../src/config/wunode/tmp", "r")
+      f = open("../../src/config/arduino/arduino/tmp", "r")
       log = f.readlines()
       log = "".join(log)
       f.close()
