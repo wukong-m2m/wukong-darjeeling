@@ -8,10 +8,10 @@
     </WuClass>
     <WuClass name="Magnetic_Sensor" appCanCreateInstances="false">
         <CreateInstance>
-            <Property name="__pin" value="JP5"/>
+            <Property name="__pin" value="PIN1"/>
         </CreateInstance>
         <CreateInstance>
-            <Property name="__pin" value="JP6"/>
+            <Property name="__pin" value="PIN2"/>
         </CreateInstance>
     </WuClass>
 </WuKong>

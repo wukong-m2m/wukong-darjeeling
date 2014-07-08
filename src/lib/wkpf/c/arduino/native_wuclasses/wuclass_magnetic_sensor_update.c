@@ -8,8 +8,8 @@
 #define output_high(port, pin) port |= (1<<pin)
 #define input_get(port, pin) ((port & (1 << pin)) != 0)
 
-// JP5: port E, pin 3
-// JP6: port H, pin 3
+// PIN1: JP5. port E, pin 3
+// PIN2: JP6. port H, pin 3
 
 void wuclass_magnetic_sensor_setup(wuobject_t *wuobject) {
   int16_t pin;
@@ -17,12 +17,12 @@ void wuclass_magnetic_sensor_setup(wuobject_t *wuobject) {
 
   wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_MAGNETIC_SENSOR___PIN, &pin);
   switch (pin) {
-    case WKPF_ENUM_WU_DEVICE_PIN_JP5:
+    case WKPF_ENUM_PIN_PIN1:
       DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MagneticSensor,%d): setup using pin JP5\n", pin);
       set_input(DDRE, 3);
       output_high(PINE, 3);
     break;
-    case WKPF_ENUM_WU_DEVICE_PIN_JP6:
+    case WKPF_ENUM_PIN_PIN2:
       DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MagneticSensor,%d): setup using pin JP6\n", pin);
       set_input(DDRH, 3);
       output_high(PINH, 3);
@@ -38,10 +38,10 @@ void wuclass_magnetic_sensor_update(wuobject_t *wuobject) {
 
   wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_MAGNETIC_SENSOR___PIN, &pin);
   switch (pin) {
-    case WKPF_ENUM_WU_DEVICE_PIN_JP5:
+    case WKPF_ENUM_PIN_PIN1:
       currentValue = input_get(PINE, 3);
     break;
-    case WKPF_ENUM_WU_DEVICE_PIN_JP6:
+    case WKPF_ENUM_PIN_PIN2:
       currentValue = input_get(PINH, 3);
     break;
     default:

@@ -15,9 +15,9 @@
         <enum value="DIVIDE"/>
     </WuTypedef>
 
-    <WuTypedef name="WuDevicePin" type="enum">
-        <enum value="JP5"/>
-        <enum value="JP6"/>
+    <WuTypedef name="Pin" type="enum">
+        <enum value="PIN1"/>
+        <enum value="PIN2"/>
     </WuTypedef>
 
     <!-- Software -->
@@ -108,7 +108,7 @@
     <WuClass name="Magnetic_Sensor" id="1007" virtual="false" type="hard">
         <property name="output" access="readonly" datatype="boolean" default="false"/>
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
-        <property name="__pin" access="readonly" datatype="WuDevicePin" />
+        <property name="__pin" access="readonly" datatype="Pin" />
     </WuClass>
     <WuClass name="Pressure_Sensor_0" id="1008" virtual="false" type="hard">
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
