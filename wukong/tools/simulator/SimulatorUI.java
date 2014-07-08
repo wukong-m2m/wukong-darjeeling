@@ -9,7 +9,7 @@ import java.util.*;
 import java.lang.Runtime;
 import name.pachler.nio.file.*;
 
-public class WKNetworkUI extends JPanel implements TreeSelectionListener, ActionListener, DirectoryWatcherListener, NetworkServerMessagesListener {
+public class SimulatorUI extends JPanel implements TreeSelectionListener, ActionListener, DirectoryWatcherListener, NetworkServerMessagesListener {
     private static NetworkServer networkServer;
     private static StandardLibraryParser standardLibrary;
     private static ChildProcessManager childProcessManager;
@@ -36,7 +36,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
 
     private SensorTreeNode selectedSensorTreeNode = null;
 
-    public WKNetworkUI(String networkdir) {
+    public SimulatorUI(String networkdir) {
         super(new GridLayout(1,0));
 
         File f = new File(networkdir);
@@ -75,7 +75,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                     setIcon(actuatorIcon);
                 } else if (value instanceof DeviceTreeNode) {
                     int clientId = ((DeviceTreeNode)value).getClientId();
-                    if (WKNetworkUI.childProcessManager.hasChildProcess(clientId)) {
+                    if (SimulatorUI.childProcessManager.hasChildProcess(clientId)) {
                         // This is a node for a child process managed by the UI
                         // (meaning we can start/stop it by double clicking on the tree node)
                         if (networkServer != null && networkServer.getConnectedClients().contains(clientId))
@@ -103,7 +103,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
             tree.putClientProperty("JTree.lineStyle", lineStyle);
         }
 
-        final WKNetworkUI final_this = this;
+        final SimulatorUI final_this = this;
         MouseListener mouseListener = new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 int selRow = tree.getRowForLocation(e.getX(), e.getY());
@@ -151,14 +151,14 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         // treeView.setMinimumSize(minimumSize);
 
         JTabbedPane logTabs = new JTabbedPane();
-        WKNetworkUI.childProcessManager.setLogTabbedPane(logTabs);
+        SimulatorUI.childProcessManager.setLogTabbedPane(logTabs);
         // Tab for network trace
         LogTextArea networkTraceTextArea = new LogTextArea();
         networkTraceTextArea.setEditable(false);
         logTabs.addTab("Network", networkTraceTextArea);
         // Start the network server
-        WKNetworkUI.networkServer.addMessagesListener(new UIMessagesListener(networkTraceTextArea, WKNetworkUI.standardLibrary));
-        WKNetworkUI.networkServer.addMessagesListener(this);
+        SimulatorUI.networkServer.addMessagesListener(new UIMessagesListener(networkTraceTextArea, SimulatorUI.standardLibrary));
+        SimulatorUI.networkServer.addMessagesListener(this);
 
         //Add the split pane to this panel.
         mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -242,7 +242,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         DeviceTreeNode device = findDeviceTreeNode(client);
         if (device != null) {
             if (device instanceof SimulatedDeviceTreeNode
-                || WKNetworkUI.childProcessManager.hasChildProcess(device.getClientId())) {
+                || SimulatorUI.childProcessManager.hasChildProcess(device.getClientId())) {
                 // It's either a node filesystem in the network directory
                 // or an external child process controlled (started/stopped) by the UI.
                 // We keep both in the tree, and update the icon.
@@ -386,11 +386,11 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         }
 
         //Create and set up the window.
-        JFrame frame = new JFrame("WKNetworkUI");
+        JFrame frame = new JFrame("SimulatorUI");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //Add content to the window.
-        WKNetworkUI ui = new WKNetworkUI(networkdir);
+        SimulatorUI ui = new SimulatorUI(networkdir);
         frame.add(ui);
 
         //Display the window.
@@ -408,7 +408,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         commandline.add("master_server.py");
         if (appdir != null)
             commandline.add("-appdir=" + appdir);
-        WKNetworkUI.childProcessManager.addChildProcess("master", commandline, masterdir, 1);
+        SimulatorUI.childProcessManager.addChildProcess("master", commandline, masterdir, 1);
     }
 
     public static void runVMs(String vmdir, String networkdir, java.util.List<NetworkConfigParser.VMNode> vmsToStart) {
@@ -421,12 +421,12 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
             commandline.add(networkdir);
             commandline.add("-e");
             commandline.add(vm.enabledWuClassesXML.getAbsolutePath());
-            WKNetworkUI.childProcessManager.addChildProcess("vm " + vm.clientId, commandline, vmdir, vm.clientId);
+            SimulatorUI.childProcessManager.addChildProcess("vm " + vm.clientId, commandline, vmdir, vm.clientId);
         }
     }
 
     public static void main(final String[] args) {
-        WKNetworkUI.childProcessManager = new ChildProcessManager();
+        SimulatorUI.childProcessManager = new ChildProcessManager();
 
         //Schedule a job for the event dispatch thread:
         //creating and showing this application's GUI.
@@ -509,9 +509,9 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                     System.exit(1);
                 }
 
-                WKNetworkUI.standardLibrary = new StandardLibraryParser(standardlibraryxml);
-                WKNetworkUI.networkServer = new NetworkServer();
-                WKNetworkUI.networkServer.start();
+                SimulatorUI.standardLibrary = new StandardLibraryParser(standardlibraryxml);
+                SimulatorUI.networkServer = new NetworkServer();
+                SimulatorUI.networkServer.start();
                 createAndShowGUI(networkdir);
                 if (start_master)
                     runMasterServer(masterdir, appdir);

@@ -1,4 +1,4 @@
-<project name="WKNetworkUI" default="jar">
+<project name="Simulator" default="jar">
 	<path id="classpath">
 		<pathelement path="${java.class.path}"/>
 		<fileset dir=".">
@@ -8,7 +8,7 @@
 
     <target name="clean">
         <delete dir="build"/>
-        <delete file="network_ui.jar"/>
+        <delete file="simulator.jar"/>
     </target>
 
     <target name="build">
@@ -20,9 +20,9 @@
     </target>
 
 	<target name="jar" depends="build">
-        <jar destfile="network_ui.jar" basedir="build/classes">
+        <jar destfile="simulator.jar" basedir="build/classes">
             <manifest>
-                <attribute name="Main-Class" value="WKNetworkUI"/>
+                <attribute name="Main-Class" value="SimulatorUI"/>
             </manifest>
             <zipgroupfileset dir="." includes="jpathwatch-0-95.jar" />
         </jar>
@@ -30,7 +30,7 @@
 
     <target name="run" depends="jar">
         <java dir="."
-        	  jar="network_ui.jar"
+        	  jar="simulator.jar"
         	  fork="true"/>
     </target>
 </project>
