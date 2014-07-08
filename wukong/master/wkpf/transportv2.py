@@ -879,7 +879,7 @@ class DIDService:
         self._device_dids = mptnUtils.DBDict("master_dev_dids.sqlite")
         self._gateway_dids = mptnUtils.DBDict("master_gtw_dids.sqlite")
         self._device_macs = mptnUtils.DBDict("master_dev_macs.sqlite")
-        self._is_insertable = True
+        self._is_insertable = False
         self._global_lock = RLock()
 
     def _update_gateways(self, new_did, new_ip, new_port, new_mask):
@@ -951,7 +951,7 @@ class DIDService:
                 return 0xFFFFFFFF
         
         with self._global_lock:
-            if self._is_insertable:
+            if self._is_insertable or ALLOW_MASTER_ALWAYS_JOINABLE:
                 if mac_addr is not None:
                     mac_addr = ":".join(map(lambda x:"%02X"%x,map(ord,mac_addr)))
                     self._device_macs[mac_addr] = did

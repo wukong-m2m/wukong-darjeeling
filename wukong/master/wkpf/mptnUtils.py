@@ -152,6 +152,7 @@ class DBDict(UserDict.DictMixin):
                                "(Key TEXT PRIMARY KEY NOT NULL, Value BLOB)")
         else:
             self._database = sqlite3.connect(filename)
+        self._database.text_factory = str
         self._open = True
 
     def __del__(self):
