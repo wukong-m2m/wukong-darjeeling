@@ -415,7 +415,7 @@ class RPCAgent(TransportAgent):
                 print "[transport] RPC poll() to gateway(%d %s) fails" % (did, str((ip, port)))
         
         if len(ret):
-            return ret.join("; ")
+            return "; ".join(ret)
         
         print "[transport] RPC poll() to gateway(%d %s) fail or no gateway found" % (did, str((ip, port)))
         return "Not available"

@@ -135,6 +135,7 @@ class Communication:
       if generic == 0xff or generic == 0x02:
         wunode = WuNode.findById(destination)
         location = self.getLocation(destination)
+        location = ''.join(c for c in location if ord(c) < 128)
         gevent.sleep(0) # give other greenlets some air to breath
         if not wunode:
           wunode = WuNode(destination, location)
