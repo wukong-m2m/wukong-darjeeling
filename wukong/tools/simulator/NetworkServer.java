@@ -14,7 +14,7 @@ public class NetworkServer extends Thread
 {
 	private static boolean serverContinue = true;
 	private static Map<Integer, NetworkServerClientHandler> clients;
-	private static List<NetworkServerMessagesListener> listeners;
+	private static List<INetworkServerMessagesListener> listeners;
 
 	private final int MODE_MESSAGE = 1;
 	private final int MODE_DISCOVERY = 2;
@@ -27,31 +27,31 @@ public class NetworkServer extends Thread
 	}
 
 	public NetworkServer() {
-		this.listeners = new ArrayList<NetworkServerMessagesListener>();
+		this.listeners = new ArrayList<INetworkServerMessagesListener>();
 	}
 
-	public void addMessagesListener(NetworkServerMessagesListener listener) {
+	public void addMessagesListener(INetworkServerMessagesListener listener) {
 		this.listeners.add(listener);
 	}
 
 	void fireMessageDropped(int src, int dest, int[] message) {
-		for (NetworkServerMessagesListener listener : this.listeners)
+		for (INetworkServerMessagesListener listener : this.listeners)
 			listener.messageDropped(src, dest, message);
 	}
 	void fireMessageSent(int src, int dest, int[] message) {
-		for (NetworkServerMessagesListener listener : this.listeners)
+		for (INetworkServerMessagesListener listener : this.listeners)
 			listener.messageSent(src, dest, message);
 	}
 	void fireClientConnected(int client) {
-		for (NetworkServerMessagesListener listener : this.listeners)
+		for (INetworkServerMessagesListener listener : this.listeners)
 			listener.clientConnected(client);
 	}
 	void fireClientDisconnected(int client) {
-		for (NetworkServerMessagesListener listener : this.listeners)
+		for (INetworkServerMessagesListener listener : this.listeners)
 			listener.clientDisconnected(client);
 	}
 	void fireDiscovery(Integer[] clients) {
-		for (NetworkServerMessagesListener listener : this.listeners)
+		for (INetworkServerMessagesListener listener : this.listeners)
 			listener.discovery(clients);
 	}
 
@@ -59,7 +59,7 @@ public class NetworkServer extends Thread
 		return NetworkServer.clients.keySet();
 	}
 
-	private static class StandardOutputListener implements NetworkServerMessagesListener {
+	private static class StandardOutputListener implements INetworkServerMessagesListener {
 		public void messageDropped(int src, int dest, int[] message){
 			System.out.println("Dropped message from " + src + " to " + dest + ", length " + message.length);
 		}

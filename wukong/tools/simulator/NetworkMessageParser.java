@@ -1,38 +1,23 @@
-import javax.swing.*;
-import javax.swing.tree.*;
-import javax.swing.event.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.net.URL;
 import java.io.*;
 import java.util.*;
 
-public class UIMessagesListener implements NetworkServerMessagesListener {
-	TextArea textArea;
-	StandardLibraryParser standardLibrary;
+public class NetworkMessageParser {
+	private static final int WKPF_PROPERTY_TYPE_SHORT         = 0;
+	private static final int WKPF_PROPERTY_TYPE_BOOLEAN       = 1;
+	private static final int WKPF_PROPERTY_TYPE_REFRESH_RATE  = 2;
 
-	private final int WKPF_PROPERTY_TYPE_SHORT         = 0;
-	private final int WKPF_PROPERTY_TYPE_BOOLEAN       = 1;
-	private final int WKPF_PROPERTY_TYPE_REFRESH_RATE  = 2;
-	private final int WKREPROG_OK                      = 0;
-	private final int WKREPROG_REQUEST_RETRANSMIT      = 1;
-	private final int WKREPROG_TOOLARGE                = 2; // Not used yet
-	private final int WKREPROG_FAILED                  = 3; // Not used yet
+	private static final int WKREPROG_OK                      = 0;
+	private static final int WKREPROG_REQUEST_RETRANSMIT      = 1;
+	private static final int WKREPROG_TOOLARGE                = 2; // Not used yet
+	private static final int WKREPROG_FAILED                  = 3; // Not used yet
 
+	public static StandardLibraryParser standardLibrary = null;
 
-	public UIMessagesListener (TextArea textArea, StandardLibraryParser standardLibrary) {
-		this.textArea = textArea;
-		this.standardLibrary = standardLibrary;
+	public static void setStandardLibrary(StandardLibraryParser library) {
+		standardLibrary = library;
 	}
 
-	public void print(String msg) {
-		this.textArea.append(msg);
-	}
-	public void println(String msg) {
-		this.textArea.append(msg + "\n");
-	}
-
-	private String propertyTypeToString(int type) {
+	private static String propertyTypeToString(int type) {
 		switch(type) {
 			case WKPF_PROPERTY_TYPE_SHORT       : return "short";
 			case WKPF_PROPERTY_TYPE_BOOLEAN     : return "boolean";
@@ -41,7 +26,7 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 		return "unknown";
 	}
 
-	private String wuclassId2String(Integer wuclassId) {
+	private static String wuclassId2String(Integer wuclassId) {
 		if (standardLibrary != null) {
 			StandardLibraryParser.WuClass wuclass = standardLibrary.getWuClass(wuclassId);
 			if (wuclass != null)
@@ -50,7 +35,7 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 		return wuclassId.toString();
 	}
 
-	private String wuclassAndProperty2String(Integer wuclassId, Integer propertyId) {
+	private static String wuclassAndProperty2String(Integer wuclassId, Integer propertyId) {
 		if (standardLibrary != null) {
 			StandardLibraryParser.WuClass wuclass = standardLibrary.getWuClass(wuclassId);
 			if (wuclass != null) {
@@ -61,11 +46,11 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 		return "wuclass:" + wuclassId + " property:" + propertyId.toString();
 	}
 
-	private String int2BoolString(int x) {
+	private static String int2BoolString(int x) {
 		return x == 0 ? "False" : "True";
 	}
 
-	private String parseMessage(int[] message) {
+	public static String parseMessage(int[] message) {
 		/*
 		 NetworkServer header
 		 byte 0   : length
@@ -238,39 +223,5 @@ public class UIMessagesListener implements NetworkServerMessagesListener {
 		}
 
 		return "(" + command_name + ") " + sb.toString();
-	}
-
-	public void messageDropped(int src, int dest, int[] message) {
-		String parsedCommand = parseMessage(message);
-		this.println("DROPPED MESSAGE from " + src + " to " + dest + ": " + parsedCommand);
-	}
-	public void messageSent(int src, int dest, int[] message) {
-		if (false) { // Useful for debugging
-			this.print("            ");
-			for (int i=0; i<message[0]; i++) {
-				this.print("[" + String.format("%02X ", message[i]) + "] ");
-			}
-			this.println("");
-		}
-		String parsedCommand = parseMessage(message);
-		this.println("Msg from " + src + " to " + dest + ": " + parsedCommand);
-	}
-
-	public void clientConnected(int client) {
-		this.println("Node " + client + " connected.");
-	}
-
-	public void clientDisconnected(int client) {
-		this.println("Node " + client + " disconnected.");
-	}
-
-	public void discovery(Integer[] ids) {
-		this.print("Discovery: " + ids.length + " clients (");
-		for (int i=0; i<ids.length; i++) {
-			this.print(ids[i].toString());
-			if (i != ids.length-1)
-				this.print(", ");
-		}
-		this.println(")");
 	}
 }
