@@ -193,7 +193,11 @@ class WuApplication:
             location = '/'+LOCATION_ROOT
 
           if componentTag.getElementsByTagName('group_size'):
-            group_size = int(componentTag.getElementsByTagName('group_size')[0].getAttribute('requirement'))
+            group_size = componentTag.getElementsByTagName('group_size')[0].getAttribute('requirement')
+            if group_size == '*':
+                group_size = -1
+            else:
+                group_size = int(group_size)
           else:
             group_size = 1
 

@@ -154,7 +154,7 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                 wuobject.mapped = True
                 component.instances.append(wuobject)
                 
-        if len(component.instances) < component.group_size:
+        if component.group_size != -1 and len(component.instances) < component.group_size:
             msg = 'There is not enough candidates wuobjects from %r for component %s' % (candidates, component.type)
             set_wukong_status(msg)
             logger.warnMappingStatus(msg)
@@ -166,7 +166,8 @@ def firstCandidate(logger, changesets, routingTable, locTree):
         component.instances = sorted(component.instances, key=lambda wuObject: wuObject.virtual, reverse=False)
         # limit to min candidate if possible
         # here is a bug if there are not enough elements in instances list   ---Sen
-        component.instances = component.instances[:component.group_size]
+        if component.group_size != -1:
+            component.instances = component.instances[:component.group_size]
         for inst in component.instances[component.group_size:]:     #roll back unused virtual wuclasses created in previous step
           if inst.created:
             inst.wunode.port_list.remove(inst.port_number)
