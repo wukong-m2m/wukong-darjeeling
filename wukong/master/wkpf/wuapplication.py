@@ -197,9 +197,9 @@ class WuApplication:
           else:
             group_size = 1
 
-          if componentTag.getElementsByTagName('reaction_time'):
+          try:
             reaction_time = float(componentTag.getElementsByTagName('reaction_time')[0].getAttribute('requirement'))
-          else:
+          except:
             reaction_time = 2.0
 
           properties = {}

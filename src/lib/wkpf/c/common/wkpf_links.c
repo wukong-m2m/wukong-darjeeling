@@ -106,6 +106,59 @@ uint8_t wkpf_pull_property(uint8_t port_number, uint8_t property_number) {
 	}
 	return WKPF_ERR_SHOULDNT_HAPPEN;
 }
+inline int wkpf_propagate_property_endpoint(wkcomm_address_t dest_node_id, wuobject_t *src_wuobject, uint8_t port_number, uint8_t source_wuclass_id, uint8_t property_number, uint8_t dest_port_number,uint8_t dest_property_number, uint8_t dest_wuclass_id,  void *value)
+{
+	uint8_t wkpf_error_code = 0;
+
+	if (dest_node_id == wkcomm_get_node_id()) {
+		// Local
+		wuobject_t *dest_wuobject;
+		uint8_t wkpf_wuobject_error_code = 0;
+		wkpf_wuobject_error_code = wkpf_get_wuobject_by_port(dest_port_number, &dest_wuobject);
+		if (wkpf_wuobject_error_code == WKPF_OK) {
+			DEBUG_LOG(true, "WKPF: propagate_property (local). (%x, %x)->(%x, %x), value %x\n", 
+						port_number, property_number, 
+						dest_port_number, dest_property_number, 
+						*((uint16_t *)value)); // TODONR: values other than 16 bit values
+			if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_BOOLEAN)
+				wkpf_error_code |= wkpf_external_write_property_boolean(dest_wuobject, dest_property_number, *((bool *)value));
+			else if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_SHORT)
+				wkpf_error_code |= wkpf_external_write_property_int16(dest_wuobject, dest_property_number, *((uint16_t *)value));
+			else
+				wkpf_error_code |= wkpf_external_write_property_refresh_rate(dest_wuobject, dest_property_number, *((uint16_t *)value));
+		}
+	} else if(dest_node_id == WUKONG_MASTER) {
+
+	    DEBUG_LOG(true, "WKPF: Monitoring property (remote). (%x, %x)->(%x, %x, %x), value %x\n", 
+			    port_number, property_number, 
+			    dest_node_id, dest_port_number, 
+			    dest_property_number, *((uint16_t *)value)); // TODONR: values other than 16 bit values
+	    if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_BOOLEAN)
+    		wkpf_error_code |= wkpf_send_monitor_property_boolean(WUKONG_MASTER, source_wuclass_id, port_number, *((bool *)value));
+	    else if(WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_SHORT)
+    		wkpf_error_code |= wkpf_send_monitor_property_int16(WUKONG_MASTER, source_wuclass_id, port_number, *((uint16_t *)value));
+	    else
+		wkpf_error_code |= wkpf_send_monitor_property_refresh_rate(WUKONG_MASTER, source_wuclass_id, port_number, *((uint16_t *)value));
+
+
+	} else {
+		// Remote
+		DEBUG_LOG(true, "WKPF: propagate_property (remote). (%x, %x)->(%x, %x, %x), value %x\n", 
+				port_number, property_number, 
+				dest_node_id, dest_port_number, 
+				dest_property_number, *((uint16_t *)value)); // TODONR: values other than 16 bit values
+		if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_BOOLEAN)
+			wkpf_error_code |= wkpf_send_set_property_boolean(dest_node_id, dest_port_number, dest_property_number, dest_wuclass_id, *((bool *)value));
+		else if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_SHORT)
+			wkpf_error_code |= wkpf_send_set_property_int16(dest_node_id, dest_port_number, dest_property_number, dest_wuclass_id, *((uint16_t *)value));
+		else
+			wkpf_error_code |= wkpf_send_set_property_refresh_rate(dest_node_id, dest_port_number, dest_property_number, dest_wuclass_id, *((uint16_t *)value));
+	}
+	DEBUG_LOG(true,"wkpf_error_code=%d\n", wkpf_error_code);
+	return wkpf_error_code;
+}
+
+
 
 uint8_t wkpf_propagate_property(wuobject_t *wuobject, uint8_t property_number, void *value) {
 	uint8_t port_number = wuobject->port_number;
@@ -127,44 +180,22 @@ uint8_t wkpf_propagate_property(wuobject_t *wuobject, uint8_t property_number, v
 			uint16_t dest_component_id = WKPF_LINK_DEST_COMPONENT_ID(i);
 			uint8_t dest_property_number = WKPF_LINK_DEST_PROPERTY(i);
 			uint16_t dest_wuclass_id = WKPF_LINK_DEST_WUCLASS_ID(i);
-			wkcomm_address_t dest_node_id = WKPF_COMPONENT_LEADER_ENDPOINT_NODE_ID(dest_component_id);
-			uint8_t dest_port_number = WKPF_COMPONENT_LEADER_ENDPOINT_PORT(dest_component_id);
-
-			if (dest_node_id == wkcomm_get_node_id()) {
-				// Local
-				wuobject_t *dest_wuobject;
-        uint8_t wkpf_wuobject_error_code = 0;
-				wkpf_wuobject_error_code = wkpf_get_wuobject_by_port(dest_port_number, &dest_wuobject);
-				if (wkpf_wuobject_error_code == WKPF_OK) {
-					DEBUG_LOG(DBG_WKPF, "WKPF: propagate_property (local). (%x, %x)->(%x, %x), value %x\n", port_number, property_number, dest_port_number, dest_property_number, *((uint16_t *)value)); // TODONR: values other than 16 bit values
-					if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_BOOLEAN)
-						wkpf_error_code |= wkpf_external_write_property_boolean(dest_wuobject, dest_property_number, *((bool *)value));
-					else if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_SHORT)
-						wkpf_error_code |= wkpf_external_write_property_int16(dest_wuobject, dest_property_number, *((uint16_t *)value));
-					else
-						wkpf_error_code |= wkpf_external_write_property_refresh_rate(dest_wuobject, dest_property_number, *((uint16_t *)value));
-				}
-			} else if(dest_node_id == WUKONG_MASTER) {
-
-                DEBUG_LOG(DBG_WKPF, "WKPF: Monitoring property (remote). (%x, %x)->(%x, %x, %x), value %x\n", port_number, property_number, dest_node_id, dest_port_number, dest_property_number, *((uint16_t *)value)); // TODONR: values other than 16 bit values
-			    if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_BOOLEAN)
-                    wkpf_error_code |= wkpf_send_monitor_property_boolean(WUKONG_MASTER, source_wuclass_id, port_number, *((bool *)value));
-			    else if(WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_SHORT)
-                    wkpf_error_code |= wkpf_send_monitor_property_int16(WUKONG_MASTER, source_wuclass_id, port_number, *((uint16_t *)value));
-			    else
-			        wkpf_error_code |= wkpf_send_monitor_property_refresh_rate(WUKONG_MASTER, source_wuclass_id, port_number, *((uint16_t *)value));
-
-
-			} else {
-				// Remote
-				DEBUG_LOG(DBG_WKPF, "WKPF: propagate_property (remote). (%x, %x)->(%x, %x, %x), value %x\n", port_number, property_number, dest_node_id, dest_port_number, dest_property_number, *((uint16_t *)value)); // TODONR: values other than 16 bit values
-				if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_BOOLEAN)
-					wkpf_error_code |= wkpf_send_set_property_boolean(dest_node_id, dest_port_number, dest_property_number, dest_wuclass_id, *((bool *)value));
-				else if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_SHORT)
-					wkpf_error_code |= wkpf_send_set_property_int16(dest_node_id, dest_port_number, dest_property_number, dest_wuclass_id, *((uint16_t *)value));
-				else
-					wkpf_error_code |= wkpf_send_set_property_refresh_rate(dest_node_id, dest_port_number, dest_property_number, dest_wuclass_id, *((uint16_t *)value));
+			for(int j = 0; j < WKPF_NUMBER_OF_ENDPOINTS(dest_component_id);j++) {
+				uint8_t dest_port_number = WKPF_COMPONENT_ENDPOINT_PORT(dest_component_id,j);
+				wkpf_error_code |= wkpf_propagate_property_endpoint(
+					WKPF_COMPONENT_ENDPOINT_NODE_ID(dest_component_id, j),
+					src_wuobject,
+					port_number,
+					source_wuclass_id,
+					property_number,
+					dest_port_number,
+					dest_property_number,
+					dest_wuclass_id,
+					value
+				);
+				DEBUG_LOG(true,"send to endpoint %d node_id %d error %d\n", j, WKPF_COMPONENT_ENDPOINT_NODE_ID(dest_component_id, j), wkpf_error_code);
 			}
+
 			/*if (wkpf_error_code != WKPF_OK)*/
 				/*return wkpf_error_code;*/
 		}

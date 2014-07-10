@@ -265,18 +265,16 @@ Block.prototype.attach=function(parent) {
         }
 		$('#propertyeditor').empty();
 		$('#propertyeditor').append('<div id=propertyeditor_tab>');
-		$('#propertyeditor_tab').append('<ul><li><a href=#propertyeditor_loc>Location Policy</a></li><li style="display:none"><a href=#propertyeditor_ft>Fault Tolerance</a></li><li><a href=#propertyeditor_default>Default Value</a></li><li style="display:none"><a href=#propertyeditor_monitor>Monitors</a></li></ul>');
+		$('#propertyeditor_tab').append('<ul><li><a href=#propertyeditor_loc>Location Policy</a></li><li style=""><a href=#propertyeditor_ft>Fault Tolerance</a></li><li><a href=#propertyeditor_default>Default Value</a></li><li style="display:none"><a href=#propertyeditor_monitor>Monitors</a></li></ul>');
 
 		$('#propertyeditor_tab').append('<div id=propertyeditor_loc>Location: <input type=text id=propertyeditor_location_hierarchy style="width:300px"></input>'+
                                         '<button class="chooseLocNode" for="propertyeditor_location_hierarchy">Choose Tree Node</button><br>'+
                                         'Function: <input type=text id=propertyeditor_location_function style="width:300px"></input><br>'+
                                         'Functions Supported: use, range, farthest, closest, ~, |, &</div>');
                                         
-		$('#propertyeditor_tab').append('<div id=propertyeditor_ft style="dislay:none"><label for="propertyeditor_groupsize">Group Size</label>');
-		$('#propertyeditor_ft').append('<br><input id=propertyeditor_groupsize name=value></input>');
-		$('#propertyeditor_ft').append('<br>');
-		$('#propertyeditor_ft').append('<label for="propertyeditor_reactiontime">Reaction Time</label>');
-		$('#propertyeditor_ft').append('<br><input id=propertyeditor_reactiontime name=value></input></div>');
+		$('#propertyeditor_tab').append('<div id=propertyeditor_ft><label for="propertyeditor_groupsize">Group Size</label><br><input id=propertyeditor_groupsize name=value></input></div>');
+		//$('#propertyeditor_ft').append('<label for="propertyeditor_reactiontime">Reaction Time</label>');
+		//$('#propertyeditor_ft').append('<br><input id=propertyeditor_reactiontime name=value></input></div>');
 		$('#propertyeditor_ft').append('');
 		
 		$('#propertyeditor_location_hierarchy').val(locationReqLst[0]);
