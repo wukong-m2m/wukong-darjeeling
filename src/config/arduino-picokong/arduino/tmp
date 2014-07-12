@@ -1,0 +1,364 @@
+cd ..; ant arduino
+Buildfile: /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/config/arduino/build.xml
+
+compile-libs:
+
+do-compile-lib:
+     [echo] /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/vm contains java: ${contains-java-code}
+
+lib-specific-pre:
+     [echo] /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/base contains java: true
+
+compile-java:
+
+create-infusion:
+  [infuser] Infusion is up to date
+
+compile-java:
+
+create-jar:
+
+create-infusion:
+
+compile-c:
+       [cc] Starting dependency analysis for 13 files.
+       [cc] 13 files are up to date.
+       [cc] 0 files to be recompiled from dependency analysis.
+       [cc] 0 total files to be compiled.
+
+create-ar:
+
+copy-public-headerfile:
+     [copy] Copying 16 files to /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/vm/build
+
+lib-specific-post:
+
+all:
+
+do-compile-lib:
+     [echo] /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/base contains java: true
+
+lib-specific-pre:
+
+compile-java:
+
+create-jar:
+
+create-infusion:
+  [infuser] Infusion is up to date
+
+compile-c:
+       [cc] Starting dependency analysis for 9 files.
+       [cc] 2 files are up to date.
+       [cc] 7 files to be recompiled from dependency analysis.
+       [cc] 7 total files to be compiled.
+
+create-ar:
+
+copy-public-headerfile:
+
+lib-specific-post:
+
+all:
+
+do-compile-lib:
+     [echo] /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/darjeeling3 contains java: true
+
+lib-specific-pre:
+
+compile-java:
+
+create-jar:
+
+create-infusion:
+  [infuser] Infusion is up to date
+
+compile-c:
+       [cc] Starting dependency analysis for 3 files.
+       [cc] 2 files are up to date.
+       [cc] 1 files to be recompiled from dependency analysis.
+       [cc] 1 total files to be compiled.
+
+create-ar:
+
+copy-public-headerfile:
+
+lib-specific-post:
+
+all:
+
+do-compile-lib:
+     [echo] /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/uart contains java: ${contains-java-code}
+
+lib-specific-pre:
+
+compile-java:
+
+create-jar:
+
+create-infusion:
+
+compile-c:
+       [cc] Starting dependency analysis for 2 files.
+       [cc] 2 files are up to date.
+       [cc] 0 files to be recompiled from dependency analysis.
+       [cc] 0 total files to be compiled.
+
+create-ar:
+
+copy-public-headerfile:
+     [copy] Copying 1 file to /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/uart/build
+
+lib-specific-post:
+
+all:
+
+do-compile-lib:
+     [echo] /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/wkcomm contains java: ${contains-java-code}
+
+lib-specific-pre:
+
+compile-java:
+
+create-jar:
+
+create-infusion:
+
+compile-c:
+       [cc] Starting dependency analysis for 7 files.
+       [cc] 6 files are up to date.
+       [cc] 1 files to be recompiled from dependency analysis.
+       [cc] 1 total files to be compiled.
+
+create-ar:
+
+copy-public-headerfile:
+     [copy] Copying 1 file to /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/wkcomm/build
+
+lib-specific-post:
+
+all:
+
+do-compile-lib:
+     [echo] /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/wkreprog contains java: ${contains-java-code}
+
+lib-specific-pre:
+
+compile-java:
+
+create-jar:
+
+create-infusion:
+
+compile-c:
+       [cc] Starting dependency analysis for 4 files.
+       [cc] 2 files are up to date.
+       [cc] 2 files to be recompiled from dependency analysis.
+       [cc] 2 total files to be compiled.
+
+create-ar:
+
+copy-public-headerfile:
+     [copy] Copying 1 file to /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/wkreprog/build
+
+lib-specific-post:
+
+all:
+
+do-compile-lib:
+     [echo] /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/wkpf contains java: ${contains-java-code}
+
+lib-specific-pre:
+     [exec] {'c_dir': '../../../src/lib/wkpf/c/common/native_wuclasses', 'java_constants_dir': None, 'component_file': '../../../wukong/ComponentDefinitions/WuKongStandardLibrary.xml', 'enabled_file': '/home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/config/arduino/enabled_wuclasses.xml', 'java_virtualclasses_dir': None, 'java_package': None} []
+     [exec] wuClass
+     [exec] WUCLASS_GENERIC wuclass_generic_setup wuclass_generic_update wuClass
+     [exec] WUCLASS_THRESHOLD wuclass_threshold_setup wuclass_threshold_update wuClass
+     [exec] WUCLASS_TEMPERATURE_SENSOR wuclass_temperature_sensor_setup wuclass_temperature_sensor_update wuClass
+     [exec] WUCLASS_NUMERIC_CONTROLLER wuclass_numeric_controller_setup wuclass_numeric_controller_update wuClass
+     [exec] WUCLASS_LIGHT_ACTUATOR wuclass_light_actuator_setup wuclass_light_actuator_update wuClass
+     [exec] WUCLASS_LIGHT_SENSOR wuclass_light_sensor_setup wuclass_light_sensor_update wuClass
+     [exec] WUCLASS_AND_GATE wuclass_and_gate_setup wuclass_and_gate_update wuClass
+     [exec] WUCLASS_SOUND_SENSOR wuclass_sound_sensor_setup wuclass_sound_sensor_update wuClass
+     [exec] WUCLASS_PIR_SENSOR wuclass_pir_sensor_setup wuclass_pir_sensor_update wuClass
+     [exec] WUCLASS_LED wuclass_led_setup wuclass_led_update wuClass
+     [exec] WUCLASS_BINARY_SENSOR wuclass_binary_sensor_setup wuclass_binary_sensor_update wuClass
+     [exec] WUCLASS_LOGICAL wuclass_logical_setup wuclass_logical_update wuClass
+     [exec] WUCLASS_IF_SHORT wuclass_if_short_setup wuclass_if_short_update wuClass
+     [exec] WUCLASS_IF_BOOLEAN wuclass_if_boolean_setup wuclass_if_boolean_update wuClass
+     [exec] WUCLASS_TEMPERATURE_HUMIDITY_SENSOR wuclass_temperature_humidity_sensor_setup wuclass_temperature_humidity_sensor_update wuClass
+     [exec] WUCLASS_SLIDER wuclass_slider_setup wuclass_slider_update wuClass
+     [exec] WUCLASS_GH_SENSOR wuclass_gh_sensor_setup wuclass_gh_sensor_update wuClass
+     [exec] WUCLASS_MAGNETIC_SENSOR wuclass_magnetic_sensor_setup wuclass_magnetic_sensor_update wuClass
+     [exec] WUCLASS_FAN wuclass_fan_setup wuclass_fan_update wuClass
+     [exec] WUCLASS_CONDITION_SELECTOR_BOOLEAN wuclass_condition_selector_boolean_setup wuclass_condition_selector_boolean_update wuClass
+     [exec] WUCLASS_CONDITION_SELECTOR_SHORT wuclass_condition_selector_short_setup wuclass_condition_selector_short_update wuClass
+     [exec] WUCLASS_LOOP_DELAY_BOOLEAN wuclass_loop_delay_boolean_setup wuclass_loop_delay_boolean_update wuClass
+     [exec] WUCLASS_LOOP_DELAY_SHORT wuclass_loop_delay_short_setup wuclass_loop_delay_short_update wuClass
+     [exec] WUCLASS_MATH_OP wuclass_math_op_setup wuclass_math_op_update wuClass
+     [exec] WUCLASS_OR_GATE wuclass_or_gate_setup wuclass_or_gate_update wuClass
+     [exec] WUCLASS_NOT_GATE wuclass_not_gate_setup wuclass_not_gate_update wuClass
+     [exec] WUCLASS_SERVER wuclass_server_setup wuclass_server_update wuClass
+     [exec] WUCLASS_PRESSURE_SENSOR_0 wuclass_pressure_sensor_0_setup wuclass_pressure_sensor_0_update wuClass
+     [exec] WUCLASS_DIMMER wuclass_dimmer_setup wuclass_dimmer_update wuClass
+     [exec] WUCLASS_VALUE wuclass_value_setup wuclass_value_update wuClass
+     [exec] WUCLASS_CUSTOM wuclass_custom_setup wuclass_custom_update wuClass
+     [exec] WUCLASS_SWITCH wuclass_switch_setup wuclass_switch_update wuClass
+     [exec] WUCLASS_COUNTDOWN wuclass_countdown_setup wuclass_countdown_update
+
+compile-java:
+
+create-jar:
+
+create-infusion:
+
+compile-c:
+       [cc] Starting dependency analysis for 34 files.
+       [cc] 8 files are up to date.
+       [cc] 26 files to be recompiled from dependency analysis.
+       [cc] 60 total files to be compiled.
+
+create-ar:
+
+copy-public-headerfile:
+     [copy] Copying 53 files to /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/wkpf/build
+
+lib-specific-post:
+
+all:
+
+do-compile-lib:
+     [echo] /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/wkpf_virtual contains java: true
+
+lib-specific-pre:
+
+compile-java:
+
+create-jar:
+
+create-infusion:
+  [infuser] Infusion is up to date
+
+compile-c:
+       [cc] Starting dependency analysis for 4 files.
+       [cc] 2 files are up to date.
+       [cc] 2 files to be recompiled from dependency analysis.
+       [cc] 2 total files to be compiled.
+
+create-ar:
+
+copy-public-headerfile:
+
+lib-specific-post:
+
+all:
+
+compile-apps:
+    [apply] /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/base/build/base.jar
+
+process-lib-depends:
+    [apply] /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/base/build/base.jar
+
+do-process-lib-depends:
+     [echo] calling build-java-only in base/build.xml
+Duplicated project name in import. Project compiler defined first in /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/architecture/arduino/compiler.xml and again in /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/architecture/native/compiler.xml
+Trying to override old definition of task platform-compile
+Trying to override old definition of task platform-link
+Trying to override old definition of task platform-objcopy
+     [echo] /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/base contains java: true
+
+lib-specific-pre:
+
+compile-java:
+
+create-jar:
+
+create-infusion:
+  [infuser] Infusion is up to date
+
+lib-specific-post:
+
+build-java-only:
+
+compile-java:
+     [echo] classpath base/build/base.jar
+
+create-jar:
+
+create-infusion:
+  [infuser] Infusion is up to date
+
+make-djarchive:
+[djarchive] Creating archive '/home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/app/helloworld/build/helloworld.dja'
+[djarchive] Adding '/home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/app/helloworld/build/helloworld.di'
+
+all:
+
+compile-core:
+
+compile:
+       [cc] Starting dependency analysis for 5 files.
+       [cc] 5 files are up to date.
+       [cc] 0 files to be recompiled from dependency analysis.
+       [cc] 0 total files to be compiled.
+
+ar:
+
+all:
+
+compile-platform:
+
+precompile:
+
+compile-c:
+       [cc] Starting dependency analysis for 3 files.
+       [cc] 3 files are up to date.
+       [cc] 0 files to be recompiled from dependency analysis.
+       [cc] 0 total files to be compiled.
+
+ar:
+
+all:
+
+unpack:
+   [delete] Deleting directory /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/config/arduino/build
+    [mkdir] Created dir: /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/config/arduino/build/unpack
+
+generate-lib-init:
+
+compile-main:
+     [echo] /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/config/arduino/c
+    [mkdir] Created dir: /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/config/arduino/build/main
+       [cc] 3 total files to be compiled.
+
+packdi:
+    [mkdir] Created dir: /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/config/arduino/build/infusions
+   [delete] Deleting: /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/config/arduino/lib_infusions.dja
+   [delete] Deleting: /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/config/arduino/app_infusion.dja
+[djarchive] Creating archive 'lib_infusions.dja'
+[djarchive] Adding '/home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/base/build/base.di'
+[djarchive] Adding '/home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/darjeeling3/build/darjeeling3.di'
+[djarchive] Adding '/home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/lib/wkpf_virtual/build/wkpf_virtual.di'
+     [copy] Copying 1 file to /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/config/arduino
+   [carray] Converting lib_infusions.dja to temp_di_lib_infusions_archive.c, 13243 bytes
+       [cc] 1 total files to be compiled.
+   [carray] Converting app_infusion.dja to temp_di_app_infusion_archive.c, 144 bytes
+       [cc] 1 total files to be compiled.
+
+repack:
+   [delete] Deleting: /home/wycc/package/arduino-1.5.5/tools/wukong-darjeeling/src/config/arduino/darjeeling.a
+
+arduino:
+
+BUILD SUCCESSFUL
+Total time: 17 seconds
+mkdir ../../../../../../hardware/arduino/wudevice
+mkdir: 無法建立目錄‘../../../../../../hardware/arduino/wudevice’: 檔案已存在
+make: [all] Error 1 (ignored)
+cp ../darjeeling.a ../../../../../../hardware/arduino/wudevice/libdarjeeling.a
+rm -rf libraries/WukongVM/wkpf
+mkdir libraries/WukongVM/wkpf
+find ../../.. -name '*.h' -exec cp \{} libraries/WukongVM/wkpf \; 2> /dev/null
+cp -a * ../../../../../../hardware/arduino/wudevice > /dev/null
+echo "Deploy successfully"
+Deploy successfully
+cp arduino-wukong ../../../../../..
