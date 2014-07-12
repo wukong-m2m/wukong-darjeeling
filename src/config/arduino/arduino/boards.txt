@@ -42,7 +42,7 @@ mega.menu.cpu.atmega2560.build.board=AVR_MEGA2560
 
 ##############################################################
 
-wudevice.name=WuDevice
+wudevice.name=WuDevice(NanoKong with VM)
 
 wudevice.vid.0=0x2341
 wudevice.pid.0=0x003f
