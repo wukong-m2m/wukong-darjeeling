@@ -2,10 +2,9 @@
 #define __WUKONG_H
 
 extern "C" {
-	void nanokong_setup(void);
-	void nanokong_loop(void);
-	void picokong_setup(void);
-	void picokong_loop(void);
+	void wukong_setup(void);
+	void wukong_start(void);
+	void wukong_loop(void);
 #include "wkpf/wkpf.h"
 #include "wkpf/wkpf_main.h"
 #include "wkpf/wkpf_wuobjects.h"
@@ -14,7 +13,6 @@ extern "C" {
 #include "wkpf/native_wuclasses.h"
 #include "wkpf/native_wuclasses_privatedatatypes.h"
 #include "wkpf/wkcomm.h"
-#define WUKONG_HAS_VM
 };
 void wkpf_dump(wuobject_t *obj)
 {
@@ -51,19 +49,14 @@ class Wukong {
 	 	*/
 		#include "wkpf/GENERATEDwkpf_wuclass_library_arduinoIDE.h"     
 		void begin() {
-#ifdef WUKONG_HAS_VM			
-			nanokong_setup();
-#else
-			picokong_setup();
-#endif			
+			wukong_setup();
 		}
 
 		void loop() {
-#ifdef WUKONG_HAS_VM			
-			nanokong_loop();
-#else
-			picokong_loop();
-#endif			
+			wukong_loop();
+		}
+		void start() {
+			wukong_start();
 		}
 		bool send(int addr, char *payload,int len) {
 			return wkcomm_send_raw(addr, (uint8_t *)payload, len)==WKPF_OK;
