@@ -63,6 +63,10 @@ wuobject_t *wkpf_mainloop() {
 	}
 }
 
+void picokong_init(dj_di_pointer archive) {
+	wkpf_initLinkTableAndComponentMap(archive);
+	wkpf_initLocalObjectAndInitValues(archive);
+}
 void wkpf_picokong(dj_di_pointer archive) {
 	wkpf_initLinkTableAndComponentMap(archive);
 	wkpf_initLocalObjectAndInitValues(archive);
