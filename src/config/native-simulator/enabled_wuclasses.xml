@@ -1,23 +1,23 @@
 <WuKong>
-    <WuClass name="Threshold" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="And_Gate" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="Or_Gate" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="Xor_Gate" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="Not_Gate" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="If_Short" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="If_Boolean" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="Condition_Selector_Boolean" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="Condition_Selector_Short" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="Math_Op" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="Light_Sensor" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="PIR_Sensor" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="Binary_Sensor" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="Temperature_Humidity_Sensor" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="Slider" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="Magnetic_Sensor" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="Light_Actuator" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="LED" appCanCreateInstances="false" createInstancesAtStartup="0" />
-    <WuClass name="Fan" appCanCreateInstances="false" createInstancesAtStartup="0" />
+    <WuClass name="Threshold" appCanCreateInstances="false" />
+    <WuClass name="And_Gate" appCanCreateInstances="false" />
+    <WuClass name="Or_Gate" appCanCreateInstances="false" />
+    <WuClass name="Xor_Gate" appCanCreateInstances="false" />
+    <WuClass name="Not_Gate" appCanCreateInstances="false" />
+    <WuClass name="If_Short" appCanCreateInstances="false" />
+    <WuClass name="If_Boolean" appCanCreateInstances="false" />
+    <WuClass name="Condition_Selector_Boolean" appCanCreateInstances="false" />
+    <WuClass name="Condition_Selector_Short" appCanCreateInstances="false" />
+    <WuClass name="Math_Op" appCanCreateInstances="false" />
+    <WuClass name="Light_Sensor" appCanCreateInstances="false" />
+    <WuClass name="PIR_Sensor" appCanCreateInstances="false" />
+    <WuClass name="Binary_Sensor" appCanCreateInstances="false" />
+    <WuClass name="Temperature_Humidity_Sensor" appCanCreateInstances="false" />
+    <WuClass name="Slider" appCanCreateInstances="false" />
+    <WuClass name="Magnetic_Sensor" appCanCreateInstances="false" />
+    <WuClass name="Light_Actuator" appCanCreateInstances="false" />
+    <WuClass name="LED" appCanCreateInstances="false" />
+    <WuClass name="Fan" appCanCreateInstances="false" />
 </WuKong>
 
 

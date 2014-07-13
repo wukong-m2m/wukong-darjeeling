@@ -378,6 +378,7 @@ class CodeGen:
             '#include <string.h>\n',
             '#include "wkcomm.h"\n',
             '#include "wkpf_wuclasses.h"\n',
+            '#include "wkpf_properties.h"\n',
             '#include "native_wuclasses.h"\n'
         ]
         header_lines_posix = ['#include <debug.h>\n',
@@ -388,18 +389,17 @@ class CodeGen:
         ]
         init_function_lines = ['''
         uint8_t wkpf_native_wuclasses_init() {
+          uint8_t retval = WKPF_OK;
+          wuobject_t *wuobject;
+          wuobject = NULL;
           DEBUG_LOG(DBG_WKPF, "WKPF: (INIT) Running wkpf native init for node id: %x\\n", wkcomm_get_node_id());
         ''']
 
-        init_function_lines_posix = ['''
-        uint8_t wkpf_process_enabled_wuclass(char* wuclassname, bool appCanCreateInstances, int createInstancesAtStartup) {
-            static int next_free_port = 1;
+        init_function_lines_posix_register_class = ['''
+        wuclass_t* wkpf_process_enabled_wuclasses_xml_register_class(char* wuclassname, bool appCanCreateInstances) {
             printf("[posix init] Registering wuclass %s", wuclassname);
-            if (createInstancesAtStartup > 0)
-                printf(", and creating %d instance(s)\\n", createInstancesAtStartup);
-            else
-                printf("\\n");
         ''']
+
 
         dom = parseString(open(enabled_wuclasses_filename).read())
 
@@ -417,7 +417,7 @@ class CodeGen:
             appCanCreateInstancesAtt = wuclass_element.getAttribute('appCanCreateInstances')
             appCanCreateInstances = True if (appCanCreateInstancesAtt.lower()=='true' or appCanCreateInstancesAtt=='1') else False
             print appCanCreateInstances, appCanCreateInstancesAtt
-            createInstancesAtStartup = int(wuclass_element.getAttribute('createInstancesAtStartup')) if wuclass_element.getAttribute('createInstancesAtStartup') != '' else 0
+            startup_instances = wuclass_element.getElementsByTagName('CreateInstance');
 
             header_lines.append('#include "%s.h"\n' % wuclass.getCFileName())
 
@@ -426,20 +426,34 @@ class CodeGen:
                         wkpf_register_wuclass(&%s);''' % wuclass.getCName())
 
             # Create as many instances as the XML specifies
-            # TODO: we'll need some extra mechanism here later to set configuration properties like port number or
-            #       do some other config. This only works if all instances are equal.
-            if createInstancesAtStartup > 0:
-                for i in range(createInstancesAtStartup):
-                    init_function_lines.append('''
-					    {
-                        uint8_t retval;
+            for instance_element in startup_instances:
+                instance_properties = instance_element.getElementsByTagName('Property')
+                init_function_lines.append('''
                         retval = wkpf_create_wuobject(%s.wuclass_id, %d, 0, true);
                         if (retval != WKPF_OK)
                             return retval;
-						}
-                        ''' % (wuclass.getCName(), portCnt))
-                    portCnt += 1
+                        wkpf_get_wuobject_by_port(%d, &wuobject);
+                        ''' % (wuclass.getCName(), portCnt, portCnt))
+                for instance_property_element in instance_properties:
+                    print 
+                    instance_property = wuclass.getPropertyByName(instance_property_element.getAttribute('name'))
+                    instance_property_type = instance_property.getWuType()
+                    if instance_property_type.getDataType() != 'short' and not instance_property_type.isEnumTypedef():
+                        print 'unsupported type' + instance_property_datatype
+                        sys.exit()
+                    if instance_property_type.isEnumTypedef():
+                        instance_property_value = instance_property_type.getValueInCConstant(instance_property_element.getAttribute('value'))
+                    else:
+                        instance_property_value = instance_property_element.getAttribute('value')
+
+                    init_function_lines.append('''retval = wkpf_internal_write_property_int16(wuobject, %s, %s);
+                        if (retval != WKPF_OK)
+                            return retval;
+                        ''' % (instance_property.getCConstName(), instance_property_value))
                     assert portCnt < 256, 'number of wuobject exceeds 256'
+                init_function_lines.append('''%s.setup(wuobject);
+                        ''' % (wuclass.getCName()))
+                portCnt += 1
 
             # Set the flag if the application is allowed to create instances
             if appCanCreateInstances:
@@ -447,34 +461,28 @@ class CodeGen:
                         %s.flags |= WKPF_WUCLASS_FLAG_APP_CAN_CREATE_INSTANCE;''' % wuclass.getCName())
 
             header_lines_posix.append('#include "../common/native_wuclasses/%s.h"\n' % wuclass.getCFileName())
-            init_function_lines_posix.append('''
+            init_function_lines_posix_register_class.append('''
             if (!strcmp(wuclassname, "%s")) {
                 wkpf_register_wuclass(&%s);
-                for (int i=0; i<createInstancesAtStartup; i++) {
-                    uint8_t retval;
-                    retval = wkpf_create_wuobject(%s.wuclass_id, next_free_port++, 0, true);
-                    if (retval != WKPF_OK)
-                        return retval;
-                }
                 if (appCanCreateInstances)
                     %s.flags |= WKPF_WUCLASS_FLAG_APP_CAN_CREATE_INSTANCE;
-                return WKPF_OK;
+                return &%s;
             }
             ''' % (wuclass.getName(), wuclass.getCName(), wuclass.getCName(), wuclass.getCName()))
 
         init_function_lines.append('''
-            return WKPF_OK;
+            return retval;
         }''')
-        init_function_lines_posix.append('''
+        init_function_lines_posix_register_class.append('''
             printf("Unknown wuclass %s\\n", wuclassname);
-            return WKPF_ERR_WUCLASS_NOT_FOUND;
+            return NULL;
         }''')
 
         native_wuclasses.writelines(header_lines)
         native_wuclasses.writelines(init_function_lines)
         native_wuclasses.close()
         native_wuclasses_posix.writelines(header_lines_posix)
-        native_wuclasses_posix.writelines(init_function_lines_posix)
+        native_wuclasses_posix.writelines(init_function_lines_posix_register_class)
         native_wuclasses_posix.close()
 
 

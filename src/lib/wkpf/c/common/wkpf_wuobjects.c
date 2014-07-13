@@ -78,7 +78,7 @@ uint8_t wkpf_create_wuobject(uint16_t wuclass_id, uint8_t port_number, dj_object
 
 	wkpf_set_request_property_init_where_necessary(wuobject);
 
-	if (!WKPF_IS_VIRTUAL_WUCLASS(wuclass))
+	if (!WKPF_IS_VIRTUAL_WUCLASS(wuclass) && !called_from_wkpf_native_wuclasses_init)
 		wuclass->setup(wuobject);
 
 	DEBUG_LOG(DBG_WKPF, "WKPF: Created wuobject for wuclass id %d at port %d\n", wuclass_id, port_number);
