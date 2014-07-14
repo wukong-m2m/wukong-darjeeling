@@ -6,6 +6,7 @@
         <group_size requirement="1" />
         <reaction_time requirement="1" />
         <signalProperty  />
+		<monitorProperty />
     </component>
     <component type="Light_Sensor" instanceId="34" x="254" y="192" w="120" h="100">
         <link fromProperty="current_value" toInstanceId="36" toProperty="value"/>
@@ -13,6 +14,7 @@
         <group_size requirement="1" />
         <reaction_time requirement="1" />
         <signalProperty  />
+		<monitorProperty />
     </component>
     <component type="Threshold" instanceId="36" x="485" y="149" w="120" h="100">
         <link fromProperty="output" toInstanceId="35" toProperty="on_off"/>
@@ -20,12 +22,14 @@
         <group_size requirement="1" />
         <reaction_time requirement="1" />
         <signalProperty operator="" threshold="" value="" output=""  />
+		<monitorProperty />
     </component>
     <component type="Light_Actuator" instanceId="35" x="753" y="208" w="120" h="100">
         <location requirement="/WuKong/Bedroom#" />
         <group_size requirement="1" />
         <reaction_time requirement="1" />
         <signalProperty  />
+		<monitorProperty />
     </component>
 </page>
 </application>
