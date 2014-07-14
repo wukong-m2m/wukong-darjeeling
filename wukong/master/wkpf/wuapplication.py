@@ -51,7 +51,6 @@ class WuApplication:
     self.templateDir = templateDir
     self.componentXml = componentXml
     self.wuComponents = {}
-    self.wuLinkList = {}
     self.instanceIds = []
     self.monitorProperties = {}
 
@@ -170,6 +169,7 @@ class WuApplication:
 
   def parseApplication(self):
       componentInstanceMap = {}
+      wuLinkMap = {}
       application_hashed_name = self.applicationDom.getElementsByTagName('application')[0].getAttribute('name')
 
       components = self.applicationDom.getElementsByTagName('component')
@@ -239,9 +239,9 @@ class WuApplication:
       self.wuComponents[0] = component
       self.changesets.components.append(component)
       self.instanceIds.append(0)
-
       #assumption: at most 99 properties for each instance, at most 999 instances
-      linkSet = []  #store hashed result of links to avoid duplicated links: (fromInstanceId*100+fromProperty)*100000+toInstanceId*100+toProperty
+      #store hashed result of links to avoid duplicated links: (fromInstanceId*100+fromProperty)*100000+toInstanceId*100+toProperty
+      linkSet = []  
       # links
       for linkTag in self.applicationDom.getElementsByTagName('link'):
           from_component_id = linkTag.parentNode.getAttribute('instanceId')
@@ -254,21 +254,21 @@ class WuApplication:
           to_property_id = WuObjectFactory.wuclassdefsbyname[to_component.type].properties[to_property_name].id
 
           hash_value = (int(from_component_id)*100+int(from_property_id))*100000+int(to_component_id)*100+int(to_property_id)
-          if hash_value not in self.wuLinkList.keys():
+          if hash_value not in wuLinkMap.keys():
             link = WuLink(from_component, from_property_name, 
                     to_component, to_property_name)
-            self.wuLinkList[hash_value] = link
-          self.changesets.links.append(self.wuLinkList[hash_value])
+            wuLinkMap[hash_value] = link
+          self.changesets.links.append(wuLinkMap[hash_value])
       
       #add monitoring related links
       if(MONITORING == 'true'):
           for instanceId, properties in self.monitorProperties.items():
               for name in properties:
                   hash_value = (int(instanceId)*100 + int(properties[name])*100000 + 0 + 0)
-                  if hash_value not in self.wuLinkList.keys():
+                  if hash_value not in wuLinkMap.keys():
                       link = WuLink(componentInstanceMap[instanceId], name, componentInstanceMap[0], 'input')
-                      self.wuLinkList[hash_value] = link
-                  self.changesets.links.append(self.wuLinkList[hash_value])
+                      wuLinkMap[hash_value] = link
+                  self.changesets.links.append(wuLinkMap[hash_value])
           
   def cleanAndCopyJava(self):
     # clean up the directory

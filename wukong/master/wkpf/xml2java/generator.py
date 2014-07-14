@@ -70,7 +70,6 @@ class Generator:
         def generateProperties(wuobject_properties, component_properties):
             properties = wuobject_properties
             for property in properties:
-                print property.name, "change from" ,property.value, "to", component_properties[property.name], "in generateProperties"
                 if property.name in component_properties:
                     property.value = component_properties[property.name]
             return properties
@@ -128,18 +127,17 @@ class Generator:
         links = ElementTree.SubElement(root, 'links')
         components = ElementTree.SubElement(root, 'components')
         initvalues = ElementTree.SubElement(root, 'initvalues')
-     
         
         for link in changesets.links:
             #print str(link.from_component.deployid) +"to"+str(link.to_component.deployid)
-            
+            #special handler for multiplexer
             if (link.to_component.type == 'Multiplexer' and link.to_property_name != 'selector'):
                 #for multiplexers, ignore links to inputs and output, and set default values to mapped wucomponent id in FBP.
                 #assumption: component id < 65535/100, property id < 100
                 #so we can put component
                 link.to_component.properties["id"] = str(link.to_component.deployid);
                 link.to_component.properties[link.to_property.name] = str(link.from_component.deployid * 100 + link.from_property.id)
-                print "multiplexer input " + link.to_property.name+" value:"+link.to_component.properties[link.to_property.name]
+                #print "multiplexer input " + link.to_property.name+" value:"+link.to_component.properties[link.to_property.name]
                 #if current_link is not selected yet, randomly pick the current one
                 if "current_src" not in link.to_component.properties.keys():
                     link.to_component.properties["current_src"] = str(link.to_component.properties[link.to_property.name])
@@ -162,6 +160,8 @@ class Generator:
                     link_element.attrib['toComponent'] = str(int(link.from_component.properties["current_dest"])//100)
                     link_element.attrib['toProperty'] = str(int(link.from_component.properties["current_dest"])%100)
                 continue        #ignore code for normal wuclasses other than "multiplexer"
+            #end of multiplexer handler
+            
             link_element = ElementTree.SubElement(links, 'link')
             link_element.attrib['fromComponent'] = str(link.from_component.deployid)
             link_element.attrib['fromProperty'] = str(link.from_property.id)
@@ -178,7 +178,6 @@ class Generator:
                 endpoint_element.attrib['port'] = str(endpoint.port_number)
         for component in changesets.components:
             wuobject = component.instances[0]
-            print "in changesets.components"
             for property in generateProperties(wuobject.properties.values(), component):
                 if (Generator.isLinkDestination(component.deployid, property.id, changesets)):
                     if component.type != 'Multiplexer':
