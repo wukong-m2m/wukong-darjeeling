@@ -19,7 +19,8 @@
  * along with Darjeeling.  If not, see <http://www.gnu.org/licenses/>.
  */
  
-#include <time.h>
+#include <sys/time.h>
+#include <math.h>
 #include <unistd.h>
 
 #include "types.h"
@@ -31,7 +32,10 @@ void dj_timer_init()
 
 dj_time_t dj_timer_getTimeMillis()
 {
-	return clock() / (CLOCKS_PER_SEC / 1000);
+	struct timeval te; 
+    gettimeofday(&te, NULL); // get current time
+    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // caculate milliseconds
+    return (dj_time_t)milliseconds;
 }
 
 void dj_timer_delay(unsigned long msec)
