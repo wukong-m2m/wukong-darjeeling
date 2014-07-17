@@ -5,6 +5,7 @@ all:
 	rm -rf libraries/WukongVM/wkpf
 	-mkdir libraries/WukongVM/wkpf
 	find ../../.. -name '*.h' -exec cp \{} libraries/WukongVM/wkpf \; 2> /dev/null
+	cp ../c/config.h libraries/WukongVM/wkpf
 
 install: all
 	cp -a * ../../../../../../hardware/arduino/wudevice > /dev/null
