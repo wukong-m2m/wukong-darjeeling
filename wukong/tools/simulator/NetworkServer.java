@@ -208,6 +208,8 @@ public class NetworkServer extends Thread
 				if (length < 0) {
 					// Connection closed
 					keepRunning = false;
+				} else if (length == 0) {
+					// Ignore heartbeat packet.
 				} else {
 					// Length byte received. Process the rest of the message
 					int [] message = new int[length];
