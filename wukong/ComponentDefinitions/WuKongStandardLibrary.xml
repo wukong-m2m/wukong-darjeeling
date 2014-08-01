@@ -170,9 +170,24 @@
         <property name="level" access="readwrite" datatype="short" default="0"  />
     </WuClass>
     <WuClass name="Value" id="47" virtual="true" type="soft">
-	<property name="send" access="readwrite" datatype="boolean" default="0" />
+        <property name="send" access="readwrite" datatype="boolean" default="0"  />
         <property name="current" access="readwrite" datatype="short" default="0"  />
         <property name="onvalue" access="readwrite" datatype="short" default="0"  />
         <property name="offvalue" access="readwrite" datatype="short" default="0"  />
+    </WuClass>
+    <WuClass name="Custom" id="201" virtual="true" type="soft">
+        <property name="start" access="readwrite" datatype="boolean"  />
+    </WuClass>
+    <WuClass name="Switch" id="202" virtual="true" type="soft">
+        <property name="on_off" access="readwrite" datatype="boolean"  />
+    </WuClass>
+    <WuClass name="Countdown" id="203" virtual="true" type="soft">
+        <property name="delay" access="readwrite" datatype="short"  />
+        <property name="start" access="readwrite" datatype="boolean"  />
+        <property name="output" access="readonly" datatype="boolean"  />
+    </WuClass>
+    <WuClass name="Sound" id="204" virtual="false" type="soft">
+        <property name="on_off" access="readwrite" datatype="boolean"  />
+        <property name="freq" access="readwrite" datatype="short"  />
     </WuClass>
 </WuKong>
