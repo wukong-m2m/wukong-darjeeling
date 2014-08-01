@@ -9,7 +9,7 @@ all:
 
 install: all
 	cp -a ../../../../../../hardware/arduino/avr/* ../../../../../../hardware/arduino/picodevice
-	cp -a platform.txt ../../../../../../hardware/arduino/picodevice > /dev/null
+	cp -a boards.txt platform.txt ../../../../../../hardware/arduino/picodevice > /dev/null
 	cp -a libraries/WukongVM ../../../../../../hardware/arduino/picodevice/libraries > /dev/null
 	echo "Deploy successfully"
 	cp arduino-wukong ../../../../../..
