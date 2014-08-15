@@ -21,7 +21,7 @@
  
 #ifndef __config_h
 #define __config_h
-
+#include <avr/wdt.h>
 // Allocate 4k heap for the VM
 #define HEAPSIZE 4096
 
@@ -63,5 +63,8 @@ void avr_serialPrintf(char * format, ...);
 // Radios: choose as many as the routing protocol allows (max 1 for routing_none)
 #define RADIO_USE_ZWAVE
 // #define RADIO_USE_XBEE
-
+#define HAS_WDT
+#define platform_wdt_init() wdt_enable(WDTO_2S)
+#define platform_wdt_reset() wdt_reset()
+//#define platform_wdt_reset() 
 #endif

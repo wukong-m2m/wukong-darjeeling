@@ -7,7 +7,11 @@
 #include "wkpf.h"
 #include "wkpf_wuobjects.h"
 #include "wkpf_links.h"
-
+#include "config.h"
+#ifndef HAS_WDT
+#define platform_wdt_init()
+#define platform_wdt_reset()
+#endif
 void wkpf_initLinkTableAndComponentMap(dj_di_pointer archive) {
 	bool found_linktable = false, found_componentmap = false;
 	wkpf_init_token();
@@ -48,8 +52,10 @@ void wkpf_initLocalObjectAndInitValues(dj_di_pointer archive) {
 
 wuobject_t *wkpf_mainloop() {
 	wuobject_t *wuobject = NULL;
+	platform_wdt_init();
 	while(true) {
 		// Process any incoming messages
+		platform_wdt_reset();
 		dj_hook_call(dj_core_pollingHook, NULL);
 		if (dj_exec_getRunlevel() == RUNLEVEL_RUNNING) {
 			// Propagate any dirty properties
