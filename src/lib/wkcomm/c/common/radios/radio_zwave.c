@@ -129,8 +129,8 @@ void radio_zwave_poll(void) {
     }
     else if(zwave_mode==2)//reset mode
     {
-	    DEBUG_LOG(DBG_ZWAVETRACE,"start zwave reset !!!!!!!!!");
-	    radio_zwave_reset();
+	    DEBUG_LOG(true,"start zwave reset !!!!!!!!!");
+	    //radio_zwave_reset();// comment for test, because the id of wudevice becomes 1 without no reason, we believe that the wudevice reset itself automatically.
 	    zwave_mode=0;
 
     }
@@ -154,14 +154,16 @@ void radio_zwave_init(void) {
 // see issue 115     output_high(PORTK,0);
     uart_inituart(ZWAVE_UART, ZWAVE_UART_BAUDRATE);
     radio_zwave_platform_dependent_init();
-
     // Clear existing queue on Zwave
-    DEBUG_LOG(DBG_WKCOMM, "Sending NAK\n");
+    DEBUG_LOG(true, "Sending NAK\n");
     uart_write_byte(ZWAVE_UART, ZWAVE_NAK);
-    DEBUG_LOG(DBG_WKCOMM, "Clearing leftovers\n");
+    DEBUG_LOG(true, "Clearing leftovers\n");
     while (uart_available(ZWAVE_UART, 150)) {
-        uart_read_byte(ZWAVE_UART);
+        unsigned char ctest;
+	ctest = uart_read_byte(ZWAVE_UART);
+	DEBUG_LOG(true,"%02x, ",ctest);
     }
+    DEBUG_LOG(true, "After Clearing leftovers\n");
 
 // see issue 115     output_high(PORTK,1);
    
@@ -182,16 +184,21 @@ void radio_zwave_init(void) {
     uint8_t retries = 10;
     radio_zwave_address_t previous_received_address = 0;
 
-    DEBUG_LOG(DBG_WKCOMM, "Getting zwave address...\n");
+    DEBUG_LOG(true, "Getting zwave address...\n");
     while(!radio_zwave_my_address_loaded) {
         while(!radio_zwave_my_address_loaded && retries-->0) {
+            DEBUG_LOG(true, "send\n");
             SerialAPI_request(buf, 2);
             if (uart_available(ZWAVE_UART, 150))
+    		while(uart_available(ZWAVE_UART,1))// to ensure all the zwave info will be polled back within one loop.
+    		{
                 radio_zwave_poll();
+                }
         }
 // see issue 115     	output_high(PORTK,2);
         if(!radio_zwave_my_address_loaded) { // Can't read address -> panic 
 	    unsigned char softreset[] = {ZWAVE_TYPE_REQ, FUNC_ID_SERIAL_API_SOFT_RESET};
+	    DEBUG_LOG(true, "softreset\n");
 	    SerialAPI_request(softreset, 2);
 	    while (uart_available(ZWAVE_UART, 150)) {
 		uart_read_byte(ZWAVE_UART);
