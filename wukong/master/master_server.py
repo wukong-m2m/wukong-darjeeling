@@ -46,14 +46,14 @@ from configuration import *
 
 import tornado.options
 
-try:
-  from pymongo import MongoClient
-except:
-  print "Please install python mongoDB driver pymongo by using"
-  print "easy_install pymongo"
-  sys.exit(-1)
-
 if(MONITORING == 'true'):
+    try:
+      from pymongo import MongoClient
+    except:
+      print "Please install python mongoDB driver pymongo by using"
+      print "easy_install pymongo"
+      sys.exit(-1)
+
     try:
         wkpf.globals.mongoDBClient = MongoClient(MONGODB_URL)
 
