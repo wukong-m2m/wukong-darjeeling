@@ -9,9 +9,8 @@ import java.util.*;
 import java.lang.Runtime;
 import name.pachler.nio.file.*;
 
-public class WKNetworkUI extends JPanel implements TreeSelectionListener, ActionListener, DirectoryWatcherListener, NetworkServerMessagesListener {
+public class SimulatorUI extends JPanel implements TreeSelectionListener, ActionListener, DirectoryWatcherListener, INetworkServerMessagesListener {
     private static NetworkServer networkServer;
-    private static StandardLibraryParser standardLibrary;
     private static ChildProcessManager childProcessManager;
 
     private DirectoryWatcher directorywatcher;
@@ -36,7 +35,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
 
     private SensorTreeNode selectedSensorTreeNode = null;
 
-    public WKNetworkUI(String networkdir) {
+    public SimulatorUI(String networkdir) {
         super(new GridLayout(1,0));
 
         File f = new File(networkdir);
@@ -75,7 +74,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                     setIcon(actuatorIcon);
                 } else if (value instanceof DeviceTreeNode) {
                     int clientId = ((DeviceTreeNode)value).getClientId();
-                    if (WKNetworkUI.childProcessManager.hasChildProcess(clientId)) {
+                    if (SimulatorUI.childProcessManager.hasChildProcess(clientId)) {
                         // This is a node for a child process managed by the UI
                         // (meaning we can start/stop it by double clicking on the tree node)
                         if (networkServer != null && networkServer.getConnectedClients().contains(clientId))
@@ -103,7 +102,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
             tree.putClientProperty("JTree.lineStyle", lineStyle);
         }
 
-        final WKNetworkUI final_this = this;
+        final SimulatorUI final_this = this;
         MouseListener mouseListener = new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 int selRow = tree.getRowForLocation(e.getX(), e.getY());
@@ -151,14 +150,19 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         // treeView.setMinimumSize(minimumSize);
 
         JTabbedPane logTabs = new JTabbedPane();
-        WKNetworkUI.childProcessManager.setLogTabbedPane(logTabs);
+        SimulatorUI.childProcessManager.setLogTabbedPane(logTabs);
         // Tab for network trace
-        LogTextArea networkTraceTextArea = new LogTextArea();
+        final LogTextArea networkTraceTextArea = new LogTextArea();
         networkTraceTextArea.setEditable(false);
         logTabs.addTab("Network", networkTraceTextArea);
         // Start the network server
-        WKNetworkUI.networkServer.addMessagesListener(new UIMessagesListener(networkTraceTextArea, WKNetworkUI.standardLibrary));
-        WKNetworkUI.networkServer.addMessagesListener(this);
+        // SimulatorUI.networkServer.addMessagesListener(new UIMessagesListener(networkTraceTextArea));
+        SimulatorUI.networkServer.addMessagesListener(new AbstractNetworkServerMessagesListener() {
+                public void print(String msg) {
+                    networkTraceTextArea.append(msg);
+                }
+        });
+        SimulatorUI.networkServer.addMessagesListener(this);
 
         //Add the split pane to this panel.
         mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -242,7 +246,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         DeviceTreeNode device = findDeviceTreeNode(client);
         if (device != null) {
             if (device instanceof SimulatedDeviceTreeNode
-                || WKNetworkUI.childProcessManager.hasChildProcess(device.getClientId())) {
+                || SimulatorUI.childProcessManager.hasChildProcess(device.getClientId())) {
                 // It's either a node filesystem in the network directory
                 // or an external child process controlled (started/stopped) by the UI.
                 // We keep both in the tree, and update the icon.
@@ -386,11 +390,11 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         }
 
         //Create and set up the window.
-        JFrame frame = new JFrame("WKNetworkUI");
+        JFrame frame = new JFrame("SimulatorUI");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //Add content to the window.
-        WKNetworkUI ui = new WKNetworkUI(networkdir);
+        SimulatorUI ui = new SimulatorUI(networkdir);
         frame.add(ui);
 
         //Display the window.
@@ -408,7 +412,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
         commandline.add("master_server.py");
         if (appdir != null)
             commandline.add("-appdir=" + appdir);
-        WKNetworkUI.childProcessManager.addChildProcess("master", commandline, masterdir, 1);
+        SimulatorUI.childProcessManager.addChildProcess("master", commandline, masterdir, 1);
     }
 
     public static void runVMs(String vmdir, String networkdir, java.util.List<NetworkConfigParser.VMNode> vmsToStart) {
@@ -421,17 +425,18 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
             commandline.add(networkdir);
             commandline.add("-e");
             commandline.add(vm.enabledWuClassesXML.getAbsolutePath());
-            WKNetworkUI.childProcessManager.addChildProcess("vm " + vm.clientId, commandline, vmdir, vm.clientId);
+            SimulatorUI.childProcessManager.addChildProcess("vm " + vm.clientId, commandline, vmdir, vm.clientId);
         }
     }
 
     public static void main(final String[] args) {
-        WKNetworkUI.childProcessManager = new ChildProcessManager();
+        SimulatorUI.childProcessManager = new ChildProcessManager();
 
         //Schedule a job for the event dispatch thread:
         //creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                boolean network_server_only = false;
                 boolean start_vms = true;
                 boolean start_master = true;
                 String wukong_root = "../../..";
@@ -471,52 +476,64 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                     } else if (args[i].equals("-no-master")) {
                         // Don't start the master server (so we can start it manually)
                         start_master = false;
+                    } else if (args[i].equals("-network-server-only")) {
+                        // Don't start the master server (so we can start it manually)
+                        network_server_only = true;
                     } else {
                         System.out.println("Options:");
-                        System.out.println("\t-w <wkroot>\tOverride the wukong root if the simulator isn't started from <wkroot>/wukong/tools/network_ui");
-                        System.out.println("\t-s <scenario>\tSet the scenario to load to <wkroot>/simulator_scenarios/<scenario>. Defaults to <wkroot>/wukong/dollhouse");
-                        System.out.println("\t-d <dir>\tOverride the simulated IO directory to monitor. Defaults to the scenario directory.");
-                        System.out.println("\t-m <dir>\tOverride the directory where the master server is located. Defaults to <wkroot>/wukong/master");
-                        System.out.println("\t-l <file>\tOverride the standard library location. Defaults to <wkroot>/wukong/ComponentDefinitions/WuKongStandardLibrary.xml");
-                        System.out.println("\t-no-vms\t\tStop the network UI from starting the VMs, so they may be run separately, for instance in a debugger.");
-                        System.out.println("\t-no-master\tStop the network UI from starting the master, so it may be run separately.");
+                        System.out.println("\t-w <wkroot>\t\t\tOverride the wukong root if the simulator isn't started from <wkroot>/wukong/tools/network_ui");
+                        System.out.println("\t-s <scenario>\t\t\tSet the scenario to load to <wkroot>/simulator_scenarios/<scenario>. Defaults to <wkroot>/wukong/dollhouse");
+                        System.out.println("\t-d <dir>\t\t\tOverride the simulated IO directory to monitor. Defaults to the scenario directory.");
+                        System.out.println("\t-m <dir>\t\t\tOverride the directory where the master server is located. Defaults to <wkroot>/wukong/master");
+                        System.out.println("\t-l <file>\t\t\tOverride the standard library location. Defaults to <wkroot>/wukong/ComponentDefinitions/WuKongStandardLibrary.xml");
+                        System.out.println("\t-no-vms\t\t\t\tStop the network UI from starting the VMs, so they may be run separately, for instance in a debugger.");
+                        System.out.println("\t-no-master\t\t\tStop the network UI from starting the master, so it may be run separately.");
+                        System.out.println("\t-network-server-only\t\tOnly run the network server.");
                         System.exit(1);
                     }
                 }
 
-                if (networkdir == null && scenarioname == null) {
-                    System.out.println("USING DEFAULT DOLLHOUSE SCENARIO.");
-                    scenarioname = "dollhouse";
-                }
-                if (scenarioname != null) {
-                    System.out.println("LOADING " + scenarioname + ".");
-                    NetworkConfigParser config = new NetworkConfigParser(wukong_root + "/wukong/simulator_scenarios/" + scenarioname + "/networkconfig.xml");
-                    networkdir = config.pathToNetworkDirectory.getAbsolutePath();
-                    vmsToStart = config.nodes;
-                    if (config.pathToMasterApplicationsDirectory != null)
-                        appdir = config.pathToMasterApplicationsDirectory.getAbsolutePath();
-                }
-
-                if (masterdir == null)
-                    masterdir = new File(wukong_root + "/wukong/master").getAbsolutePath();
-                if (vmdir == null)
-                    vmdir = new File(wukong_root + "/src/config/native-simulator").getAbsolutePath();
                 if (standardlibraryxml == null)
                     standardlibraryxml = new File(wukong_root + "/wukong/ComponentDefinitions/WuKongStandardLibrary.xml").getAbsolutePath();
+                NetworkMessageParser.setStandardLibrary(new StandardLibraryParser(standardlibraryxml));
 
-                if (networkdir == null) {
-                    System.err.println("Please specify at least the network directory.");
-                    System.exit(1);
+                SimulatorUI.networkServer = new NetworkServer();
+                SimulatorUI.networkServer.start();
+
+                if (network_server_only) {
+                    SimulatorUI.networkServer.addMessagesListener(new AbstractNetworkServerMessagesListener() {
+                        public void print(String msg) {
+                            System.out.print(msg);
+                        }
+                    });
+                } else {
+                    if (networkdir == null && scenarioname == null) {
+                        System.out.println("USING DEFAULT DOLLHOUSE SCENARIO.");
+                        scenarioname = "dollhouse";
+                    }
+                    if (scenarioname != null) {
+                        System.out.println("LOADING " + scenarioname + ".");
+                        NetworkConfigParser config = new NetworkConfigParser(wukong_root + "/wukong/simulator_scenarios/" + scenarioname + "/networkconfig.xml");
+                        networkdir = config.pathToNetworkDirectory.getAbsolutePath();
+                        vmsToStart = config.nodes;
+                        if (config.pathToMasterApplicationsDirectory != null)
+                            appdir = config.pathToMasterApplicationsDirectory.getAbsolutePath();
+                    }
+                    if (masterdir == null)
+                        masterdir = new File(wukong_root + "/wukong/master").getAbsolutePath();
+                    if (vmdir == null)
+                        vmdir = new File(wukong_root + "/src/config/native-simulator").getAbsolutePath();
+                    if (networkdir == null) {
+                        System.err.println("Please specify at least the network directory.");
+                        System.exit(1);
+                    }
+
+                    createAndShowGUI(networkdir);
+                    if (start_master)
+                        runMasterServer(masterdir, appdir);
+                    if (start_vms && vmsToStart != null)
+                        runVMs(vmdir, networkdir, vmsToStart);
                 }
-
-                WKNetworkUI.standardLibrary = new StandardLibraryParser(standardlibraryxml);
-                WKNetworkUI.networkServer = new NetworkServer();
-                WKNetworkUI.networkServer.start();
-                createAndShowGUI(networkdir);
-                if (start_master)
-                    runMasterServer(masterdir, appdir);
-                if (start_vms && vmsToStart != null)
-                    runVMs(vmdir, networkdir, vmsToStart);
             }
         });
     }

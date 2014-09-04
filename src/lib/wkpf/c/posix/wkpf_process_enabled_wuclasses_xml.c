@@ -6,9 +6,11 @@
 #include "simplexml-1.0/src/simplexml.h"
 #include "wkpf.h"
 #include "posix_utils.h"
+#include "wkpf_wuclasses.h"
+#include "wkpf_wuobjects.h"
 
 // GENERATED:
-extern uint8_t wkpf_process_enabled_wuclass(char* wuclassname, bool appCanCreateInstances, int createInstancesAtStartup);
+extern wuclass_t* wkpf_process_enabled_wuclasses_xml_register_class(char* wuclassname, bool appCanCreateInstances);
 
 int wkpf_process_enabled_wuclasses_readfile (char* sFileName, char** psData, long *pnDataLen) {
     struct stat fstat;
@@ -39,18 +41,33 @@ int wkpf_process_enabled_wuclasses_readfile (char* sFileName, char** psData, lon
     }   
 }
 
+
 void* wkpf_process_enabled_wuclasses_handler (SimpleXmlParser parser, SimpleXmlEvent event, 
     const char* szName, const char* szAttribute, const char* szValue)
 {
+    static int next_free_port = 1;
     static char wuclassname[1024];
     static bool appCanCreateInstances;
-    static int createInstancesAtStartup;
+    static wuclass_t *wuclass;
 
-    if (event == ADD_SUBTAG) {
-        if (!strcmp(szName, "WuClass")) {
-            wuclassname[0] = 0;
-            appCanCreateInstances = false;
-            createInstancesAtStartup = 0;
+    uint8_t retval;
+
+    if (event == ADD_SUBTAG && !strcmp(szName, "WuClass")) {
+        wuclassname[0] = 0;
+        appCanCreateInstances = false;
+        wuclass = NULL;
+    } else if (event == ADD_SUBTAG && !strcmp(szName, "CreateInstance")) {
+        if (wuclass == NULL)
+            wuclass = wkpf_process_enabled_wuclasses_xml_register_class(wuclassname, appCanCreateInstances);
+        if (wuclass == NULL) {
+            printf("Couldn't register wuclass '%s'\n", wuclassname);
+            exit(1);
+        }
+
+        retval = wkpf_create_wuobject(wuclass->wuclass_id, next_free_port++, 0, true);
+        if (retval != WKPF_OK) {
+            printf("Couldn't create wuobject for class '%s'. Error %d\n", wuclassname, retval);
+            exit(1);
         }
     } else if (event == ADD_ATTRIBUTE) {
         if (!strcmp(szAttribute, "name"))
@@ -59,14 +76,12 @@ void* wkpf_process_enabled_wuclasses_handler (SimpleXmlParser parser, SimpleXmlE
             appCanCreateInstances = strcmp(szValue, "true") == 0
                                         || strcmp(szValue, "True") == 0
                                         || strcmp(szValue, "1") == 0;
-        else if (!strcmp(szAttribute, "createInstancesAtStartup"))
-            createInstancesAtStartup = atoi(szValue);
-    } else if (event == FINISH_TAG) {
-        if (!strcmp(szName, "WuClass")) {
-            if (wkpf_process_enabled_wuclass(wuclassname, appCanCreateInstances, createInstancesAtStartup) != WKPF_OK) {
-                printf("Initialisation failed.\n");
-                exit(1);
-            }
+    } else if (event == FINISH_TAG && !strcmp(szName, "WuClass")) {
+        if (wuclass == NULL)
+            wuclass = wkpf_process_enabled_wuclasses_xml_register_class(wuclassname, appCanCreateInstances);
+        if (wuclass == NULL) {
+            printf("Couldn't register wuclass '%s'\n", wuclassname);
+            exit(1);
         }
     }
 

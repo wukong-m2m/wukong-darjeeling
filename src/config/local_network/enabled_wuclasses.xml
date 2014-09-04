@@ -1,4 +1,8 @@
 <WuKong>
-    <WuClass name="Magnetic_Sensor" appCanCreateInstances="false" createInstancesAtStartup="1" />
-    <WuClass name="Light_Actuator" appCanCreateInstances="false" createInstancesAtStartup="1" />
+    <WuClass name="Magnetic_Sensor" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Light_Actuator" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
 </WuKong>

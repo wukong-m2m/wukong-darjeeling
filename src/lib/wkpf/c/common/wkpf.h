@@ -45,5 +45,6 @@ typedef int16_t   wkpf_refresh_rate_t; // TODONR: should be changed later when I
 // Need to make sure these codes don't overlap with other libs or the definitions in panic.h
 #define WKPF_PANIC_ERROR_CREATING_LOCAL_OBJECTS             110
 #define WKPF_PANIC_MISSING_BINARY_FILE                      111
+#define WKPF_PANIC_PIN_NOT_SUPPORTED                        112
 
 #endif // WKPF_H

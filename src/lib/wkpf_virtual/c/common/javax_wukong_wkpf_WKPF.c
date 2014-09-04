@@ -198,7 +198,7 @@ void javax_wukong_wkpf_WKPF_boolean_updateLinking_short_short_byte_short_byte_sh
 	wkpf_send_set_linktable_no_token(orig_dest_node_id, setter_component_id, orig_dest_component_id, orig_src_component_id, orig_src_property_id, 
 	                                orig_dest_component_id, orig_dest_property_id, new_src_component_id, 
 	                                new_src_property_id, new_dest_component_id, new_dest_property_id);
-	DEBUG_LOG(true, "about to update_link", orig_src_node_id, new_src_node_id);
+	DEBUG_LOG(true, "about to update_link");
 	uint8_t rt_val = wkpf_update_link(orig_src_component_id, orig_src_property_id, orig_dest_component_id, orig_dest_property_id, 
 	                                  new_src_component_id, new_src_property_id, new_dest_component_id, new_dest_property_id);
 

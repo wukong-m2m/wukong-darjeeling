@@ -9,7 +9,6 @@
 		<Node id="4" enabled_wuclasses="enabled_wuclasses_bedroom3.xml" />
 		<Node id="5" enabled_wuclasses="enabled_wuclasses_kitchen.xml" />
 		<Node id="6" enabled_wuclasses="enabled_wuclasses_entrance1.xml" />
-		<Node id="7" enabled_wuclasses="enabled_wuclasses_entrance2.xml" />
 	</Nodes>
 </WuKongNetworkSimulatorConfig>
 

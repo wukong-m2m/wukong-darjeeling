@@ -6,6 +6,7 @@
         <group_size requirement="1" />
         <reaction_time requirement="1" />
         <signalProperty output=""  />
+		<monitorProperty />
     </component>
     <component type="Or_Gate" instanceId="27" x="657" y="240" w="120" h="100">
         <link fromProperty="output" toInstanceId="36" toProperty="on_off"/>
@@ -13,20 +14,23 @@
         <group_size requirement="1" />
         <reaction_time requirement="1" />
         <signalProperty output=""  />
+		<monitorProperty />
     </component>
     <component type="Magnetic_Sensor" instanceId="31" x="251" y="104" w="120" h="100">
         <link fromProperty="output" toInstanceId="26" toProperty="input1"/>
-        <location requirement="/WuKong/Entrance/Left#" />
+        <location requirement="/WuKong/Entrance#" />
         <group_size requirement="1" />
         <reaction_time requirement="1" />
-        <signalProperty output="" refresh_rate=""  />
+        <signalProperty output="" refresh_rate="" __pin=""  />
+		<monitorProperty />
     </component>
     <component type="Magnetic_Sensor" instanceId="32" x="244" y="240" w="120" h="100">
         <link fromProperty="output" toInstanceId="26" toProperty="input2"/>
-        <location requirement="/WuKong/Entrance/Right#" />
+        <location requirement="/WuKong/Entrance#" />
         <group_size requirement="1" />
         <reaction_time requirement="1" />
-        <signalProperty output="" refresh_rate=""  />
+        <signalProperty output="" refresh_rate="" __pin=""  />
+		<monitorProperty refresh_rate="1" />
     </component>
     <component type="PIR_Sensor" instanceId="34" x="249" y="390" w="120" h="100">
         <link fromProperty="current_value" toInstanceId="27" toProperty="input2"/>
@@ -34,12 +38,14 @@
         <group_size requirement="1" />
         <reaction_time requirement="1" />
         <signalProperty current_value="" refresh_rate=""  />
+		<monitorProperty />
     </component>
     <component type="Light_Actuator" instanceId="36" x="868" y="234" w="120" h="100">
         <location requirement="/WuKong/Entrance#" />
         <group_size requirement="1" />
         <reaction_time requirement="1" />
         <signalProperty on_off=""  />
+		<monitorProperty />
     </component>
 </page>
 </application>
