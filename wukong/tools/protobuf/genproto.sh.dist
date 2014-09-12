@@ -1,0 +1,5 @@
+PROTO_HOME=/Users/Peter/Documents/install/protobuf-2.6.0/src
+STORAGE_PATH=../../../..//master/wkpf/storage
+
+cd $PROTO_HOME
+sh protoc --proto_path=$STORAGE_PATH --python_out=$STORAGE_PATH/model  $STORAGE_PATH/proto/storage.proto
