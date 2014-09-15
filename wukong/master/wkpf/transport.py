@@ -713,8 +713,9 @@ class BrokerAgent:
             # insert monitoring message into database
             if deliver.command == pynvc.MONITORING:
                 data_collection = sensor.SensorData.createByPayload(deliver.destination, deliver.payload)
-                print(data_collection.toDocument())
-                globals.mongoDBClient.wukong.readings.insert(ast.literal_eval(data_collection.toDocument()))
+                if (data_collection != None):
+                    print(data_collection.toDocument())
+                    globals.mongoDBClient.wukong.readings.insert(ast.literal_eval(data_collection.toDocument()))
 
             # display logs from nodes if received
             print deliver.command

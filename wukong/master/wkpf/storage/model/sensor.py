@@ -11,16 +11,17 @@ class SensorData:
 
     @classmethod
     def createByPayload(self, node_id, payload):
+        if (len(payload) >= 7):
+            class_id = (payload[2] << 8) + payload[3]
+            port = payload[4]
+            type = payload[5]
+            if type == 1: #boolean
+                value = payload[6]
+            else:
+                value = (payload[6] << 8) + payload[7]
 
-        class_id = (payload[2] << 8) + payload[3]
-        port = payload[4]
-        type = payload[5]
-        if type == 1: #boolean
-            value = payload[6]
-        else:
-            value = (payload[6] << 8) + payload[7]
-
-        return SensorData(node_id, class_id, port, value, 0)
+            return SensorData(node_id, class_id, port, value, 0)
+        return None
 
     @classmethod
     def createByCollection(self, document):
