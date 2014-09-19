@@ -6,6 +6,7 @@ from wkpf.locationTree import *
 from wkpf.parser import *
 from configuration import *
 from wkpf.wkpfcomm import *
+import serial
 
 class WuTest:
     def __init__(self,dev):
@@ -33,11 +34,15 @@ class WuTest:
             l = self.console.readline()
             if l.find("ready") != -1: break
     def deviceLearn(self):
-        self.write("$l");
+        self.console.write("$l")
     def deviceReset(self):
-        self.write("$r");
+        self.console.write("$r")
     def constrollerReset(self):
         pass
+
+    def discovery(self):
+        self.comm.getNodeIds()
+        self.comm.getAllNodeInfos(False)
 
 
 def initDevice(dev):
@@ -55,7 +60,7 @@ if __name__ == '__main__':
     ret = dev.wait('ready')
     print "----->", ret
     dev.waitDeviceReady()
-    dev.deviceRest()
+    dev.deviceReset()
     dev.deviceLearn()
     dev.wait('found',20)
 
