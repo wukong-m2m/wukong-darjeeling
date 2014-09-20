@@ -72,7 +72,9 @@ void wkreprog_impl_write(uint8_t size, uint8_t* data) {
 }
 
 void wkreprog_impl_close() {
-	DEBUG_LOG(DBG_WKREPROG, "AVR: Closing flash file.\n");
+	if (avr_flash_pageaddress == 0) //prevent the file be closed for more than one time.
+        	return;
+        DEBUG_LOG(DBG_WKREPROG, "AVR: Closing flash file.\n");
 	if (avr_flash_buf_len != 0) { // If there's any data remaining, write it to flash.
 		// Fill the remaining of the buffer with the old data currently in the file
 		for (int i=avr_flash_buf_len; i<SPM_PAGESIZE; i++)

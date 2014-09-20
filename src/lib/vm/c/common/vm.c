@@ -33,6 +33,11 @@
 #include "vm_gc.h"
 #include "jlib_base.h"
 
+#include "config.h"
+#ifndef HAS_WDT
+#define platform_wdt_init()
+#define platform_wdt_reset()
+#endif
 /**
  *
  *
@@ -51,6 +56,7 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 	dj_vm *vm;
 	dj_object * obj;
 
+	platform_wdt_init();
 	// create a new VM
 	vm = dj_vm_create();
 
@@ -75,6 +81,7 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 	// start the main execution loop
 	while (dj_vm_countLiveThreads(vm)>0)
 	{
+		platform_wdt_reset();
 		dj_vm_schedule(vm);
 		if (vm->currentThread!=NULL)
 			if (vm->currentThread->status==THREADSTATUS_RUNNING)
