@@ -40,6 +40,9 @@
 				name="gcc"
 				outfile="@{outputfile}"
 				>				
+                                <linker>
+                                        <libset libs="m" />
+                                </linker>
 				<link-elements/>
 			</cc>
 		</sequential>
