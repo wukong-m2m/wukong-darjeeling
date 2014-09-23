@@ -5,10 +5,12 @@
 #include <unistd.h>
 
 void wuclass_light_actuator_setup(wuobject_t *wuobject) {
+	//gpio26 corresponds to arduino port IO8
 	if( access( "/sys/class/gpio/gpio26/value", F_OK ) == -1 ) {
 		system("echo -n 26 > /sys/class/gpio/export");
 	}
 	system("echo -n out > /sys/class/gpio/gpio26/direction");
+	system("echo -n strong > /sys/class/gpio/gpio26/drive");
 }
 
 void wuclass_light_actuator_update(wuobject_t *wuobject) {
