@@ -10,6 +10,6 @@ To use python mock test, please install pymock
 3) Pymock
 http://theblobshop.com/pymock/
 
-
-4) Realize binary program
+To Release binary program
+4) Python installer
 Install pythonhosted.org/PyInstaller/
