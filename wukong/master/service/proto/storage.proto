@@ -1,0 +1,58 @@
+option py_generic_services = true;
+
+message Location {
+    enum LocationType {
+        BEDROOM = 1;
+        LIVING_ROOM = 2;
+        KITCHEN = 3;
+        WASH_ROOM = 4;
+    }
+
+    required LocationType type = 1;
+}
+
+message SensorData {
+    enum SensorType {
+        PRESSURE_SENSOR = 1;
+    }
+
+    required SensorType type = 1;
+    required Location location = 2;
+    required int32 value = 3;
+    optional float confidence = 4;
+    required int64 timestamp = 5;
+}
+
+message ContextData {
+    enum ContextType {
+        LOCATION = 1;
+    }
+
+    required ContextType type = 1;
+    required string value = 2;
+    optional float confidence = 3;
+    required int64 timestamp = 4;
+    required int64 valid_milliseconds = 5;
+
+}
+
+message FetchRequest {
+    optional Location location = 1;
+    optional int64 start_timestamp = 2;
+    optional int64 end_timestamp = 3;
+}
+
+message FetchResponse {
+    repeated SensorData sensorDataList = 1;
+}
+
+message void {
+
+}
+
+service StorageService {
+    rpc storeSensorData(SensorData) returns(void);
+    rpc storeContextData(ContextData) returns(void);
+    rpc getSensorData(FetchRequest) returns(FetchResponse);
+}
+
