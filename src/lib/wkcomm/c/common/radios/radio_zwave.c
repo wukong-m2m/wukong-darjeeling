@@ -130,7 +130,7 @@ void radio_zwave_poll(void) {
     else if(zwave_mode==2)//reset mode
     {
 	    DEBUG_LOG(DBG_ZWAVETRACE,"start zwave reset !!!!!!!!!");
-	    radio_zwave_reset();
+	    //radio_zwave_reset(); // because the id of wudevice becomes 1 without no reason, we believe that the wudevice reset itself automatically.
 	    zwave_mode=0;
 
     }
@@ -188,7 +188,10 @@ void radio_zwave_init(void) {
         while(!radio_zwave_my_address_loaded && retries-->0) {
             SerialAPI_request(buf, 2);
             if (uart_available(ZWAVE_UART, 150))
-                radio_zwave_poll();
+                 while(uart_available(ZWAVE_UART,1))// to ensure all the zwave info will be polled back within one loop.
+		 {
+		   radio_zwave_poll();
+		 }
         }
 // see issue 115     	output_high(PORTK,2);
         if(!radio_zwave_my_address_loaded) { // Can't read address -> panic 
