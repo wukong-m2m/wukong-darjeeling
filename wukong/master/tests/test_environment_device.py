@@ -13,6 +13,7 @@ class WuTest:
     def __init__(self, dev):
         self.dev = dev
         self.comm = getComm()
+        self.nodeID = 2
         WuClassLibraryParser.read(COMPONENTXML_PATH)
 
     def download(self, hexfile):
@@ -54,6 +55,11 @@ class WuTest:
     def discovery(self):
         return self.comm.getAllNodeInfos(True)
 
+    def setLocation(self, location):
+        self.comm.setLocation(self.nodeID, location)
+
+    def getLocation(self):
+        return self.comm.getLocation(self.nodeID)
 
 def initDevice(dev):
     obj = WuTest(dev)
