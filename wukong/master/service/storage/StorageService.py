@@ -1,7 +1,6 @@
 from model.proto.storage_pb2 import *
 from protobuf.socketrpc import *
 
-@Singleton
 class StorageService(object):
   def __init__(self):
     self.channel = SocketRpcChannel(host, port)
@@ -23,3 +22,13 @@ class StorageService(object):
     if (controller.failed()):
       print "Rpc failed %s : %s" % (controller.error, controller.reason)
     return fetchresponse
+
+
+
+def main():
+    service = StorageService(localhost, 8080);
+    service.storeSensorData();
+
+
+if  __name__ =='__main__':
+    main()
