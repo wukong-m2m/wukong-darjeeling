@@ -263,12 +263,12 @@ class Communication:
       #set_wukong_status("Discovery: Requesting wuclass list from node %d" % (destination))
 
       wuclasses = {}
-      total_number_of_messages = None
+      total_number_of_messages = 0
       message_number = 0
       if SIMULATION == "true":
         return self.simulator.mockWuClassList(destination)
 
-      while (message_number != total_number_of_messages):
+      while (message_number <= total_number_of_messages):
         reply = self.zwave.send(destination, pynvc.WKPF_GET_WUCLASS_LIST, [message_number], [pynvc.WKPF_GET_WUCLASS_LIST_R, pynvc.WKPF_ERROR_R])
         message_number += 1
 
@@ -317,12 +317,12 @@ class Communication:
       #set_wukong_status("Discovery: Requesting wuobject list from node %d" % (destination))
 
       wuobjects = {}
-      total_number_of_messages = None
+      total_number_of_messages = 0
       message_number = 0
       if SIMULATION == "true":
         return self.simulator.mockWuObjectList(destination)
-        
-      while (message_number != total_number_of_messages):
+
+      while (message_number <= total_number_of_messages):
         reply = self.zwave.send(destination, pynvc.WKPF_GET_WUOBJECT_LIST, [message_number], [pynvc.WKPF_GET_WUOBJECT_LIST_R, pynvc.WKPF_ERROR_R])
         message_number += 1
 
