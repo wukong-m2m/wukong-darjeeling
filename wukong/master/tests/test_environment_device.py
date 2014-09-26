@@ -52,8 +52,7 @@ class WuTest:
         os.system(command)
 
     def discovery(self):
-        self.comm.getNodeIds()
-        self.comm.getAllNodeInfos(False)
+        return self.comm.getAllNodeInfos(True)
 
 
 def initDevice(dev):
