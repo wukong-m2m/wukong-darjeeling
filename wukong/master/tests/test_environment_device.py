@@ -6,13 +6,16 @@ from wkpf.locationTree import *
 from wkpf.parser import *
 from configuration import *
 from wkpf.wkpfcomm import *
+from wkpf.wuclasslibraryparser import *
 import serial
 
 class WuTest:
-    def __init__(self,dev):
+    def __init__(self, dev):
         self.dev = dev
         self.comm = getComm()
-    def download(self,hexfile):
+        WuClassLibraryParser.read(COMPONENTXML_PATH)
+
+    def download(self, hexfile):
         os.system("avrdude -p atmega2560 -c wiring -P %s -U flash:w:%s" % (self.dev, hexfile))
     def add(self):
         self.comm.onAddMode()
@@ -38,7 +41,8 @@ class WuTest:
     def deviceReset(self):
         self.console.write("$r")
     def constrollerReset(self):
-        pass
+        command = '../../tools/testrtt/a.out -d %s nowait controller reset' % (ZWAVE_GATEWAY_IP)
+        os.system(command)
 
     def discovery(self):
         self.comm.getNodeIds()
