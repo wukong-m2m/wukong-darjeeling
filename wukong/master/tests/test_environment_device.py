@@ -17,11 +17,14 @@ class WuTest:
 
     def download(self, hexfile):
         os.system("avrdude -p atmega2560 -c wiring -P %s -U flash:w:%s" % (self.dev, hexfile))
+
     def add(self):
         self.comm.onAddMode()
+
     def stop(self):
         self.comm.onStopMode()
-    def wait(self,findStr,timeout=5):
+
+    def wait(self, findStr, timeout=5):
         print timeout
         while timeout > 0:
             st = self.comm.currentStatus()
@@ -30,16 +33,20 @@ class WuTest:
             time.sleep(1)
             timeout = timeout - 1
         return False
-    def waitDeviceReady(self,timeout=20):
-        self.console = serial.Serial(self.dev,baudrate=115200)
+
+    def waitDeviceReady(self, timeout=20):
+        self.console = serial.Serial(self.dev, baudrate=115200)
         while timeout > 0:
             timeout = timeout - 1
             l = self.console.readline()
             if l.find("ready") != -1: break
+
     def deviceLearn(self):
         self.console.write("$l")
+
     def deviceReset(self):
         self.console.write("$r")
+
     def constrollerReset(self):
         command = '../../tools/testrtt/a.out -d %s nowait controller reset' % (ZWAVE_GATEWAY_IP)
         os.system(command)
