@@ -3,12 +3,17 @@ from model.storage_pb2 import *
 class MongoDBStorageServiceImpl(StorageService):
   def __init__(self):
      """Initialize MongoDB Connection """
+     print 'Create mongoDB connection'
 
-  def storeSensorData(sensor_data):
-    return
+  def storeSensorData(self, controller, sensordata, callback):
+    """Received sensor data """
+    print "received data from client"
+    callback.run(void())
 
-  def storeContextData(sensor_data):
-    return
+  def storeContextData(self, controller, sensordata, callback):
+    print "received data from client"
+    callback.run(void())
 
-  def fetchSensorData(fetch_request):
-    return
+  def getSensorData(self, controller, fetchrequest, callback):
+    print "received data from client"
+    callback.run(void())

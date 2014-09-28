@@ -1,5 +1,6 @@
 from protobuf.socketrpc import server
 from mongo.MongoDBStorageServiceImpl import *
+from model.storage_pb2 import *
 
 class StorageServer(object):
   started = False
@@ -8,17 +9,17 @@ class StorageServer(object):
     self.port = port;
 
   def start(self):
-    if (not StorageServer.started):
+    if not StorageServer.started:
+      StorageServer.started = True
       storage_sever = server.SocketRpcServer(self.port)
       storage_sever.registerService(MongoDBStorageServiceImpl())
+      print 'Start storage server on port', self.port
       storage_sever.run()
-      StorageServer.started = True
 
 
 def main():
-    server = StorageServer(8080);
+    server = StorageServer(8888);
     server.start()
-
 
 if  __name__ =='__main__':
     main()
