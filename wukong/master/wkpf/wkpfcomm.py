@@ -2,7 +2,7 @@
 import sys, time, copy
 from transport import *
 from locationTree import *
-from models import *
+from model.models import *
 from globals import *
 from configuration import *
 import simulator

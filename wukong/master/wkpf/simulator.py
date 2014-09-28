@@ -1,6 +1,6 @@
 from globals import *
 import xml.dom.minidom
-from models import *
+from model.models import *
 
 class MockDiscovery:
     def new_message(*args):

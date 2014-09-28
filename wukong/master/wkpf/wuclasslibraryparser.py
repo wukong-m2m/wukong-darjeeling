@@ -2,7 +2,7 @@
 
 import os, sys, traceback
 import xml.dom.minidom
-from models import *
+from model.models import *
 
 class WuClassLibraryParser:
   @staticmethod

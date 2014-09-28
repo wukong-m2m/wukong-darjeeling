@@ -1,7 +1,7 @@
 # vim:ts=2 sw=2 expandtab
 import sys, os, traceback, time, re, copy
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from models import WuClassDef, WuComponent, WuLink
+from model.models import WuClassDef, WuComponent, WuLink
 from mapper import firstCandidate
 from locationTree import *
 from locationParser import *

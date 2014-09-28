@@ -7,7 +7,7 @@ import sys, traceback, os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "./pyparsing"))
 from configuration import *
-from models import *
+from model.models import *
 from locationTree import *
 from pyparsing import *
 import math

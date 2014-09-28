@@ -4,7 +4,7 @@
 #priority | < & < ~
 #any kind of spaces, tabs or "\n" are not allowed in URL
 
-from models import Node
+from model.models import Node
 from locationTree import *
 
 
