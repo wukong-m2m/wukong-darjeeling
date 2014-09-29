@@ -1,0 +1,8 @@
+/**
+ * The proto defines the messages that are exchanged between progression server and master.
+ *
+ *
+ *
+ */
+
+ option py_generic_services = true;

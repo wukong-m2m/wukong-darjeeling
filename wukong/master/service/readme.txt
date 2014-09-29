@@ -1,10 +1,12 @@
 To enable the protobuf and python rpc, you need to download and install:
 
-1) Protobuf library
-https://github.com/google/protobuf
+1) Protobuf compiler protobuf-2.5.0.tar.bz2
+https://code.google.com/p/protobuf/downloads/list
+follow steps in INSTALL.txt
 
 2) Install Protobuf Python libary
 https://pypi.python.org/pypi/protobuf/2.6.0
+easy_install protobuf-2.6.0-py2.7.egg
 
 3) Proto RPC channel implementation
 https://code.google.com/p/protobuf-socket-rpc/downloads/detail?name=protobuf.socketrpc-1.3.2-py2.6.egg&can=2&q=
