@@ -2,7 +2,8 @@ To enable the protobuf and python rpc, you need to download and install:
 
 1) Protobuf compiler protobuf-2.5.0.tar.bz2
 https://code.google.com/p/protobuf/downloads/list
-follow steps in INSTALL.txt
+ 1. follow steps in INSTALL.txt to make and install protoc
+ 2. go into python folder, follow readme to install google.proto.rpc library
 
 2) Install Protobuf Python libary
 https://pypi.python.org/pypi/protobuf/2.6.0

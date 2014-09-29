@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__f
 from jinja2 import Template, Environment, FileSystemLoader
 from struct import pack
 
-from wkpf.models import *
+from wkpf.model.models import *
 
 from configuration import *
 from wkpf.util import *

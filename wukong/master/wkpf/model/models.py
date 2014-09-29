@@ -72,6 +72,9 @@ class WuObjectFactory:
   def createWuClassDef(cls, id, name, virtual, type, properties = None):
     cls.wuclassdefsbyid[id] = WuClassDef( id, name, virtual, type, properties) 
     cls.wuclassdefsbyname[name] = cls.wuclassdefsbyid[id]
+    print '***********************'
+    print cls.wuclassdefsbyname
+
     return cls.wuclassdefsbyname[name]
 
 class WuClassDef:
@@ -200,7 +203,7 @@ class WuNode:
     return None
   
   @classmethod
-  def saveNodes(cls, filename="../LocalData/nodes.xml"):#for debug now, will expand to support reconstructing nodes from the dump ---- Sen
+  def saveNodes(cls, filename="../../../LocalData/nodes.xml"):#for debug now, will expand to support reconstructing nodes from the dump ---- Sen
       
     fin = open(filename,"w")
     fin.write( WuNode.dumpXML())
@@ -210,14 +213,14 @@ class WuNode:
       WuNode.locations[id] = WuNode.node_dict[id].location
     return
   @classmethod
-  def clearNodes(cls, filename="../LocalData/nodes.xml"):
+  def clearNodes(cls, filename="../../../LocalData/nodes.xml"):
     cls.node_dict = {}
     fin = open(filename,"w")
     fin.write("")
     fin.close()
     return
   @classmethod
-  def loadNodes(cls, filename="../LocalData/nodes.xml"):#for debug now, will expand to support reconstructing nodes from the dump ---- Sen
+  def loadNodes(cls, filename="../../../LocalData/nodes.xml"):#for debug now, will expand to support reconstructing nodes from the dump ---- Sen
       print ('[loadNodes in models] Loading node from file', filename)
       try:
           fin = open(filename,"r")
