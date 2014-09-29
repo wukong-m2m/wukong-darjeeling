@@ -1,3 +1,22 @@
+/**
+ * The proto defines the communication messages between the information exchange between the storage clients and
+ * storage server of ICS. Within the Wukong ecosystem, there are several parties will use it. They include:
+ *
+ * 1) ICS Storage Server
+ *    NTU ICS will record the sensor data and user actions for long term analysis. The storage API hidden the schema of
+ *    storage, and provide a convenient data access capability for clients who want to store or fetch data.
+ * 2) Wukong Master
+ *    A Wukong Master manages a bunch of wudevice, flow based progromming model based applications, mapping decision
+ *    making. Master will use storage service to persistent those meta data
+ * 3) Gateway
+ *    A Gateway is responsible for cross network routing, collecting the monitored data, send to progression server, and
+ *    store monitored data to ICS storage server.
+ * 4) Progression Server
+ *    The progression server is a local intelligent server that analysis the runtime data. Learning plugins will generate
+ *    context data. To evaluate the correctness of them, progression server will persistent those data into ICT storage.
+**/
+
+
 option py_generic_services = true;
 
 message Location {
@@ -5,7 +24,7 @@ message Location {
         BEDROOM = 1;
         LIVING_ROOM = 2;
         KITCHEN = 3;
-        WASH_ROOM = 4;
+        BATH_ROOM = 4;
     }
 
     required LocationType type = 1;
@@ -14,6 +33,11 @@ message Location {
 message SensorData {
     enum SensorType {
         PRESSURE_SENSOR = 1;
+        LIGHT_SENSOR = 2;
+        TEMPERATURE_HUMIDITY_SENSOR = 3;
+        PIR_SENSOR = 4;
+        MAGNETIC_SENSOR = 5;
+        SLIDER = 6;
     }
 
     required SensorType type = 1;
