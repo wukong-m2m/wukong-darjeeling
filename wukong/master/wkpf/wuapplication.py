@@ -3,8 +3,8 @@ import sys, os, traceback, time, re, copy
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from model.models import WuClassDef, WuComponent, WuLink
 from mapper import firstCandidate
-from locationTree import *
-from locationParser import *
+from model.locationTree import *
+from model.locationParser import *
 from xml.dom.minidom import parse, parseString
 from xml.parsers.expat import ExpatError
 import simplejson as json

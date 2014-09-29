@@ -2,13 +2,13 @@
 import sys, os, traceback, copy
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from parser import *
-from locationTree import *
+from wkpf.model.locationTree import *
 from xml.dom.minidom import parse, parseString
 from xml.parsers.expat import ExpatError
 import simplejson as json
 import logging, logging.handlers, wukonghandler
 from collections import namedtuple
-from locationParser import *
+from wkpf.model.locationParser import *
 #from codegen import CodeGen
 from xml2java.generator import Generator
 import copy
