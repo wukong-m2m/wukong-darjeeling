@@ -72,9 +72,6 @@ class WuObjectFactory:
   def createWuClassDef(cls, id, name, virtual, type, properties = None):
     cls.wuclassdefsbyid[id] = WuClassDef( id, name, virtual, type, properties) 
     cls.wuclassdefsbyname[name] = cls.wuclassdefsbyid[id]
-    print '***********************'
-    print cls.wuclassdefsbyname
-
     return cls.wuclassdefsbyname[name]
 
 class WuClassDef:
