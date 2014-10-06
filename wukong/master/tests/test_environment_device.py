@@ -32,7 +32,7 @@ class WuTest:
 
         ## set up communication gateway
         self.comm = getComm()
-        WuClassLibraryParser.read(COMPONENTXML_PATH)
+        
         self.pair_devices_gateway()
 
     def pair_devices_gateway(self):
@@ -102,6 +102,7 @@ class WuTest:
     def constrollerReset(self):
         command = '../../tools/testrtt/a.out -d %s nowait controller reset' % (ZWAVE_GATEWAY_IP)
         os.system(command)
+        time.sleep(1)
 
     def discovery(self, force=True):
         self.allNodesInfos = self.comm.getAllNodeInfos(force, 'nodes.xml')
