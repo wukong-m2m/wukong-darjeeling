@@ -7,6 +7,7 @@ from wkpf.parser import *
 from configuration import *
 from wkpf.wkpfcomm import *
 from wkpf.wuclasslibraryparser import *
+from wkpf.wuapplication import *
 import serial
 
 class WuTest:
@@ -14,24 +15,29 @@ class WuTest:
         self.devs = TEST_DEVICES
         self.hexfiles = HEXFILES
 
-        self.__downloadAll()
+        self.loadApplication(APP_PATH)
+        # self.__downloadAll()
 
         self.comm = getComm()
         WuClassLibraryParser.read(COMPONENTXML_PATH)
 
         self.consoles = []
-        for i in xrange(self.devs):
-            console = serial.Serial(self.dev, baudrate=115200)
+        for i in xrange(len(self.devs)):
+            console = serial.Serial(self.devs[i], baudrate=115200)
             console.timeout = 1
             self.consoles.append(console)
+    
+    def loadApplication(self, dir_path):
+        self.application = WuApplication(dir=dir_path)
+        self.application.loadConfig()
 
     def __downloadAll(self):
         assert len(self.devs) == len(self.hexfiles)
-        for i in xrange(self.devs):
+        for i in xrange(len(self.devs)):
             self.__download(self.devs[i], self.hexfiles[i])
 
-    def __download(self, nodeID, hexfile):
-        os.system("avrdude -p atmega2560 -c wiring -P %s -U flash:w:%s" % (self.devs[nodeID], hexfile))
+    def __download(self, port_name, hexfile):
+        os.system("avrdude -p atmega2560 -c wiring -P %s -U flash:w:%s" % (port_name, hexfile))
 
     def add(self):
         self.comm.onAddMode()
@@ -100,10 +106,6 @@ class WuTest:
                     cnt += 1
 
         return cnt
-
-
-
-
 
 if __name__ == '__main__':
     test = WuTest()
