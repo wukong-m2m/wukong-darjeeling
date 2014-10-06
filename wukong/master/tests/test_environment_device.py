@@ -107,26 +107,26 @@ class WuTest:
         self.allNodesInfos = self.comm.getAllNodeInfos(force, 'nodes.xml')
         return self.allNodesInfos
 
-    def setLocation(self, nodeID, location):
-        self.comm.setLocation(nodeID, location)
+    def setLocation(self, node_id, location):
+        self.comm.setLocation(node_id, location)
 
-    def getLocation(self, nodeID):
-        return self.comm.getLocation(nodeID)
+    def getLocation(self, node_id):
+        return self.comm.getLocation(node_id)
 
-    def getProperty(self, nodeID, port, wuclassid, property_number):
-        return self.comm.getProperty(nodeID, port, wuclassid, property_number)
+    def getProperty(self, node_id, port, wuclassid, property_number):
+        return self.comm.getProperty(node_id, port, wuclassid, property_number)
 
-    def setProperty(self, nodeID, port, wuclassid, property_number, datatype, value):
-        self.comm.setProperty(nodeID, port, wuclassid, property_number, datatype, value)
+    def setProperty(self, node_id, port, wuclassid, property_number, datatype, value):
+        self.comm.setProperty(node_id, port, wuclassid, property_number, datatype, value)
 
-    def getWuClassList(self, nodeID):
-        return self.comm.getWuClassList(nodeID)
+    def getWuClassList(self, node_id):
+        return self.comm.getWuClassList(node_id)
 
-    def getWuObjectList(self, nodeID):
-        return self.comm.getWuObjectList(nodeID)
+    def getWuObjectList(self, node_id):
+        return self.comm.getWuObjectList(node_id)
 
-    def getNodeInfo(self, nodeID):
-        self.comm.getNodeInfo(nodeID)
+    def getNodeInfo(self, node_id):
+        self.comm.getNodeInfo(node_id)
 
     def countWuObjectByWuClassID(self, wuClassID):
         cnt = 0
