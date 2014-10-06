@@ -10,14 +10,28 @@ from wkpf.wuclasslibraryparser import *
 import serial
 
 class WuTest:
-    def __init__(self, dev):
-        self.dev = dev
+    def __init__(self):
+        self.devs = TEST_DEVICES
+        self.hexfiles = HEXFILES
+
+        self.__downloadAll()
+
         self.comm = getComm()
-        self.nodeID = 2
         WuClassLibraryParser.read(COMPONENTXML_PATH)
 
-    def download(self, hexfile):
-        os.system("avrdude -p atmega2560 -c wiring -P %s -U flash:w:%s" % (self.dev, hexfile))
+        self.consoles = []
+        for i in xrange(self.devs):
+            console = serial.Serial(self.dev, baudrate=115200)
+            console.timeout = 1
+            self.consoles.append(console)
+
+    def __downloadAll(self):
+        assert len(self.devs) == len(self.hexfiles)
+        for i in xrange(self.devs):
+            self.__download(self.devs[i], self.hexfiles[i])
+
+    def __download(self, nodeID, hexfile):
+        os.system("avrdude -p atmega2560 -c wiring -P %s -U flash:w:%s" % (self.devs[nodeID], hexfile))
 
     def add(self):
         self.comm.onAddMode()
@@ -35,18 +49,18 @@ class WuTest:
             timeout = timeout - 1
         return False
 
-    def waitDeviceReady(self, timeout=20):
-        self.console = serial.Serial(self.dev, baudrate=115200)
+    def waitDeviceReady(self, nodeID, timeout=20):
+        # self.console = serial.Serial(self.dev, baudrate=115200)
         while timeout > 0:
             timeout = timeout - 1
-            l = self.console.readline()
+            l = self.consoles[nodeID].readline()
             if l.find("ready") != -1: break
 
-    def deviceLearn(self):
-        self.console.write("$l")
+    def deviceLearn(self, nodeID):
+        self.consoles[nodeID].write("$l")
 
-    def deviceReset(self):
-        self.console.write("$r")
+    def deviceReset(self, nodeID):
+        self.consoles[nodeID].write("$r")
 
     def constrollerReset(self):
         command = '../../tools/testrtt/a.out -d %s nowait controller reset' % (ZWAVE_GATEWAY_IP)
@@ -55,28 +69,44 @@ class WuTest:
     def discovery(self):
         return self.comm.getAllNodeInfos(True)
 
-    def setLocation(self, location):
-        self.comm.setLocation(self.nodeID, location)
+    def setLocation(self, nodeID, location):
+        self.comm.setLocation(nodeID, location)
+
+    def getLocation(self, nodeID):
+        return self.comm.getLocation(nodeID)
+
+    def getProperty(self, nodeID, port, wuclassid, property_number):
+        return self.comm.getProperty(nodeID, port, wuclassid, property_number)
+
+    def setProperty(self, nodeID, port, wuclassid, property_number, datatype, value):
+        self.comm.setProperty(nodeID, port, wuclassid, property_number, datatype, value)
+
+    def getWuClassList(self, nodeID):
+        return self.comm.getWuClassList(nodeID)
+
+    def getWuObjectList(self, nodeID):
+        return self.comm.getWuObjectList(nodeID)
+
+    def getNodeInfo(self, nodeID):
+        self.comm.getNodeInfo(nodeID)
+
+    def countWuObjectByWuClassID(self, wuClassID):
+        cnt = 0
+        for node in self.allNodesInfos:
+            for key in node.wuobjects:
+                wuobject = node.wuobjects[key]
+                if wuClassID == wuobject.wuclassdef.id:
+                    cnt += 1
+
+        return cnt
 
     def getLocation(self):
         return self.comm.getLocation(self.nodeID)
 
-def initDevice(dev):
-    obj = WuTest(dev)
-    return obj
 
 
 
 if __name__ == '__main__':
-    dev = initDevice('/dev/cu.usbserial-A96P9ZJF')
-    #dev.download('vm1.hex')
-    dev.stop()
-    ret = dev.wait('done')
-    dev.add()
-    ret = dev.wait('ready')
-    print "----->", ret
-    dev.waitDeviceReady()
-    dev.deviceReset()
-    dev.deviceLearn()
-    dev.wait('found',20)
+    test = WuTest()
+
 

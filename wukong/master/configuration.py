@@ -31,3 +31,10 @@ NETWORKSERVER_PORT = int(config.get('NETWORKSERVER_PORT', 10008))
 WKPFCOMM_AGENT = config.get('WKPFCOMM_AGENT', 'ZWAVE')
 
 MONGODB_URL = config.get('MONGODB_URL', '')
+
+
+DEVICE1 = '/dev/cu.usbserial-A9OJFT55'
+VM1 = 'arduino/wutest_with_wuclass.cpp.hex'
+TEST_DEVICES = [DEVICE1]
+HEXFILES = [VM1]
+
