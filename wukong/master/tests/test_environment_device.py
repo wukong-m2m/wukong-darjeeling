@@ -10,6 +10,8 @@ from wkpf.wuclasslibraryparser import *
 from wkpf.wuapplication import *
 import serial
 
+from threading import Thread
+
 class WuTest:
 
     def __init__(self, download=True):
@@ -32,8 +34,12 @@ class WuTest:
 
         ## set up communication gateway
         self.comm = getComm()
-        
-        self.pair_devices_gateway()
+
+        for dev in self.devs:
+            self.consoles[dev] = serial.Serial(dev, baudrate=115200)
+            self.consoles[dev].timeout = 1
+
+        # self.pair_devices_gateway()
 
     def pair_devices_gateway(self):
         self.constrollerReset()
@@ -44,7 +50,6 @@ class WuTest:
             self.add()
             ret = self.wait('ready')
             print "----->", ret
-            self.consoles[dev] = serial.Serial(dev, baudrate=115200)
             self.waitDeviceReady(dev)
             self.deviceReset(dev)
             self.deviceLearn(dev)
@@ -139,9 +144,31 @@ class WuTest:
 
         return cnt
 
+    def start_log(self):
+        def func(self, console, filename):
+            f = open(filename, 'w')
+
+            while not self.log_done:
+                s = console.readline()
+                f.write(s)
+                f.flush()
+            f.close()
+
+        self.log_done = False
+        self.log_threads = []
+        for dev in self.devs:
+            filename = 'reports/node_%d.txt' % (2)
+            thread = Thread(target=func, args=(self, self.consoles[dev], filename))
+            thread.start()
+            self.log_threads.append(thread)
+
+    def stop_log(self):
+        time.sleep(1)
+        self.log_done = True
+        for thread in self.log_threads:
+            thread.join()
+
+
+
 if __name__ == '__main__':
     test = WuTest(False)
-
-    # test.discovery()
-
-
