@@ -33,8 +33,9 @@ WKPFCOMM_AGENT = config.get('WKPFCOMM_AGENT', 'ZWAVE')
 MONGODB_URL = config.get('MONGODB_URL', '')
 
 
-DEVICE1 = '/dev/cu.usbserial-A9OJFT55'
+DEVICE1 = '/dev/cu.usbserial-A9OV7PTP'
 VM1 = 'arduino/wutest_with_wuclass.cpp.hex'
 TEST_DEVICES = [DEVICE1]
 HEXFILES = [VM1]
+APP_PATH = "applications/b5fba9ff24d0045d1377a05a46b32f68/"
 
