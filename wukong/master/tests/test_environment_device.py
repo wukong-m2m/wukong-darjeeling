@@ -11,26 +11,44 @@ from wkpf.wuapplication import *
 import serial
 
 class WuTest:
-    def __init__(self):
+    def __init__(self, download=True):
+        ## set up FBP application 
+        self.application = None
+        self.loadApplication(APP_PATH)
+
+        ## set up manageable devices 
         self.devs = TEST_DEVICES
         self.hexfiles = HEXFILES
+        if download is True:
+            self.__downloadAll()
 
-        self.loadApplication(APP_PATH)
-        # self.__downloadAll()
-
-        self.comm = getComm()
+        ## load wukong component library
         WuClassLibraryParser.read(COMPONENTXML_PATH)
 
+        ## set up communication gateway
+        self.comm = getComm()
+        
+        ## set up logging 
         self.consoles = []
         for i in xrange(len(self.devs)):
             console = serial.Serial(self.devs[i], baudrate=115200)
             console.timeout = 1
             self.consoles.append(console)
     
+    ### We may assume only one application in one WuTest object.
     def loadApplication(self, dir_path):
         self.application = WuApplication(dir=dir_path)
         self.application.loadConfig()
 
+    def mapping(self): 
+        if self.application is not None:
+            locTree = LocationTree(LOCATION_ROOT)
+            self.application.mapping(locTree, None)
+    
+    def deploy_with_discovery(self):
+        if self.application is not None:
+            self.application.deploy_with_discovery()
+            
     def __downloadAll(self):
         assert len(self.devs) == len(self.hexfiles)
         for i in xrange(len(self.devs)):
@@ -108,6 +126,8 @@ class WuTest:
         return cnt
 
 if __name__ == '__main__':
-    test = WuTest()
+    test = WuTest(False)
+
+    test.discovery()
 
 

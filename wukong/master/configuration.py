@@ -34,8 +34,10 @@ MONGODB_URL = config.get('MONGODB_URL', '')
 
 
 DEVICE1 = '/dev/cu.usbserial-A9OV7PTP'
+DEVICE2 = '/dev/cu.usbserial-A98BV19T'
+DEVICE3 = '/dev/cu.usbserial-A900Z8AI'
 VM1 = 'arduino/wutest_with_wuclass.cpp.hex'
-TEST_DEVICES = [DEVICE1]
-HEXFILES = [VM1]
+TEST_DEVICES = [DEVICE1, DEVICE2, DEVICE3]
+HEXFILES = [VM1, VM1, VM1]
 APP_PATH = "applications/b5fba9ff24d0045d1377a05a46b32f68/"
 
