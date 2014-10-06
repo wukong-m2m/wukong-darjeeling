@@ -1,50 +1,64 @@
 import os, sys
 import unittest
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
-import test_environment_device
+from test_environment_device import WuTest
+from configuration import *
 
 class TestLocation(unittest.TestCase):
+
     def setUp(self):
-        self.dev = test_environment_device.WuTest('/dev/tty.usbserial-A9OJFT55')
+        self.test = WuTest()
 
     def test_basic_locationAPI(self):
-        ans = 'WuKong'
-        self.dev.setLocation(ans)
-        location = self.dev.getLocation()
-        self.assertEqual(location, ans)
+        for i in xrange(self.test.dev_len):
+            node_id = i + 2
 
-    def test_strength_location(self):
-        for i in xrange(5):
             ans = 'WuKong'
-            self.dev.setLocation(ans)
-            location = self.dev.getLocation()
+            self.test.setLocation(node_id, ans)
+            location = self.test.getLocation(node_id)
             self.assertEqual(location, ans)
 
+    def test_strength_location(self):
+        for i in xrange(self.test.dev_len):
+            node_id = i + 2
+
+            for j in xrange(5):
+                ans = 'WuKong'
+                self.test.setLocation(node_id, ans)
+                location = self.test.getLocation(node_id)
+                self.assertEqual(location, ans)
+
     def test_error_location(self):
-        ans = ''
-        self.dev.setLocation(ans)
-        location = self.dev.getLocation()
-        self.assertEqual(location, ans)
+        for i in xrange(self.test.dev_len):
+            node_id = i + 2
 
-        ans = ' '
-        self.dev.setLocation(ans)
-        location = self.dev.getLocation()
-        self.assertEqual(location, ans)
+            ans = ''
+            self.test.setLocation(node_id, ans)
+            location = self.test.getLocation(node_id)
+            self.assertEqual(location, ans)
 
-        ans = '   '
-        self.dev.setLocation(ans)
-        location = self.dev.getLocation()
-        self.assertEqual(location, ans)
+            ans = ' '
+            self.test.setLocation(node_id, ans)
+            location = self.test.getLocation(node_id)
+            self.assertEqual(location, ans)
 
-        ans = ''
-        for i in xrange(50):
-            ans = ans + ' '
-        self.dev.setLocation(ans)
-        location = self.dev.getLocation()
-        self.assertEqual(location, ans)
+            ans = '\x00'
+            self.test.setLocation(node_id, ans)
+            location = self.test.getLocation(node_id)
+            self.assertEqual(location, ans)
 
+            ans = '\x01'
+            self.test.setLocation(node_id, ans)
+            location = self.test.getLocation(node_id)
+            self.assertEqual(location, ans)
+
+            ans = ''
+            for j in xrange(50):
+                ans = ans + ' '
+            self.test.setLocation(node_id, ans)
+            location = self.test.getLocation(node_id)
+            self.assertEqual(location, ans)
 
 
 if __name__ == '__main__':
     unittest.main()
-

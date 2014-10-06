@@ -17,13 +17,15 @@ class WuTest:
         self.loadApplication(APP_PATH)
 
         ## set up manageable devices 
+        assert len(self.devs) == len(self.hexfiles)
+        self.dev_len = len(self.devs)
         self.devs = TEST_DEVICES
         self.hexfiles = HEXFILES
         if download is True:
             self.__downloadAll()
 
         ## load wukong component library
-        WuClassLibraryParser.read(COMPONENTXML_PATH)
+        WuClassLibraryParser.read(COMPONENTXML_PATH)        
 
         ## set up communication gateway
         self.comm = getComm()
