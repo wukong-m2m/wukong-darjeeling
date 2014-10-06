@@ -12,10 +12,10 @@ import serial
 
 class WuTest:
 
-    def __init__(self, download=True):
+    def __init__(self, download=True, pair=True):
         ## set up FBP application
         self.application = None
-        self.loadApplication(APP_PATH)
+        #self.loadApplication(APP_PATH)
 
         ## set up manageable devices
         self.devs = TEST_DEVICES
@@ -33,7 +33,8 @@ class WuTest:
         ## set up communication gateway
         self.comm = getComm()
         
-        self.pair_devices_gateway()
+	if pair is True:
+            self.pair_devices_gateway()
 
     def pair_devices_gateway(self):
         self.constrollerReset()
@@ -140,7 +141,7 @@ class WuTest:
         return cnt
 
 if __name__ == '__main__':
-    test = WuTest(False)
+    test = WuTest(True)
 
     # test.discovery()
 

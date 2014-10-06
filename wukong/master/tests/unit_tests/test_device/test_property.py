@@ -9,7 +9,7 @@ from configuration import *
 class TestProperty(unittest.TestCase):
 
     def setUp(self):
-        self.test = WuTest()
+        self.test = WuTest(False, False)
 
     def test_basic_propertyAPI(self):
         node_id = 2

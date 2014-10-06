@@ -7,7 +7,7 @@ from configuration import *
 class TestDiscovery(unittest.TestCase):
 
     def setUp(self):
-    	self.test = WuTest()
+    	self.test = WuTest(False, False)
 
     def test_basic_discoveryAPI(self):
     	self.test.discovery()
