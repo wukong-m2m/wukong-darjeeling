@@ -14,20 +14,18 @@ from threading import Thread
 
 class WuTest:
 
-    def __init__(self, download=True):
+    def __init__(self, download=True, pair=True):
         ## set up FBP application
         self.application = None
-        self.loadApplication(APP_PATH)
+        #self.loadApplication(APP_PATH)
 
         ## set up manageable devices
         self.devs = TEST_DEVICES
         self.hexfiles = HEXFILES
         assert len(self.devs) == len(self.hexfiles)
         self.dev_len = len(self.devs)
-        self.consoles = {}
         if download is True:
             self.__downloadAll()
-
 
         ## load wukong component library
         WuClassLibraryParser.read(COMPONENTXML_PATH)
@@ -35,11 +33,14 @@ class WuTest:
         ## set up communication gateway
         self.comm = getComm()
 
+        ## start the device consoles
+        self.consoles = {}
         for dev in self.devs:
             self.consoles[dev] = serial.Serial(dev, baudrate=115200)
             self.consoles[dev].timeout = 1
 
-        # self.pair_devices_gateway()
+        if pair is True:
+            self.pair_devices_gateway()
 
     def pair_devices_gateway(self):
         self.constrollerReset()

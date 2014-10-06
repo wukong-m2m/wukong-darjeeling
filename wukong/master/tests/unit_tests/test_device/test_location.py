@@ -7,7 +7,7 @@ from configuration import *
 class TestLocation(unittest.TestCase):
 
     def setUp(self):
-        self.test = WuTest()
+        self.test = WuTest(False, False)
 
     def test_basic_locationAPI(self):
         for i in xrange(self.test.dev_len):
