@@ -16,6 +16,9 @@ class WuTest:
         self.hexfiles = HEXFILES
 
         self.loadApplication(APP_PATH)
+        assert len(self.devs) == len(self.hexfiles)
+        self.dev_len = len(self.devs)
+
         # self.__downloadAll()
 
         self.comm = getComm()
