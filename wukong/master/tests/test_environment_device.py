@@ -66,8 +66,9 @@ class WuTest:
         command = '../../tools/testrtt/a.out -d %s nowait controller reset' % (ZWAVE_GATEWAY_IP)
         os.system(command)
 
-    def discovery(self):
-        return self.comm.getAllNodeInfos(True)
+    def discovery(self, force=True):
+        self.allNodesInfos = self.comm.getAllNodeInfos(force, 'nodes.xml')
+        return self.allNodesInfos
 
     def setLocation(self, nodeID, location):
         self.comm.setLocation(nodeID, location)
@@ -100,8 +101,6 @@ class WuTest:
 
         return cnt
 
-    def getLocation(self):
-        return self.comm.getLocation(self.nodeID)
 
 
 

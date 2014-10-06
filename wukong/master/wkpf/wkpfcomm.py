@@ -56,7 +56,7 @@ class Communication:
 
     def getNodeIds(self):
       if SIMULATION == "true":
-        return self.simulator.discovery() 
+        return self.simulator.discovery()
       return self.zwave.discovery()
 
     def getActiveNodeInfos(self, force=False):
@@ -66,19 +66,19 @@ class Communication:
     def getNodeInfos(self, node_ids):
       return filter(lambda info: info.id in node_ids, self.getAllNodeInfos())
 
-    def getAllNodeInfos(self, force=False):
+    def getAllNodeInfos(self, force=False, filename="../LocalData/nodes.xml"):
       if force == False:
-        self.all_node_infos = WuNode.loadNodes()
+        self.all_node_infos = WuNode.loadNodes(filename)
         if self.all_node_infos == None:
           print ('[wkpfcomm] error in cached discovery result')
       if force == True or self.all_node_infos == None:
         print '[wkpfcomm] getting all nodes from node discovery'
-        WuNode.clearNodes()
+        WuNode.clearNodes(filename)
         self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
         WuNode.addVirtualNodes(wkpf.globals.virtual_nodes)
-        WuNode.saveNodes()
-        
-      
+        WuNode.saveNodes(filename)
+
+
       return self.all_node_infos
 
     def updateAllNodeInfos(self):
@@ -114,7 +114,7 @@ class Communication:
 
     def onStopMode(self):
       return self.zwave.stop()
-        
+
     def currentStatus(self):
       return self.zwave.poll()
 
@@ -131,7 +131,7 @@ class Communication:
         gevent.sleep(0) # give other greenlets some air to breath
         if not wunode:
           wunode = WuNode(destination, location)
-    
+
         wuClasses = self.getWuClassList(destination)
         print '[wkpfcomm] get %d wuclasses' % (len(wuClasses))
         wunode.wuclasses = wuClasses
@@ -139,14 +139,14 @@ class Communication:
 
         wuObjects = self.getWuObjectList(destination)
         print '[wkpfcomm] get %d wuobjects' % (len(wuObjects))
-        
+
         wunode.wuobjects = wuObjects
         gevent.sleep(0)
-        
+
       else:
-        # Create a virtual wuclass for non wukong device. We support switch only now. 
+        # Create a virtual wuclass for non wukong device. We support switch only now.
         # We may support others in the future.
-        
+
         wuclassdef = WuObjectFactory.wuclassdefsbyid[4]    # Light_Actuator
 
         if not wuclassdef:
@@ -154,11 +154,11 @@ class Communication:
           return None
         wunode = WuNode(destination, None,type='native')
         port_number =1
-        
+
 
         # Create one
         if (WuObject.ZWAVE_SWITCH_PORT not in wunode.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
-          # 0x100 is a mgic number. When we see this in the code generator, 
+          # 0x100 is a mgic number. When we see this in the code generator,
           # we will generate ZWave command table to implement the wuclass by
           # using the Z-Wave command.
           wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_SWITCH_PORT, False, property_values={})
@@ -172,10 +172,10 @@ class Communication:
       print '[wkpfcomm] getLocation', destination
       #########This code is put here just in case we need to change some node location before get it.
       #Sometimes invalid locations block discovery, we have to correct it beforehand
-      #comm = getComm()   
+      #comm = getComm()
       #if comm.setLocation(1, "WuKong")
       ##########################################
-      
+
       length = 0
       location = ''
       if SIMULATION == "true":
@@ -201,7 +201,7 @@ class Communication:
           location = ''.join([chr(byte) for byte in reply.payload[3:]])
         else:
           location += ''.join([chr(byte) for byte in reply.payload[2:]])
-      
+
       return location[0:length] # The node currently send a bit too much, so we have to truncate the string to the length we need
 
     def setLocation(self, destination, location):
@@ -280,7 +280,6 @@ class Communication:
           return {}
         if total_number_of_messages == None:
           total_number_of_messages = reply.payload[3]
-
         reply = reply.payload[5:]
         print "reply=", reply
         while len(reply) > 1:
@@ -289,7 +288,7 @@ class Communication:
 
           virtual = virtual_or_publish & 0x1
           publish = virtual_or_publish & 0x2
-          
+
           #virtual wuclass, non-publish wuclass will not be shown upon discovery, because we cannot create new wuobjs using them
           #to create new virtual wuobjs, we need to re-download virtual wuclass...
           if publish and (not virtual):
@@ -362,21 +361,28 @@ class Communication:
       return wuobjects
 
     # Only used by inspector
-    def getProperty(self, wuproperty):
+    def getProperty(self, id, port, wuclassid, property_number):
+    # def getProperty(self, wuproperty):
       print '[wkpfcomm] getProperty'
 
-      wuobject = wuproperty.wuobject
-      wuclass = wuobject.wuclassdef
-      wunode = wuobject.wunode
-      value = wuproperty.value
-      datatype = wuproperty.datatype
-      number = wuproperty.number
+      # wuobject = wuproperty.wuobject
+      # wuclass = wuobject.wuclassdef
+      # wunode = wuobject.wunode
+      # value = wuproperty.value
+      # datatype = wuproperty.datatype
+      # number = wuproperty.number
 
-      reply = self.zwave.send(wunode.id, 
+      # reply = self.zwave.send(wunode.id,
+      #         pynvc.WKPF_READ_PROPERTY,
+      #         [wuobject.port_number, wuclass.id/256,
+      #               wuclass.id%256, number],
+      #         [pynvc.WKPF_READ_PROPERTY_R, pynvc.WKPF_ERROR_R])
+      reply = self.zwave.send(id,
               pynvc.WKPF_READ_PROPERTY,
-              [wuobject.port_number, wuclass.id/256, 
-                    wuclass.id%256, number], 
+              [port, wuclassid/256,
+                    wuclassid%256, property_number],
               [pynvc.WKPF_READ_PROPERTY_R, pynvc.WKPF_ERROR_R])
+
 
 
       if reply == None:
@@ -399,16 +405,17 @@ class Communication:
         value = None
       return (value, datatype, status)
 
-    def setProperty(self, wuproperty):
+    def setProperty(self, id, port, wuclassid, property_number, datatype, value):
+    # def setProperty(self, wuproperty):
       print '[wkpfcomm] setProperty'
       master_busy()
 
-      wuobject = wuproperty.wuobject
-      wuclassdef = wuobject.wuclassdef
-      wunode = wuobject.wunode
-      value = wuproperty.value
-      datatype = wuproperty.datatype
-      #number = wuproperty.wupropertydef.number
+      # wuobject = wuproperty.wuobject
+      # wuclassdef = wuobject.wuclassdef
+      # wunode = wuobject.wunode
+      # value = wuproperty.value
+      # datatype = wuproperty.datatype
+      # #number = wuproperty.wupropertydef.number
 
       if datatype == 'boolean':
         datatype = WKPF_PROPERTY_TYPE_BOOLEAN
@@ -420,14 +427,19 @@ class Communication:
         datatype = WKPF_PROPERTY_TYPE_REFRESH_RATE
 
       if datatype == WKPF_PROPERTY_TYPE_BOOLEAN:
-        payload=[wuobject.port_number, wuclassdef.id/256,
-        wuclassdef.id%256, number, datatype, 1 if value else 0]
+        payload=[port, wuclassid/256,
+        wuclassid%256, property_number, datatype, 1 if value else 0]
+        # payload=[wuobject.port_number, wuclassdef.id/256,
+        # wuclassdef.id%256, number, datatype, 1 if value else 0]
 
       elif datatype == WKPF_PROPERTY_TYPE_SHORT or datatype == WKPF_PROPERTY_TYPE_REFRESH_RATE:
-        payload=[wuobject.port_number, wuclassdef.id/256,
-        wuclassdef.id%256, number, datatype, value/256, value%256]
+        payload=[port, wuclassid/256,
+        wuclassid%256, property_number, datatype, value/256, value%256]
+        # payload=[wuobject.port_number, wuclassdef.id/256,
+        # wuclassdef.id%256, number, datatype, value/256, value%256]
 
-      reply = self.zwave.send(wunode.id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])
+      reply = self.zwave.send(id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])
+      # reply = self.zwave.send(wunode.id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])
       print '[wkpfcomm] getting reply from send command'
 
 
@@ -446,7 +458,7 @@ class Communication:
 
     def reprogram(self, destination, filename, retry=1):
       master_busy()
-      
+
       if retry < 0:
         retry = 1
 
