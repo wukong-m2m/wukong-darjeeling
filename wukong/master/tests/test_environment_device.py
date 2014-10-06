@@ -14,6 +14,7 @@ class WuTest:
     def __init__(self):
         self.devs = TEST_DEVICES
         self.hexfiles = HEXFILES
+        self.consoles = {}
 
         self.loadApplication(APP_PATH)
         assert len(self.devs) == len(self.hexfiles)
@@ -23,19 +24,28 @@ class WuTest:
 
         self.comm = getComm()
         WuClassLibraryParser.read(COMPONENTXML_PATH)
+        self.pair_devices_gateway()
 
-        self.consoles = []
-        for i in xrange(len(self.devs)):
-            console = serial.Serial(self.devs[i], baudrate=115200)
-            console.timeout = 1
-            self.consoles.append(console)
-    
+    def pair_devices_gateway(self):
+        self.constrollerReset()
+
+        for dev in self.devs:
+            self.stop()
+            ret = self.wait('done')
+            self.add()
+            ret = self.wait('ready')
+            print "----->", ret
+            self.consoles[dev] = serial.Serial(dev, baudrate=115200)
+            self.waitDeviceReady(dev)
+            self.deviceReset(dev)
+            self.deviceLearn(dev)
+            self.wait('found',20)
+
     def loadApplication(self, dir_path):
         self.application = WuApplication(dir=dir_path)
         self.application.loadConfig()
 
     def __downloadAll(self):
-        assert len(self.devs) == len(self.hexfiles)
         for i in xrange(len(self.devs)):
             self.__download(self.devs[i], self.hexfiles[i])
 
@@ -58,18 +68,17 @@ class WuTest:
             timeout = timeout - 1
         return False
 
-    def waitDeviceReady(self, nodeID, timeout=20):
-        # self.console = serial.Serial(self.dev, baudrate=115200)
+    def waitDeviceReady(self, dev, timeout=20):
         while timeout > 0:
             timeout = timeout - 1
-            l = self.consoles[nodeID].readline()
+            l = self.consoles[dev].readline()
             if l.find("ready") != -1: break
 
-    def deviceLearn(self, nodeID):
-        self.consoles[nodeID].write("$l")
+    def deviceLearn(self, dev):
+        self.consoles[dev].write("$l")
 
-    def deviceReset(self, nodeID):
-        self.consoles[nodeID].write("$r")
+    def deviceReset(self, dev):
+        self.consoles[dev].write("$r")
 
     def constrollerReset(self):
         command = '../../tools/testrtt/a.out -d %s nowait controller reset' % (ZWAVE_GATEWAY_IP)
