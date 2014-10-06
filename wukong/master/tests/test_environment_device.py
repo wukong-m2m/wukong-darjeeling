@@ -11,17 +11,26 @@ from wkpf.wuapplication import *
 import serial
 
 class WuTest:
-    def __init__(self):
+
+    def __init__(self, download=True):
+        ## set up FBP application
+        self.application = None
+        self.loadApplication(APP_PATH)
+
+        ## set up manageable devices
         self.devs = TEST_DEVICES
         self.hexfiles = HEXFILES
-        self.consoles = {}
-
-        self.loadApplication(APP_PATH)
         assert len(self.devs) == len(self.hexfiles)
         self.dev_len = len(self.devs)
+        self.consoles = {}
+        if download is True:
+            self.__downloadAll()
 
-        # self.__downloadAll()
 
+        ## load wukong component library
+        WuClassLibraryParser.read(COMPONENTXML_PATH)
+
+        ## set up communication gateway
         self.comm = getComm()
         WuClassLibraryParser.read(COMPONENTXML_PATH)
         self.pair_devices_gateway()
@@ -41,9 +50,19 @@ class WuTest:
             self.deviceLearn(dev)
             self.wait('found',20)
 
+    ### We may assume only one application in one WuTest object.
     def loadApplication(self, dir_path):
         self.application = WuApplication(dir=dir_path)
         self.application.loadConfig()
+
+    def mapping(self):
+        if self.application is not None:
+            locTree = LocationTree(LOCATION_ROOT)
+            self.application.mapping(locTree, None)
+
+    def deploy_with_discovery(self):
+        if self.application is not None:
+            self.application.deploy_with_discovery()
 
     def __downloadAll(self):
         for i in xrange(len(self.devs)):
@@ -120,6 +139,8 @@ class WuTest:
         return cnt
 
 if __name__ == '__main__':
-    test = WuTest()
+    test = WuTest(False)
+
+    # test.discovery()
 
 
