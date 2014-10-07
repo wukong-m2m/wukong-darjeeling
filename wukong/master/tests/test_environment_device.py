@@ -13,7 +13,6 @@ import serial
 from threading import Thread
 
 class WuTest:
-
     def __init__(self, download=True, pair=True):
         ## set up FBP application
         self.application = None
@@ -173,3 +172,5 @@ class WuTest:
 
 if __name__ == '__main__':
     test = WuTest(False)
+
+    test.discovery()
