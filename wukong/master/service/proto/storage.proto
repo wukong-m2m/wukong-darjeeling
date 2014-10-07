@@ -40,11 +40,13 @@ message SensorData {
         SLIDER = 6;
     }
 
-    required SensorType type = 1;
-    required Location location = 2;
-    required int32 value = 3;
-    optional float confidence = 4;
-    required int64 timestamp = 5;
+    required int32 master_id = 1;
+    required int32 sensor_id = 2;
+    required SensorType type = 3;
+    required Location location = 4;
+    required int32 value = 5;
+    optional float confidence = 6;
+    required int64 timestamp = 7;
 }
 
 message ContextData {
