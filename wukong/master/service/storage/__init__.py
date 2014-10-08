@@ -1,1 +1,3 @@
-from model.storage_pb2.py import *
+import os, sys
+lib_path = os.path.abspath('..')
+from protobuf import *
