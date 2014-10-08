@@ -75,11 +75,21 @@ class Communication:
         print '[wkpfcomm] getting all nodes from node discovery'
         WuNode.clearNodes(filename)
         self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
+
+        self.all_node_infos.append(self.getVirtualNode())
+
         WuNode.addVirtualNodes(wkpf.globals.virtual_nodes)
         WuNode.saveNodes(filename)
 
 
       return self.all_node_infos
+    def getVirtualDevice(self):
+        wuclasses = {}
+        wuobjects = {}
+        node = WuNode(1, '/' + LOCATION_ROOT, wuclasses, wuobjects, 'virtualdevice')
+        wuclassdef = WuObjectFactory.wuclassdefsbyid[44]
+        wuobject = WuObjectFactory.createWuObject(wuclassdef, node, 1, False)
+        return node
 
     def updateAllNodeInfos(self):
       nodelist = self.getNodeIds()
