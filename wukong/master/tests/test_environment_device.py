@@ -60,14 +60,16 @@ class WuTest:
         self.application = WuApplication(dir=dir_path)
         self.application.loadConfig()
 
-    def mapping(self):
+    def mapping(self, nodes_info):
         if self.application is not None:
+            self.application.parseApplication()
             locTree = LocationTree(LOCATION_ROOT)
-            self.application.mapping(locTree, None)
+            locTree.buildTree(nodes_info)
+            self.application.mapping(locTree, self.comm.getRoutingInformation())
 
     def deploy_with_discovery(self):
         if self.application is not None:
-            self.application.deploy_with_discovery()
+            self.application.deploy_with_discovery(['arduino'])
 
     def __downloadAll(self):
         for i in xrange(len(self.devs)):
@@ -171,6 +173,10 @@ class WuTest:
 
 
 if __name__ == '__main__':
-    test = WuTest(False)
+    test = WuTest(True, True)
 
-    test.discovery()
+    nodes_info = test.discovery()
+
+    test.loadApplication(APP_PATH) 
+    test.mapping(nodes_info)
+    test.deploy_with_discovery()
