@@ -1,3 +1,7 @@
+import os, sys
+lib_path = os.path.abspath('..')
+sys.path.append(lib_path)
+
 from model.storage_pb2 import *
 
 class MongoDBStorageServiceImpl(StorageService):
@@ -17,3 +21,9 @@ class MongoDBStorageServiceImpl(StorageService):
   def getSensorData(self, controller, fetchrequest, callback):
     print "received data from client"
     callback.run(void())
+
+def main():
+   service = MongoDBStorageServiceImpl();
+
+if  __name__ =='__main__':
+    main()
