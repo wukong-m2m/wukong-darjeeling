@@ -76,7 +76,7 @@ class Communication:
         WuNode.clearNodes(filename)
         self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
 
-        self.all_node_infos.append(self.getVirtualNode())
+        self.all_node_infos.append(self.getVirtualDevice())
 
         WuNode.addVirtualNodes(wkpf.globals.virtual_nodes)
         WuNode.saveNodes(filename)
