@@ -12,13 +12,13 @@ class TestDiscovery(unittest.TestCase):
     def test_basic_discoveryAPI(self):
     	self.test.discovery()
         res = self.test.countWuObjectByWuClassID(204)
-        self.assertEqual(res, 1)
+        self.assertEqual(res, 3)
 
-        res = self.test.countWuObjectByWuClassID(1000)
-        self.assertEqual(res, 0)
+        res = self.test.countWuObjectByWuClassID(10)
+        self.assertEqual(res, 3)
 
-        res = self.test.countWuObjectByWuClassID(2000)
-        self.assertEqual(res, 0)
+        res = self.test.countWuObjectByWuClassID(15)
+        self.assertEqual(res, 3)
 
 
 if __name__ == '__main__':
