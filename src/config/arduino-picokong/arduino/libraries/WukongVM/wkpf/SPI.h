@@ -1,70 +1,51 @@
 /*
- * Copyright (c) 2010 by Cristian Maglie <c.maglie@bug.st>
- * SPI Master library for arduino.
- *
- * This file is free software; you can redistribute it and/or modify
- * it under the terms of either the GNU General Public License version 2
- * or the GNU Lesser General Public License version 2.1, both as
- * published by the Free Software Foundation.
+ * spi.h
+ * 
+ * Copyright (c) 2008-2010 CSIRO, Delft University of Technology.
+ * 
+ * This file is part of Darjeeling.
+ * 
+ * Darjeeling is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Darjeeling is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Darjeeling.  If not, see <http://www.gnu.org/licenses/>.
  */
+ 
+#ifndef __spi_h__
+#define __spi_h__
 
-#ifndef _SPI_H_INCLUDED
-#define _SPI_H_INCLUDED
+#define avr_sspiSlaveSelect(x)		PORTB = (x) ? (PORTB|(1<<PB4)) : (PORTB&~(1<<PB4))
+#define avr_sspiMoSi(x)				PORTB = (x) ? (PORTB|(1<<PB5)) : (PORTB&~(1<<PB5))
+#define avr_sspiMiSo(x)				PORTB = (x) ? (PORTB|(1<<PB6)) : (PORTB&~(1<<PB6))
+#define avr_sspiClock(x)			PORTB = (x) ? (PORTB|(1<<PB7)) : (PORTB&~(1<<PB7))
 
-#include <stdio.h>
-#include <Arduino.h>
-#include <avr/pgmspace.h>
 
-#define SPI_CLOCK_DIV4 0x00
-#define SPI_CLOCK_DIV16 0x01
-#define SPI_CLOCK_DIV64 0x02
-#define SPI_CLOCK_DIV128 0x03
-#define SPI_CLOCK_DIV2 0x04
-#define SPI_CLOCK_DIV8 0x05
-#define SPI_CLOCK_DIV32 0x06
-//#define SPI_CLOCK_DIV64 0x07
+#define avr_sspiSlaveSelectEnable()		PORTB &= ~(1<<PB4)
+#define avr_sspiSlaveSelectDisable()	PORTB |= (1<<PB4)
 
-#define SPI_MODE0 0x00
-#define SPI_MODE1 0x04
-#define SPI_MODE2 0x08
-#define SPI_MODE3 0x0C
+#define avr_sspiClockPulse()		PORTB &= ~(1<<PB7); \
+									PORTB |= 1<<PB7;
 
-#define SPI_MODE_MASK 0x0C  // CPOL = bit 3, CPHA = bit 2 on SPCR
-#define SPI_CLOCK_MASK 0x03  // SPR1 = bit 1, SPR0 = bit 0 on SPCR
-#define SPI_2XCLOCK_MASK 0x01  // SPI2X = bit 0 on SPSR
+#define avr_sspiSendBit(x)			avr_sspiMoSi(x); \
+									avr_sspiClockPulse(); \
 
-class SPIClass {
-public:
-  inline static byte transfer(byte _data);
+#define avr_sspiSendByte(x)			avr_sspiSendBit((x & 0x80) >> 7); \
+									avr_sspiSendBit((x & 0x40) >> 6); \
+									avr_sspiSendBit((x & 0x20) >> 5); \
+									avr_sspiSendBit((x & 0x10) >> 4); \
+									avr_sspiSendBit((x & 0x8) >> 3); \
+									avr_sspiSendBit((x & 0x4) >> 2); \
+									avr_sspiSendBit((x & 0x2) >> 1); \
+									avr_sspiSendBit(x & 0x1);
 
-  // SPI Configuration methods
-
-  inline static void attachInterrupt();
-  inline static void detachInterrupt(); // Default
-
-  static void begin(); // Default
-  static void end();
-
-  static void setBitOrder(uint8_t);
-  static void setDataMode(uint8_t);
-  static void setClockDivider(uint8_t);
-};
-
-extern SPIClass SPI;
-
-byte SPIClass::transfer(byte _data) {
-  SPDR = _data;
-  while (!(SPSR & _BV(SPIF)))
-    ;
-  return SPDR;
-}
-
-void SPIClass::attachInterrupt() {
-  SPCR |= _BV(SPIE);
-}
-
-void SPIClass::detachInterrupt() {
-  SPCR &= ~_BV(SPIE);
-}
+#define avr_sspiInit()				DDRB |= 0xf0;
 
 #endif

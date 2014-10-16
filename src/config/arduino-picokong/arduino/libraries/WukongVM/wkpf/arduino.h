@@ -1,234 +1,219 @@
-/* This header file is part of the ATMEL AVR-UC3-SoftwareFramework-1.7.0 Release */
+#ifndef Arduino_h
+#define Arduino_h
 
-/*This file is prepared for Doxygen automatic documentation generation.*/
-/*! \file *********************************************************************
- *
- * \brief AT32UC3A EVK1100 board header file.
- *
- * This file contains definitions and services related to the features of the
- * EVK1100 board rev. B and C.
- *
- * To use this board, define BOARD=EVK1100.
- *
- * - Compiler:           IAR EWAVR32 and GNU GCC for AVR32
- * - Supported devices:  All AVR32 AT32UC3A devices can be used.
- * - AppNote:
- *
- * \author               Atmel Corporation: http://www.atmel.com \n
- *                       Support and FAQ: http://support.atmel.no/
- *
- ******************************************************************************/
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
 
-/* Copyright (c) 2009 Atmel Corporation. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- *
- * 3. The name of Atmel may not be used to endorse or promote products derived
- * from this software without specific prior written permission.
- *
- * 4. This software may only be redistributed and used in connection with an Atmel
- * AVR product.
- *
- * THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
- * EXPRESSLY AND SPECIFICALLY DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
- *
- */
+#include <avr/pgmspace.h>
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
-#ifndef _ARDUINO_H_
-#define _ARDUINO_H_
+#include "binary.h"
 
-#include "compiler.h"
-
-#ifdef __AVR32_ABI_COMPILER__ // Automatically defined when compiling for AVR32, not when assembling.
-#  include "led.h"
-#endif  // __AVR32_ABI_COMPILER__
-
-
-/*! \name Oscillator Definitions
- */
-//! @{
-
-// RCOsc has no custom calibration by default. Set the following definition to
-// the appropriate value if a custom RCOsc calibration has been applied to your
-// part.
-//#define FRCOSC          AVR32_PM_RCOSC_FREQUENCY              //!< RCOsc frequency: Hz.
-
-#define FOSC32          32768                                 //!< Osc32 frequency: Hz.
-#define OSC32_STARTUP   AVR32_PM_OSCCTRL32_STARTUP_8192_RCOSC //!< Osc32 startup time: RCOsc periods.
-
-#define FOSC0           12000000                              //!< Osc0 frequency: Hz.
-#define OSC0_STARTUP    AVR32_PM_OSCCTRL0_STARTUP_2048_RCOSC  //!< Osc0 startup time: RCOsc periods.
-
-// Osc1 crystal is not mounted by default. Set the following definitions to the
-// appropriate values if a custom Osc1 crystal is mounted on your board.
-//#define FOSC1           12000000                              //!< Osc1 frequency: Hz.
-//#define OSC1_STARTUP    AVR32_PM_OSCCTRL1_STARTUP_2048_RCOSC  //!< Osc1 startup time: RCOsc periods.
-
-//! @}
-
-
-//! Number of LEDs.
-#define LED_COUNT   3
-
-/*! \name GPIO Connections of LEDs
- */
-//! @{
-#define LED0_GPIO   AVR32_PIN_PB19
-#define LED1_GPIO   AVR32_PIN_PB20
-#define LED2_GPIO   AVR32_PIN_PB21
-//! @}
-
-/*! \name PWM Channels of LEDs
- */
-//! @{
-#define LED0_PWM      0
-#define LED1_PWM      1
-#define LED2_PWM      2
-//! @}
-
-/*! \name PWM Functions of LEDs
- */
-//! @{
-#define LED0_PWM_FUNCTION   AVR32_PWM_0_FUNCTION
-#define LED1_PWM_FUNCTION   AVR32_PWM_1_FUNCTION
-#define LED2_PWM_FUNCTION   AVR32_PWM_2_FUNCTION
-//! @}
-
-/*! \name Color Identifiers of LEDs to Use with LED Functions
- */
-//! @{
-#define LED_MONO0_GREEN   LED0
-#define LED_MONO1_GREEN   LED1
-#define LED_MONO2_GREEN   LED2
-//! @}
-
-#if 0
-/*! \name SPI Connections of the DIP204 LCD
- */
-//! @{
-#define DIP204_SPI                  (&AVR32_SPI1)
-#define DIP204_SPI_NPCS             2
-#define DIP204_SPI_SCK_PIN          AVR32_SPI1_SCK_0_0_PIN
-#define DIP204_SPI_SCK_FUNCTION     AVR32_SPI1_SCK_0_0_FUNCTION
-#define DIP204_SPI_MISO_PIN         AVR32_SPI1_MISO_0_0_PIN
-#define DIP204_SPI_MISO_FUNCTION    AVR32_SPI1_MISO_0_0_FUNCTION
-#define DIP204_SPI_MOSI_PIN         AVR32_SPI1_MOSI_0_0_PIN
-#define DIP204_SPI_MOSI_FUNCTION    AVR32_SPI1_MOSI_0_0_FUNCTION
-#define DIP204_SPI_NPCS_PIN         AVR32_SPI1_NPCS_2_0_PIN
-#define DIP204_SPI_NPCS_FUNCTION    AVR32_SPI1_NPCS_2_0_FUNCTION
-//! @}
-
-/*! \name GPIO and PWM Connections of the DIP204 LCD Backlight
- */
-//! @{
-#define DIP204_BACKLIGHT_PIN        AVR32_PIN_PB18
-#define DIP204_PWM_CHANNEL          6
-#define DIP204_PWM_PIN              AVR32_PWM_6_PIN
-#define DIP204_PWM_FUNCTION         AVR32_PWM_6_FUNCTION
-//! @}
+#ifdef __cplusplus
+extern "C"{
 #endif
 
-/*! \name SPI Connections of the AT45DBX Data Flash Memory
- */
-//! @{
-#define AT45DBX_SPI                 (&AVR32_SPI1)
-#define AT45DBX_SPI_NPCS            2
-#define AT45DBX_SPI_SCK_PIN         AVR32_SPI1_SCK_0_0_PIN
-#define AT45DBX_SPI_SCK_FUNCTION    AVR32_SPI1_SCK_0_0_FUNCTION
-#define AT45DBX_SPI_MISO_PIN        AVR32_SPI1_MISO_0_0_PIN
-#define AT45DBX_SPI_MISO_FUNCTION   AVR32_SPI1_MISO_0_0_FUNCTION
-#define AT45DBX_SPI_MOSI_PIN        AVR32_SPI1_MOSI_0_0_PIN
-#define AT45DBX_SPI_MOSI_FUNCTION   AVR32_SPI1_MOSI_0_0_FUNCTION
-#define AT45DBX_SPI_NPCS2_PIN       AVR32_SPI1_NPCS_2_0_PIN
-#define AT45DBX_SPI_NPCS2_FUNCTION  AVR32_SPI1_NPCS_2_0_FUNCTION
-#define AT45DBX_CHIP_RESET  		AVR32_PIN_PA02
-//! @}
+void yield(void);
 
+#define HIGH 0x1
+#define LOW  0x0
 
-/*! \name GPIO and SPI Connections of the SD/MMC Connector
- */
-//! @{
-//#define SD_MMC_CARD_DETECT_PIN      AVR32_PIN_PA02
-//#define SD_MMC_WRITE_PROTECT_PIN    AVR32_PIN_PA07
-#define SD_MMC_SPI                  (&AVR32_SPI1)
-#define SD_MMC_SPI_NPCS             1
-#define SD_MMC_SPI_SCK_PIN          AVR32_SPI1_SCK_0_0_PIN
-#define SD_MMC_SPI_SCK_FUNCTION     AVR32_SPI1_SCK_0_0_FUNCTION
-#define SD_MMC_SPI_MISO_PIN         AVR32_SPI1_MISO_0_0_PIN
-#define SD_MMC_SPI_MISO_FUNCTION    AVR32_SPI1_MISO_0_0_FUNCTION
-#define SD_MMC_SPI_MOSI_PIN         AVR32_SPI1_MOSI_0_0_PIN
-#define SD_MMC_SPI_MOSI_FUNCTION    AVR32_SPI1_MOSI_0_0_FUNCTION
-#define SD_MMC_SPI_NPCS_PIN         AVR32_SPI1_NPCS_1_0_PIN
-#define SD_MMC_SPI_NPCS_FUNCTION    AVR32_SPI1_NPCS_1_0_FUNCTION
-//! @}
+#define INPUT 0x0
+#define OUTPUT 0x1
+#define INPUT_PULLUP 0x2
 
-/*	Timer Counter to generate clock for WiFi chip*/
-#  define WIFI_TC                    (&AVR32_TC)
-#  define WIFI_TC_CHANNEL_ID         0
-#  define WIFI_TC_CHANNEL_PIN        AVR32_TC_A0_0_0_PIN
-#  define WIFI_TC_CHANNEL_FUNCTION   AVR32_TC_A0_0_0_FUNCTION
-// Note that TC_A0_0_0 pin is pin 6 (PB23) on AT32UC3A1512 QFP100.
+#define true 0x1
+#define false 0x0
 
-/* Pin related to WiFi chip communication */
-#ifndef USE_POLL
- #define USE_POLL
+#define PI 3.1415926535897932384626433832795
+#define HALF_PI 1.5707963267948966192313216916398
+#define TWO_PI 6.283185307179586476925286766559
+#define DEG_TO_RAD 0.017453292519943295769236907684886
+#define RAD_TO_DEG 57.295779513082320876798154814105
+
+#define SERIAL  0x0
+#define DISPLAY 0x1
+
+#define LSBFIRST 0
+#define MSBFIRST 1
+
+#define CHANGE 1
+#define FALLING 2
+#define RISING 3
+
+#if defined(__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__) || defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
+#define DEFAULT 0
+#define EXTERNAL 1
+#define INTERNAL 2
+#else  
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1284__) || defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega644A__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644PA__)
+#define INTERNAL1V1 2
+#define INTERNAL2V56 3
+#else
+#define INTERNAL 3
 #endif
- #define SPI_CS 					0
- #define AVR32_SPI 					AVR32_SPI1
- #define GPIO_IRQ_PIN 				AVR32_PIN_PA03
- #define GPIO_IRQ 					AVR32_GPIO_IRQ_7
- #define GPIO_W_RESET_PIN 			AVR32_PIN_PA07
- #define GPIO_W_SHUTDOWN_PIN 		AVR32_PIN_PA09
-
-/* Pin related to shield communication */
- #define ARDUINO_HANDSHAKE_PIN 		AVR32_PIN_PA25
-
- #define AVR32_PDCA_PID_TX 			AVR32_PDCA_PID_SPI1_TX
- #define AVR32_PDCA_PID_RX 			AVR32_PDCA_PID_SPI1_RX
-
-
-#if 0
-/*! \name TWI Connections of the Spare TWI Connector
- */
-//! @{
-#define SPARE_TWI                   (&AVR32_TWI)
-#define SPARE_TWI_SCL_PIN           AVR32_TWI_SCL_0_0_PIN
-#define SPARE_TWI_SCL_FUNCTION      AVR32_TWI_SCL_0_0_FUNCTION
-#define SPARE_TWI_SDA_PIN           AVR32_TWI_SDA_0_0_PIN
-#define SPARE_TWI_SDA_FUNCTION      AVR32_TWI_SDA_0_0_FUNCTION
-//! @}
-
-
-/*! \name SPI Connections of the Spare SPI Connector
- */
-//! @{
-#define SPARE_SPI                   (&AVR32_SPI0)
-#define SPARE_SPI_NPCS              0
-#define SPARE_SPI_SCK_PIN           AVR32_SPI0_SCK_0_0_PIN
-#define SPARE_SPI_SCK_FUNCTION      AVR32_SPI0_SCK_0_0_FUNCTION
-#define SPARE_SPI_MISO_PIN          AVR32_SPI0_MISO_0_0_PIN
-#define SPARE_SPI_MISO_FUNCTION     AVR32_SPI0_MISO_0_0_FUNCTION
-#define SPARE_SPI_MOSI_PIN          AVR32_SPI0_MOSI_0_0_PIN
-#define SPARE_SPI_MOSI_FUNCTION     AVR32_SPI0_MOSI_0_0_FUNCTION
-#define SPARE_SPI_NPCS_PIN          AVR32_SPI0_NPCS_0_0_PIN
-#define SPARE_SPI_NPCS_FUNCTION     AVR32_SPI0_NPCS_0_0_FUNCTION
-//! @}
+#define DEFAULT 1
+#define EXTERNAL 0
 #endif
 
-#endif  // _ARDUINO_H_
+// undefine stdlib's abs if encountered
+#ifdef abs
+#undef abs
+#endif
+
+#define min(a,b) ((a)<(b)?(a):(b))
+#define max(a,b) ((a)>(b)?(a):(b))
+#define abs(x) ((x)>0?(x):-(x))
+#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+#define round(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
+#define radians(deg) ((deg)*DEG_TO_RAD)
+#define degrees(rad) ((rad)*RAD_TO_DEG)
+#define sq(x) ((x)*(x))
+
+#define interrupts() sei()
+#define noInterrupts() cli()
+
+#define clockCyclesPerMicrosecond() ( F_CPU / 1000000L )
+#define clockCyclesToMicroseconds(a) ( (a) / clockCyclesPerMicrosecond() )
+#define microsecondsToClockCycles(a) ( (a) * clockCyclesPerMicrosecond() )
+
+#define lowByte(w) ((uint8_t) ((w) & 0xff))
+#define highByte(w) ((uint8_t) ((w) >> 8))
+
+#define bitRead(value, bit) (((value) >> (bit)) & 0x01)
+#define bitSet(value, bit) ((value) |= (1UL << (bit)))
+#define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
+#define bitWrite(value, bit, bitvalue) (bitvalue ? bitSet(value, bit) : bitClear(value, bit))
+
+
+typedef unsigned int word;
+
+#define bit(b) (1UL << (b))
+
+typedef uint8_t boolean;
+typedef uint8_t byte;
+
+void init(void);
+
+void pinMode(uint8_t, uint8_t);
+void digitalWrite(uint8_t, uint8_t);
+int digitalRead(uint8_t);
+int analogRead(uint8_t);
+void analogReference(uint8_t mode);
+void analogWrite(uint8_t, int);
+
+unsigned long millis(void);
+unsigned long micros(void);
+void delay(unsigned long);
+void delayMicroseconds(unsigned int us);
+unsigned long pulseIn(uint8_t pin, uint8_t state, unsigned long timeout);
+
+void shiftOut(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, uint8_t val);
+uint8_t shiftIn(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder);
+
+void attachInterrupt(uint8_t, void (*)(void), int mode);
+void detachInterrupt(uint8_t);
+
+void setup(void);
+void loop(void);
+
+// Get the bit location within the hardware port of the given virtual pin.
+// This comes from the pins_*.c file for the active board configuration.
+
+#define analogInPinToBit(P) (P)
+
+// On the ATmega1280, the addresses of some of the port registers are
+// greater than 255, so we can't store them in uint8_t's.
+extern const uint16_t PROGMEM port_to_mode_PGM[];
+extern const uint16_t PROGMEM port_to_input_PGM[];
+extern const uint16_t PROGMEM port_to_output_PGM[];
+
+extern const uint8_t PROGMEM digital_pin_to_port_PGM[];
+// extern const uint8_t PROGMEM digital_pin_to_bit_PGM[];
+extern const uint8_t PROGMEM digital_pin_to_bit_mask_PGM[];
+extern const uint8_t PROGMEM digital_pin_to_timer_PGM[];
+
+// Get the bit location within the hardware port of the given virtual pin.
+// This comes from the pins_*.c file for the active board configuration.
+// 
+// These perform slightly better as macros compared to inline functions
+//
+#define digitalPinToPort(P) ( pgm_read_byte( digital_pin_to_port_PGM + (P) ) )
+#define digitalPinToBitMask(P) ( pgm_read_byte( digital_pin_to_bit_mask_PGM + (P) ) )
+#define digitalPinToTimer(P) ( pgm_read_byte( digital_pin_to_timer_PGM + (P) ) )
+#define analogInPinToBit(P) (P)
+#define portOutputRegister(P) ( (volatile uint8_t *)( pgm_read_word( port_to_output_PGM + (P))) )
+#define portInputRegister(P) ( (volatile uint8_t *)( pgm_read_word( port_to_input_PGM + (P))) )
+#define portModeRegister(P) ( (volatile uint8_t *)( pgm_read_word( port_to_mode_PGM + (P))) )
+
+#define NOT_A_PIN 0
+#define NOT_A_PORT 0
+
+#define NOT_AN_INTERRUPT -1
+
+#ifdef ARDUINO_MAIN
+#define PA 1
+#define PB 2
+#define PC 3
+#define PD 4
+#define PE 5
+#define PF 6
+#define PG 7
+#define PH 8
+#define PJ 10
+#define PK 11
+#define PL 12
+#endif
+
+#define NOT_ON_TIMER 0
+#define TIMER0A 1
+#define TIMER0B 2
+#define TIMER1A 3
+#define TIMER1B 4
+#define TIMER2  5
+#define TIMER2A 6
+#define TIMER2B 7
+
+#define TIMER3A 8
+#define TIMER3B 9
+#define TIMER3C 10
+#define TIMER4A 11
+#define TIMER4B 12
+#define TIMER4C 13
+#define TIMER4D 14	
+#define TIMER5A 15
+#define TIMER5B 16
+#define TIMER5C 17
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
+#ifdef __cplusplus
+#include "WCharacter.h"
+#include "WString.h"
+#include "HardwareSerial.h"
+
+uint16_t makeWord(uint16_t w);
+uint16_t makeWord(byte h, byte l);
+
+#define word(...) makeWord(__VA_ARGS__)
+
+unsigned long pulseIn(uint8_t pin, uint8_t state, unsigned long timeout = 1000000L);
+
+void tone(uint8_t _pin, unsigned int frequency, unsigned long duration = 0);
+void noTone(uint8_t _pin);
+
+// WMath prototypes
+long random(long);
+long random(long, long);
+void randomSeed(unsigned int);
+long map(long, long, long, long, long);
+
+#endif
+
+#include "pins_arduino.h"
+
+#endif
