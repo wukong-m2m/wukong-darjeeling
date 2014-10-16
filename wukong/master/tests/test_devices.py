@@ -15,14 +15,15 @@ if __name__ == '__main__':
 
 	try:
 		os.mkdir('reports/%s' % (date))
-		output = open('reports/%s/%s' % (date, filename), "wb")
-		loader = TestLoader()
-		suite = TestSuite((
-				loader.loadTestsFromTestCase(TestLocation),
-				loader.loadTestsFromTestCase(TestProperty),
-				loader.loadTestsFromTestCase(TestDiscovery)
-		))
-		runner = HTMLTestRunner(stream=output, verbosity=1, title="WuKong Testing")
-		runner.run(suite)
 	except:
 		pass
+	
+	output = open('reports/%s/%s' % (date, filename), "wb")
+	loader = TestLoader()
+	suite = TestSuite((
+			loader.loadTestsFromTestCase(TestLocation),
+			loader.loadTestsFromTestCase(TestProperty),
+			loader.loadTestsFromTestCase(TestDiscovery)
+	))
+	runner = HTMLTestRunner(stream=output, verbosity=1, title="WuKong Testing")
+	runner.run(suite)
