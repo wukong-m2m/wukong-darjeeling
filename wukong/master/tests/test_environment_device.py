@@ -30,8 +30,11 @@ class WuTest:
         ## load wukong component library
         WuClassLibraryParser.read(COMPONENTXML_PATH)
 
+
         ## set up communication gateway
         self.comm = getComm()
+
+        self.node_ids = [i + 2 for i in xrange(self.dev_len)]
 
         ## start the device consoles
         self.consoles = {}
