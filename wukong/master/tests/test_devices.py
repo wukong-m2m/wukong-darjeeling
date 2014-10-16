@@ -7,11 +7,11 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'unit_t
 from test_location import TestLocation
 from test_property import TestProperty
 from test_discovery import TestDiscovery
-
+from test_deploy import TestDeploy
 
 if __name__ == '__main__':
-	filename = datetime.datetime.now().strftime("report.html")
-	date = datetime.datetime.now().strftime("%Y_%m_%d_%H%M")
+	filename = datetime.datetime.now().strftime('report_%Hh_%Mm.html')
+	date = datetime.datetime.now().strftime("%Y_%m_%d")
 
 	try:
 		os.mkdir('reports/%s' % (date))
@@ -23,7 +23,8 @@ if __name__ == '__main__':
 	suite = TestSuite((
 			loader.loadTestsFromTestCase(TestLocation),
 			loader.loadTestsFromTestCase(TestProperty),
-			loader.loadTestsFromTestCase(TestDiscovery)
+			loader.loadTestsFromTestCase(TestDiscovery),
+			loader.loadTestsFromTestCase(TestDeploy)
 	))
 	runner = HTMLTestRunner(stream=output, verbosity=1, title="WuKong Testing")
 	runner.run(suite)
