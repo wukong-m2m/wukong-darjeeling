@@ -7,6 +7,13 @@ import pymongo
 from pymongo import MongoClient
 import datetime
 from bson import BSON
+from bson.binary import Binary, UUIDLegacy, UUID_SUBTYPE
+
+'''
+class Callback():
+    def run(self):
+        print ""
+'''
 
 class MongoDBStorageServiceImpl(StorageService):
   def __init__(self):
@@ -18,60 +25,70 @@ class MongoDBStorageServiceImpl(StorageService):
     self.post_context=None
     self.client = MongoClient(self.ip, 27017)
     self.db = self.client["wukong"]
-    self.collection = self.db["readings"]
+    self.collection = self.db["posts"]
     print 'Create mongoDB connection'
 
   def storeSensorData(self, controller, sensordata, callback):
-    """Received sensor data """
-
-    '''type=sensordata.type'''
-
     self.post_sensor = {"id": "sensor_%s" %(sensordata.type),
-    "data" : sensordata.SerializeToString()
+    "timestamp" : sensordata.timestamp ,
+    "data" : Binary(sensordata.SerializeToString())
     }
     self.post_id_s = self.db.posts.insert(self.post_sensor)
     print self.db.posts.find_one(self.post_id_s)
 
-    callback.run(void())
+    #callback.run(void())
 
   def storeContextData(self, controller, sensordata, callback):
-    print "received data from client"
     self.post_context = {"id": "context_%s" %(sensordata.SensorType),
-    "data" : sensordata.SerializeToString()
+    "timestamp" : sensordata.timestamp ,
+    "data" : Binary(sensordata.SerializeToString())
     }
-    self.post_id_s = self.db.posts.insert(self.post_sensor)
-    print self.db.posts.find_one(self.post_id_s)
-    callback.run(void())
+    self.post_id_s = self.db.posts.insert(self.post_context)
+    return self.post_id_s
+    #print self.db.posts.find_one(self.post_id_s)
+    #callback.run(void())
+
+  
 
   '''Mongo API'''  
   def retrieve_sensor(self,n_id,pt):
-        for p in self.db.readings.find({ 'node_id':n_id , 'port':pt }) :
+        return self.db.posts.find({ 'node_id':n_id , 'port':pt })
+        for p in self.db.posts.find({ 'node_id':n_id , 'port':pt }) :
             print '[Specific Sensor]+%s'%(p)
 
   def retrieve_time(self,t1,t2):
-        return self.db.readings.find( { 'timestamp':  { "$gte":t1 , "$lt": t2 } } ) 
-        for p in self.db.readings.find( { 'timestamp':  { "$gte":t1 , "$lt": t2 } } ) :
+        return self.db.posts.find( { 'timestamp':  { "$gte":t1 , "$lt": t2 } } ) 
+        for p in self.db.posts.find( { 'timestamp':  { "$gte":t1 , "$lt": t2 } } ) :
             print '[Specific time]+%s'%(p)
   def retrieve_st(self,n_id,pt,t1,t2):
-        for p in self.db.readings.find( { 'node_id':n_id , 'port':pt ,'timestamp':  { "$gte":t1 , "$lt": t2 } } ) :
+        return self.db.posts.find( { 'node_id':n_id , 'port':pt ,'timestamp':  { "$gte":t1 , "$lt": t2 } } ) 
+        for p in self.db.posts.find( { 'node_id':n_id , 'port':pt ,'timestamp':  { "$gte":t1 , "$lt": t2 } } ) :
             print '[Specific time]+%s'%(p)
 
   def getSensorData(self, controller, fetchrequest, callback):
     print "received data from client"
-    my_fetchrequest=storage_pb2.FetchRequest()
+    my_fetchrequest=FetchRequest()
     my_fetchrequest= fetchrequest
-    '''print location/start_timestamp/end_timestamp'''
-    print "retrieve condition location/start_timestamp/end_timestamp =  %s/%d/%d" %(my_fetchrequest.location,my_fetchrequest.start_timestamp,my_fetchrequest.end_timestamp)
-    '''Here we got no location schema from sensor, ONLY node_id&port'''
-    return retrieve_time(my_fetchrequest.start_timestamp,my_fetchrequest.end_timestamp)
+    return self.retrieve_time(my_fetchrequest.start_timestamp,my_fetchrequest.end_timestamp)
 
 
-    callback.run(void())
+    #callback.run(void())
 
 
 st= MongoDBStorageServiceImpl()
 sensordata = SensorData()
 sensordata.type = SensorData.PRESSURE_SENSOR
 sensordata.timestamp = 123456
-sensordata.value = 3
+sensordata.value = 19
 sensordata.location.type = Location.BEDROOM
+#st.storeSensorData("controller",sensordata,"Callback")
+insert_id=st.storeContextData("controller",sensordata,"Callback")
+fetchrequest = FetchRequest()
+fetchrequest.start_timestamp=123456
+fetchrequest.end_timestamp=123457
+ans=st.getSensorData("controller",fetchrequest,"Callback")
+print 'There are %d data' %(ans.count()) 
+
+for a in ans:
+  if insert_id==a["_id"]:
+    print "got it!"
