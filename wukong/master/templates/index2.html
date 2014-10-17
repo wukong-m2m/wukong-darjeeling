@@ -1,0 +1,98 @@
+<!doctype html>
+<link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.min.css" />
+<script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="/static/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/static/js/index2.js"></script>
+<script>
+  var len;
+  var node_id=[];
+  var port_id=[];
+</script>
+<title>Welcome to Wukong Master</title>
+
+  <head>
+
+
+</head>
+
+
+<div id="div_changesize" class="container" style="margin-top: 50px">
+
+  <header class="jumbotron subhead">
+
+    <!--<meta http-equiv="refresh" content="0.5">-->
+
+    <h1>Sensing Data review</h1>
+    <div class="row">
+      <div class="span12">
+        
+      </div>
+    </div>
+    <div class="row">
+      <div class="span12">
+        <table class="table table-condensed">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>ID</th>
+              <th>Description</th>
+              <th>Location</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for index, app in enumerate(applications) %}
+            <script>
+              len={{index}}+1;
+              //len='{{ applications[index].id }}';
+              var str='{{ app.id }}';
+              var res=str.split('_');
+              node_id.push(res[0]);
+              port_id.push(res[1]);
+            </script>
+            <tr class="application" id="app_{{ index+1 }}">
+              <td><a href="/applications/{{ index }}">{{ index+1 }}</a></td>
+              <td id="docid">{{ app.id }}</td>
+              <td><a1>{{ app.sensor }}</a1></td>
+              <td><a2>{{ app.loc }}</a2></td>
+              <td id="{{ index+1 }}"><a3>{{ applications[index].value }}</a3></td>
+            </tr>
+            {% end %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+  </header>
+
+</div>
+<script>
+
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function(){
+      refreshTable();
+    });
+
+    function refreshTable(){
+      var i;
+      for(i=1;i<len+1;i++){
+        $('#'+i).load('getvalue?arg1=IR%20Sensor&arg2='+node_id[i-1]+'&arg3='+port_id[i-1]+'&arg4=BL-7F%20entrance', function(){
+           setTimeout(refreshTable, 1000);
+        });
+      }
+      /*
+      i=9
+        $('#1').load('getvalue?arg1=IR%20Sensor&arg2='+i+'&arg3=3&arg4=BL-7F%20entrance', function(){
+           setTimeout(refreshTable, 1000);
+        });
+        $('#2').load('getvalue?arg1=IR%20Sensor&arg2=11&arg3=4&arg4=BL-7F%20entrance', function(){
+           setTimeout(refreshTable, 1000);
+        });
+        document.getElementById("1").innerHTML = len;
+      */
+    }
+</script>
+
