@@ -75,11 +75,11 @@ node_infos = []
 from make_js import make_main
 from make_fbp import fbp_main
 def import_wuXML():
-	make_main()
-	
+  make_main()
+  
 def make_FBP():
-	test_1 = fbp_main()
-	test_1.make()	
+  test_1 = fbp_main()
+  test_1.make() 
 
 wkpf.globals.location_tree = LocationTree(LOCATION_ROOT)
 
@@ -169,6 +169,46 @@ class list_applications(tornado.web.RequestHandler):
     apps = sorted([application.config() for application in wkpf.globals.applications], key=lambda k: k['app_name'])
     self.content_type = 'application/json'
     self.write(json.dumps(apps))
+
+class Test:
+  def __init__(self,name,n_id,pt,loc):
+    self.id = str(n_id)+'_'+str(pt)
+    self.sensor = name
+    self.loc=loc
+    self.value = wkpf.globals.mongoDBClient.wukong.readings.find({ 'node_id':n_id , 'port':pt }).sort('timestamp',-1).limit(1)[0]['value']
+          #wkpf.globals.mongoDBClient.wukong.readings.find().sort({"timestamp":-1}).sort("timestamp":-1)['value']
+
+class Monitoring(tornado.web.RequestHandler):
+  def get(self):
+      comm = getComm()
+      node_infos = comm.getAllNodeInfos(False)
+      # print node_infos
+      for node in node_infos:
+        print node.id
+        print node.location
+        for port_number in node.wuobjects.keys():
+          wuobject = node.wuobjects[port_number]
+          print 'port:', port_number
+          print wuobject.wuclassdef.name
+          
+      obj1 = Test('IR Sensor',2,3,'BL-7F entrance')#location tree
+      obj2 = Test('Ultra Sound Sensor',3,4,'BL-7F entrance')
+      self.render('templates/index2.html', applications=[obj1,obj2])
+
+  def post(self):
+    apps=wkpf.globals.mongoDBClient.wukong.readings.find().sort('timestamp',-1).limit(1)[2]
+    #apps = sorted([application.config() for application in wkpf.globals.applications], key=lambda k: k['app_name'])
+    self.content_type = 'application/json'
+    self.write(json.dumps(apps))
+
+class GetValue(tornado.web.RequestHandler):
+  def get(self):
+      #obj1 = Test('IR Sensor',9,3,'BL-7F entrance')
+      #obj2 = Test('Ultra Sound Sensor',11,4,'BL-7F entrance')
+      obj2 = Test('IR Sensor',int(self.get_argument("arg2")),int(self.get_argument("arg3")),'BL-7F entrance')
+      #self.render('templates/value.html', applications=[obj1,obj2])
+      self.render('templates/value.html', applications=[obj2.value])
+
 
 # Returns a form to upload new application
 class new_application(tornado.web.RequestHandler):
@@ -618,7 +658,7 @@ class nodes(tornado.web.RequestHandler):
             self.content_type = 'application/json'
             self.write({'status':1, 'mesg': 'Cannot set location, please try again.'})
 
-class WuLibrary(tornado.web.RequestHandler):	
+class WuLibrary(tornado.web.RequestHandler):  
   def get(self):
     self.content_type = 'application/xml'
     try:
@@ -637,7 +677,7 @@ class WuLibrary(tornado.web.RequestHandler):
     except:
       self.write('<error>1</error>')
     self.write('')
-class WuLibraryUser(tornado.web.RequestHandler):	
+class WuLibraryUser(tornado.web.RequestHandler):  
   def get(self):
     self.content_type = 'application/xml'
     appid = self.get_argument('appid')
@@ -695,7 +735,7 @@ class SerialPort(tornado.web.RequestHandler):
         pass
     self.write(json.dumps(available))
 
-class EnabledWuClass(tornado.web.RequestHandler):	
+class EnabledWuClass(tornado.web.RequestHandler): 
   def get(self):
     self.content_type = 'application/xml'
     try:
@@ -714,7 +754,7 @@ class EnabledWuClass(tornado.web.RequestHandler):
     except:
       pass
 
-class WuClassSource(tornado.web.RequestHandler):	
+class WuClassSource(tornado.web.RequestHandler):  
   def get(self):
     self.content_type = 'text/plain'
     try:
@@ -1055,6 +1095,8 @@ wukong = tornado.web.Application([
   (r"/enablexml",EnabledWuClass),
   (r"/build",Build),
   (r"/upload",Upload)
+  ,(r"/monitoring",Monitoring)
+  ,(r"/getvalue",GetValue)
 ], IP, **settings)
 
 logging.info("Starting up...")
