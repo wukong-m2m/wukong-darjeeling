@@ -1,7 +1,7 @@
 # vi: ts=2 sw=2 expandtab
 import sys, time, copy
 from transport import *
-from locationTree import *
+from model.locationTree import *
 from model.models import *
 from globals import *
 from configuration import *

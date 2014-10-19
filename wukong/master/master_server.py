@@ -109,20 +109,6 @@ def rebuildTree(nodes):
 def setup_signal_handler_greenlet():
   logging.info('setting up signal handler')
   gevent.spawn(wusignal.signal_handler)
-def allowed_file(filename):
-  return '.' in filename and \
-      filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
-
-def copyAnything(src, dst):
-  try:
-    shutil.copytree(src, dst)
-  except OSError as exc: # python >2.5
-    exc_type, exc_value, exc_traceback = sys.exc_info()
-    print traceback.print_exception(exc_type, exc_value, exc_traceback,
-                                  limit=2, file=sys.stdout)
-    if exc.errno == errno.ENOTDIR:
-      shutil.copy(src, dst)
-    else: raise
 
 def getAppIndex(app_id):
   # make sure it is not unicode

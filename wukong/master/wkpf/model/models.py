@@ -1,11 +1,259 @@
-import sqlite3
 import copy
 from xml.etree import ElementTree
 import xml.dom.minidom
 import traceback
 import wkpf.globals
+from xml.dom.minidom import parse, parseString
+from xml.parsers.expat import ExpatError
+import simplejson as json
+from configuration import *
+import logging
 
 
+# Copy from original WuApplication, split the deployment functionality out into ApplicationManager.
+# At the same time, add some data fields for energy aware mapping
+class WuApplicationNew:
+    def __init__(self, id='', app_name='', desc='', file='', dir='', outputDir="", templateDir=TEMPLATE_DIR, componentXml=open(COMPONENTXML_PATH).read()):
+      self.id = id
+      self.app_name = app_name
+      self.desc = desc
+      self.file = file
+      self.xml = ''
+      self.dir = dir
+      self.version = 0
+      self.returnCode = 1
+      self.deployed = False
+      # 5 levels: self.logger.debug, self.logger.info, self.logger.warn, self.logger.error, self.logger.critical
+      self.logger = logging.getLogger(self.id[:5])
+      self.logger.setLevel(logging.DEBUG) # to see all levels
+      self.loggerHandler = wukonghandler.WukongHandler(1024 * 3, target=logging.FileHandler(os.path.join(self.dir, 'compile.log')))
+      self.logger.addHandler(self.loggerHandler)
+
+      # For Mapper
+      self.name = ""
+      self.applicationDom = ""
+      self.destinationDir = outputDir
+      self.templateDir = templateDir
+      self.componentXml = componentXml
+      self.wuComponents = {}
+      self.instanceIds = []
+      self.monitorProperties = {}
+
+      self.changesets = ChangeSets([], [], [])
+
+      # a log of mapping results warning or errors
+      # format: a list of dict of {'msg': '', 'level': 'warn|error'}
+      self.mapping_status = []
+
+      # a log of deploying results warning or errors
+      # format: a list of dict of {'msg': '', 'level': 'warn|error'}
+      self.deploy_status = []
+      self.deploy_ops = ''
+
+    def clearMappingStatus(self):
+      self.mapping_status = []
+
+    def errorMappingStatus(self, msg):
+      self.mapping_status.append({'msg': msg, 'level': 'error'})
+
+    def warnMappingStatus(self, msg):
+      self.mapping_status.append({'msg': msg, 'level': 'warn'})
+
+    def clearDeployStatus(self):
+      self.deploy_status = []
+      self.deploy_ops = ''
+      print 'clear deploy status.........'
+
+    # signal to client to stop polling
+    def stopDeployStatus(self):
+      self.deploy_ops = 'c'
+
+    def logDeployStatus(self, msg):
+      self.info(msg)
+      self.deploy_status.append({'msg': msg, 'level': 'log'})
+
+    def errorDeployStatus(self, msg):
+      self.error(msg)
+      self.deploy_status.append({'msg': msg, 'level': 'error'})
+
+    def warnDeployStatus(self, msg):
+      self.warning(msg)
+      self.deploy_status.append({'msg': msg, 'level': 'warn'})
+
+    def setFlowDom(self, flowDom):
+      self.applicationDom = flowDom
+      self.name = flowDom.getElementsByTagName('application')[0].getAttribute('name')
+
+    def setOutputDir(self, outputDir):
+      self.destinationDir = outputDir
+
+    def setTemplateDir(self, templateDir):
+      self.templateDir = templateDir
+
+    def setComponentXml(self, componentXml):
+      self.componentXml = componentXml
+
+    def logs(self):
+      self.loggerHandler.retrieve()
+      logs = open(os.path.join(self.dir, 'compile.log')).readlines()
+      return logs
+
+    def retrieve(self):
+        return self.loggerHandler.retrieve()
+
+    def info(self, line):
+      self.logger.info(line)
+      self.version += 1
+
+    def error(self, line):
+      self.logger.error(line)
+      self.version += 2
+
+    def warning(self, line):
+      self.logger.warning(line)
+      self.version += 1
+
+    def updateXML(self, xml):
+      self.xml = xml
+      self.setFlowDom(parseString(self.xml))
+      self.saveConfig()
+      f = open(os.path.join(self.dir, self.id + '.xml'), 'w')
+      f.write(xml)
+      f.close()
+
+    def loadConfig(self):
+      config = json.load(open(os.path.join(self.dir, 'config.json')))
+      self.id = config['id']
+      try:
+        self.app_name = config['app_name']
+      except:
+        self.app_name='noname';
+      self.desc = config['desc']
+      # self.dir = config['dir']
+      self.xml = config['xml']
+      try:
+        dom = parseString(self.xml)
+        self.setFlowDom(dom)
+      except ExpatError:
+        pass
+
+    def saveConfig(self):
+      json.dump(self.config(), open(os.path.join(self.dir, 'config.json'), 'w'))
+
+    def getReturnCode(self):
+      return self.returnCode
+
+    def getStatus(self):
+      return self.status
+
+    def config(self):
+      return {'id': self.id, 'app_name': self.app_name, 'desc': self.desc, 'dir': self.dir, 'xml': self.xml, 'version': self.version}
+
+    def __repr__(self):
+      return json.dumps(self.config())
+
+    def parseApplication(self):
+      componentInstanceMap = {}
+      wuLinkMap = {}
+      application_hashed_name = self.applicationDom.getElementsByTagName('application')[0].getAttribute('name')
+
+      components = self.applicationDom.getElementsByTagName('component')
+      self.instanceIds = []
+
+      # parse application XML to generate WuClasses, WuObjects and WuLinks
+      for componentTag in components:
+          # make sure application component is found in wuClassDef component list
+          try:
+              assert componentTag.getAttribute('type') in WuObjectFactory.wuclassdefsbyname.keys()
+          except Exception as e:
+
+            logging.error('unknown types for component found while parsing application')
+            return #TODO: need to handle this
+
+          type = componentTag.getAttribute('type')
+
+          if componentTag.getElementsByTagName('location'):
+            location = componentTag.getElementsByTagName('location')[0].getAttribute('requirement')
+          else:
+            location = '/'+LOCATION_ROOT
+
+          if componentTag.getElementsByTagName('group_size'):
+            group_size = int(componentTag.getElementsByTagName('group_size')[0].getAttribute('requirement'))
+          else:
+            group_size = 1
+
+          if componentTag.getElementsByTagName('reaction_time'):
+            reaction_time = float(componentTag.getElementsByTagName('reaction_time')[0].getAttribute('requirement'))
+          else:
+            reaction_time = 2.0
+
+          properties = {}
+          # set default output property values for components in application
+          for propertyTag in componentTag.getElementsByTagName('actionProperty'):
+            for attr in propertyTag.attributes.values():
+              properties[attr.name] = attr.value.strip()
+
+          # set default input property values for components in application
+          for propertyTag in componentTag.getElementsByTagName('signalProperty'):
+            for attr in propertyTag.attributes.values():
+              properties[attr.name] = attr.value.strip()
+
+
+          index = componentTag.getAttribute('instanceId')
+          self.monitorProperties[index] = {}
+
+      # set monitoring properties index for components in application
+          for propertyTag in componentTag.getElementsByTagName('monitorProperty'):
+            for attr in propertyTag.attributes.values():
+              self.monitorProperties[index][attr.name] = attr.value.strip()
+
+          if index in self.instanceIds:
+
+            #wucomponent already appears in other pages, merge property requirement, suppose location etc are the same
+            self.wuComponents[index].properties = dict(self.wuComponents[index].properties.items() + properties.items())
+          else:
+            component = WuComponent(index, location, group_size, reaction_time, type, application_hashed_name, properties)
+            componentInstanceMap[componentTag.getAttribute('instanceId')] = component
+            self.wuComponents[componentTag.getAttribute('instanceId')] = component
+            self.changesets.components.append(component)
+            self.instanceIds.append(index)
+
+      # add server as component in node 0
+      component = WuComponent(1, '/'+LOCATION_ROOT, 1, 2.0, 'Server', 0, {})
+      componentInstanceMap[0] = component
+      self.wuComponents[0] = component
+      self.changesets.components.append(component)
+      self.instanceIds.append(0)
+      #assumption: at most 99 properties for each instance, at most 999 instances
+      #store hashed result of links to avoid duplicated links: (fromInstanceId*100+fromProperty)*100000+toInstanceId*100+toProperty
+      linkSet = []
+      # links
+      for linkTag in self.applicationDom.getElementsByTagName('link'):
+          from_component_id = linkTag.parentNode.getAttribute('instanceId')
+          from_component = componentInstanceMap[from_component_id]
+          from_property_name = linkTag.getAttribute('fromProperty').lower()
+          from_property_id = WuObjectFactory.wuclassdefsbyname[from_component.type].properties[from_property_name].id
+          to_component_id = linkTag.getAttribute('toInstanceId')
+          to_component = componentInstanceMap[to_component_id]
+          to_property_name =  linkTag.getAttribute('toProperty').lower()
+          to_property_id = WuObjectFactory.wuclassdefsbyname[to_component.type].properties[to_property_name].id
+
+          hash_value = (int(from_component_id)*100+int(from_property_id))*100000+int(to_component_id)*100+int(to_property_id)
+          if hash_value not in wuLinkMap.keys():
+            link = WuLink(from_component, from_property_name,
+                    to_component, to_property_name)
+            wuLinkMap[hash_value] = link
+          self.changesets.links.append(wuLinkMap[hash_value])
+
+      #add monitoring related links
+      if(MONITORING == 'true'):
+          for instanceId, properties in self.monitorProperties.items():
+              for name in properties:
+                  hash_value = (int(instanceId)*100 + int(properties[name])*100000 + 0 + 0)
+                  if hash_value not in wuLinkMap.keys():
+                      link = WuLink(componentInstanceMap[instanceId], name, componentInstanceMap[0], 'input')
+                      wuLinkMap[hash_value] = link
+                  self.changesets.links.append(wuLinkMap[hash_value])
 
 class WuComponent:
  
