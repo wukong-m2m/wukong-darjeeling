@@ -10,13 +10,14 @@ class TestDeploy(unittest.TestCase):
 
     def test_application(self):        
         nodes_info = self.test.discovery()
-        self.test.loadApplication("../../applications/ac49daab4d351391b3d544fb182c3074") 
+        self.test.loadApplication("applications/9d07e0e08af7f96cf45be0112b9ccfbe") 
     	self.test.mapping(nodes_info)
     	self.test.deploy_with_discovery()
+
     def test_super_application(self):
         for i in xrange(10):
             nodes_info = self.test.discovery()
-            self.test.loadApplication("../../applications/ac49daab4d351391b3d544fb182c3074") 
+            self.test.loadApplication("applications/9d07e0e08af7f96cf45be0112b9ccfbe") 
             self.test.mapping(nodes_info)
             self.test.deploy_with_discovery()
 

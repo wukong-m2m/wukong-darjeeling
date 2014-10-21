@@ -36,10 +36,10 @@ class WuTest:
         self.node_ids = [i + 2 for i in xrange(self.dev_len)]
 
         ## start the device consoles
-        self.consoles = {}
-        for dev in self.devs:
-            self.consoles[dev] = serial.Serial(dev, baudrate=115200)
-            self.consoles[dev].timeout = 1
+        #self.consoles = {}
+        #for dev in self.devs:
+        #    self.consoles[dev] = serial.Serial(dev, baudrate=115200)
+        #    self.consoles[dev].timeout = 1
 
         if pair is True:
             self.pair_devices_gateway()
@@ -54,7 +54,7 @@ class WuTest:
             ret = self.wait('ready')
             print "----->", ret
             self.waitDeviceReady(dev)
-            self.deviceReset(dev)
+            #self.deviceReset(dev)
             self.deviceLearn(dev)
             self.wait('found',20)
 
@@ -125,7 +125,10 @@ class WuTest:
         return self.comm.getLocation(node_id)
 
     def getProperty(self, node_id, port, wuclassid, property_number):
-        return self.comm.getProperty(node_id, port, wuclassid, property_number)
+        res = self.comm.getProperty(node_id, port, wuclassid, property_number)
+        # res = [value, datatype, status]
+        value = res[0]
+        return value
 
     def setProperty(self, node_id, port, wuclassid, property_number, datatype, value):
         self.comm.setProperty(node_id, port, wuclassid, property_number, datatype, value)
