@@ -101,14 +101,13 @@ class TestPropagate(unittest.TestCase):
         sound_wuclass_id = 204
         sound_property_number = 0
         
-	ans = True
+	ans = 1
 	self.test.setProperty(binary_sensor_node_id, binary_sensor_port, binary_sensor_wuclass_id, binary_property_number, binary_datatype, ans)
 	time.sleep(SLEEP_SECS)
         res = self.test.getProperty(sound_node_id, sound_port, sound_wuclass_id, sound_property_number)
-        print 'sound res', res
         self.assertEqual(res, ans)
 
-	ans = False
+	ans = 0
 	self.test.setProperty(binary_sensor_node_id, binary_sensor_port, binary_sensor_wuclass_id, binary_property_number, binary_datatype, ans)
 	time.sleep(SLEEP_SECS)
 	res = self.test.getProperty(sound_node_id, sound_port, sound_wuclass_id, sound_property_number)
@@ -141,7 +140,7 @@ class TestPropagate(unittest.TestCase):
         sound_property_number = 0
         
 	for i in xrange(TEST_PROPAGATE_STRENGTH_NUMBER):
-            ans = True if random.randint(0, 1) == 1 else False
+            ans = random.randint(0, 1)
             self.test.setProperty(binary_sensor_node_id, binary_sensor_port, binary_sensor_wuclass_id, binary_property_number, binary_datatype, ans)
 	    time.sleep(SLEEP_SECS)
             res = self.test.getProperty(sound_node_id, sound_port, sound_wuclass_id, sound_property_number)
