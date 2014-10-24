@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-typedef uint16_t radio_networkserver_address_t;
+typedef uint32_t radio_networkserver_address_t;
 
 extern void radio_networkserver_init(void);
 extern radio_networkserver_address_t radio_networkserver_get_node_id();

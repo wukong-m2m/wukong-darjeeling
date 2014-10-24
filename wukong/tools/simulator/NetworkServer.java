@@ -162,6 +162,7 @@ public class NetworkServer extends Thread
 				// Say hi
 				out.write(42);
 				out.flush();
+
 				// Get client mode
 				int mode = in.read();
 
@@ -175,6 +176,7 @@ public class NetworkServer extends Thread
 			catch (IOException e) { 
 				System.err.println("Problem with Communication Server");
 				System.err.println(e);
+				e.printStackTrace(new PrintStream(System.err));
 			} 
 			finally {
 				if (NetworkServer.clients.get(this.clientId) == this)
@@ -187,7 +189,9 @@ public class NetworkServer extends Thread
 			this.clientId = in.read();
 			if (this.clientId < 0)
 				throw new IOException("No ID received");
-			this.clientId += 256*in.read();
+			this.clientId += in.read() << 8;
+			this.clientId += in.read() << 16;
+			this.clientId += in.read() << 24;
 			fireClientConnected(this.clientId);
 
 			if (NetworkServer.clients.get(this.clientId) != null)
@@ -216,8 +220,7 @@ public class NetworkServer extends Thread
 					message[0] = length;
 					for (int i=1; i<length; i++)
 						message[i] = in.read();
-					int destId = message[3] + message[4]*256;
-
+					int destId = message[5] + (message[6] << 8) + (message[7] << 16) + (message[8] << 24);
 
 					NetworkServerClientHandler destClient = NetworkServer.clients.get(destId);
 					if (destClient != null) {
@@ -248,7 +251,7 @@ public class NetworkServer extends Thread
 
 		private void handle_mode_discovery(BufferedInputStream in, BufferedOutputStream out) throws IOException {
 			int number_of_clients = NetworkServer.clients.keySet().size();
-			int length = 2+number_of_clients*2;
+			int length = 2+number_of_clients*4;
 			System.out.println("discovery, number of clients " + number_of_clients);
 			out.write(length%256);
 			out.write(length/256);
@@ -256,8 +259,10 @@ public class NetworkServer extends Thread
 			fireDiscovery(ids);
 			for (int i=0; i<number_of_clients; i++) {
 				System.out.println("clients " + ids[i]);
-				out.write((ids[i]%256));
-				out.write((ids[i]/256));
+				out.write((ids[i] & 0xFF));
+				out.write(((ids[i] >> 8) & 0xFF));
+				out.write(((ids[i] >> 16) & 0xFF));
+				out.write(((ids[i] >> 24) & 0xFF));
 			}
 			out.flush();
 		}

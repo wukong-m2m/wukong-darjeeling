@@ -59,13 +59,15 @@ void open_connection() {
 		close(radio_networkserver_sockfd);
 		return;
 	}
-	uint8_t send_buffer[3];
+	uint8_t send_buffer[5];
 	// Connect in messaging mode
 	send_buffer[0] = MODE_MESSAGE;
 	// Tell the server our network id
 	send_buffer[1] = radio_networkserver_get_node_id() & 0xFF;
 	send_buffer[2] = (radio_networkserver_get_node_id() >> 8) & 0xFF;
-    retval = write(radio_networkserver_sockfd, send_buffer, 3);
+	send_buffer[3] = (radio_networkserver_get_node_id() >> 16) & 0xFF;
+	send_buffer[4] = (radio_networkserver_get_node_id() >> 24) & 0xFF;
+    retval = write(radio_networkserver_sockfd, send_buffer, 5);
 	if (retval == -1) {
 		fprintf(stderr, "Unable to send local network id to server: %d\n", errno);
 		close(radio_networkserver_sockfd);

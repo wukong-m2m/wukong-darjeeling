@@ -39,7 +39,7 @@ stk500boot.o.d
 darjeeling_flash_page.o
 darjeeling_flash_page.hex
 wkdeploy.dja
-standardlibrary.db
-gid.db
+*.db
+*.sqlite
 fbp.html
 wukong/tools/testrtt/testrtt

@@ -18,7 +18,7 @@ char * ref_t_base_address;
 char** posix_argv;
 char* posix_uart_filenames[4];
 bool posix_arg_addnode = false;
-uint16_t posix_local_network_id = 0;
+uint32_t posix_local_network_id = 0;
 char* posix_pc_network_directory = "./djnetwork";
 bool posix_pc_network_directory_specified = false;
 char* posix_network_server_address = "127.0.0.1";

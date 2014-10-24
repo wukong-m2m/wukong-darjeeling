@@ -6,9 +6,13 @@ from model.models import *
 from globals import *
 from configuration import *
 import simulator
+if WKPFCOMM_AGENT == "GATEWAY":
+  from transportv2 import *
+else:
+  from transport import *
 
 # MUST MATCH THE SIZE DEFINED IN wkcomm.h
-WKCOMM_MESSAGE_PAYLOAD_SIZE=40
+WKCOMM_MESSAGE_PAYLOAD_SIZE=30
 
 WKPF_PROPERTY_TYPE_SHORT         = 0
 WKPF_PROPERTY_TYPE_BOOLEAN       = 1
@@ -31,7 +35,9 @@ class Communication:
         if SIMULATION == "true":
           print "simulation mode"
           raise Exception('simulation', 'Set simulation in master.cfg to false if you do not want simulated discovery')
-        if WKPFCOMM_AGENT == "NETWORKSERVER":
+        if WKPFCOMM_AGENT == "GATEWAY":
+          self.zwave = getGatewayAgent()
+        elif WKPFCOMM_AGENT == "NETWORKSERVER":
           self.zwave = getNetworkServerAgent()
         else:
           self.zwave = getZwaveAgent()
@@ -52,11 +58,11 @@ class Communication:
 
     def verifyWKPFmsg(self, messageStart, minAdditionalBytes):
       # minPayloadLength should not include the command or the 2 byte sequence number
-      return lambda command, payload: (command == pynvc.WKPF_ERROR_R) or (payload != None and payload[0:len(messageStart)]==messageStart and len(payload) >= len(messageStart)+minAdditionalBytes)
+      return lambda command, payload: (command == pynvc.WKPF_ERROR_R) or (payload is not None and payload[0:len(messageStart)]==messageStart and len(payload) >= len(messageStart)+minAdditionalBytes)
 
     def getNodeIds(self):
       if SIMULATION == "true":
-        return self.simulator.discovery() 
+        return self.simulator.discovery()
       return self.zwave.discovery()
 
     def getActiveNodeInfos(self, force=False):
@@ -112,7 +118,7 @@ class Communication:
 
     def onStopMode(self):
       return self.zwave.stop()
-        
+
     def currentStatus(self):
       return self.zwave.poll()
 
@@ -126,10 +132,11 @@ class Communication:
       if generic == 0xff or generic == 0x02:
         wunode = WuNode.findById(destination)
         location = self.getLocation(destination)
+        location = ''.join(c for c in location if ord(c) <= 126 and ord(c) >= 32)
         gevent.sleep(0) # give other greenlets some air to breath
         if not wunode:
           wunode = WuNode(destination, location)
-    
+
         wuClasses = self.getWuClassList(destination)
         print '[wkpfcomm] get %d wuclasses' % (len(wuClasses))
         wunode.wuclasses = wuClasses
@@ -137,14 +144,14 @@ class Communication:
 
         wuObjects = self.getWuObjectList(destination)
         print '[wkpfcomm] get %d wuobjects' % (len(wuObjects))
-        
+
         wunode.wuobjects = wuObjects
         gevent.sleep(0)
-        
+
       else:
-        # Create a virtual wuclass for non wukong device. We support switch only now. 
+        # Create a virtual wuclass for non wukong device. We support switch only now.
         # We may support others in the future.
-        
+
         wuclassdef = WuObjectFactory.wuclassdefsbyid[4]    # Light_Actuator
 
         if not wuclassdef:
@@ -152,11 +159,11 @@ class Communication:
           return None
         wunode = WuNode(destination, None,type='native')
         port_number =1
-        
+
 
         # Create one
         if (WuObject.ZWAVE_SWITCH_PORT not in wunode.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
-          # 0x100 is a mgic number. When we see this in the code generator, 
+          # 0x100 is a mgic number. When we see this in the code generator,
           # we will generate ZWave command table to implement the wuclass by
           # using the Z-Wave command.
           wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_SWITCH_PORT, False, property_values={})
@@ -170,10 +177,10 @@ class Communication:
       print '[wkpfcomm] getLocation', destination
       #########This code is put here just in case we need to change some node location before get it.
       #Sometimes invalid locations block discovery, we have to correct it beforehand
-      #comm = getComm()   
+      #comm = getComm()
       #if comm.setLocation(1, "WuKong")
       ##########################################
-      
+
       length = 0
       location = ''
       if SIMULATION == "true":
@@ -199,7 +206,7 @@ class Communication:
           location = ''.join([chr(byte) for byte in reply.payload[3:]])
         else:
           location += ''.join([chr(byte) for byte in reply.payload[2:]])
-      
+
       return location[0:length] # The node currently send a bit too much, so we have to truncate the string to the length we need
 
     def setLocation(self, destination, location):
@@ -287,7 +294,7 @@ class Communication:
 
           virtual = virtual_or_publish & 0x1
           publish = virtual_or_publish & 0x2
-          
+
           #virtual wuclass, non-publish wuclass will not be shown upon discovery, because we cannot create new wuobjs using them
           #to create new virtual wuobjs, we need to re-download virtual wuclass...
           if publish and (not virtual):
@@ -319,7 +326,7 @@ class Communication:
       message_number = 0
       if SIMULATION == "true":
         return self.simulator.mockWuObjectList(destination)
-        
+
       while (message_number != total_number_of_messages):
         reply = self.zwave.send(destination, pynvc.WKPF_GET_WUOBJECT_LIST, [message_number], [pynvc.WKPF_GET_WUOBJECT_LIST_R, pynvc.WKPF_ERROR_R])
         message_number += 1
@@ -370,10 +377,10 @@ class Communication:
       datatype = wuproperty.datatype
       number = wuproperty.number
 
-      reply = self.zwave.send(wunode.id, 
+      reply = self.zwave.send(wunode.id,
               pynvc.WKPF_READ_PROPERTY,
-              [wuobject.port_number, wuclass.id/256, 
-                    wuclass.id%256, number], 
+              [wuobject.port_number, wuclass.id/256,
+                    wuclass.id%256, number],
               [pynvc.WKPF_READ_PROPERTY_R, pynvc.WKPF_ERROR_R])
 
 
@@ -444,7 +451,7 @@ class Communication:
 
     def reprogram(self, destination, filename, retry=1):
       master_busy()
-      
+
       if retry < 0:
         retry = 1
 

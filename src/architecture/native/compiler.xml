@@ -22,7 +22,6 @@
 					<compilerarg value="-Wall"/>
 					<compilerarg value="-Werror"/>
 					<compilerarg value="-std=gnu99"/>
-					<compilerarg value="-march=i586"/>
 					<compiler-args/>
 				</compiler>
 

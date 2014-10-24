@@ -1,0 +1,58 @@
+// This file is created by Daniel
+// 2014/02/18
+
+Questions for routing_wukong.c
+
+- Line 133 and 134: Is S1 equal to s1? C is case sensitive and they
+  should be different.
+They are actually different, but I didn't see any 'S1' appears in routing_wukong.c.
+
+- L140: Will this line block the function?
+No, it won't block the function.
+"radio_wifi_client_connect" tries to establish connecion between itself and specified IP.
+Once it fails, it returns.
+
+- Line 151: what's a wifi-server?
+WiFi server indicates the device itself.
+Because every device with wifi module is always listening for connection requirement.
+'wifi_server_disconnect(uint8_t cid)' just closes the connection between specified cid and itself.
+
+- What's cid?
+There is a struct array named "sock_table" in radio_wifi.c,
+and it is used to store related info about each established connection.
+cid stands for "connection id", and it is just a index of "sock_table".
+
+- RT_FAILED is used in several place:
+  * Line 176: no path
+  * Line 195: cannot find wifi cid based on LID.
+- Line 199: the transmission is not actually completed. What's the
+  return of radio_wifi_send()? The function return success when the
+  data are written into UART port. It may fail to reach the
+  destination.
+  radio_wifi_send(): Lin 705, radio_wifi.c
+The return value of radio_wifi_send() is always WIFI_SUCCESS.
+I think guan-fan assumes the send will be successful if the connection is still existed.
+I am not sure how the older wifi module works, but I agree that the transmittion may fails.
+
+- Line 202: the failure is casused by not finding IP address, not
+  transmission. In this case, delay the transmission will not fix the
+  problem.
+I think it works.
+If the connection is missing, wifi_table_to_ip() will call radio_wifi_client_connect()
+and try to establish a new connection.
+
+- Line 209: is this line sending the failure message to someone?
+failed_handle() puts packet which is failed to send into a buffer, and gives the packet a deadline.
+Then failed_handle() calls routing_broadcast_ask() to get a new route from neighbors.
+And in each periodic update, the buffer will be checked to see whether there is a new route for the packet.
+If the new route existed, the packet is resent.
+The packet will be dropped if the time is up and the new route is still missing.
+
+- Line 213: if the transmission fails, variable ret has no value.
+If the transmission fails, the value of ret is RT_FAILED.
+
+- Line 190 ~ 215: this is no error handling when the next interface is
+  wifi but wifi radio is NOT used. Same problem applies for other
+  radio.
+I think it might be a problem.
+

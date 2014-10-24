@@ -166,8 +166,10 @@ public class WKPFTableTask extends Task
 					Node node2 = endpoints.item(j);
 					if (node2.getNodeType() == Node.ELEMENT_NODE) {
 						Element endpoint = (Element)node2;
-						component_map_bytes.add((byte)(Short.parseShort(endpoint.getAttribute("node")) % 256));
-						component_map_bytes.add((byte)(Short.parseShort(endpoint.getAttribute("node")) / 256));
+						component_map_bytes.add((byte)((Long.parseLong(endpoint.getAttribute("node"))) & 0xFF));
+						component_map_bytes.add((byte)((Long.parseLong((endpoint.getAttribute("node"))) >> 8) & 0xFF));
+						component_map_bytes.add((byte)((Long.parseLong((endpoint.getAttribute("node"))) >> 16) & 0xFF));
+						component_map_bytes.add((byte)((Long.parseLong((endpoint.getAttribute("node"))) >> 24) & 0xFF));
 						component_map_bytes.add(Byte.parseByte(endpoint.getAttribute("port")));
 					}
 				}

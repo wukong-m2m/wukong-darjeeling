@@ -23,7 +23,7 @@ extern uint8_t wkpf_send_set_linktable_no_token(wkcomm_address_t dest_node_id, u
                                 uint16_t orig_link_dest_component_id, uint8_t orig_link_dest_property_id, uint16_t new_link_src_component_id, 
                                 uint8_t new_link_src_property_id, uint16_t new_link_dest_component_id, uint8_t new_link_dest_property_id);
 
-                                
+
 extern uint8_t wkpf_send_monitor_property_int16(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t property_number, int16_t value);
 extern uint8_t wkpf_send_monitor_property_boolean(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t property_number, bool value);
 extern uint8_t wkpf_send_monitor_property_refresh_rate(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t property_number, wkpf_refresh_rate_t value);
@@ -59,8 +59,8 @@ extern void wkpf_comm_handle_message(void *msg); // Will be called with a pointe
 #define WKPF_COMM_CMD_ERROR_R                     0xAF
 
 #define WUKONG_MONITOR_PROPERTY                   0xB5
-
 #define WUKONG_MASTER 1
+
 #define DEVICE_NATIVE_ZWAVE_SWITCH 64
 #define DEVICE_NATIVE_ZWAVE_DIMMER 65
 #define DEVICE_NATIVE_ZWAVE_CURTAIN 66
