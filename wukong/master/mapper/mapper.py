@@ -6,11 +6,11 @@ from wkpf.model.locationTree import *
 from xml.dom.minidom import parse, parseString
 from xml.parsers.expat import ExpatError
 import simplejson as json
-import logging, logging.handlers, wukonghandler
+import logging, logging.handlers, wkpf.wukonghandler
 from collections import namedtuple
 from wkpf.model.locationParser import *
 #from codegen import CodeGen
-from xml2java.generator import Generator
+from wkpf.xml2java.generator import Generator
 import copy
 from threading import Thread
 import traceback
@@ -22,7 +22,7 @@ import datetime
 from subprocess import Popen, PIPE, STDOUT
 
 from configuration import *
-from globals import *
+from wkpf.globals import *
 
 # allcandidates are all node ids ([int])
 def constructHeartbeatGroups(heartbeatgroups, routingTable, allcandidates):

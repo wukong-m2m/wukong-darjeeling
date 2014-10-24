@@ -2,7 +2,7 @@ import copy
 from xml.etree import ElementTree
 import xml.dom.minidom
 import traceback
-import wkpf.globals
+from wkpf import globals
 from xml.dom.minidom import parse, parseString
 from xml.parsers.expat import ExpatError
 import simplejson as json
