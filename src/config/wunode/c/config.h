@@ -34,7 +34,7 @@ typedef unsigned long long int dj_time_t;
 #define ALIGN_16
 
 /* Please see common/debug.h */
- #define DARJEELING_DEBUG
+#define DARJEELING_DEBUG
 // #define DARJEELING_DEBUG_FRAME
 // #define DARJEELING_DEBUG_MEM_TRACE
 // #define DARJEELING_DEBUG_TRACE
@@ -49,6 +49,8 @@ typedef unsigned long long int dj_time_t;
 // #define DBG_WKREPROG true
 // #define DBG_ZWAVETRACE true
 // #define DBG_WKPFGH true
+#define DBG_WKROUTING true
+// #define DBG_WIFI true
 
 void avr_serialPrintf(char * format, ...);
 #define DARJEELING_PRINTF avr_serialPrintf
@@ -56,15 +58,17 @@ void avr_serialPrintf(char * format, ...);
 #define DARJEELING_PGMSPACE_MACRO
 
 // Routing: choose 1
-#define ROUTING_USE_NONE
+#define ROUTING_USE_GATEWAY
+//#define ROUTING_USE_NONE
 //#define ROUTING_USE_DSDV
-// #define ROUTING_USE_WUKONG
+//#define ROUTING_USE_WUKONG
 
 // Radios: choose as many as the routing protocol allows (max 1 for routing_none)
 #define RADIO_USE_ZWAVE
 // #define RADIO_USE_XBEE
+// #define RADIO_USE_WIFI
 #define HAS_WDT
 #define platform_wdt_init() wdt_enable(WDTO_2S)
 #define platform_wdt_reset() wdt_reset()
-//#define platform_wdt_reset() 
+//#define platform_wdt_reset()
 #endif

@@ -70,8 +70,6 @@ IP = sys.argv[1] if len(sys.argv) >= 2 else '127.0.0.1'
 landId = 100
 node_infos = []
 
-
-
 from make_js import make_main
 from make_fbp import fbp_main
 def import_wuXML():
@@ -1107,6 +1105,7 @@ initializeVirtualNode();
 update_applications()
 import_wuXML()
 make_FBP()
+getComm()
 wukong.listen(MASTER_PORT)
 
 if __name__ == "__main__":

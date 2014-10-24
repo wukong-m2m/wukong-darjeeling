@@ -213,17 +213,16 @@ class WuApplication:
             for attr in propertyTag.attributes.values():
               properties[attr.name] = attr.value.strip()
 
-          
           index = componentTag.getAttribute('instanceId')
           self.monitorProperties[index] = {}
-          
-	  # set monitoring properties index for components in application
+
+          # set monitoring properties index for components in application
           for propertyTag in componentTag.getElementsByTagName('monitorProperty'):
             for attr in propertyTag.attributes.values():
               self.monitorProperties[index][attr.name] = attr.value.strip()
 
           if index in self.instanceIds:
-            
+
             #wucomponent already appears in other pages, merge property requirement, suppose location etc are the same
             self.wuComponents[index].properties = dict(self.wuComponents[index].properties.items() + properties.items())
           else:
@@ -270,6 +269,7 @@ class WuApplication:
                       wuLinkMap[hash_value] = link
                   self.changesets.links.append(wuLinkMap[hash_value])
           
+
   def cleanAndCopyJava(self):
     # clean up the directory
     if os.path.exists(JAVA_OUTPUT_DIR):
@@ -376,8 +376,8 @@ class WuApplication:
       remaining_ids = copy.deepcopy(destination_ids)
       gevent.sleep(0)
 
-      destination_ids.remove(1)
-      remaining_ids.remove(1    )
+      #destination_ids.remove(1)
+      #remaining_ids.remove(1)
 
       for node_id in destination_ids:
         node = WuNode.node_dict[node_id]

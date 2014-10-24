@@ -11,8 +11,8 @@
 #include "wkpf_properties.h"
 
 #define SIZE_OF_COMPONENT_ID 2
-#define NUMBER_OF_WUCLASSES_PER_MESSAGE 9
-#define NUMBER_OF_WUOBJECTS_PER_MESSAGE 9
+#define NUMBER_OF_WUCLASSES_PER_MESSAGE ((WKCOMM_MESSAGE_PAYLOAD_SIZE-3)/3)
+#define NUMBER_OF_WUOBJECTS_PER_MESSAGE ((WKCOMM_MESSAGE_PAYLOAD_SIZE-3)/4)
 
 
 uint8_t send_message(wkcomm_address_t dest_node_id, uint8_t command, uint8_t *payload, uint8_t length) {
@@ -44,15 +44,16 @@ uint8_t send_message(wkcomm_address_t dest_node_id, uint8_t command, uint8_t *pa
 void send_message_withou_reply(wkcomm_address_t dest_node_id, uint8_t command, uint8_t *payload, uint8_t length) {
     // Print some debug info
     #ifdef DARJEELING_DEBUG
-    	DEBUG_LOG(true, "WKPF: sending property set command to %d:", dest_node_id);
-    	for(int i=0; i<length; i++) {
-    		DEBUG_LOG(true, "[%x] ", payload[i]);
-    	}
-    	DEBUG_LOG(true, "\n");
+       DEBUG_LOG(true, "WKPF: sending property set command to %d:", dest_node_id);
+       for(int i=0; i<length; i++) {
+               DEBUG_LOG(true, "[%x] ", payload[i]);
+       }
+       DEBUG_LOG(true, "\n");
     #endif
 
     wkcomm_send(dest_node_id, command, payload, length);
 }
+
 
 uint8_t wkpf_call_adaptor(wkcomm_address_t dest_node_id, uint16_t wuclass_id, uint8_t property_number, uint16_t value)
 {
@@ -68,9 +69,6 @@ uint8_t wkpf_call_adaptor(wkcomm_address_t dest_node_id, uint16_t wuclass_id, ui
 	return r;
 
 }
-
-
-
 
 uint8_t wkpf_send_set_property_int16(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, int16_t value, uint16_t src_component_id) {
 	uint8_t message_buffer[7 + WKPF_MAX_NUM_OF_TOKENS * 2 +5];
@@ -269,7 +267,6 @@ uint8_t wkpf_send_monitor_property_refresh_rate(wkcomm_address_t progression_ser
     }
 }
 
-
 uint8_t wkpf_send_request_property_init(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number) {
 	uint8_t message_buffer[2];
 	message_buffer[0] = port_number;
@@ -330,7 +327,7 @@ void wkpf_comm_handle_message(void *data) {
 			response_size = 1;
 		}
 		break;
-		case WKPF_COMM_CMD_GET_FEATURES: {
+		/*case WKPF_COMM_CMD_GET_FEATURES: {
 			int count = 0;
 			for (int i=0; i<WKPF_NUMBER_OF_FEATURES; i++) { // Needs to be changed if we have more features than fits in a single message, but for now it will work fine.
 				if (wkpf_config_get_feature_enabled(i)) {
@@ -353,7 +350,7 @@ void wkpf_comm_handle_message(void *data) {
 				response_size = 1;
 			}
 		}
-		break;
+		break;*/
 		case WKPF_COMM_CMD_GET_WUCLASS_LIST: {
 			// Request format: payload[0] request message number
 			// Response format: payload[0] response message number

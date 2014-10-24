@@ -24,10 +24,7 @@ extern uint8_t wkpf_config_get_part_of_location_string(char* dest, uint8_t offse
 extern uint8_t wkpf_config_set_feature_enabled(uint8_t feature, bool enabled); // Needs reboot
 extern bool wkpf_config_get_feature_enabled(uint8_t feature);
 
-extern wkcomm_address_t wkpf_config_get_master_node_id();
-extern void wkpf_config_set_master_node_id(wkcomm_address_t node_id);
-
-extern wkcomm_address_t wkpf_config_get_gid();
-extern void wkpf_config_set_gid(wkcomm_address_t gid);
+extern wkcomm_address_t wkpf_config_get_did();
+extern void wkpf_config_set_did(wkcomm_address_t did);
 
 #endif // WKPF_CONFIG_H

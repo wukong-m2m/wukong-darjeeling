@@ -5,10 +5,10 @@
 #include <unistd.h>
 
 void wuclass_pir_sensor_setup(wuobject_t *wuobject) {
-	if( access( "/sys/class/gpio/gpio27/value", F_OK ) == -1 ) {
-		system("echo -n 27 > /sys/class/gpio/export");
-	}
-	system("echo -n in > /sys/class/gpio/gpio27/direction"); //gpio27-pin7, gpio26-pin8
+    if( access( "/sys/class/gpio/gpio27/value", F_OK ) == -1 ) {
+        system("echo -n 27 > /sys/class/gpio/export");
+    }
+    system("echo -n in > /sys/class/gpio/gpio27/direction"); //gpio27-pin7, gpio26-pin8
 }
 
 void wuclass_pir_sensor_update(wuobject_t *wuobject) {
