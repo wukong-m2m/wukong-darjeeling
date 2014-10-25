@@ -5,7 +5,7 @@
 #any kind of spaces, tabs or "\n" are not allowed in URL
 import sys, traceback, os
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "./pyparsing"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "../pyparsing"))
 from configuration import *
 from models import *
 from locationTree import *
