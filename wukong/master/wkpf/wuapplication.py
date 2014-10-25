@@ -376,8 +376,9 @@ class WuApplication:
       remaining_ids = copy.deepcopy(destination_ids)
       gevent.sleep(0)
 
-      #destination_ids.remove(1)
-      #remaining_ids.remove(1)
+      # Remove Server node ID?
+      destination_ids.remove(1)
+      remaining_ids.remove(1)
 
       for node_id in destination_ids:
         node = WuNode.node_dict[node_id]
