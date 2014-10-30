@@ -13,7 +13,7 @@
 #include "wkpf_wuclasses.h"
 #include "wkpf_wuobjects.h"
 
-#define TOKEN_NO_COMPONENT 65535
+#define TOKEN_NO_COMPONENT 32767
 
 dj_di_pointer wkpf_links_store = 0;
 dj_di_pointer wkpf_component_map_store = 0;
