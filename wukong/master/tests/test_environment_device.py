@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # vim: ts=4 sw=4
 import os,sys,time
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
@@ -8,9 +9,26 @@ from configuration import *
 from wkpf.wkpfcomm import *
 from wkpf.wuclasslibraryparser import *
 from wkpf.wuapplication import *
+from device_handlers import *
 import serial
 
-from threading import Thread
+
+
+# For Galileo/NetworkServer
+TEST_DEVICES = [
+    Galileo_NetworkServer(binary='../../../src/config/galileo', ipaddress='192.168.4.111'),
+    Galileo_NetworkServer(binary='../../../src/config/galileo', ipaddress='192.168.4.116'),
+    Galileo_NetworkServer(binary='../../../src/config/galileo', ipaddress='192.168.4.117')
+]
+
+# For WuDevice/ZWave
+# TEST_DEVICES = [
+#     WuDevice_Zwave(binary='arduino/wukong_test2_no_watchdog.cpp.hex', usbport='/dev/ttyUSB0'),
+#     WuDevice_Zwave(binary='arduino/wukong_test2_no_watchdog.cpp.hex', usbport='/dev/ttyUSB1'),
+#     WuDevice_Zwave(binary='arduino/wukong_test2_no_watchdog.cpp.hex', usbport='/dev/ttyUSB2')
+# ]
+
+
 
 class WuTest:
     def __init__(self, download=True, pair=True):
@@ -21,25 +39,21 @@ class WuTest:
 	#os.system("kill -9  `cat /tmp/gateway.pid`;rm /tmp/gateway.pid;sleep 2")
         ## set up manageable devices
         self.devs = TEST_DEVICES
-        self.hexfiles = HEXFILES
-        assert len(self.devs) == len(self.hexfiles)
-        self.dev_len = len(self.devs)
         if download is True:
-            self.__downloadAll()
+            for dev in self.devs:
+                dev.download()
 
         ## load wukong component library
         WuClassLibraryParser.read(COMPONENTXML_PATH)
 
-
         ## set up communication gateway
 
-        self.node_ids = [i + 2 for i in xrange(self.dev_len)]
-
-        ## start the device consoles
-        self.consoles = {}
+        ## set node_ids. This assumes all zwave nodes will be numbered from 2 up. Network server nodes use the last byte of their IP as node_id
+        next_zwave_id = 2
         for dev in self.devs:
-            self.consoles[dev] = serial.Serial(dev, baudrate=115200)
-            self.consoles[dev].timeout = 1
+            if dev.__class__ == WuDevice_Zwave:
+                dev.node_id = next_zwave_id
+                next_zwave_id += 1
 
         if pair is True:
             self.pair_devices_gateway()
@@ -58,9 +72,9 @@ class WuTest:
             self.add()
             ret = self.wait('ready')
             print "----->", ret
-            self.waitDeviceReady(dev)
-            #self.deviceReset(dev)
-            self.deviceLearn(dev)
+            dev.waitDeviceReady()
+            #dev.deviceReset()
+            dev.deviceLearn()
             self.wait('found',20)
 
     ### We may assume only one application in one WuTest object.
@@ -79,13 +93,6 @@ class WuTest:
         if self.application is not None:
             self.application.deploy_with_discovery(['arduino'])
 
-    def __downloadAll(self):
-        for i in xrange(len(self.devs)):
-            self.__download(self.devs[i], self.hexfiles[i])
-
-    def __download(self, port_name, hexfile):
-        os.system("avrdude -p atmega2560 -c wiring -P %s -U flash:w:%s" % (port_name, hexfile))
-
     def add(self):
         self.comm.onAddMode()
 
@@ -101,18 +108,6 @@ class WuTest:
             gevent.sleep(1)
             timeout = timeout - 1
         return False
-
-    def waitDeviceReady(self, dev, timeout=20):
-        while timeout > 0:
-            timeout = timeout - 1
-            l = self.consoles[dev].readline()
-            if l.find("ready") != -1: break
-
-    def deviceLearn(self, dev):
-        self.consoles[dev].write("$l")
-
-    def deviceReset(self, dev):
-        self.consoles[dev].write("$r")
 
     def constrollerReset(self):
         command = '../../tools/testrtt/a.out -d %s nowait controller reset' % (ZWAVE_GATEWAY_IP)
@@ -158,36 +153,20 @@ class WuTest:
         return cnt
 
     def start_log(self):
-        def func(self, console, filename):
-            f = open(filename, 'w')
-
-            while not self.log_done:
-                s = console.readline()
-                f.write(s)
-                f.flush()
-            f.close()
-
-        self.log_done = False
-        self.log_threads = []
         for dev in self.devs:
-            filename = 'reports/node_%d.txt' % (2)
-            thread = Thread(target=func, args=(self, self.consoles[dev], filename))
-            thread.start()
-            self.log_threads.append(thread)
+            dev.startLog()
 
     def stop_log(self):
-        gevent.sleep(1)
-        self.log_done = True
-        for thread in self.log_threads:
-            thread.join()
+        for dev in self.devs:
+            dev.stopLog()
 
 
 
 if __name__ == '__main__':
     test = WuTest(False, True)
 
-    nodes_info = test.discovery()
+    # nodes_info = test.discovery()
 
-    test.loadApplication(APP_PATH) 
-    test.mapping(nodes_info)
-    test.deploy_with_discovery()
+    # test.loadApplication(APP_PATH) 
+    # test.mapping(nodes_info)
+    # test.deploy_with_discovery()

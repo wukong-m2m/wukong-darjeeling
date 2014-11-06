@@ -8,6 +8,7 @@ from xml.parsers.expat import ExpatError
 import simplejson as json
 from configuration import *
 import logging
+import globals
 
 
 # It is a global view of the overall system, like devices, Wuclasses, WuObjects, Energy Consumptions on device.

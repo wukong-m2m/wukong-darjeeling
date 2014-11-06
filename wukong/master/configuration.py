@@ -36,13 +36,7 @@ WKPFCOMM_AGENT = config.get('WKPFCOMM_AGENT', 'ZWAVE')
 MONGODB_URL = config.get('MONGODB_URL', '')
 ALLOW_MASTER_ALWAYS_JOINABLE = config.get('ALLOW_MASTER_ALWAYS_JOINABLE', False)
 
-DEVICE1 = '/dev/ttyUSB0'
-DEVICE2 = '/dev/ttyUSB1'
-DEVICE3 = '/dev/ttyUSB2'
-VM1 = 'arduino/hex_file/wukong_test2_no_watchdog.cpp.hex'
-TEST_DEVICES = [DEVICE1, DEVICE2, DEVICE3]
-HEXFILES = [VM1, VM1, VM1]
-APP_PATH = "applications/three_components_in_one_device/"
+APP_PATH = "applications/9d07e0e08af7f96cf45be0112b9ccfbe/"
 
 TEST_LOCATION_STRENGTH_NUMBER = 100
 TEST_LOCATION_ERROR_LENGTH = 50
