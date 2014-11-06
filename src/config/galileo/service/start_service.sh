@@ -1,4 +1,4 @@
 #!/bin/sh
 cd /usr/local/darjeeling
-./darjeeling.elf -u 2=/dev/ttyACM0
+./darjeeling.elf REPLACE_THIS_WITH_BOOT_PARAMETERS
 
