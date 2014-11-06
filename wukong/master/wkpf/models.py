@@ -3,7 +3,7 @@ import copy
 from xml.etree import ElementTree
 import xml.dom.minidom
 import traceback
-import wkpf.globals
+import globals
 
 
 

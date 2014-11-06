@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import datetime
 from unittest import TestLoader, TestSuite
 from HTMLTestRunner import HTMLTestRunner
