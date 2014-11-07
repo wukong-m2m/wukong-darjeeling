@@ -51,7 +51,7 @@ dj_int_array *dj_int_array_create(uint8_t type, uint16_t size)
 	arr = (dj_int_array*)dj_mem_alloc( byteSize + sizeof(dj_int_array), CHUNKID_INTARRAY );
 
     // let the caller deal with it
-	if(arr == nullref) return nullref;
+	if(arr == nullref) return (dj_int_array *)nullref;
 
 	// init array to zeroes
 	memset(arr->data.bytes, 0, byteSize);
@@ -86,7 +86,7 @@ dj_ref_array *dj_ref_array_create(runtime_id_t runtime_class_id, uint16_t size)
 	arr = (dj_ref_array*)dj_mem_alloc( size * sizeof(ref_t) + sizeof(dj_ref_array), CHUNKID_REFARRAY );
 
     // let the caller deal with out of memory
-	if(arr == nullref) return nullref;
+	if(arr == nullref) return (dj_ref_array *)nullref;
 
 	// set array size
 	arr->array.length = size;
