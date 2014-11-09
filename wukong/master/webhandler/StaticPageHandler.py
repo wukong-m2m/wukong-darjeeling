@@ -13,7 +13,7 @@ sysmanager = SystemManager.init()
 class Editor(tornado.web.RequestHandler):
     def get(self):
         self.content_type='text/html'
-        self.render('templates'/ide.html)
+        self.render('../templates/ide.html')
 
 # Serve Home Page
 class Home(tornado.web.RequestHandler):

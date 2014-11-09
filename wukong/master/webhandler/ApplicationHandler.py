@@ -9,9 +9,11 @@ import logging
 from configuration import *
 from manager.ApplicationManager import ApplicationManager
 from manager.SystemManager import SystemManager
+from manager.ModelManager import ModelManager
 
 appmanager = ApplicationManager.init()
 sysmanager = SystemManager.init()
+modelmanager = ModelManager.init()
 
 # Returns a form to upload new application
 class CreateApplication(tornado.web.RequestHandler):
@@ -166,14 +168,14 @@ class MapApplication(tornado.web.RequestHandler):
         else:
             platforms = ['avr_mega2560']
             # TODO: need platforms from fbp
-            sysmanager.rebuildTree()
+            sysmanager.refreshNodeInfo()
 
             # Map with location tree info (discovery), this will produce mapping_results
-            #mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, getComm().getRoutingInformation())
-            mapping_result = appmanager.getApplication(app_id).map(wkpf.globals.location_tree, [])
+            mapping_result = appmanager.getApplication(app_id).map(modelmanager.getLocationTree(), [])
 
             ret = []
-            for component in sysmanager.getApplication(app_ind).changesets.components:
+            app = appmanager.getApplication(app_id)
+            for component in app.changesets.components:
                 obj_hash = {
                 'instanceId': component.index,
                 'location': component.location,
@@ -201,8 +203,8 @@ class MapApplication(tornado.web.RequestHandler):
                 'status':0,
                 'mapping_result': mapping_result, # True or False
                 'mapping_results': ret,
-                'version': wkpf.globals.applications[app_ind].version,
-                'mapping_status': appmanager.getApplication(app_id).mapping_status})
+                'version': app.version,
+                'mapping_status': app.mapping_status})
 
 class MonitorApplication(tornado.web.RequestHandler):
     def get(self, app_id):

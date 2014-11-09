@@ -9,6 +9,7 @@ from wkpf.wkpfcomm import *
 from make_js import make_main
 from make_fbp import fbp_main
 from ApplicationManager import ApplicationManager
+from LocationManager import LocationManager
 
 class SystemManager:
     __system_manager = None
@@ -20,7 +21,6 @@ class SystemManager:
         return cls.__system_manager
 
     def __init__(self):
-        self._location_tree = LocationTree(LOCATION_ROOT)
         self._wukong_status = []
         self._virtual_nodes = {}   # for monitoring
         self._node_infos = []
@@ -28,6 +28,7 @@ class SystemManager:
         self._busy = False
         self._wkpfcomm = getComm()
         self._appmanager = ApplicationManager.init()
+        self._locmanager =  LocationManager.init()
         self.initZwave()  # test zwave module availability
         self.initMonitoring()  # test mongoDB setting
         self._appmanager.updateApplications()
@@ -74,29 +75,10 @@ class SystemManager:
     def setActiveApplicationIndex(self, new_index):
         self.active_ind = new_index
 
-    def getLocationTreeJson(self):
-        return self._location_tree.getJson()
-
     def signalDeploy(self, app_ind, platforms):
          # signal deploy in other greenlet task
           wusignal.signal_deploy(platforms)
           self._active_ind  = app_ind
-
-    def getNodeInfos(self):
-        return self._node_infos
-
-    def getNodeInfo(self, node_id):
-        return getComm().getNodeInfo(node_id)
-
-    def refreshNodeInfo(self, condition=False):
-        self._node_infos = self._wkpfcomm.getAllNodeInfos(condition)
-        self.rebuildTree()
-
-    def findLocationById(self, id):
-        self._location_tree.findLocationById(id)
-
-    def saveLocationTree(sef):
-        self._location_tree.saveLocationTree()
 
     # add the virtual wunode just used to represent master which is the destination of monitoring link
     def initializeVirtualNode(self):
@@ -109,19 +91,6 @@ class SystemManager:
         wuclassdef = WuObjectFactory.wuclassdefsbyid[44]
         wuobject = WuObjectFactory.createWuObject(wuclassdef, node, 1, False)
         wkpf.globals.virtual_nodes[1] = node
-
-    # using cloned nodes
-    def rebuildTree(self):
-        nodes_clone = copy.deepcopy(self._node_infos)
-        location_tree = LocationTree(LOCATION_ROOT)
-        location_tree.buildTree(nodes_clone)
-        flag = os.path.exists("../../LocalData/landmarks.txt")
-        if(flag):
-            location_tree.loadTree()
-        location_tree.printTree()
-
-    def loadTree(self):
-        self._location_tree.loadTree()
 
     # Helper functions
     def setupSignalHandlerGreenlet(self):

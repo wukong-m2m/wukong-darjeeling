@@ -7,6 +7,7 @@ import tornado.web
 import tornado.template as template
 import simplejson as json
 from configuration import *
+import glob
 
 from manager.SystemManager import SystemManager
 

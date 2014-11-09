@@ -7,18 +7,20 @@ import tornado.ioloop, tornado.web
 import tornado.template as template
 from configuration import *
 from manager.SystemManager import SystemManager
+from manager.ModelManager import ModelManager
 
 sysmanager = SystemManager.init()
+modelmanager = ModelManager.init()
 
 class LocationTree(tornado.web.RequestHandler):
     def post(self):
         addloc = template.Loader(os.getcwd()).load('templates/display_locationTree.html').generate(
             node_infos=sysmanager.getNodeInfos())
         self.content_type = 'application/json'
-        self.write({'loc':json.dumps(sysmanager.geylocationTreeJson()),'node':addloc})
+        self.write({'loc':json.dumps(modelmanager.getlocationTreeJson()),'node':addloc})
 
     def get(self, node_id):
-        curNode = sysmanager.findLocationById(int(node_id))
+        curNode = modelmanager.findLocationById(int(node_id))
         print node_id, curNode
         if curNode == None:
             self.write({'status':1,'message':'cannot find node id '+str(node_id)})
@@ -33,7 +35,7 @@ class LocationTree(tornado.web.RequestHandler):
 
     def put(self, node_id):
         node_id = int(node_id)
-        curNode = sysmanager.findLocationById(node_id)
+        curNode = modelmanager.findLocationById(node_id)
         if curNode == None:
             self.write({'status':1,'message':'cannot find node id '+str(node_id)})
             return
@@ -48,7 +50,7 @@ class LocationTree(tornado.web.RequestHandler):
 class SensorInfo(tornado.web.RequestHandler):
     def get(self, node_id, sensor_id):
         node_id = int(node_id)
-        curNode = sysmanager.findLocationById(node_id)
+        curNode = modelmanager.findLocationById(node_id)
         if curNode == None:
             self.write({'status':1,'message':'cannot find node id '+str(node_id)})
             return
@@ -69,7 +71,7 @@ class EditLocationTree(tornado.web.RequestHandler):
         parent_id = self.get_argument("parent_id")
         child_name = self.get_argument("child_name")
         size = self.get_argument("size")
-        paNode = sysmanager.findLocationById(node_id)
+        paNode = modelmanager.findLocationById(node_id)
         if paNode != None:
             if operation == "0": #add a new location
                 paNode.addChild(child_name)
@@ -95,7 +97,7 @@ class TreeModifier(tornado.web.RequestHandler):
         start_id = self.get_argument("start")
         end_id = self.get_argument("end")
         distance = self.get_argument("distance")
-        paNode = sysmanager.findLocationById(int(start_id)//100) #find parent node
+        paNode = modelmanager.findLocationById(int(start_id)//100) #find parent node
         if paNode !=None:
             if int(mode) == 0:        #adding modifier between siblings
                 if paNode.addDistanceModifier(int(start_id), int(end_id), int(distance)):
@@ -116,17 +118,17 @@ class TreeModifier(tornado.web.RequestHandler):
 
 class SaveLandMark(tornado.web.RequestHandler):
     def put(self):
-        self.write({'tree':sysmanager.getLocationTree()})
+        self.write({'tree':modelmanager.getLocationTree()})
 
     def post(self):
-        sysmanager.getSaveLocationTree()
+        modelmanager.getSaveLocationTree()
         self.write({'message':'Save Successfully!'})
 
 class LoadLandMark(tornado.web.RequestHandler):
     def post(self):
         flag = os.path.exists("../LocalData/landmarks.txt")
         if(flag):
-            sysmanager.loadTree()
+            modelmanager.loadTree()
             self.write({'message':'Load Successfully!'})
         else:
             self.write({'message':'"../LocalData/landmarks.txt" does not exist '})
@@ -145,11 +147,10 @@ class AddLandMark(tornado.web.RequestHandler):
         if(operation=="1"):
             # landId += 1
             landmark = LandmarkNode(name, location+"@"+coordinate, size, direct)
-            rt_val = wkpf.globals.location_tree.addLandmark(landmark)
+            rt_val = modelmanager.addLandmark(landmark)
             msg = 'add fails'
-            wkpf.globals.location_tree.printTree()
         elif(operation=="0"):
-            rt_val = wkpf.globals.location_tree.delLandmark(name, location)
+            rt_val = modelmanager.deleteLandmark(name, location)
             msg = 'deletion of '+ name + ' fails at '+ location
 
         self.content_type = 'application/json'
