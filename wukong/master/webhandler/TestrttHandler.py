@@ -1,8 +1,9 @@
+import os, sys, zipfile, re, time
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 import tornado.web
 import tornado.template as template
-from sysmanager import *
+from configuration import *
+from manager.SystemManager import SystemManager
 
 sysmanager = SystemManager.init()
 

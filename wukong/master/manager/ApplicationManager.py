@@ -1,4 +1,4 @@
-“”“
+"""
 It manages the global set of applications, and the life cycle of an application.
 The life cycle includes stages of below:
 
@@ -8,44 +8,35 @@ The life cycle includes stages of below:
 4) map
 5) deploy
 6) reconfiguration
-”“”
-
-# vim:ts=2 sw=2 expandtab
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+"""
 import sys, os, traceback, time, re, copy
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from wkpf.model.models import WuClassDef, WuComponent, WuLink
 import fnmatch
 import shutil
-from wkpfcomm import *
-from xml2java.generator import Generator
+from wkpf.wkpfcomm import *
+from wkpf.xml2java.generator import Generator
 from subprocess import Popen, PIPE, STDOUT
 from collections import namedtuple
 import distutils.dir_util
+from wkpf.wuapplication import WuApplication
 from configuration import *
-from globals import *
-
+from mapper.mapper import *
 
 class ApplicationManager:
     __application_manager = None
 
     @classmethod
     def init(cls):
-        if(cls.__application_manager = None):
-            cls.__application_manager = ApplicationManager([], False)
+        if(cls.__application_manager == None):
+            cls.__application_manager = ApplicationManager()
 
-         return cls.__application_manager
+        return cls.__application_manager
 
-    def __init__(self, apps, status):
-        self._busy = status
+    def __init__(self):
         self._active_ind = None
-        self._applications = apps
+        self._applications = []
         self._app_map = {}
-
-    def master_busy(self):
-        self._busy = True
-
-    def master_available(self):
-        self._busy = False
 
     def hasApplication(self, app_id):
         return app_id in self._app_map
@@ -76,7 +67,7 @@ class ApplicationManager:
         app_id = app_id.encode('ascii','ignore')
         for index, app in enumerate(self._applications):
             if app.id == app_id:
-            return index
+                return index
         return None
 
     def getAllApplications(self):
@@ -95,7 +86,7 @@ class ApplicationManager:
     def deleteApplication(self, i):
         try:
             shutil.rmtree(self._applications[i].dir)
-            def self._app_map[_applications[i].id]
+            del self._app_map[_applications[i].id]
             self._applications.pop(i)
             return True
         except Exception as e:
@@ -120,7 +111,7 @@ class ApplicationManager:
             logging.info('scanning %s:' % (dirname))
             if dirname not in application_basenames:
                 logging.info('%s' % (dirname))
-                app = loadAppFromDir(app_dir)
+                app = self.loadAppFromDir(app_dir)
                 self._applications.append(app)
                 self._app_map[app.id] = app
                 application_basenames = [os.path.basename(app.dir) for app in self._applications]
@@ -132,7 +123,7 @@ class ApplicationManager:
             return None
 
     def setActiveApplicationIndex(self, app_id):
-        self._active_id = getAppIndex(app_id)
+        self._active_id = self.getAppIndex(app_id)
 
     def updateApplication(app_id, name, desc):
          self._app_map[app_ind].app_name = name
@@ -180,7 +171,8 @@ class ApplicationManager:
         self.deploy(node_ids, *args)
 
     def deploy(self, destination_ids, platforms):
-        master_busy()
+        sysmanager = SystemManager.init()
+        sysmanager.setMasterBusy();
         wuapplication = getActiveApplication()
         app_path = wuapplication.dir
         wuapplication.clearDeployStatus()
@@ -253,14 +245,15 @@ class ApplicationManager:
 
         wuapplication.logDeployStatus('Application has been deployed!')
         wuapplication.stopDeployStatus()
-        master_available()
+        sysmanager.setMasterAvailable()
         return True
 
     def reconfiguration(self):
 
         global location_tree
         global routingTable
-        master_busy()
+        sysmanager = SystemManager.init()
+        sysmanager.setMasterBusy();
         wuapplication = getActiveApplication()
         wuapplication.status = "Start reconfiguration"
         node_infos = getComm().getActiveNodeInfos(force=True)
@@ -269,6 +262,6 @@ class ApplicationManager:
         routingTable = getComm().getRoutingInformation()
         if self.map(location_tree, routingTable):
             self.deploy([info.id for info in node_infos], DEPLOY_PLATFORMS)
-        master_available()
+        sysmanager.setMasterAvailable()
 
 

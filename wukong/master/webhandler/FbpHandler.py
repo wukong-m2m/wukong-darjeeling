@@ -1,12 +1,14 @@
+import os, sys, zipfile, re, time
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import traceback
 import shutil, errno
 import platform
-import os, sys, zipfile, re, time
 import tornado.web
 import tornado.template as template
 import simplejson as json
-import manager.ApplicationManager
-import manager.SystemManager
+from configuration import *
+from manager.ApplicationManager import ApplicationManager
+from manager.SystemManager import SystemManager
 
 appmanager = ApplicationManager.init()
 sysmanager = SystemManager.init()
@@ -26,7 +28,7 @@ class SaveFBP(tornado.web.RequestHandler):
 
 class LoadFBP(tornado.web.RequestHandler):
     def get(self, app_id):
-        self.render('templates/fbp.html')
+        self.render('../templates/fbp.html')
 
     def post(self, app_id):
         if not appmanager.hasApplication(app_id):

@@ -1,14 +1,14 @@
+import os, sys, zipfile, re, time
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 import traceback
 import shutil, errno
 import platform
-import os, sys, zipfile, re, time
 import tornado.web
 import tornado.template as template
 import simplejson as json
+from configuration import *
 
-from sysmanager import *
+from manager.SystemManager import SystemManager
 
 sysmanager = SystemManager.init()
 
@@ -48,10 +48,10 @@ class Nodes(tornado.web.RequestHandler):
         if SIMULATION == "true":
             for info in node_infos:
                 if info.id == int(nodeId):
-                info.location = location
-                senNd = SensorNode(info)
-                WuNode.saveNodes()
-                wkpf.globals.location_tree.addSensor(senNd)
+                    info.location = location
+                    senNd = SensorNode(info)
+                    WuNode.saveNodes()
+                    wkpf.globals.location_tree.addSensor(senNd)
             wkpf.globals.location_tree.printTree()
             self.content_type = 'application/json'
             self.write({'status':0})
@@ -79,11 +79,11 @@ class Nodes(tornado.web.RequestHandler):
                 wkpf.globals.location_tree.addSensor(senNd)
                 wkpf.globals.location_tree.printTree()
                 WuNode.saveNodes()
-            self.content_type = 'application/json'
-            self.write({'status':0})
-         else:
-            self.content_type = 'application/json'
-            self.write({'status':1, 'mesg': 'Cannot set location, please try again.'})
+                self.content_type = 'application/json'
+                self.write({'status':0})
+            else:
+                self.content_type = 'application/json'
+                self.write({'status':1, 'mesg': 'Cannot set location, please try again.'})
 
 class WuLibrary(tornado.web.RequestHandler):
     def get(self):
@@ -140,12 +140,12 @@ class SerialPort(tornado.web.RequestHandler):
         if system_name == "Windows":
             available = []
             for i in range(256):
-            try:
-                s = serial.Serial(i)
-                available.append(i)
-                s.close()
-            except:
-                pass
+                try:
+                    s = serial.Serial(i)
+                    available.append(i)
+                    s.close()
+                except:
+                    pass
             self.write(json.dumps(available))
             return
         if system_name == "Darwin":
@@ -161,7 +161,7 @@ class SerialPort(tornado.web.RequestHandler):
                 available.append(l)
                 s.close()
             except:
-            pass
+                pass
         self.write(json.dumps(available))
 
 class EnabledWuClass(tornado.web.RequestHandler):

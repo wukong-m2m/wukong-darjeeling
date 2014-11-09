@@ -8,7 +8,7 @@ from wkpf.model import *
 from wkpf.wkpfcomm import *
 from make_js import make_main
 from make_fbp import fbp_main
-import ApplicationManager
+from ApplicationManager import ApplicationManager
 
 class SystemManager:
     __system_manager = None
@@ -20,7 +20,6 @@ class SystemManager:
         return cls.__system_manager
 
     def __init__(self):
-        self._applications = []
         self._location_tree = LocationTree(LOCATION_ROOT)
         self._wukong_status = []
         self._virtual_nodes = {}   # for monitoring
@@ -28,12 +27,12 @@ class SystemManager:
         self._connected = (False if SIMULATION == "true" else True)  # whether zwave gateway is connected
         self._busy = False
         self._wkpfcomm = getComm()
-        self._appmanager = ApplicationManager(self._applications, self._busy)
-        initZwave()  # test zwave module availability
-        initMonitoring()  # test mongoDB setting
-        updateApplications()
-        importWuXML()
-        makeFBP()
+        self._appmanager = ApplicationManager.init()
+        self.initZwave()  # test zwave module availability
+        self.initMonitoring()  # test mongoDB setting
+        self._appmanager.updateApplications()
+        self.importWuXML()
+        self.makeFBP()
 
     def initZwave(self):
         if WKPFCOMM_AGENT == "ZWAVE":
@@ -47,22 +46,21 @@ class SystemManager:
 
     def initMonitoring(self):
         if(MONITORING == 'true'):
+            # check availability of mongo driver
+            try:
+                from pymongo import MongoClient
+            except:
+                print "Please install python mongoDB driver pymongo by using"
+                print "easy_install pymongo"
+                sys.exit(-1)
 
-        # check availability of mongo driver
-        try:
-            from pymongo import MongoClient
-        except:
-            print "Please install python mongoDB driver pymongo by using"
-            print "easy_install pymongo"
-            sys.exit(-1)
-
-        # check correctness of mongoDB URL
-        try:
-            wkpf.globals.mongoDBClient = MongoClient(MONGODB_URL)
-        except:
-            print "MongoDB instance " + MONGODB_URL + " can't be connected."
-            print "Please install the mongDB, pymongo module."
-            sys.exit(-1)
+            # check correctness of mongoDB URL
+            try:
+                wkpf.globals.mongoDBClient = MongoClient(MONGODB_URL)
+            except:
+                print "MongoDB instance " + MONGODB_URL + " can't be connected."
+                print "Please install the mongDB, pymongo module."
+                sys.exit(-1)
 
     def getApplicationSize(self):
         return len(applications)
@@ -79,8 +77,6 @@ class SystemManager:
     def getLocationTreeJson(self):
         return self._location_tree.getJson()
 
-
-
     def signalDeploy(self, app_ind, platforms):
          # signal deploy in other greenlet task
           wusignal.signal_deploy(platforms)
@@ -92,9 +88,9 @@ class SystemManager:
     def getNodeInfo(self, node_id):
         return getComm().getNodeInfo(node_id)
 
-    def refreshNodeInfo(self, conditio=False):
+    def refreshNodeInfo(self, condition=False):
         self._node_infos = self._wkpfcomm.getAllNodeInfos(condition)
-        rebuildTree(self._node_infos)
+        self.rebuildTree()
 
     def findLocationById(self, id):
         self._location_tree.findLocationById(id)
@@ -116,7 +112,7 @@ class SystemManager:
 
     # using cloned nodes
     def rebuildTree(self):
-        nodes_clone = copy.deepcopy(_node_infos)
+        nodes_clone = copy.deepcopy(self._node_infos)
         location_tree = LocationTree(LOCATION_ROOT)
         location_tree.buildTree(nodes_clone)
         flag = os.path.exists("../../LocalData/landmarks.txt")
@@ -124,7 +120,7 @@ class SystemManager:
             location_tree.loadTree()
         location_tree.printTree()
 
-     def loadTree(self):
+    def loadTree(self):
         self._location_tree.loadTree()
 
     # Helper functions
@@ -162,8 +158,8 @@ class SystemManager:
     def importWuXML(self):
         make_main()
 
-    def makeFBP():
-        test_1 = fbp_main(self)
+    def makeFBP(self):
+        test_1 = fbp_main()
         test_1.make()
 
     def getActiveNodeInfos(self, force=False):

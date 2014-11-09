@@ -1,10 +1,12 @@
+import os, sys, zipfile, re, time
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import traceback
 import shutil, errno
 import platform
-import os, sys, zipfile, re, time
 import tornado.web
 import tornado.template as template
 import simplejson as json
+from configuration import *
 
 class Test:
   def __init__(self,name,n_id,pt,loc):

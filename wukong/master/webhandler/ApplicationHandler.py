@@ -1,14 +1,14 @@
+import os, sys, zipfile, re, time
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 import tornado.web
 import tornado.template as template
 import simplejson as json
-import os, sys, zipfile, re, time
 import traceback
 import hashlib
 import logging
-import manager.ApplicationManager
-import manager.SystemManager
+from configuration import *
+from manager.ApplicationManager import ApplicationManager
+from manager.SystemManager import SystemManager
 
 appmanager = ApplicationManager.init()
 sysmanager = SystemManager.init()
@@ -17,24 +17,25 @@ sysmanager = SystemManager.init()
 class CreateApplication(tornado.web.RequestHandler):
     def post(self):
         try:
-            app_name = self.get_argument('app_name')
-        except:
-            app_name = 'application' + sysmanager.getApplicationSize()
-            app_id = hashlib.md5(app_name).hexdigest()
-            if appmanager.hasApplication(app_id):
-                self.content_type = 'application/json'
-                self.write({'status':1, 'mesg':'Cannot create application with the same name'})
-                return
+            try:
+                app_name = self.get_argument('app_name')
+            except:
+                app_name = 'application' + sysmanager.getApplicationSize()
+                app_id = hashlib.md5(app_name).hexdigest()
+                if appmanager.hasApplication(app_id):
+                    self.content_type = 'application/json'
+                    self.write({'status':1, 'mesg':'Cannot create application with the same name'})
+                    return
 
-            app = appmanager.createApplication(app_id);
-            self.content_type = 'application/json'
-            self.write({'status':0, 'app': app.config()})
+                app = appmanager.createApplication(app_id);
+                self.content_type = 'application/json'
+                self.write({'status':0, 'app': app.config()})
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             print traceback.print_exception(exc_type, exc_value, exc_traceback,
                                   limit=2, file=sys.stdout)
-        self.content_type = 'application/json'
-        self.write({'status':1, 'mesg':'Cannot create application'})
+            self.content_type = 'application/json'
+            self.write({'status':1, 'mesg':'Cannot create application'})
 
 # Rename an application
 class RenameApplication(tornado.web.RequestHandler):
@@ -65,7 +66,7 @@ class Application(tornado.web.RequestHandler):
             title = ""
             if self.get_argument('title'):
                 title = self.get_argument('title')
-            app = sysmanager.getApplication(app_ind)
+            app = appmanager.getApplication(app_id)
             topbar = template.Loader(os.getcwd()).load('templates/topbar.html').generate(application=app, title=title, default_location=LOCATION_ROOT)
             self.content_type = 'application/json'
         self.write({'status':0, 'app': app.config(), 'topbar': topbar})
@@ -81,7 +82,7 @@ class Application(tornado.web.RequestHandler):
             app = appmanager.getApplication(app_id)
             topbar = template.Loader(os.getcwd()).load('templates/topbar.html').generate(application=app, title="Flow Based Programming")
             self.content_type = 'application/json'
-            self.write({'status':0, 'app': app.config, 'topbar': topbar})
+            self.write({'status':0, 'app': app.config(), 'topbar': topbar})
 
     # Update a specific application
     def put(self, app_id):
@@ -120,7 +121,7 @@ class ResetApplication(tornado.web.RequestHandler):
             self.write({'status':1, 'mesg': 'Cannot find the application'})
         else:
             sysmanager.setWukongStatus("close")
-            app = sysmanager.getApplication(app_id)
+            app = appmanager.getApplication(app_id)
             app.status = "close"
             self.content_type = 'application/json'
             self.write({'status':0, 'version': app.version})
@@ -131,9 +132,9 @@ class DeployApplication(tornado.web.RequestHandler):
             self.content_type = 'application/json'
             self.write({'status':1, 'mesg': 'Cannot find the application'})
         else:
-            app = sysmanager.getApplication(app_id)
+            app = appmanager.getApplication(app_id)
              # deployment.js will call refresh_node eventually, rebuild location tree there
-            deployment = template.Loader(os.getcwd()).load('../templates/deployment.html').generate(
+            deployment = template.Loader(os.getcwd()).load('templates/deployment.html').generate(
                 app=app,
                 app_id=app_id, node_infos=sysmanager.getNodeInfos(),
                 logs=app.logs(),
