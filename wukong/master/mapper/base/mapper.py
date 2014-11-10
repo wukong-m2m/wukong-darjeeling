@@ -16,10 +16,9 @@ class IMapper(Interface):
 
 class AbstractMapper(IMapper):
 
-  def __init__(self, application, system, tree):
-    self.application = application
-    self.system = system
-    self.tree = tree
+  def __init__(self, application, modelmanager):
+    self._application = application
+    self._modelmanager = modelmanager
 
   # To be override
   def map():
@@ -27,12 +26,12 @@ class AbstractMapper(IMapper):
 
 class AbstractSelectionMapper(AbstractMapper):
 
-  def __init__(self, application, system, tree):
-    super(self.__class__, self).__init__(application, system, tree)
+  def __init__(self, application, modelmanager):
+    super(self.__class__, self).__init__(application, modelmanager)
     self.variables = {}
 
   def map():
-    if (system == None || application == None):
+    if (self.tree == None || self.application == None):
       print "error mapping input"
       return
 

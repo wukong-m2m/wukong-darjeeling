@@ -6,9 +6,9 @@ from base.mapper import *
 
 class DistanceIgnorantEnergyEfficientMapper(AbstractSelectionMapper):
 
-  def __init__(self, application, system, tree):
+  def __init__(self, application, tree):
 
 
 class DistanceAwareEnergyEfficientMapper(AbstractSelectionMapper):
 
-  def __init__(self, application, system, tree):
+  def __init__(self, application, tree):

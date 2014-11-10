@@ -41,7 +41,7 @@ class ApplicationManager:
     def __init__(self):
         self._active_ind = None
         self._applications = []
-        self._app_map = {}
+        self._app_map = {}  # id to application
         self.updateApplications()
 
     def hasApplication(self, app_id):
@@ -61,12 +61,12 @@ class ApplicationManager:
 
         # dump config file to app
         logging.info('saving application configuration...')
-        app.saveConfig()
+        saveConfig(app)
         return app
 
     def renameApplication(self, app_id, app_name):
          self._app_map[app_id].app_name
-         self._app_map[app_id].saveConfig()
+         saveConfig(_app_map[app_id])
 
     def getAppIndex(self, app_id):
         # make sure it is not unicode
@@ -102,8 +102,35 @@ class ApplicationManager:
 
     def loadAppFromDir(self, dir):
         app = WuApplication(dir=dir)
-        app.loadConfig()
+        self.loadConfig(app)
         return app
+
+    def updateXML(self, app, xml):
+            self.xml = xml
+            self.setFlowDom(parseString(self.xml))
+            self.saveConfig()
+            f = open(os.path.join(self.dir, self.id + '.xml'), 'w')
+            f.write(xml)
+            f.close()
+
+    def loadConfig(self, app):
+        config = json.load(open(os.path.join(app.dir, 'config.json')))
+        app.id = config['id']
+        try:
+            app.app_name = config['app_name']
+        except:
+            app.app_name='noname';
+        app.desc = config['desc']
+        # self.dir = config['dir']
+        app.xml = config['xml']
+        try:
+            dom = parseString(app.xml)
+            app.setFlowDom(dom)
+        except ExpatError:
+            pass
+
+    def saveConfig(self, app):
+        json.dump(app.config(), open(os.path.join(app.dir, 'config.json'), 'w'))
 
     def updateApplications(self):
         logging.info('updating applications:')
@@ -121,6 +148,110 @@ class ApplicationManager:
                 self._applications.append(app)
                 self._app_map[app.id] = app
                 application_basenames = [os.path.basename(app.dir) for app in self._applications]
+
+    # Build up internal data structure from xml
+    def parseApplication(self, app):
+        componentInstanceMap = {}
+        wuLinkMap = {}
+        application_hashed_name = app.applicationDom.getElementsByTagName('application')[0].getAttribute('name')
+
+        components = app.applicationDom.getElementsByTagName('component')
+        app.instanceIds = []
+
+        # parse application XML to generate WuClasses, WuObjects and WuLinks
+        for componentTag in components:
+            # make sure application component is found in wuClassDef component list
+            try:
+                assert componentTag.getAttribute('type') in WuObjectFactory.wuclassdefsbyname.keys()
+            except Exception as e:
+
+                logging.error('unknown types for component found while parsing application')
+                return #TODO: need to handle this
+
+            type = componentTag.getAttribute('type')
+
+            if componentTag.getElementsByTagName('location'):
+                location = componentTag.getElementsByTagName('location')[0].getAttribute('requirement')
+            else:
+                location = '/'+LOCATION_ROOT
+
+            if componentTag.getElementsByTagName('group_size'):
+                group_size = int(componentTag.getElementsByTagName('group_size')[0].getAttribute('requirement'))
+            else:
+                group_size = 1
+
+            if componentTag.getElementsByTagName('reaction_time'):
+                reaction_time = float(componentTag.getElementsByTagName('reaction_time')[0].getAttribute('requirement'))
+            else:
+                reaction_time = 2.0
+
+            properties = {}
+            # set default output property values for components in application
+            for propertyTag in componentTag.getElementsByTagName('actionProperty'):
+                for attr in propertyTag.attributes.values():
+                    properties[attr.name] = attr.value.strip()
+
+            # set default input property values for components in application
+            for propertyTag in componentTag.getElementsByTagName('signalProperty'):
+                for attr in propertyTag.attributes.values():
+                    properties[attr.name] = attr.value.strip()
+
+
+            index = componentTag.getAttribute('instanceId')
+            app.monitorProperties[index] = {}
+
+            # set monitoring properties index for components in application
+            for propertyTag in componentTag.getElementsByTagName('monitorProperty'):
+                for attr in propertyTag.attributes.values():
+                    app.monitorProperties[index][attr.name] = attr.value.strip()
+
+            if index in app.instanceIds:
+
+                #wucomponent already appears in other pages, merge property requirement, suppose location etc are the same
+                app.wuComponents[index].properties = dict(app.wuComponents[index].properties.items() + properties.items())
+            else:
+                component = WuComponent(index, location, group_size, reaction_time, type, application_hashed_name, properties)
+                componentInstanceMap[componentTag.getAttribute('instanceId')] = component
+                app.wuComponents[componentTag.getAttribute('instanceId')] = component
+                app.changesets.components.append(component)
+                app.instanceIds.append(index)
+
+        # add server as component in node 0
+        component = WuComponent(1, '/'+LOCATION_ROOT, 1, 2.0, 'Server', 0, {})
+        componentInstanceMap[0] = component
+        app.wuComponents[0] = component
+        app.changesets.components.append(component)
+        app.instanceIds.append(0)
+        #assumption: at most 99 properties for each instance, at most 999 instances
+        #store hashed result of links to avoid duplicated links: (fromInstanceId*100+fromProperty)*100000+toInstanceId*100+toProperty
+        linkSet = []
+        # links
+        for linkTag in app.applicationDom.getElementsByTagName('link'):
+            from_component_id = linkTag.parentNode.getAttribute('instanceId')
+            from_component = componentInstanceMap[from_component_id]
+            from_property_name = linkTag.getAttribute('fromProperty').lower()
+            from_property_id = WuObjectFactory.wuclassdefsbyname[from_component.type].properties[from_property_name].id
+            to_component_id = linkTag.getAttribute('toInstanceId')
+            to_component = componentInstanceMap[to_component_id]
+            to_property_name =  linkTag.getAttribute('toProperty').lower()
+            to_property_id = WuObjectFactory.wuclassdefsbyname[to_component.type].properties[to_property_name].id
+
+            hash_value = (int(from_component_id)*100+int(from_property_id))*100000+int(to_component_id)*100+int(to_property_id)
+            if hash_value not in wuLinkMap.keys():
+                link = WuLink(from_component, from_property_name,
+                        to_component, to_property_name)
+                wuLinkMap[hash_value] = link
+            app.changesets.links.append(wuLinkMap[hash_value])
+
+        #add monitoring related links
+        if(MONITORING == 'true'):
+            for instanceId, properties in self.monitorProperties.items():
+                for name in properties:
+                    hash_value = (int(instanceId)*100 + int(properties[name])*100000 + 0 + 0)
+                    if hash_value not in wuLinkMap.keys():
+                        link = WuLink(componentInstanceMap[instanceId], name, componentInstanceMap[0], 'input')
+                        wuLinkMap[hash_value] = link
+                    app.changesets.links.append(wuLinkMap[hash_value])
 
     def getActiveApplication(self):
         try:
@@ -165,9 +296,7 @@ class ApplicationManager:
 
     def map(self, wuapplication, location_tree, routingTable, mapFunc=firstCandidate):
         wuapplication.changesets = ChangeSets([], [], [])
-        wuapplication.parseApplication()
-        logging.info("Go to First Candidate")
-
+        self.parseApplication(wuapplication)
         result = mapFunc(wuapplication, wuapplication.changesets, routingTable, location_tree)
         logging.info("Mapping Results")
         logging.info(wuapplication.changesets)
