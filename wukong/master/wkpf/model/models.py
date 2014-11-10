@@ -1,3 +1,5 @@
+import os, sys
+dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 import copy
 from xml.etree import ElementTree
 import xml.dom.minidom
@@ -403,6 +405,12 @@ class WuNode:
     return stri
 
   @staticmethod
+  def addNodes(nodes):
+    for node in nodes:
+        WuNode.node_dict[node.id] =  node
+    return
+
+  @staticmethod
   def addVirtualNodes(nodes):
     WuNode.node_dict =  dict(WuNode.node_dict.items() +  nodes.items())
     return
@@ -452,9 +460,9 @@ class WuNode:
     return None
   
   @classmethod
-  def saveNodes(cls, filename="../LocalData/nodes.xml"):#for debug now, will expand to support reconstructing nodes from the dump ---- Sen
+  def saveNodes(cls, filename="LocalData/nodes.xml"):#for debug now, will expand to support reconstructing nodes from the dump ---- Sen
       
-    fin = open(filename,"w")
+    fin = open(os.path.join(dir, filename),"w")
     fin.write( WuNode.dumpXML())
     fin.close()
     WuNode.locations={}
@@ -462,19 +470,19 @@ class WuNode:
       WuNode.locations[id] = WuNode.node_dict[id].location
     return
   @classmethod
-  def clearNodes(cls, filename="../LocalData/nodes.xml"):
+  def clearNodes(cls, filename="LocalData/nodes.xml"):
     cls.node_dict = {}
-    fin = open(filename,"w")
+    fin = open(os.path.join(dir, filename),"w")
     fin.write("")
     fin.close()
     return
   @classmethod
-  def loadNodes(cls, filename="../LocalData/nodes.xml"):#for debug now, will expand to support reconstructing nodes from the dump ---- Sen
-      print ('[loadNodes in models] Loading node from file', filename)
+  def loadNodes(cls, filename="LocalData/nodes.xml"):#for debug now, will expand to support reconstructing nodes from the dump ---- Sen
+      print ('[loadNodes in models] Loading node from file', os.path.join(dir, filename))
       try:
-          fin = open(filename,"r")
-          nodedom = xml.dom.minidom.parse(filename)
-      except Exception:
+          fin = open(os.path.abspath(os.path.join(dir, filename)),"r")
+          nodedom = xml.dom.minidom.parse(fin)
+      except Exception as e:
           print (filename,'does not exist, initial list is empty!')
           return cls.node_dict.values()
       

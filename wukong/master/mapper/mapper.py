@@ -87,6 +87,8 @@ def firstCandidate(logger, changesets, routingTable, locTree):
     #input: nodes, WuObjects, WuLinks, WuClassDefsm, wuObjects is a list of wuobject list corresponding to group mapping
     #output: assign node id to WuObjects
     # TODO: mapping results for generating the appropriate instiantiation for different nodes
+    print("Go to First Candidate")
+    print WuNode.node_dict
 
     mapping_result = True
     #clear all "mapped" tags in every node before mapping
@@ -116,6 +118,7 @@ def firstCandidate(logger, changesets, routingTable, locTree):
             mapping_result = False
             continue
             #candidates = locTree.root.getAllAliveNodeIds()
+
         # construct wuobjects, instances of component
         for candidate in candidates:
             wuclassdef = WuObjectFactory.wuclassdefsbyname[component.type]

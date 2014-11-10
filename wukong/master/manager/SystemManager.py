@@ -9,7 +9,7 @@ from wkpf.wkpfcomm import *
 from make_js import make_main
 from make_fbp import fbp_main
 from ApplicationManager import ApplicationManager
-from LocationManager import LocationManager
+from ModelManager import ModelManager
 
 class SystemManager:
     __system_manager = None
@@ -22,13 +22,11 @@ class SystemManager:
 
     def __init__(self):
         self._wukong_status = []
-        self._virtual_nodes = {}   # for monitoring
-        self._node_infos = []
         self._connected = (False if SIMULATION == "true" else True)  # whether zwave gateway is connected
         self._busy = False
         self._wkpfcomm = getComm()
         self._appmanager = ApplicationManager.init()
-        self._locmanager =  LocationManager.init()
+        self._modelmanager =  ModelManager.init()
         self.initZwave()  # test zwave module availability
         self.initMonitoring()  # test mongoDB setting
         self._appmanager.updateApplications()
@@ -57,7 +55,7 @@ class SystemManager:
 
             # check correctness of mongoDB URL
             try:
-                wkpf.globals.mongoDBClient = MongoClient(MONGODB_URL)
+                self._mongoDBClient = MongoClient(MONGODB_URL)
             except:
                 print "MongoDB instance " + MONGODB_URL + " can't be connected."
                 print "Please install the mongDB, pymongo module."
@@ -79,18 +77,6 @@ class SystemManager:
          # signal deploy in other greenlet task
           wusignal.signal_deploy(platforms)
           self._active_ind  = app_ind
-
-    # add the virtual wunode just used to represent master which is the destination of monitoring link
-    def initializeVirtualNode(self):
-        # Add the server as a virtual Wudevice for monitoring
-        wuclasses = {}
-        wuobjects = {}
-
-        # 1 is by default the network id of the controller
-        node = WuNode(1, '/' + LOCATION_ROOT, wuclasses, wuobjects, 'virtualdevice')
-        wuclassdef = WuObjectFactory.wuclassdefsbyid[44]
-        wuobject = WuObjectFactory.createWuObject(wuclassdef, node, 1, False)
-        wkpf.globals.virtual_nodes[1] = node
 
     # Helper functions
     def setupSignalHandlerGreenlet(self):
@@ -121,7 +107,7 @@ class SystemManager:
         else:
             return ""
 
-    def setWukongStatus(status):
+    def setWukongStatus(self, status):
         self._wukong_status.append(status)
 
     def importWuXML(self):

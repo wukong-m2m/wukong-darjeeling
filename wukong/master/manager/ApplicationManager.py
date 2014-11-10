@@ -22,6 +22,10 @@ import distutils.dir_util
 from wkpf.wuapplication import WuApplication
 from configuration import *
 from mapper.mapper import *
+import shutil, errno
+from wkpf.util import *
+
+ChangeSets = namedtuple('ChangeSets', ['components', 'links', 'heartbeatgroups'])
 
 class ApplicationManager:
     __application_manager = None
@@ -41,7 +45,7 @@ class ApplicationManager:
     def hasApplication(self, app_id):
         return app_id in self._app_map
 
-    def createApplication(self, app_id):
+    def createApplication(self, app_id, app_name):
 
         # copy base for the new application
         logging.info('creating application... "%s"' % (app_name))
@@ -157,13 +161,14 @@ class ApplicationManager:
     def generateJava(self, wuapplication):
         Generator.generate(wuapplication.name, wuapplication.changesets)
 
-    def map(self, location_tree, routingTable, mapFunc=firstCandidate):
-        wuapplication = getActiveApplication()
+    def map(self, wuapplication, location_tree, routingTable, mapFunc=firstCandidate):
         wuapplication.changesets = ChangeSets([], [], [])
         wuapplication.parseApplication()
-        result = mapFunc(wuapplication, wuapplication.changesets, routingTable, locTree)
+        logging.info("Go to First Candidate")
+
+        result = mapFunc(wuapplication, wuapplication.changesets, routingTable, location_tree)
         logging.info("Mapping Results")
-        logging.info(self.changesets)
+        logging.info(wuapplication.changesets)
         return result
 
     def deploy_with_discovery(self, *args):

@@ -9,16 +9,20 @@ import simplejson as json
 from configuration import *
 import glob
 
+from manager.ModelManager import ModelManager
 from manager.SystemManager import SystemManager
+from manager.ApplicationManager import ApplicationManager
 
+appmanager = ApplicationManager.init()
 sysmanager = SystemManager.init()
+modelmanager = ModelManager.init()
 
 class RefreshNodes(tornado.web.RequestHandler):
     def post(self, force):
         if int(force,0) == 0:
-            sysmanager.refreshNodeInfo(False)
+            modelmanager.refreshNodeInfo(False)
         else:
-            sysmanager.refreshNodeInfo(True)
+            modelmanager.refreshNodeInfo(True)
 
         set_location = self.get_argument('set_location', False)
         if set_location == u'True':
@@ -27,7 +31,7 @@ class RefreshNodes(tornado.web.RequestHandler):
             set_location = False
 
         nodes = template.Loader(os.getcwd()).load('templates/monitor-nodes.html').generate(
-            node_infos=sysmanager.getNodeInfos(), set_location=set_location, default_location=LOCATION_ROOT)
+            node_infos=modelmanager.getNodeInfos(), set_location=set_location, default_location=LOCATION_ROOT)
 
         self.content_type = 'application/json'
         self.write({'status':0, 'nodes': nodes})
@@ -37,22 +41,21 @@ class Nodes(tornado.web.RequestHandler):
         pass
 
     def post(self, nodeId):
-        info = sysmanager.getNodeInfo(nodeId)
+        info = modelmanager.getNodeInfo(nodeId)
         self.content_type = 'application/json'
         self.write({'status':0, 'node_info': info})
 
     def put(self, nodeId):
 
         location = self.get_argument('location')
-        print node_infos
         print 'in nodes: simulation:'+SIMULATION
         if SIMULATION == "true":
-            for info in node_infos:
+            for info in  modelmanager.getNodeInfo(nodeId):
                 if info.id == int(nodeId):
                     info.location = location
                     senNd = SensorNode(info)
                     WuNode.saveNodes()
-                    wkpf.globals.location_tree.addSensor(senNd)
+                    modelmanager.addSensor(senNd)
             wkpf.globals.location_tree.printTree()
             self.content_type = 'application/json'
             self.write({'status':0})
@@ -60,13 +63,13 @@ class Nodes(tornado.web.RequestHandler):
         comm = getComm()
         if location:
             #print "nodeId=",nodeId
-            info = sysmanager.getNodeInfo(nodeId)
+            info = modelmanager.getNodeInfo(nodeId)
             #print "device type=",info.type
             if info.type == 'native':
                 info.location = location
                 WuNode.saveNodes()
                 senNd = SensorNode(info)
-                wkpf.globals.location_tree.addSensor(senNd)
+                modelmanager.addSensor(senNd)
                 self.content_type = 'application/json'
                 self.write({'status':0})
         else:
@@ -77,8 +80,8 @@ class Nodes(tornado.web.RequestHandler):
                         info.location = location
                         senNd = SensorNode(info)
                         print (info.location)
-                wkpf.globals.location_tree.addSensor(senNd)
-                wkpf.globals.location_tree.printTree()
+                modelmanager.addSensor(senNd)
+                modelmanager.getLocationTree().printTree()
                 WuNode.saveNodes()
                 self.content_type = 'application/json'
                 self.write({'status':0})

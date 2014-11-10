@@ -22,16 +22,16 @@ class CreateApplication(tornado.web.RequestHandler):
             try:
                 app_name = self.get_argument('app_name')
             except:
-                app_name = 'application' + sysmanager.getApplicationSize()
-                app_id = hashlib.md5(app_name).hexdigest()
-                if appmanager.hasApplication(app_id):
-                    self.content_type = 'application/json'
-                    self.write({'status':1, 'mesg':'Cannot create application with the same name'})
-                    return
+                app_name = 'application' + appmanager.getApplicationSize()
+            app_id = hashlib.md5(app_name).hexdigest()
+            if appmanager.hasApplication(app_id):
+                 self.content_type = 'application/json'
+                 self.write({'status':1, 'mesg':'Cannot create application with the same name'})
+                 return
 
-                app = appmanager.createApplication(app_id);
-                self.content_type = 'application/json'
-                self.write({'status':0, 'app': app.config()})
+            app = appmanager.createApplication(app_id, app_name);
+            self.content_type = 'application/json'
+            self.write({'status':0, 'app': app.config()})
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             print traceback.print_exception(exc_type, exc_value, exc_traceback,
@@ -109,7 +109,7 @@ class Application(tornado.web.RequestHandler):
             self.content_type = 'application/json'
             self.write({'status':1, 'mesg': 'Cannot find the application'})
         else:
-            if sysmanager.deleteApplication(app_ind):
+            if appmanager.deleteApplication(app_ind):
                 self.content_type = 'application/json'
                 self.write({'status':0})
             else:
@@ -138,7 +138,7 @@ class DeployApplication(tornado.web.RequestHandler):
              # deployment.js will call refresh_node eventually, rebuild location tree there
             deployment = template.Loader(os.getcwd()).load('templates/deployment.html').generate(
                 app=app,
-                app_id=app_id, node_infos=sysmanager.getNodeInfos(),
+                app_id=app_id, node_infos=modelmanager.getNodeInfos(),
                 logs=app.logs(),
                 changesets=app.changesets,
                 set_location=False,
@@ -153,7 +153,7 @@ class DeployApplication(tornado.web.RequestHandler):
         else:
             sysmanager.setWukongStatus("Deploying")
             platforms = ['avr_mega2560']
-            sysmanager.signalDeploy(app_ind, platforms)
+            sysmanager.signalDeploy(app_id, platforms)
 
             self.content_type = 'application/json'
             self.write({
@@ -168,10 +168,10 @@ class MapApplication(tornado.web.RequestHandler):
         else:
             platforms = ['avr_mega2560']
             # TODO: need platforms from fbp
-            sysmanager.refreshNodeInfo()
+            modelmanager.refreshNodeInfo(True)
 
             # Map with location tree info (discovery), this will produce mapping_results
-            mapping_result = appmanager.getApplication(app_id).map(modelmanager.getLocationTree(), [])
+            mapping_result = appmanager.map(appmanager.getApplication(app_id), modelmanager.getLocationTree(), [])
 
             ret = []
             app = appmanager.getApplication(app_id)
@@ -193,8 +193,7 @@ class MapApplication(tornado.web.RequestHandler):
                         'portNumber': wuobj.port_number,
                         'virtual': wuobj.virtual
                     }
-
-                obj_hash['instances'].append(wuobj_hash)
+                    obj_hash['instances'].append(wuobj_hash)
 
                 ret.append(obj_hash)
 
@@ -236,7 +235,7 @@ class PollApplication(tornado.web.RequestHandler):
             self.content_type = 'application/json'
             self.write({'status':1, 'mesg': 'Cannot find the application'})
         else:
-            app = sysmanager.getApplication(app_id)
+            app = appmanager.getApplication(app_id)
             self.content_type = 'application/json'
             self.write({
                 'status':0,

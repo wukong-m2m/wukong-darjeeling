@@ -78,10 +78,7 @@ class Communication:
           print ('[wkpfcomm] error in cached discovery result')
       if force == True or self.all_node_infos == None:
         print '[wkpfcomm] getting all nodes from node discovery'
-        WuNode.clearNodes()
         self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
-        WuNode.addVirtualNodes(globals.virtual_nodes)
-        WuNode.saveNodes()
       return self.all_node_infos
 
     def updateAllNodeInfos(self):

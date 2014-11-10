@@ -14,7 +14,6 @@ class IMapper(Interface):
   """An object that map components of application to wuobjects"""
   def map():
 
-
 class AbstractMapper(IMapper):
 
   def __init__(self, application, system, tree):
@@ -25,7 +24,6 @@ class AbstractMapper(IMapper):
   # To be override
   def map():
     pass
-
 
 class AbstractSelectionMapper(AbstractMapper):
 

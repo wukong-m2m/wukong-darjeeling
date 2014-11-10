@@ -5,6 +5,7 @@ import shutil, errno
 import platform
 import tornado.ioloop, tornado.web
 import tornado.template as template
+import simplejson as json
 from configuration import *
 from manager.SystemManager import SystemManager
 from manager.ModelManager import ModelManager
@@ -12,12 +13,12 @@ from manager.ModelManager import ModelManager
 sysmanager = SystemManager.init()
 modelmanager = ModelManager.init()
 
-class LocationTree(tornado.web.RequestHandler):
+class DisplayLocationTree(tornado.web.RequestHandler):
     def post(self):
-        addloc = template.Loader(os.getcwd()).load('templates/display_locationTree.html').generate(
-            node_infos=sysmanager.getNodeInfos())
+        addloc = template.Loader(os.getcwd()).load('templates/display_locationTree.html').generate(node_infos=modelmanager.getNodeInfos())
+        print modelmanager.getLocationTreeJson()
         self.content_type = 'application/json'
-        self.write({'loc':json.dumps(modelmanager.getlocationTreeJson()),'node':addloc})
+        self.write({'loc':json.dumps(modelmanager.getLocationTreeJson()),'node':addloc})
 
     def get(self, node_id):
         curNode = modelmanager.findLocationById(int(node_id))
@@ -108,12 +109,12 @@ class TreeModifier(tornado.web.RequestHandler):
                     return
             elif int(mode) == 1:        #deleting modifier between siblings
                 if paNode.delDistanceModifier(int(start_id), int(end_id), int(distance)):
-                    self.write({'status':0,'message':'deletinging distance modifier between '+str(start_id) +'and'+str(end_id)+'to node'+str(int(start_id)//100)})
+                    self.write({'status':0,'message':'deleting distance modifier between '+str(start_id) +'and'+str(end_id)+'to node'+str(int(start_id)//100)})
                     return
                 else:
                     self.write({'status':1,'message':'deleting faild due to not able to find common direct father of the two nodes'})
                     return
-        self.write({'status':1,'message':'operation faild due to not able to find common direct father of the two nodes'})
+        self.write({'status':1,'message':'operation failed due to not able to find common direct father of the two nodes'})
 
 
 class SaveLandMark(tornado.web.RequestHandler):
@@ -121,7 +122,7 @@ class SaveLandMark(tornado.web.RequestHandler):
         self.write({'tree':modelmanager.getLocationTree()})
 
     def post(self):
-        modelmanager.getSaveLocationTree()
+        modelmanager.saveLocationTree()
         self.write({'message':'Save Successfully!'})
 
 class LoadLandMark(tornado.web.RequestHandler):
