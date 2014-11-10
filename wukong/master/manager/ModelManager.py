@@ -30,7 +30,7 @@ class ModelManager:
         return getComm().getNodeInfo(node_id)
 
     def refreshNodeInfo(self, condition=True):
-        # WuNode.clearNodes()
+        WuNode.clearNodes()
         self._node_infos = self._wkpfcomm.getAllNodeInfos(condition)
         for index in self._virtual_nodes:
             self._node_infos.append(self._virtual_nodes[index])
