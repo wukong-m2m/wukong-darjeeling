@@ -19,11 +19,12 @@ from wkpf.xml2java.generator import Generator
 from subprocess import Popen, PIPE, STDOUT
 from collections import namedtuple
 import distutils.dir_util
-from wkpf.wuapplication import WuApplication
+from wkpf.model.models import WuApplication
 from configuration import *
 from mapper.mapper import *
 import shutil, errno
 from wkpf.util import *
+import logging
 
 ChangeSets = namedtuple('ChangeSets', ['components', 'links', 'heartbeatgroups'])
 
@@ -41,6 +42,7 @@ class ApplicationManager:
         self._active_ind = None
         self._applications = []
         self._app_map = {}
+        self.updateApplications()
 
     def hasApplication(self, app_id):
         return app_id in self._app_map

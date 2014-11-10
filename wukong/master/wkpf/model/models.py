@@ -1,24 +1,23 @@
 import os, sys
-dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import copy
 from xml.etree import ElementTree
 import xml.dom.minidom
 import traceback
-from wkpf import globals
 from xml.dom.minidom import parse, parseString
+import logging, logging.handlers, wukonghandler
 from xml.parsers.expat import ExpatError
+from collections import namedtuple
 import simplejson as json
 from configuration import *
 import logging
 
-
-# It is a global view of the overall system, like devices, Wuclasses, WuObjects, Energy Consumptions on device.
-class WuSystem:
-    pass
+dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+ChangeSets = namedtuple('ChangeSets', ['components', 'links', 'heartbeatgroups'])
 
 # Copy from original WuApplication, split the deployment functionality out into ApplicationManager.
 # At the same time, add some data fields for energy aware mapping
-class WuApplicationNew:
+class WuApplication:
     def __init__(self, id='', app_name='', desc='', file='', dir='', outputDir="", templateDir=TEMPLATE_DIR, componentXml=open(COMPONENTXML_PATH).read()):
         self.id = id
         self.app_name = app_name
@@ -29,6 +28,7 @@ class WuApplicationNew:
         self.version = 0
         self.returnCode = 1
         self.deployed = False
+        self.status = "" # deprecated, replaced by wukong_status and deploy_status
         # 5 levels: self.logger.debug, self.logger.info, self.logger.warn, self.logger.error, self.logger.critical
         self.logger = logging.getLogger(self.id[:5])
         self.logger.setLevel(logging.DEBUG) # to see all levels
@@ -134,9 +134,9 @@ class WuApplicationNew:
             self.app_name = config['app_name']
         except:
             self.app_name='noname';
-            self.desc = config['desc']
-            # self.dir = config['dir']
-            self.xml = config['xml']
+        self.desc = config['desc']
+        # self.dir = config['dir']
+        self.xml = config['xml']
         try:
             dom = parseString(self.xml)
             self.setFlowDom(dom)
