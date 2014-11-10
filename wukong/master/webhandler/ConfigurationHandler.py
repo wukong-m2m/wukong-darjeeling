@@ -6,6 +6,8 @@ import platform
 import tornado.web
 import tornado.template as template
 import simplejson as json
+from wkpf.model.models import *
+from wkpf.model.locationTree import *
 from configuration import *
 import glob
 
@@ -50,13 +52,13 @@ class Nodes(tornado.web.RequestHandler):
         location = self.get_argument('location')
         print 'in nodes: simulation:'+SIMULATION
         if SIMULATION == "true":
-            for info in  modelmanager.getNodeInfo(nodeId):
+            for info in modelmanager.getNodeInfos():
                 if info.id == int(nodeId):
                     info.location = location
                     senNd = SensorNode(info)
-                    WuNode.saveNodes()
+                    modelmanager.saveNodes()
                     modelmanager.addSensor(senNd)
-            wkpf.globals.location_tree.printTree()
+            modelmanager.getLocationTree().printTree()
             self.content_type = 'application/json'
             self.write({'status':0})
             return
@@ -67,7 +69,7 @@ class Nodes(tornado.web.RequestHandler):
             #print "device type=",info.type
             if info.type == 'native':
                 info.location = location
-                WuNode.saveNodes()
+                modelmanager.saveNodes()
                 senNd = SensorNode(info)
                 modelmanager.addSensor(senNd)
                 self.content_type = 'application/json'
@@ -75,14 +77,14 @@ class Nodes(tornado.web.RequestHandler):
         else:
             if comm.setLocation(int(nodeId), location):
                 # update our knowledge too
-                for info in comm.getActiveNodeInfos():
+                for info in modelmanager.getNodeInfos():
                     if info.id == int(nodeId):
                         info.location = location
                         senNd = SensorNode(info)
                         print (info.location)
                 modelmanager.addSensor(senNd)
                 modelmanager.getLocationTree().printTree()
-                WuNode.saveNodes()
+                modelmanager.saveNodes()
                 self.content_type = 'application/json'
                 self.write({'status':0})
             else:

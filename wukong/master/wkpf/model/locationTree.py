@@ -453,19 +453,20 @@ class LocationTree:
             logging.info("Node",sensorId," not in location tree, deletion ignored")
         sensorNode = self.sensor_dict[sensorId]
         locTreeNode = sensorNode.locationTreeNode
-        
-        locTreeNode.delSensor(sensorNode)
-        del self.sensor_dict[sensorId]
-        self.totalSensorCount = self.totalSensorCount - 1
-        #delete unnecessary branches in the tree (del branches with no sensor node)
-   #     while locTreeNode.sensorCnt == 0 and len(locTreeNode.landmarkLst)==0:
-    #        pa = locTreeNode.parent
-     #       if pa != None:
-      #          pa.delChild(locTreeNode)
-    #        else: #root of the tree
-     #           break
-      #      del locTreeNode
-       #     locTreeNode = pa
+
+        if locTreeNode != None:
+            locTreeNode.delSensor(sensorNode)
+            del self.sensor_dict[sensorId]
+            self.totalSensorCount = self.totalSensorCount - 1
+        # delete unnecessary branches in the tree (del branches with no sensor node)
+        # while locTreeNode.sensorCnt == 0 and len(locTreeNode.landmarkLst)==0:
+        #     pa = locTreeNode.parent
+        #     if pa != None:
+        #        pa.delChild(locTreeNode)
+        #     else: #root of the tree
+        #        break
+        #     del locTreeNode
+        #     locTreeNode = pa
     
     def getAllNodeInfos(self):
         return self.root.getAllNodeInfos()

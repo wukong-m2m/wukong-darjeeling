@@ -267,7 +267,7 @@ class ApplicationManager:
          self._app_map[app_ind].desc = desc
          self._app_map[app_ind].saveConfig()
 
-    def cleanAndCopyJava(self, wuapplication):
+    def cleanAndCopyJava(self, app):
         # clean up the directory
         if os.path.exists(JAVA_OUTPUT_DIR):
             distutils.dir_util.remove_tree(JAVA_OUTPUT_DIR)
@@ -279,7 +279,7 @@ class ApplicationManager:
             shutil.copy(componentFile, JAVA_OUTPUT_DIR)
 
         if not os.path.exists(os.path.join(JAVA_OUTPUT_DIR, 'WKDeployCustomComponents.xml')):
-            wuapplication.errorDeployStatus("An error has encountered while copying WKDeployCustomComponents.xml to java dir in wkdeploy!")
+            app.errorDeployStatus("An error has encountered while copying WKDeployCustomComponents.xml to java dir in wkdeploy!")
 
         # copy java implementation to wkdeploy/java
         # recursive scan
@@ -289,21 +289,21 @@ class ApplicationManager:
                 shutil.copy(javaFile, JAVA_OUTPUT_DIR)
 
             if not os.path.exists(os.path.join(JAVA_OUTPUT_DIR, filename)):
-                wuapplication.errorDeployStatus("An error has encountered while copying %s to java dir in wkdeploy!" % (filename))
+                app.errorDeployStatus("An error has encountered while copying %s to java dir in wkdeploy!" % (filename))
 
     def generateJava(self, wuapplication):
         Generator.generate(wuapplication.name, wuapplication.changesets)
 
-    def map(self, wuapplication, location_tree, routingTable, mapFunc=firstCandidate):
-        wuapplication.changesets = ChangeSets([], [], [])
-        self.parseApplication(wuapplication)
-        result = mapFunc(wuapplication, wuapplication.changesets, routingTable, location_tree)
+    def map(self, app, location_tree, routingTable, mapFunc=firstCandidate):
+        app.changesets = ChangeSets([], [], [])
+        self.parseApplication(app)
+        result = mapFunc(app, app.changesets, routingTable, location_tree)
         logging.info("Mapping Results")
-        logging.info(wuapplication.changesets)
+        logging.info(app.changesets)
         return result
 
-    def deploy_with_discovery(self, *args):
-        node_ids = set([x.wunode.id for component in wuapplication.changesets.components for x in component.instances])
+    def deploy_with_discovery(self, app, *args):
+        node_ids = set([x.wunode.id for component in app.changesets.components for x in component.instances])
         self.deploy(node_ids, *args)
 
     def deploy(self, destination_ids, platforms):

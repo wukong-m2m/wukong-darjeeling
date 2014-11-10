@@ -1,9 +1,11 @@
 # vi: ts=2 sw=2 expandtab
-import sys, time, copy
+import sys, os, time, copy
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from model.locationTree import *
 from model.models import *
 from globals import *
 from configuration import *
+
 import simulator
 if WKPFCOMM_AGENT == "GATEWAY":
   from transportv2 import *
@@ -50,6 +52,12 @@ class Communication:
               print '[wkpfcomm]running in simulation mode, discover result from mock_discovery.xml'
       self.routing = None
 
+    def getNodeById(self, id):
+        for node in self.all_node_infos:
+            if node.id == id:
+                return node
+        return None
+
     def addActiveNodesToLocTree(self, locTree):
       for node_info in self.getActiveNodeInfos():
         print '[wkpfcomm] active node_info', node_info
@@ -64,19 +72,13 @@ class Communication:
         return self.simulator.discovery()
       return self.zwave.discovery()
 
-    def getActiveNodeInfos(self, force=False):
+    def getActiveNodeInfos(self, force=True):
       #set_wukong_status("Discovery: Requesting node info")
       return filter(lambda item: item.isResponding(), self.getAllNodeInfos(force=force))
 
-    def getNodeInfos(self, node_ids):
-      return filter(lambda info: info.id in node_ids, self.getAllNodeInfos())
-
-    def getAllNodeInfos(self, force=False):
-      if force == False:
-        self.all_node_infos = WuNode.loadNodes()
-        if self.all_node_infos == None:
-          print ('[wkpfcomm] error in cached discovery result')
-      if force == True or self.all_node_infos == None:
+    def getAllNodeInfos(self, nodes, force=True):
+      self.all_node_infos = nodes
+      if force == True:
         print '[wkpfcomm] getting all nodes from node discovery'
         self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
       return self.all_node_infos
@@ -126,19 +128,19 @@ class Communication:
       print "generic=", generic
       print "specific=", specific
       if generic == 0xff or generic == 0x02:
-        wunode = WuNode.findById(destination)
+        wunode = self.getNodeById(destination)
         location = self.getLocation(destination)
         location = ''.join(c for c in location if ord(c) <= 126 and ord(c) >= 32)
         gevent.sleep(0) # give other greenlets some air to breath
-        if not wunode:
-          wunode = WuNode(destination, location)
+        # if not wunode:
+        wunode = WuNode(destination, location)
 
-        wuClasses = self.getWuClassList(destination)
+        wuClasses = self.getWuClassList(wunode)
         print '[wkpfcomm] get %d wuclasses' % (len(wuClasses))
         wunode.wuclasses = wuClasses
         gevent.sleep(0)
 
-        wuObjects = self.getWuObjectList(destination)
+        wuObjects = self.getWuObjectList(wunode)
         print '[wkpfcomm] get %d wuobjects' % (len(wuObjects))
 
         wunode.wuobjects = wuObjects
@@ -258,19 +260,19 @@ class Communication:
         return False
       return True
 
-    def getWuClassList(self, destination):
+    def getWuClassList(self, node):
       print '[wkpfcomm] getWuClassList'
 
-      #set_wukong_status("Discovery: Requesting wuclass list from node %d" % (destination))
+      #set_wukong_status("Discovery: Requesting wuclass list from node %d" % (node.id))
 
       wuclasses = {}
       total_number_of_messages = None
       message_number = 0
       if SIMULATION == "true":
-        return self.simulator.mockWuClassList(destination)
+        return self.simulator.mockWuClassList(node)
 
       while (message_number != total_number_of_messages):
-        reply = self.zwave.send(destination, pynvc.WKPF_GET_WUCLASS_LIST, [message_number], [pynvc.WKPF_GET_WUCLASS_LIST_R, pynvc.WKPF_ERROR_R])
+        reply = self.zwave.send(node.id, pynvc.WKPF_GET_WUCLASS_LIST, [message_number], [pynvc.WKPF_GET_WUCLASS_LIST_R, pynvc.WKPF_ERROR_R])
         message_number += 1
 
         print '[wkpfcomm] Respond received'
@@ -294,10 +296,9 @@ class Communication:
           #virtual wuclass, non-publish wuclass will not be shown upon discovery, because we cannot create new wuobjs using them
           #to create new virtual wuobjs, we need to re-download virtual wuclass...
           if publish and (not virtual):
-            node = WuNode.findById(destination)
 
             if not node:
-              print '[wkpfcomm] Unknown node id', destination
+              print '[wkpfcomm] Unknown node id', node.id
               break
 
             wuclassdef = WuObjectFactory.wuclassdefsbyid[wuclass_id]
@@ -312,19 +313,19 @@ class Communication:
 
       return wuclasses
 
-    def getWuObjectList(self, destination):
+    def getWuObjectList(self, node):
       print '[wkpfcomm] getWuObjectList'
 
-      #set_wukong_status("Discovery: Requesting wuobject list from node %d" % (destination))
+      #set_wukong_status("Discovery: Requesting wuobject list from node %d" % (node.id))
 
       wuobjects = {}
       total_number_of_messages = None
       message_number = 0
       if SIMULATION == "true":
-        return self.simulator.mockWuObjectList(destination)
+        return self.simulator.mockWuObjectList(node)
 
       while (message_number != total_number_of_messages):
-        reply = self.zwave.send(destination, pynvc.WKPF_GET_WUOBJECT_LIST, [message_number], [pynvc.WKPF_GET_WUOBJECT_LIST_R, pynvc.WKPF_ERROR_R])
+        reply = self.zwave.send(node.id, pynvc.WKPF_GET_WUOBJECT_LIST, [message_number], [pynvc.WKPF_GET_WUOBJECT_LIST_R, pynvc.WKPF_ERROR_R])
         message_number += 1
 
         print '[wkpfcomm] Respond received'
@@ -341,10 +342,9 @@ class Communication:
           port_number = reply[0]
           wuclass_id = (reply[1] <<8) + reply[2]
           virtual = bool(int(reply[3]))
-          node = WuNode.findById(destination)
 
           if not node:
-            print '[wkpfcomm] Unknown node id', destination
+            print '[wkpfcomm] Unknown node id', node.id
 
           wuclassdef = WuObjectFactory.wuclassdefsbyid[wuclass_id]
 

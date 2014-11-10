@@ -1,4 +1,3 @@
-from globals import *
 import xml.dom.minidom
 from model.models import *
 
@@ -28,12 +27,12 @@ class MockDiscovery:
                             return location
         return location
         
-    def mockWuClassList(self, nodeId):
+    def mockWuClassList(self, wunode):
         wuclasses = {}
         nodes = self.dom.getElementsByTagName("Node")
         found = False;
         for node in nodes:
-            if int(node.getAttribute("id"),0) == nodeId:
+            if int(node.getAttribute("id"),0) == wunode.id:
                 if node.hasChildNodes():
                     for lsts in node.childNodes:
                         if lsts.nodeType != lsts.ELEMENT_NODE:    
@@ -46,7 +45,7 @@ class MockDiscovery:
                                 publish = wuclass.getAttribute("publish")
                                 virtual = True if wuclass.getAttribute("virtual")=="true" else False
                                 if publish == "true":
-                                    wunode = WuNode.findById(nodeId)
+                                    # wunode = WuNode.findById(nodeId)
                                     try:
                                       wuclassdef = WuObjectFactory.wuclassdefsbyid[wuclass_id]
 
@@ -62,12 +61,12 @@ class MockDiscovery:
             if found:
                 break
         return wuclasses
-    def mockWuObjectList(self, nodeId):
+    def mockWuObjectList(self, wunode):
         wuobjects = {}
         nodes = self.dom.getElementsByTagName("Node")
         found = False;
         for node in nodes:
-            if int(node.getAttribute("id"),0) == nodeId:
+            if int(node.getAttribute("id"),0) == wunode.id:
                 if node.hasChildNodes():
                     for lsts in node.childNodes:
                         if lsts.nodeType != lsts.ELEMENT_NODE:    
@@ -79,7 +78,6 @@ class MockDiscovery:
                                 port_number = int(wuobj.getAttribute("port"), 0)
                                 wuclass_id = int(wuobj.getAttribute("id"), 0)
                                 virtual = False
-                                wunode = WuNode.findById(nodeId)
                                 try:
                                   wuclassdef = WuObjectFactory.wuclassdefsbyid[wuclass_id]
                                 except KeyError:
