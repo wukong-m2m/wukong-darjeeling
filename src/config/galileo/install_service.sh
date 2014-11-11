@@ -12,7 +12,7 @@ if [ -f /etc/init.d/darjeeling.sh ]; then
 fi
 
 cp service/start_service.sh darjeeling.elf lib_infusions.dja app_infusion.dja /usr/local/darjeeling
-chmod a+rx /usr/local/darjeeling/start_service /usr/local/darjeeling/darjeeling.elf
+chmod a+rx /usr/local/darjeeling/start_service.sh /usr/local/darjeeling/darjeeling.elf
 sed -i "s/REPLACE_THIS_WITH_BOOT_PARAMETERS/$(echo $DJ_BOOT_PARAMETERS | sed -e 's/\\/\\\\/g' -e 's/\//\\\//g' -e 's/&/\\\&/g')/g" /usr/local/darjeeling/start_service.sh
 
 cp service/darjeeling.sh /etc/init.d
