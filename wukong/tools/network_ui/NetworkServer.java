@@ -196,22 +196,27 @@ public class NetworkServer extends Thread
 				if (length < 0) {
 					// Connection closed
 					keepRunning = false;
-				} else {
-					// Length byte received. Process the rest of the message
-					int [] message = new int[length];
-					message[0] = length;
-					for (int i=1; i<length; i++)
-						message[i] = in.read();
-					int destId = message[3] + message[4]*256;
+				} else if (length > 0) {
+					// Length byte received.
+					if (length < 5) {
+						System.out.println("Message with length " + length + " ignored. (length should be >= 5)");
+					} else {
+						// Process the rest of the message
+						int [] message = new int[length];
+						message[0] = length;
+						for (int i=1; i<length; i++)
+							message[i] = in.read();
+						int destId = message[3] + message[4]*256;
 
 
-					NetworkServerClientHandler destClient = NetworkServer.clients.get(destId);
-					if (destClient != null) {
-						fireMessageSent(this.clientId, destId, message);
-						destClient.sendMessage(message);
-					}
-					else {
-						fireMessageDropped(this.clientId, destId, message);
+						NetworkServerClientHandler destClient = NetworkServer.clients.get(destId);
+						if (destClient != null) {
+							fireMessageSent(this.clientId, destId, message);
+							destClient.sendMessage(message);
+						}
+						else {
+							fireMessageDropped(this.clientId, destId, message);
+						}
 					}
 				}
 			}
