@@ -32,7 +32,6 @@ stop() {
   fi
   echo 'Stopping service…' >&2
   pkill -P $(cat "$PIDFILE")
-  kill $(cat "$PIDFILE")
   rm -f "$PIDFILE"
   echo 'Service stopped' >&2
 }
