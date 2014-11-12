@@ -226,7 +226,6 @@ class WuPropertyDef:
     self.access = access
     self.wuclassdef = wuclassdef
 
-
 class WuTypeDef:
 
   #values is a list of values
@@ -236,15 +235,9 @@ class WuTypeDef:
       self.values = values
       if self.values == None:
         self.values = []
-      
-
 
 # Network info
 class WuNode:
-  
-  node_dict = {}
-  # locations = {}
-
   def __init__(self, id, location, wuclassdefs=None, wuobj=None,energy=100.0,type='wudevice'):
     self.id = id
     if location == None:
@@ -262,7 +255,6 @@ class WuNode:
       self.wuobjects = {}
     self.energy = energy
     self.type = type
-    WuNode.node_dict[id] = self
   
   def dump(self):   
     stri = ''

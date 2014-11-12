@@ -8,8 +8,6 @@ from wkpf.model import *
 from wkpf.wkpfcomm import *
 from make_js import make_main
 from make_fbp import fbp_main
-from ApplicationManager import ApplicationManager
-from ModelManager import ModelManager
 
 class SystemManager:
     __system_manager = None
@@ -25,11 +23,8 @@ class SystemManager:
         self._connected = (False if SIMULATION == "true" else True)  # whether zwave gateway is connected
         self._busy = False
         self._wkpfcomm = getComm()
-        self._appmanager = ApplicationManager.init()
-        self._modelmanager =  ModelManager.init()
         self.initZwave()  # test zwave module availability
         self.initMonitoring()  # test mongoDB setting
-        self._appmanager.updateApplications()
         self.importWuXML()
         self.makeFBP()
 

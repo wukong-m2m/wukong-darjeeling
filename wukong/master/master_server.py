@@ -27,7 +27,8 @@ from webhandler.LocationHandler import *
 from webhandler.MonitorHandler import *
 from webhandler.StaticPageHandler import *
 from webhandler.TestrttHandler import *
-from manager.SystemManager import *
+from manager.ApplicationManager import *
+from manager.ModelManager import *
 
 import tornado.options
 tornado.options.define("appdir", type=str, help="Directory that contains the applications")
@@ -143,7 +144,8 @@ wukong = tornado.web.Application([
 
 
 if __name__ == "__main__":
-  SystemManager.init()
+  ModelManager.init()
+  ApplicationManager.init()
   wukong.listen(MASTER_PORT)
   ioloop.start()
 

@@ -25,6 +25,9 @@ from mapper.mapper import *
 import shutil, errno
 from wkpf.util import *
 import logging
+from SystemManager import SystemManager
+
+sysmanager = SystemManager.init()
 
 ChangeSets = namedtuple('ChangeSets', ['components', 'links', 'heartbeatgroups'])
 
@@ -295,11 +298,12 @@ class ApplicationManager:
         Generator.generate(wuapplication.name, wuapplication.changesets)
 
     def map(self, app, location_tree, routingTable, mapFunc=firstCandidate):
+        sysmanager = SystemManager.init()
+        sysmanager.setWukongStatus("Mapping")
         app.changesets = ChangeSets([], [], [])
         self.parseApplication(app)
         result = mapFunc(app, app.changesets, routingTable, location_tree)
-        logging.info("Mapping Results")
-        logging.info(app.changesets)
+        sysmanager.setWukongStatus("")
         return result
 
     def deploy_with_discovery(self, app, *args):

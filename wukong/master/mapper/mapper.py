@@ -22,7 +22,10 @@ import datetime
 from subprocess import Popen, PIPE, STDOUT
 
 from configuration import *
-from wkpf.globals import *
+from manager.ModelManager import ModelManager
+
+modelmanager = ModelManager.init()
+
 
 # allcandidates are all node ids ([int])
 def constructHeartbeatGroups(heartbeatgroups, routingTable, allcandidates):
@@ -81,18 +84,15 @@ def sortCandidates(wuObjects):
 #############################
 
 def firstCandidate(logger, changesets, routingTable, locTree):
-    set_wukong_status('Mapping')
     logger.clearMappingStatus() # clear previous mapping status
 
     #input: nodes, WuObjects, WuLinks, WuClassDefsm, wuObjects is a list of wuobject list corresponding to group mapping
     #output: assign node id to WuObjects
     # TODO: mapping results for generating the appropriate instiantiation for different nodes
-    print("Go to First Candidate")
-    print WuNode.node_dict
 
     mapping_result = True
     #clear all "mapped" tags in every node before mapping
-    for nodeid in WuNode.node_dict:
+    for nodeid in modelmanager.getNodeInfos():
         node = locTree.getNodeInfoById(nodeid)
         if node != None:
             for wuobj in node.wuobjects.values():
@@ -206,5 +206,4 @@ def firstCandidate(logger, changesets, routingTable, locTree):
                 #senNd.port_list.remove(j)
             #senNd.temp_port_list = []
 
-    set_wukong_status('')
     return mapping_result
