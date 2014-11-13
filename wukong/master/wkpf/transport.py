@@ -7,6 +7,7 @@ import hashlib
 import logging
 from collections import namedtuple
 import gevent
+import gevent.select
 from gevent.event import AsyncResult
 from gevent.queue import Queue
 import wusignal
@@ -15,7 +16,6 @@ from configuration import *
 import globals
 from globals import *
 import socket # for NetworkServerAgent
-import select # for NetworkServerAgent
 from storage.model import sensor
 import ast
 import traceback
@@ -474,12 +474,12 @@ class NetworkServerAgent(TransportAgent):
 
     def poll(self):
         # TODONR return pyzwave.poll()
-        return "Not availble"
+        return "Not available"
 
-    def receive(self, timeout_msec=100):
+    def receive(self, timeout_sec=100):
         while 1:
             try:
-                r, w, e = select.select([self._socket], [], [], timeout_msec)
+                r, w, e = gevent.select.select([self._socket], [], [], timeout_sec)
                 if r:
                     length = ord(self._socket.recv(1)[0])
                     if length == 0:
@@ -499,10 +499,6 @@ class NetworkServerAgent(TransportAgent):
                 traceback.print_tb(e.__traceback__)
 
             getDeferredQueue().removeTimeoutDefer()
-
-            #logger.debug('receive: going to sleep')
-            gevent.sleep(0.01) # sleep for at least 10 msec
-
 
     # to be run in a thread, and others will use ioloop to monitor this thread
     def handler(self):
