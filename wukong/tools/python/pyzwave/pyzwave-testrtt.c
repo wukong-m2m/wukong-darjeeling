@@ -919,7 +919,6 @@ int SerialAPI_request(unsigned char *buf, int len)
                 printf("%02x ", buf[i]);
             printf("CRC=0x%x\n", crc);
         }
-		printf("Send request\n");
         zstate = WAIT_ACK;
         ack_got = 0;
 
