@@ -512,7 +512,7 @@ class NetworkServerAgent(TransportAgent):
 
                 discovered_ids=[]
                 try:
-                    r, w, e = select.select([discovery_socket], [], [], 1000)
+                    r, w, e = gevent.select.select([discovery_socket], [], [], 100)
                     if r:
                         length = ord(discovery_socket.recv(1)[0])
                         length += 256*ord(discovery_socket.recv(1)[0])
