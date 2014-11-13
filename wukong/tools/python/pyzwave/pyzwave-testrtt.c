@@ -463,8 +463,9 @@ void clear_serial_api_queue(void)
         }
         n = read(zwavefd, &c,1);
         if (n != 1) {
+	    perror("clear_serial_api_queue");
             printf("read error !!!!!!!!!!!!!! n=%d\n", n);
-            exit(1);
+	    continue;
         }
         zwave_check_state(c);
     }
@@ -875,8 +876,9 @@ int SerialAPI_request(unsigned char *buf, int len)
             }
             n = read(zwavefd, &c,1);
             if (n != 1) {
+		perror("Serial API request");
                 printf("read error !!!!!!!!!!!!!! n=%d\n", n);
-                exit(1);
+                continue;
             }
             zwave_check_state(c);
         }
@@ -940,10 +942,11 @@ int SerialAPI_request(unsigned char *buf, int len)
             }
             n = read(zwavefd, &c,1);
             if (n != 1) {
+                perror(" wait for reply");
                 printf("read error !!!!!!!!!!!!!! n=%d\n", n);
-                exit(1);
+            } else {
+                zwave_check_state(c);
             }
-            zwave_check_state(c);
 
             if (ack_got) {
                 return 0;
@@ -4258,8 +4261,9 @@ int PyZwave_receiveByte(int wait_msec) {
     }
     n = (int)read(zwavefd, &c,1);
     if (n != 1) {
+	perror("read receiveByte");
         printf("read error !!!!!!!!!!!!!! n=%d\n", n);
-        exit(1);
+        return 0;
     }
     zwave_check_state(c);
     return 1;
