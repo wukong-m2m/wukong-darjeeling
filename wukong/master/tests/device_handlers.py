@@ -1,6 +1,6 @@
 import re, os, socket
 from threading import Thread
-
+import serial
 
 
 class TestDevice:
@@ -33,7 +33,7 @@ class WuDevice_Zwave(TestDevice):
         self.binary = binary
         self.usbport = usbport
         self.node_id = None # Will be set from test_environment_device.py, which is a bit ugly
-        self.console = serial.Serial(dev, baudrate=115200)
+        self.console = serial.Serial(self.usbport, baudrate=115200)
         self.console.timeout = 1
 
     def download(self):
@@ -48,7 +48,7 @@ class WuDevice_Zwave(TestDevice):
     def waitDeviceReady(self, timeout=20):
         while timeout > 0:
             timeout = timeout - 1
-            l = self.consoles[dev].readline()
+            l = self.console.readline()
             if l.find("ready") != -1: break
 
     def startLog(self):

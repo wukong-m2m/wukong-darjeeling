@@ -78,7 +78,7 @@ class Communication:
 
         self.all_node_infos.append(self.getVirtualDevice())
 
-        WuNode.addVirtualNodes(wkpf.globals.virtual_nodes)
+        WuNode.addVirtualNodes(virtual_nodes)
         WuNode.saveNodes(filename)
 
 
