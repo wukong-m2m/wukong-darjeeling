@@ -10,6 +10,7 @@ from wkpf.wkpfcomm import *
 from wkpf.wuclasslibraryparser import *
 from wkpf.wuapplication import *
 from device_handlers import *
+import wkpf.globals
 import serial
 
 
