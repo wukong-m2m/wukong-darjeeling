@@ -1,0 +1,639 @@
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+33fa00a66f2edf0d1c5697a9f8693ba8
+scanning 4cca20194762de2f883db226efbd9de7:
+4cca20194762de2f883db226efbd9de7
+scanning c521e495942f5a48828160ae509d8f40:
+c521e495942f5a48828160ae509d8f40
+scanning 41c59b9cced27b8565a110f8d597823b:
+41c59b9cced27b8565a110f8d597823b
+make_js_complete
+make_fbp_complete
+304 GET / (127.0.0.1) 2.08ms
+304 GET /static/css/smoothness/jquery-ui-1.8.21.custom.css (127.0.0.1) 2.32ms
+304 GET /static/css/jquery.contextMenu.css (127.0.0.1) 0.44ms
+304 GET /static/css/application.css (127.0.0.1) 0.42ms
+304 GET /static/bootstrap/css/bootstrap.min.css (127.0.0.1) 0.46ms
+304 GET /static/css/jquery.treeview.css (127.0.0.1) 0.29ms
+304 GET /static/css/bootstrap-editable.css (127.0.0.1) 0.39ms
+304 GET /static/js/jquery-ui-1.8.21.custom.min.js (127.0.0.1) 0.80ms
+304 GET /static/js/jquery-ui-disabler-1.0.0.min.js (127.0.0.1) 0.32ms
+304 GET /static/js/jquery.contextMenu.js (127.0.0.1) 0.49ms
+304 GET /static/js/underscore-min.js (127.0.0.1) 0.35ms
+304 GET /static/js/json2.js (127.0.0.1) 0.32ms
+304 GET /static/js/jquery-1.7.2.min.js (127.0.0.1) 0.46ms
+304 GET /static/js/jquery.blockUI.js (127.0.0.1) 0.32ms
+304 GET /static/bootstrap/js/bootstrap.min.js (127.0.0.1) 0.33ms
+304 GET /static/js/bootstrap-editable.min.js (127.0.0.1) 0.42ms
+304 GET /static/js/jquery.treeview.js (127.0.0.1) 0.31ms
+304 GET /static/js/display_locationTree.js (127.0.0.1) 0.33ms
+304 GET /static/js/application.js (127.0.0.1) 0.32ms
+304 GET /static/images/background_tile-100x100.png (127.0.0.1) 0.46ms
+304 GET /static/images/wukong_logo.jpg (127.0.0.1) 0.62ms
+updating applications:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+scanning 4cca20194762de2f883db226efbd9de7:
+scanning c521e495942f5a48828160ae509d8f40:
+scanning 41c59b9cced27b8565a110f8d597823b:
+200 POST /applications (127.0.0.1) 0.96ms
+200 GET /testrtt (127.0.0.1) 9.90ms
+200 GET /static/js/testrtt.js?_=1415100420605 (127.0.0.1) 0.65ms
+200 POST /testrtt/poll (127.0.0.1) 564.21ms
+200 GET /static/js/display_locationTree.js?_=1415100420611 (127.0.0.1) 2.02ms
+200 POST /testrtt/poll (127.0.0.1) 586.80ms
+200 POST /nodes/refresh/1 (127.0.0.1) 12143.59ms
+200 POST /testrtt/poll (127.0.0.1) 594.98ms
+200 POST /testrtt/poll (127.0.0.1) 585.58ms
+updating applications:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+scanning 4cca20194762de2f883db226efbd9de7:
+scanning c521e495942f5a48828160ae509d8f40:
+scanning 41c59b9cced27b8565a110f8d597823b:
+200 POST /applications (127.0.0.1) 1.27ms
+200 POST /testrtt/poll (127.0.0.1) 593.66ms
+200 POST /applications/c521e495942f5a48828160ae509d8f40 (127.0.0.1) 1.59ms
+200 GET /applications/c521e495942f5a48828160ae509d8f40/deploy (127.0.0.1) 2.07ms
+200 GET /static/js/topbar.js?_=1415100447351 (127.0.0.1) 0.64ms
+200 GET /applications/c521e495942f5a48828160ae509d8f40/fbp/load (127.0.0.1) 1.38ms
+200 GET /static/js/deployment.js?_=1415100447361 (127.0.0.1) 0.95ms
+200 POST /applications/c521e495942f5a48828160ae509d8f40 (127.0.0.1) 2.02ms
+200 POST /applications/c521e495942f5a48828160ae509d8f40/fbp/load (127.0.0.1) 0.38ms
+updating applications:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+scanning 4cca20194762de2f883db226efbd9de7:
+scanning c521e495942f5a48828160ae509d8f40:
+scanning 41c59b9cced27b8565a110f8d597823b:
+200 POST /applications (127.0.0.1) 1.42ms
+200 POST /applications/41c59b9cced27b8565a110f8d597823b (127.0.0.1) 1.30ms
+200 GET /applications/41c59b9cced27b8565a110f8d597823b/deploy (127.0.0.1) 2.04ms
+200 GET /static/js/topbar.js?_=1415100453822 (127.0.0.1) 0.64ms
+200 GET /applications/41c59b9cced27b8565a110f8d597823b/fbp/load (127.0.0.1) 1.28ms
+200 GET /static/js/deployment.js?_=1415100453831 (127.0.0.1) 0.56ms
+200 POST /applications/41c59b9cced27b8565a110f8d597823b (127.0.0.1) 1.88ms
+200 POST /applications/41c59b9cced27b8565a110f8d597823b/fbp/load (127.0.0.1) 0.32ms
+updating applications:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+scanning 4cca20194762de2f883db226efbd9de7:
+scanning c521e495942f5a48828160ae509d8f40:
+scanning 41c59b9cced27b8565a110f8d597823b:
+200 POST /applications (127.0.0.1) 0.87ms
+200 POST /applications/4cca20194762de2f883db226efbd9de7 (127.0.0.1) 1.30ms
+200 GET /applications/4cca20194762de2f883db226efbd9de7/deploy (127.0.0.1) 2.38ms
+200 GET /static/js/topbar.js?_=1415100456289 (127.0.0.1) 0.47ms
+200 GET /applications/4cca20194762de2f883db226efbd9de7/fbp/load (127.0.0.1) 1.88ms
+200 GET /static/js/deployment.js?_=1415100456296 (127.0.0.1) 1.32ms
+200 POST /applications/4cca20194762de2f883db226efbd9de7 (127.0.0.1) 2.13ms
+200 POST /applications/4cca20194762de2f883db226efbd9de7/fbp/load (127.0.0.1) 0.47ms
+updating applications:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+scanning 4cca20194762de2f883db226efbd9de7:
+scanning c521e495942f5a48828160ae509d8f40:
+scanning 41c59b9cced27b8565a110f8d597823b:
+200 POST /applications (127.0.0.1) 0.84ms
+200 DELETE /applications/c521e495942f5a48828160ae509d8f40 (127.0.0.1) 1.42ms
+updating applications:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+scanning 4cca20194762de2f883db226efbd9de7:
+scanning 41c59b9cced27b8565a110f8d597823b:
+200 POST /applications (127.0.0.1) 1.13ms
+200 DELETE /applications/41c59b9cced27b8565a110f8d597823b (127.0.0.1) 0.70ms
+updating applications:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+scanning 4cca20194762de2f883db226efbd9de7:
+200 POST /applications (127.0.0.1) 0.92ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055 (127.0.0.1) 1.34ms
+200 GET /applications/4840d2555bd5f0b995eb76723c6c9055/deploy (127.0.0.1) 2.50ms
+200 GET /static/js/topbar.js?_=1415100465457 (127.0.0.1) 0.49ms
+200 GET /applications/4840d2555bd5f0b995eb76723c6c9055/fbp/load (127.0.0.1) 1.61ms
+200 GET /static/js/deployment.js?_=1415100465468 (127.0.0.1) 0.74ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055 (127.0.0.1) 2.12ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/fbp/load (127.0.0.1) 0.52ms
+200 POST /nodes/refresh/0 (127.0.0.1) 8.26ms
+Mapping Results
+ChangeSets(components=[<wkpf.model.models.WuComponent instance at 0x7f907d5cad88>, <wkpf.model.models.WuComponent instance at 0x7f907d5cadd0>, <wkpf.model.models.WuComponent instance at 0x7f907d5cae18>, <wkpf.model.models.WuComponent instance at 0x7f907d5ca3b0>, <wkpf.model.models.WuComponent instance at 0x7f907d5ca3f8>, <wkpf.model.models.WuComponent instance at 0x7f907d5ca320>, <wkpf.model.models.WuComponent instance at 0x7f907d5ca368>], links=[<wkpf.model.models.WuLink instance at 0x7f907d5ca248>, <wkpf.model.models.WuLink instance at 0x7f907d5ca200>, <wkpf.model.models.WuLink instance at 0x7f907d5ca1b8>, <wkpf.model.models.WuLink instance at 0x7f907d5ca170>, <wkpf.model.models.WuLink instance at 0x7f907d5ca128>], heartbeatgroups=[])
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/deploy/map (127.0.0.1) 15.86ms
+deploy signal set
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/deploy (127.0.0.1) 0.44ms
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.63ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.36ms
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.29ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.24ms
+...has completed
+Deploying to node 3, remaining set([])
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.53ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.26ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.28ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.25ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.37ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.65ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.91ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.29ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.27ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.25ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.25ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.92ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.41ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.59ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.27ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.92ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.27ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.28ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.26ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.27ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.29ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.39ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.27ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.27ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.25ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.31ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.32ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.29ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.30ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.27ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.24ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.32ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.30ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.32ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.31ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.30ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.26ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.23ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.26ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.25ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.23ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.54ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.38ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.28ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.41ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.41ms
+304 GET / (127.0.0.1) 1.45ms
+304 GET /static/css/smoothness/jquery-ui-1.8.21.custom.css (127.0.0.1) 0.68ms
+304 GET /static/bootstrap/css/bootstrap.min.css (127.0.0.1) 0.58ms
+304 GET /static/css/jquery.treeview.css (127.0.0.1) 0.32ms
+304 GET /static/css/bootstrap-editable.css (127.0.0.1) 0.52ms
+304 GET /static/css/jquery.contextMenu.css (127.0.0.1) 0.44ms
+304 GET /static/css/application.css (127.0.0.1) 0.47ms
+304 GET /static/js/jquery-1.7.2.min.js (127.0.0.1) 0.71ms
+304 GET /static/js/jquery.blockUI.js (127.0.0.1) 0.40ms
+304 GET /static/js/jquery-ui-1.8.21.custom.min.js (127.0.0.1) 0.66ms
+304 GET /static/js/jquery-ui-disabler-1.0.0.min.js (127.0.0.1) 0.33ms
+304 GET /static/js/jquery.contextMenu.js (127.0.0.1) 0.44ms
+304 GET /static/js/underscore-min.js (127.0.0.1) 0.33ms
+304 GET /static/js/json2.js (127.0.0.1) 0.32ms
+304 GET /static/bootstrap/js/bootstrap.min.js (127.0.0.1) 0.34ms
+304 GET /static/js/bootstrap-editable.min.js (127.0.0.1) 0.52ms
+304 GET /static/js/jquery.treeview.js (127.0.0.1) 0.40ms
+304 GET /static/js/display_locationTree.js (127.0.0.1) 0.43ms
+304 GET /static/js/application.js (127.0.0.1) 0.40ms
+304 GET /static/images/background_tile-100x100.png (127.0.0.1) 0.48ms
+304 GET /static/images/wukong_logo.jpg (127.0.0.1) 0.43ms
+updating applications:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+scanning 4cca20194762de2f883db226efbd9de7:
+200 POST /applications (127.0.0.1) 0.77ms
+304 GET /testrtt (127.0.0.1) 8.96ms
+200 GET /static/js/testrtt.js?_=1415100527756 (127.0.0.1) 0.60ms
+200 POST /testrtt/poll (127.0.0.1) 529.63ms
+200 GET /static/js/display_locationTree.js?_=1415100527762 (127.0.0.1) 1.87ms
+...has completed
+Application has been deployed!
+error! location for node 3 is not set
+200 POST /nodes/refresh/1 (127.0.0.1) 30406.14ms
+200 POST /testrtt/poll (127.0.0.1) 592.91ms
+200 POST /testrtt/poll (127.0.0.1) 590.62ms
+200 POST /testrtt/poll (127.0.0.1) 594.22ms
+200 POST /testrtt/poll (127.0.0.1) 593.35ms
+200 POST /testrtt/poll (127.0.0.1) 595.64ms
+200 POST /testrtt/poll (127.0.0.1) 595.24ms
+200 POST /testrtt/poll (127.0.0.1) 595.01ms
+200 POST /testrtt/poll (127.0.0.1) 595.85ms
+200 POST /testrtt/poll (127.0.0.1) 595.35ms
+200 POST /testrtt/poll (127.0.0.1) 595.34ms
+200 POST /testrtt/poll (127.0.0.1) 591.10ms
+200 POST /testrtt/poll (127.0.0.1) 596.15ms
+200 POST /testrtt/poll (127.0.0.1) 593.69ms
+200 POST /testrtt/poll (127.0.0.1) 595.46ms
+200 POST /testrtt/poll (127.0.0.1) 595.53ms
+200 POST /testrtt/poll (127.0.0.1) 595.53ms
+200 POST /testrtt/poll (127.0.0.1) 594.77ms
+Uncaught exception
+Traceback (most recent call last):
+  File "/usr/local/lib/python2.7/dist-packages/tornado/http1connection.py", line 234, in _read_message
+    delegate.finish()
+  File "/usr/local/lib/python2.7/dist-packages/tornado/httpserver.py", line 282, in finish
+    self.delegate.finish()
+  File "/usr/local/lib/python2.7/dist-packages/tornado/web.py", line 1884, in finish
+    self.execute()
+  File "/usr/local/lib/python2.7/dist-packages/tornado/web.py", line 1914, in execute
+    self.handler._execute(transforms, *self.path_args, **self.path_kwargs)
+  File "/usr/local/lib/python2.7/dist-packages/tornado/gen.py", line 175, in wrapper
+    yielded = next(result)
+  File "/usr/local/lib/python2.7/dist-packages/tornado/web.py", line 1332, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "master_server.py", line 584, in post
+    node_infos = getComm().getActiveNodeInfos(True)
+  File "/home/wukong/arduino-1.5.8/tools/wukong-darjeeling/wukong/master/wkpf/wkpfcomm.py", line 69, in getActiveNodeInfos
+    return filter(lambda item: item.isResponding(), self.getAllNodeInfos(force=force))
+  File "/home/wukong/arduino-1.5.8/tools/wukong-darjeeling/wukong/master/wkpf/wkpfcomm.py", line 82, in getAllNodeInfos
+    self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
+  File "/home/wukong/arduino-1.5.8/tools/wukong-darjeeling/wukong/master/wkpf/wkpfcomm.py", line 133, in getNodeInfo
+    location = self.getLocation(destination)
+  File "/home/wukong/arduino-1.5.8/tools/wukong-darjeeling/wukong/master/wkpf/wkpfcomm.py", line 191, in getLocation
+    reply = self.zwave.send(destination, pynvc.WKPF_GET_LOCATION, [offset], [pynvc.WKPF_GET_LOCATION_R, pynvc.WKPF_ERROR_R])
+  File "/home/wukong/arduino-1.5.8/tools/wukong-darjeeling/wukong/master/wkpf/transportv2.py", line 296, in send
+    return result.get()
+  File "/usr/local/lib/python2.7/dist-packages/gevent/event.py", line 233, in get
+    result = self.hub.switch()
+  File "/usr/local/lib/python2.7/dist-packages/gevent/hub.py", line 331, in switch
+    return greenlet.switch(self)
+KeyboardInterrupt
+200 POST /testrtt/poll (127.0.0.1) 1.13ms
+304 GET / (127.0.0.1) 1.17ms
+304 GET /static/css/smoothness/jquery-ui-1.8.21.custom.css (127.0.0.1) 0.57ms
+304 GET /static/css/jquery.contextMenu.css (127.0.0.1) 0.36ms
+304 GET /static/css/bootstrap-editable.css (127.0.0.1) 0.40ms
+304 GET /static/js/jquery-1.7.2.min.js (127.0.0.1) 0.58ms
+304 GET /static/css/jquery.treeview.css (127.0.0.1) 0.31ms
+304 GET /static/css/application.css (127.0.0.1) 0.31ms
+304 GET /static/bootstrap/css/bootstrap.min.css (127.0.0.1) 0.48ms
+304 GET /static/js/jquery-ui-disabler-1.0.0.min.js (127.0.0.1) 0.46ms
+304 GET /static/js/underscore-min.js (127.0.0.1) 0.56ms
+304 GET /static/js/jquery.contextMenu.js (127.0.0.1) 0.42ms
+304 GET /static/js/jquery-ui-1.8.21.custom.min.js (127.0.0.1) 0.65ms
+304 GET /static/bootstrap/js/bootstrap.min.js (127.0.0.1) 0.34ms
+304 GET /static/js/bootstrap-editable.min.js (127.0.0.1) 0.44ms
+304 GET /static/js/jquery.treeview.js (127.0.0.1) 0.31ms
+304 GET /static/js/display_locationTree.js (127.0.0.1) 0.33ms
+304 GET /static/js/json2.js (127.0.0.1) 0.32ms
+304 GET /static/js/jquery.blockUI.js (127.0.0.1) 0.32ms
+304 GET /static/js/application.js (127.0.0.1) 0.31ms
+304 GET /static/images/background_tile-100x100.png (127.0.0.1) 0.51ms
+304 GET /static/images/wukong_logo.jpg (127.0.0.1) 0.45ms
+updating applications:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+scanning 4cca20194762de2f883db226efbd9de7:
+200 POST /applications (127.0.0.1) 0.78ms
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+33fa00a66f2edf0d1c5697a9f8693ba8
+scanning 4cca20194762de2f883db226efbd9de7:
+4cca20194762de2f883db226efbd9de7
+make_js_complete
+make_fbp_complete
+304 GET / (127.0.0.1) 2.11ms
+304 GET /static/css/smoothness/jquery-ui-1.8.21.custom.css (127.0.0.1) 2.40ms
+304 GET /static/css/jquery.contextMenu.css (127.0.0.1) 0.38ms
+304 GET /static/css/application.css (127.0.0.1) 0.34ms
+304 GET /static/bootstrap/css/bootstrap.min.css (127.0.0.1) 0.50ms
+304 GET /static/css/jquery.treeview.css (127.0.0.1) 0.42ms
+304 GET /static/css/bootstrap-editable.css (127.0.0.1) 0.36ms
+304 GET /static/js/jquery-ui-1.8.21.custom.min.js (127.0.0.1) 0.67ms
+304 GET /static/js/jquery-ui-disabler-1.0.0.min.js (127.0.0.1) 0.50ms
+304 GET /static/js/jquery.contextMenu.js (127.0.0.1) 0.46ms
+304 GET /static/js/underscore-min.js (127.0.0.1) 0.32ms
+304 GET /static/js/json2.js (127.0.0.1) 0.32ms
+304 GET /static/js/jquery-1.7.2.min.js (127.0.0.1) 0.54ms
+304 GET /static/js/jquery.blockUI.js (127.0.0.1) 0.33ms
+304 GET /static/bootstrap/js/bootstrap.min.js (127.0.0.1) 0.33ms
+304 GET /static/js/bootstrap-editable.min.js (127.0.0.1) 0.42ms
+304 GET /static/js/jquery.treeview.js (127.0.0.1) 0.31ms
+304 GET /static/js/display_locationTree.js (127.0.0.1) 0.41ms
+304 GET /static/js/application.js (127.0.0.1) 0.33ms
+304 GET /static/images/background_tile-100x100.png (127.0.0.1) 0.47ms
+304 GET /static/images/wukong_logo.jpg (127.0.0.1) 0.45ms
+updating applications:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+scanning 4cca20194762de2f883db226efbd9de7:
+200 POST /applications (127.0.0.1) 0.90ms
+200 GET /testrtt (127.0.0.1) 10.68ms
+200 GET /static/js/testrtt.js?_=1415100623997 (127.0.0.1) 0.52ms
+200 POST /testrtt/poll (127.0.0.1) 525.22ms
+200 GET /static/js/display_locationTree.js?_=1415100624002 (127.0.0.1) 2.04ms
+200 POST /testrtt/poll (127.0.0.1) 580.97ms
+200 POST /nodes/refresh/1 (127.0.0.1) 11241.33ms
+200 POST /testrtt/poll (127.0.0.1) 591.40ms
+200 POST /testrtt/poll (127.0.0.1) 595.03ms
+200 POST /testrtt/poll (127.0.0.1) 592.52ms
+200 POST /testrtt/poll (127.0.0.1) 592.94ms
+updating applications:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+scanning 4cca20194762de2f883db226efbd9de7:
+200 POST /applications (127.0.0.1) 0.71ms
+200 POST /testrtt/poll (127.0.0.1) 594.74ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055 (127.0.0.1) 1.62ms
+200 GET /applications/4840d2555bd5f0b995eb76723c6c9055/deploy (127.0.0.1) 2.21ms
+200 GET /static/js/topbar.js?_=1415100644623 (127.0.0.1) 0.49ms
+200 GET /applications/4840d2555bd5f0b995eb76723c6c9055/fbp/load (127.0.0.1) 1.29ms
+200 GET /static/js/deployment.js?_=1415100644630 (127.0.0.1) 0.70ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055 (127.0.0.1) 1.28ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/fbp/load (127.0.0.1) 0.38ms
+200 POST /nodes/refresh/0 (127.0.0.1) 6.18ms
+Mapping Results
+ChangeSets(components=[<wkpf.model.models.WuComponent instance at 0x7f9ec2cd39e0>, <wkpf.model.models.WuComponent instance at 0x7f9ec2cd3a70>, <wkpf.model.models.WuComponent instance at 0x7f9ec2cd3998>, <wkpf.model.models.WuComponent instance at 0x7f9ec2cd3c20>, <wkpf.model.models.WuComponent instance at 0x7f9ec2cd3d40>, <wkpf.model.models.WuComponent instance at 0x7f9ec2cd3dd0>, <wkpf.model.models.WuComponent instance at 0x7f9ec2cd3710>], links=[<wkpf.model.models.WuLink instance at 0x7f9ec2cd3950>, <wkpf.model.models.WuLink instance at 0x7f9ec2cd37a0>, <wkpf.model.models.WuLink instance at 0x7f9ec2cdd050>, <wkpf.model.models.WuLink instance at 0x7f9ec2cdd098>, <wkpf.model.models.WuLink instance at 0x7f9ec2cdd0e0>], heartbeatgroups=[])
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/deploy/map (127.0.0.1) 26.79ms
+deploy signal set
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/deploy (127.0.0.1) 0.42ms
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.72ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.42ms
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.11ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.40ms
+...has completed
+Deploying to node 3, remaining set([])
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.90ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.29ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.76ms
+...has completed
+Application has been deployed!
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.32ms
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+33fa00a66f2edf0d1c5697a9f8693ba8
+scanning 4cca20194762de2f883db226efbd9de7:
+4cca20194762de2f883db226efbd9de7
+make_js_complete
+make_fbp_complete
+304 GET / (127.0.0.1) 1.47ms
+304 GET /static/css/smoothness/jquery-ui-1.8.21.custom.css (127.0.0.1) 2.36ms
+304 GET /static/css/jquery.contextMenu.css (127.0.0.1) 0.47ms
+304 GET /static/css/application.css (127.0.0.1) 0.31ms
+304 GET /static/bootstrap/css/bootstrap.min.css (127.0.0.1) 0.47ms
+304 GET /static/css/jquery.treeview.css (127.0.0.1) 0.32ms
+304 GET /static/css/bootstrap-editable.css (127.0.0.1) 0.36ms
+304 GET /static/js/jquery-ui-1.8.21.custom.min.js (127.0.0.1) 0.77ms
+304 GET /static/js/jquery-ui-disabler-1.0.0.min.js (127.0.0.1) 0.56ms
+304 GET /static/js/jquery.contextMenu.js (127.0.0.1) 0.33ms
+304 GET /static/js/underscore-min.js (127.0.0.1) 0.33ms
+304 GET /static/js/json2.js (127.0.0.1) 0.32ms
+304 GET /static/js/jquery-1.7.2.min.js (127.0.0.1) 0.46ms
+304 GET /static/js/jquery.blockUI.js (127.0.0.1) 0.32ms
+304 GET /static/bootstrap/js/bootstrap.min.js (127.0.0.1) 0.35ms
+304 GET /static/js/bootstrap-editable.min.js (127.0.0.1) 0.54ms
+304 GET /static/js/jquery.treeview.js (127.0.0.1) 0.33ms
+304 GET /static/js/display_locationTree.js (127.0.0.1) 0.72ms
+304 GET /static/js/application.js (127.0.0.1) 2.40ms
+304 GET /static/images/background_tile-100x100.png (127.0.0.1) 0.48ms
+304 GET /static/images/wukong_logo.jpg (127.0.0.1) 0.65ms
+updating applications:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+scanning 4cca20194762de2f883db226efbd9de7:
+200 POST /applications (127.0.0.1) 0.79ms
+200 GET /testrtt (127.0.0.1) 8.42ms
+200 GET /static/js/testrtt.js?_=1415101183660 (127.0.0.1) 0.66ms
+200 POST /testrtt/poll (127.0.0.1) 538.35ms
+200 GET /static/js/display_locationTree.js?_=1415101183673 (127.0.0.1) 2.37ms
+200 POST /testrtt/poll (127.0.0.1) 579.23ms
+Uncaught exception POST /nodes/refresh/1 (127.0.0.1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/nodes/refresh/1', version='HTTP/1.1', remote_ip='127.0.0.1', headers={'Content-Length': '17', 'Accept-Language': 'en-US,en;q=0.5', 'Accept-Encoding': 'gzip, deflate', 'Host': 'localhost:5000', 'Accept': 'application/json, text/javascript, */*; q=0.01', 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:32.0) Gecko/20100101 Firefox/32.0', 'Connection': 'keep-alive', 'X-Requested-With': 'XMLHttpRequest', 'Pragma': 'no-cache', 'Cache-Control': 'no-cache', 'Referer': 'http://localhost:5000/', 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'})
+Traceback (most recent call last):
+  File "/usr/local/lib/python2.7/dist-packages/tornado/web.py", line 1332, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "master_server.py", line 584, in post
+    node_infos = getComm().getActiveNodeInfos(True)
+  File "/home/wukong/arduino-1.5.8/tools/wukong-darjeeling/wukong/master/wkpf/wkpfcomm.py", line 69, in getActiveNodeInfos
+    return filter(lambda item: item.isResponding(), self.getAllNodeInfos(force=force))
+  File "/home/wukong/arduino-1.5.8/tools/wukong-darjeeling/wukong/master/wkpf/wkpfcomm.py", line 82, in getAllNodeInfos
+    self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
+  File "/home/wukong/arduino-1.5.8/tools/wukong-darjeeling/wukong/master/wkpf/wkpfcomm.py", line 144, in getNodeInfo
+    wuObjects = self.getWuObjectList(destination)
+  File "/home/wukong/arduino-1.5.8/tools/wukong-darjeeling/wukong/master/wkpf/wkpfcomm.py", line 345, in getWuObjectList
+    wuclass_id = (reply[1] <<8) + reply[2]
+IndexError: list index out of range
+500 POST /nodes/refresh/1 (127.0.0.1) 5120.58ms
+200 POST /testrtt/poll (127.0.0.1) 513.76ms
+200 POST /testrtt/poll (127.0.0.1) 589.04ms
+200 POST /testrtt/poll (127.0.0.1) 592.99ms
+200 POST /testrtt/poll (127.0.0.1) 587.68ms
+200 POST /testrtt/poll (127.0.0.1) 591.02ms
+200 POST /testrtt/poll (127.0.0.1) 591.80ms
+200 POST /testrtt/poll (127.0.0.1) 596.13ms
+200 POST /testrtt/poll (127.0.0.1) 594.54ms
+200 POST /testrtt/poll (127.0.0.1) 3.90ms
+200 POST /testrtt/poll (127.0.0.1) 601.92ms
+200 POST /testrtt/poll (127.0.0.1) 594.54ms
+200 POST /testrtt/poll (127.0.0.1) 595.93ms
+200 POST /testrtt/poll (127.0.0.1) 595.93ms
+200 POST /testrtt/poll (127.0.0.1) 595.50ms
+200 POST /testrtt/poll (127.0.0.1) 3.88ms
+200 POST /testrtt/poll (127.0.0.1) 588.83ms
+Uncaught exception POST /testrtt/poll (127.0.0.1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/testrtt/poll', version='HTTP/1.1', remote_ip='127.0.0.1', headers={'Content-Length': '0', 'Accept-Language': 'en-US,en;q=0.5', 'Accept-Encoding': 'gzip, deflate', 'Host': 'localhost:5000', 'Accept': '*/*', 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:32.0) Gecko/20100101 Firefox/32.0', 'Connection': 'keep-alive', 'X-Requested-With': 'XMLHttpRequest', 'Pragma': 'no-cache', 'Cache-Control': 'no-cache', 'Referer': 'http://localhost:5000/'})
+Traceback (most recent call last):
+  File "/usr/local/lib/python2.7/dist-packages/tornado/web.py", line 1332, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "master_server.py", line 525, in post
+    status = comm.currentStatus()
+  File "/home/wukong/arduino-1.5.8/tools/wukong-darjeeling/wukong/master/wkpf/wkpfcomm.py", line 122, in currentStatus
+    return self.zwave.poll()
+  File "/home/wukong/arduino-1.5.8/tools/wukong-darjeeling/wukong/master/wkpf/transportv2.py", line 418, in poll
+    return "; ".join(ret)
+TypeError: sequence item 0: expected string, NoneType found
+500 POST /testrtt/poll (127.0.0.1) 381.20ms
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+33fa00a66f2edf0d1c5697a9f8693ba8
+scanning 4cca20194762de2f883db226efbd9de7:
+4cca20194762de2f883db226efbd9de7
+make_js_complete
+make_fbp_complete
+304 GET / (127.0.0.1) 4.47ms
+304 GET /static/css/smoothness/jquery-ui-1.8.21.custom.css (127.0.0.1) 2.39ms
+304 GET /static/css/jquery.contextMenu.css (127.0.0.1) 0.37ms
+304 GET /static/css/application.css (127.0.0.1) 0.47ms
+304 GET /static/bootstrap/css/bootstrap.min.css (127.0.0.1) 0.53ms
+304 GET /static/css/jquery.treeview.css (127.0.0.1) 0.30ms
+304 GET /static/css/bootstrap-editable.css (127.0.0.1) 0.32ms
+304 GET /static/js/jquery-ui-1.8.21.custom.min.js (127.0.0.1) 0.78ms
+304 GET /static/js/jquery-ui-disabler-1.0.0.min.js (127.0.0.1) 0.45ms
+304 GET /static/js/jquery.contextMenu.js (127.0.0.1) 0.32ms
+304 GET /static/js/underscore-min.js (127.0.0.1) 0.42ms
+304 GET /static/js/json2.js (127.0.0.1) 0.37ms
+304 GET /static/js/jquery-1.7.2.min.js (127.0.0.1) 0.59ms
+304 GET /static/js/jquery.blockUI.js (127.0.0.1) 0.74ms
+304 GET /static/bootstrap/js/bootstrap.min.js (127.0.0.1) 0.40ms
+304 GET /static/js/bootstrap-editable.min.js (127.0.0.1) 0.45ms
+304 GET /static/js/jquery.treeview.js (127.0.0.1) 0.40ms
+304 GET /static/js/display_locationTree.js (127.0.0.1) 0.36ms
+304 GET /static/js/application.js (127.0.0.1) 0.66ms
+304 GET /static/images/background_tile-100x100.png (127.0.0.1) 0.48ms
+304 GET /static/images/wukong_logo.jpg (127.0.0.1) 0.52ms
+updating applications:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+scanning 4cca20194762de2f883db226efbd9de7:
+200 POST /applications (127.0.0.1) 0.80ms
+200 GET /testrtt (127.0.0.1) 8.24ms
+200 GET /static/js/testrtt.js?_=1415101232116 (127.0.0.1) 0.68ms
+200 POST /testrtt/poll (127.0.0.1) 515.98ms
+200 GET /static/js/display_locationTree.js?_=1415101232121 (127.0.0.1) 2.12ms
+200 POST /testrtt/poll (127.0.0.1) 587.62ms
+200 POST /nodes/refresh/1 (127.0.0.1) 11817.60ms
+200 POST /testrtt/poll (127.0.0.1) 595.55ms
+200 POST /testrtt/poll (127.0.0.1) 591.90ms
+200 POST /testrtt/poll (127.0.0.1) 592.59ms
+200 POST /testrtt/poll (127.0.0.1) 591.57ms
+200 POST /testrtt/poll (127.0.0.1) 594.29ms
+200 POST /testrtt/poll (127.0.0.1) 593.04ms
+200 POST /testrtt/poll (127.0.0.1) 595.75ms
+200 POST /testrtt/poll (127.0.0.1) 595.25ms
+200 PUT /nodes/2 (127.0.0.1) 1652.46ms
+200 POST /testrtt/poll (127.0.0.1) 592.06ms
+200 POST /testrtt/poll (127.0.0.1) 592.40ms
+200 POST /testrtt/poll (127.0.0.1) 594.78ms
+200 POST /testrtt/poll (127.0.0.1) 594.65ms
+200 POST /testrtt/poll (127.0.0.1) 592.54ms
+200 POST /testrtt/poll (127.0.0.1) 595.56ms
+200 POST /testrtt/poll (127.0.0.1) 593.94ms
+200 PUT /nodes/2 (127.0.0.1) 1679.59ms
+200 POST /testrtt/poll (127.0.0.1) 602.78ms
+200 POST /testrtt/poll (127.0.0.1) 592.75ms
+200 POST /testrtt/poll (127.0.0.1) 594.65ms
+200 PUT /nodes/4 (127.0.0.1) 1589.40ms
+200 POST /testrtt/poll (127.0.0.1) 602.28ms
+200 POST /testrtt/poll (127.0.0.1) 595.31ms
+200 POST /testrtt/poll (127.0.0.1) 595.03ms
+200 POST /testrtt/poll (127.0.0.1) 593.68ms
+200 PUT /nodes/3 (127.0.0.1) 1601.50ms
+200 POST /testrtt/poll (127.0.0.1) 503.26ms
+200 POST /nodes/refresh/1 (127.0.0.1) 12838.21ms
+200 POST /testrtt/poll (127.0.0.1) 587.96ms
+200 POST /testrtt/poll (127.0.0.1) 592.51ms
+200 POST /testrtt/poll (127.0.0.1) 594.63ms
+updating applications:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+scanning 4cca20194762de2f883db226efbd9de7:
+200 POST /applications (127.0.0.1) 1.48ms
+200 POST /testrtt/poll (127.0.0.1) 595.64ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055 (127.0.0.1) 4.78ms
+200 GET /applications/4840d2555bd5f0b995eb76723c6c9055/deploy (127.0.0.1) 4.58ms
+200 GET /static/js/topbar.js?_=1415101305441 (127.0.0.1) 0.96ms
+200 GET /applications/4840d2555bd5f0b995eb76723c6c9055/fbp/load (127.0.0.1) 1.98ms
+200 GET /static/js/deployment.js?_=1415101305453 (127.0.0.1) 0.97ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055 (127.0.0.1) 5.72ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/fbp/load (127.0.0.1) 0.32ms
+200 POST /nodes/refresh/0 (127.0.0.1) 5.13ms
+200 POST /loc_tree (127.0.0.1) 1.21ms
+200 POST /loc_tree (127.0.0.1) 2.26ms
+200 POST /loc_tree (127.0.0.1) 2.96ms
+200 POST /loc_tree (127.0.0.1) 1.13ms
+200 POST /loc_tree (127.0.0.1) 2.41ms
+200 POST /loc_tree (127.0.0.1) 1.17ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/fbp/save (127.0.0.1) 1.70ms
+200 POST /loc_tree (127.0.0.1) 1.32ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/fbp/save (127.0.0.1) 5.43ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/fbp/save (127.0.0.1) 2.19ms
+200 POST /nodes/refresh/0 (127.0.0.1) 6.12ms
+Mapping Results
+ChangeSets(components=[<wkpf.model.models.WuComponent instance at 0x7fe70904ba28>, <wkpf.model.models.WuComponent instance at 0x7fe70904bcf8>, <wkpf.model.models.WuComponent instance at 0x7fe70904bcb0>, <wkpf.model.models.WuComponent instance at 0x7fe70904bc68>, <wkpf.model.models.WuComponent instance at 0x7fe70904b998>, <wkpf.model.models.WuComponent instance at 0x7fe70904bb90>, <wkpf.model.models.WuComponent instance at 0x7fe70904bbd8>], links=[<wkpf.model.models.WuLink instance at 0x7fe708fa2290>, <wkpf.model.models.WuLink instance at 0x7fe709105f80>, <wkpf.model.models.WuLink instance at 0x7fe708fa75f0>, <wkpf.model.models.WuLink instance at 0x7fe708fa7950>, <wkpf.model.models.WuLink instance at 0x7fe70904ebd8>], heartbeatgroups=[])
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/deploy/map (127.0.0.1) 20.24ms
+deploy signal set
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/deploy (127.0.0.1) 0.52ms
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.87ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 2.50ms
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.25ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.23ms
+...has completed
+Deploying to node 3, remaining set([])
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.69ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.23ms
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 1.41ms
+...has completed
+Application has been deployed!
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/poll (127.0.0.1) 0.97ms
+Mapping Results
+ChangeSets(components=[<wkpf.model.models.WuComponent instance at 0x7fe709071440>, <wkpf.model.models.WuComponent instance at 0x7fe709071518>, <wkpf.model.models.WuComponent instance at 0x7fe7090715f0>, <wkpf.model.models.WuComponent instance at 0x7fe7090716c8>, <wkpf.model.models.WuComponent instance at 0x7fe7090717a0>, <wkpf.model.models.WuComponent instance at 0x7fe709071878>, <wkpf.model.models.WuComponent instance at 0x7fe709071908>], links=[<wkpf.model.models.WuLink instance at 0x7fe709071ab8>, <wkpf.model.models.WuLink instance at 0x7fe709071b00>, <wkpf.model.models.WuLink instance at 0x7fe709071b48>, <wkpf.model.models.WuLink instance at 0x7fe709071b90>, <wkpf.model.models.WuLink instance at 0x7fe709071bd8>], heartbeatgroups=[])
+200 POST /applications/4840d2555bd5f0b995eb76723c6c9055/deploy/map (127.0.0.1) 19.78ms
+error! location for node 2 is not set
+error! location for node 3 is not set
+Preparing java library code...
+Generating java application...
+An error has encountered while generating java application! Backtrace is shown below:
+<traceback object at 0x7f177f0f95f0>
+error! location for node 2 is not set
+error! location for node 3 is not set
+Preparing java library code...
+Generating java application...
+An error has encountered while generating java application! Backtrace is shown below:
+<traceback object at 0x7f24c3a2c5f0>
+error! location for node 2 is not set
+error! location for node 3 is not set
+error! location for node 2 is not set
+error! location for node 3 is not set
+error! location for node 2 is not set
+error! location for node 3 is not set

@@ -1,0 +1,51 @@
+<application name="4840d2555bd5f0b995eb76723c6c9055">
+<page title="_first_">
+    <component type="PIR_Sensor" instanceId="26" x="250" y="50" w="120" h="100">
+        <link fromProperty="current_value" toInstanceId="29" toProperty="input1"/>
+        <location requirement="/WuKong/Bedroom/Center#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty current_value="" refresh_rate=""  />
+		<monitorProperty />
+    </component>
+    <component type="Slider" instanceId="27" x="255" y="162" w="120" h="100">
+        <link fromProperty="output" toInstanceId="30" toProperty="threshold"/>
+        <location requirement="/WuKong/Bedroom/Center#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty low_value="" high_value="" output="" refresh_rate=""  />
+		<monitorProperty />
+    </component>
+    <component type="Light_Sensor" instanceId="28" x="256" y="273" w="120" h="100">
+        <link fromProperty="current_value" toInstanceId="30" toProperty="value"/>
+        <location requirement="/WuKong/Bedroom/Center#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty current_value="" refresh_rate="2000"  />
+		<monitorProperty />
+    </component>
+    <component type="And_Gate" instanceId="29" x="623" y="140" w="120" h="100">
+        <link fromProperty="output" toInstanceId="31" toProperty="on_off"/>
+        <location requirement="/WuKong/Bedroom/Center#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty output=""  />
+		<monitorProperty />
+    </component>
+    <component type="Threshold" instanceId="30" x="443" y="211" w="120" h="100">
+        <link fromProperty="output" toInstanceId="29" toProperty="input2"/>
+        <location requirement="/WuKong/Bedroom/Center#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty operator="" threshold="" value="" output=""  />
+		<monitorProperty />
+    </component>
+    <component type="Light_Actuator" instanceId="31" x="789" y="142" w="120" h="100">
+        <location requirement="/WuKong/Bedroom/Left#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty on_off=""  />
+		<monitorProperty />
+    </component>
+</page>
+</application>

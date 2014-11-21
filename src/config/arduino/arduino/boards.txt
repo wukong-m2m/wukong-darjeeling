@@ -1,0 +1,72 @@
+# See: http://code.google.com/p/arduino/wiki/Platforms
+
+menu.cpu=Processor
+
+##############################################################
+
+mega.name=Arduino Mega or Mega 2560
+
+mega.vid.0=0x2341
+mega.pid.0=0x0010
+mega.vid.1=0x2341
+mega.pid.1=0x0042
+
+mega.upload.tool=avrdude
+mega.upload.maximum_data_size=8192
+
+mega.bootloader.tool=avrdude
+mega.bootloader.low_fuses=0xFF
+mega.bootloader.unlock_bits=0x3F
+mega.bootloader.lock_bits=0x0F
+
+mega.build.f_cpu=16000000L
+mega.build.core=arduino
+mega.build.variant=mega
+# default board  may be overridden by the cpu menu
+mega.build.board=AVR_MEGA2560
+
+## Arduino Mega w/ ATmega2560
+## -------------------------
+mega.menu.cpu.atmega2560=ATmega2560 (Mega 2560)
+
+mega.menu.cpu.atmega2560.upload.protocol=wiring
+mega.menu.cpu.atmega2560.upload.maximum_size=258048
+mega.menu.cpu.atmega2560.upload.speed=115200
+
+mega.menu.cpu.atmega2560.bootloader.high_fuses=0xD8
+mega.menu.cpu.atmega2560.bootloader.extended_fuses=0xFD
+mega.menu.cpu.atmega2560.bootloader.file=stk500v2/stk500boot_v2_mega2560.hex
+
+mega.menu.cpu.atmega2560.build.mcu=atmega2560
+mega.menu.cpu.atmega2560.build.board=AVR_MEGA2560
+
+##############################################################
+
+wudevice.name=WuDevice(NanoKong with VM)
+
+wudevice.vid.0=0x2341
+wudevice.pid.0=0x003f
+wudevice.vid.1=0x2341
+wudevice.pid.1=0x0044
+
+wudevice.upload.tool=avrdude
+wudevice.upload.protocol=wiring
+wudevice.upload.maximum_size=258048
+wudevice.upload.maximum_data_size=8192
+wudevice.upload.speed=115200
+
+wudevice.bootloader.tool=avrdude
+wudevice.bootloader.low_fuses=0xFF
+wudevice.bootloader.high_fuses=0xD8
+wudevice.bootloader.extended_fuses=0xFD
+wudevice.bootloader.file=stk500v2/stk500boot_v2_mega2560.hex
+wudevice.bootloader.unlock_bits=0x3F
+wudevice.bootloader.lock_bits=0x0F
+
+wudevice.build.mcu=atmega2560
+wudevice.build.f_cpu=16000000L
+wudevice.build.board=wukong
+wudevice.build.core=arduino
+wudevice.build.variant=mega
+
+
