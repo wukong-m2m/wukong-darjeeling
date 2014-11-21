@@ -13,7 +13,7 @@
 #include "wkpf_wuclasses.h"
 #include "wkpf_wuobjects.h"
 
-#define TOKEN_NO_COMPONENT 65535
+#define TOKEN_NO_COMPONENT 32767
 
 dj_di_pointer wkpf_links_store = 0;
 dj_di_pointer wkpf_component_map_store = 0;
@@ -135,7 +135,7 @@ uint8_t wkpf_update_token_table (uint16_t* component_ids, int length, uint16_t s
     //remove old locks
     DEBUG_LOG(DBG_RELINK, "update token table\n");
     for (int i = 0; i < WKPF_MAX_NUM_OF_TOKENS; i++) {
-        if (WKPF_LINK_SRC_COMPONENT_ID(wkpf_token_setter_link[i]) == src_component && WKPF_LINK_DEST_COMPONENT_ID(wkpf_token_setter_link[i]) == dest_component) {    //token from the same link
+        if (wkpf_token_setter_link[i] != TOKEN_NO_COMPONENT && WKPF_LINK_SRC_COMPONENT_ID(wkpf_token_setter_link[i]) == src_component && WKPF_LINK_DEST_COMPONENT_ID(wkpf_token_setter_link[i]) == dest_component) {    //token from the same link
             bool found_match = false;
             for (int j = 0; j < length; j++) {
                 if (component_ids[j] == wkpf_token_id[i]) {

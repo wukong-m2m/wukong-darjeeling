@@ -14,7 +14,7 @@
 #include "jlib_base.h"
 
 
-static dj_object *panicExceptionObject = nullref;
+static dj_object *panicExceptionObject = (dj_object *)nullref;
 
 static inline void vm_mem_updateManagedReference(dj_vm * vm, heap_chunk *chunk)
 {
