@@ -12,9 +12,10 @@ class TestPropagate(unittest.TestCase):
 
     def test_basic_propagate(self):        
         nodes_info = self.test.discovery()
-        self.test.loadApplication("applications/9d07e0e08af7f96cf45be0112b9ccfbe") 
+        self.test.loadApplication("applications/three_components_in_one_device") 
     	self.test.mapping(nodes_info)
     	self.test.deploy_with_discovery()
+        time.sleep(10)
 
         slider_node_id = 2
         slider_port = 2
@@ -47,10 +48,11 @@ class TestPropagate(unittest.TestCase):
 
     def test_strength_propagate(self):        
         nodes_info = self.test.discovery()
-        self.test.loadApplication("applications/9d07e0e08af7f96cf45be0112b9ccfbe") 
+        self.test.loadApplication("applications/three_components_in_one_device") 
     	self.test.mapping(nodes_info)
     	self.test.deploy_with_discovery()
-
+        time.sleep(10)       
+ 
         slider_node_id = 2
         slider_port = 2
         slider_wuclass_id = 15
@@ -77,10 +79,18 @@ class TestPropagate(unittest.TestCase):
             self.assertEqual(res, ans)
 
     def test_basic_external_propagate(self):
+        time.sleep(1)
+        self.test.setLocation(2, "/WuKong/binary")
+        self.test.setLocation(3, "/WuKong/slider")
+        self.test.setLocation(4, "/WuKong/sound")
+        print (2, self.test.getLocation(2))
+        print (3, self.test.getLocation(3))
+        print (4, self.test.getLocation(4))
         nodes_info = self.test.discovery()
-        self.test.loadApplication("applications/1d4b34c75f6feae66e45a9504b3ab8c6") 
+        self.test.loadApplication("applications/three_components_in_three_devices") 
     	self.test.mapping(nodes_info)
     	self.test.deploy_with_discovery()
+        time.sleep(10)
 
         slider_node_id = 3
         slider_port = 2
@@ -103,22 +113,31 @@ class TestPropagate(unittest.TestCase):
         
 	ans = 1
 	self.test.setProperty(binary_sensor_node_id, binary_sensor_port, binary_sensor_wuclass_id, binary_property_number, binary_datatype, ans)
-	time.sleep(SLEEP_SECS)
-        res = self.test.getProperty(sound_node_id, sound_port, sound_wuclass_id, sound_property_number)
-        self.assertEqual(res, ans)
+        for loop in range(0,10):
+            time.sleep(0.1)
+            res = self.test.getProperty(sound_node_id, sound_port, sound_wuclass_id, sound_property_number)
+            if res == (ans == 1):
+                break
+        self.assertNotEqual(loop, 10)       
 
 	ans = 0
 	self.test.setProperty(binary_sensor_node_id, binary_sensor_port, binary_sensor_wuclass_id, binary_property_number, binary_datatype, ans)
-	time.sleep(SLEEP_SECS)
-	res = self.test.getProperty(sound_node_id, sound_port, sound_wuclass_id, sound_property_number)
-        self.assertEqual(res, ans)
-
+        for loop in range(0,10):
+            time.sleep(0.1)
+            res = self.test.getProperty(sound_node_id, sound_port, sound_wuclass_id, sound_property_number)
+            if res == (ans == 0):
+                break
+        self.assertNotEqual(loop, 10)  
 
     def test_strength_external_propagate(self):
+        self.test.setLocation(3, "/WuKong/slider")
+        self.test.setLocation(2, "/WuKong/binary")
+        self.test.setLocation(4, "/WuKong/sound")
         nodes_info = self.test.discovery()
-        self.test.loadApplication("applications/1d4b34c75f6feae66e45a9504b3ab8c6") 
+        self.test.loadApplication("applications/three_components_in_three_devices") 
     	self.test.mapping(nodes_info)
     	self.test.deploy_with_discovery()
+        time.sleep(10) 
 
         slider_node_id = 3
         slider_port = 2
@@ -141,10 +160,14 @@ class TestPropagate(unittest.TestCase):
         
 	for i in xrange(TEST_PROPAGATE_STRENGTH_NUMBER):
             ans = random.randint(0, 1)
+            print "\033[44m setProperty to %d\033[m" % ans
             self.test.setProperty(binary_sensor_node_id, binary_sensor_port, binary_sensor_wuclass_id, binary_property_number, binary_datatype, ans)
-	    time.sleep(SLEEP_SECS)
-            res = self.test.getProperty(sound_node_id, sound_port, sound_wuclass_id, sound_property_number)
-            self.assertEqual(res, ans)
+            for loop in range(0,10):
+                time.sleep(0.1)
+                res = self.test.getProperty(sound_node_id, sound_port, sound_wuclass_id, sound_property_number)
+                if res == (ans == 1):
+                    break
+            self.assertNotEqual(loop, 10)
 
 
 if __name__ == '__main__':

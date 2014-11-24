@@ -39,10 +39,10 @@ ALLOW_MASTER_ALWAYS_JOINABLE = config.get('ALLOW_MASTER_ALWAYS_JOINABLE', False)
 DEVICE1 = '/dev/ttyUSB0'
 DEVICE2 = '/dev/ttyUSB1'
 DEVICE3 = '/dev/ttyUSB2'
-VM1 = 'arduino/hex_file/dollhouse.cpp.hex'
-TEST_DEVICES = [DEVICE1, DEVICE2, DEVICE2]
+VM1 = 'arduino/hex_file/wukong_test2_no_watchdog.cpp.hex'
+TEST_DEVICES = [DEVICE1, DEVICE2, DEVICE3]
 HEXFILES = [VM1, VM1, VM1]
-APP_PATH = "applications/bedroom/"
+APP_PATH = "applications/three_components_in_one_device/"
 
 TEST_LOCATION_STRENGTH_NUMBER = 100
 TEST_LOCATION_ERROR_LENGTH = 50
