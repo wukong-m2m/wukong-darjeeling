@@ -65,7 +65,7 @@ class ApplicationManager:
     def deploy_with_discovery(wuapplication, *args):
       #node_ids = [info.id for info in getComm().getActiveNodeInfos(force=False)]
       node_ids = set([x.wunode.id for component in wuapplication.changesets.components for x in component.instances])
-      self.deploy(node_ids,*args)
+      return self.deploy(node_ids,*args)
 
     @staticmethod
     def deploy(wuapplication, destination_ids, platforms):

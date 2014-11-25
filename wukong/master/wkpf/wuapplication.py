@@ -317,7 +317,8 @@ class WuApplication:
   def deploy_with_discovery(self,*args):
     #node_ids = [info.id for info in getComm().getActiveNodeInfos(force=False)]
     node_ids = set([x.wunode.id for component in self.changesets.components for x in component.instances])
-    self.deploy(node_ids,*args)
+    res = self.deploy(node_ids,*args)
+    return res
 
   def deploy(self, destination_ids, platforms):
     master_busy()

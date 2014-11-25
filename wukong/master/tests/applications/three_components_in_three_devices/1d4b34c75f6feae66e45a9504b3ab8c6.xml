@@ -8,7 +8,7 @@
         <signalProperty low_value="" high_value="" output="" refresh_rate=""  />
 		<monitorProperty />
     </component>
-    <component type="Binary_Sensor" instanceId="36" x="255" y="111" w="120" h="100">
+    <component type="PIR_Sensor" instanceId="36" x="255" y="111" w="120" h="100">
         <link fromProperty="current_value" toInstanceId="34" toProperty="on_off"/>
         <location requirement="/WuKong/binary#" />
         <group_size requirement="1" />

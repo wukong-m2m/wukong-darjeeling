@@ -14,7 +14,7 @@ class TestProperty(unittest.TestCase):
     def test_basic_propertyAPI(self):
         node_id = self.test.devs[0].node_id
         port = 3
-        wuclassID = 204
+        wuclassID = 2005
         property_number = 1
         datatype = 'short' # boolean, short, refresh_rate
         
@@ -30,7 +30,7 @@ class TestProperty(unittest.TestCase):
         for i in xrange(TEST_PROPERTY_STRENGTH_NUMBER):
             node_id = self.test.devs[0].node_id
             port = 3
-            wuclassID = 204
+            wuclassID = 2005
             property_number = 1
             datatype = 'short'
             

@@ -1,6 +1,6 @@
 <application name="9d07e0e08af7f96cf45be0112b9ccfbe">
 <page title="_first_">
-    <component type="Binary_Sensor" instanceId="35" x="250" y="50" w="120" h="100">
+    <component type="PIR_Sensor" instanceId="35" x="250" y="50" w="120" h="100">
         <link fromProperty="current_value" toInstanceId="34" toProperty="on_off"/>
         <group_size requirement="1" />
         <reaction_time requirement="1" />
