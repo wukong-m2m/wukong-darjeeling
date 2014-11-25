@@ -368,22 +368,28 @@ class Communication:
 
       return wuobjects
 
-    # Only used by inspector
-    def getProperty(self, wuproperty):
+    def getProperty(self, id, port, wuclassid, property_number):
+    # def getProperty(self, wuproperty):
       print '[wkpfcomm] getProperty'
 
-      wuobject = wuproperty.wuobject
-      wuclass = wuobject.wuclassdef
-      wunode = wuobject.wunode
-      value = wuproperty.value
-      datatype = wuproperty.datatype
-      number = wuproperty.number
+      # wuobject = wuproperty.wuobject
+      # wuclass = wuobject.wuclassdef
+      # wunode = wuobject.wunode
+      # value = wuproperty.value
+      # datatype = wuproperty.datatype
+      # number = wuproperty.number
 
-      reply = self.agent.send(wunode.id,
+      # reply = self.zwave.send(wunode.id,
+      #         pynvc.WKPF_READ_PROPERTY,
+      #         [wuobject.port_number, wuclass.id/256,
+      #               wuclass.id%256, number],
+      #         [pynvc.WKPF_READ_PROPERTY_R, pynvc.WKPF_ERROR_R])
+      reply = self.agent.send(id,
               pynvc.WKPF_READ_PROPERTY,
-              [wuobject.port_number, wuclass.id/256,
-                    wuclass.id%256, number],
+              [port, wuclassid/256,
+                    wuclassid%256, property_number],
               [pynvc.WKPF_READ_PROPERTY_R, pynvc.WKPF_ERROR_R])
+
 
 
       if reply == None:
@@ -406,16 +412,17 @@ class Communication:
         value = None
       return (value, datatype, status)
 
-    def setProperty(self, wuproperty):
+    def setProperty(self, id, port, wuclassid, property_number, datatype, value):
+    # def setProperty(self, wuproperty):
       print '[wkpfcomm] setProperty'
       master_busy()
 
-      wuobject = wuproperty.wuobject
-      wuclassdef = wuobject.wuclassdef
-      wunode = wuobject.wunode
-      value = wuproperty.value
-      datatype = wuproperty.datatype
-      #number = wuproperty.wupropertydef.number
+      # wuobject = wuproperty.wuobject
+      # wuclassdef = wuobject.wuclassdef
+      # wunode = wuobject.wunode
+      # value = wuproperty.value
+      # datatype = wuproperty.datatype
+      # #number = wuproperty.wupropertydef.number
 
       if datatype == 'boolean':
         datatype = WKPF_PROPERTY_TYPE_BOOLEAN
@@ -427,15 +434,19 @@ class Communication:
         datatype = WKPF_PROPERTY_TYPE_REFRESH_RATE
 
       if datatype == WKPF_PROPERTY_TYPE_BOOLEAN:
-        payload=[wuobject.port_number, wuclassdef.id/256,
-        wuclassdef.id%256, number, datatype, 1 if value else 0]
+        payload=[port, wuclassid/256,
+        wuclassid%256, property_number, datatype, 1 if value else 0]
+        # payload=[wuobject.port_number, wuclassdef.id/256,
+        # wuclassdef.id%256, number, datatype, 1 if value else 0]
 
       elif datatype == WKPF_PROPERTY_TYPE_SHORT or datatype == WKPF_PROPERTY_TYPE_REFRESH_RATE:
-        payload=[wuobject.port_number, wuclassdef.id/256,
-        wuclassdef.id%256, number, datatype, value/256, value%256]
+        payload=[port, wuclassid/256,
+        wuclassid%256, property_number, datatype, value/256, value%256]
+        # payload=[wuobject.port_number, wuclassdef.id/256,
+        # wuclassdef.id%256, number, datatype, value/256, value%256]
 
-      reply = self.agent.send(wunode.id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])
-
+      reply = self.agent.send(id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])
+      # reply = self.zwave.send(wunode.id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])
       print '[wkpfcomm] getting reply from send command'
 
 
