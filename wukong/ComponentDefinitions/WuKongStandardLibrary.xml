@@ -135,6 +135,14 @@
         <property name="enable" access="readwrite" datatype="boolean" default="true"  />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="2000"  />
     </WuClass>
+    <WuClass name="Ir_Sensor" id="1010" virtual="false" type="hard">
+        <property name="current_value" access="readonly" datatype="short"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
+    </WuClass>
+    <WuClass name="Ultrasound_Sensor" id="1011" virtual="false" type="hard">
+        <property name="current_value" access="readonly" datatype="short"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
+    </WuClass>
 
     <!-- Actuators -->
     <WuClass name="Light_Actuator" id="2001" virtual="false" type="hard">
@@ -150,15 +158,11 @@
     <WuClass name="Fan" id="2003" virtual="false" type="hard">
         <property name="on_off" access="readwrite" datatype="boolean" default="false"/>
     </WuClass>
-    <WuClass name="Ir_Sensor" id="2004" virtual="false" type="hard">
-        <property name="current_value" access="readonly" datatype="short"  />
-        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
-    </WuClass>
-    <WuClass name="Ultrasound_Sensor" id="2005" virtual="false" type="hard">
-        <property name="current_value" access="readonly" datatype="short"  />
-        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
-    </WuClass>
-    <WuClass name="Buzzer" id="2006" virtual="false" type="hard">
+    <WuClass name="Buzzer" id="2004" virtual="false" type="hard">
         <property name="on_off" access="readwrite" datatype="boolean" default="false"/>
+    </WuClass>
+    <WuClass name="Sound" id="2005" virtual="false" type="soft">
+        <property name="on_off" access="readwrite" datatype="boolean"  />
+        <property name="freq" access="readwrite" datatype="short"  />
     </WuClass>
 </WuKong>
