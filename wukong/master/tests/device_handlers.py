@@ -81,7 +81,8 @@ class Galileo_NetworkServer(TestDevice):
 
     def download(self):
         os.system("ssh root@%s 'rm -rf /galileo'" % (self.ipaddress))
-        os.system("scp -r %s root@%s:/galileo" % (self.binary, self.ipaddress))
+        os.system("ssh root@%s 'mkdir /galileo'" % (self.ipaddress))
+        os.system("scp -r %s/darjeeling.elf %s/*.dja %s/install_service.sh %s/service root@%s:/galileo" % (self.binary, self.binary, self.binary, self.binary, self.ipaddress))
         local_networkserver_ip = socket.gethostbyname(socket.gethostname())
         os.system("ssh root@%s 'cd /galileo; ./install_service.sh \"-i %s    -s %s\"'" % (self.ipaddress, self.node_id, local_networkserver_ip))
 

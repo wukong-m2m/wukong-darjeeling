@@ -159,7 +159,7 @@ class WuTest:
 
 
 if __name__ == '__main__':
-    test = WuTest(False, True)
+    test = WuTest(True, True)
 
     # nodes_info = test.discovery()
 

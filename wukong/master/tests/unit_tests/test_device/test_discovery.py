@@ -11,15 +11,14 @@ class TestDiscovery(unittest.TestCase):
 
     def test_basic_discoveryAPI(self):
     	self.test.discovery()
-        res = self.test.countWuObjectByWuClassID(204)
+        res = self.test.countWuObjectByWuClassID(1003) # PIR
         self.assertEqual(res, 3)
 
-        res = self.test.countWuObjectByWuClassID(10)
+        res = self.test.countWuObjectByWuClassID(1006) # Slider
         self.assertEqual(res, 3)
 
-        res = self.test.countWuObjectByWuClassID(15)
+        res = self.test.countWuObjectByWuClassID(2005) # Sound
         self.assertEqual(res, 3)
-
 
 if __name__ == '__main__':
     unittest.main()
