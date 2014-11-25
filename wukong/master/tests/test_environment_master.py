@@ -2,7 +2,7 @@ import os, sys
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 from wkpf.models import *
 from wkpf.locationTree import *
-from wkpf.parser import *
+from wkpf.wuclasslibraryparser import *
 from configuration import *
 
 # these two will be generated
@@ -13,7 +13,7 @@ routing = {}
 print "this is test_env"
 if os.path.exists('standardlibrary.db'):
   os.remove('standardlibrary.db') 
-Parser.parseLibrary(COMPONENTXML_PATH) # parse standard library XML and load into db
+WuClassLibraryParser.read(COMPONENTXML_PATH) # parse standard library XML and load into db
 locs = [u"WuKong", u"WuKong", u"WuKong", u"WuKong"]
 locs = [u"/universal/CS_Building/3F/South_Corridor/Room336@(0,1,2)", u"/universal/CS_Building/3F/East_Corridor/Room318@(0,5,4)", u"/universal/CS_Building/3F/South_Corridor/Room336@(0,1,3)", u"/universal/CS_Building/3F/East_Corridor/Room318@(0,6,4)"]
 coords = [(0, 1, 2), (0, 5, 3), (0,1,3), (0, 6, 4)]

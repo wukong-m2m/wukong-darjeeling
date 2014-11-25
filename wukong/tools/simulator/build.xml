@@ -33,4 +33,12 @@
         	  jar="simulator.jar"
         	  fork="true"/>
     </target>
+
+    <target name="run-network-server-only" depends="jar">
+        <java dir="."
+              jar="simulator.jar"
+              fork="true">
+              <arg value="-network-server-only" />
+        </java>
+    </target>
 </project>

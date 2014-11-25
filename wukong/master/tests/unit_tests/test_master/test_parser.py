@@ -4,7 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 import unittest
 #import test_environment # this test is an exception, since test_environment
 #also uses parser
-from wkpf.parser import *
+from wkpf.wuclasslibraryparser import *
 
 if os.path.exists('standardlibrary.db'):
   os.remove('standardlibrary.db') 
@@ -28,7 +28,7 @@ class TestParser(unittest.TestCase):
     self.assertEqual(len(WuType.all()), 1)
 
   def test_parseLibraryXMLString2(self):
-    Parser.parseLibraryXMLString("""
+    WuClassLibraryParser.parseLibraryXMLString("""
     <WuKong>
         <WuClass name="Generic" id="0" virtual="false" type="hard">
             <property name="dummy" datatype="short" access="readonly" />

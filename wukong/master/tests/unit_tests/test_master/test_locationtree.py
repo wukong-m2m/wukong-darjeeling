@@ -3,7 +3,6 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 import unittest
 import test_environment
-from wkpf.parser import *
 
 class TestLocationTree(unittest.TestCase):
   def test_function(self):

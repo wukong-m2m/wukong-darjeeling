@@ -30,7 +30,7 @@
 
 bool radio_networkserver_connected = false;
 int radio_networkserver_sockfd;
-uint8_t radio_networkserver_receive_buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+3]; // 4 for local network overhead, 3 for wkcomm overhead
+uint8_t radio_networkserver_receive_buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+11]; // 8 for local network overhead, 3 for wkcomm overhead
 dj_hook radio_networkserver_shutdownHook;
 
 dj_time_t radio_networkserver_last_heartbeat = 0;
@@ -118,12 +118,15 @@ void radio_networkserver_poll(void) {
 	uint8_t length;
 	int retval = recv(radio_networkserver_sockfd, &length, 1, MSG_DONTWAIT);
 	if (retval > 0 && length > 0) {
-		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, 2, 0);
-		radio_networkserver_address_t src = radio_networkserver_receive_buffer[0] + 256*radio_networkserver_receive_buffer[1];
-		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, 2, 0); // skip dest
-		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, length-5, 0); // skip dest
-		DEBUG_LOG(DBG_WKCOMM, "Message received from %d, length %d\n", src, length-5);
-		routing_handle_local_message(src, radio_networkserver_receive_buffer, length-5);
+		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, 4, 0);
+		radio_networkserver_address_t src = radio_networkserver_receive_buffer[0]
+											+ (((uint32_t)radio_networkserver_receive_buffer[1]) << 8)
+											+ (((uint32_t)radio_networkserver_receive_buffer[2]) << 16)
+											+ (((uint32_t)radio_networkserver_receive_buffer[3]) << 24);
+		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, 4, 0); // skip dest
+		recv(radio_networkserver_sockfd, radio_networkserver_receive_buffer, length-9, 0);
+		DEBUG_LOG(DBG_WKCOMM, "Message received from %d, length %d\n", src, length-9);
+		routing_handle_local_message(src, radio_networkserver_receive_buffer, length-9);
 	} else if (retval == 0) {
 		fprintf(stderr, "Connection to network server lost.\n");
 		close(radio_networkserver_sockfd);
@@ -135,14 +138,18 @@ uint8_t radio_networkserver_send(radio_networkserver_address_t dest, uint8_t *pa
 	if (!radio_networkserver_connected)
 		return -1;
 
-	uint8_t send_buffer[length+5];
-	send_buffer[0] = 5+length;
+	uint8_t send_buffer[length+9];
+	send_buffer[0] = 9+length;
 	send_buffer[1] = radio_networkserver_get_node_id() & 0xFF;
 	send_buffer[2] = (radio_networkserver_get_node_id() >> 8) & 0xFF;
-	send_buffer[3] = dest & 0xFF;
-	send_buffer[4] = (dest >> 8) & 0xFF;
-	memcpy(send_buffer+5, payload, length);
-    int retval = write(radio_networkserver_sockfd, send_buffer, length+5);
+	send_buffer[3] = (radio_networkserver_get_node_id() >> 16) & 0xFF;
+	send_buffer[4] = (radio_networkserver_get_node_id() >> 24) & 0xFF;
+	send_buffer[5] = dest & 0xFF;
+	send_buffer[6] = (dest >> 8) & 0xFF;
+	send_buffer[7] = (dest >> 16) & 0xFF;
+	send_buffer[8] = (dest >> 24) & 0xFF;
+	memcpy(send_buffer+9, payload, length);
+    int retval = write(radio_networkserver_sockfd, send_buffer, length+9);
 	DEBUG_LOG(DBG_WKCOMM, "Message sent to %d, length %d, retval %d\n", dest, length, retval);
 	if (retval != -1)
 		return 0;

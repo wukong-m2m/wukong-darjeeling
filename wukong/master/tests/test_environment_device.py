@@ -4,7 +4,6 @@ import os,sys,time
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 from wkpf.model.models import *
 from wkpf.model.locationTree import *
-from wkpf.parser import *
 from configuration import *
 from wkpf.wkpfcomm import *
 from wkpf.wuclasslibraryparser import *
@@ -48,6 +47,7 @@ class WuTest:
         WuClassLibraryParser.read(COMPONENTXML_PATH)
 
         ## set up communication gateway
+        self.comm = getComm()
 
         ## set node_ids. This assumes all zwave nodes will be numbered from 2 up. Network server nodes use the last byte of their IP as node_id
         next_zwave_id = 2
@@ -61,11 +61,6 @@ class WuTest:
 
     def pair_devices_gateway(self):
         self.constrollerReset()
-        self.comm = getComm()
-	gevent.sleep(4)
-	os.system("rm PAUSE_GATEWAY")
-	print "%"*100
-	gevent.sleep(10)
 
         for dev in self.devs:
             self.stop()

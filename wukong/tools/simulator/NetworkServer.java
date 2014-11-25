@@ -214,8 +214,8 @@ public class NetworkServer extends Thread
 					keepRunning = false;
 				} else if (length > 0) {
 					// Length byte received.
-					if (length < 5) {
-						System.out.println("Message with length " + length + " ignored. (length should be >= 5)");
+					if (length < 9) {
+						System.out.println("Message with length " + length + " ignored. (length should be >= 9)");
 					} else {
 						// Process the rest of the message
 						int [] message = new int[length];
