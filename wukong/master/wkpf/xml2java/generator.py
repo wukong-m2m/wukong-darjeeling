@@ -177,6 +177,8 @@ class Generator:
                 endpoint_element.attrib['node'] = str(endpoint.wunode.id)
                 endpoint_element.attrib['port'] = str(endpoint.port_number)
         for component in changesets.components:
+            if len(component.instances) == 0:
+                raise IndexError('No instances for component of type ' + component.type)
             wuobject = component.instances[0]
             for property in generateProperties(wuobject.properties.values(), component):
                 if (Generator.isLinkDestination(component.deployid, property.id, changesets)):
