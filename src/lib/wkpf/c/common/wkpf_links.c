@@ -600,6 +600,7 @@ uint8_t wkpf_update_link_in_flash(uint8_t* orig_link, uint8_t* new_link) {
     }
     uint16_t offset = 2;
     int index = 0;
+    index++; index--; // Just to keep the compiler happy
     uint16_t new_src_component, new_dest_component;
     uint8_t new_src_property, new_dest_property;
     new_src_component =  ((uint16_t)(*new_link)<<8)+*(new_link + 1);
