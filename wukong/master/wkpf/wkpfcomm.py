@@ -36,7 +36,7 @@ class Communication:
           raise Exception('simulation', 'Set simulation in master.cfg to false if you do not want simulated discovery')
         if WKPFCOMM_AGENT == "GATEWAY":
           self.agent = getGatewayAgent()
-        if WKPFCOMM_AGENT == "NETWORKSERVER":
+        elif WKPFCOMM_AGENT == "NETWORKSERVER":
           self.agent = getNetworkServerAgent()
         else:
           self.agent = getZwaveAgent()
