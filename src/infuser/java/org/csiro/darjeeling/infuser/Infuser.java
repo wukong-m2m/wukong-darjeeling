@@ -70,7 +70,7 @@ import org.w3c.dom.Document;
 public class Infuser
 {
 	// Version of the infusion format. VM should check if it matches the VM's format
-	public static int infusionFormatVersion = 1;
+	public static int infusionFormatVersion = 3; // 1: original, 2: RTC, 3: 32 bit addresses
 
 	// never start with version 1.0.0 :-)
 	public static final String version = "1.1.12";

@@ -26,7 +26,7 @@
 #include "program_mem.h"
 
 
-#define INFUSION_FORMAT_VERSION 1
+#define INFUSION_FORMAT_VERSION 3 // 1: original, 2: RTC, 3: 32 bit addresses
 
 enum ElementType
 {
