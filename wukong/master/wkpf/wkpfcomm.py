@@ -80,8 +80,7 @@ class Communication:
         print '[wkpfcomm] getting all nodes from node discovery'
         WuNode.clearNodes()
         self.all_node_infos = [self.getNodeInfo(int(destination)) for destination in self.getNodeIds()]
-
-        WuNode.addVirtualNodes(virtual_nodes)
+        self.all_node_infos.append(globals.virtual_nodes.items())
         WuNode.saveNodes()
       return self.all_node_infos
 
