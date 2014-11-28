@@ -16,16 +16,16 @@ import serial
 
 # For Galileo/NetworkServer
 TEST_DEVICES = [
-    Galileo_NetworkServer(binary='../../../src/config/galileo-testframework', ipaddress='192.168.4.111'),
-    Galileo_NetworkServer(binary='../../../src/config/galileo-testframework', ipaddress='192.168.4.116'),
-    Galileo_NetworkServer(binary='../../../src/config/galileo-testframework', ipaddress='192.168.4.117')
+    Galileo_NetworkServer(binary='binaries/galileo', ipaddress='192.168.4.111'),
+    Galileo_NetworkServer(binary='binaries/galileo', ipaddress='192.168.4.116'),
+    Galileo_NetworkServer(binary='binaries/galileo', ipaddress='192.168.4.117')
 ]
 
 # For WuDevice/ZWave
 # TEST_DEVICES = [
-#     WuDevice_Zwave(binary='arduino/wukong_test2_no_watchdog.cpp.hex', usbport='/dev/ttyUSB0'),
-#     WuDevice_Zwave(binary='arduino/wukong_test2_no_watchdog.cpp.hex', usbport='/dev/ttyUSB1'),
-#     WuDevice_Zwave(binary='arduino/wukong_test2_no_watchdog.cpp.hex', usbport='/dev/ttyUSB2')
+#     WuDevice_Zwave(binary='binaries/arduino/wukong_test2_no_watchdog.cpp.hex', usbport='/dev/ttyUSB0'),
+#     WuDevice_Zwave(binary='binaries/arduino/wukong_test2_no_watchdog.cpp.hex', usbport='/dev/ttyUSB1'),
+#     WuDevice_Zwave(binary='binaries/arduino/wukong_test2_no_watchdog.cpp.hex', usbport='/dev/ttyUSB2')
 # ]
 
 
