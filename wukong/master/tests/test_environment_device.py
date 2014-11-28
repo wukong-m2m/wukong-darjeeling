@@ -16,9 +16,9 @@ import serial
 
 # For Galileo/NetworkServer
 TEST_DEVICES = [
-    Galileo_NetworkServer(binary='../../../src/config/galileo', ipaddress='192.168.4.111'),
-    Galileo_NetworkServer(binary='../../../src/config/galileo', ipaddress='192.168.4.116'),
-    Galileo_NetworkServer(binary='../../../src/config/galileo', ipaddress='192.168.4.117')
+    Galileo_NetworkServer(binary='../../../src/config/galileo-testframework', ipaddress='192.168.4.111'),
+    Galileo_NetworkServer(binary='../../../src/config/galileo-testframework', ipaddress='192.168.4.116'),
+    Galileo_NetworkServer(binary='../../../src/config/galileo-testframework', ipaddress='192.168.4.117')
 ]
 
 # For WuDevice/ZWave

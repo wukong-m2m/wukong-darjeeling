@@ -1,0 +1,11 @@
+<WuKong>
+    <WuClass name="PIR_Sensor" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Slider" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Sound" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+</WuKong>
