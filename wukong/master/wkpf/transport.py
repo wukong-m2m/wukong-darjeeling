@@ -547,7 +547,7 @@ class NetworkServerAgent(TransportAgent):
                 if len(defer.allowed_replies) > 0:
                     print "[transport] handler: appending defer", defer, "to queue"
                     getAgent().append(defer)
-
+                    
                 while retries > 0:
                     try:
                         destination = defer.message.destination
@@ -564,10 +564,6 @@ class NetworkServerAgent(TransportAgent):
                         buffer.append((destination >> 24) & 0xff)
                         buffer.append(command)
                         buffer.extend(payload)
-                        print "networkserver send"
-                        print source
-                        print destination
-                        print buffer
                         self._socket.send(buffer)
                         break
                     except Exception as e:
