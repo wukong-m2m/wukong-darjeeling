@@ -1,5 +1,6 @@
 import os, sys
 import unittest
+import time
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
 from test_environment_device import WuTest
 
@@ -14,13 +15,7 @@ class TestDeploy(unittest.TestCase):
     	self.test.mapping(nodes_info)
     	res = self.test.deploy_with_discovery()
         self.assertTrue(res)
-
-    def test_application2(self):        
-        nodes_info = self.test.discovery()
-        self.test.loadApplication("applications/three_components_in_one_device") 
-        self.test.mapping(nodes_info)
-        res = self.test.deploy_with_discovery()
-        self.assertTrue(res)
+        time.sleep(1) # Allow the nodes some time to reboot
 
     def test_super_application(self):
         for i in xrange(10):
@@ -29,6 +24,7 @@ class TestDeploy(unittest.TestCase):
             self.test.mapping(nodes_info)
             res = self.test.deploy_with_discovery()
             self.assertTrue(res)
+            time.sleep(1) # Allow the nodes some time to reboot
 
 if __name__ == '__main__':
     unittest.main()

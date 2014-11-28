@@ -17,7 +17,7 @@ class WuSystem:
     def getVirtualNodes(cls):
         # 20141128 Refactored globals.virtual_nodes and initializeVirtualNodes to a method that just returns
         # the same dictionary of nodes each time.
-        if cls.__virtual_nodes == None:
+        if cls.__virtual_nodes == None or True:
             cls.__virtual_nodes = {}
             # add the virtual wunode just used to represent master which is the destination of monitoring link
             wuclasses = {}
