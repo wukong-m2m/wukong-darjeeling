@@ -38,18 +38,6 @@ class SystemManager:
   def set_active_application_index(new_index):
     self.active_ind = new_index
 
-  # add the virtual wunode just used to represent master which is the destination of monitoring link
-  def initializeVirtualNode():
-      # Add the server as a virtual Wudevice for monitoring
-      wuclasses = {}
-      wuobjects = {}
-
-      # 1 is by default the network id of the controller
-      node = WuNode(1, '/' + LOCATION_ROOT, wuclasses, wuobjects, 'virtualdevice')
-      wuclassdef = WuObjectFactory.wuclassdefsbyid[44]
-      wuobject = WuObjectFactory.createWuObject(wuclassdef, node, 1, False)
-      wkpf.globals.virtual_nodes[1] = node
-
   # using cloned nodes
   def rebuildTree(nodes):
     nodes_clone = copy.deepcopy(nodes)

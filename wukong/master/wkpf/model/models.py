@@ -12,7 +12,23 @@ import logging
 
 # It is a global view of the overall system, like devices, Wuclasses, WuObjects, Energy Consumptions on device.
 class WuSystem:
-    pass
+    __virtual_nodes = None
+    @classmethod
+    def getVirtualNodes(cls):
+        # 20141128 Refactored globals.virtual_nodes and initializeVirtualNodes to a method that just returns
+        # the same dictionary of nodes each time.
+        if cls.__virtual_nodes == None:
+            cls.__virtual_nodes = {}
+            # add the virtual wunode just used to represent master which is the destination of monitoring link
+            wuclasses = {}
+            wuobjects = {}
+
+            # 1 is by default the network id of the controller
+            node = WuNode(1, '/' + LOCATION_ROOT, wuclasses, wuobjects, 'virtualdevice')
+            wuclassdef = WuObjectFactory.wuclassdefsbyid[44]
+            wuobject = WuObjectFactory.createWuObject(wuclassdef, node, 1, False)
+            cls.__virtual_nodes[1] = node
+        return cls.__virtual_nodes
 
 # Copy from original WuApplication, split the deployment functionality out into ApplicationManager.
 # At the same time, add some data fields for energy aware mapping
@@ -530,7 +546,7 @@ class WuNode:
              #                   wuobject.properties[prop_name] = prop_value
 
       #add the virtual nodes
-      cls.node_dict = dict(cls.node_dict.items() + globals.virtual_nodes.items())
+      cls.node_dict = dict(cls.node_dict.items() + WuSystem.getVirtualNodes().items())
       return cls.node_dict.values()                              
       
   def isResponding(self):

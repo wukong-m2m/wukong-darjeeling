@@ -87,7 +87,7 @@ class WuTest:
 
     def deploy_with_discovery(self):
         if self.application is not None:
-            self.application.deploy_with_discovery(['arduino'])
+            return self.application.deploy_with_discovery(['arduino'])
 
     def add(self):
         self.comm.onAddMode()

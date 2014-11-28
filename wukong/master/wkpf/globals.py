@@ -4,7 +4,6 @@ applications = []
 location_tree = None
 mongoDBClient = None
 wukong_status = []
-virtual_nodes = {}
 connected = (False if SIMULATION == "true" else True)  # whether zwave gateway is connected
 
 MASTER_BUSY = False
@@ -51,3 +50,4 @@ def get_wukong_status():
 def set_wukong_status(status):
   global wukong_status
   wukong_status.append(status)
+
