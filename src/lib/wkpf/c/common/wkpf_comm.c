@@ -458,7 +458,7 @@ void wkpf_comm_handle_message(void *data) {
 				response_cmd = WKPF_COMM_CMD_READ_PROPERTY_R;        
 			} else
 				retval = WKPF_ERR_SHOULDNT_HAPPEN;
-				if (retval != WKPF_OK) {
+			if (retval != WKPF_OK) {
 				payload [0] = retval;
 				response_cmd = WKPF_COMM_CMD_ERROR_R;
 				response_size = 1;
@@ -474,24 +474,28 @@ void wkpf_comm_handle_message(void *data) {
 			// link_entry link;
 			// wkpf_get_link_by_dest_property_and_dest_wuclass_id(property_number, wuclass_id, &link);
 
-			//for each type, we need to check if the message is valid or not by checking the lock within it,if locked. do not set property
-			int piggyback_message_offset = -1;
-			if (payload[4] == WKPF_PROPERTY_TYPE_SHORT){
-				piggyback_message_offset  =7;
-			} else if (payload[4] == WKPF_PROPERTY_TYPE_BOOLEAN) {
-				piggyback_message_offset = 6;
-			} else if (payload[4] == WKPF_PROPERTY_TYPE_REFRESH_RATE) {
-				piggyback_message_offset = 7;
-			}
-			uint8_t retval = wkpf_update_token_table_with_piggyback(payload + piggyback_message_offset);
-			uint16_t dest_component_id = (uint16_t)payload[piggyback_message_offset+2];
-			dest_component_id = (uint16_t)(dest_component_id << 8) + (uint16_t)payload[piggyback_message_offset+3];
-			if (retval != WKPF_OK) {
-				DEBUG_LOG(true, "WKPF Error: %u, token unable to be updated, abort write property\n", retval); 
-				payload[0] = retval;
-				response_cmd = WKPF_COMM_CMD_ERROR_R;
-				response_size = 1;
-				break;
+			// Only do this when the piggyback information is present
+			uint16_t dest_component_id = 0;
+			if (msg->length > 7) {
+				//for each type, we need to check if the message is valid or not by checking the lock within it,if locked. do not set property
+				int piggyback_message_offset = -1;
+				if (payload[4] == WKPF_PROPERTY_TYPE_SHORT){
+					piggyback_message_offset  =7;
+				} else if (payload[4] == WKPF_PROPERTY_TYPE_BOOLEAN) {
+					piggyback_message_offset = 6;
+				} else if (payload[4] == WKPF_PROPERTY_TYPE_REFRESH_RATE) {
+					piggyback_message_offset = 7;
+				}
+				uint8_t retval = wkpf_update_token_table_with_piggyback(payload + piggyback_message_offset);
+				dest_component_id = (uint16_t)payload[piggyback_message_offset+2];
+				dest_component_id = (uint16_t)(dest_component_id << 8) + (uint16_t)payload[piggyback_message_offset+3];
+				if (retval != WKPF_OK) {
+					DEBUG_LOG(true, "WKPF Error: %u, token unable to be updated, abort write property\n", retval); 
+					payload[0] = retval;
+					response_cmd = WKPF_COMM_CMD_ERROR_R;
+					response_size = 1;
+					break;
+				}
 			}
 			retval = wkpf_get_wuobject_by_port(port_number, &wuobject);
 			if (retval != WKPF_OK) {
