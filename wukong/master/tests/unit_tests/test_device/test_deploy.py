@@ -10,6 +10,9 @@ class TestDeploy(unittest.TestCase):
         self.test = WuTest(False, False)
 
     def test_application(self):        
+        self.test.setLocation(self.test.devs[0].node_id, "/WuKong/node1")
+        self.test.setLocation(self.test.devs[1].node_id, "/WuKong/node2")
+        self.test.setLocation(self.test.devs[2].node_id, "/WuKong/node3")
         nodes_info = self.test.discovery()
         self.test.loadApplication("applications/three_components_in_one_device") 
     	self.test.mapping(nodes_info)
@@ -19,6 +22,9 @@ class TestDeploy(unittest.TestCase):
 
     def test_super_application(self):
         for i in xrange(10):
+            self.test.setLocation(self.test.devs[0].node_id, "/WuKong/node1")
+            self.test.setLocation(self.test.devs[1].node_id, "/WuKong/node2")
+            self.test.setLocation(self.test.devs[2].node_id, "/WuKong/node3")
             nodes_info = self.test.discovery()
             self.test.loadApplication("applications/three_components_in_one_device") 
             self.test.mapping(nodes_info)

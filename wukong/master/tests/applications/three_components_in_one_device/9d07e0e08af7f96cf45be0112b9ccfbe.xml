@@ -1,20 +1,23 @@
 <application name="9d07e0e08af7f96cf45be0112b9ccfbe">
 <page title="_first_">
-    <component type="PIR_Sensor" instanceId="35" x="250" y="50" w="120" h="100">
+    <component type="Binary_TestSensor" instanceId="35" x="250" y="50" w="120" h="100">
         <link fromProperty="current_value" toInstanceId="34" toProperty="on_off"/>
+        <location requirement="/WuKong/node1" />
         <group_size requirement="1" />
         <reaction_time requirement="1" />
         <signalProperty  />
 		<monitorProperty />
     </component>
-    <component type="Slider" instanceId="36" x="254" y="184" w="120" h="100">
-        <link fromProperty="output" toInstanceId="34" toProperty="freq"/>
+    <component type="Integer_TestSensor" instanceId="36" x="254" y="184" w="120" h="100">
+        <link fromProperty="current_value" toInstanceId="34" toProperty="freq"/>
+        <location requirement="/WuKong/node1" />
         <group_size requirement="1" />
         <reaction_time requirement="1" />
         <signalProperty  />
 		<monitorProperty />
     </component>
     <component type="Sound" instanceId="34" x="446" y="113" w="120" h="100">
+        <location requirement="/WuKong/node1" />
         <group_size requirement="1" />
         <reaction_time requirement="1" />
         <signalProperty  />

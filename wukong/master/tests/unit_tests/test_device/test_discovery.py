@@ -11,10 +11,10 @@ class TestDiscovery(unittest.TestCase):
 
     def test_basic_discoveryAPI(self):
     	self.test.discovery()
-        res = self.test.countWuObjectByWuClassID(1003) # PIR
+        res = self.test.countWuObjectByWuClassID(1901) # Binary_TestSensor
         self.assertEqual(res, 3)
 
-        res = self.test.countWuObjectByWuClassID(1006) # Slider
+        res = self.test.countWuObjectByWuClassID(1902) # Integer_TestSensor
         self.assertEqual(res, 3)
 
         res = self.test.countWuObjectByWuClassID(2005) # Sound

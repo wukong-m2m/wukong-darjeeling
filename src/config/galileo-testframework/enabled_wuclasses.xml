@@ -1,8 +1,8 @@
 <WuKong>
-    <WuClass name="PIR_Sensor" appCanCreateInstances="false">
+    <WuClass name="Binary_TestSensor" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
-    <WuClass name="Slider" appCanCreateInstances="false">
+    <WuClass name="Integer_TestSensor" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
     <WuClass name="Sound" appCanCreateInstances="false">

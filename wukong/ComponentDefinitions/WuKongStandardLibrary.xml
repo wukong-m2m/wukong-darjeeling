@@ -143,6 +143,14 @@
         <property name="current_value" access="readonly" datatype="short"  />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
     </WuClass>
+    <WuClass name="Binary_TestSensor" id="1901" virtual="false" type="hard">
+        <property name="current_value" access="readwrite" datatype="boolean"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="10"  />
+    </WuClass>
+    <WuClass name="Integer_TestSensor" id="1902" virtual="false" type="hard">
+        <property name="current_value" access="readwrite" datatype="short"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="10"  />
+    </WuClass>
 
     <!-- Actuators -->
     <WuClass name="Light_Actuator" id="2001" virtual="false" type="hard">

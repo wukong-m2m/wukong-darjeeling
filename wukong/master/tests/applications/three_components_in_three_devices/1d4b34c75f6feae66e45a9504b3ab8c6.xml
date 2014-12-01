@@ -1,14 +1,14 @@
 <application name="1d4b34c75f6feae66e45a9504b3ab8c6">
 <page title="_first_">
-    <component type="Slider" instanceId="35" x="258" y="257" w="120" h="100">
-        <link fromProperty="output" toInstanceId="34" toProperty="freq"/>
+    <component type="Integer_TestSensor" instanceId="35" x="258" y="257" w="120" h="100">
+        <link fromProperty="current_value" toInstanceId="34" toProperty="freq"/>
         <location requirement="/WuKong/slider#" />
         <group_size requirement="1" />
         <reaction_time requirement="[object Object]" />
         <signalProperty low_value="" high_value="" output="" refresh_rate=""  />
 		<monitorProperty />
     </component>
-    <component type="PIR_Sensor" instanceId="36" x="255" y="111" w="120" h="100">
+    <component type="Binary_TestSensor" instanceId="36" x="255" y="111" w="120" h="100">
         <link fromProperty="current_value" toInstanceId="34" toProperty="on_off"/>
         <location requirement="/WuKong/binary#" />
         <group_size requirement="1" />
