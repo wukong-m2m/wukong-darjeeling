@@ -162,7 +162,7 @@ public class NetworkMessageParser {
 				sb.append(" type:" + propertyTypeToString(payload[4]));
 				sb.append(" status:" + String.format("%02X ", payload[5]));
 				if (payload[4]==WKPF_PROPERTY_TYPE_SHORT || payload[4]==WKPF_PROPERTY_TYPE_REFRESH_RATE) {
-					sb.append(" value:" + payload[6]*256 + payload[7]);
+					sb.append(" value:" + (payload[6]*256 + payload[7]));
 				} else {
 					sb.append(" value:" + int2BoolString(payload[6]));
 				}
@@ -173,7 +173,7 @@ public class NetworkMessageParser {
 				sb.append(wuclassAndProperty2String(payload[1]*256+payload[2], payload[3]));
 				sb.append(" type:" + propertyTypeToString(payload[4]));
 				if (payload[4]==WKPF_PROPERTY_TYPE_SHORT || payload[4]==WKPF_PROPERTY_TYPE_REFRESH_RATE) {
-					sb.append(" value:" + payload[5]*256 + payload[6]);
+					sb.append(" value:" + (payload[5]*256 + payload[6]));
 				} else {
 					sb.append(" value:" + int2BoolString(payload[5]));
 				}
