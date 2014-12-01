@@ -180,7 +180,7 @@ class Generator:
             if len(component.instances) == 0:
                 raise IndexError('No instances for component of type ' + component.type)
             wuobject = component.instances[0]
-            for property in generateProperties(wuobject.properties.values(), component):
+            for property in [p for p in generateProperties(wuobject.properties.values(), component) if p.value != '']:                
                 if (Generator.isLinkDestination(component.deployid, property.id, changesets)):
                     if component.type != 'Multiplexer':
                         # This property is the destination for a link, so we shouldn't generate an entry in the init value table
