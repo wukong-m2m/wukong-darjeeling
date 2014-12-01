@@ -476,26 +476,29 @@ void wkpf_comm_handle_message(void *data) {
 
 			// Only do this when the piggyback information is present
 			uint16_t dest_component_id = 0;
-			if (msg->length > 7) {
-				//for each type, we need to check if the message is valid or not by checking the lock within it,if locked. do not set property
-				int piggyback_message_offset = -1;
-				if (payload[4] == WKPF_PROPERTY_TYPE_SHORT){
-					piggyback_message_offset  =7;
-				} else if (payload[4] == WKPF_PROPERTY_TYPE_BOOLEAN) {
-					piggyback_message_offset = 6;
-				} else if (payload[4] == WKPF_PROPERTY_TYPE_REFRESH_RATE) {
-					piggyback_message_offset = 7;
-				}
-				uint8_t retval = wkpf_update_token_table_with_piggyback(payload + piggyback_message_offset);
-				dest_component_id = (uint16_t)payload[piggyback_message_offset+2];
-				dest_component_id = (uint16_t)(dest_component_id << 8) + (uint16_t)payload[piggyback_message_offset+3];
-				if (retval != WKPF_OK) {
-					DEBUG_LOG(true, "WKPF Error: %u, token unable to be updated, abort write property\n", retval); 
-					payload[0] = retval;
-					response_cmd = WKPF_COMM_CMD_ERROR_R;
-					response_size = 1;
-					break;
-				}
+			//for each type, we need to check if the message is valid or not by checking the lock within it,if locked. do not set property
+			int piggyback_message_offset = -1;
+			if (payload[4] == WKPF_PROPERTY_TYPE_SHORT){
+				piggyback_message_offset  =7;
+			} else if (payload[4] == WKPF_PROPERTY_TYPE_BOOLEAN) {
+				piggyback_message_offset = 6;
+			} else if (payload[4] == WKPF_PROPERTY_TYPE_REFRESH_RATE) {
+				piggyback_message_offset = 7;
+			}
+			uint8_t retval = wkpf_update_token_table_with_piggyback(payload + piggyback_message_offset);
+			dest_component_id = (uint16_t)payload[piggyback_message_offset+2];
+			dest_component_id = (uint16_t)(dest_component_id << 8) + (uint16_t)payload[piggyback_message_offset+3];
+			//dest_comp_id==0 means message from master. 
+			//Under this case, suppose master know who it is sending to and fill up the component id myself
+			if (dest_component_id == 0) {		
+				wkpf_get_component_id(port_number, &dest_component_id);
+			}
+			if (retval != WKPF_OK) {
+				DEBUG_LOG(true, "WKPF Error: %u, token unable to be updated, abort write property\n", retval); 
+				payload[0] = retval;
+				response_cmd = WKPF_COMM_CMD_ERROR_R;
+				response_size = 1;
+				break;
 			}
 			retval = wkpf_get_wuobject_by_port(port_number, &wuobject);
 			if (retval != WKPF_OK) {

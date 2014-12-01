@@ -434,15 +434,19 @@ class Communication:
 
       if datatype == WKPF_PROPERTY_TYPE_BOOLEAN:
         payload=[port, wuclassid/256,
-        wuclassid%256, property_number, datatype, 1 if value else 0]
-        # payload=[wuobject.port_number, wuclassdef.id/256,
-        # wuclassdef.id%256, number, datatype, 1 if value else 0]
+        wuclassid%256, property_number, datatype, 1 if value else 0, 
+        0, 0, 0, 0, 0]    
+        # the last 5 0s are sender and receiver component id. set them to 0 to bypass property locking check.
+        #Property locking check checks if the desired id and property is still the desired component in case of link change.
+        #see wkpf_generate_piggyback_token() in wkpf_links.c 
+
 
       elif datatype == WKPF_PROPERTY_TYPE_SHORT or datatype == WKPF_PROPERTY_TYPE_REFRESH_RATE:
         payload=[port, wuclassid/256,
-        wuclassid%256, property_number, datatype, value/256, value%256]
-        # payload=[wuobject.port_number, wuclassdef.id/256,
-        # wuclassdef.id%256, number, datatype, value/256, value%256]
+        wuclassid%256, property_number, datatype, value/256, value%256,
+        0, 0, 0, 0, 0]    
+        # the last 5 0s are sender and receiver component id. see wkpf_generate_piggyback_token() in wkpf_links.c 
+
 
       reply = self.agent.send(id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])
       # reply = self.zwave.send(wunode.id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])
