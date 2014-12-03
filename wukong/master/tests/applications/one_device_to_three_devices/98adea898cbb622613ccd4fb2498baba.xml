@@ -1,0 +1,45 @@
+<application name="98adea898cbb622613ccd4fb2498baba">
+<page title="_first_">
+    <component type="Binary_Sensor" instanceId="34" x="266" y="140" w="120" h="100">
+        <link fromProperty="current_value" toInstanceId="36" toProperty="on_off"/>
+        <link fromProperty="current_value" toInstanceId="37" toProperty="on_off"/>
+        <link fromProperty="current_value" toInstanceId="38" toProperty="on_off"/>
+        <location requirement="/WuKong/binary#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="[object Object]" />
+        <signalProperty refresh_rate="" current_value="" status="" debounce=""  />
+		<monitorProperty />
+    </component>
+    <component type="Slider" instanceId="35" x="268" y="332" w="120" h="100">
+        <link fromProperty="output" toInstanceId="36" toProperty="freq"/>
+        <link fromProperty="output" toInstanceId="37" toProperty="freq"/>
+        <link fromProperty="output" toInstanceId="38" toProperty="freq"/>
+        <location requirement="/WuKong/slider#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="[object Object]" />
+        <signalProperty low_value="" high_value="" output="" refresh_rate=""  />
+		<monitorProperty />
+    </component>
+    <component type="Sound" instanceId="36" x="517" y="71" w="120" h="100">
+        <location requirement="/WuKong/binary#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="[object Object]" />
+        <signalProperty on_off="" freq=""  />
+		<monitorProperty />
+    </component>
+    <component type="Sound" instanceId="37" x="520" y="252" w="120" h="100">
+        <location requirement="/WuKong/slider#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="[object Object]" />
+        <signalProperty on_off="" freq=""  />
+		<monitorProperty />
+    </component>
+    <component type="Sound" instanceId="38" x="521" y="429" w="120" h="100">
+        <location requirement="/WuKong/sound#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="[object Object]" />
+        <signalProperty on_off="" freq=""  />
+		<monitorProperty />
+    </component>
+</page>
+</application>

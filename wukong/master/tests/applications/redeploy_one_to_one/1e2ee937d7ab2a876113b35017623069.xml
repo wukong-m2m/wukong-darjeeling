@@ -1,0 +1,27 @@
+<application name="1e2ee937d7ab2a876113b35017623069">
+<page title="_first_">
+    <component type="Binary_Sensor" instanceId="35" x="333" y="91" w="120" h="100">
+        <link fromProperty="current_value" toInstanceId="37" toProperty="on_off"/>
+        <location requirement="/WuKong/binary#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="[object Object]" />
+        <signalProperty  />
+		<monitorProperty status="2" />
+    </component>
+    <component type="Slider" instanceId="36" x="336" y="250" w="120" h="100">
+        <link fromProperty="output" toInstanceId="37" toProperty="freq"/>
+        <location requirement="/WuKong/binary#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="[object Object]" />
+        <signalProperty  />
+		<monitorProperty />
+    </component>
+    <component type="Sound" instanceId="37" x="562" y="96" w="120" h="100">
+        <location requirement="/WuKong/sound#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="[object Object]" />
+        <signalProperty  />
+		<monitorProperty />
+    </component>
+</page>
+</application>

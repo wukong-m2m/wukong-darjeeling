@@ -1,0 +1,3879 @@
+scanning 1d4b34c75f6feae66e45a9504b3ab8c6:
+1d4b34c75f6feae66e45a9504b3ab8c6
+scanning 98adea898cbb622613ccd4fb2498baba:
+98adea898cbb622613ccd4fb2498baba
+scanning 9d07e0e08af7f96cf45be0112b9ccfbe:
+9d07e0e08af7f96cf45be0112b9ccfbe
+make_js_complete
+make_fbp_complete
+200 GET / (192.168.4.105) 17.68ms
+304 GET /static/css/smoothness/jquery-ui-1.8.21.custom.css (192.168.4.105) 4.46ms
+304 GET /static/js/jquery-1.7.2.min.js (192.168.4.105) 2.13ms
+304 GET /static/css/jquery.treeview.css (192.168.4.105) 1.30ms
+304 GET /static/css/bootstrap-editable.css (192.168.4.105) 1.43ms
+304 GET /static/css/jquery.contextMenu.css (192.168.4.105) 1.26ms
+304 GET /static/css/application.css (192.168.4.105) 0.76ms
+304 GET /static/bootstrap/css/bootstrap.min.css (192.168.4.105) 1.17ms
+304 GET /static/js/underscore-min.js (192.168.4.105) 1.62ms
+304 GET /static/js/json2.js (192.168.4.105) 1.35ms
+304 GET /static/js/jquery.blockUI.js (192.168.4.105) 1.40ms
+304 GET /static/js/jquery-ui-1.8.21.custom.min.js (192.168.4.105) 2.64ms
+304 GET /static/js/jquery-ui-disabler-1.0.0.min.js (192.168.4.105) 1.27ms
+304 GET /static/js/jquery.contextMenu.js (192.168.4.105) 1.13ms
+304 GET /static/bootstrap/js/bootstrap.min.js (192.168.4.105) 1.67ms
+304 GET /static/js/bootstrap-editable.min.js (192.168.4.105) 1.74ms
+304 GET /static/js/jquery.treeview.js (192.168.4.105) 0.80ms
+304 GET /static/js/display_locationTree.js (192.168.4.105) 0.86ms
+304 GET /static/js/application.js (192.168.4.105) 0.83ms
+304 GET /static/images/wukong_logo.jpg (192.168.4.105) 1.49ms
+304 GET /static/images/background_tile-100x100.png (192.168.4.105) 1.48ms
+updating applications:
+scanning de1bd7f2b46f4b504b306881a73eee6b:
+scanning 1e2ee937d7ab2a876113b35017623069:
+scanning 1d4b34c75f6feae66e45a9504b3ab8c6:
+scanning 98adea898cbb622613ccd4fb2498baba:
+scanning 9d07e0e08af7f96cf45be0112b9ccfbe:
+200 POST /applications (192.168.4.105) 2.62ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069 (192.168.4.105) 6.77ms
+200 GET /applications/1e2ee937d7ab2a876113b35017623069/deploy (192.168.4.105) 8.74ms
+200 GET /static/js/topbar.js?_=1417586969215 (192.168.4.105) 3.63ms
+200 GET /static/js/deployment.js?_=1417586969330 (192.168.4.105) 3.55ms
+200 GET /applications/1e2ee937d7ab2a876113b35017623069/fbp/load (192.168.4.105) 3.40ms
+200 GET /static/css/fbp.css (192.168.4.105) 2.80ms
+200 GET /static/css/smoothness/jquery-ui-1.9.2.custom.min.css (192.168.4.105) 1.31ms
+200 GET /static/js/jquery-ui-1.9.2.custom.min.js (192.168.4.105) 4.44ms
+200 GET /static/js/jcanvas.js (192.168.4.105) 1.97ms
+200 GET /static/js/block.js (192.168.4.105) 1.84ms
+200 GET /static/js/line.js (192.168.4.105) 1.57ms
+200 GET /static/js/fbp.js (192.168.4.105) 2.85ms
+200 GET /static/js/flowlist.js (192.168.4.105) 1.19ms
+200 GET /static/js/ace/ace.js (192.168.4.105) 9.09ms
+200 GET /static/js/__comp__pressure_sensor_0.js (192.168.4.105) 1.34ms
+200 GET /static/js/__comp__loop_delay_short.js (192.168.4.105) 0.88ms
+200 GET /static/js/__comp__temperature_sensor.js (192.168.4.105) 0.87ms
+200 GET /static/js/__comp__threshold.js (192.168.4.105) 0.92ms
+200 GET /static/js/__comp__switch.js (192.168.4.105) 1.62ms
+200 GET /static/js/__comp__fan.js (192.168.4.105) 1.76ms
+200 GET /static/js/__comp__sound_sensor.js (192.168.4.105) 1.43ms
+200 GET /static/js/__comp__led.js (192.168.4.105) 1.71ms
+200 GET /static/js/__comp__magnetic_sensor.js (192.168.4.105) 1.41ms
+200 GET /static/js/__comp__condition_selector_boolean.js (192.168.4.105) 1.13ms
+200 GET /static/js/__comp__temperature_humidity_sensor.js (192.168.4.105) 1.38ms
+200 GET /static/js/__comp__server.js (192.168.4.105) 1.16ms
+200 GET /static/js/__comp__not_gate.js (192.168.4.105) 1.65ms
+200 GET /static/js/__comp__generic.js (192.168.4.105) 1.49ms
+200 GET /static/js/__comp__if_boolean.js (192.168.4.105) 1.40ms
+200 GET /static/js/__comp__and_gate.js (192.168.4.105) 1.41ms
+200 GET /static/js/__comp__slider.js (192.168.4.105) 1.73ms
+200 GET /static/js/__comp__numeric_controller.js (192.168.4.105) 1.41ms
+200 GET /static/js/__comp__light_sensor.js (192.168.4.105) 1.44ms
+200 GET /static/js/__comp__value.js (192.168.4.105) 1.15ms
+200 GET /static/js/__comp__custom.js (192.168.4.105) 0.88ms
+200 GET /static/js/__comp__if_short.js (192.168.4.105) 0.89ms
+200 GET /static/js/__comp__light_actuator.js (192.168.4.105) 1.07ms
+200 GET /static/js/__comp__countdown.js (192.168.4.105) 1.48ms
+200 GET /static/js/__comp__binary_sensor.js (192.168.4.105) 1.51ms
+200 GET /static/js/__comp__condition_selector_short.js (192.168.4.105) 1.42ms
+200 GET /static/js/__comp__gh_sensor.js (192.168.4.105) 1.48ms
+200 GET /static/js/__comp__dimmer.js (192.168.4.105) 1.39ms
+200 GET /static/js/__comp__logical.js (192.168.4.105) 1.66ms
+200 GET /static/js/__comp__mathop.js (192.168.4.105) 1.24ms
+200 GET /static/js/__comp__loop_delay_boolean.js (192.168.4.105) 0.88ms
+200 GET /static/js/__comp__or_gate.js (192.168.4.105) 0.87ms
+200 GET /static/js/__comp__sound.js (192.168.4.105) 0.90ms
+200 GET /static/js/__comp__pir_sensor.js (192.168.4.105) 1.35ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069 (192.168.4.105) 4.86ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069/fbp/load (192.168.4.105) 1.00ms
+200 GET / (192.168.4.105) 4.24ms
+updating applications:
+scanning de1bd7f2b46f4b504b306881a73eee6b:
+scanning 1e2ee937d7ab2a876113b35017623069:
+scanning 1d4b34c75f6feae66e45a9504b3ab8c6:
+scanning 98adea898cbb622613ccd4fb2498baba:
+scanning 9d07e0e08af7f96cf45be0112b9ccfbe:
+200 POST /applications (192.168.4.105) 2.67ms
+200 POST /applications/9d07e0e08af7f96cf45be0112b9ccfbe (192.168.4.105) 4.84ms
+200 GET /applications/9d07e0e08af7f96cf45be0112b9ccfbe/deploy (192.168.4.105) 176.43ms
+200 GET /static/js/topbar.js?_=1417586983928 (192.168.4.105) 1.09ms
+200 GET /static/js/deployment.js?_=1417586984039 (192.168.4.105) 1.77ms
+200 GET /applications/9d07e0e08af7f96cf45be0112b9ccfbe/fbp/load (192.168.4.105) 3.40ms
+200 GET /static/js/__comp__loop_delay_short.js (192.168.4.105) 1.64ms
+200 GET /static/js/__comp__pressure_sensor_0.js (192.168.4.105) 1.47ms
+200 GET /static/js/__comp__switch.js (192.168.4.105) 1.39ms
+200 GET /static/js/__comp__fan.js (192.168.4.105) 0.87ms
+200 GET /static/js/__comp__threshold.js (192.168.4.105) 0.85ms
+200 GET /static/js/__comp__temperature_sensor.js (192.168.4.105) 0.85ms
+200 GET /static/js/__comp__sound_sensor.js (192.168.4.105) 1.05ms
+200 GET /static/js/__comp__magnetic_sensor.js (192.168.4.105) 1.20ms
+200 GET /static/js/__comp__condition_selector_boolean.js (192.168.4.105) 1.52ms
+200 GET /static/js/__comp__led.js (192.168.4.105) 1.43ms
+200 GET /static/js/__comp__temperature_humidity_sensor.js (192.168.4.105) 1.43ms
+200 GET /static/js/__comp__server.js (192.168.4.105) 1.44ms
+200 GET /static/js/__comp__if_boolean.js (192.168.4.105) 1.69ms
+200 GET /static/js/__comp__and_gate.js (192.168.4.105) 1.39ms
+200 GET /static/js/__comp__numeric_controller.js (192.168.4.105) 0.89ms
+200 GET /static/js/__comp__slider.js (192.168.4.105) 0.86ms
+200 GET /static/js/__comp__not_gate.js (192.168.4.105) 0.87ms
+200 GET /static/js/__comp__generic.js (192.168.4.105) 0.85ms
+200 GET /static/js/__comp__gh_sensor.js (192.168.4.105) 1.60ms
+200 GET /static/js/__comp__countdown.js (192.168.4.105) 1.45ms
+200 GET /static/js/__comp__light_sensor.js (192.168.4.105) 1.38ms
+200 GET /static/js/__comp__value.js (192.168.4.105) 0.86ms
+200 GET /static/js/__comp__custom.js (192.168.4.105) 0.84ms
+200 GET /static/js/__comp__if_short.js (192.168.4.105) 0.85ms
+200 GET /static/js/__comp__dimmer.js (192.168.4.105) 1.62ms
+200 GET /static/js/__comp__light_actuator.js (192.168.4.105) 1.40ms
+200 GET /static/js/__comp__binary_sensor.js (192.168.4.105) 1.44ms
+200 GET /static/js/__comp__condition_selector_short.js (192.168.4.105) 1.46ms
+200 GET /static/js/__comp__logical.js (192.168.4.105) 1.38ms
+200 GET /static/js/__comp__mathop.js (192.168.4.105) 0.87ms
+200 GET /static/js/__comp__sound.js (192.168.4.105) 1.71ms
+200 GET /static/js/__comp__pir_sensor.js (192.168.4.105) 1.39ms
+200 POST /applications/9d07e0e08af7f96cf45be0112b9ccfbe (192.168.4.105) 2.99ms
+200 GET /static/js/__comp__loop_delay_boolean.js (192.168.4.105) 0.95ms
+200 GET /static/js/__comp__or_gate.js (192.168.4.105) 0.88ms
+200 POST /applications/9d07e0e08af7f96cf45be0112b9ccfbe/fbp/load (192.168.4.105) 1.04ms
+updating applications:
+scanning de1bd7f2b46f4b504b306881a73eee6b:
+scanning 1e2ee937d7ab2a876113b35017623069:
+scanning 1d4b34c75f6feae66e45a9504b3ab8c6:
+scanning 98adea898cbb622613ccd4fb2498baba:
+scanning 9d07e0e08af7f96cf45be0112b9ccfbe:
+200 POST /applications (192.168.4.105) 2.62ms
+200 POST /applications/98adea898cbb622613ccd4fb2498baba (192.168.4.105) 4.86ms
+200 GET /applications/98adea898cbb622613ccd4fb2498baba/deploy (192.168.4.105) 9.23ms
+200 GET /static/js/topbar.js?_=1417587000190 (192.168.4.105) 1.39ms
+200 GET /static/js/deployment.js?_=1417587000280 (192.168.4.105) 1.73ms
+200 GET /applications/98adea898cbb622613ccd4fb2498baba/fbp/load (192.168.4.105) 3.33ms
+200 GET /static/js/__comp__loop_delay_short.js (192.168.4.105) 1.66ms
+200 GET /static/js/__comp__pressure_sensor_0.js (192.168.4.105) 1.49ms
+200 GET /static/js/__comp__switch.js (192.168.4.105) 1.44ms
+200 GET /static/js/__comp__threshold.js (192.168.4.105) 0.87ms
+200 GET /static/js/__comp__temperature_sensor.js (192.168.4.105) 0.86ms
+200 GET /static/js/__comp__fan.js (192.168.4.105) 1.69ms
+200 GET /static/js/__comp__condition_selector_boolean.js (192.168.4.105) 0.90ms
+200 GET /static/js/__comp__led.js (192.168.4.105) 0.90ms
+200 GET /static/js/__comp__temperature_humidity_sensor.js (192.168.4.105) 0.86ms
+200 GET /static/js/__comp__sound_sensor.js (192.168.4.105) 0.85ms
+200 GET /static/js/__comp__magnetic_sensor.js (192.168.4.105) 0.90ms
+200 GET /static/js/__comp__not_gate.js (192.168.4.105) 1.67ms
+200 GET /static/js/__comp__generic.js (192.168.4.105) 1.40ms
+200 GET /static/js/__comp__if_boolean.js (192.168.4.105) 1.44ms
+200 GET /static/js/__comp__server.js (192.168.4.105) 1.37ms
+200 GET /static/js/__comp__slider.js (192.168.4.105) 1.63ms
+200 GET /static/js/__comp__light_sensor.js (192.168.4.105) 1.41ms
+200 GET /static/js/__comp__value.js (192.168.4.105) 1.20ms
+200 GET /static/js/__comp__custom.js (192.168.4.105) 0.92ms
+200 GET /static/js/__comp__and_gate.js (192.168.4.105) 0.93ms
+200 GET /static/js/__comp__numeric_controller.js (192.168.4.105) 0.94ms
+200 GET /static/js/__comp__if_short.js (192.168.4.105) 1.62ms
+200 GET /static/js/__comp__gh_sensor.js (192.168.4.105) 1.45ms
+200 GET /static/js/__comp__countdown.js (192.168.4.105) 1.38ms
+200 GET /static/js/__comp__dimmer.js (192.168.4.105) 1.44ms
+200 GET /static/js/__comp__light_actuator.js (192.168.4.105) 1.39ms
+200 GET /static/js/__comp__binary_sensor.js (192.168.4.105) 0.87ms
+200 GET /static/js/__comp__condition_selector_short.js (192.168.4.105) 1.63ms
+200 GET /static/js/__comp__logical.js (192.168.4.105) 1.34ms
+200 GET /static/js/__comp__mathop.js (192.168.4.105) 0.86ms
+200 GET /static/js/__comp__loop_delay_boolean.js (192.168.4.105) 0.86ms
+200 GET /static/js/__comp__or_gate.js (192.168.4.105) 0.91ms
+200 GET /static/js/__comp__sound.js (192.168.4.105) 0.88ms
+200 GET /static/js/__comp__pir_sensor.js (192.168.4.105) 1.64ms
+200 POST /applications/98adea898cbb622613ccd4fb2498baba (192.168.4.105) 4.73ms
+200 POST /applications/98adea898cbb622613ccd4fb2498baba/fbp/load (192.168.4.105) 1.03ms
+200 GET /static/css/smoothness/images/ui-icons_222222_256x240.png (192.168.4.105) 167.64ms
+200 GET /static/css/smoothness/images/ui-bg_glass_75_e6e6e6_1x400.png (192.168.4.105) 162.46ms
+200 GET /static/css/smoothness/images/ui-bg_highlight-soft_75_cccccc_1x100.png (192.168.4.105) 4.50ms
+200 GET /static/css/smoothness/images/ui-bg_flat_75_ffffff_40x100.png (192.168.4.105) 1.45ms
+200 GET /static/css/smoothness/images/ui-bg_glass_75_dadada_1x400.png (192.168.4.105) 6.29ms
+200 GET /static/css/smoothness/images/ui-bg_glass_65_ffffff_1x400.png (192.168.4.105) 6.42ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069/fbp/save (192.168.4.105) 3.78ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069/fbp/save (192.168.4.105) 4.59ms
+200 GET /static/css/smoothness/images/ui-icons_888888_256x240.png (192.168.4.105) 6.47ms
+200 GET /static/css/smoothness/images/ui-icons_454545_256x240.png (192.168.4.105) 4.34ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069/fbp/save (192.168.4.105) 3.91ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069/fbp/save (192.168.4.105) 4.65ms
+200 POST /nodes/refresh/0 (192.168.4.105) 18.46ms
+200 POST /nodes/refresh/0 (192.168.4.105) 15.51ms
+Mapping Results
+ChangeSets(components=[<wkpf.models.WuComponent instance at 0x7fb1149ad200>, <wkpf.models.WuComponent instance at 0x7fb1149ad170>, <wkpf.models.WuComponent instance at 0x7fb1149ad248>, <wkpf.models.WuComponent instance at 0x7fb1149ad320>, <wkpf.models.WuComponent instance at 0x7fb1149ad488>], links=[<wkpf.models.WuLink instance at 0x7fb1149ad638>, <wkpf.models.WuLink instance at 0x7fb1149ad680>, <wkpf.models.WuLink instance at 0x7fb1149ad6c8>, <wkpf.models.WuLink instance at 0x7fb1149ad710>], heartbeatgroups=[])
+200 POST /applications/1e2ee937d7ab2a876113b35017623069/deploy/map (192.168.4.105) 25.36ms
+200 POST /loc_tree (192.168.4.105) 8.92ms
+200 GET /static/js/jquery.treeview.js?_=1417587379264 (192.168.4.105) 1.13ms
+200 GET /static/js/tree_expand.js?_=1417587379361 (192.168.4.105) 3.61ms
+200 GET /static/css/images/treeview-default.gif (192.168.4.105) 3.97ms
+200 GET /static/js/display_locationTree.js?_=1417587379493 (192.168.4.105) 1.73ms
+200 GET /static/css/images/treeview-default-line.gif (192.168.4.105) 1.73ms
+200 GET /testrtt (192.168.4.105) 26.46ms
+200 GET /static/js/testrtt.js?_=1417587381414 (192.168.4.105) 3.45ms
+200 GET /static/js/display_locationTree.js?_=1417587381517 (192.168.4.105) 1.27ms
+200 POST /testrtt/poll (192.168.4.105) 501.64ms
+200 POST /testrtt/poll (192.168.4.105) 501.70ms
+200 POST /testrtt/poll (192.168.4.105) 501.80ms
+200 POST /testrtt/poll (192.168.4.105) 501.71ms
+200 POST /loc_tree (192.168.4.105) 4.31ms
+200 GET /static/js/jquery.treeview.js?_=1417587387349 (192.168.4.105) 1.77ms
+200 GET /static/js/tree_expand.js?_=1417587387456 (192.168.4.105) 1.70ms
+200 GET /static/js/display_locationTree.js?_=1417587387581 (192.168.4.105) 1.95ms
+200 POST /testrtt/poll (192.168.4.105) 501.72ms
+200 POST /testrtt/poll (192.168.4.105) 501.77ms
+updating applications:
+scanning de1bd7f2b46f4b504b306881a73eee6b:
+scanning 1e2ee937d7ab2a876113b35017623069:
+scanning 1d4b34c75f6feae66e45a9504b3ab8c6:
+scanning 98adea898cbb622613ccd4fb2498baba:
+scanning 9d07e0e08af7f96cf45be0112b9ccfbe:
+200 POST /applications (192.168.4.105) 2.51ms
+200 POST /testrtt/poll (192.168.4.105) 501.54ms
+200 GET /ide (192.168.4.105) 163.11ms
+200 GET /static/js/wuide.js (192.168.4.105) 3.57ms
+200 GET /static/js/pure.js (192.168.4.105) 2.52ms
+200 GET /componentxml (192.168.4.105) 1.14ms
+200 GET /enablexml (192.168.4.105) 2.71ms
+updating applications:
+scanning de1bd7f2b46f4b504b306881a73eee6b:
+scanning 1e2ee937d7ab2a876113b35017623069:
+scanning 1d4b34c75f6feae66e45a9504b3ab8c6:
+scanning 98adea898cbb622613ccd4fb2498baba:
+scanning 9d07e0e08af7f96cf45be0112b9ccfbe:
+200 POST /applications (192.168.4.105) 2.66ms
+304 GET /ide (192.168.4.105) 3.25ms
+304 GET /componentxml (192.168.4.105) 1.06ms
+304 GET /enablexml (192.168.4.105) 1.05ms
+scanning 1d4b34c75f6feae66e45a9504b3ab8c6:
+1d4b34c75f6feae66e45a9504b3ab8c6
+scanning 98adea898cbb622613ccd4fb2498baba:
+98adea898cbb622613ccd4fb2498baba
+scanning 9d07e0e08af7f96cf45be0112b9ccfbe:
+9d07e0e08af7f96cf45be0112b9ccfbe
+make_js_complete
+make_fbp_complete
+updating applications:
+scanning de1bd7f2b46f4b504b306881a73eee6b:
+scanning 1e2ee937d7ab2a876113b35017623069:
+scanning 1d4b34c75f6feae66e45a9504b3ab8c6:
+scanning 98adea898cbb622613ccd4fb2498baba:
+scanning 9d07e0e08af7f96cf45be0112b9ccfbe:
+200 POST /applications (192.168.4.105) 3.70ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069 (192.168.4.105) 6.29ms
+200 GET /applications/1e2ee937d7ab2a876113b35017623069/deploy (192.168.4.105) 5.15ms
+200 GET /static/js/topbar.js?_=1417587820958 (192.168.4.105) 7.31ms
+200 GET /applications/1e2ee937d7ab2a876113b35017623069/fbp/load (192.168.4.105) 3.80ms
+200 GET /static/js/deployment.js?_=1417587821046 (192.168.4.105) 1.75ms
+200 GET /static/js/__comp__pressure_sensor_0.js (192.168.4.105) 1.70ms
+200 GET /static/js/__comp__loop_delay_short.js (192.168.4.105) 1.47ms
+200 GET /static/js/__comp__temperature_sensor.js (192.168.4.105) 1.53ms
+200 GET /static/js/__comp__sound_sensor.js (192.168.4.105) 1.70ms
+200 GET /static/js/__comp__magnetic_sensor.js (192.168.4.105) 1.43ms
+200 GET /static/js/__comp__threshold.js (192.168.4.105) 1.94ms
+200 GET /static/js/__comp__switch.js (192.168.4.105) 1.04ms
+200 GET /static/js/__comp__fan.js (192.168.4.105) 0.89ms
+200 GET /static/js/__comp__condition_selector_boolean.js (192.168.4.105) 1.51ms
+200 GET /static/js/__comp__led.js (192.168.4.105) 1.18ms
+200 GET /static/js/__comp__temperature_humidity_sensor.js (192.168.4.105) 1.04ms
+200 GET /static/js/__comp__server.js (192.168.4.105) 1.04ms
+200 GET /static/js/__comp__not_gate.js (192.168.4.105) 1.02ms
+200 GET /static/js/__comp__generic.js (192.168.4.105) 1.04ms
+200 GET /static/js/__comp__if_boolean.js (192.168.4.105) 1.06ms
+200 GET /static/js/__comp__and_gate.js (192.168.4.105) 1.06ms
+200 GET /static/js/__comp__numeric_controller.js (192.168.4.105) 1.48ms
+200 GET /static/js/__comp__slider.js (192.168.4.105) 1.42ms
+200 GET /static/js/__comp__light_sensor.js (192.168.4.105) 1.42ms
+200 GET /static/js/__comp__value.js (192.168.4.105) 1.40ms
+200 GET /static/js/__comp__custom.js (192.168.4.105) 1.07ms
+200 GET /static/js/__comp__if_short.js (192.168.4.105) 0.91ms
+200 GET /static/js/__comp__gh_sensor.js (192.168.4.105) 1.03ms
+200 GET /static/js/__comp__countdown.js (192.168.4.105) 1.04ms
+200 GET /static/js/__comp__dimmer.js (192.168.4.105) 1.12ms
+200 GET /static/js/__comp__light_actuator.js (192.168.4.105) 1.04ms
+200 GET /static/js/__comp__binary_sensor.js (192.168.4.105) 1.74ms
+200 GET /static/js/__comp__condition_selector_short.js (192.168.4.105) 1.44ms
+200 GET /static/js/__comp__logical.js (192.168.4.105) 1.16ms
+200 GET /static/js/__comp__mathop.js (192.168.4.105) 0.88ms
+200 GET /static/js/__comp__loop_delay_boolean.js (192.168.4.105) 0.88ms
+200 GET /static/js/__comp__or_gate.js (192.168.4.105) 0.87ms
+200 GET /static/js/__comp__sound.js (192.168.4.105) 1.17ms
+200 GET /static/js/__comp__pir_sensor.js (192.168.4.105) 0.97ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069 (192.168.4.105) 3.65ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069/fbp/load (192.168.4.105) 1.07ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069/fbp/save (192.168.4.105) 4.47ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069/fbp/save (192.168.4.105) 3.77ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069/fbp/save (192.168.4.105) 4.30ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069/fbp/save (192.168.4.105) 3.72ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069/fbp/save (192.168.4.105) 4.02ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069/fbp/save (192.168.4.105) 3.95ms
+scanning 1d4b34c75f6feae66e45a9504b3ab8c6:
+1d4b34c75f6feae66e45a9504b3ab8c6
+scanning 98adea898cbb622613ccd4fb2498baba:
+98adea898cbb622613ccd4fb2498baba
+scanning 9d07e0e08af7f96cf45be0112b9ccfbe:
+9d07e0e08af7f96cf45be0112b9ccfbe
+make_js_complete
+make_fbp_complete
+updating applications:
+scanning de1bd7f2b46f4b504b306881a73eee6b:
+scanning 1e2ee937d7ab2a876113b35017623069:
+scanning 1d4b34c75f6feae66e45a9504b3ab8c6:
+scanning 98adea898cbb622613ccd4fb2498baba:
+scanning 9d07e0e08af7f96cf45be0112b9ccfbe:
+200 POST /applications (192.168.4.105) 3.16ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069 (192.168.4.105) 6.65ms
+304 GET /applications/1e2ee937d7ab2a876113b35017623069/deploy (192.168.4.105) 5.48ms
+200 GET /static/js/topbar.js?_=1417587937053 (192.168.4.105) 7.49ms
+200 GET /applications/1e2ee937d7ab2a876113b35017623069/fbp/load (192.168.4.105) 3.82ms
+200 GET /static/js/deployment.js?_=1417587937099 (192.168.4.105) 1.87ms
+304 GET /static/js/__comp__pressure_sensor_0.js (192.168.4.105) 1.89ms
+304 GET /static/js/__comp__loop_delay_short.js (192.168.4.105) 1.16ms
+304 GET /static/js/__comp__temperature_sensor.js (192.168.4.105) 1.52ms
+304 GET /static/js/__comp__threshold.js (192.168.4.105) 1.39ms
+304 GET /static/js/__comp__switch.js (192.168.4.105) 0.80ms
+304 GET /static/js/__comp__fan.js (192.168.4.105) 0.78ms
+304 GET /static/js/__comp__sound_sensor.js (192.168.4.105) 0.78ms
+304 GET /static/js/__comp__magnetic_sensor.js (192.168.4.105) 0.80ms
+304 GET /static/js/__comp__condition_selector_boolean.js (192.168.4.105) 1.05ms
+304 GET /static/js/__comp__led.js (192.168.4.105) 1.02ms
+304 GET /static/js/__comp__temperature_humidity_sensor.js (192.168.4.105) 0.89ms
+304 GET /static/js/__comp__server.js (192.168.4.105) 1.02ms
+304 GET /static/js/__comp__not_gate.js (192.168.4.105) 0.95ms
+304 GET /static/js/__comp__generic.js (192.168.4.105) 0.93ms
+304 GET /static/js/__comp__if_boolean.js (192.168.4.105) 0.97ms
+304 GET /static/js/__comp__and_gate.js (192.168.4.105) 1.60ms
+304 GET /static/js/__comp__numeric_controller.js (192.168.4.105) 1.41ms
+304 GET /static/js/__comp__slider.js (192.168.4.105) 1.30ms
+304 GET /static/js/__comp__light_sensor.js (192.168.4.105) 1.20ms
+304 GET /static/js/__comp__value.js (192.168.4.105) 0.79ms
+304 GET /static/js/__comp__custom.js (192.168.4.105) 0.95ms
+304 GET /static/js/__comp__if_short.js (192.168.4.105) 1.32ms
+304 GET /static/js/__comp__gh_sensor.js (192.168.4.105) 1.22ms
+304 GET /static/js/__comp__countdown.js (192.168.4.105) 1.04ms
+304 GET /static/js/__comp__dimmer.js (192.168.4.105) 0.92ms
+304 GET /static/js/__comp__light_actuator.js (192.168.4.105) 0.88ms
+304 GET /static/js/__comp__binary_sensor.js (192.168.4.105) 0.86ms
+304 GET /static/js/__comp__condition_selector_short.js (192.168.4.105) 0.97ms
+304 GET /static/js/__comp__logical.js (192.168.4.105) 1.03ms
+304 GET /static/js/__comp__mathop.js (192.168.4.105) 0.79ms
+304 GET /static/js/__comp__loop_delay_boolean.js (192.168.4.105) 1.31ms
+304 GET /static/js/__comp__sound.js (192.168.4.105) 1.28ms
+304 GET /static/js/__comp__or_gate.js (192.168.4.105) 1.00ms
+304 GET /static/js/__comp__pir_sensor.js (192.168.4.105) 1.00ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069 (192.168.4.105) 4.83ms
+200 POST /applications/1e2ee937d7ab2a876113b35017623069/fbp/load (192.168.4.105) 1.07ms
+Preparing java library code...
+Generating java application...
+An error has encountered while generating java application! Backtrace is shown below:
+<traceback object at 0x7f058c064908>
+Preparing java library code...
+Generating java application...
+An error has encountered while generating java application! Backtrace is shown below:
+<traceback object at 0x7f2a837bd908>
+Preparing java library code...
+Generating java application...
+An error has encountered while generating java application! Backtrace is shown below:
+<traceback object at 0x7fecb7ae4908>
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2])
+Deploying to node 2, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2])
+Deploying to node 2, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3])
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3])
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3])
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2])
+Deploying to node 2, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3])
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2])
+Deploying to node 2, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3])
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2])
+Deploying to node 2, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3])
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2])
+Deploying to node 2, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3])
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2])
+Deploying to node 2, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3])
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2])
+Deploying to node 2, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+An error has encountered while generating java application! Backtrace is shown below:
+<traceback object at 0x7ff6503b4560>
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+An error has encountered while generating java application! Backtrace is shown below:
+<traceback object at 0x7ff6503b4560>
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+An error has encountered while generating java application! Backtrace is shown below:
+<traceback object at 0x7ff6503b4560>
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+An error has encountered while generating java application! Backtrace is shown below:
+<traceback object at 0x7ff6503b4560>
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+An error has encountered while generating java application! Backtrace is shown below:
+<traceback object at 0x7ff6503b4560>
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+An error has encountered while generating java application! Backtrace is shown below:
+<traceback object at 0x7ff6503b4560>
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+An error has encountered while generating java application! Backtrace is shown below:
+<traceback object at 0x7ff6503b4560>
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+An error has encountered while generating java application! Backtrace is shown below:
+<traceback object at 0x7ff6503b4560>
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+An error has encountered while generating java application! Backtrace is shown below:
+<traceback object at 0x7ff6503b4560>
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+An error has encountered while generating java application! Backtrace is shown below:
+<traceback object at 0x7ff6503b4560>
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+An error has encountered while generating java application! Backtrace is shown below:
+<traceback object at 0x7ff6503b4560>
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
+error! location for node 2 is not set
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 3, 4])
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3])
+Deploying to node 2, remaining set([3])
+...has completed
+Deploying to node 3, remaining set([])
+...has completed
+Application has been deployed!
