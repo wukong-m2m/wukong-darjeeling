@@ -20,6 +20,19 @@ class TestDiscovery(unittest.TestCase):
         res = self.test.countWuObjectByWuClassID(15)
         self.assertEqual(res, 3)
 
+    def test_strength_discoveryAPI(self):
+        for i in xrange(TEST_DISCOVERY_STRENGTH_NUMBER):
+            self.test.discovery()
+            res = self.test.countWuObjectByWuClassID(204)
+            self.assertEqual(res, 3)
+
+            res = self.test.countWuObjectByWuClassID(10)
+            self.assertEqual(res, 3)
+
+            res = self.test.countWuObjectByWuClassID(15)
+            self.assertEqual(res, 3)
+
+
 
 if __name__ == '__main__':
     unittest.main()

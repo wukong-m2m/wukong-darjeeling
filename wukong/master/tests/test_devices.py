@@ -9,6 +9,9 @@ from test_property import TestProperty
 from test_discovery import TestDiscovery
 from test_deploy import TestDeploy
 from test_propagate import TestPropagate
+from test_integration import TestIntegration
+from test_oneblock import TestOneBlock
+from test_redeploy import TestRedeploy
 
 if __name__ == '__main__':
 	filename = datetime.datetime.now().strftime('report_%Hh_%Mm.html')
@@ -26,7 +29,10 @@ if __name__ == '__main__':
 			loader.loadTestsFromTestCase(TestProperty),
 			loader.loadTestsFromTestCase(TestDiscovery),
 			loader.loadTestsFromTestCase(TestDeploy),
-			loader.loadTestsFromTestCase(TestPropagate)
+			loader.loadTestsFromTestCase(TestPropagate),
+			loader.loadTestsFromTestCase(TestIntegration),
+			loader.loadTestsFromTestCase(TestOneBlock),
+			loader.loadTestsFromTestCase(TestRedeploy)
 	))
 	runner = HTMLTestRunner(stream=output, verbosity=1, title="WuKong Testing")
 	runner.run(suite)

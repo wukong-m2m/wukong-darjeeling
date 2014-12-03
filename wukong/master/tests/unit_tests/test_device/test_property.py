@@ -1,4 +1,4 @@
-import os, sys
+import os, sys ,gevent
 import time
 import unittest
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
@@ -20,7 +20,7 @@ class TestProperty(unittest.TestCase):
         
         ans = random.randint(0, 255)
         self.test.setProperty(node_id, port, wuclassID, property_number, datatype, ans)
-        time.sleep(SLEEP_SECS)
+        gevent.sleep(SLEEP_SECS)
         res = self.test.getProperty(node_id, port, wuclassID, property_number)
 
         self.assertEqual(res, ans)
@@ -35,8 +35,9 @@ class TestProperty(unittest.TestCase):
             datatype = 'short'
             
             ans = random.randint(0, 255)      
+            gevent.sleep(SLEEP_SECS)
             self.test.setProperty(node_id, port, wuclassID, property_number, datatype, ans)
-            time.sleep(SLEEP_SECS)
+            gevent.sleep(SLEEP_SECS)
             res = self.test.getProperty(node_id, port, wuclassID, property_number)
 
             self.assertEqual(res, ans)

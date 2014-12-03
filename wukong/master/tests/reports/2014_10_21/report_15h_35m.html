@@ -1,0 +1,2565 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>WuKong Testing</title>
+    <meta name="generator" content="HTMLTestRunner 0.8.2"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    
+<style type="text/css" media="screen">
+body        { font-family: verdana, arial, helvetica, sans-serif; font-size: 80%; }
+table       { font-size: 100%; }
+pre         { }
+
+/* -- heading ---------------------------------------------------------------------- */
+h1 {
+	font-size: 16pt;
+	color: gray;
+}
+.heading {
+    margin-top: 0ex;
+    margin-bottom: 1ex;
+}
+
+.heading .attribute {
+    margin-top: 1ex;
+    margin-bottom: 0;
+}
+
+.heading .description {
+    margin-top: 4ex;
+    margin-bottom: 6ex;
+}
+
+/* -- css div popup ------------------------------------------------------------------------ */
+a.popup_link {
+}
+
+a.popup_link:hover {
+    color: red;
+}
+
+.popup_window {
+    display: none;
+    position: relative;
+    left: 0px;
+    top: 0px;
+    /*border: solid #627173 1px; */
+    padding: 10px;
+    background-color: #E6E6D6;
+    font-family: "Lucida Console", "Courier New", Courier, monospace;
+    text-align: left;
+    font-size: 8pt;
+    width: 500px;
+}
+
+}
+/* -- report ------------------------------------------------------------------------ */
+#show_detail_line {
+    margin-top: 3ex;
+    margin-bottom: 1ex;
+}
+#result_table {
+    width: 80%;
+    border-collapse: collapse;
+    border: 1px solid #777;
+}
+#header_row {
+    font-weight: bold;
+    color: white;
+    background-color: #777;
+}
+#result_table td {
+    border: 1px solid #777;
+    padding: 2px;
+}
+#total_row  { font-weight: bold; }
+.passClass  { background-color: #6c6; }
+.failClass  { background-color: #c60; }
+.errorClass { background-color: #c00; }
+.passCase   { color: #6c6; }
+.failCase   { color: #c60; font-weight: bold; }
+.errorCase  { color: #c00; font-weight: bold; }
+.hiddenRow  { display: none; }
+.testcase   { margin-left: 2em; }
+
+
+/* -- ending ---------------------------------------------------------------------- */
+#ending {
+}
+
+</style>
+
+</head>
+<body>
+<script language="javascript" type="text/javascript"><!--
+output_list = Array();
+
+/* level - 0:Summary; 1:Failed; 2:All */
+function showCase(level) {
+    trs = document.getElementsByTagName("tr");
+    for (var i = 0; i < trs.length; i++) {
+        tr = trs[i];
+        id = tr.id;
+        if (id.substr(0,2) == 'ft') {
+            if (level < 1) {
+                tr.className = 'hiddenRow';
+            }
+            else {
+                tr.className = '';
+            }
+        }
+        if (id.substr(0,2) == 'pt') {
+            if (level > 1) {
+                tr.className = '';
+            }
+            else {
+                tr.className = 'hiddenRow';
+            }
+        }
+    }
+}
+
+
+function showClassDetail(cid, count) {
+    var id_list = Array(count);
+    var toHide = 1;
+    for (var i = 0; i < count; i++) {
+        tid0 = 't' + cid.substr(1) + '.' + (i+1);
+        tid = 'f' + tid0;
+        tr = document.getElementById(tid);
+        if (!tr) {
+            tid = 'p' + tid0;
+            tr = document.getElementById(tid);
+        }
+        id_list[i] = tid;
+        if (tr.className) {
+            toHide = 0;
+        }
+    }
+    for (var i = 0; i < count; i++) {
+        tid = id_list[i];
+        if (toHide) {
+            document.getElementById('div_'+tid).style.display = 'none'
+            document.getElementById(tid).className = 'hiddenRow';
+        }
+        else {
+            document.getElementById(tid).className = '';
+        }
+    }
+}
+
+
+function showTestDetail(div_id){
+    var details_div = document.getElementById(div_id)
+    var displayState = details_div.style.display
+    // alert(displayState)
+    if (displayState != 'block' ) {
+        displayState = 'block'
+        details_div.style.display = 'block'
+    }
+    else {
+        details_div.style.display = 'none'
+    }
+}
+
+
+function html_escape(s) {
+    s = s.replace(/&/g,'&amp;');
+    s = s.replace(/</g,'&lt;');
+    s = s.replace(/>/g,'&gt;');
+    return s;
+}
+
+/* obsoleted by detail in <div>
+function showOutput(id, name) {
+    var w = window.open("", //url
+                    name,
+                    "resizable,scrollbars,status,width=800,height=450");
+    d = w.document;
+    d.write("<pre>");
+    d.write(html_escape(output_list[id]));
+    d.write("\n");
+    d.write("<a href='javascript:window.close()'>close</a>\n");
+    d.write("</pre>\n");
+    d.close();
+}
+*/
+--></script>
+
+<div class='heading'>
+<h1>WuKong Testing</h1>
+<p class='attribute'><strong>Start Time:</strong> 2014-10-21 15:35:24</p>
+<p class='attribute'><strong>Duration:</strong> 0:00:58.216894</p>
+<p class='attribute'><strong>Status:</strong> Pass 2</p>
+
+<p class='description'></p>
+</div>
+
+
+
+<p id='show_detail_line'>Show
+<a href='javascript:showCase(0)'>Summary</a>
+<a href='javascript:showCase(1)'>Failed</a>
+<a href='javascript:showCase(2)'>All</a>
+</p>
+<table id='result_table'>
+<colgroup>
+<col align='left' />
+<col align='right' />
+<col align='right' />
+<col align='right' />
+<col align='right' />
+<col align='right' />
+</colgroup>
+<tr id='header_row'>
+    <td>Test Group/Test case</td>
+    <td>Count</td>
+    <td>Pass</td>
+    <td>Fail</td>
+    <td>Error</td>
+    <td>View</td>
+</tr>
+
+<tr class='passClass'>
+    <td>test_propagate.TestPropagate</td>
+    <td>2</td>
+    <td>2</td>
+    <td>0</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1',2)">Detail</a></td>
+</tr>
+
+<tr id='pt1.1' class='hiddenRow'>
+    <td class='none'><div class='testcase'>test_basic_propagate</div></td>
+    <td colspan='5' align='center'>
+
+    <!--css div popup start-->
+    <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.1')" >
+        pass</a>
+
+    <div id='div_pt1.1' class="popup_window">
+        <div style='text-align: right; color:red;cursor:pointer'>
+        <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.1').style.display = 'none' " >
+           [x]</a>
+        </div>
+        <pre>
+        
+pt1.1: Scanning /home/wukong/wukong/arduino-1.5.7/tools/wukong-darjeeling/wukong/master/../../wukong/ComponentDefinitions/WuKongStandardLibrary.xml
+creating wutypes
+Scanning classes &amp; properties
+[transport] BrokerAgent init
+[wkpfcomm] getting all nodes from node discovery
+[wkpfcomm] getNodeInfo of node id 2
+basic= 1
+generic= 255
+specific= 0
+[wkpfcomm] getLocation 2
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf320&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[155, 175], message=Message(destination=2, command=154, payload=[0, 1, 0]), timeout=1413876937568) to queue
+[transport] adding to queue: queue_id  01e8c391abfde9abea82d75a2d60278d4
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=155, payload=[0, 1, 2, 57, 57, 51, 43, 45, 42, 47, 52, 53, 54, 86, 64, 97, 69, 92, 42, 36, 54, 81, 32, 60, 91, 79, 36, 72, 32, 121, 41, 65, 124, 58, 118, 116, 77, 91, 108, 49, 125, 92])
+155
+[transport] found
+[wkpfcomm] getWuClassList
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf410&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf938&gt;, allowed_replies=[145, 175], message=Message(destination=2, command=144, payload=[0, 2, 0]), timeout=1413876937638) to queue
+[transport] adding to queue: queue_id  07dc1c7653ac42a05642a667959c12239
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=145, payload=[0, 2, 0, 1, 3, 0, 204, 2, 0, 15, 2, 0, 10, 2])
+145
+[transport] found
+[wkpfcomm] Respond received
+reply= [0, 204, 2, 0, 15, 2, 0, 10, 2]
+[wkpfcomm] get 3 wuclasses
+[wkpfcomm] getWuObjectList
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf320&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[147, 175], message=Message(destination=2, command=146, payload=[0, 3, 0]), timeout=1413876937685) to queue
+[transport] adding to queue: queue_id  0936a40b7e8eea0dc537e5f2edee1387a
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=147, payload=[0, 3, 0, 1, 3, 3, 0, 204, 0, 2, 0, 15, 0, 1, 0, 10, 0])
+147
+[transport] found
+[wkpfcomm] Respond received
+[wkpfcomm] get 3 wuobjects
+[wkpfcomm] getNodeInfo of node id 3
+basic= 1
+generic= 255
+specific= 0
+[wkpfcomm] getLocation 3
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf410&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf230&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf938&gt;, allowed_replies=[155, 175], message=Message(destination=3, command=154, payload=[0, 4, 0]), timeout=1413876938746) to queue
+[transport] adding to queue: queue_id  0fdbd31f2027f20378b1a80125fc862db
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=3, command=155, payload=[0, 4, 2, 57, 57, 51, 43, 45, 42, 47, 52, 53, 54, 9, 51, 52, 84, 92, 79, 96, 118, 58, 60, 75, 101, 104, 101, 65, 110, 118, 47, 123, 119, 75, 78, 68, 122, 117, 123, 56, 13, 76])
+155
+[transport] found
+[wkpfcomm] getWuClassList
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf320&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[145, 175], message=Message(destination=3, command=144, payload=[0, 5, 0]), timeout=1413876938816) to queue
+[transport] adding to queue: queue_id  0a41b3bb3e6b050b6c9067c67f663b915
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=3, command=145, payload=[0, 5, 0, 1, 3, 0, 204, 2, 0, 15, 2, 0, 10, 2])
+145
+[transport] found
+[wkpfcomm] Respond received
+reply= [0, 204, 2, 0, 15, 2, 0, 10, 2]
+[wkpfcomm] get 3 wuclasses
+[wkpfcomm] getWuObjectList
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf410&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf230&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf938&gt;, allowed_replies=[147, 175], message=Message(destination=3, command=146, payload=[0, 6, 0]), timeout=1413876938861) to queue
+[transport] adding to queue: queue_id  05d4ae76f053f8f2516ad12961ef7fe97
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=3, command=147, payload=[0, 6, 0, 1, 3, 3, 0, 204, 0, 2, 0, 15, 0, 1, 0, 10, 0])
+147
+[transport] found
+[wkpfcomm] Respond received
+[wkpfcomm] get 3 wuobjects
+[wkpfcomm] getNodeInfo of node id 4
+basic= 1
+generic= 255
+specific= 0
+[wkpfcomm] getLocation 4
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf320&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[155, 175], message=Message(destination=4, command=154, payload=[0, 7, 0]), timeout=1413876939920) to queue
+[transport] adding to queue: queue_id  0bd22c2ef9e6f0fa97825c6be879f8fa4
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=4, command=155, payload=[0, 7, 2, 57, 57, 51, 43, 45, 42, 47, 52, 53, 54, 43, 56, 44, 50, 43, 80, 44, 44, 69, 85, 51, 121, 75, 83, 55, 59, 124, 63, 97, 71, 46, 60, 105, 105, 60, 54, 119, 60, 46])
+155
+[transport] found
+[wkpfcomm] getWuClassList
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf410&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf230&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf938&gt;, allowed_replies=[145, 175], message=Message(destination=4, command=144, payload=[0, 8, 0]), timeout=1413876939990) to queue
+[transport] adding to queue: queue_id  0605ac7e4c16b8a013b4779b81f883e66
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=4, command=145, payload=[0, 8, 0, 1, 3, 0, 204, 2, 0, 15, 2, 0, 10, 2])
+145
+[transport] found
+[wkpfcomm] Respond received
+reply= [0, 204, 2, 0, 15, 2, 0, 10, 2]
+[wkpfcomm] get 3 wuclasses
+[wkpfcomm] getWuObjectList
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf320&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[147, 175], message=Message(destination=4, command=146, payload=[0, 9, 0]), timeout=1413876940035) to queue
+[transport] adding to queue: queue_id  0109f91266ef89cc3690079b28abfe9a3
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=4, command=147, payload=[0, 9, 0, 1, 3, 3, 0, 204, 0, 2, 0, 15, 0, 1, 0, 10, 0])
+147
+[transport] found
+[wkpfcomm] Respond received
+[wkpfcomm] get 3 wuobjects
+2
+3
+4
+1
+&lt;wkpf.models.WuComponent instance at 0x7eff4f3613b0&gt;
+location string to evaluate is:/WuKong
+location parser returns ([1, 2, 3, 4], [0, 0, 0, 0])
+candidates [1, 2, 3, 4] [0, 0, 0, 0]
+False False
+using native at 2
+False False
+using native at 3
+False False
+using native at 4
+('mapped node id', [2])
+&lt;wkpf.models.WuComponent instance at 0x7eff4f36ea28&gt;
+location string to evaluate is:/WuKong
+location parser returns ([1, 2, 3, 4], [0, 0, 0, 0])
+candidates [1, 2, 3, 4] [0, 0, 0, 0]
+False False
+using native at 2
+False False
+using native at 3
+False False
+using native at 4
+('mapped node id', [2])
+&lt;wkpf.models.WuComponent instance at 0x7eff4f36ea70&gt;
+location string to evaluate is:/WuKong
+location parser returns ([1, 2, 3, 4], [0, 0, 0, 0])
+candidates [1, 2, 3, 4] [0, 0, 0, 0]
+False False
+using native at 2
+False False
+using native at 3
+False False
+using native at 4
+('mapped node id', [2])
+&lt;wkpf.models.WuComponent instance at 0x7eff4f36eab8&gt;
+location string to evaluate is:/WuKong
+location parser returns ([1, 2, 3, 4], [0, 0, 0, 0])
+candidates [1, 2, 3, 4] [0, 0, 0, 0]
+False False
+using native at 1
+('mapped node id', [1])
+clear deploy status.........
+[generator] generate Table XML
+[generator] generate Java App
+[generator] generating /home/wukong/wukong/arduino-1.5.7/tools/wukong-darjeeling/wukong/master/../../src/app/wkdeploy/java/WKDeploy.java
+Deploy to node 2 type wudevice
+[wkpfcomm] Sending REPRG_OPEN command with image size  343
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f3229b0&gt;, allowed_replies=[17], message=Message(destination=2, command=16, payload=[0, 10, 87, 1]), timeout=1413876951123) to queue
+[transport] adding to queue: queue_id  045fbc6d3e05ebd93369ce542e8f2322d
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=17, payload=[0, 10, 0, 0, 1])
+17
+[transport] found
+[wkpfcomm] Uploading 343 bytes.
+[wkpfcomm] Uploading bytes 0 to 38 of 343
+[wkpfcomm] 0 0 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Uploading bytes 38 to 76 of 343
+[wkpfcomm] 0 0 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Uploading bytes 76 to 114 of 343
+[wkpfcomm] 0 0 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Uploading bytes 114 to 152 of 343
+[wkpfcomm] 0 0 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Uploading bytes 152 to 190 of 343
+[wkpfcomm] 0 0 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Uploading bytes 190 to 228 of 343
+[wkpfcomm] 0 0 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Uploading bytes 228 to 266 of 343
+[wkpfcomm] 0 1 of pagesize 256
+[wkpfcomm] Send last packet of this page and wait for a REPRG_DJ_WRITE_R after each full page
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf320&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[19], message=Message(destination=2, command=18, payload=[0, 17, 228, 0, 0, 2, 2, 0, 1, 34, 0, 3, 4, 0, 10, 0, 16, 0, 22, 0, 28, 0, 1, 10, 0, 2, 0, 1, 1, 15, 0, 2, 0, 2, 1, 204, 0, 2, 0, 3, 1, 44]), timeout=1413876951388) to queue
+[transport] adding to queue: queue_id  0e96ed478dab8595a7dbda4cbcbee168f
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=19, payload=[0, 17, 0])
+19
+[transport] found
+[wkpfcomm] Reply:  Message(destination=2, command=19, payload=[0, 17, 0])
+[wkpfcomm] Received REPRG_DJ_RETURN_OK in reply to packet writing at [228, 0]
+[wkpfcomm] Uploading bytes 266 to 304 of 343
+[wkpfcomm] 1 1 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Uploading bytes 304 to 342 of 343
+[wkpfcomm] 1 1 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Uploading bytes 342 to 380 of 343
+[wkpfcomm] 1 1 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Send REPRG_DJ_COMMIT after last packet
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f469488&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf2a8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f3227d0&gt;, allowed_replies=[21], message=Message(destination=2, command=20, payload=[0, 21, 87, 1]), timeout=1413876951552) to queue
+[transport] adding to queue: queue_id  0ec8ce6abb3e952a85b8551ba726a1227
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=21, payload=[0, 21, 0])
+21
+[transport] found
+[wkpfcomm] Reply:  Message(destination=2, command=21, payload=[0, 21, 0])
+[wkpfcomm] Commit OK. [0, 21, 0]
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Sent reboot. [0, 21, 0]
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf230&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f3229b0&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 23, 2, 0, 15, 2, 0, 0, 50]), timeout=1413876951627) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[wkpfcomm] getting reply from send command
+[wkpfcomm] no reply received
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f322848&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 24, 1, 0, 10, 1, 1, 1]), timeout=1413876961721) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 24, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f469488&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf2a8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 25, 3, 0, 204, 0]), timeout=1413876961762) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 25, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf320&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 26, 1, 0, 10, 1, 1, 0]), timeout=1413876961805) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 26, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f469488&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf2a8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 27, 3, 0, 204, 0]), timeout=1413876961846) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 27, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+
+
+        </pre>
+    </div>
+    <!--css div popup end-->
+
+    </td>
+</tr>
+
+<tr id='pt1.2' class='hiddenRow'>
+    <td class='none'><div class='testcase'>test_strength_propagate</div></td>
+    <td colspan='5' align='center'>
+
+    <!--css div popup start-->
+    <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.2')" >
+        pass</a>
+
+    <div id='div_pt1.2' class="popup_window">
+        <div style='text-align: right; color:red;cursor:pointer'>
+        <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.2').style.display = 'none' " >
+           [x]</a>
+        </div>
+        <pre>
+        
+pt1.2: Scanning /home/wukong/wukong/arduino-1.5.7/tools/wukong-darjeeling/wukong/master/../../wukong/ComponentDefinitions/WuKongStandardLibrary.xml
+creating wutypes
+Scanning classes &amp; properties
+[wkpfcomm] getting all nodes from node discovery
+[wkpfcomm] getNodeInfo of node id 2
+basic= 1
+generic= 255
+specific= 0
+[wkpfcomm] getLocation 2
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf230&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[155, 175], message=Message(destination=2, command=154, payload=[0, 28, 0]), timeout=1413876964978) to queue
+[transport] adding to queue: queue_id  01e8c391abfde9abea82d75a2d60278d4
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=155, payload=[0, 28, 2, 57, 57, 51, 43, 45, 42, 47, 52, 53, 54, 86, 64, 97, 69, 92, 42, 36, 54, 81, 32, 60, 91, 79, 36, 72, 32, 121, 41, 65, 124, 58, 118, 116, 77, 91, 108, 49, 125, 92])
+155
+[transport] found
+[wkpfcomm] getWuClassList
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf2a8&gt;, allowed_replies=[145, 175], message=Message(destination=2, command=144, payload=[0, 29, 0]), timeout=1413876965048) to queue
+[transport] adding to queue: queue_id  07dc1c7653ac42a05642a667959c12239
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=145, payload=[0, 29, 0, 1, 3, 0, 204, 2, 0, 15, 2, 0, 10, 2])
+145
+[transport] found
+[wkpfcomm] Respond received
+reply= [0, 204, 2, 0, 15, 2, 0, 10, 2]
+[wkpfcomm] get 3 wuclasses
+[wkpfcomm] getWuObjectList
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf230&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[147, 175], message=Message(destination=2, command=146, payload=[0, 30, 0]), timeout=1413876965093) to queue
+[transport] adding to queue: queue_id  0936a40b7e8eea0dc537e5f2edee1387a
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=147, payload=[0, 30, 0, 1, 3, 3, 0, 204, 0, 2, 0, 15, 0, 1, 0, 10, 0])
+147
+[transport] found
+[wkpfcomm] Respond received
+[wkpfcomm] get 3 wuobjects
+[wkpfcomm] getNodeInfo of node id 3
+basic= 1
+generic= 255
+specific= 0
+[wkpfcomm] getLocation 3
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf2a8&gt;, allowed_replies=[155, 175], message=Message(destination=3, command=154, payload=[0, 31, 0]), timeout=1413876966153) to queue
+[transport] adding to queue: queue_id  0fdbd31f2027f20378b1a80125fc862db
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=3, command=155, payload=[0, 31, 2, 57, 57, 51, 43, 45, 42, 47, 52, 53, 54, 9, 51, 52, 84, 92, 79, 96, 118, 58, 60, 75, 101, 104, 101, 65, 110, 118, 47, 123, 119, 75, 78, 68, 122, 117, 123, 56, 13, 76])
+155
+[transport] found
+[wkpfcomm] getWuClassList
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf230&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[145, 175], message=Message(destination=3, command=144, payload=[0, 32, 0]), timeout=1413876966223) to queue
+[transport] adding to queue: queue_id  0a41b3bb3e6b050b6c9067c67f663b915
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=3, command=145, payload=[0, 32, 0, 1, 3, 0, 204, 2, 0, 15, 2, 0, 10, 2])
+145
+[transport] found
+[wkpfcomm] Respond received
+reply= [0, 204, 2, 0, 15, 2, 0, 10, 2]
+[wkpfcomm] get 3 wuclasses
+[wkpfcomm] getWuObjectList
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf2a8&gt;, allowed_replies=[147, 175], message=Message(destination=3, command=146, payload=[0, 33, 0]), timeout=1413876966272) to queue
+[transport] adding to queue: queue_id  05d4ae76f053f8f2516ad12961ef7fe97
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=3, command=147, payload=[0, 33, 0, 1, 3, 3, 0, 204, 0, 2, 0, 15, 0, 1, 0, 10, 0])
+147
+[transport] found
+[wkpfcomm] Respond received
+[wkpfcomm] get 3 wuobjects
+[wkpfcomm] getNodeInfo of node id 4
+basic= 1
+generic= 255
+specific= 0
+[wkpfcomm] getLocation 4
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[155, 175], message=Message(destination=4, command=154, payload=[0, 34, 0]), timeout=1413876967332) to queue
+[transport] adding to queue: queue_id  0bd22c2ef9e6f0fa97825c6be879f8fa4
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=4, command=155, payload=[0, 34, 2, 57, 57, 51, 43, 45, 42, 47, 52, 53, 54, 43, 56, 44, 50, 43, 80, 44, 44, 69, 85, 51, 121, 75, 83, 55, 59, 124, 63, 97, 71, 46, 60, 105, 105, 60, 54, 119, 60, 46])
+155
+[transport] found
+[wkpfcomm] getWuClassList
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf2a8&gt;, allowed_replies=[145, 175], message=Message(destination=4, command=144, payload=[0, 35, 0]), timeout=1413876967402) to queue
+[transport] adding to queue: queue_id  0605ac7e4c16b8a013b4779b81f883e66
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=4, command=145, payload=[0, 35, 0, 1, 3, 0, 204, 2, 0, 15, 2, 0, 10, 2])
+145
+[transport] found
+[wkpfcomm] Respond received
+reply= [0, 204, 2, 0, 15, 2, 0, 10, 2]
+[wkpfcomm] get 3 wuclasses
+[wkpfcomm] getWuObjectList
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[147, 175], message=Message(destination=4, command=146, payload=[0, 36, 0]), timeout=1413876967447) to queue
+[transport] adding to queue: queue_id  0109f91266ef89cc3690079b28abfe9a3
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=4, command=147, payload=[0, 36, 0, 1, 3, 3, 0, 204, 0, 2, 0, 15, 0, 1, 0, 10, 0])
+147
+[transport] found
+[wkpfcomm] Respond received
+[wkpfcomm] get 3 wuobjects
+2
+3
+4
+1
+&lt;wkpf.models.WuComponent instance at 0x7eff4f4738c0&gt;
+location string to evaluate is:/WuKong
+location parser returns ([1, 2, 3, 4], [0, 0, 0, 0])
+candidates [1, 2, 3, 4] [0, 0, 0, 0]
+False False
+using native at 2
+False False
+using native at 3
+False False
+using native at 4
+('mapped node id', [2])
+&lt;wkpf.models.WuComponent instance at 0x7eff4f473e60&gt;
+location string to evaluate is:/WuKong
+location parser returns ([1, 2, 3, 4], [0, 0, 0, 0])
+candidates [1, 2, 3, 4] [0, 0, 0, 0]
+False False
+using native at 2
+False False
+using native at 3
+False False
+using native at 4
+('mapped node id', [2])
+&lt;wkpf.models.WuComponent instance at 0x7eff4f473908&gt;
+location string to evaluate is:/WuKong
+location parser returns ([1, 2, 3, 4], [0, 0, 0, 0])
+candidates [1, 2, 3, 4] [0, 0, 0, 0]
+False False
+using native at 2
+False False
+using native at 3
+False False
+using native at 4
+('mapped node id', [2])
+&lt;wkpf.models.WuComponent instance at 0x7eff4f473488&gt;
+location string to evaluate is:/WuKong
+location parser returns ([1, 2, 3, 4], [0, 0, 0, 0])
+candidates [1, 2, 3, 4] [0, 0, 0, 0]
+False False
+using native at 1
+('mapped node id', [1])
+clear deploy status.........
+[generator] generate Table XML
+[generator] generate Java App
+[generator] generating /home/wukong/wukong/arduino-1.5.7/tools/wukong-darjeeling/wukong/master/../../src/app/wkdeploy/java/WKDeploy.java
+Deploy to node 2 type wudevice
+[wkpfcomm] Sending REPRG_OPEN command with image size  343
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf320&gt;, allowed_replies=[17], message=Message(destination=2, command=16, payload=[0, 37, 87, 1]), timeout=1413876973295) to queue
+[transport] adding to queue: queue_id  045fbc6d3e05ebd93369ce542e8f2322d
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=17, payload=[0, 37, 0, 0, 1])
+17
+[transport] found
+[wkpfcomm] Uploading 343 bytes.
+[wkpfcomm] Uploading bytes 0 to 38 of 343
+[wkpfcomm] 0 0 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Uploading bytes 38 to 76 of 343
+[wkpfcomm] 0 0 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Uploading bytes 76 to 114 of 343
+[wkpfcomm] 0 0 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Uploading bytes 114 to 152 of 343
+[wkpfcomm] 0 0 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Uploading bytes 152 to 190 of 343
+[wkpfcomm] 0 0 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Uploading bytes 190 to 228 of 343
+[wkpfcomm] 0 0 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Uploading bytes 228 to 266 of 343
+[wkpfcomm] 0 1 of pagesize 256
+[wkpfcomm] Send last packet of this page and wait for a REPRG_DJ_WRITE_R after each full page
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[19], message=Message(destination=2, command=18, payload=[0, 44, 228, 0, 0, 2, 2, 0, 1, 34, 0, 3, 4, 0, 10, 0, 16, 0, 22, 0, 28, 0, 1, 10, 0, 2, 0, 1, 1, 15, 0, 2, 0, 2, 1, 204, 0, 2, 0, 3, 1, 44]), timeout=1413876973563) to queue
+[transport] adding to queue: queue_id  0e96ed478dab8595a7dbda4cbcbee168f
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=19, payload=[0, 44, 0])
+19
+[transport] found
+[wkpfcomm] Reply:  Message(destination=2, command=19, payload=[0, 44, 0])
+[wkpfcomm] Received REPRG_DJ_RETURN_OK in reply to packet writing at [228, 0]
+[wkpfcomm] Uploading bytes 266 to 304 of 343
+[wkpfcomm] 1 1 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Uploading bytes 304 to 342 of 343
+[wkpfcomm] 1 1 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Uploading bytes 342 to 380 of 343
+[wkpfcomm] 1 1 of pagesize 256
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Send REPRG_DJ_COMMIT after last packet
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f469488&gt;, error_cb=&lt;function error_callback at 0x7eff4f322848&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f322cf8&gt;, allowed_replies=[21], message=Message(destination=2, command=20, payload=[0, 48, 87, 1]), timeout=1413876973733) to queue
+[transport] adding to queue: queue_id  0ec8ce6abb3e952a85b8551ba726a1227
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=21, payload=[0, 48, 0])
+21
+[transport] found
+[wkpfcomm] Reply:  Message(destination=2, command=21, payload=[0, 48, 0])
+[wkpfcomm] Commit OK. [0, 48, 0]
+[transport] handler: returns immediately to handle failues, or defer has no expected replies
+[wkpfcomm] Sent reboot. [0, 48, 0]
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf230&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f322c80&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 50, 2, 0, 15, 2, 0, 0, 50]), timeout=1413876973808) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[wkpfcomm] getting reply from send command
+[wkpfcomm] no reply received
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f322c08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 51, 1, 0, 10, 1, 1, 1]), timeout=1413876983901) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 51, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f469488&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 52, 3, 0, 204, 0]), timeout=1413876983942) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 52, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 53, 1, 0, 10, 1, 1, 1]), timeout=1413876983985) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 53, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f469488&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 54, 3, 0, 204, 0]), timeout=1413876984026) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 54, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 55, 1, 0, 10, 1, 1, 1]), timeout=1413876984068) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 55, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f469488&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 56, 3, 0, 204, 0]), timeout=1413876984110) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 56, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 57, 1, 0, 10, 1, 1, 0]), timeout=1413876984152) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 57, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f469488&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 58, 3, 0, 204, 0]), timeout=1413876984194) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 58, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 59, 1, 0, 10, 1, 1, 0]), timeout=1413876984237) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 59, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f469488&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 60, 3, 0, 204, 0]), timeout=1413876984284) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 60, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 61, 1, 0, 10, 1, 1, 0]), timeout=1413876984333) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 61, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f469488&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 62, 3, 0, 204, 0]), timeout=1413876984374) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 62, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 63, 1, 0, 10, 1, 1, 0]), timeout=1413876984416) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 63, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 64, 3, 0, 204, 0]), timeout=1413876984546) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 64, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 65, 1, 0, 10, 1, 1, 1]), timeout=1413876984588) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 65, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 66, 3, 0, 204, 0]), timeout=1413876984629) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 66, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 67, 1, 0, 10, 1, 1, 1]), timeout=1413876984671) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 67, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 68, 3, 0, 204, 0]), timeout=1413876984712) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 68, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 69, 1, 0, 10, 1, 1, 1]), timeout=1413876984755) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 69, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 70, 3, 0, 204, 0]), timeout=1413876984799) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 70, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 71, 1, 0, 10, 1, 1, 0]), timeout=1413876984841) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 71, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 72, 3, 0, 204, 0]), timeout=1413876984883) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 72, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 73, 1, 0, 10, 1, 1, 1]), timeout=1413876984925) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 73, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 74, 3, 0, 204, 0]), timeout=1413876984966) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 74, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 75, 1, 0, 10, 1, 1, 1]), timeout=1413876985009) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 75, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 76, 3, 0, 204, 0]), timeout=1413876985049) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 76, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 77, 1, 0, 10, 1, 1, 0]), timeout=1413876985092) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 77, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 78, 3, 0, 204, 0]), timeout=1413876985134) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 78, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 79, 1, 0, 10, 1, 1, 1]), timeout=1413876985177) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 79, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 80, 3, 0, 204, 0]), timeout=1413876985221) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 80, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 81, 1, 0, 10, 1, 1, 1]), timeout=1413876985263) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 81, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 82, 3, 0, 204, 0]), timeout=1413876985305) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 82, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 83, 1, 0, 10, 1, 1, 1]), timeout=1413876985347) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 83, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 84, 3, 0, 204, 0]), timeout=1413876985388) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 84, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 85, 1, 0, 10, 1, 1, 1]), timeout=1413876985430) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 85, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 86, 3, 0, 204, 0]), timeout=1413876985471) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 86, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 87, 1, 0, 10, 1, 1, 1]), timeout=1413876985514) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 87, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 88, 3, 0, 204, 0]), timeout=1413876985644) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 88, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 89, 1, 0, 10, 1, 1, 1]), timeout=1413876985687) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 89, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 90, 3, 0, 204, 0]), timeout=1413876985728) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 90, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 91, 1, 0, 10, 1, 1, 1]), timeout=1413876985770) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 91, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 92, 3, 0, 204, 0]), timeout=1413876985819) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 92, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 93, 1, 0, 10, 1, 1, 0]), timeout=1413876985861) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 93, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 94, 3, 0, 204, 0]), timeout=1413876985902) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 94, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 95, 1, 0, 10, 1, 1, 0]), timeout=1413876985943) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 95, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 96, 3, 0, 204, 0]), timeout=1413876985984) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 96, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 97, 1, 0, 10, 1, 1, 1]), timeout=1413876986026) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 97, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 98, 3, 0, 204, 0]), timeout=1413876986067) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 98, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 99, 1, 0, 10, 1, 1, 0]), timeout=1413876986109) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 99, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 100, 3, 0, 204, 0]), timeout=1413876986150) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 100, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 101, 1, 0, 10, 1, 1, 0]), timeout=1413876986192) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 101, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 102, 3, 0, 204, 0]), timeout=1413876986233) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 102, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 103, 1, 0, 10, 1, 1, 0]), timeout=1413876986276) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 103, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 104, 3, 0, 204, 0]), timeout=1413876986316) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 104, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 105, 1, 0, 10, 1, 1, 0]), timeout=1413876986363) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 105, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 106, 3, 0, 204, 0]), timeout=1413876986404) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 106, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 107, 1, 0, 10, 1, 1, 0]), timeout=1413876986446) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 107, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 108, 3, 0, 204, 0]), timeout=1413876986486) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 108, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 109, 1, 0, 10, 1, 1, 1]), timeout=1413876986528) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 109, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 110, 3, 0, 204, 0]), timeout=1413876986569) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 110, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 111, 1, 0, 10, 1, 1, 0]), timeout=1413876986611) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 111, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 112, 3, 0, 204, 0]), timeout=1413876986652) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 112, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 113, 1, 0, 10, 1, 1, 1]), timeout=1413876986693) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 113, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 114, 3, 0, 204, 0]), timeout=1413876986734) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 114, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 115, 1, 0, 10, 1, 1, 0]), timeout=1413876986776) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 115, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 116, 3, 0, 204, 0]), timeout=1413876986817) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 116, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 117, 1, 0, 10, 1, 1, 1]), timeout=1413876986859) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 117, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 118, 3, 0, 204, 0]), timeout=1413876986899) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 118, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 119, 1, 0, 10, 1, 1, 1]), timeout=1413876986941) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 119, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 120, 3, 0, 204, 0]), timeout=1413876986982) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 120, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 121, 1, 0, 10, 1, 1, 1]), timeout=1413876987024) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 121, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 122, 3, 0, 204, 0]), timeout=1413876987065) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 122, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 123, 1, 0, 10, 1, 1, 0]), timeout=1413876987107) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 123, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 124, 3, 0, 204, 0]), timeout=1413876987150) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 124, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 125, 1, 0, 10, 1, 1, 1]), timeout=1413876987192) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 125, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 126, 3, 0, 204, 0]), timeout=1413876987233) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 126, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 127, 1, 0, 10, 1, 1, 0]), timeout=1413876987275) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 127, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 128, 3, 0, 204, 0]), timeout=1413876987316) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 128, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 129, 1, 0, 10, 1, 1, 1]), timeout=1413876987358) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 129, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 130, 3, 0, 204, 0]), timeout=1413876987404) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 130, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 131, 1, 0, 10, 1, 1, 1]), timeout=1413876987454) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 131, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 132, 3, 0, 204, 0]), timeout=1413876987495) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 132, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 133, 1, 0, 10, 1, 1, 0]), timeout=1413876987537) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 133, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 134, 3, 0, 204, 0]), timeout=1413876987578) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 134, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 135, 1, 0, 10, 1, 1, 1]), timeout=1413876987620) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 135, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 136, 3, 0, 204, 0]), timeout=1413876987661) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 136, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 137, 1, 0, 10, 1, 1, 0]), timeout=1413876987703) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 137, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 138, 3, 0, 204, 0]), timeout=1413876987744) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 138, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 139, 1, 0, 10, 1, 1, 1]), timeout=1413876987786) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 139, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 140, 3, 0, 204, 0]), timeout=1413876987827) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 140, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 141, 1, 0, 10, 1, 1, 0]), timeout=1413876987870) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 141, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 142, 3, 0, 204, 0]), timeout=1413876987911) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 142, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 143, 1, 0, 10, 1, 1, 1]), timeout=1413876987954) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 143, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 144, 3, 0, 204, 0]), timeout=1413876987994) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 144, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 145, 1, 0, 10, 1, 1, 0]), timeout=1413876988036) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 145, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 146, 3, 0, 204, 0]), timeout=1413876988078) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 146, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 147, 1, 0, 10, 1, 1, 0]), timeout=1413876988120) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 147, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 148, 3, 0, 204, 0]), timeout=1413876988161) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 148, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 149, 1, 0, 10, 1, 1, 1]), timeout=1413876988203) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 149, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 150, 3, 0, 204, 0]), timeout=1413876988244) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 150, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 151, 1, 0, 10, 1, 1, 1]), timeout=1413876988286) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 151, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 152, 3, 0, 204, 0]), timeout=1413876988327) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 152, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 153, 1, 0, 10, 1, 1, 0]), timeout=1413876988370) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 153, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 154, 3, 0, 204, 0]), timeout=1413876988411) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 154, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 155, 1, 0, 10, 1, 1, 1]), timeout=1413876988453) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 155, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 156, 3, 0, 204, 0]), timeout=1413876988494) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 156, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 157, 1, 0, 10, 1, 1, 0]), timeout=1413876988537) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 157, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 158, 3, 0, 204, 0]), timeout=1413876988579) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 158, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 159, 1, 0, 10, 1, 1, 0]), timeout=1413876988621) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 159, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 160, 3, 0, 204, 0]), timeout=1413876988662) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 160, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 161, 1, 0, 10, 1, 1, 1]), timeout=1413876988704) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 161, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 162, 3, 0, 204, 0]), timeout=1413876988745) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 162, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 163, 1, 0, 10, 1, 1, 1]), timeout=1413876988787) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 163, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 164, 3, 0, 204, 0]), timeout=1413876988828) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 164, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 165, 1, 0, 10, 1, 1, 0]), timeout=1413876988871) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 165, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 166, 3, 0, 204, 0]), timeout=1413876988912) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 166, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 167, 1, 0, 10, 1, 1, 1]), timeout=1413876988955) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 167, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 168, 3, 0, 204, 0]), timeout=1413876988995) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 168, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 169, 1, 0, 10, 1, 1, 1]), timeout=1413876989038) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 169, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 170, 3, 0, 204, 0]), timeout=1413876989080) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 170, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 171, 1, 0, 10, 1, 1, 0]), timeout=1413876989122) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 171, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 172, 3, 0, 204, 0]), timeout=1413876989163) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 172, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 173, 1, 0, 10, 1, 1, 0]), timeout=1413876989206) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 173, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 174, 3, 0, 204, 0]), timeout=1413876989247) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 174, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 175, 1, 0, 10, 1, 1, 1]), timeout=1413876989289) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 175, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 176, 3, 0, 204, 0]), timeout=1413876989329) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 176, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 177, 1, 0, 10, 1, 1, 1]), timeout=1413876989372) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 177, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 178, 3, 0, 204, 0]), timeout=1413876989414) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 178, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 179, 1, 0, 10, 1, 1, 1]), timeout=1413876989456) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 179, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 180, 3, 0, 204, 0]), timeout=1413876989497) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 180, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 181, 1, 0, 10, 1, 1, 1]), timeout=1413876989540) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 181, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 182, 3, 0, 204, 0]), timeout=1413876989581) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 182, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 183, 1, 0, 10, 1, 1, 0]), timeout=1413876989624) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 183, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 184, 3, 0, 204, 0]), timeout=1413876989665) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 184, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 185, 1, 0, 10, 1, 1, 1]), timeout=1413876989707) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 185, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 186, 3, 0, 204, 0]), timeout=1413876989747) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 186, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 187, 1, 0, 10, 1, 1, 0]), timeout=1413876989790) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 187, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 188, 3, 0, 204, 0]), timeout=1413876989832) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 188, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 189, 1, 0, 10, 1, 1, 1]), timeout=1413876989874) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 189, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 190, 3, 0, 204, 0]), timeout=1413876989915) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 190, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 191, 1, 0, 10, 1, 1, 1]), timeout=1413876989957) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 191, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 192, 3, 0, 204, 0]), timeout=1413876989998) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 192, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 193, 1, 0, 10, 1, 1, 0]), timeout=1413876990040) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 193, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 194, 3, 0, 204, 0]), timeout=1413876990087) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 194, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 195, 1, 0, 10, 1, 1, 0]), timeout=1413876990129) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 195, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 196, 3, 0, 204, 0]), timeout=1413876990170) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 196, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 197, 1, 0, 10, 1, 1, 0]), timeout=1413876990212) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 197, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 198, 3, 0, 204, 0]), timeout=1413876990253) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 198, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 199, 1, 0, 10, 1, 1, 0]), timeout=1413876990296) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 199, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 200, 3, 0, 204, 0]), timeout=1413876990336) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 200, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 201, 1, 0, 10, 1, 1, 0]), timeout=1413876990378) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 201, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 202, 3, 0, 204, 0]), timeout=1413876990419) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 202, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 203, 1, 0, 10, 1, 1, 1]), timeout=1413876990461) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 203, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 204, 3, 0, 204, 0]), timeout=1413876990519) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 204, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 205, 1, 0, 10, 1, 1, 1]), timeout=1413876990561) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 205, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 206, 3, 0, 204, 0]), timeout=1413876990603) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 206, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 207, 1, 0, 10, 1, 1, 0]), timeout=1413876990644) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 207, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 208, 3, 0, 204, 0]), timeout=1413876990753) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 208, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 209, 1, 0, 10, 1, 1, 0]), timeout=1413876990795) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 209, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 210, 3, 0, 204, 0]), timeout=1413876990839) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 210, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 211, 1, 0, 10, 1, 1, 0]), timeout=1413876990880) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 211, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 212, 3, 0, 204, 0]), timeout=1413876990927) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 212, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 213, 1, 0, 10, 1, 1, 0]), timeout=1413876990974) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 213, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 214, 3, 0, 204, 0]), timeout=1413876991015) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 214, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 215, 1, 0, 10, 1, 1, 1]), timeout=1413876991057) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 215, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 216, 3, 0, 204, 0]), timeout=1413876991098) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 216, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 217, 1, 0, 10, 1, 1, 1]), timeout=1413876991141) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 217, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 218, 3, 0, 204, 0]), timeout=1413876991182) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 218, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 219, 1, 0, 10, 1, 1, 1]), timeout=1413876991224) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 219, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 220, 3, 0, 204, 0]), timeout=1413876991265) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 220, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 221, 1, 0, 10, 1, 1, 1]), timeout=1413876991308) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 221, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 222, 3, 0, 204, 0]), timeout=1413876991349) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 222, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 223, 1, 0, 10, 1, 1, 1]), timeout=1413876991395) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 223, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 224, 3, 0, 204, 0]), timeout=1413876991438) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 224, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 225, 1, 0, 10, 1, 1, 0]), timeout=1413876991481) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 225, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 226, 3, 0, 204, 0]), timeout=1413876991523) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 226, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 227, 1, 0, 10, 1, 1, 1]), timeout=1413876991565) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 227, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 228, 3, 0, 204, 0]), timeout=1413876991605) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 228, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 229, 1, 0, 10, 1, 1, 1]), timeout=1413876991648) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 229, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 230, 3, 0, 204, 0]), timeout=1413876991690) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 230, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 231, 1, 0, 10, 1, 1, 0]), timeout=1413876991732) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 231, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 232, 3, 0, 204, 0]), timeout=1413876991772) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 232, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 233, 1, 0, 10, 1, 1, 1]), timeout=1413876991818) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 233, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 234, 3, 0, 204, 0]), timeout=1413876991859) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 234, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 235, 1, 0, 10, 1, 1, 1]), timeout=1413876991901) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 235, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 236, 3, 0, 204, 0]), timeout=1413876991947) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 236, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 237, 1, 0, 10, 1, 1, 1]), timeout=1413876991990) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 237, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 238, 3, 0, 204, 0]), timeout=1413876992031) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 238, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 239, 1, 0, 10, 1, 1, 1]), timeout=1413876992073) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 239, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 240, 3, 0, 204, 0]), timeout=1413876992115) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 240, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf1b8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf140&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 241, 1, 0, 10, 1, 1, 0]), timeout=1413876992157) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 241, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 242, 3, 0, 204, 0]), timeout=1413876992199) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 242, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cfc08&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf1b8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 243, 1, 0, 10, 1, 1, 0]), timeout=1413876992240) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 243, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf0c8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 244, 3, 0, 204, 0]), timeout=1413876992282) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 244, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf398&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cfc08&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 245, 1, 0, 10, 1, 1, 1]), timeout=1413876992324) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 245, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf140&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 246, 3, 0, 204, 0]), timeout=1413876992365) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 246, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf0c8&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf398&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 247, 1, 0, 10, 1, 1, 1]), timeout=1413876992407) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 247, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf1b8&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 248, 3, 0, 204, 0]), timeout=1413876992448) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 248, 3, 0, 204, 0, 1, 0, 1])
+149
+[transport] found
+[wkpfcomm] setProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f4cf140&gt;, error_cb=&lt;function error_callback at 0x7eff4f4cf0c8&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cf398&gt;, allowed_replies=[151, 175], message=Message(destination=2, command=150, payload=[0, 249, 1, 0, 10, 1, 1, 0]), timeout=1413876992491) to queue
+[transport] adding to queue: queue_id  024917db15c4e37e421866448c9ab23d8
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=151, payload=[0, 249, 1, 0, 10, 1])
+151
+[transport] found
+[wkpfcomm] getting reply from send command
+[wkpfcomm] reply received
+[wkpfcomm] getProperty
+[transport] handler: appending defer Defer(callback=&lt;function callback at 0x7eff4f322d70&gt;, error_cb=&lt;function error_callback at 0x7eff4f469488&gt;, verify=&lt;function &lt;lambda&gt; at 0x7eff4f4cfc08&gt;, allowed_replies=[149, 175], message=Message(destination=2, command=148, payload=[0, 250, 3, 0, 204, 0]), timeout=1413876992540) to queue
+[transport] adding to queue: queue_id  0e21e4e58ad9ab56e8a4634046da90113
+[transport] receive: put a message to messages
+[transport] getting messages from nodes
+[transport] Message(destination=2, command=149, payload=[0, 250, 3, 0, 204, 0, 1, 0, 0])
+149
+[transport] found
+
+
+        </pre>
+    </div>
+    <!--css div popup end-->
+
+    </td>
+</tr>
+
+<tr id='total_row'>
+    <td>Total</td>
+    <td>2</td>
+    <td>2</td>
+    <td>0</td>
+    <td>0</td>
+    <td>&nbsp;</td>
+</tr>
+</table>
+
+<div id='ending'>&nbsp;</div>
+
+</body>
+</html>

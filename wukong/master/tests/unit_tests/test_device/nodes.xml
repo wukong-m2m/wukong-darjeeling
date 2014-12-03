@@ -1,0 +1,49 @@
+<?xml version="1.0" ?>
+<Nodes>
+	<Node id="1" type="wudevice">
+		<Location content="/WuKong" length="7"/>
+		<WuClassList length="0"/>
+		<WuObjectList>
+			<WuObject id="44" port="1" virtual="False"/>
+		</WuObjectList>
+	</Node>
+	<Node id="2" type="wudevice">
+		<Location content="999" length="3"/>
+		<WuClassList length="3">
+			<WuCLass id="10" virtual="False"/>
+			<WuCLass id="204" virtual="False"/>
+			<WuCLass id="15" virtual="False"/>
+		</WuClassList>
+		<WuObjectList>
+			<WuObject id="10" port="1" virtual="False"/>
+			<WuObject id="15" port="2" virtual="False"/>
+			<WuObject id="204" port="3" virtual="False"/>
+		</WuObjectList>
+	</Node>
+	<Node id="3" type="wudevice">
+		<Location content="999" length="3"/>
+		<WuClassList length="3">
+			<WuCLass id="10" virtual="False"/>
+			<WuCLass id="204" virtual="False"/>
+			<WuCLass id="15" virtual="False"/>
+		</WuClassList>
+		<WuObjectList>
+			<WuObject id="10" port="1" virtual="False"/>
+			<WuObject id="15" port="2" virtual="False"/>
+			<WuObject id="204" port="3" virtual="False"/>
+		</WuObjectList>
+	</Node>
+	<Node id="4" type="wudevice">
+		<Location content="999" length="3"/>
+		<WuClassList length="3">
+			<WuCLass id="10" virtual="False"/>
+			<WuCLass id="204" virtual="False"/>
+			<WuCLass id="15" virtual="False"/>
+		</WuClassList>
+		<WuObjectList>
+			<WuObject id="10" port="1" virtual="False"/>
+			<WuObject id="15" port="2" virtual="False"/>
+			<WuObject id="204" port="3" virtual="False"/>
+		</WuObjectList>
+	</Node>
+</Nodes>

@@ -8,16 +8,16 @@ class TestDeploy(unittest.TestCase):
     def setUp(self):
         self.test = WuTest(False, False)
 
-    def test_application(self):        
+    def test_application(self):
         nodes_info = self.test.discovery()
-        self.test.loadApplication("applications/9d07e0e08af7f96cf45be0112b9ccfbe") 
+        self.test.loadApplication("applications/three_components_in_one_device")
     	self.test.mapping(nodes_info)
     	self.test.deploy_with_discovery()
 
     def test_super_application(self):
         for i in xrange(10):
             nodes_info = self.test.discovery()
-            self.test.loadApplication("applications/9d07e0e08af7f96cf45be0112b9ccfbe") 
+            self.test.loadApplication("applications/three_components_in_one_device")
             self.test.mapping(nodes_info)
             self.test.deploy_with_discovery()
 

@@ -6828,3 +6828,39 @@ Deploying to node 3, remaining set([4])
 Deploying to node 4, remaining set([])
 ...has completed
 Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3, 4])
+Deploying to node 2, remaining set([3, 4])
+...has completed
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3, 4])
+Deploying to node 2, remaining set([3, 4])
+...has completed
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+Compression finished
+Preparing to deploy to nodes set([1, 2, 3, 4])
+Deploying to node 2, remaining set([3, 4])
+...has completed
+Deploying to node 3, remaining set([4])
+...has completed
+Deploying to node 4, remaining set([])
+...has completed
+Application has been deployed!

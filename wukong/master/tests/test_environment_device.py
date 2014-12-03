@@ -36,10 +36,10 @@ class WuTest:
         self.node_ids = [i + 2 for i in xrange(self.dev_len)]
 
         ## start the device consoles
-        #self.consoles = {}
-        #for dev in self.devs:
-        #    self.consoles[dev] = serial.Serial(dev, baudrate=115200)
-        #    self.consoles[dev].timeout = 1
+        self.consoles = {}
+        for dev in self.devs:
+            self.consoles[dev] = serial.Serial(dev, baudrate=115200)
+            self.consoles[dev].timeout = 1
 
         if pair is True:
             self.pair_devices_gateway()
@@ -83,15 +83,21 @@ class WuTest:
 
     def add(self):
         self.comm.onAddMode()
+    
+    def delete(self):
+        self.comm.onDeleteMode()
 
     def stop(self):
         self.comm.onStopMode()
 
     def wait(self, findStr, timeout=5):
-        print timeout
+        print "wait for ", findStr
+	
         while timeout > 0:
             st = self.comm.currentStatus()
+	    print "--->",st
             if st.find(findStr) != -1:
+		print "matched"
                 return True
             time.sleep(1)
             timeout = timeout - 1
@@ -101,13 +107,21 @@ class WuTest:
         while timeout > 0:
             timeout = timeout - 1
             l = self.consoles[dev].readline()
+	    print "-->",l
             if l.find("ready") != -1: break
+	print " device ready"
 
     def deviceLearn(self, dev):
         self.consoles[dev].write("$l")
 
     def deviceReset(self, dev):
         self.consoles[dev].write("$r")
+
+    def deviceWait(self, dev):
+        self.consoles[dev].write("$w")
+
+    def deviceResume(self, dev):
+        self.consoles[dev].write("#")
 
     def constrollerReset(self):
         command = '../../tools/testrtt/a.out -d %s nowait controller reset' % (ZWAVE_GATEWAY_IP)
@@ -127,6 +141,7 @@ class WuTest:
     def getProperty(self, node_id, port, wuclassid, property_number):
         res = self.comm.getProperty(node_id, port, wuclassid, property_number)
         # res = [value, datatype, status]
+	print res
         value = res[0]
         return value
 
@@ -180,9 +195,18 @@ class WuTest:
 
 if __name__ == '__main__':
     test = WuTest(True, True)
-
+    #test = WuTest(False, False)
+    
     nodes_info = test.discovery()
-
-    test.loadApplication(APP_PATH) 
-    test.mapping(nodes_info)
-    test.deploy_with_discovery()
+    #
+    #print 'nodes:', nodes_info
+    #node = nodes_info[0]
+    #print 'node:', node.id, node.wuobjects
+    #for port in node.wuobjects:
+    #    print 'port:', port
+    #    wuclass = node.wuobjects[port].wuclassdef
+    #    print 'obj:', wuclass.id, wuclass.name
+    
+    #test.loadApplication(APP_PATH) 
+    #test.mapping(nodes_info)
+    #test.deploy_with_discovery()
