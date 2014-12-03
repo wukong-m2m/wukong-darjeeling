@@ -4,7 +4,7 @@
         <link fromProperty="current_value" toInstanceId="34" toProperty="freq"/>
         <location requirement="/WuKong/slider#" />
         <group_size requirement="1" />
-        <reaction_time requirement="[object Object]" />
+        <reaction_time requirement="1" />
         <signalProperty low_value="" high_value="" output="" refresh_rate=""  />
 		<monitorProperty />
     </component>
@@ -12,14 +12,14 @@
         <link fromProperty="current_value" toInstanceId="34" toProperty="on_off"/>
         <location requirement="/WuKong/binary#" />
         <group_size requirement="1" />
-        <reaction_time requirement="[object Object]" />
+        <reaction_time requirement="1" />
         <signalProperty refresh_rate="" current_value="" status="" debounce=""  />
 		<monitorProperty debounce="3" />
     </component>
     <component type="Sound" instanceId="34" x="448" y="182" w="120" h="100">
         <location requirement="/WuKong/sound#" />
         <group_size requirement="1" />
-        <reaction_time requirement="[object Object]" />
+        <reaction_time requirement="1" />
         <signalProperty on_off="" freq=""  />
 		<monitorProperty />
     </component>
