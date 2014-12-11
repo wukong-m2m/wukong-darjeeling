@@ -737,11 +737,11 @@ class LocationTree:
         tmpLst = locationStr.split(u'@')
         x_coord,y_coord,z_coord = '0','0','0'
         if len(tmpLst)>1:
-	    ff = tmpLst[1].rstrip(') ').lstrip('( ').split(',')
-	    if len(ff) == 3:
-            [x_coord,y_coord,z_coord] = tmpLst[1].rstrip(') ').lstrip('( ').split(',')
+            ff = tmpLst[1].rstrip(') ').lstrip('( ').split(',')
+            if len(ff) == 3:
+                [x_coord,y_coord,z_coord] = tmpLst[1].rstrip(') ').lstrip('( ').split(',')
         else:
-            tmpLst= locationStr.split(u'#')
+            tmpLst = tmpLst[0].split(u'#')
         locationLst = tmpLst[0].split(u'/')
         for loc in locationLst:
             if len(loc) == 0:
