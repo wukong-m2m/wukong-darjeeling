@@ -730,6 +730,7 @@ class LocationTree:
                 else:
                     return None
         return curPos
+
     @staticmethod
     def parseLocation (locationStr):
       #be able to handle something like /CS_Building/4F/Room336@(1,2,3)
@@ -737,16 +738,23 @@ class LocationTree:
         x_coord,y_coord,z_coord = '0','0','0'
         if len(tmpLst)>1:
 	    ff = tmpLst[1].rstrip(') ').lstrip('( ').split(',')
-	    if len(ff) >= 3:
-                [x_coord,y_coord,z_coord] = tmpLst[1].rstrip(') ').lstrip('( ').split(',')
+	    if len(ff) == 3:
+            [x_coord,y_coord,z_coord] = tmpLst[1].rstrip(') ').lstrip('( ').split(',')
         else:
             tmpLst= locationStr.split(u'#')
         locationLst = tmpLst[0].split(u'/')
         for loc in locationLst:
             if len(loc) == 0:
                 locationLst.remove(loc)
-                
-        return locationLst, eval(x_coord),eval(y_coord),eval(z_coord)
+        try:
+            x_coord = int(x_coord)
+            y_coord = int(y_coord)
+            z_coord = int(z_coord)
+        except ValueError:
+            x_coord = 0
+            y_coord = 0
+            z_coord = 0
+        return locationLst, x_coord, y_coord, z_coord
 
     def printTree(self, treeNd=None, indent = 0):
         
@@ -777,11 +785,15 @@ class LocationTree:
    # self.addSensor(senNd)
 
 if __name__ == "__main__":
+    
+    loc4 = u"asfafaeff@gaerg"
+    print(LocationTree.parseLocation(loc4))
     locTree = LocationTree(u"Boli_Building")
     loc0 = u"Boli_Building/3F/South_Corridor@(0,1,2)"
     loc1 = u"Boli_Building/2F/South_Corridor/Room318@(0,5,3)"
     loc2 = u"Boli_Building/3F/East_Corridor/Room318@(3,3,2)"
     loc3 = u"Boli_Building/3F/East_Corridor/Room318@(2,1,2)"
+    
     senNd0 = SensorNode(NodeInfo(0,[], [], loc0))
     
     senNd1 = SensorNode(NodeInfo(1, [], [], loc1))
