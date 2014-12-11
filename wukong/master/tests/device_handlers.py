@@ -75,9 +75,9 @@ class WuDevice_Zwave(TestDevice):
 class Galileo_NetworkServer(TestDevice):
     def getMyIP(self):
         if 'eth0' in ni.interfaces():
-            ni.ifaddresses('eth0')[2][0]['addr']
+            return ni.ifaddresses('eth0')[2][0]['addr']
         elif 'en0' in ni.interfaces():
-            ni.ifaddresses('en0')[2][0]['addr']
+            return ni.ifaddresses('en0')[2][0]['addr']
         else:
             raise Error('Cant determine IP address')
 
@@ -92,6 +92,7 @@ class Galileo_NetworkServer(TestDevice):
         os.system("ssh root@%s 'mkdir /darjeeling'" % (self.ipaddress))
         os.system("scp -r %s/darjeeling.elf %s/*.dja %s/install_service.sh %s/service root@%s:/darjeeling" % (self.binary, self.binary, self.binary, self.binary, self.ipaddress))
         local_networkserver_ip = self.getMyIP()
+        print local_networkserver_ip
         os.system("ssh root@%s 'cd /darjeeling; ./install_service.sh \"-i %s    -s %s\"'" % (self.ipaddress, self.node_id, local_networkserver_ip))
 
     def deviceLearn(self):
