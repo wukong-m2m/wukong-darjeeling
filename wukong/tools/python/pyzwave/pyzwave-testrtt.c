@@ -3221,7 +3221,7 @@ void zwave_check_state(unsigned char c)
                 ack_got = 1;
             } else if (c == ZW_CAN) {
                 printf("       WAIT_SOF: SerialAPI got CAN, we should wait for ACK\n");
-                zstate = WAIT_ACK;
+                zstate = WAIT_RETRANSMIT;
             }
             else {
                 printf("       WAIT_SOF: SerialAPI got unexpected byte 0x%x ?????????\n", c);
