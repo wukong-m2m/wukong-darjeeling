@@ -53,7 +53,9 @@ class Gateway(object):
             return False
         self._greenlet = [gevent.spawn(self._serve_transport_forever), gevent.spawn(self._serve_socket_forever)]
         if CONFIG.ENABLE_AUTONET:
-            self._greenlet.append(gevent.spawn(self.autonet.serve_autonet))
+            self._greenlet.append(gevent.spawn(self._autonet.serve_autonet))
+        if CONFIG.UNITTEST_MODE:
+            self._greenlet.append(gevent.spawn(self._did_service.clear_did_req_queue))
         gevent.sleep(0) # Make the greenlet start first and return
         logger.info("started on %s:%s" % self._ip_server.getsockname()[:2])
         return True

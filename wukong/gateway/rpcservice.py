@@ -33,5 +33,5 @@ class RPCService(object):
             response = str(None)
         else:
             response = response.serialize()
-        
+
         return response
