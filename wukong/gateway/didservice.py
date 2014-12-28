@@ -17,18 +17,20 @@ from gevent.queue import Queue
 import struct
 from datetime import datetime
 import logging
+import random
 logging.basicConfig(level=CONFIG.LOG_LEVEL)
 logger = logging.getLogger( __name__ )
 
 MAX_DID_LEN = MPTN.MULT_PROTO_LEN_DID
-AUTONET_MAC_ADDR_LEN = 8
-NONE_MAC_ADDRESS = [0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00]
+AUTONET_MAC_ADDR_LEN = CONFIG.AUTONET_MAC_ADDR_LEN
+NONE_MAC_ADDRESS = [random.randrange(0, 256) for _ in range(0, AUTONET_MAC_ADDR_LEN)]
 
 class DIDService(object):
     def __init__(self, transport_radio_addr, transport_radio_addr_len, autonet_mac_addr=None):
         self._db = dbdict.DBDict("gtw.sqlite")
         self._did_nodes = dbdict.DBDict("gtw_alloc_did.sqlite")
         self._ok_nets = dbdict.DBDict("gtw_ok_nets.sqlite")
+        self._did_to_mac = dbdict.DBDict("gtw_did_to_mac.sqlite")
 
         if not self._is_db_init():
             self._db_init(transport_radio_addr, transport_radio_addr_len, autonet_mac_addr)
@@ -118,17 +120,17 @@ class DIDService(object):
             del self._did_nodes[key]
         for key in self._ok_nets:
             del self._ok_nets[key]
-
-    def _is_radio_address_set(self, radio_address):
-        return radio_address in self._did_nodes
+        for key in self._did_to_mac:
+            del self._did_to_mac[key]
 
     def _set_radio_address(self, radio_address, value=True):
         assert isinstance(radio_address, int), "radio address(%s) must be integer instead of %s" % (str(radio_address), type(radio_address))
         assert radio_address < self._db["GTWSELF_NETWORK_SIZE"], "radio address(%d) cannot excede upper bound %d" % (radio_address, self._db["GTWSELF_NETWORK_SIZE"])
         self._did_nodes[radio_address] = value
 
+
     def _unset_radio_address(self, radio_address):
-        if self._is_radio_address_set(radio_address):
+        if self.is_radio_address_valid(radio_address):
             del self._did_nodes[radio_address]
 
     def _get_transport_radio_address(self, did):
@@ -153,7 +155,7 @@ class DIDService(object):
         did_obj = ipaddress.ip_address(did)
         self_did_network = ipaddress.ip_interface("%s/%d"%(str(ipaddress.ip_address(self_did)),self._db["GTWSELF_DID_PREFIX_LEN"])).network
         if did_obj in self_did_network:
-            return self._is_radio_address_set(self._get_transport_radio_address(did))
+            return self.is_radio_address_valid(self._get_transport_radio_address(did))
         return False
 
     def _find_did_in_other_network(self, did):
@@ -278,7 +280,7 @@ class DIDService(object):
 
         return ret
 
-    def _confirm_with_master(self, temp_did):
+    def _confirm_with_master(self, temp_did, payload):
         address = (self._db["MASTER_IP_ADDR"], self._db["MASTER_TCP_PORT"])
         dest_did = self._db["GTWSELF_DID"]
         src_did = temp_did
@@ -321,13 +323,17 @@ class DIDService(object):
 
         logger.debug("it is a valid DID ACK message")
 
-        self._set_radio_address(temp_radio_addr)
+        self._set_radio_address(self._get_transport_radio_address(temp_did))
+        self._did_to_mac[temp_did] = payload
         logger.info("successfully allocate DID on both gateway and master")
         return True
 
     '''
     Public functions
     '''
+    def is_radio_address_valid(self, radio_address):
+        return radio_address in self._did_nodes
+
     def is_did_valid(self, did):
         # Check other known network
         # Then Check itself network
@@ -349,9 +355,9 @@ class DIDService(object):
 
     def clear_did_req_queue(self):
         while True:
-            temp_did = self._did_req_queue.get()
-            if self._confirm_with_master(temp_did) is None:
-                self._did_req_queue.put_nowait(temp_did)
+            temp_did, payload = self._did_req_queue.get()
+            if self._confirm_with_master((temp_did, payload)) is None:
+                self._did_req_queue.put_nowait((temp_did, payload))
                 gevent.sleep(self._wait_sec)
                 if self._wait_sec < 10:
                     self._wait_sec += 1
@@ -359,7 +365,7 @@ class DIDService(object):
                 gevent.sleep(0.05)
                 self._wait_sec = CONFIG.UNITTEST_WAIT_SEC
 
-    def handle_did_req_message(self, context, dest_did, src_did, msg_type, msg_subtype, payload):
+    def handle_did_req_message(self, context, dest_did, src_did, msg_type, msg_subtype, payload, do_later=False):
         self_did = self._db["GTWSELF_DID"]
         if self_did is None:
             logger.error("gateway does not have a valid prefix of DID")
@@ -373,10 +379,10 @@ class DIDService(object):
         temp_radio_addr = context
         temp_did = (self_did & self._db["GTWSELF_DID_NETMASK"]) | temp_radio_addr
 
-        if not self._is_radio_address_set(temp_radio_addr):
-            if CONFIG.UNITTEST_MODE:
-                self._did_req_queue.put_nowait(temp_did)
-            elif self._confirm_with_master(temp_did) is None:
+        if not self.is_radio_address_valid(temp_radio_addr):
+            if do_later:
+                self._did_req_queue.put_nowait((temp_did,payload))
+            elif self._confirm_with_master(temp_did, payload) is None:
                 return None
 
         dest_did = temp_did

@@ -554,7 +554,9 @@ class WuNode:
 
 
 class WuObject:
-  ZWAVE_SWITCH_PORT = 64
+  ZWAVE_SWITCH_PORT1 = 64
+  ZWAVE_SWITCH_PORT2 = 65
+  ZWAVE_SWITCH_PORT3 = 66
   def __init__(self, wuclassdef, wunode, port_number, virtual, property_values = None):
     self.port_number = port_number
     self.wuclassdef = wuclassdef

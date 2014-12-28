@@ -70,9 +70,28 @@ uint8_t wkpf_call_adaptor(wkcomm_address_t dest_node_id, uint16_t wuclass_id, ui
 
 }
 
+uint8_t wkpf_call_multi_adaptor(wkcomm_address_t dest_node_id, uint8_t instance, uint16_t wuclass_id, uint8_t property_number, uint16_t value)
+{
+	uint8_t buf[7];
+	uint8_t r;
+
+	DEBUG_LOG(true, "Send value %d to node %d\n", value, dest_node_id);
+	buf[0] = 0x60; // multi-channel cmd class
+	buf[1] = 0xD; // cmd encapsulation
+	buf[2] = 0; // src channel 0
+	buf[3] = instance; // dst channel
+	buf[4] = 0x20;		// COMMAND_CLASS_BASIC
+	buf[5] = 1;			// BASIC_SET
+	buf[6] = value;		// level
+	r =  wkcomm_send_raw(dest_node_id,buf,7);
+	DEBUG_LOG(DBG_WKPF,"send raw done\n");
+	return r;
+
+}
+
 uint8_t wkpf_send_set_property_int16(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, int16_t value, uint16_t src_component_id) {
 	uint8_t message_buffer[7 + WKPF_MAX_NUM_OF_TOKENS * 2 +5];
-	if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH) {
+	if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
 		return wkpf_call_adaptor(dest_node_id, wuclass_id, property_number, value);
 	} else {
 		message_buffer[0] = port_number;
@@ -97,8 +116,8 @@ uint8_t wkpf_send_set_property_int16(wkcomm_address_t dest_node_id, uint8_t port
 uint8_t wkpf_send_set_property_boolean(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, bool value, uint16_t src_component_id) {
 	uint8_t message_buffer[6 + WKPF_MAX_NUM_OF_TOKENS * 2 +5];
 	uint16_t dest_component_id;
-	if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH) {
-		return wkpf_call_adaptor(dest_node_id, wuclass_id, property_number, value? 255:0);
+	if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
+		return wkpf_call_multi_adaptor(dest_node_id, port_number-DEVICE_NATIVE_ZWAVE_SWITCH1+1, wuclass_id, property_number, value? 255:0);
 	} else {
 		message_buffer[0] = port_number;
 		message_buffer[1] = (uint8_t)(wuclass_id >> 8);
@@ -119,7 +138,7 @@ uint8_t wkpf_send_set_property_boolean(wkcomm_address_t dest_node_id, uint8_t po
 uint8_t wkpf_send_set_property_refresh_rate(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, wkpf_refresh_rate_t value, uint16_t src_component_id) {
 	uint8_t message_buffer[7 + WKPF_MAX_NUM_OF_TOKENS * 2 +5];
 	uint16_t dest_component_id;
-	if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH) {
+	if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
 		return WKPF_COMM_CMD_ERROR_R;
 	} else {
 		message_buffer[0] = port_number;
@@ -220,7 +239,7 @@ uint8_t wkpf_send_set_linktable_no_token(wkcomm_address_t dest_node_id, uint16_t
 
 uint8_t wkpf_send_monitor_property_int16(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, int16_t value) {
     uint8_t message_buffer[6];
-    if (progression_server_id >= DEVICE_NATIVE_ZWAVE_SWITCH) {
+    if (progression_server_id >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
         return WKPF_COMM_CMD_ERROR_R;
     } else {
         message_buffer[0] = (uint8_t)(wuclass_id >> 8);
@@ -237,7 +256,7 @@ uint8_t wkpf_send_monitor_property_int16(wkcomm_address_t progression_server_id,
 uint8_t wkpf_send_monitor_property_boolean(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, bool value) {
 
     uint8_t message_buffer[5];
-    if (progression_server_id >= DEVICE_NATIVE_ZWAVE_SWITCH) {
+    if (progression_server_id >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
         return WKPF_COMM_CMD_ERROR_R;
     } else {
         message_buffer[0] = (uint8_t)(wuclass_id >> 8);
@@ -253,7 +272,7 @@ uint8_t wkpf_send_monitor_property_boolean(wkcomm_address_t progression_server_i
 uint8_t wkpf_send_monitor_property_refresh_rate(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, wkpf_refresh_rate_t value) {
 
     uint8_t message_buffer[6];
-    if (progression_server_id >= DEVICE_NATIVE_ZWAVE_SWITCH) {
+    if (progression_server_id >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
         return WKPF_COMM_CMD_ERROR_R;
     } else {
         message_buffer[0] = (uint8_t)(wuclass_id >> 8);

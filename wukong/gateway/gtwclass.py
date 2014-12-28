@@ -10,6 +10,7 @@ from autonet import AutoNet
 
 import struct
 import logging
+import random
 logging.basicConfig(level=CONFIG.LOG_LEVEL)
 logger = logging.getLogger( __name__ )
 
@@ -98,7 +99,7 @@ class Gateway(object):
                 return None
 
             logger.debug("receive DID REQ message:\n" + log_msg)
-            message = self._did_req_handler(context, dest_did, src_did, msg_type, msg_subtype, payload)
+            message = self._did_req_handler(context, dest_did, src_did, msg_type, msg_subtype, payload, CONFIG.UNITTEST_MODE)
             if message is None:
                 return None
 
@@ -291,7 +292,16 @@ class Gateway(object):
             return r
 
         def discover():
-            return self._transport.discover()
+            logger.debug("start to discover")
+            r = self._transport.discover()
+            logger.debug("discovered %s" % str(r))
+            for temp_radio_addr in r:
+                if not self._did_service.is_radio_address_valid(temp_radio_addr):
+                    if self._did_req_handler(temp_radio_addr, None, None, None, None, 
+                        str(bytearray([random.randrange(0, 256) for _ in range(0, CONFIG.AUTONET_MAC_ADDR_LEN)])),
+                        do_later=False) is None:
+                        logger.error("fails to re-add the radio address %d" % temp_radio_addr)                    
+            return r
 
         def poll():
             return self._transport.poll()

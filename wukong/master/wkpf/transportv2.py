@@ -191,7 +191,7 @@ class RPCTCPClient(ClientTransport):
             print "[transport] RPC drops message since msg_type (%X) is not RPC" % msg_subtype
             return None
 
-        print "[transport] RPC REP is received"
+        print "[transport] RPC REP is received \n%s" % mptnUtils.formatted_print([payload])
 
         return payload
 
@@ -240,6 +240,12 @@ class RPCAgent(TransportAgent):
     def __init__(self):
         self._mode = 'stop'
         TransportAgent.__init__(self)
+        self._remove_timeout_greenlet = gevent.spawn(self._remove_timeout)
+
+    def _remove_timeout(self,):
+        while True:
+            getDeferredQueue().removeTimeoutDefer()
+            gevent.sleep(5)
 
     def _create_client_stub(self, did, ip, port):
         assert isinstance(did, int), "did should be integer"

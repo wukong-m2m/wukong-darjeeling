@@ -1,4 +1,3 @@
-// vim: ts=4 sw=4
 #include "config.h" // To get RADIO_USE_ZWAVE
 
 #ifdef RADIO_USE_ZWAVE
@@ -215,7 +214,7 @@ void radio_zwave_init(void) {
     }
     // see issue 115     output_high(PORTK,3);
     //    if(!radio_zwave_my_address_loaded) // Can't read address -> panic
-    DEBUG_LOG(DBG_WKCOMM, "My Zwave node_id: %d\n", radio_zwave_my_address);
+    DEBUG_LOG(true, "My Zwave node_id: %d\n", radio_zwave_my_address);
     //radio_zwave_platform_dependent_init();
 
     dj_timer_delay(wait_RF_ready);
@@ -456,7 +455,8 @@ void radio_zwave_learn() {
         }
     }
     //DEBUG_LOG(DBG_WKCOMM, "current:"DBG32" start:"DBG32", zwave_learn_block:%d: ", dj_timer_getTimeMillis(), zwave_time_learn_start, zwave_learn_block);
-    if (dj_timer_getTimeMillis()-zwave_time_learn_start>2000) { //time out learn off
+    return;
+    if (dj_timer_getTimeMillis()-zwave_time_learn_start>20000) { //time out learn off
         DEBUG_LOG(true, "turn off\n");
         onoff=0;
         b[0] = 1;
