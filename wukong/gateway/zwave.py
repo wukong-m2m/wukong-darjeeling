@@ -8,7 +8,7 @@ except:
 import gevent
 from gevent.lock import RLock
 import sys
-
+import pprint
 import gtwconfig as CONFIG
 import mptn as MPTN
 
@@ -59,11 +59,12 @@ class ZWTransport(object):
 
         return (None, None)
 
-    def send(self, radio_address, payload):
+    def send_raw(self, radio_address, payload):
         _global_lock.acquire(True)
         ret = None
         try:
-            logger.info("Zwave sending %s to %X" % (str(payload), radio_address))
+        
+            logger.info("Zwave sending %d bytes %s to %X" % (len(payload),pprint.pformat(payload), radio_address))
             pyzwave.send(radio_address, payload)
         except:
             e = sys.exc_info()[0]
@@ -72,6 +73,9 @@ class ZWTransport(object):
         finally:
             _global_lock.release()
         return ret
+
+    def send(self, radio_address, payload):
+        self.send_raw(radio_address, [0x88]+payload)
 
     def get_device_type(self, radio_address):
         _global_lock.acquire(True)

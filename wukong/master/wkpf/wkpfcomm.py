@@ -343,6 +343,7 @@ class Communication:
 
         reply = reply.payload[5:]
         while len(reply) > 1:
+          print reply
           port_number = reply[0]
           wuclass_id = (reply[1] <<8) + reply[2]
           virtual = bool(int(reply[3]))

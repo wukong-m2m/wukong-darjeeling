@@ -533,6 +533,7 @@ class RPCAgent(TransportAgent):
                 print "[transport] TCP server receives invalid FWD FWD message subtype and will not send any reply"
                 return None, None 
             
+            print message
             print "[transport] TCP Server receives FWD FWD message:\n" + log_msg
 
             msg_subtype = mptnUtils.MULT_PROTO_MSG_SUBTYPE_FWD_ACK
@@ -691,7 +692,7 @@ class RPCAgent(TransportAgent):
                                 #print "handler: sending message from defer"
                                 message = getDIDService().create_fwd_message_byte_list(dev_did, [command] + payload)
 
-                                success, msg = gateway.send(dev_addr, [0x88] + message)
+                                success, msg = gateway.send(dev_addr, message)
 
                                 if success: break
 

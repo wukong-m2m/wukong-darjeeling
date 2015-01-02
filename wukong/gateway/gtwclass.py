@@ -184,9 +184,11 @@ class Gateway(object):
                 logger.debug("the forward destination DID is not in this gateway's network")
                 return None
 
+
+            message = map(ord, message)
             retries = CONFIG.CONNECTION_RETRIES
             for i in xrange(retries):
-                success, message = self._transport_send_handler(radio_address, message)
+                success, err_msg = self._transport_send_handler(radio_address, message)
                 if success:
                     msg_subtype = MPTN.MULT_PROTO_MSG_SUBTYPE_FWD_ACK
                     header = utils.create_mult_proto_header_to_str(src_did, dest_did, msg_type, msg_subtype)
@@ -255,7 +257,7 @@ class Gateway(object):
                     logger.debug("transport radio interface receives message from address %X" % src_radio_addr)
                     response = self._process_message(src_radio_addr, message, True)
                     if response is not None:
-                        response = [0x88] + map(ord, response)
+                        response = map(ord, response)
                         retries = CONFIG.CONNECTION_RETRIES
                         while retries > 0:
                             ret = self._transport_send_handler(src_radio_addr, response)
