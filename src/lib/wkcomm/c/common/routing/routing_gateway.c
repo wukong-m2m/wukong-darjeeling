@@ -263,7 +263,7 @@ void routing_get_gateway_did()
 {
     // First get the known radio address
     #ifdef RADIO_USE_ZWAVE
-        radio_zwave_address_t gateway_radio_address = 1;
+        radio_zwave_address_t gateway_radio_address = 24;
         did_table.gateway_did |= gateway_radio_address;
     #endif
     #ifdef RADIO_USE_XBEE

@@ -147,11 +147,9 @@ class Communication:
         wunode.wuobjects = wuObjects
         gevent.sleep(0)
 
-      else:
-        # Create a virtual wuclass for non wukong device. We support switch only now.
-        # We may support others in the future.
+      elif generic == 17:
 
-        wuclassdef = WuObjectFactory.wuclassdefsbyid[4]    # Light_Actuator
+        wuclassdef = WuObjectFactory.wuclassdefsbyid[2001]    # Light_Actuator
 
         if not wuclassdef:
           print '[wkpfcomm] Unknown device type', generic
@@ -161,11 +159,52 @@ class Communication:
 
 
         # Create one
-        if (WuObject.ZWAVE_SWITCH_PORT not in wunode.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
+        if (WuObject.ZWAVE_SWITCH_PORT1 not in wunode.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
           # 0x100 is a mgic number. When we see this in the code generator,
           # we will generate ZWave command table to implement the wuclass by
           # using the Z-Wave command.
-          wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_SWITCH_PORT, False, property_values={})
+          if specific == 1:
+            wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_SWITCH_PORT1, False, property_values={})
+
+          elif specific == 3:
+            wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_SWITCH_PORT1, False, property_values={})
+
+        if (WuObject.ZWAVE_SWITCH_PORT2 not in wunode.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
+          # 0x100 is a mgic number. When we see this in the code generator,
+          # we will generate ZWave command table to implement the wuclass by
+          # using the Z-Wave command.
+          if specific == 1:
+            wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_SWITCH_PORT2, False, property_values={})
+
+        if (WuObject.ZWAVE_SWITCH_PORT3 not in wunode.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
+          # 0x100 is a mgic number. When we see this in the code generator,
+          # we will generate ZWave command table to implement the wuclass by
+          # using the Z-Wave command.
+          if specific == 1:
+            wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_SWITCH_PORT3, False, property_values={})
+
+      else:
+        # Create a virtual wuclass for non wukong device. We support switch only now.
+        # We may support others in the future.
+
+        wuclassdef = WuObjectFactory.wuclassdefsbyid[2001]    # Light_Actuator
+
+        if not wuclassdef:
+          print '[wkpfcomm] Unknown device type', generic
+          return None
+        wunode = WuNode(destination, None,type='native')
+        port_number =1
+
+
+        # Create one
+        for k in [WuObject.ZWAVE_SWITCH_PORT1, WuObject.ZWAVE_SWITCH_PORT2, WuObject.ZWAVE_SWITCH_PORT3]:
+          if (k not in wunode.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
+            # 0x100 is a mgic number. When we see this in the code generator,
+            # we will generate ZWave command table to implement the wuclass by
+            # using the Z-Wave command.
+            wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, k, False, property_values={})
+
+
       return wunode
 
     def getDeviceType(self, destination):

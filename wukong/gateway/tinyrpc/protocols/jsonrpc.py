@@ -79,7 +79,7 @@ class JSONRPCErrorResponse(RPCErrorResponse):
     def serialize(self):
         return json.dumps(self._to_dict())
 
-
+import traceback
 def _get_code_and_message(error):
     assert isinstance(error, (Exception, basestring))
     if isinstance(error, Exception):
@@ -95,7 +95,7 @@ def _get_code_and_message(error):
         else:
             # allow exception message to propagate
             code = JSONRPCServerError.jsonrpc_error_code
-            msg = str(error)
+            msg = str(error) + traceback.format_exc()
     else:
         code = -32000
         msg = error

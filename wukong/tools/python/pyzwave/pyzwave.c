@@ -298,6 +298,17 @@ static PyObject* pyzwave_getDeviceType(PyObject *self, PyObject *args) {
   return device_type;
 }
 
+static PyObject* pyzwave_getID(PyObject *self, PyObject *args) {
+  int i;
+  int node_id;
+
+  if (!initialised) {
+    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
+    return NULL;
+  }
+  return PyInt_FromLong(PyZwave_get_id());
+}
+
 PyMethodDef methods[] = {
   {"init", pyzwave_init, METH_VARARGS, "Sets the IP address to connect to"},
   {"send", pyzwave_send, METH_VARARGS, "Sends a list of bytes to a node"},
@@ -310,6 +321,7 @@ PyMethodDef methods[] = {
   {"discover", pyzwave_discover, METH_VARARGS, "discover nodes"},
   {"routing", pyzwave_routing, METH_VARARGS, "node neighbors"},
   {"getDeviceType", pyzwave_getDeviceType, METH_VARARGS, "device type"},
+  {"getID", pyzwave_getID, METH_VARARGS, "get dongle ID"},
   {NULL, NULL, 0, NULL}
 };
 

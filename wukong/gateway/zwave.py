@@ -34,7 +34,7 @@ class ZWTransport(object):
         return self._name
 
     def get_radio_address(self):
-        return 0x01
+        return pyzwave.getID()
 
     def get_radio_addr_len(self):
         return MPTN.RADIO_ADDRESS_LEN_ZW
@@ -108,6 +108,7 @@ class ZWTransport(object):
             total_nodes = nodes[1]
             # remaining are the discovered nodes
             discovered_nodes = nodes[2:]
+            print "---------------------", gateway_id, total_nodes, discovered_nodes
             try:
                 discovered_nodes.remove(gateway_id)
             except ValueError:

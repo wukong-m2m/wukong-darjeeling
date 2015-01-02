@@ -3285,6 +3285,7 @@ void zwave_check_state(unsigned char c)
                     zwave_ready = 1;
                     printf("HomeID: %02x%02x%02x%02x\n", zdata[0], zdata[1], zdata[2], zdata[3]);
                     printf("My address: %x\n", zdata[4]);
+
                     fflush(stdout);
                 } else if (curcmd == IsFailedNodeId) {
                     if(zdata[0]==1)
@@ -4345,7 +4346,18 @@ void PyZwave_discover(){
     printf("my zwave address: %d\n", zdata[4]);
 }
 
-
+int PyZwave_get_id(){
+    ZW_MemoryGetID();
+    while (1) {
+        if (!PyZwave_receiveByte(1000)) {
+            break; // No data received.
+        }
+        if (PyZwave_senddataAckReceived != TRANSMIT_WAIT_FOR_ACK)
+            break; // Ack or error received.
+    }
+    zwave_my_address = zdata[4];
+    return zwave_my_address;
+}
 
 void PyZwave_check_removefail(){
     int i;
