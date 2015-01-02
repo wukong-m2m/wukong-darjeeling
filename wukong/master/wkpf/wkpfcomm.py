@@ -135,30 +135,30 @@ class Communication:
         gevent.sleep(0) # give other greenlets some air to breath
         if not wunode:
           wunode = WuNode(destination, location)
-	retries=3
-	while retries > 0:
-          wuClasses = self.getWuClassList(destination)
-	  if wuClasses == None:
-	    retries=retries-1
-	  else:
-	    break
-	else:
-	  return wunode
+        retries=3
+        while retries > 0:
+              wuClasses = self.getWuClassList(destination)
+          if wuClasses == None:
+            retries=retries-1
+          else:
+            break
+        else:
+          return wunode
 
-	      
+          
         print '[wkpfcomm] get %d wuclasses' % (len(wuClasses))
         wunode.wuclasses = wuClasses
         gevent.sleep(0)
-	retries=3
-	while retries > 0 :
-          wuObjects = self.getWuObjectList(destination)
-          print '[wkpfcomm] get %d wuobjects' % (len(wuObjects))
-	  if wuObjects == None:
-	    retries=retries-1
-	  else:
-	    break
-	else:
-	  return wunode
+        retries=3
+        while retries > 0 :
+              wuObjects = self.getWuObjectList(destination)
+              print '[wkpfcomm] get %d wuobjects' % (len(wuObjects))
+          if wuObjects == None:
+            retries=retries-1
+          else:
+            break
+        else:
+          return wunode
 
 
         wunode.wuobjects = wuObjects
@@ -247,9 +247,9 @@ class Communication:
         reply = self.agent.send(destination, pynvc.WKPF_GET_LOCATION, [offset], [pynvc.WKPF_GET_LOCATION_R, pynvc.WKPF_ERROR_R])
 
         if reply == None:
-	  retries=retries-1
-	  if retries == 0:
-	    return ''
+      retries=retries-1
+      if retries == 0:
+        return ''
           continue
         if reply.command == pynvc.WKPF_ERROR_R:
           print "[wkpfcomm] WKPF RETURNED ERROR ", reply.command
@@ -342,7 +342,7 @@ class Communication:
         if reply.command == pynvc.WKPF_ERROR_R:
           print "[wkpfcomm] WKPF RETURNED ERROR ", reply.payload
           return {}
-        if total_number_of_messages == None:
+        if total_number_of_messages is None:
           total_number_of_messages = reply.payload[3]
 
         reply = reply.payload[5:]
@@ -397,17 +397,19 @@ class Communication:
         if reply.command == pynvc.WKPF_ERROR_R:
           print "[wkpfcomm] WKPF RETURNED ERROR ", reply.payload
           return {}
-        if total_number_of_messages == None:
+        print '[wkpfcomm] Respond payload is', reply.payload
+        if total_number_of_messages is None:
           total_number_of_messages = reply.payload[3]
-        if total_number_of_wuobjects == None:
+        if total_number_of_wuobjects is None:
           total_number_of_wuobjects = reply.payload[4]
-        if total_number_of_wuobjects:
-          frame_number = reply.payload[2]/OBJECTS_IN_MESSAGE
-          if frame_number < total_number_of_messages-1:
-            num_byte = 5+4*OBJECTS_IN_MESSAGE
+        else:
+          index_of_message = reply.payload[2]
+          expected_num_byte = 5
+          if index_of_message < total_number_of_messages-1:
+            expected_num_byte = expected_num_byte + 4*OBJECTS_IN_MESSAGE
           else:
-            num_byte = 5 + 4*(total_number_of_wuobjects-reply.payload[2])
-        if len(reply.payload) != num_byte:
+            expected_num_byte = expected_num_byte + 4*(total_number_of_wuobjects-index_of_message*OBJECTS_IN_MESSAGE)
+        if len(reply.payload) != expected_num_byte:
           continue
 
         message_number += 1
