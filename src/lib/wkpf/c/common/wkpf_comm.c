@@ -70,12 +70,22 @@ uint8_t wkpf_call_adaptor(wkcomm_address_t dest_node_id, uint16_t wuclass_id, ui
 
 }
 
-uint8_t wkpf_call_multi_adaptor(wkcomm_address_t dest_node_id, uint8_t instance, uint16_t wuclass_id, uint8_t property_number, uint16_t value)
+uint8_t wkpf_call_multi_adaptor(wkcomm_address_t dest_node_id, uint8_t port_number, uint16_t wuclass_id, uint8_t property_number, uint16_t value)
 {
 	uint8_t buf[7];
 	uint8_t r;
+	uint8_t instance;
 
-	DEBUG_LOG(true, "Send value %d to node %d\n", value, dest_node_id);
+	if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH1 && port_number <= DEVICE_NATIVE_ZWAVE_SWITCH3){
+		instance = port_number - DEVICE_NATIVE_ZWAVE_SWITCH1+1;
+	}else if(port_number >= DEVICE_NATIVE_ZWAVE_DIMMER1 && port_number <= DEVICE_NATIVE_ZWAVE_DIMMER3){
+		instance = port_number - DEVICE_NATIVE_ZWAVE_DIMMER1 +1;
+	}else{
+		DEBUG_LOG(DBG_WKPF, "Unknown port number %d\n", port_number);
+		return -1;
+	}
+
+	DEBUG_LOG(DBG_WKPF, "Send value %d to node %d\n", value, dest_node_id);
 	buf[0] = 0x60; // multi-channel cmd class
 	buf[1] = 0xD; // cmd encapsulation
 	buf[2] = 0; // src channel 0
@@ -92,7 +102,7 @@ uint8_t wkpf_call_multi_adaptor(wkcomm_address_t dest_node_id, uint8_t instance,
 uint8_t wkpf_send_set_property_int16(wkcomm_address_t dest_node_id, uint8_t port_number, uint8_t property_number, uint16_t wuclass_id, int16_t value, uint16_t src_component_id) {
 	uint8_t message_buffer[7 + WKPF_MAX_NUM_OF_TOKENS * 2 +5];
 	if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
-		return wkpf_call_adaptor(dest_node_id, wuclass_id, property_number, value);
+		return wkpf_call_multi_adaptor(dest_node_id, port_number, wuclass_id, property_number, value);
 	} else {
 		message_buffer[0] = port_number;
 		message_buffer[1] = (uint8_t)(wuclass_id >> 8);
@@ -117,7 +127,7 @@ uint8_t wkpf_send_set_property_boolean(wkcomm_address_t dest_node_id, uint8_t po
 	uint8_t message_buffer[6 + WKPF_MAX_NUM_OF_TOKENS * 2 +5];
 	uint16_t dest_component_id;
 	if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
-		return wkpf_call_multi_adaptor(dest_node_id, port_number-DEVICE_NATIVE_ZWAVE_SWITCH1+1, wuclass_id, property_number, value? 255:0);
+		return wkpf_call_multi_adaptor(dest_node_id, port_number, wuclass_id, property_number, value? 255:0);
 	} else {
 		message_buffer[0] = port_number;
 		message_buffer[1] = (uint8_t)(wuclass_id >> 8);

@@ -245,7 +245,7 @@ class RPCAgent(TransportAgent):
     def _remove_timeout(self,):
         while True:
             getDeferredQueue().removeTimeoutDefer()
-            gevent.sleep(5)
+            gevent.sleep(1)
 
     def _create_client_stub(self, did, ip, port):
         assert isinstance(did, int), "did should be integer"
@@ -294,7 +294,7 @@ class RPCAgent(TransportAgent):
                 self.verify(allowed_replies),
                 allowed_replies,
                 new_message(destination, command, self.getNextSequenceNumberAsPrefixPayload() + payload),
-                int(round(time.time() * 1000)) + 10000
+                int(round(time.time() * 1000)) + 5000
         )
 
         tasks.put_nowait(defer)

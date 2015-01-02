@@ -16,7 +16,7 @@ WKCOMM_MESSAGE_PAYLOAD_SIZE=30
 WKPF_PROPERTY_TYPE_SHORT         = 0
 WKPF_PROPERTY_TYPE_BOOLEAN       = 1
 WKPF_PROPERTY_TYPE_REFRESH_RATE  = 2
-
+OBJECTS_IN_MESSAGE               = (WKCOMM_MESSAGE_PAYLOAD_SIZE-3)/4
 # routing services here
 class Communication:
     _communication = None
@@ -135,21 +135,38 @@ class Communication:
         gevent.sleep(0) # give other greenlets some air to breath
         if not wunode:
           wunode = WuNode(destination, location)
+	retries=3
+	while retries > 0:
+          wuClasses = self.getWuClassList(destination)
+	  if wuClasses == None:
+	    retries=retries-1
+	  else:
+	    break
+	else:
+	  return wunode
 
-        wuClasses = self.getWuClassList(destination)
+	      
         print '[wkpfcomm] get %d wuclasses' % (len(wuClasses))
         wunode.wuclasses = wuClasses
         gevent.sleep(0)
+	retries=3
+	while retries > 0 :
+          wuObjects = self.getWuObjectList(destination)
+          print '[wkpfcomm] get %d wuobjects' % (len(wuObjects))
+	  if wuObjects == None:
+	    retries=retries-1
+	  else:
+	    break
+	else:
+	  return wunode
 
-        wuObjects = self.getWuObjectList(destination)
-        print '[wkpfcomm] get %d wuobjects' % (len(wuObjects))
 
         wunode.wuobjects = wuObjects
         gevent.sleep(0)
 
       elif generic == 17:
 
-        wuclassdef = WuObjectFactory.wuclassdefsbyid[2001]    # Light_Actuator
+        wuclassdef = WuObjectFactory.wuclassdefsbyid[2007]    # Dimmer
 
         if not wuclassdef:
           print '[wkpfcomm] Unknown device type', generic
@@ -157,31 +174,30 @@ class Communication:
         wunode = WuNode(destination, None,type='native')
         port_number =1
 
-
         # Create one
-        if (WuObject.ZWAVE_SWITCH_PORT1 not in wunode.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
+        if (WuObject.ZWAVE_DIMMER1 not in wunode.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
           # 0x100 is a mgic number. When we see this in the code generator,
           # we will generate ZWave command table to implement the wuclass by
           # using the Z-Wave command.
           if specific == 1:
-            wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_SWITCH_PORT1, False, property_values={})
+            wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_DIMMER1, False, property_values={})
 
           elif specific == 3:
-            wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_SWITCH_PORT1, False, property_values={})
+            wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_DIMMER1, False, property_values={})
 
-        if (WuObject.ZWAVE_SWITCH_PORT2 not in wunode.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
+        if (WuObject.ZWAVE_DIMMER2 not in wunode.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
           # 0x100 is a mgic number. When we see this in the code generator,
           # we will generate ZWave command table to implement the wuclass by
           # using the Z-Wave command.
           if specific == 1:
-            wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_SWITCH_PORT2, False, property_values={})
+            wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_DIMMER2, False, property_values={})
 
-        if (WuObject.ZWAVE_SWITCH_PORT3 not in wunode.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
+        if (WuObject.ZWAVE_DIMMER3 not in wunode.wuobjects.keys()) or wuobjects[port].wuclassdef != wuclassdef:
           # 0x100 is a mgic number. When we see this in the code generator,
           # we will generate ZWave command table to implement the wuclass by
           # using the Z-Wave command.
           if specific == 1:
-            wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_SWITCH_PORT3, False, property_values={})
+            wuobject = WuObjectFactory.createWuObject(wuclassdef, wunode, WuObject.ZWAVE_DIMMER3, False, property_values={})
 
       else:
         # Create a virtual wuclass for non wukong device. We support switch only now.
@@ -221,6 +237,7 @@ class Communication:
 
       length = 0
       location = ''
+      retries=3
       if SIMULATION == "true":
           location = self.simulator.mockLocation(destination)
           return location
@@ -230,7 +247,10 @@ class Communication:
         reply = self.agent.send(destination, pynvc.WKPF_GET_LOCATION, [offset], [pynvc.WKPF_GET_LOCATION_R, pynvc.WKPF_ERROR_R])
 
         if reply == None:
-          return ''
+	  retries=retries-1
+	  if retries == 0:
+	    return ''
+          continue
         if reply.command == pynvc.WKPF_ERROR_R:
           print "[wkpfcomm] WKPF RETURNED ERROR ", reply.command
           return '' # graceful degradation
@@ -362,6 +382,7 @@ class Communication:
 
       wuobjects = {}
       total_number_of_messages = None
+      total_number_of_wuobjects = None
       message_number = 0
       if SIMULATION == "true":
         return self.simulator.mockWuObjectList(destination)
@@ -369,7 +390,6 @@ class Communication:
       while (message_number != total_number_of_messages):
         reply = self.agent.send(destination, pynvc.WKPF_GET_WUOBJECT_LIST, [message_number], [pynvc.WKPF_GET_WUOBJECT_LIST_R, pynvc.WKPF_ERROR_R])
 
-        message_number += 1
 
         print '[wkpfcomm] Respond received'
         if reply == None:
@@ -379,31 +399,52 @@ class Communication:
           return {}
         if total_number_of_messages == None:
           total_number_of_messages = reply.payload[3]
+        if total_number_of_wuobjects == None:
+          total_number_of_wuobjects = reply.payload[4]
+        if total_number_of_wuobjects:
+          frame_number = reply.payload[2]/OBJECTS_IN_MESSAGE
+          if frame_number < total_number_of_messages-1:
+            num_byte = 5+4*OBJECTS_IN_MESSAGE
+          else:
+            num_byte = 5 + 4*(total_number_of_wuobjects-reply.payload[2])
+        if len(reply.payload) != num_byte:
+          continue
+
+        message_number += 1
 
         reply = reply.payload[5:]
         while len(reply) > 1:
           print reply
-          port_number = reply[0]
-          wuclass_id = (reply[1] <<8) + reply[2]
-          virtual = bool(int(reply[3]))
+          try:
+            port_number = reply[0]
+            wuclass_id = (reply[1] <<8) + reply[2]
+            virtual = bool(int(reply[3]))
+          except:
+            print '[wkpfcomm] reply too short'
+            return None
           node = WuNode.findById(destination)
 
           if not node:
             print '[wkpfcomm] Unknown node id', destination
 
-          wuclassdef = WuObjectFactory.wuclassdefsbyid[wuclass_id]
+          try:
+            wuclassdef = WuObjectFactory.wuclassdefsbyid[wuclass_id]
+            if not wuclassdef:
+              print '[wkpfcomm] Unknown wuclass id', wuclass_id
+              break
 
-          if not wuclassdef:
-            print '[wkpfcomm] Unknown wuclass id', wuclass_id
-            break
 
+            if (not node) or (port_number not in node.wuobjects.keys()) or node.wuobjects[port_number].wuclassdef != wuclassdef:
+              wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number, virtual)
+            else:
+              wuobject = node.wuobjects[port_number]
+            wuobjects[port_number] = wuobject
+          except Exception as e:
+            print "[wkpfcomm] incorrect wuclass id ", str(e)
+            return None
 
-          if (not node) or (port_number not in node.wuobjects.keys()) or node.wuobjects[port_number].wuclassdef != wuclassdef:
-            wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number, virtual)
-          else:
-            wuobject = node.wuobjects[port_number]
-          wuobjects[port_number] = wuobject
           reply = reply[4:]
+
 
       return wuobjects
 
