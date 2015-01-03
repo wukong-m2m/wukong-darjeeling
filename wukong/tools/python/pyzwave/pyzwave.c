@@ -4,13 +4,13 @@
 
 #include "pyzwave-testrtt.h"
 
-#define ADD_NODE_ANY		0x1
-#define ADD_NODE_CONTROLLER 	0x2
-#define ADD_NODE_SLAVE		0x3
-#define ADD_NODE_EXISTING	0x4
-#define ADD_NODE_STOP		0x5
-#define ADD_NODE_STOP_FAILED	0x6
-#define ADD_NODE_OPTION_HIGH_POWER	0x80
+#define ADD_NODE_ANY    0x1
+#define ADD_NODE_CONTROLLER   0x2
+#define ADD_NODE_SLAVE    0x3
+#define ADD_NODE_EXISTING  0x4
+#define ADD_NODE_STOP    0x5
+#define ADD_NODE_STOP_FAILED  0x6
+#define ADD_NODE_OPTION_HIGH_POWER  0x80
 
 int initialised = 0;
 
@@ -29,10 +29,10 @@ static PyObject* pyzwave_receive(PyObject *self, PyObject *args) {
     PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
     return NULL;
   }
-  
+
   if (!PyArg_ParseTuple( args, "i", &wait_msec))
     return NULL;
-  
+
   len = PyZwave_receive(wait_msec);
   if (len == 0) {
     PyObject* return_value_list = PyList_New(0);
@@ -63,13 +63,13 @@ static PyObject* pyzwave_init(PyObject *self, PyObject *args) {
   regex_t regex;
   int regi;
 
-  regi = regcomp(&regex, "^[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}$", REG_EXTENDED | REG_NOSUB | REG_ICASE);
+  regi = regcomp(&regex, "^[[:digit:]]{1,3}\\.[[:digit:]]{1,3}\\.[[:digit:]]{1,3}\\.[[:digit:]]{1,3}$", REG_EXTENDED | REG_NOSUB | REG_ICASE);
   if (regi) { fprintf(stderr, "Could not compile regex\n"); return NULL; }
-  
+
   printf("pyzwave_init\n");
   if (!PyArg_ParseTuple( args, "s", &host_or_dev_name)) return NULL;
   printf("PyArg_ParseTuple\n");
- 
+
   regi = regexec(&regex, host_or_dev_name, 0, NULL, 0);
   printf("%s\n", host_or_dev_name);
   printf("%d\n", regi);
@@ -106,7 +106,7 @@ static PyObject* pyzwave_send(PyObject *self, PyObject *args) {
     PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
     return NULL;
   }
-  
+
   if (!PyArg_ParseTuple( args, "iO!", &dest_address, &PyList_Type, &data))
     return NULL;
 
@@ -119,7 +119,7 @@ static PyObject* pyzwave_send(PyObject *self, PyObject *args) {
     PyErr_SetString(PyExc_ValueError, "Payload cannot be longer than 256 bytes");
     return NULL;
   }
-  
+
   for (i=0; i<length; i++) {
     PyObject *byteAsObject = PyList_GetItem(data, i); /* Can't fail */
     long byteAsLong = PyInt_AsLong(byteAsObject);
@@ -168,18 +168,18 @@ static PyObject* pyzwave_poll(PyObject *self, PyObject *args) {
 
     FD_ZERO(&rs);
     FD_SET(zwavefd, &rs);
-#ifdef _WIN32	
+#ifdef _WIN32
     FD_SET(sfd_commu, &rs);
-#else //_WIN32	
+#else //_WIN32
     FD_SET(STDIN_FILENO, &rs);
-#endif //_WIN32	
+#endif //_WIN32
 
     n = select(FD_SETSIZE,&rs,NULL,NULL, &to);
     if (n < 0) {
       printf("Z-Wave device file is closed !!!\n");
       return Py_BuildValue("");
     }
-    else if (n == 0) {	// timeout
+    else if (n == 0) {  // timeout
       printf("select timeout\n");
       /*return Py_BuildValue("");*/
       break;
@@ -239,20 +239,68 @@ static PyObject* pyzwave_stop(PyObject *self, PyObject *args) {
 }
 
 static PyObject* pyzwave_discover(PyObject *self, PyObject *args) {
-	int i;
-	PyObject* message_list;
-	if (!initialised) {
-    	PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
-    	return NULL;
-  	}
-	PyZwave_discover();
- 	message_list = PyList_New(0);
-	PyList_Append(message_list, PyInt_FromLong((long)zwave_my_address & 0xFF));
+  int i;
+  PyObject* message_list;
+  if (!initialised) {
+      PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
+      return NULL;
+    }
+  PyZwave_discover();
+  message_list = PyList_New(0);
+  PyList_Append(message_list, PyInt_FromLong((long)zwave_my_address & 0xFF));
     for (i=0; i<init_data_buf[0]+1; i++) {
       PyList_Append(message_list, PyInt_FromLong((long)init_data_buf[i] & 0xFF));
 
     }
     return message_list;
+}
+
+static PyObject* pyzwave_hardReset(PyObject *self, PyObject *args) {
+  if (!initialised) {
+    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
+    return NULL;
+  }
+
+  if (ZW_SetDefault() < 0) {
+    return NULL;
+  }
+  Py_RETURN_NONE;
+}
+
+static PyObject* pyzwave_getAddr(PyObject *self, PyObject *args) {
+  int i;
+  PyObject* message_list;
+
+  if (!initialised) {
+    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
+    return NULL;
+  }
+  unsigned long network_id = PyZwave_get_addr();
+  message_list = PyList_New(0);
+  for (i = 0; i < 4; i++){
+    PyList_Append(message_list, PyInt_FromLong((long)network_id & 0xFF));
+    network_id >>= 8;
+  }
+  PyList_Append(message_list, PyInt_FromLong((long)zwave_my_address & 0xFF));
+  return message_list;
+}
+
+static PyObject* pyzwave_isNodeFail(PyObject *self, PyObject *args) {
+  int node_id;
+
+  if (!PyArg_ParseTuple( args, "i", &node_id))
+    return NULL;
+
+  if (!initialised) {
+    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
+    return NULL;
+  }
+
+  // method 1:
+  //do_test(node_id, 10, 10);
+  //return PyInt_FromLong((long)main_ret);
+
+  return PyInt_FromLong((long)PyZwave_is_node_fail(node_id));
 }
 
 static PyObject* pyzwave_routing(PyObject *self, PyObject *args) {
@@ -277,7 +325,6 @@ static PyObject* pyzwave_routing(PyObject *self, PyObject *args) {
   return neighbor_list;
 }
 static PyObject* pyzwave_getDeviceType(PyObject *self, PyObject *args) {
-  int i;
   int node_id;
   PyObject* device_type;
 
@@ -298,16 +345,6 @@ static PyObject* pyzwave_getDeviceType(PyObject *self, PyObject *args) {
   return device_type;
 }
 
-static PyObject* pyzwave_getID(PyObject *self, PyObject *args) {
-  int i;
-  int node_id;
-
-  if (!initialised) {
-    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
-    return NULL;
-  }
-  return PyInt_FromLong(PyZwave_get_id());
-}
 
 PyMethodDef methods[] = {
   {"init", pyzwave_init, METH_VARARGS, "Sets the IP address to connect to"},
@@ -321,11 +358,13 @@ PyMethodDef methods[] = {
   {"discover", pyzwave_discover, METH_VARARGS, "discover nodes"},
   {"routing", pyzwave_routing, METH_VARARGS, "node neighbors"},
   {"getDeviceType", pyzwave_getDeviceType, METH_VARARGS, "device type"},
-  {"getID", pyzwave_getID, METH_VARARGS, "get dongle ID"},
+  {"getAddr", pyzwave_getAddr, METH_VARARGS, "get Z-Wave address (network ID 4 bytes + node ID 1 byte)"},
+  {"hardReset", pyzwave_hardReset, METH_VARARGS, "hard reset"},
+  {"isNodeFail", pyzwave_isNodeFail, METH_VARARGS, "check if the node fails or not"},
   {NULL, NULL, 0, NULL}
 };
 
-PyMODINIT_FUNC 
-initpyzwave() {
-    (void) Py_InitModule("pyzwave", methods); 
+PyMODINIT_FUNC
+initpyzwave(void) {
+    (void) Py_InitModule("pyzwave", methods);
 }
