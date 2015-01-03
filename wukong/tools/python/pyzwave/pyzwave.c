@@ -66,29 +66,23 @@ static PyObject* pyzwave_init(PyObject *self, PyObject *args) {
   regi = regcomp(&regex, "^[[:digit:]]{1,3}\\.[[:digit:]]{1,3}\\.[[:digit:]]{1,3}\\.[[:digit:]]{1,3}$", REG_EXTENDED | REG_NOSUB | REG_ICASE);
   if (regi) { fprintf(stderr, "Could not compile regex\n"); return NULL; }
 
-  printf("pyzwave_init\n");
   if (!PyArg_ParseTuple( args, "s", &host_or_dev_name)) return NULL;
-  printf("PyArg_ParseTuple\n");
 
   regi = regexec(&regex, host_or_dev_name, 0, NULL, 0);
-  printf("%s\n", host_or_dev_name);
-  printf("%d\n", regi);
   if (!regi) {
-    printf("is IP\n");
+    printf("INFO:pyzwave.c init: %s is an IP host\n", host_or_dev_name);
     if (PyZwave_init(host_or_dev_name) < 0) {
       PyErr_SetString(PyExc_IOError, "Call to zwave_init failed.");
       return NULL;
     }
-    printf("PyZwave_init\n");
   } else if (regi == REG_NOMATCH) {
-    printf("Not IP\n");
+    printf("INFO:pyzwave.c init: %s is a non-IP device\n", host_or_dev_name);
     if (PyZwave_init_usb(host_or_dev_name) < 0) {
       PyErr_SetString(PyExc_IOError, "Call to zwave_init failed.");
       return NULL;
     }
-    printf("PyZwave_init_usb\n");
   } else {
-    printf("Match failed\n");
+    printf("INFO:pyzwave.c init: regx match %s failed %d\n", host_or_dev_name, regi);
   }
 
   regfree(&regex);
@@ -130,15 +124,15 @@ static PyObject* pyzwave_send(PyObject *self, PyObject *args) {
     buf[i] = (uint8_t)byteAsLong;
   }
 
-  DEBUGF("PYZWAVE: Sending %i bytes to %i: ", length, dest_address);
+  DEBUGF("INFO:pyzwave.c send: Sending %i bytes to %i: ", length, dest_address);
   for (i=0; i<length; i++) {
     DEBUGF("[%x] ", buf[i]);
   }
   if(PyZwave_send(dest_address, buf, length) == 0) {
-    DEBUGF("\nPYZWAVE: Done.\n");
+    DEBUGF("\nINFO:pyzwave.c send: Done.\n");
     Py_RETURN_NONE;
   } else {
-    DEBUGF("pyzwave.c pyzwave_send: Call to ZW_senddata failed.\n");
+    DEBUGF("INFO:pyzwave.c send: Call to ZW_senddata failed.\n");
     PyErr_SetString(PyExc_IOError, "Call to ZW_senddata failed.");
     return NULL;
   }
@@ -149,6 +143,14 @@ static PyObject* pyzwave_setdebug(PyObject *self, PyObject *args) {
   if (!PyArg_ParseTuple( args, "i", &print_debug_info))
     return NULL;
   PyZwave_print_debug_info = print_debug_info;
+  Py_RETURN_NONE;
+}
+
+static PyObject* pyzwave_setVerbose(PyObject *self, PyObject *args) {
+  int vb;
+  if (!PyArg_ParseTuple( args, "i", &vb))
+    return NULL;
+  verbose = vb;
   Py_RETURN_NONE;
 }
 
@@ -176,11 +178,11 @@ static PyObject* pyzwave_poll(PyObject *self, PyObject *args) {
 
     n = select(FD_SETSIZE,&rs,NULL,NULL, &to);
     if (n < 0) {
-      printf("Z-Wave device file is closed !!!\n");
+      printf("INFO:pyzwave.c poll: Z-Wave device file is closed !!!\n");
       return Py_BuildValue("");
     }
     else if (n == 0) {  // timeout
-      printf("select timeout\n");
+      printf("INFO:pyzwave.c poll: select timeout\n");
       /*return Py_BuildValue("");*/
       break;
     }
@@ -261,7 +263,7 @@ static PyObject* pyzwave_hardReset(PyObject *self, PyObject *args) {
     return NULL;
   }
 
-  if (ZW_SetDefault() < 0) {
+  if (PyZwave_hard_reset() < 0) {
     return NULL;
   }
   Py_RETURN_NONE;
@@ -361,6 +363,7 @@ PyMethodDef methods[] = {
   {"getAddr", pyzwave_getAddr, METH_VARARGS, "get Z-Wave address (network ID 4 bytes + node ID 1 byte)"},
   {"hardReset", pyzwave_hardReset, METH_VARARGS, "hard reset"},
   {"isNodeFail", pyzwave_isNodeFail, METH_VARARGS, "check if the node fails or not"},
+  {"setVerbose", pyzwave_setVerbose, METH_VARARGS, "Turn verbose on or off"},
   {NULL, NULL, 0, NULL}
 };
 

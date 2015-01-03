@@ -438,7 +438,6 @@ char * cmd_class_string(int cls)
 
 void clear_serial_api_queue(void)
 {
-    printf("clear_serial_api_queue\n");
     unsigned char ack = ZW_ACK;
     unsigned char c;
     struct timeval to;
@@ -458,12 +457,12 @@ void clear_serial_api_queue(void)
             break;
         }
         else if (n < 0) {
-            printf("select() error\n");
+            printf("ERROR:rtt.c clear_serial_api_queue: select() error\n");
             exit(1);
         }
         n = read(zwavefd, &c,1);
         if (n != 1) {
-            printf("read error !!!!!!!!!!!!!! n=%d\n", n);
+            printf("ERROR:rtt.c clear_serial_api_queue: read error! n=%d\n", n);
             exit(1);
         }
         zwave_check_state(c);
@@ -485,7 +484,8 @@ void clear_serial_api_queue(void)
        }
        }
        */
-    printf("clear_serial_api_queue done\n");
+    if(verbose) printf("INFO:rtt.c clear_serial_api_queue: done\n");
+    fflush(stdout);
 }
 
 int ZW_sendData(unsigned id,unsigned char *in,int len)
@@ -534,7 +534,7 @@ void register_persistent_class_callback(int class,void (*f)(int src, void *paylo
 
 void execute_class_callback(int src, int class,void *payload,int len)
 {
-    //printf("class %x: cmd %x\n", class, ((unsigned char *)payload)[0]);
+    //if(verbose) printf("class %x: cmd %x\n", class, ((unsigned char *)payload)[0]);
     if (class_callback[class]) {
         void (*cb)(void *data,void *payload,int len) = class_callback[class];
         class_callback[class] = NULL;
@@ -568,7 +568,7 @@ void register_idle_callback(void (*f)(void *data),void *data)
             idle_callback_data[i] = data;
             return;
         }
-    printf("idle callback register failed\n");
+    printf("WARNING:rtt.c register_idle_callback: failed\n");
 }
 
 void execute_idle_callback(void)
@@ -870,19 +870,18 @@ int SerialAPI_request(unsigned char *buf, int len)
                 break;
             }
             else if (n < 0) {
-                printf("select() error\n");
+                printf("ERROR:rtt.c SerialAPI_request: 1st select() error\n");
                 exit(1);
             }
             n = read(zwavefd, &c,1);
             if (n != 1) {
-                printf("read error !!!!!!!!!!!!!! n=%d\n", n);
+                printf("ERROR:rtt.c SerialAPI_request: 1st read error ! n=%d\n", n);
                 exit(1);
             }
             zwave_check_state(c);
         }
         if (zstate != WAIT_SOF) {	// wait for WAIT_SOF statie (idle state)
-            printf("SerialAPI is not in ready state!!!!!!!!!! zstate=%d\n", zstate);
-            printf("Try to send SerialAPI command in a wrong state......\n");
+            printf("WARNING:rtt.c SerialAPI_request: not in ready state zstate=%d\n", zstate);
             usleep(100*1000);
 			// ACK the packet no matter what it is
 			c=6;
@@ -901,7 +900,7 @@ int SerialAPI_request(unsigned char *buf, int len)
 		zwave_retransmit_buffer[zwave_retransmit_ptr++] = c;
         wlen = write(zwavefd, buf,len);	// REQ, cmd, data
         if (wlen != len) {
-            printf("write fail %d %d\n", len,wlen);
+            printf("WARNING:rtt.c SerialAPI_request: write fail %d %d\n", len,wlen);
         }
 		for(i=0;i<len;i++) {
 			zwave_retransmit_buffer[zwave_retransmit_ptr++] = buf[i];
@@ -914,12 +913,11 @@ int SerialAPI_request(unsigned char *buf, int len)
         write(zwavefd,&crc,1);	// LRC checksum
 		zwave_retransmit_buffer[zwave_retransmit_ptr++] = crc;
         if (PyZwave_print_debug_info) {
-            printf("Send len=%d ", len+1);
+            printf("DEBUG:rtt.c SerialAPI_request: Send len=%d ", len+1);
             for(i=0;i<len;i++)
                 printf("%02x ", buf[i]);
             printf("CRC=0x%x\n", crc);
         }
-		printf("Send request\n");
         zstate = WAIT_ACK;
         ack_got = 0;
 
@@ -932,16 +930,16 @@ int SerialAPI_request(unsigned char *buf, int len)
             FD_SET(zwavefd,&rs);
             n = select(zwavefd+1,&rs,NULL,NULL,&to);
             if (n == 0) {
-                printf("timeout.... SerialAPI without ACK !!!\n");
+                printf("WARNING:rtt.c SerialAPI_request: timeout without ACK !!!\n");
                 break;
             }
             else if (n < 0) {
-                printf("select() error\n");
+                printf("ERROR:rtt.c SerialAPI_request: 2nd select() error\n");
                 exit(1);
             }
             n = read(zwavefd, &c,1);
             if (n != 1) {
-                printf("read error !!!!!!!!!!!!!! n=%d\n", n);
+                printf("ERROR:rtt.c SerialAPI_request: 2nd read error ! n=%d\n", n);
                 exit(1);
             }
             zwave_check_state(c);
@@ -949,7 +947,7 @@ int SerialAPI_request(unsigned char *buf, int len)
             if (ack_got) {
                 return 0;
             } else {
-                printf("Ack error!!! zstate=%d ack_got=%d c=%d\n", zstate, ack_got, c);
+                printf("WARNING:rtt.c SerialAPI_request: Ack error! zstate=%d ack_got=%d c=%d\n", zstate, ack_got, c);
                 //break;
             }
 			if (zstate == WAIT_RETRANSMIT) {
@@ -959,15 +957,15 @@ int SerialAPI_request(unsigned char *buf, int len)
 
         }
         if (!retry--) {
-            printf("SerialAPI request:\n");
+            printf("ERROR:rtt.c SerialAPI_request: cannot retry");
             for (i=0; i<len; i++) {
                 printf("%02x ", buf[i]);
             }
-            printf("\n");
+            printf("\t");
             printf("%s() error!!!\n", __FUNCTION__);
             exit(1);
         }
-        printf("%s() retry......\n", __FUNCTION__);
+        printf("WARNING:rtt.c SerialAPI_request: %s() retry\n", __FUNCTION__);
     }
     return -1;
 }
@@ -1046,7 +1044,7 @@ void zwavecmd_simple_av_send_raw(unsigned int id, char *file)
         if (fp == NULL) return;
         irbuf_len = fread(irbuf, 1,sizeof(irbuf), fp);
         fclose(fp);
-        printf("read %d bytes\n", irbuf_len);
+        if(verbose) printf("INFO:rtt.c zwavecmd_simple_av_send_raw: read %d bytes\n", irbuf_len);
     }
     if (id == 0)
         id = irbuf_srcnode;
@@ -1061,7 +1059,7 @@ void zwavecmd_simple_av_send_raw(unsigned int id, char *file)
         buf[1] = 44;
         len = 44;
     }
-    printf("send %d bytes\n", len);
+    if(verbose) printf("INFO:rtt.c zwavecmd_simple_av_send_raw: send %d bytes\n", len);
     memcpy(buf+2,irbuf+irbuf_ptr, len);
 
     zwave_sendClassCommand(id, COMMAND_CLASS_SIMPLE_AV_CONTROL,SIMPLE_AV_CONTROL_RAW_SET,buf, len+2);
@@ -1120,8 +1118,7 @@ int hsk200_config_load(char * filename)
     ret = fread(ir_macro, sizeof(ir_macro), 1, fp);
     ret = fread(hsk200_keymap, sizeof(hsk200_keymap), 1, fp);
     ret = fread(hsk200_database, sizeof(hsk200_database), 1, fp);
-    fclose(fp); printf("hsk200_config_load unused ret=%d",ret);
-
+    fclose(fp);
     return 0;
 }
 int hsk200_config_save(char * filename)
@@ -1137,7 +1134,7 @@ int hsk200_config_save(char * filename)
     ret = fwrite(ir_macro, sizeof(ir_macro), 1, fp);
     ret = fwrite(hsk200_keymap, sizeof(hsk200_keymap), 1, fp);
     ret = fwrite(hsk200_database, sizeof(hsk200_database), 1, fp);
-    fclose(fp); printf("hsk200_config_save unused ret=%d",ret);
+    fclose(fp);
 
     return 0;
 }
@@ -1178,7 +1175,7 @@ void hsk200_configuration_report_cb(int src, void * payload, int len)
     if (buf[0] == CONFIGURATION_BULK_REPORT_V2) {
         size = buf[3] * (buf[5] & 0x7);
         if ((g_instance_src != g_instance) || (g_instance <= 0)) {
-            printf("!!!!!!!! error !!!!!!!! g_instance=%d, g_instance_src=%d\n", g_instance, g_instance_src);
+            printf("WARNING:rtt.c hsk200_configuration_report_cb: Error g_instance=%d, g_instance_src=%d\n", g_instance, g_instance_src);
             return;
         }
         if ((buf[1]==0) && (buf[2]==23)) {	// key map
@@ -1256,7 +1253,7 @@ void hsk200_key_data_set_check(void * data)
             break;
         }
     }
-    printf("key data set ok....................\n");
+    printf("INFO:rtt.c hsk200_key_data_set_check: ok\n");
 }
 void hsk200_assoc_remove_check(void * data)
 {
@@ -1267,7 +1264,7 @@ void hsk200_assoc_remove_check(void * data)
         zwavecmd_association_remove_all(hsk200_node_id, g_cur_conf+1);
         return;
     }
-    printf("Assoc remove ok....................\n");
+    printf("INFO:rtt.c hsk200_assoc_remove_check: ok\n");
     g_cur_conf = 0;
     hsk200_assoc_set_check(NULL);
 }
@@ -1291,7 +1288,7 @@ void hsk200_assoc_set_check(void * data)
         zwavecmd_association_set_buf(hsk200_node_id, g_cur_conf+1, hsk200_assoc+HSK200_N_ASSOC_IN_GROUP*g_cur_conf, len);
         return;
     }
-    printf("Assoc set ok....................\n");
+    printf("INFO:rtt.c hsk200_assoc_set_check: ok\n");
     g_cur_key = 0;
     g_instance = 1;
     hsk200_key_data_set_check(NULL);
@@ -1311,7 +1308,7 @@ void hsk200_assoc_report_check(void * data)
     }
 
     for (i=0; i<HSK200_N_GROUPS; i++) {
-        printf("group %d: ", i+1);
+        printf("INFO:rtt.c hsk200_assoc_report_check: group %d: ", i+1);
         for (j=0; j<HSK200_N_ASSOC_IN_GROUP; j++) {
             if (hsk200_assoc[i*HSK200_N_ASSOC_IN_GROUP+j])
                 printf("%d ", hsk200_assoc[i*HSK200_N_ASSOC_IN_GROUP+j]);
@@ -1340,9 +1337,9 @@ void hsk200_macro_report_check(void * data)
     }
     for (i=0; i<MAX_SCENES*2; i++) {
         if (i<MAX_SCENES)
-            printf("Enter scene %d:\n    ", i+1);
+            printf("INFO:rtt.c hsk200_macro_report_check: scene %d:\n    ", i+1);
         else
-            printf("Leave scene %d:\n    ", i-MAX_SCENES+1);
+            printf("INFO:rtt.c hsk200_macro_report_check: Leave scene %d:\n    ", i-MAX_SCENES+1);
         addr = i*MAX_IR_MACRO*MACRO_UNIT_SIZE;
         for (j=0; j<MAX_IR_MACRO; j++) {
             if ((ir_macro[addr+j*2]==0) && (ir_macro[addr+j*2+1]==0))
@@ -1360,7 +1357,7 @@ void hsk200_macro_report_check(void * data)
 void hsk200_dump_key(int ch, int key)
 {
     int i;
-    printf("ch:%d key:%d\n", ch+1, key);
+    printf("INFO:rtt.c hsk200_dump_key: ch:%d key:%d\n", ch+1, key);
     for (i=0; i<80; i++) {
         printf("%02x ", hsk200_database[ch][key][i]);
         if (!((i+1)%16)) {
@@ -1373,7 +1370,7 @@ void hsk200_dump_keymap(void)
     int i, j, k;
 
     for (i=0; i<HSK200_N_CHANNEL; i++) {
-        printf("ch %d:\n", i+1);
+        printf("INFO:rtt.c hsk200_dump_keymap: ch %d:\t", i+1);
         for (j=0; j<HSK200_N_KEY/8; j++) {
             for (k=0; k<8; k++) {
                 printf("%d", (hsk200_keymap[i][j] & (1<<k)) ? 1 : 0);
@@ -1429,7 +1426,7 @@ void hsk200_key_data_report_check(void * data)
                 }
                 else if (!(hsk200_keymap_flag[i][j] & 0x2)) {
                     if (g_cur_key != j) {
-                        printf("ERROR!!!!!!!!!!!! cur_key=%d j=%d\n", g_cur_key, j);
+                        printf("WARNING:rtt.c hsk200_key_data_report_check: 1st ERROR! cur_key=%d j=%d\n", g_cur_key, j);
                         hsk200_keymap_flag[i][j] = 0;
                         return;
                     }
@@ -1441,7 +1438,7 @@ void hsk200_key_data_report_check(void * data)
                 }
                 else if (!(hsk200_keymap_flag[i][j] & 0x4)) {
                     if (g_cur_key != j) {
-                        printf("ERROR!!!!!!!!!!!! cur_key=%d j=%d\n", g_cur_key, j);
+                        printf("WARNING:rtt.c hsk200_key_data_report_check: 2nd ERROR! cur_key=%d j=%d\n", g_cur_key, j);
                         hsk200_keymap_flag[i][j] = 0;
                         return;
                     }
@@ -1497,9 +1494,9 @@ void hsk200_conf_report_check(void * data)
             return;
         }
     }
-
+    printf("INFO:rtt.c hsk200_conf_report_check:\n");
     for (i=0; i<HSK200_N_CONFIG; i++) {
-        printf("configuration %d : 0x%x\n", i+1, hsk200_config[i]);
+        printf("\tconfiguration %d : 0x%x\n", i+1, hsk200_config[i]);
     }
     hsk200_macro_report_check(NULL);
 }
@@ -1563,7 +1560,7 @@ void hsk200_macro_set_check(void * data)
         zwavecmd_configuration_bulk_set_buf(hsk200_node_id, g_cur_conf, ir_macro+(g_cur_conf-25)*4, 32);
         return;
     }
-    printf("IR macro set ok....................\n");
+    printf("INFO:rtt.c hsk200_macro_set_check: IR ok\n");
     g_cur_conf = 0;
     hsk200_assoc_remove_check(NULL);
 }
@@ -1592,7 +1589,7 @@ void hsk200_restore(int id)
 
     ret = hsk200_config_load("hsk200z.cfg");
     if (ret) {
-        printf("load hsk200z.cfg error\n");
+        printf("WARNING:rtt.c hsk200_restore: load hsk200z.cfg error\n");
         return;
     }
     hsk200_conf_set_check(NULL);
@@ -1653,10 +1650,10 @@ void version_dump(void *data,void *payload,int len)
     unsigned char *pp = (unsigned char *) payload;
 
     if (pp[0] != VERSION_REPORT) {
-        printf("Unknown command %d\n", pp[0]);
+        printf("WARNING:rtt.c version_dump: Unknown command %d\n", pp[0]);
         return;
     }
-    printf("VERSION_REPORT:\n");
+    printf("INFO:rtt.c VERSION_REPORT:\n");
     printf("  Z-Wave library type: %d\n", pp[1]);
     printf("  Z-Wave protocol version: %d\n", pp[2]);
     printf("  Z-Wave protocol sub version: %d\n", pp[3]);
@@ -1673,10 +1670,10 @@ void battery_dump(void *data,void *payload,int len)
     unsigned char *pp = (unsigned char *) payload;
 
     if (pp[0] != BATTERY_REPORT) {
-        printf("Unknown command %d\n", pp[0]);
+        printf("WARNING:rtt.c battery_dump: Unknown command %d\n", pp[0]);
         return;
     }
-    printf("Battery Level is %d\n", pp[1]);
+    printf("INFO:rtt.c battery_dump: Battery Level is %d\n", pp[1]);
 }
 void zwavecmd_battery_get(unsigned int id)
 {
@@ -1765,13 +1762,14 @@ void multilevel_dump(void *data,void *payload,int len)
     unsigned long div = 1;
     //printf("xxxx payload=%x len=%d\n",payload,len);
     if (pp[0] != SENSOR_MULTILEVEL_REPORT) {
-        printf("Impossible command %x\n", pp[0]);
+        printf("WARNING:rtt.c multilevel_dump: Impossible command %x\n", pp[0]);
         return;
     }
     type = pp[1];
     size = pp[2]&0x7;
     scale = (pp[2]>>3)&0x3;
     precision = (pp[2]>>5)&0x7;
+    printf("INFO:rtt.c multilevel_dump: \n");
     printf("sensor type: 0x%02x (%s)\n", type, get_sensor_type_string(type));
     printf("precision: %d\n", precision);
     printf("scale: %d (%s)\n", scale, get_sensor_scale_string(type, scale));
@@ -1793,9 +1791,10 @@ void thermostat_mode_dump(void *data,void *payload,int len)
 {
     unsigned char *pp = (unsigned char *) payload;
     if (pp[0] != THERMOSTAT_SETPOINT_REPORT) {
-        printf("Impossible command %x\n", pp[0]);
+        printf("WARNING:rtt.c thermostat_mode_dump: Impossible command %x\n", pp[0]);
         return;
     }
+    printf("INFO:rtt.c thermostat_mode_dump:\n");
     switch(pp[1]) {
         case 0:
             printf("Mode is idle\n");
@@ -1855,10 +1854,10 @@ void multi_instance_dump(void *data,void *payload,int len)
 {
     unsigned char *pp = (unsigned char *) payload;
     if (pp[0] != THERMOSTAT_SETPOINT_REPORT) {
-        printf("Impossible command %x\n", pp[0]);
+        printf("WARNING:rtt.c multi_instance_dump: Impossible command %x\n", pp[0]);
         return;
     }
-    printf("class %x has %d instance(s)\n", pp[1],pp[2]);
+    printf("INFO:rtt.c multi_instance_dump: class %x has %d instance(s)\n", pp[1],pp[2]);
 }
 
 void zwavecmd_multi_instance_get(unsigned int id,unsigned class)
@@ -1874,9 +1873,10 @@ void multi_channel_get_dump(void *data,void *payload,int len)
 {
     unsigned char *pp = (unsigned char *) payload;
     if (pp[0] != MULTI_CHANNEL_END_POINT_REPORT_V2) {
-        printf("Impossible command %x\n", pp[0]);
+        printf("WARNING:rtt.c multi_channel_get_dump: Impossible command %x\n", pp[0]);
         return;
     }
+    printf("INFO:rtt.c multi_channel_get_dump: \n");
     if (pp[1]&0x80) {
         printf("The number of channnels are dynamic\n");
     } else {
@@ -1900,9 +1900,10 @@ void multi_channel_capability_get_dump(void *data,void *payload,int len)
     unsigned char *pp = (unsigned char *) payload;
     int i;
     if (pp[0] != MULTI_CHANNEL_CAPABILITY_REPORT_V2) {
-        printf("Impossible command %x\n", pp[0]);
+        printf("WARNING:rtt.c multi_channel_capability_get_dump: Impossible command %x\n", pp[0]);
         return;
     }
+    printf("INFO:rtt.c multi_channel_capability_get_dump: \n");
     if (pp[1]&0x80) {
         printf("The number of channnels are dynamic\n");
     } else {
@@ -1929,10 +1930,10 @@ void multi_channel_find_dump(void *data,void *payload,int len)
     unsigned char *pp = (unsigned char *) payload;
     int i;
     if (pp[0] != MULTI_CHANNEL_END_POINT_FIND_REPORT_V2) {
-        printf("Impossible command %x\n", pp[0]);
+        printf("WARNING:rtt.c multi_channel_find_dump: Impossible command %x\n", pp[0]);
         return;
     }
-    printf("matched end point for %d %d:\n",pp[2],pp[3]);
+    printf("INFO:rtt.c multi_channel_find_dump: matched end point for %d %d:\n",pp[2],pp[3]);
     for(i=4;i<len-1;i++) {
         printf("\t%x\n", pp[i]);
     }
@@ -1957,18 +1958,18 @@ void thermostat_setpoint_dump(void *data,void *payload,int len)
     int size,scale,precision,i;
     double val;
     if (pp[0] != THERMOSTAT_SETPOINT_REPORT) {
-        printf("Impossible command %x\n", pp[0]);
+        printf("WARNING:rtt.c thermostat_setpoint_dump: Impossible command %x\n", pp[0]);
         return;
     }
     size = pp[2]&7;
-    scale = (pp[2]>>3)&3; printf("unsused scale=%d\n", scale);
+    scale = (pp[2]>>3)&3;
     precision = (pp[2]>>5)&3;
     val = 0;
     for(i=0;i<size;i++)
         val = val * 256 + pp[3+i];
     for(i=0;i<precision;i++)
         val = val /10;
-    printf("type %d value %g\n", pp[1], val);
+    printf("INFO:rtt.c thermostat_setpoint_dump: type %d value %g\n", pp[1], val);
 }
 void zwavecmd_thermostat_getpoint(unsigned int id,int type)
 {
@@ -2094,6 +2095,7 @@ void meter_monitor_dump(int src, void *payload,int len)
     size = pp[2]&7;
     scale = (pp[2]>>3)&3;
     precision = (pp[2]>>5)&7;
+    printf("INFO:rtt.c meter_monitor_dump: \n");
     printf("Meter type: %s ", get_meter_type_string(type));
     printf("Rate type %x ", (pp[1]>>5)&0x3);
     printf("scale: %d ", scale);
@@ -2118,6 +2120,7 @@ void meter_dump(void *data,void *payload,int len)
     size = pp[2]&7;
     scale = (pp[2]>>3)&3;
     precision = (pp[2]>>5)&7;
+    printf("INFO:rtt.c meter_dump: \n");
     printf("Meter type: %s\n", get_meter_type_string(type));
     printf("Rate type %x\n", (pp[1]>>5)&0x3);
     printf("precision: %d\n", precision);
@@ -2185,7 +2188,7 @@ void zwavecmd_configuration_set_next(void *d,int r)
     struct setv_data *data = (struct setv_data *) d;
     struct timeval to;
     if (r != 0) {
-        printf("Failed\n");
+        printf("WARNING:rtt.c zwavecmd_configuration_set_next: Failed\n");
         return;
     }
     to.tv_sec = 0;
@@ -2197,7 +2200,7 @@ void zwavecmd_configuration_set_next(void *d,int r)
     }
     data->cur++;
     buf[0] =data->cur;
-    buf[1] =data->cur; printf("zwavecmd_config unused buf[1]=%c",buf[1]);
+    buf[1] =data->cur;
     zwavecmd_configuration_set(data->id, data->pars[data->cur],data->vals[data->cur]);
     register_senddata_ack_callback(zwavecmd_configuration_set_next,(void *)data);
 }
@@ -2307,7 +2310,7 @@ void zwavecmd_configuration_bulk_get(unsigned int id, unsigned int offset,int le
 void zwavecmd_configuration_set4(unsigned int id, unsigned int no, int v)
 {
     unsigned char buf[255];
-    printf("Set parameter %d to be %d\n",no,v);
+    printf("INFO:rtt.c zwavecmd_configuration_set4: Set parameter %d to be %d\n",no,v);
 
     buf[0] = no;
     buf[1] = 4;
@@ -2321,7 +2324,7 @@ void zwavecmd_configuration_set4(unsigned int id, unsigned int no, int v)
 void zwavecmd_configuration_set(unsigned int id, unsigned int no, int v)
 {
     char buf[255];
-    printf("Set parameter %d to be %d\n",no,v);
+    printf("INFO:rtt.c zwavecmd_configuration_set: Set parameter %d to be %d\n",no,v);
 
     buf[0] = no;
     if (v < 128 && v >= -128) {
@@ -2370,7 +2373,7 @@ void zwavecmd_configuration_dump_next(void *data,void *payload,int len)
             register_class_callback(COMMAND_CLASS_CONFIGURATION,zwavecmd_configuration_dump_next,data);
         }
         size = pp[5]&7;
-        printf("[%d] ", offset);
+        printf("INFO:rtt.c zwavecmd_configuration_dump_next: [%d] ", offset);
         for(i=0;i<n*size;i++) {
             printf("%02x ", pp[6+i]);
         }
@@ -2426,7 +2429,7 @@ void zwavecmd_proprietary_dump(void *data,void *payload,int len)
     unsigned char *pp = (unsigned char *) payload;
     if (pp[0] == PROPRIETARY_REPORT) {
         int i;
-
+        printf("INFO:rtt.c zwavecmd_proprietary_dump: ");
         for(i=1;i<len;i++) {
             printf("%x ", pp[i]);
         }
@@ -2485,11 +2488,11 @@ void zwavecmd_wakeup_dump(void *data, void *payload, int len)
     int v;
 
     if (pp[0] != WAKE_UP_INTERVAL_REPORT) {
-        printf("Unknown command(%x)\n", pp[0]);
+        printf("WARNING:rtt.c zwavecmd_wakeup_dump: Unknown command(%x)\n", pp[0]);
         return;
     }
     v = (pp[1]<<16)+(pp[2]<<8)+pp[3];
-    printf("Send wakeup notification to node %d at interval of %d\n", pp[4],v);
+    printf("INFO:rtt.c zwavecmd_wakeup_dump: Send wakeup notification to node %d at interval of %d\n", pp[4],v);
 }
 
 
@@ -2520,10 +2523,10 @@ void zwavecmd_actuator_dump(void *data, void *payload, int len)
     unsigned char *pp = (unsigned char *) payload;
 
     if (pp[0] != ACTUATOR_CONF_REPORT) {
-        printf("Unknown command(%x)\n", pp[0]);
+        printf("WARNING:rtt.c zwavecmd_actuator_dump: Unknown command(%x)\n", pp[0]);
         return;
     }
-    printf("Scene %d level %d duration %d\n", pp[1],pp[2],pp[3]);
+    printf("INFO:rtt.c zwavecmd_actuator_dump: Scene %d level %d duration %d\n", pp[1],pp[2],pp[3]);
 }
 void zwavecmd_actuator_get(unsigned int id,unsigned int scene)
 {
@@ -2553,10 +2556,10 @@ void zwavecmd_scene_conf_dump(void *data, void *payload, int len)
     unsigned char *pp = (unsigned char *) payload;
 
     if (pp[0] != SCENE_CONTROLLER_REPORT) {
-        printf("Unknown command(%x)\n", pp[0]);
+        printf("WARNING:rtt.c zwavecmd_scene_conf_dump: Unknown command(%x)\n", pp[0]);
         return;
     }
-    printf("group %d scene %d duration %d\n", pp[1],pp[2],pp[3]);
+    printf("INFO:rtt.c zwavecmd_scene_conf_dump: group %d scene %d duration %d\n", pp[1],pp[2],pp[3]);
 }
 
 void zwavecmd_scene_controller_get(unsigned int id,unsigned int group)
@@ -2658,10 +2661,10 @@ void manufacture_dump(void *data,void *payload,int len)
     unsigned char *pp = (unsigned char *) payload;
 
     if (pp[0] != MANUFACTURER_SPECIFIC_REPORT) {
-        printf("Unknown command %d\n", pp[0]);
+        printf("WARNING:rtt.c manufacture_dump: Unknown command %d\n", pp[0]);
         return;
     }
-    printf("MANUFACTURER_SPECIFIC_REPORT:\n");
+    printf("INFO:rtt.c MANUFACTURER_SPECIFIC_REPORT:\n");
     printf("  Manufacturer ID 1: 0x%02x\n", pp[1]);
     printf("  Manufacturer ID 2: 0x%02x\n", pp[2]);
     printf("  Product type ID 1: 0x%02x\n", pp[3]);
@@ -2700,20 +2703,19 @@ int SetSocketBlockingEnabled(int fd, int blocking)
 int zwave_init(void)
 {
     fflush(stdout);
-    printf("zwave_init\n");
 #ifndef _WIN32
     struct termios newtio;
 #endif //_WIN32
     struct sockaddr_in server_addr;
     struct hostent *host;
     if (g_host) {
-        printf("g_host\n");
+        if(verbose) printf("INFO:rtt.c zwave_init: is host\n");
         if((zwavefd=socket(AF_INET,SOCK_STREAM,0)) == -1) {
-            perror("socket\n");
+            perror("ERROR:rtt.c zwave_init: socket\n");
             return -1;
         }
         if((host=gethostbyname(g_host)) == NULL) {
-            perror("gethostbyname\n");
+            perror("ERROR:rtt.c zwave_init: gethostbyname\n");
             return -1;
         }
 
@@ -2724,24 +2726,22 @@ int zwave_init(void)
         //	printf("blocking or not? %d\n", ret_val);
 
         if(connect(zwavefd,(struct sockaddr *)(&server_addr),sizeof(struct sockaddr)) < 0) {
-            perror("connect\n");
+            perror("ERROR:rtt.c zwave_init: connect\n");
             return -1;
         }
     } else {
-        printf("not g_host\n");
-        printf("%s\n", g_dev_name);
 #ifdef _WIN32
+        printf("ERROR:rtt.c zwave_init: windows cannot handle %s\n", g_dev_name);
         return 0;
 #else //_WIN32
-        printf("opening ...\n");
+        if(verbose) printf("INFO:rtt.c zwave_init: opening %s\n", g_dev_name);
         zwavefd = open(g_dev_name, O_RDWR | O_NOCTTY);
         if (zwavefd < 0) {
-            printf("open %s error\n", g_dev_name);
+            printf("ERROR:rtt.c zwave_init: open %s\n", g_dev_name);
             return -1;
         }
-        printf("tcgetattr ...\n");
         if (tcgetattr(zwavefd, &newtio) < 0) {
-            printf("errors:tcgetattr.\n");
+            printf("ERROR:rtt.c zwave_init: tcgetattr\n");
             return -1;
         }
         cfmakeraw(&newtio);
@@ -2749,26 +2749,24 @@ int zwave_init(void)
         cfsetospeed(&newtio, B115200);
 
         tcflush(zwavefd, TCIFLUSH);
-        printf("tcsetattr ...\n");
         if (tcsetattr(zwavefd,TCSANOW,&newtio) < 0) {
-            printf("errors:tcsetattr.\n");
+            printf("ERROR:rtt.c zwave_init: tcsetattr\n");
             return -1;
         }
 #endif //_WIN32
     }
-    printf("print debug info...\n");
     int PyZwave_print_debug_info_old = PyZwave_print_debug_info;
     PyZwave_print_debug_info = 0;
     clear_serial_api_queue();
 
-    printf("cleared queue\n");
     zwave_ready = 0;
     //if (SerialAPI_soft_reset()) {
     if (ZW_MemoryGetID()) {
-        printf("ERROR!!! Can't init Z-Wave !!!\n");
+        printf("ERROR:rtt.c zwave_init: Cannot init Z-Wave !\n");
     }
     else {
-        printf("Z-Wave is ready.\n");
+        clear_serial_api_queue();
+        if(verbose) printf("INFO:rtt.c zwave_init: ready.\n");
         //usleep(100*1000);	// wait z-wave ready after reset
     }
     PyZwave_print_debug_info = PyZwave_print_debug_info_old;
@@ -2820,12 +2818,12 @@ void capability_string(int v)
 void dumpSerialCapability(void)
 {
     int i;
-    printf("Serial API capability\n");
-    printf("version %d\n", zdata[0]);
-    printf("revision %d\n", zdata[1]);
-    printf("Manufacture id %x %x\n", zdata[2],zdata[3]);
-    printf("Product type %x %x\n",zdata[4],zdata[5]);
-    printf("Product is %x %x\n", zdata[6],zdata[7]);
+    printf("INFO:rtt.c Serial API capability:\n");
+    printf("\tversion %d\n", zdata[0]);
+    printf("\trevision %d\n", zdata[1]);
+    printf("\tManufacture id %x %x\n", zdata[2],zdata[3]);
+    printf("\tProduct type %x %x\n",zdata[4],zdata[5]);
+    printf("\tProduct is %x %x\n", zdata[6],zdata[7]);
     printf("       0 1 2 3 4 5 6 7\n");
     for(i=8;i<zdataptr-1;i++) {
         int j;
@@ -2842,55 +2840,55 @@ void dumpInitData(void)
 {
     int len = 0;
     int i;
-    printf("Version is %d\n", zdata[0]);
+    printf("INFO:rtt.c dumpInitData: \n\tVersion is %d.\n\tZdata is [", zdata[0]);
     for(i=0;i<10;i++) {
         printf("%x ",zdata[i]);
     }
-    printf("\n");
+    printf("]\n\t");
     if (zdata[1]&1)
-        printf("This is a slave\n");
+        printf("This is a slave with ");
     else {
-        printf("This is a controller\n");
         if (zdata[1]&4)
-            printf("This is a secondary controller\n");
+            printf("This is a secondary controller ");
         else
-            printf("This is a primary controller\n");
+            printf("This is a primary controller ");
         if (zdata[1]&8)
-            printf("SUC is enabled\n");
+            printf("with SUC enabled and ");
+        else
+            printf("with ");
     }
     if (zdata[1]&2)
-        printf("Timer is implemented\n");
+        printf("Timer implemented\n");
     else
-        printf("Timer is not available\n");
+        printf("Timer unavailable\n");
     len=zdata[2];
     //init_data_buf, init_data_buf_ptr added for node discovery Sen 12.8.8
-    printf("Node ids:\n");
+    fflush(stdout);
     int init_data_buf_ptr=1;
     for(i=0;i<len;i++) {
         bool printed = false;
         int mask = 1,j;
-        //printf("%03d: ",i*8);
+        // printf("%03d: ",i*8);
         for(j=0;j<8;j++) {
             if (zdata[3+i]&mask){
-                //printf("X");
-                printed = true;
+                if(!printed) {
+                    printf("\tNode ids: ");
+                    printed = true;
+                }
                 printf("%d ", i*8+j+1);
                 init_data_buf[init_data_buf_ptr]=i*8+j+1;
                 init_data_buf_ptr+=1;
             }
-            else{
-                //printf(" ");
-            }
             mask <<=1;
         }
-        if(printed)
-          printf("\n");
+        if(printed) printf("\n\t");
     }
+    printf("\n");
     init_data_buf[0]=init_data_buf_ptr-1;	//init_data_buf[0] stores the number of nodes(including self) in zwave
 }
 void dumpBasicType(int bt)
 {
-    printf("BASIC_TYPE: %s\n", basic_type_string(bt));
+    printf("INFO:rtt.c dumpBasicType: %s\n", basic_type_string(bt));
 }
 
 void dumpGenericAndSpecificType(int gt,int st)
@@ -3008,17 +3006,15 @@ void dumpGenericAndSpecificType(int gt,int st)
             snprintf(stbuf,sizeof(stbuf),"%d", st);
             break;
     }
-    printf("GENERIC_TYPE: %s\n", sgt);
-    printf("SPECIFIC_TYPE: %s\n", sst);
-
+    printf("INFO:rtt.c dumpGenericAndSpecificType: GENERIC_TYPE is %s and SPECIFIC_TYPE is %s\n", sgt, sst);
 }
 
 void dumpNodeProtocolInfo(void)
 {
     if (zdata[4] == 0)
-        printf("node is not available\n");
+        printf("WARNING:rtt.c dumpNodeProtocolInfo: node is not available\n");
     else {
-        printf("Node information\n");
+        printf("INFO:rtt.c dumpNodeProtocolInfo:\n");
         if (zdata[0] & NODEINFO_LISTENING_SUPPORT)
             printf("\tlistening client\n");
         if (zdata[0] & NODEINFO_ROUTING_SUPPORT)
@@ -3036,6 +3032,7 @@ void dumpNodeProtocolInfo(void)
 void dump_node_info(unsigned char * buf, int len)
 {
     int i;
+    printf("INFO:rtt.c dump_node_info:\n");
     printf("  Basic Device Class = %02x\n", buf[0]);
     printf("  Generic Device Class = %02x\n", buf[1]);
     printf("  Specific Device Class = %02x\n", buf[2]);
@@ -3056,19 +3053,19 @@ void ApplicationCommandHandler(unsigned char * buf, int len)
     int i;
     //  printf("LENGTH======TMPNR====== %d %d\n", len, len-4-1);
     execute_class_callback(src, class, buf+4, len-4-1);
-
+    printf("INFO:rtt.c ApplicationCommandHandler:\n");
     if (class == COMMAND_CLASS_BASIC) {
         if      (cmd == BASIC_SET) {
-            printf("Node %d, BASIC_SET: %02x\n", src, buf[5]);
+            printf("\tNode %d, BASIC_SET: %02x\n", src, buf[5]);
         }
         else if (cmd == BASIC_GET) {
-            printf("Node %d, BASIC_GET\n", src);
+            printf("\tNode %d, BASIC_GET\n", src);
         }
         else if (cmd == BASIC_REPORT) {
-            printf("Node %d, BASIC_REPORT: %02x\n", src, buf[5]);
+            printf("\tNode %d, BASIC_REPORT: %02x\n", src, buf[5]);
         }
         else if (cmd == 0xff) {
-            printf("Debug: %02x %02x", buf[5],buf[6]);
+            printf("\tDebug: %02x %02x", buf[5],buf[6]);
         }
     }
     else if (class == COMMAND_CLASS_ASSOCIATION ) {
@@ -3076,7 +3073,7 @@ void ApplicationCommandHandler(unsigned char * buf, int len)
             int gid = buf[5];
             int maxnod = buf[6];
             int nreport = buf[7];
-            printf("Association report: group=%d, max_node=%d, report_left=%d\n", gid,maxnod,nreport);
+            printf("\tAssociation report: group=%d, max_node=%d, report_left=%d\n", gid,maxnod,nreport);
             for(i=8;i<len-1;i++) {
                 printf("   %d\n", buf[i]);
             }
@@ -3101,17 +3098,17 @@ void ApplicationCommandHandler(unsigned char * buf, int len)
                 if ( v > 0x7fffffff)
                     v = -(0xffffffff-v+1);
             }
-            printf("Parameter %d = %d\n", no,v);
+            printf("\tParameter %d = %d\n", no,v);
         }
     }
     else if (class == COMMAND_CLASS_WAKE_UP) {
         if (cmd == WAKE_UP_NOTIFICATION) {
-            printf("node %d is wakeup\n", src);
+            printf("\tnode %d is wakeup\n", src);
         }
     }
     else if (class == COMMAND_CLASS_SIMPLE_AV_CONTROL) {
         if (cmd == SIMPLE_AV_CONTROL_LEARN_REPORT) {
-            printf("Learn feedback is %c\n", buf[5]);
+            printf("\tLearn feedback is %c\n", buf[5]);
         } else if (cmd == SIMPLE_AV_CONTROL_RAW_SET) {
             usleep(50*1000);
             zwavecmd_simple_av_send_raw(0,NULL);
@@ -3119,7 +3116,7 @@ void ApplicationCommandHandler(unsigned char * buf, int len)
     }
     else if (class == COMMAND_CLASS_MULTI_INSTANCE) {
         if (cmd == MULTI_INSTANCE_CMD_ENCAP_V2) {
-            printf("src=%d dest=%d\n", buf[5],buf[6]);
+            printf("\tsrc=%d dest=%d\n", buf[5],buf[6]);
             g_instance_src = buf[5];
             g_instance_dst = buf[6];
             execute_class_callback(src, buf[7], buf+8,len-8-1);
@@ -3127,18 +3124,18 @@ void ApplicationCommandHandler(unsigned char * buf, int len)
     }
     else if (class == 0x20 && cmd == 0xff) {
         int k;
-        printf("Debug: ");
+        printf("\tDebug: ");
         for(k=5;k<len-1;k++)
             printf("%02x ", buf[k]);
         printf("\n");
     }
     else {
         if (PyZwave_print_debug_info) {
-            printf("rxStatus = %d\n", rxStatus);
-            printf("src_node = %d\n", src);
-            printf("class = %x\n", class);
-            printf("command = %x\n", cmd);
-            printf("extra=");
+            printf("\trxStatus = %d\n", rxStatus);
+            printf("\tsrc_node = %d\n", src);
+            printf("\tclass = %x\n", class);
+            printf("\tcommand = %x\n", cmd);
+            printf("\textra=");
             for(i=5;i<len;i++)
                 printf("%x ", buf[i]);
             printf("\n");
@@ -3149,7 +3146,7 @@ void ApplicationCommandHandler(unsigned char * buf, int len)
     if (abs(delay) < 5000) {
         total_delay += delay;
         total_count++;
-        printf("rtt time %d/%d ms\n", delay,total_delay/total_count);
+        printf("\trtt time %d/%d ms\n", delay,total_delay/total_count);
     }
     rtt_start_ms = 0;
 }
@@ -3159,7 +3156,7 @@ void dumpRouteInformation(void)
     int i,j,k;
 
     k=0;
-    printf("connected to\n");
+    printf("INFO:rtt.c dumpRouteInformation: connected to [");
     for(i=0;i<29;i++) {
         for(j=0;j<8;j++)
             if (zdata[i]& (1<<j)) {
@@ -3169,7 +3166,7 @@ void dumpRouteInformation(void)
             }
     }
     init_data_buf[0] = k;
-    printf("\n");
+    printf("]\n");
 }
 void zwave_check_state(unsigned char c)
 {
@@ -3177,10 +3174,9 @@ void zwave_check_state(unsigned char c)
     unsigned char ack = ZW_ACK;
     static unsigned char cksum;
 
-    if (verbose) printf("cur state %d token %x\n", zstate,c);
-        /*printf("======TMPNR======cur state %d token %x\n", zstate,c);*/
-
     fflush(stdout);
+    if (verbose) printf("INFO:rtt.c zwave_check_state: cur state %d token %x\n", zstate,c);
+
     switch(zstate) {
         case WAIT_ACK:
             if (c == ZW_ACK) {
@@ -3192,23 +3188,23 @@ void zwave_check_state(unsigned char c)
                 // unsuccessful transmission of a data frame.
                 // Only a frame with a LRC checksum error is
                 // de-acknowledged with a NAK frame.
-                printf("[NAK] SerialAPI LRC checksum error!!!\n");
+                printf("WARNING:rtt.c zwave_check_state: [NAK] SerialAPI LRC checksum\n");
                 zstate = WAIT_SOF;
             }
             else if (c == ZW_CAN) {
                 // The CAN frame is used by the ZW to instruct
                 // the host that a host transmitted data frame
                 // has been dropped.
-                printf("[CAN] SerialAPI frame is dropped by ZW!!!\n");
+                printf("WARNING:rtt.c zwave_check_state: [CAN] SerialAPI frame is dropped by ZW\n");
                 usleep(50*1000);
                 zstate = WAIT_RETRANSMIT;
             }
             else if (c == ZW_SOF) {
-                printf("       WAIT_ACK: SerialAPI got SOF without ACK ????????\n");
+                printf("WARNING:rtt.c zwave_check_state: WAIT_ACK: SerialAPI got SOF without ACK\n");
                 zstate = WAIT_LEN;
             }
             else {
-                printf("       WAIT_ACK: SerialAPI got unexpected byte 0x%x ?????????\n", c);
+                printf("WARNING:rtt.c zwave_check_state: WAIT_ACK: SerialAPI got unexpected byte 0x%x\n", c);
             }
             break;
         case WAIT_SOF:
@@ -3216,14 +3212,14 @@ void zwave_check_state(unsigned char c)
                 zstate = WAIT_LEN;
                 ack_got=1;
             } else if (c == ZW_ACK) {
-                printf("       WAIT_SOF: SerialAPI got unknown ACK ????????\n");
+                printf("WARNING:rtt.c zwave_check_state: WAIT_SOF: SerialAPI got unknown ACK \n");
                 ack_got = 1;
             } else if (c == ZW_CAN) {
-                printf("       WAIT_SOF: SerialAPI got CAN, we should wait for ACK\n");
+                printf("WARNING:rtt.c zwave_check_state: WAIT_SOF: SerialAPI got CAN, we should wait for ACK\n");
                 zstate = WAIT_RETRANSMIT;
             }
             else {
-                printf("       WAIT_SOF: SerialAPI got unexpected byte 0x%x ?????????\n", c);
+                printf("WARNING:rtt.c zwave_check_state: WAIT_SOF: SerialAPI got unexpected byte 0x%x\n", c);
             }
             break;
         case WAIT_LEN:
@@ -3258,42 +3254,53 @@ void zwave_check_state(unsigned char c)
             zdataptr++;
             if (zlen == 0) {
                 if (c != cksum) {
-                    printf("CRC ERROR!!! crc1=%x crc2=%x\n", c, cksum);
+                    printf("WARNING:rtt.c zwave_check_state: CRC!!! crc1=%x crc2=%x\n", c, cksum);
                 }
                 write(zwavefd, &ack,1);
                 zstate = WAIT_SOF;
                 if (curcmd == GetControllerCapability) {
-                    printf("The capabiity is\n\t");
+                    printf("INFO:rtt.c zwave_check_state: controller capabiity is\n\t");
                     capability_string(zdata[0]);
                 } else if (curcmd == GetSerialCapability) {
                     dumpSerialCapability();
                 } else if (curcmd == GetNodeProtocolInfo) {
                     dumpNodeProtocolInfo();
+                    execute_senddata_ack_callback(TRANSMIT_COMPLETE_OK);
                 } else if (curcmd == GetInitData) {
                     dumpInitData();
+                    execute_senddata_ack_callback(TRANSMIT_COMPLETE_OK);
                 } else if (curcmd == GetRoutingInformation) {
                     dumpRouteInformation();
+                    execute_senddata_ack_callback(TRANSMIT_COMPLETE_OK);
                 } else if (curcmd == ZW_SendData) {
                     if (zdata[0] == 0) {	// zdata[0] is RetVal
-                        printf(" queue overflow\n");
+                        printf("INFO:rtt.c zwave_check_state: queue overflow\n");
                         usleep(10000);
                     } else if (zdata[0] == 1) {
                         //printf(" command accepted\n");
                     }
                 } else if (curcmd == FUNC_ID_MEMORY_GET_ID) {
                     zwave_ready = 1;
-                    printf("HomeID: %02x%02x%02x%02x\n", zdata[0], zdata[1], zdata[2], zdata[3]);
-                    printf("My address: %x\n", zdata[4]);
-
-                    fflush(stdout);
+                    printf("INFO:rtt.c zwave_check_state: HomeID=%02x%02x%02x%02x, My address=%x\n", zdata[0], zdata[1], zdata[2], zdata[3], zdata[4]);
+                    execute_senddata_ack_callback(TRANSMIT_COMPLETE_OK);
                 } else if (curcmd == IsFailedNodeId) {
                     if(zdata[0]==1)
                         zwave_check_node_isfail=1;
                     else
                         zwave_check_node_isfail=0;
+                    execute_senddata_ack_callback(TRANSMIT_COMPLETE_OK);
+                } else if (curcmd == RemoveFailedNodeId) {
+                    if (PyZwave_print_debug_info) {
+                        printf("DEBUG:rtt.c zwave_check_state: Get response for RemoveFailedNodeId [");
+                        for(i=0;i<zdataptr;i++) {
+                            printf("%x ", zdata[i]);
+                        }
+                        printf("]\n");
+                    }
+                    execute_senddata_ack_callback(TRANSMIT_COMPLETE_OK);
                 } else {
                     if (PyZwave_print_debug_info) {
-                        printf("Get response for command %x\n [", curcmd);
+                        printf("DEBUG:rtt.c zwave_check_state: Get response for command %x [", curcmd);
                         for(i=0;i<zdataptr;i++) {
                             printf("%x ", zdata[i]);
                         }
@@ -3316,24 +3323,24 @@ void zwave_check_state(unsigned char c)
                     ApplicationCommandHandler(zdata, zdataptr);
                 } else if (curcmd == 0x49) {	// ApplicationSlaveUpdate
                     if (PyZwave_print_debug_info) {
-                        printf("ApplicationSlaveUpdate:\n");
-                        printf("  rxStatus = %02x\n", zdata[0]);
-                        printf("  src_node = %d\n", zdata[1]);
+                        printf("DEBUG:rtt.c zwave_check_state: ApplicationSlaveUpdate: ");
+                        printf("  rxStatus = %02x", zdata[0]);
+                        printf("  src_node = %d", zdata[1]);
                         dump_node_info(zdata+3, zdata[2]);
                     }
                 } else if (curcmd == RFPowerLevelGet) {
-                    printf("power level is %s\n", toPowerLevel(zdata[0]));
+                    printf("INFO:rtt.c zwave_check_state: power level is %s\n", toPowerLevel(zdata[0]));
                 } else if (curcmd == SendTestFrame) {
                     if (zdataptr == 2) {
-                        printf("Command is accepted retVal=%d\n", zdata[0]);
+                        printf("INFO:rtt.c zwave_check_state: Command is accepted retVal=%d\n", zdata[0]);
                     } else {
-                        printf("txStatus = %x\n", zdata[1]);
+                        printf("INFO:rtt.c zwave_check_state: txStatus = %x\n", zdata[1]);
                     }
                 } else if (curcmd == RequestNetworkUpdate) {
                     if (zdataptr== 2) {
-                        printf("Command is accepted retVal=%d\n", zdata[0]);
+                        printf("INFO:rtt.c zwave_check_state: Command is accepted retVal=%d\n", zdata[0]);
                     } else {
-                        printf("network update status is %d\n", zdata[1]);
+                        printf("INFO:rtt.c zwave_check_state: network update status is %d\n", zdata[1]);
                     }
                 } else if (curcmd == ZW_SendData || curcmd == ZW_SendNodeInformation) {
                     if (zdata[1] == TRANSMIT_COMPLETE_OK)
@@ -3342,18 +3349,18 @@ void zwave_check_state(unsigned char c)
                         cmd_succ=0;
                     if (PyZwave_print_debug_info) {
                         if (zdata[1] == TRANSMIT_COMPLETE_OK) {
-                            printf("Transmit complete ok.\n");
+                            printf("DEBUG:rtt.c zwave_check_state: Transmit complete ok.\n");
                         } else if (zdata[1] == TRANSMIT_COMPLETE_NO_ACK) {
-                            printf("Transmit complete NO_ACK.\n");
+                            printf("DEBUG:rtt.c zwave_check_state: Transmit complete NO_ACK.\n");
                         } else if (zdata[1] == TRANSMIT_COMPLETE_FAIL) {
-                            printf("TRANSMIT_COMPLETE_FAIL.\n");
+                            printf("DEBUG:rtt.c zwave_check_state: TRANSMIT_COMPLETE_FAIL.\n");
                         } else {
-                            printf("TRANSMIT error (%d)\n", zdata[1]);
+                            printf("DEBUG:rtt.c zwave_check_state: TRANSMIT error(%d)\n", zdata[1]);
                         }
                     }
                     if (g_flood) {
                         ZW_sendNodeInformation(g_flood,txoptions);
-                        printf("flood\n");
+                        printf("WARNING:rtt.c zwave_check_state: flood\n");
                     } else {
                         //printf("done\n");
                     }
@@ -3366,7 +3373,7 @@ void zwave_check_state(unsigned char c)
                             send_data_fin = 1;
                         }
                         else {
-                            printf("		ACKed SEQ != last SEQ ???? ack_seq=%d, last_seq=%d\n", zdata[0], zseq);
+                            printf("WARNING:rtt.c zwave_check_state: ACKed SEQ != last SEQ ? ack_seq=%d, last_seq=%d\n", zdata[0], zseq);
                         }
                         execute_senddata_ack_callback(zdata[1]);
                     }
@@ -3387,28 +3394,28 @@ void zwave_check_state(unsigned char c)
                        */
                     char tmp[256];
                     if (zdata[1] == 1) {
-                        printf("%s: learn ready\n", type);
+                        printf("INFO:rtt.c zwave_check_state: %s: learn ready\t", type);
                         sprintf(tmp, "%s: learn ready", type);
                         strcat(current_status, "\n");
                         strcat(current_status, tmp);
                     } else if (zdata[1] == 2) {
-                        printf("%s: node found\n", type);
+                        printf("INFO:rtt.c zwave_check_state: %s: node found\n", type);
                         sprintf(tmp, "%s: node found\n", type);
                         strcat(current_status, "\n");
                         strcat(current_status, tmp);
                     } else if (zdata[1] == 3) {
-                        printf("%sing slave node.....\n", type);
+                        printf("INFO:rtt.c zwave_check_state: %sing slave node.....\n", type);
                     } else if (zdata[1] == 4) {
-                        printf("%sing controller node.....\n", type);
+                        printf("INFO:rtt.c zwave_check_state: %sing controller node.....\n", type);
                     } else if (zdata[1] == 5) {
-                        printf("%s: protocol done. Wait for replication\n", type);
+                        printf("INFO:rtt.c zwave_check_state: %s: protocol done. Wait for replication\n", type);
                     } else if (zdata[1] == 6) {
-                        printf("%s: done.\n", type);
+                        printf("INFO:rtt.c zwave_check_state: %s: done.\n", type);
                         sprintf(tmp, "%s: done.", type);
                         strcat(current_status, "\n");
                         strcat(current_status, tmp);
                     } else if (zdata[1] == 7) {
-                        printf("%s: failed.\n", type);
+                        printf("WARNING:rtt.c zwave_check_state: %s: failed.\n", type);
                         sprintf(tmp, "%s: failed.", type);
                         strcat(current_status, "\n");
                         strcat(current_status, tmp);
@@ -3416,25 +3423,29 @@ void zwave_check_state(unsigned char c)
                         printf("%s: Unknown retval = %d\n", type, zdata[1]);
                     }
                     if (zdata[2])
-                        printf("  node_id: %d\n", zdata[2]);
+                        printf("INFO:rtt.c zwave_check_state: node_id: %d\t", zdata[2]);
                         sprintf(tmp, "  node_id: %d", zdata[2]);
                         strcat(current_status, "\n");
                         strcat(current_status, tmp);
-                    if (zdata[3])
+                    if (zdata[3]){
                         dump_node_info(zdata+4, zdata[3]);
-                } else if (curcmd == FUNC_ID_ZW_CONTROLLER_CHANGE) {
-                    printf("Get command for %x\n [", curcmd);
-                    for(i=0;i<zdataptr;i++) {
-                        printf("%x ", zdata[i]);
                     }
-                    printf("]\n");
+                } else if (curcmd == FUNC_ID_ZW_CONTROLLER_CHANGE) {
+                    if(verbose) {
+                        printf("INFO:rtt.c zwave_check_state: Get command for ZW_CONTROLLER_CHANGE %x\t [", curcmd);
+                        for(i=0;i<zdataptr;i++) {
+                            printf("%x ", zdata[i]);
+                        }
+                        printf("]\n");
+                    }
                 }
                 else if (curcmd == SetDefault) {
-                    printf("Z-Wave controller is back to factory default\n");
+                    printf("INFO:rtt.c zwave_check_state: Z-Wave controller is back to factory default\n");
+                    execute_senddata_ack_callback(TRANSMIT_COMPLETE_OK);
                 }
                 else {
                     if (PyZwave_print_debug_info) {
-                        printf("Get command for %x\n [", curcmd);
+                        printf("DEBUG:rtt.c zwave_check_state: Get command for %x\t [", curcmd);
                         for(i=0;i<zdataptr;i++) {
                             printf("%x ", zdata[i]);
                         }
@@ -3443,8 +3454,12 @@ void zwave_check_state(unsigned char c)
                 }
             }
             break;
+        case WAIT_INIT:
+            if(verbose) printf("INFO:rtt.c zwave_check_state: WAIT_INIT\n");
+            break;
         default:
-            printf("Unknown state %d\n", zstate);
+            printf("WARNING:rtt.c zwave_check_state: Unknown state %d\n", zstate);
+            break;
     }
     fflush(stdout);
 }
@@ -3597,7 +3612,7 @@ void do_test(int id,int v,int loop)
                 break;
             }
         }
-        printf("succ=%d fail=%d\n", succ,fail);
+        printf("INFO:rtt.c do_test: succ=%d fail=%d\n", succ,fail);
     }
     if ((succ*100/(succ+fail)) >= 90) {	// > 90% successful
         main_ret = 0;
@@ -4109,10 +4124,10 @@ int process_cmd(int argc, char * argv[])
 
 
         } else if (strcmp(argv[i],"q")==0) {
-            printf("End\n");
+            printf("INFO:rtt.c process_cmd: End\n");
             return -1;
         } else {
-            printf("unknown token %s\n", argv[i]);
+            printf("INFO:rtt.c process_cmd: unknown token %s\n", argv[i]);
         }
     }
     repeat_cmd = cmd;
@@ -4160,7 +4175,7 @@ void read_stdin_thread(void * data)
     int ret;
 
     if ((sfd=(int)socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("%s:%d ERRNO=%d (%s)\n", __FUNCTION__, __LINE__, ERRNO, strerror(ERRNO));
+        printf("INFO:rtt.c read_stdin_thread: %s:%d ERRNO=%d (%s)\n", __FUNCTION__, __LINE__, ERRNO, strerror(ERRNO));
         //return -1;
         return;
     }
@@ -4169,23 +4184,23 @@ void read_stdin_thread(void * data)
     remote.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
     if (connect(sfd, (struct sockaddr *)&remote, sizeof(struct sockaddr_in)) < 0) {
-        printf("%s:%d ERRNO=%d (%s)\n", __FUNCTION__, __LINE__, ERRNO, strerror(ERRNO));
+        printf("INFO:rtt.c read_stdin_thread: %s:%d ERRNO=%d (%s)\n", __FUNCTION__, __LINE__, ERRNO, strerror(ERRNO));
         //return -1;
         return;
     }
 
     while (1) {
         if (!fgets(buf, sizeof(buf), stdin)) {
-            printf("fgets error\n");
+            printf("INFO:rtt.c read_stdin_thread: fgets error\n");
             break;
         }
         if (write(sfd, buf, strlen(buf)+1) < 0) {
-            printf("write error\n");
+            printf("INFO:rtt.c read_stdin_thread: write error\n");
             break;
         }
     }
     close(sfd);
-    printf("end of thread\n");
+    printf("INFO:rtt.c read_stdin_thread: end of thread\n");
     _endthread();
     //return 0;
     return;
@@ -4201,7 +4216,7 @@ int PyZwave_senddataAckReceived = 0;
 
 void PyZwave_proprietary_class_cb(int src, void * payload, int len) {
     if (len>1024) {
-        printf("Received too much data. :-(");
+        printf("INFO:rtt.c PyZwave_proprietary_class_cb: Received too much data. :-(");
         exit(0);
     }
 
@@ -4217,24 +4232,18 @@ void PyZwave_proprietary_class_cb(int src, void * payload, int len) {
 }
 
 int PyZwave_init_usb(char *dev_name) {
-    printf("inside PyZwave_init\n");
     strcpy(g_dev_name, dev_name);
-    printf("g_dev_name\n");
     txoptions |= TRANSMIT_OPTION_ACK + TRANSMIT_OPTION_AUTO_ROUTE;
-    printf("txoptions\n");
     register_persistent_class_callback(COMMAND_CLASS_PROPRIETARY, PyZwave_proprietary_class_cb);
-    printf("register_persistent_class_callback\n");
+    if(verbose) printf("INFO:rtt.c PyZwave_init_usb: device name is %s\n", g_dev_name);
     return zwave_init();
 }
 
 int PyZwave_init(char *host) {
-    printf("inside PyZwave_init\n");
     g_host = host;
-    printf("g_host\n");
     txoptions |= TRANSMIT_OPTION_ACK + TRANSMIT_OPTION_AUTO_ROUTE;
-    printf("txoptions\n");
     register_persistent_class_callback(COMMAND_CLASS_PROPRIETARY, PyZwave_proprietary_class_cb);
-    printf("register_persistent_class_callback\n");
+    if(verbose) printf("INFO:rtt.c PyZwave_init: host name is %s\n", g_host);
     return zwave_init();
 }
 
@@ -4254,12 +4263,12 @@ int PyZwave_receiveByte(int wait_msec) {
         return 0;
     }
     else if (n < 0) {
-        printf("select() error\n");
+        printf("ERROR:rtt.c PyZwave_receiveByte: select() error\n");
         exit(1);
     }
     n = (int)read(zwavefd, &c,1);
     if (n != 1) {
-        printf("read error !!!!!!!!!!!!!! n=%d\n", n);
+        printf("ERROR:rtt.c PyZwave_receiveByte: error! n=%d\n", n);
         exit(1);
     }
     zwave_check_state(c);
@@ -4301,7 +4310,7 @@ int PyZwave_send(unsigned id,unsigned char *in,int len) {
     if (PyZwave_senddataAckReceived == TRANSMIT_COMPLETE_OK)
         return 0;
     else {
-        printf("Transmit failed: %i\n", PyZwave_senddataAckReceived);
+        printf("ERROR:rtt.c send: transmit failed %i\n", PyZwave_senddataAckReceived);
         return -1;
     }
 }
@@ -4323,17 +4332,32 @@ void PyZwave_discover_ack_cb(void * data, int txStatus) //TODO: this function is
 void PyZwave_discover(void){
     PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
     register_discover_callback(PyZwave_discover_ack_cb, NULL);
-    printf("calling GetInitData!\n");
     ZW_GetInitData();
     while (1) {
         if (!PyZwave_receiveByte(1000)) {
             break; // No data received.
         }
-        if (PyZwave_senddataAckReceived != TRANSMIT_WAIT_FOR_ACK)
+        if (PyZwave_senddataAckReceived != TRANSMIT_WAIT_FOR_ACK){
             break; // Ack or error received.
+        }
     }
 
+    PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
+    register_discover_callback(PyZwave_discover_ack_cb, NULL);
     ZW_MemoryGetID();
+    while (1) {
+        if (!PyZwave_receiveByte(1000)) {
+            break; // No data received.
+        }
+    }
+    zwave_my_address = zdata[4];
+    if(verbose) printf("INFO:rtt.c PyZwave_discover: my zwave address is %d\n", zwave_my_address);
+}
+
+int PyZwave_hard_reset(void){
+    PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
+    register_discover_callback(PyZwave_discover_ack_cb, NULL);
+    int ret = ZW_SetDefault();
     while (1) {
         if (!PyZwave_receiveByte(1000)) {
             break; // No data received.
@@ -4341,13 +4365,14 @@ void PyZwave_discover(void){
         if (PyZwave_senddataAckReceived != TRANSMIT_WAIT_FOR_ACK)
             break; // Ack or error received.
     }
-    zwave_my_address = zdata[4];
-    printf("my zwave address: %d\n", zdata[4]);
+    return ret;
 }
 
 unsigned long PyZwave_get_addr(void){
     unsigned long network_id = 0;
     int i;
+    PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
+    register_discover_callback(PyZwave_discover_ack_cb, NULL);
     ZW_MemoryGetID();
     while (1) {
         if (!PyZwave_receiveByte(1000)) {
@@ -4367,7 +4392,6 @@ unsigned long PyZwave_get_addr(void){
 int PyZwave_is_node_fail(int node_id){
     PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
     register_discover_callback(PyZwave_discover_ack_cb, NULL);
-    //printf("ack basic get %d\n",node_id);
     txoptions |= TRANSMIT_OPTION_ACK;//ack basic get
     repeat_cmd = BASIC_GET;
     zwavecmd_basic_get((unsigned int)node_id);
@@ -4378,12 +4402,13 @@ int PyZwave_is_node_fail(int node_id){
         if (PyZwave_senddataAckReceived != TRANSMIT_WAIT_FOR_ACK)
             break; // Ack or error received.
     }
-    // printf("PyZwave_senddataAckReceived=%d\n",PyZwave_senddataAckReceived);
+
+    if(verbose) printf("INFO:rtt.c PyZwave_is_node_fail zwavecmd_basic_get %d for node id %d\n",PyZwave_senddataAckReceived,node_id);
     if(PyZwave_senddataAckReceived == TRANSMIT_COMPLETE_OK)
         return 0;//node still alive, no need to check fail
 
     PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
-    // printf("isfail %d\n",node_id);
+    register_discover_callback(PyZwave_discover_ack_cb, NULL);
     ZW_isFailedNodeId(node_id);
     while (1) {
         if (!PyZwave_receiveByte(1000)) {
@@ -4392,19 +4417,15 @@ int PyZwave_is_node_fail(int node_id){
         if (PyZwave_senddataAckReceived != TRANSMIT_WAIT_FOR_ACK)
             break; // Ack or error received.
     }
-    if (zwave_check_node_isfail){
-        return 1;
-    }
-    else {
-        return 0;
-    }
+    if(verbose) printf("INFO:rtt.c PyZwave_is_node_fail ZW_isFailed %d for node id %d\n",zwave_check_node_isfail,node_id);
+    fflush(stdout);
+    return (int)zwave_check_node_isfail;
 }
 
 void PyZwave_check_removefail(void){
     int i;
     PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
     register_discover_callback(PyZwave_discover_ack_cb, NULL);
-    printf("calling GetInitData!\n");
     ZW_GetInitData();
     while (1) {
         if (!PyZwave_receiveByte(1000)) {
@@ -4415,40 +4436,10 @@ void PyZwave_check_removefail(void){
     }
 
     for(i=2;i<=init_data_buf[0];i++) {
-        PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
-        register_discover_callback(PyZwave_discover_ack_cb, NULL);
-        printf("ack basic get %d\n",init_data_buf[i]);
-        txoptions |= TRANSMIT_OPTION_ACK;//ack basic get
-        repeat_cmd = BASIC_GET;
-        zwavecmd_basic_get((unsigned int)init_data_buf[i]);
-        while (1) {
-            if (!PyZwave_receiveByte(1000)) {
-                break; // No data received.
-            }
-            if (PyZwave_senddataAckReceived != TRANSMIT_WAIT_FOR_ACK)
-                break; // Ack or error received.
-        }
-        //printf("PyZwave_senddataAckReceived=%d\n",PyZwave_senddataAckReceived);
-        if(PyZwave_senddataAckReceived == TRANSMIT_COMPLETE_OK)
-            continue;//node still alive, no need to check fail
-
-        PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
-        printf("isfail %d\n",init_data_buf[i]);
-        ZW_isFailedNodeId((int)init_data_buf[i]);
-        while (1) {
-            if (!PyZwave_receiveByte(1000)) {
-                break; // No data received.
-            }
-            if (PyZwave_senddataAckReceived != TRANSMIT_WAIT_FOR_ACK)
-                break; // Ack or error received.
-        }
-        //printf("nodeid=%d========isfail=%d\n",init_data_buf[i],zdata[0],zwave_check_node_isfail);
-
-	if(zwave_check_node_isfail) {
-        PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
-        register_discover_callback(PyZwave_discover_ack_cb, NULL);
-        printf("===removefail %d===\n",init_data_buf[i]);
-        ZW_removeFailedNodeId((int)init_data_buf[i]);
+    	if(PyZwave_is_node_fail((int)init_data_buf[i])) {
+            PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
+            register_discover_callback(PyZwave_discover_ack_cb, NULL);
+            ZW_removeFailedNodeId((int)init_data_buf[i]);
             while (1) {
                 if (!PyZwave_receiveByte(1000)) {
                     break; // No data received.
@@ -4456,15 +4447,15 @@ void PyZwave_check_removefail(void){
                 if (PyZwave_senddataAckReceived != TRANSMIT_WAIT_FOR_ACK)
                     break; // Ack or error received.
             }
+            if(verbose) printf("INFO:rtt.c PyZwave_is_node_fail ZW_removeFailed for node id %d\n",init_data_buf[i]);
         }
     }
 }
 
-
 // Penn
 void PyZwave_routing(unsigned node_id) {
-  printf("calling GetRoutingInformation!\n");
   PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
+  register_discover_callback(PyZwave_discover_ack_cb, NULL);
   ZW_GetRoutingInformation(node_id);
   while (1) {
     if (!PyZwave_receiveByte(1000))
@@ -4475,8 +4466,8 @@ void PyZwave_routing(unsigned node_id) {
 }
 
 void PyZwave_getDeviceType(unsigned node_id) {
-  printf("calling GetRoutingInformation!\n");
   PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
+  register_discover_callback(PyZwave_discover_ack_cb, NULL);
   ZW_GetNodeProtocolInfo(node_id);
   while (1) {
     if (!PyZwave_receiveByte(1000))
@@ -4497,8 +4488,6 @@ char *PyZwave_status(void) {
 void PyZwave_clearstatus(void) {
     memset(current_status, '\0', sizeof(current_status));
 }
-
-
 
 int main(int argc, char *argv[])
 {
@@ -4525,7 +4514,7 @@ int main(int argc, char *argv[])
 
 #ifdef _WIN32
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        printf("WSAStartup error\n");
+        printf("ERROR:rtt.c main: WSAStartup error\n");
         return -1;
     }
 #endif //_WIN32
@@ -4555,7 +4544,7 @@ int main(int argc, char *argv[])
         usage();
 
     if (zwave_init() < 0) {
-        printf("can not open zwave device\n");
+        printf("ERROR:rtt.c main: can not open zwave device\n");
         exit(-1);
     }
 
@@ -4563,18 +4552,18 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
     ///////////// create command line thread
     if ((sfd_listen = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        printf("%s:%d ERRNO=%d (%s)\n", __FUNCTION__, __LINE__, ERRNO, strerror(ERRNO));
+        printf("INFO:rtt.c main: %s:%d ERRNO=%d (%s)\n", __FUNCTION__, __LINE__, ERRNO, strerror(ERRNO));
         exit(-1);
     }
     local.sin_family = AF_INET;
     local.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     local.sin_port = htons(0);
     if (bind(sfd_listen, (struct sockaddr *)&local, sizeof(struct sockaddr_in)) < 0) {
-        printf("%s:%d ERRNO=%d (%s)\n", __FUNCTION__, __LINE__, ERRNO, strerror(ERRNO));
+        printf("ERROR:rtt.c main: %s:%d ERRNO=%d (%s)\n", __FUNCTION__, __LINE__, ERRNO, strerror(ERRNO));
         exit(-1);
     }
     if (getsockname(sfd_listen, (struct sockaddr *)&local, &local_len) < 0) {
-        printf("%s:%d ERRNO=%d (%s)\n", __FUNCTION__, __LINE__, ERRNO, strerror(ERRNO));
+        printf("ERROR:rtt.c main: %s:%d ERRNO=%d (%s)\n", __FUNCTION__, __LINE__, ERRNO, strerror(ERRNO));
         exit(-1);
     }
     server_port = ntohs(local.sin_port);
@@ -4586,10 +4575,10 @@ int main(int argc, char *argv[])
     stdin_thread = (HANDLE)_beginthread(read_stdin_thread, 0, NULL);
 
     if ((sfd_commu=(int)accept(sfd_listen, (struct sockaddr *)&remote, &remote_len)) < 0) {
-        printf("%s:%d ERRNO=%d (%s)\n", __FUNCTION__, __LINE__, ERRNO, strerror(ERRNO));
+        printf("ERROR:rtt.c main: %s:%d ERRNO=%d (%s)\n", __FUNCTION__, __LINE__, ERRNO, strerror(ERRNO));
         exit(-1);
     }
-    printf("Accept connection from %s:%d\n", inet_ntoa(remote.sin_addr), ntohs(remote.sin_port));
+    printf("INFO:rtt.c main: Accept connection from %s:%d\n", inet_ntoa(remote.sin_addr), ntohs(remote.sin_port));
 #endif //_WIN32
 
     process_cmd(argc-i, &argv[i]);
@@ -4609,7 +4598,7 @@ int main(int argc, char *argv[])
 
         n = select(FD_SETSIZE,&rs,NULL,NULL, &to);
         if (n < 0) {
-            printf("Z-Wave device file is closed !!!\n");
+            printf("ERROR:rtt.c main: Z-Wave device file is closed !\n");
             break;
         }
         else if (n == 0) {	// timeout
@@ -4666,6 +4655,6 @@ int main(int argc, char *argv[])
             }
         }
     }
-    printf("end of main\n");
+    printf("INFO:rtt.c main: end\n");
     return 0;
 }
