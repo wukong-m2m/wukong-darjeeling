@@ -34,7 +34,8 @@ dj_di_pointer wkreprog_impl_get_raw_position() {
 
 // Open reprogramming at a position within the app archive
 bool wkreprog_impl_open_app_archive(uint16_t start_write_position) {
-	return wkreprog_impl_open_raw(avr_flash_pageaddress+start_write_position);
+	void *x = (void *)di_app_infusion_archive_data;
+	return wkreprog_impl_open_raw((uint16_t)x + start_write_position);
 }
 
 // Open reprogramming at any position in flash
