@@ -212,6 +212,7 @@ void routing_handle_message(wkcomm_address_t wkcomm_addr, uint8_t *payload, uint
             DEBUG_LOG(DBG_WKROUTING, "routing handle set DID=%d\n",dest);
             did_table.my_did = dest;
             did_table.gateway_did = GET_DID_PREFIX(dest) | GET_DID_RADIO_ADDRESS(did_table.gateway_did);
+            wkpf_config_set_gwdid(did_table.gateway_did);
         } else {
             DEBUG_LOG(DBG_WKROUTING, "routing handle the same DID=%d\n",dest);
         }
@@ -255,8 +256,8 @@ void routing_poweron_init()
     DEBUG_LOG(DBG_WKROUTING, "routing_poweron_init\n");
     did_table.my_did = routing_get_node_id();
     did_table.gateway_did = wkpf_config_get_gwdid();
-    // routing_get_mac_address();
-    // routing_discover_gateway();
+    routing_get_mac_address();
+    routing_discover_gateway();
     // dj_timer_delay(10);
     routing_did_req();
 }
@@ -265,8 +266,7 @@ void routing_discover_gateway()
 {
     // First get the known radio address
     #ifdef RADIO_USE_ZWAVE
-        radio_zwave_address_t gateway_radio_address = 1;
-        did_table.gateway_did |= gateway_radio_address;
+        did_table.gateway_did = 1;
     #endif
     #ifdef RADIO_USE_XBEE
         dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);

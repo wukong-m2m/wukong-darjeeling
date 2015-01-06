@@ -7,6 +7,7 @@ import utils
 from rpcservice import RPCService
 from didservice import DIDService
 from autonet import AutoNet
+from monitorservice import MonitorService
 
 import struct
 import logging
@@ -19,6 +20,7 @@ class Gateway(object):
     def __init__(self, transport):
         assert transport is not None, "Gateway's transport radio interface is required"
         self._transport = transport
+        self._radio_address = self._transport.get_radio_address()
 
         self._greenlet = None
         self._no_dump = False
@@ -34,8 +36,12 @@ class Gateway(object):
         self._autonet = AutoNet(self._transport_learn_handler[MPTN.MULT_PROTO_MSG_SUBTYPE_RAD_ADD], self._transport_learn_handler[MPTN.MULT_PROTO_MSG_SUBTYPE_RAD_DEL], self._transport_learn_handler[MPTN.MULT_PROTO_MSG_SUBTYPE_RAD_STOP]) if CONFIG.ENABLE_AUTONET else None
         autonet_mac_address = self._autonet.get_gateway_mac_address() if CONFIG.ENABLE_AUTONET else None
 
+        # Initialize Monitor Service
+        self._monitor_service = MonitorService(CONFIG.MONGODB_URL) if CONFIG.ENABLE_MONITOR else None
+        self._monitor_handler = self._monitor_service.handle_monitor_message
+
         # Initialize DID service
-        self._did_service = DIDService(self._transport.get_radio_address(), self._transport.get_radio_addr_len(), autonet_mac_address)
+        self._did_service = DIDService(self._radio_address, self._transport.get_radio_addr_len(), autonet_mac_address)
         self._did_req_handler = self._did_service.handle_did_req_message
         self._fwd_handler = self._did_service.handle_fwd_message
         self._pfx_upd_handler = self._did_service.handle_pfx_upd_message
@@ -57,6 +63,8 @@ class Gateway(object):
             self._greenlet.append(gevent.spawn(self._autonet.serve_autonet))
         if CONFIG.UNITTEST_MODE:
             self._greenlet.append(gevent.spawn(self._did_service.clear_did_req_queue))
+        if CONFIG.ENABLE_MONITOR:
+            self._greenlet.append(gevent.spawn(self._monitor_service.serve_monitor))
         gevent.sleep(0) # Make the greenlet start first and return
         logger.info("started on %s:%s" % self._ip_server.getsockname()[:2])
         return True
@@ -187,6 +195,16 @@ class Gateway(object):
                 logger.debug("the forward destination DID is not in this gateway's network")
                 return None
 
+            if radio_address == self._radio_address:
+                if from_transport:
+                    if payload[0] == MPTN.WKPF_COMMAND_MONITOR:
+                        self._monitor_handler(context, payload[1:])
+                        gevent.sleep(0)
+                    else:
+                        logger.error("receives invalid message payload and will not send any reply")
+                else:
+                    logger.error("receives invalid message to me from master and will not send any reply")
+                return None
 
             message = map(ord, message)
             retries = CONFIG.CONNECTION_RETRIES

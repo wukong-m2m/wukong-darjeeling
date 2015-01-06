@@ -27,14 +27,19 @@ class ZWTransport(object):
         global _global_lock
         _global_lock = RLock()
         pyzwave.init(dev_address)
+        _addr = pyzwave.getAddr()
+        b = _addr[:4]
+        self._network_id = sum(b[i] << ((len(b)-1-i) * 8) for i in range(len(b)))
+        self._node_id = _addr[4]
 
-        logger.info("Zwave radio interface %s initialized on %s" % (name, dev_address))
+        logger.info("Zwave radio interface %s initialized on %s with Network ID %s and Node ID %s" % (name, 
+            dev_address, hex(self._network_id), hex(self._node_id)))
 
     def get_name(self):
         return self._name
 
     def get_radio_address(self):
-        return pyzwave.getID()
+        return self._node_id
 
     def get_radio_addr_len(self):
         return MPTN.RADIO_ADDRESS_LEN_ZW
@@ -63,7 +68,6 @@ class ZWTransport(object):
         _global_lock.acquire(True)
         ret = None
         try:
-        
             logger.info("Zwave sending %d bytes %s to %X" % (len(payload),pprint.pformat(payload), radio_address))
             pyzwave.send(radio_address, payload)
         except:

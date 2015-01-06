@@ -288,14 +288,14 @@ uint8_t wkpf_propagate_property(wuobject_t *wuobject, uint8_t property_number, v
                     else
                         wkpf_error_code |= wkpf_external_write_property_refresh_rate(dest_wuobject, dest_property_number, *((uint16_t *)value));
                 }
-            } else if(dest_node_id == WUKONG_MASTER) {
+            } else if(dest_node_id == WUKONG_GATEWAY) {
                 DEBUG_LOG(DBG_WKPF, "WKPF: Monitoring property (remote). (%x, %x)->(%x, %x, %x), value %x\n", port_number, property_number, dest_node_id, dest_port_number, dest_property_number, *((uint16_t *)value)); // TODONR: values other than 16 bit values
 			    if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_BOOLEAN)
-                    wkpf_error_code |= wkpf_send_monitor_property_boolean(WUKONG_MASTER, source_wuclass_id, port_number, *((bool *)value));
+                    wkpf_error_code |= wkpf_send_monitor_property_boolean(WUKONG_GATEWAY, source_wuclass_id, port_number, *((bool *)value));
 			    else if(WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_SHORT)
-                    wkpf_error_code |= wkpf_send_monitor_property_int16(WUKONG_MASTER, source_wuclass_id, port_number, *((uint16_t *)value));
+                    wkpf_error_code |= wkpf_send_monitor_property_int16(WUKONG_GATEWAY, source_wuclass_id, port_number, *((uint16_t *)value));
 			    else
-			        wkpf_error_code |= wkpf_send_monitor_property_refresh_rate(WUKONG_MASTER, source_wuclass_id, port_number, *((uint16_t *)value));
+			        wkpf_error_code |= wkpf_send_monitor_property_refresh_rate(WUKONG_GATEWAY, source_wuclass_id, port_number, *((uint16_t *)value));
 			} else {
                 // Remote
                 DEBUG_LOG(DBG_WKPF, "WKPF: propagate_property (remote). (%x, %x)->(%x, %x, %x), value %x\n", port_number, property_number, dest_node_id, dest_port_number, dest_property_number, *((uint16_t *)value)); // TODONR: values other than 16 bit values

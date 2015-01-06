@@ -405,6 +405,10 @@ class DIDService(object):
             self._forward_to_final_ip_hop((self._db["MASTER_IP_ADDR"],self._db["MASTER_TCP_PORT"]), message)
             return None
 
+        if self._is_did_self(dest_did):
+            logger.debug("the message is to me")
+            return self._get_transport_radio_address(dest_did)
+
         if self._is_did_in_self_network(dest_did):
             logger.debug("forward the message to transport radio address directly")
             return self._get_transport_radio_address(dest_did)
