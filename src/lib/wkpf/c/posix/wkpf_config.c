@@ -11,14 +11,16 @@
 typedef struct features_t {
 	bool feature_enabled[WKPF_NUMBER_OF_FEATURES];
 	char location[LOCATION_MAX_LENGTH];
-	wkcomm_address_t did;
+	wkcomm_address_t mydid;
+	wkcomm_address_t gwdid;
 } features_t;
 
 features_t features;
 bool features_loaded = false;
 
 #define CONFIG_FILE_LOCATION_STRING "Location (in raw bytes on the next line):\n"
-#define CONFIG_FILE_DID_STRING "Did: %d\n"
+#define CONFIG_FILE_MYDID_STRING "MyDID: %d\n"
+#define CONFIG_FILE_GWDID_STRING "GwDID: %d\n"
 #define CONFIG_FILE_ENABLED_FEATURE_STRING "Feature: %d %d\n"
 
 bool prefix(const char *pre, const char *str) {
@@ -31,7 +33,8 @@ void save_features_data() {
 		printf("Can't open %s for writing, aborting...\n", posix_config_filename);
 		abort();
 	}
-	fprintf(fp, CONFIG_FILE_DID_STRING, features.did);
+	fprintf(fp, CONFIG_FILE_MYDID_STRING, features.mydid);
+	fprintf(fp, CONFIG_FILE_GWDID_STRING, features.gwdid);
 	fprintf(fp, CONFIG_FILE_LOCATION_STRING);
 	for (int i=0; i<LOCATION_MAX_LENGTH; i++)
 		fputc(features.location[i], fp);
@@ -58,14 +61,22 @@ void load_features_data() {
 		ssize_t read;
 
         while ((read = getline(&line, &len, fp)) != -1) {
-        	if (prefix("Did", line)) {
-				int did;
-				if (!sscanf(line, CONFIG_FILE_DID_STRING, &did)) {
-					printf("Did in %s not in expected format, aborting...\n", posix_config_filename);
+        	if (prefix("MyDID", line)) {
+				int devid;
+				if (!sscanf(line, CONFIG_FILE_MYDID_STRING, &did)) {
+					printf("MyDID in %s not in expected format, aborting...\n", posix_config_filename);
 					abort();
 				}
-				features.did = did;
-				DEBUG_LOG(DBG_WKPF, "CONFIG: did = %d\n", features.did);
+				features.mydid = did;
+				DEBUG_LOG(DBG_WKPF, "CONFIG: MyDID = %d\n", features.mydid);
+			} else if (prefix("GwDID", line)) {
+				int did;
+				if (!sscanf(line, CONFIG_FILE_GWDID_STRING, &did)) {
+					printf("GwDID in %s not in expected format, aborting...\n", posix_config_filename);
+					abort();
+				}
+				features.gwdid = did;
+				DEBUG_LOG(DBG_WKPF, "CONFIG: GwDID = %d\n", features.gwdid);
 			} else if (prefix("Feature", line)) {
 				int feature;
 				int is_enabled;
@@ -141,19 +152,34 @@ bool wkpf_config_get_feature_enabled(uint8_t feature) {
 			&& features.feature_enabled[feature];
 }
 
-
-wkcomm_address_t wkpf_config_get_did() {
+wkcomm_address_t wkpf_config_get_mydid() {
 	if (!features_loaded)
 		load_features_data();
 
-	return features.did;
+	return features.mydid;
 }
 
-void wkpf_config_set_did(wkcomm_address_t did) {
+void wkpf_config_set_mydid(wkcomm_address_t did) {
 	if (!features_loaded)
 		load_features_data();
 
-	features.did = did;
-	
+	features.mydid = did;
+
+	save_features_data();
+}
+
+wkcomm_address_t wkpf_config_get_gwdid() {
+	if (!features_loaded)
+		load_features_data();
+
+	return features.gwdid;
+}
+
+void wkpf_config_set_gwdid(wkcomm_address_t did) {
+	if (!features_loaded)
+		load_features_data();
+
+	features.gwdid = did;
+
 	save_features_data();
 }

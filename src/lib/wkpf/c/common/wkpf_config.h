@@ -24,7 +24,10 @@ extern uint8_t wkpf_config_get_part_of_location_string(char* dest, uint8_t offse
 extern uint8_t wkpf_config_set_feature_enabled(uint8_t feature, bool enabled); // Needs reboot
 extern bool wkpf_config_get_feature_enabled(uint8_t feature);
 
-extern wkcomm_address_t wkpf_config_get_did();
-extern void wkpf_config_set_did(wkcomm_address_t did);
+extern wkcomm_address_t wkpf_config_get_mydid();
+extern void wkpf_config_set_mydid(wkcomm_address_t did);
+
+extern wkcomm_address_t wkpf_config_get_gwdid();
+extern void wkpf_config_set_gwdid(wkcomm_address_t did);
 
 #endif // WKPF_CONFIG_H

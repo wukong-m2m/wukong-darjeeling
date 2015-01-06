@@ -9,7 +9,8 @@
 
 static char EEMEM eeprom_location[LOCATION_MAX_LENGTH] = ""; // Currently can only handle locations that fit into a single message
 static uint8_t EEMEM eeprom_wkpf_features[WKPF_FEATURE_ARRAY_SIZE];
-static uint32_t EEMEM eeprom_did;
+static uint32_t EEMEM eeprom_mydid;
+static uint32_t EEMEM eeprom_gwdid;
 
 #define load_location_length() eeprom_read_byte((uint8_t*)&eeprom_location_length)
 #define save_location_length(x) eeprom_update_byte((uint8_t*)&eeprom_location_length, (uint8_t)x)
@@ -19,8 +20,10 @@ static uint32_t EEMEM eeprom_did;
 #define enable_feature(feature) eeprom_update_byte(feat_addr(feature), eeprom_read_byte(feat_addr(feature)) | (1<<(feature % 8)))
 #define disable_feature(feature) eeprom_update_byte(feat_addr(feature), eeprom_read_byte(feat_addr(feature)) & ~(1<<(feature % 8)))
 #define get_feature_enabled(feature) (eeprom_read_byte(feat_addr(feature)) & (1<<(feature % 8)))
-#define load_did() eeprom_read_dword((wkcomm_address_t*)&eeprom_did)
-#define save_did(x) eeprom_update_dword((wkcomm_address_t*)&eeprom_did, (wkcomm_address_t)x)
+#define load_mydid() eeprom_read_dword((wkcomm_address_t*)&eeprom_mydid)
+#define save_mydid(x) eeprom_update_dword((wkcomm_address_t*)&eeprom_mydid, (wkcomm_address_t)x)
+#define load_gwdid() eeprom_read_dword((wkcomm_address_t*)&eeprom_gwdid)
+#define save_gwdid(x) eeprom_update_dword((wkcomm_address_t*)&eeprom_gwdid, (wkcomm_address_t)x)
 
 // Stores a part of the location in EEPROM, or returns WKPF_ERR_LOCATION_TOO_LONG if the string is too long.
 uint8_t wkpf_config_set_part_of_location_string(char* src, uint8_t offset, uint8_t length) {
@@ -60,10 +63,18 @@ bool wkpf_config_get_feature_enabled(uint8_t feature) {
           && get_feature_enabled(feature) > 0;
 }
 
-wkcomm_address_t wkpf_config_get_did() {
-  return load_did();
+wkcomm_address_t wkpf_config_get_mydid() {
+  return load_mydid();
 }
 
-void wkpf_config_set_did(wkcomm_address_t did) {
-  save_did(did);
+void wkpf_config_set_mydid(wkcomm_address_t did) {
+  save_mydid(did);
+}
+
+wkcomm_address_t wkpf_config_get_gwdid() {
+  return load_gwdid();
+}
+
+void wkpf_config_set_gwdid(wkcomm_address_t did) {
+  save_gwdid(did);
 }

@@ -16,49 +16,51 @@
 #error Only 1 radio protocol allowed for routing_use_gateway
 #endif
 
-#define MULT_PROTO_LEN_DID              4
-#define MULT_PROTO_LEN_MSG_TYPE         1
-#define MULT_PROTO_LEN_MSG_SUBTYPE      1
-#define MULT_PROTO_DEST_BYTE_OFFSET     0
-#define MULT_PROTO_SRC_BYTE_OFFSET      MULT_PROTO_DEST_BYTE_OFFSET + MULT_PROTO_LEN_DID
-#define MULT_PROTO_MSG_TYPE_BYTE_OFFSET MULT_PROTO_SRC_BYTE_OFFSET + MULT_PROTO_LEN_DID
-#define MULT_PROTO_MSG_SUBTYPE_BYTE_OFFSET MULT_PROTO_MSG_TYPE_BYTE_OFFSET + MULT_PROTO_LEN_MSG_TYPE
-#define MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET MULT_PROTO_MSG_SUBTYPE_BYTE_OFFSET + MULT_PROTO_LEN_MSG_SUBTYPE
+#define MPTN_LEN_DID              4
+#define MPTN_LEN_MSG_TYPE         1
+#define MPTN_LEN_MSG_SUBTYPE      1
+#define MPTN_DEST_BYTE_OFFSET     0
+#define MPTN_SRC_BYTE_OFFSET      MPTN_DEST_BYTE_OFFSET + MPTN_LEN_DID
+#define MPTN_MSG_TYPE_BYTE_OFFSET MPTN_SRC_BYTE_OFFSET + MPTN_LEN_DID
+#define MPTN_MSG_SUBTYPE_BYTE_OFFSET MPTN_MSG_TYPE_BYTE_OFFSET + MPTN_LEN_MSG_TYPE
+#define MPTN_MSG_PAYLOAD_BYTE_OFFSET MPTN_MSG_SUBTYPE_BYTE_OFFSET + MPTN_LEN_MSG_SUBTYPE
 
-#define MULT_PROTO_LEN_MAC                8
+#define MPTN_LEN_MAC                8
 
-#define MULT_PROTO_MSG_TYPE_DID         0x01
-#define MULT_PROTO_MSG_SUBTYPE_DID_REQ  0x00
-#define MULT_PROTO_MSG_SUBTYPE_DID_UPD  0x01
-#define MULT_PROTO_MSG_SUBTYPE_DID_OFFR 0x02
-#define MULT_PROTO_MSG_SUBTYPE_DID_ACK  0x03
-#define MULT_PROTO_MSG_SUBTYPE_DID_NAK  0x04
+#define MPTN_MSG_TYPE_DID         0x01
+#define MPTN_MSG_SUBTYPE_DID_REQ  0x00
+#define MPTN_MSG_SUBTYPE_DID_UPD  0x01
+#define MPTN_MSG_SUBTYPE_DID_OFFR 0x02
+#define MPTN_MSG_SUBTYPE_DID_ACK  0x03
+#define MPTN_MSG_SUBTYPE_DID_NAK  0x04
 
-#define MULT_PROTO_MSG_TYPE_FWD         0x03
-#define MULT_PROTO_MSG_SUBTYPE_FWD      0x00
-#define MULT_PROTO_MSG_SUBTYPE_FWD_ACK  0x01
-#define MULT_PROTO_MSG_SUBTYPE_FWD_NAK  0x02
+#define MPTN_MSG_TYPE_FWD         0x03
+#define MPTN_MSG_SUBTYPE_FWD      0x00
+#define MPTN_MSG_SUBTYPE_FWD_ACK  0x01
+#define MPTN_MSG_SUBTYPE_FWD_NAK  0x02
 
-#define MULT_PROTO_MASTER_DID           0
+#define MPTN_MASTER_DID           0
 
 struct Routing_Table
 {
     wkcomm_address_t my_did;
     wkcomm_address_t gateway_did;
-    uint16_t gateway_tcp_port;
+#ifdef RADIO_USE_WIFI
+    uint16_t gateway_port;
+#endif
     uint8_t mac_address[8];
 } did_table;
 
 void routing_handle_message(wkcomm_address_t wkcomm_addr, uint8_t *payload, uint8_t length);
 void routing_poweron_init();
 void routing_did_req();
-void routing_get_gateway_did();
+void routing_discover_gateway();
 void routing_get_mac_address();
 
 // MY NODE ID
 // Get my own node id
 wkcomm_address_t routing_get_node_id() {
-    return wkpf_config_get_did();
+    return wkpf_config_get_mydid();
 }
 
 // ADDRESS TRANSLATION
@@ -94,24 +96,24 @@ wkcomm_address_t addr_xbee_to_wkcomm(radio_xbee_address_t xbee_addr) {
 
 // SENDING
 uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
-    uint8_t rt_payload[MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET+WKCOMM_MESSAGE_PAYLOAD_SIZE+3]; // 3 bytes for wkcomm
+    uint8_t rt_payload[MPTN_MSG_PAYLOAD_BYTE_OFFSET+WKCOMM_MESSAGE_PAYLOAD_SIZE+3]; // 3 bytes for wkcomm
     uint8_t i;
 
     wkcomm_address_t temp_did;
-    for (temp_did = dest, i = 0; i < MULT_PROTO_LEN_DID; ++i)
+    for (temp_did = dest, i = 0; i < MPTN_LEN_DID; ++i)
     {
-        rt_payload[MULT_PROTO_DEST_BYTE_OFFSET+MULT_PROTO_LEN_DID-1-i] = temp_did & 0xFF;
+        rt_payload[MPTN_DEST_BYTE_OFFSET+MPTN_LEN_DID-1-i] = temp_did & 0xFF;
         temp_did >>= 8;
     }
-    for (temp_did = did_table.my_did, i = 0; i < MULT_PROTO_LEN_DID; ++i)
+    for (temp_did = did_table.my_did, i = 0; i < MPTN_LEN_DID; ++i)
     {
-        rt_payload[MULT_PROTO_SRC_BYTE_OFFSET+MULT_PROTO_LEN_DID-1-i] = temp_did & 0xFF;
+        rt_payload[MPTN_SRC_BYTE_OFFSET+MPTN_LEN_DID-1-i] = temp_did & 0xFF;
         temp_did >>= 8;
     }
-    rt_payload[MULT_PROTO_MSG_TYPE_BYTE_OFFSET] = MULT_PROTO_MSG_TYPE_FWD;
-    rt_payload[MULT_PROTO_MSG_SUBTYPE_BYTE_OFFSET] = MULT_PROTO_MSG_SUBTYPE_FWD;
-    memcpy (rt_payload+MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET, payload, length);
-    length += MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET;
+    rt_payload[MPTN_MSG_TYPE_BYTE_OFFSET] = MPTN_MSG_TYPE_FWD;
+    rt_payload[MPTN_MSG_SUBTYPE_BYTE_OFFSET] = MPTN_MSG_SUBTYPE_FWD;
+    memcpy (rt_payload+MPTN_MSG_PAYLOAD_BYTE_OFFSET, payload, length);
+    length += MPTN_MSG_PAYLOAD_BYTE_OFFSET;
 
     DEBUG_LOG(DBG_WKROUTING, "routing send packet:[");
     for (i = 0; i < length; ++i){
@@ -120,7 +122,7 @@ uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
     }
     DEBUG_LOG(DBG_WKROUTING, "]\n");
 
-    if (GET_DID_PREFIX(did_table.my_did) != GET_DID_PREFIX(dest) || dest == MULT_PROTO_MASTER_DID)
+    if (GET_DID_PREFIX(did_table.my_did) != GET_DID_PREFIX(dest) || dest == MPTN_MASTER_DID)
     {
         dest = did_table.gateway_did;
     }
@@ -176,37 +178,37 @@ void routing_handle_message(wkcomm_address_t wkcomm_addr, uint8_t *payload, uint
     DEBUG_LOG(DBG_WKROUTING, "] from %d\n", wkcomm_addr);
 
 
-    if (length < MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET)
+    if (length < MPTN_MSG_PAYLOAD_BYTE_OFFSET)
     {
         DEBUG_LOG(DBG_WKROUTING, "routing handler drops garbage packet\n");
         return;
     }
-    for (i = MULT_PROTO_DEST_BYTE_OFFSET; i < MULT_PROTO_DEST_BYTE_OFFSET+MULT_PROTO_LEN_DID; ++i)
+    for (i = MPTN_DEST_BYTE_OFFSET; i < MPTN_DEST_BYTE_OFFSET+MPTN_LEN_DID; ++i)
     {
         dest <<= 8;
         dest |= payload[i];
     }
     DEBUG_LOG(DBG_WKROUTING, "routing handle dest did is %d\n", dest);
-    for (i = MULT_PROTO_SRC_BYTE_OFFSET; i < MULT_PROTO_SRC_BYTE_OFFSET+MULT_PROTO_LEN_DID; ++i)
+    for (i = MPTN_SRC_BYTE_OFFSET; i < MPTN_SRC_BYTE_OFFSET+MPTN_LEN_DID; ++i)
     {
         src <<= 8;
         src |= payload[i];
     }
     DEBUG_LOG(DBG_WKROUTING, "routing handle src did is %d\n", src);
 
-    msg_type = payload[MULT_PROTO_MSG_TYPE_BYTE_OFFSET];
+    msg_type = payload[MPTN_MSG_TYPE_BYTE_OFFSET];
     DEBUG_LOG(DBG_WKROUTING, "routing handle msg_type is %d\n", msg_type);
 
-    msg_subtype = payload[MULT_PROTO_MSG_SUBTYPE_BYTE_OFFSET];
+    msg_subtype = payload[MPTN_MSG_SUBTYPE_BYTE_OFFSET];
     DEBUG_LOG(DBG_WKROUTING, "routing handle msg_subtype is %d\n", msg_subtype);
 
-    if (msg_type == MULT_PROTO_MSG_TYPE_DID &&
-        msg_subtype == MULT_PROTO_MSG_SUBTYPE_DID_OFFR &&
+    if (msg_type == MPTN_MSG_TYPE_DID &&
+        msg_subtype == MPTN_MSG_SUBTYPE_DID_OFFR &&
         src == 0)
     {
         DEBUG_LOG(DBG_WKROUTING, "routing handle receives DID OFFR packet\n");
         if (dest != did_table.my_did){
-            wkpf_config_set_did(dest);
+            wkpf_config_set_mydid(dest);
             DEBUG_LOG(DBG_WKROUTING, "routing handle set DID=%d\n",dest);
             did_table.my_did = dest;
             did_table.gateway_did = GET_DID_PREFIX(dest) | GET_DID_RADIO_ADDRESS(did_table.gateway_did);
@@ -218,12 +220,12 @@ void routing_handle_message(wkcomm_address_t wkcomm_addr, uint8_t *payload, uint
     {
 
         DEBUG_LOG(DBG_WKROUTING, "routing handle receives FWD packet\n");
-        if(msg_type == MULT_PROTO_MSG_TYPE_FWD)
+        if(msg_type == MPTN_MSG_TYPE_FWD)
         {
-            if(msg_subtype == MULT_PROTO_MSG_SUBTYPE_FWD){
+            if(msg_subtype == MPTN_MSG_SUBTYPE_FWD){
                 uint8_t buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+3]; // remove routing header from payload
-                length -= MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET;
-                memcpy (buffer, payload+MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET, length);
+                length -= MPTN_MSG_PAYLOAD_BYTE_OFFSET;
+                memcpy (buffer, payload+MPTN_MSG_PAYLOAD_BYTE_OFFSET, length);
                 wkcomm_handle_message(src, buffer, length);    //send to application
             }
         }
@@ -252,18 +254,18 @@ void routing_poweron_init()
 {
     DEBUG_LOG(DBG_WKROUTING, "routing_poweron_init\n");
     did_table.my_did = routing_get_node_id();
-    did_table.gateway_did = GET_DID_PREFIX(did_table.my_did);
-    routing_get_mac_address();
-    routing_get_gateway_did();
-    dj_timer_delay(10);
+    did_table.gateway_did = wkpf_config_get_gwdid();
+    // routing_get_mac_address();
+    // routing_discover_gateway();
+    // dj_timer_delay(10);
     routing_did_req();
 }
 
-void routing_get_gateway_did()
+void routing_discover_gateway()
 {
     // First get the known radio address
     #ifdef RADIO_USE_ZWAVE
-        radio_zwave_address_t gateway_radio_address = 24;
+        radio_zwave_address_t gateway_radio_address = 1;
         did_table.gateway_did |= gateway_radio_address;
     #endif
     #ifdef RADIO_USE_XBEE
@@ -274,8 +276,8 @@ void routing_get_gateway_did()
 void routing_get_mac_address()
 {
     // get MAC address
-    uint8_t uart_data[MULT_PROTO_LEN_MAC];
-    for (uint8_t i = 0; i < MULT_PROTO_LEN_MAC; ++i)
+    uint8_t uart_data[MPTN_LEN_MAC];
+    for (uint8_t i = 0; i < MPTN_LEN_MAC; ++i)
     {
         did_table.mac_address[i] = uart_data[i];
     }
@@ -284,20 +286,20 @@ void routing_get_mac_address()
 void routing_did_req()    //send DID request
 {
     DEBUG_LOG(DBG_WKROUTING, "routing did req/chk: my_did=%d\n",did_table.my_did);
-    uint8_t rt_payload[MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET + MULT_PROTO_LEN_MAC]; //Autonet MAC address
+    uint8_t rt_payload[MPTN_MSG_PAYLOAD_BYTE_OFFSET + MPTN_LEN_MAC]; //Autonet MAC address
     uint8_t i;
-    for (i = MULT_PROTO_DEST_BYTE_OFFSET; i < MULT_PROTO_DEST_BYTE_OFFSET+MULT_PROTO_LEN_DID; ++i)
+    for (i = MPTN_DEST_BYTE_OFFSET; i < MPTN_DEST_BYTE_OFFSET+MPTN_LEN_DID; ++i)
     {
         rt_payload[i] = 0;
     }
-    for (i = MULT_PROTO_SRC_BYTE_OFFSET; i < MULT_PROTO_SRC_BYTE_OFFSET+MULT_PROTO_LEN_DID; ++i)
+    for (i = MPTN_SRC_BYTE_OFFSET; i < MPTN_SRC_BYTE_OFFSET+MPTN_LEN_DID; ++i)
     {
         rt_payload[i] = 0xFF;
     }
-    rt_payload[MULT_PROTO_MSG_TYPE_BYTE_OFFSET] = MULT_PROTO_MSG_TYPE_DID;
-    rt_payload[MULT_PROTO_MSG_SUBTYPE_BYTE_OFFSET] = MULT_PROTO_MSG_SUBTYPE_DID_REQ;
+    rt_payload[MPTN_MSG_TYPE_BYTE_OFFSET] = MPTN_MSG_TYPE_DID;
+    rt_payload[MPTN_MSG_SUBTYPE_BYTE_OFFSET] = MPTN_MSG_SUBTYPE_DID_REQ;
 
-    radio_zwave_send(addr_wkcomm_to_zwave(did_table.gateway_did), rt_payload, MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET + MULT_PROTO_LEN_MAC);
+    radio_zwave_send(addr_wkcomm_to_zwave(did_table.gateway_did), rt_payload, MPTN_MSG_PAYLOAD_BYTE_OFFSET + MPTN_LEN_MAC);
 }
 
 // POLL
