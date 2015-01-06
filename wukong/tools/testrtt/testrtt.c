@@ -3102,7 +3102,8 @@ void SerialAPI_proc_command(void)
 				}
 			} else if (curcmd == FUNC_ID_MEMORY_GET_ID) {
 				zwave_ready = 1;
-				printf("HomeID=%02x%02x%02x%02x, My address=%x\n", zdata[0], zdata[1], zdata[2], zdata[3], zdata[4]);
+				printf("HomeID: %02x%02x%02x%02x\n", zdata[0], zdata[1], zdata[2], zdata[3]);
+				printf("MyID: %02d\n", zdata[4]);
 			} else {
 				if (print) {
 					printf("Get response for command %x\n [", curcmd);
