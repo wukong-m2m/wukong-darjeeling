@@ -1,9 +1,9 @@
 try:
-  import pyzwave
+    import pyzwave
 except:
-  print "Please install the pyzwave module in the wukong/tools/python/pyzwave by using"
-  print "cd ../tools/python/pyzwave; sudo python setup.py install"
-  exit(-1)
+    print "Please install the pyzwave module in the wukong/tools/python/pyzwave by using"
+    print "cd ../tools/python/pyzwave; sudo python setup.py install"
+    exit(-1)
 
 import gevent
 from gevent.lock import RLock
@@ -27,7 +27,14 @@ class ZWTransport(object):
         global _global_lock
         _global_lock = RLock()
         pyzwave.init(dev_address)
-        _addr = pyzwave.getAddr()
+
+        try:
+            _addr = pyzwave.getAddr()
+        except:
+            print "PyZwave module has been updated. Please RE-INSTALL the pyzwave module in the wukong/tools/python/pyzwave"
+            print "Using command: sudo python setup.py install"
+            exit(-1)
+
         b = _addr[:4]
         self._network_id = sum(b[i] << ((len(b)-1-i) * 8) for i in range(len(b)))
         self._node_id = _addr[4]

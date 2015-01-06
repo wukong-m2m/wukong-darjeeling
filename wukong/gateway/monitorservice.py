@@ -10,6 +10,7 @@ from gevent.queue import Queue
 import json
 import ast
 
+import gtwconfig as CONFIG
 import logging
 logging.basicConfig(level=CONFIG.LOG_LEVEL)
 logger = logging.getLogger( __name__ )

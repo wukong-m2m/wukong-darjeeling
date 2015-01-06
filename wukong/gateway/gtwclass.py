@@ -38,7 +38,7 @@ class Gateway(object):
 
         # Initialize Monitor Service
         self._monitor_service = MonitorService(CONFIG.MONGODB_URL) if CONFIG.ENABLE_MONITOR else None
-        self._monitor_handler = self._monitor_service.handle_monitor_message
+        self._monitor_handler = self._monitor_service.handle_monitor_message if CONFIG.ENABLE_MONITOR else None
 
         # Initialize DID service
         self._did_service = DIDService(self._radio_address, self._transport.get_radio_addr_len(), autonet_mac_address)
