@@ -66,4 +66,5 @@ class MonitorService(object):
             if (data_collection != None):
                 logging.debug(data_collection.toDocument())
                 self._mongodb_client.wukong.readings.insert(ast.literal_eval(data_collection.toDocument()))
+            gevent.sleep(0)
 
