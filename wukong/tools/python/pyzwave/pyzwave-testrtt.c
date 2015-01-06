@@ -2763,6 +2763,7 @@ int zwave_init(void)
     //if (SerialAPI_soft_reset()) {
     if (ZW_MemoryGetID()) {
         printf("ERROR:rtt.c zwave_init: Cannot init Z-Wave !\n");
+        exit(1);
     }
     else {
         clear_serial_api_queue();
@@ -2840,11 +2841,11 @@ void dumpInitData(void)
 {
     int len = 0;
     int i;
-    printf("INFO:rtt.c dumpInitData: \n\tVersion is %d.\n\tZdata is [", zdata[0]);
+    printf("INFO:rtt.c dumpInitData: \n\tZdata is [");
     for(i=0;i<10;i++) {
         printf("%x ",zdata[i]);
     }
-    printf("]\n\t");
+    printf("]\n\tVersion is %d.\n\t", zdata[0]);
     if (zdata[1]&1)
         printf("This is a slave with ");
     else {
@@ -3168,6 +3169,7 @@ void dumpRouteInformation(void)
     init_data_buf[0] = k;
     printf("]\n");
 }
+
 void zwave_check_state(unsigned char c)
 {
     int i;
@@ -3443,6 +3445,10 @@ void zwave_check_state(unsigned char c)
                     printf("INFO:rtt.c zwave_check_state: Z-Wave controller is back to factory default\n");
                     execute_senddata_ack_callback(TRANSMIT_COMPLETE_OK);
                 }
+                else if (curcmd == SetLearnMode) {
+                    printf("INFO:rtt.c zwave_check_state: Learn on/off done");
+                    execute_senddata_ack_callback(TRANSMIT_COMPLETE_OK);
+                }
                 else {
                     if (PyZwave_print_debug_info) {
                         printf("DEBUG:rtt.c zwave_check_state: Get command for %x\t [", curcmd);
@@ -3470,26 +3476,26 @@ void usage(void)
     printf("Z-wave unit test utility\n");
     printf("testrtt [-d dev_file] [<cmd> [args]]+\n");
     printf("    serial: Dump the supported command the Z-wave module\n");
-    printf("    ack   : Set the ACK option when we send the data\n");
+    printf("    ack: Set the ACK option when we send the data\n");
     printf("    autoroute: Set the AUTOROUTE option when we send data\n");
     printf("    lowpower: Set the LOWPOWER option when we send data\n");
     printf("    nowait: Exit after command is sent\n");
     printf("    seq <seq>: Set the initial sequence number\n");
     printf("    repeat:\n");
-    printf("       Send the BASIC or MULTILEVEL SWITCH copmmand repeatly. This is used to test the signal strength\n");
+    printf("        Send the BASIC or MULTILEVEL SWITCH copmmand repeatly. This is used to test the signal strength\n");
     printf("    interval <t>: Set the interval between packet to be <t> ms. This works with the repeat command\n");
     printf("    exit_time <t>: End this utility after <t> seconds.\n");
     printf("    returnroute: Set the RETURNROUTE option when we send data\n");
     printf("    basic set <id> <val> |get <id>\n");
-    printf("	Send BASIC_SET or BASIC_GET command\n");
+    printf("	    Send BASIC_SET or BASIC_GET command\n");
     printf("    multilevel set <id> <val>| get <id>\n");
-    printf("	Send Multilevel Switch command\n");
+    printf("	    Send Multilevel Switch command\n");
     printf("    start_level_change <id> <is_down>\n");
-    printf("	Start to dim with specified direction\n");
+    printf("	    Start to dim with specified direction\n");
     printf("    stop_level_change <id>\n");
-    printf("	Stop to dimming\n");
+    printf("	    Stop to dimming\n");
     printf("    scene set <id> <button> <scene id> | get <id> <button>\n");
-    printf("	Send SCENE_CONF command\n");
+    printf(" 	    Send SCENE_CONF command\n");
     printf("    association set <id> <group> <dest id>\n");
     printf("        Add <dest id> into <group>-th group\n");
     printf("    association get <id> <group>\n");
@@ -3497,9 +3503,9 @@ void usage(void)
     printf("    association group_get <id>\n");
     printf("        Return the number of supported group\n");
     printf("    association remove <id> <group> <dest id>\n");
-    printf("	Remove the <dest id> from <group>-th group\n");
+    printf("	    Remove the <dest id> from <group>-th group\n");
     printf("    manufacture get <id>\n");
-    printf("	Get manufacture ID\n");
+    printf("	    Get manufacture ID\n");
     printf("    configuration get <id> <no>\n");
     printf("        Get parameter #<no>\n");
     printf("    configuration set <id> <no> <value>\n");
@@ -3507,19 +3513,19 @@ void usage(void)
     printf("    configuration dump <id> <num>\n");
     printf("        Dump parameters from 1 to <num>\n");
     printf("    controller_change [start | stop]\n");
-    printf("	Add a controller and shift the primary role to the new controller\n");
+    printf("	    Add a controller and shift the primary role to the new controller\n");
     printf("    network add\n");
-    printf("	Enter the learning mode to learn a new device\n");
+    printf("	    Enter the learning mode to learn a new device\n");
     printf("    network addhigh\n");
-    printf("	The same as 'network add'. However, the RF signal in the full power instead of reduced power\n");
+    printf("	    The same as 'network add'. However, the RF signal in the full power instead of reduced power\n");
     printf("    network update\n");
-    printf("	Refresh the routing table in the SUC\n");
+    printf("	    Refresh the routing table in the SUC\n");
     printf("    network stop\n");
-    printf("   	Leave the learning mode\n");
+    printf("   	    Leave the learning mode\n");
     printf("    network delete\n");
-    printf("	Enter the learning mode to delete a device.\n");
+    printf("	    Enter the learning mode to delete a device.\n");
     printf("    nodeupdate <id>\n");
-    printf("	Update the routing table for node <id>\n");
+    printf("	    Update the routing table for node <id>\n");
     printf("    simpleav set <id> <itemid> <key> <seq>\n");
     printf("        Send IR command <key> for device <dev>\n");
     printf("    simpleav learn <key>\n");
@@ -3533,25 +3539,25 @@ void usage(void)
     printf("    wakeup set <id> <v> <n>\n");
     printf("        set the wakeup notification sent to <n> at interval of <v>\n");
     printf("    wakeup nomore <id>\n");
-    printf("	tell the node <id> that it can enter the sleep mode now\n");
+    printf("	    tell the node <id> that it can enter the sleep mode now\n");
     printf("    battery get <id>\n");
     printf("        Get battery level of node <id>\n");
     printf("    controller type\n");
     printf("    controller SUC get\n");
     printf("    controller SUC set <id> <suc> <power> <cap>\n");
-    printf("       Set the SUCNode ID of the controller\n");
-    printf("       <suc>: 0 | 1\n");
-    printf("       <power>: high | low\n");
-    printf("       <cap>: SUC | SIS\n");
+    printf("        Set the SUCNode ID of the controller\n");
+    printf("        <suc>: 0 | 1\n");
+    printf("        <power>: high | low\n");
+    printf("        <cap>: SUC | SIS\n");
     printf("    controller enable <type>\n");
-    printf("       Enable the controller as SUC or SIS\n");
-    printf("       <type>: suc|sis|none\n");
+    printf("        Enable the controller as SUC or SIS\n");
+    printf("        <type>: suc|sis|none\n");
     printf("    controller initdata\n");
-    printf("       dump all node information in the controller's EEPROM\n");
+    printf("        dump all node information in the controller's EEPROM\n");
     printf("    controller initnodeinfo <devmask> <generic> <specific> <class1> <class 2> ....\n");
-    printf("       setup the node info frame for the controller\n");
+    printf("        setup the node info frame for the controller\n");
     printf("    controller reset\n");
-    printf("       reset all node information in controller's EEPROM\n");
+    printf("        reset all node information in controller's EEPROM\n");
     printf("    actuator set <id> <scene> <level> <duration>\n");
     printf("    actuator get <id> <scene>\n");
     printf("    route print <id>\n");
@@ -4315,21 +4321,20 @@ int PyZwave_send(unsigned id,unsigned char *in,int len) {
     }
 }
 
-
 //discover - Sen 12.8.8
-
 void PyZwave_discover_ack_cb(void * data, int txStatus) //TODO: this function is not called, why??????!
 {
     //int i=0;
     PyZwave_senddataAckReceived = txStatus;
     /*for(i=0;i<10;++i){
-        //		init_data_buf[i]=zdata[i];
+        //      init_data_buf[i]=zdata[i];
         printf("buf%d: %d", i, init_data_buf[i]);
     }
     printf("\n");*/
 
 }
-void PyZwave_discover(void){
+
+void PyZwave_get_init_data(void){
     PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
     register_discover_callback(PyZwave_discover_ack_cb, NULL);
     ZW_GetInitData();
@@ -4341,31 +4346,6 @@ void PyZwave_discover(void){
             break; // Ack or error received.
         }
     }
-
-    PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
-    register_discover_callback(PyZwave_discover_ack_cb, NULL);
-    ZW_MemoryGetID();
-    while (1) {
-        if (!PyZwave_receiveByte(1000)) {
-            break; // No data received.
-        }
-    }
-    zwave_my_address = zdata[4];
-    if(verbose) printf("INFO:rtt.c PyZwave_discover: my zwave address is %d\n", zwave_my_address);
-}
-
-int PyZwave_hard_reset(void){
-    PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
-    register_discover_callback(PyZwave_discover_ack_cb, NULL);
-    int ret = ZW_SetDefault();
-    while (1) {
-        if (!PyZwave_receiveByte(1000)) {
-            break; // No data received.
-        }
-        if (PyZwave_senddataAckReceived != TRANSMIT_WAIT_FOR_ACK)
-            break; // Ack or error received.
-    }
-    return ret;
 }
 
 unsigned long PyZwave_get_addr(void){
@@ -4389,7 +4369,46 @@ unsigned long PyZwave_get_addr(void){
     return network_id;
 }
 
-int PyZwave_is_node_fail(int node_id){
+void PyZwave_discover(void){
+    PyZwave_get_init_data();
+    PyZwave_get_addr();
+    if(verbose) printf("INFO:rtt.c PyZwave_discover: my zwave address is %d\n", zwave_my_address);
+}
+
+int PyZwave_hard_reset(void){
+    PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
+    register_discover_callback(PyZwave_discover_ack_cb, NULL);
+    int ret = ZW_SetDefault();
+    while (1) {
+        if (!PyZwave_receiveByte(1000)) {
+            break; // No data received.
+        }
+        if (PyZwave_senddataAckReceived != TRANSMIT_WAIT_FOR_ACK)
+            break; // Ack or error received.
+    }
+    return ret;
+}
+
+int PyZwave_basic_set(unsigned int node_id, unsigned char value){
+    PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
+    register_discover_callback(PyZwave_discover_ack_cb, NULL);
+    txoptions |= TRANSMIT_OPTION_ACK;//ack basic get
+    repeat_cmd = BASIC_SET;
+    zwavecmd_basic_set(node_id, value);
+    while (1) {
+        if (!PyZwave_receiveByte(1000)) {
+            break; // No data received.
+        }
+        if (PyZwave_senddataAckReceived != TRANSMIT_WAIT_FOR_ACK)
+            break; // Ack or error received.
+    }
+    if(PyZwave_senddataAckReceived == TRANSMIT_COMPLETE_OK)
+        return 1;
+    else
+        return 0;
+}
+
+int PyZwave_is_node_fail(unsigned int node_id){
     PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
     register_discover_callback(PyZwave_discover_ack_cb, NULL);
     txoptions |= TRANSMIT_OPTION_ACK;//ack basic get
@@ -4422,7 +4441,20 @@ int PyZwave_is_node_fail(int node_id){
     return (int)zwave_check_node_isfail;
 }
 
-void PyZwave_check_removefail(void){
+void PyZwave_remove_fail(unsigned int node_id){
+    PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
+    register_discover_callback(PyZwave_discover_ack_cb, NULL);
+    ZW_removeFailedNodeId((int)node_id);
+    while (1) {
+        if (!PyZwave_receiveByte(1000)) {
+            break; // No data received.
+        }
+        if (PyZwave_senddataAckReceived != TRANSMIT_WAIT_FOR_ACK)
+            break; // Ack or error received.
+    }
+}
+
+void PyZwave_check_all_remove_fail(void){
     int i;
     PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
     register_discover_callback(PyZwave_discover_ack_cb, NULL);
@@ -4436,17 +4468,9 @@ void PyZwave_check_removefail(void){
     }
 
     for(i=2;i<=init_data_buf[0];i++) {
-    	if(PyZwave_is_node_fail((int)init_data_buf[i])) {
-            PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
-            register_discover_callback(PyZwave_discover_ack_cb, NULL);
-            ZW_removeFailedNodeId((int)init_data_buf[i]);
-            while (1) {
-                if (!PyZwave_receiveByte(1000)) {
-                    break; // No data received.
-                }
-                if (PyZwave_senddataAckReceived != TRANSMIT_WAIT_FOR_ACK)
-                    break; // Ack or error received.
-            }
+        int node_id = (unsigned)init_data_buf[i];
+    	if(PyZwave_is_node_fail(node_id)) {
+            PyZwave_remove_fail(node_id);
             if(verbose) printf("INFO:rtt.c PyZwave_is_node_fail ZW_removeFailed for node id %d\n",init_data_buf[i]);
         }
     }
@@ -4465,7 +4489,7 @@ void PyZwave_routing(unsigned node_id) {
   }
 }
 
-void PyZwave_getDeviceType(unsigned node_id) {
+void PyZwave_get_device_type(unsigned node_id) {
   PyZwave_senddataAckReceived = TRANSMIT_WAIT_FOR_ACK;
   register_discover_callback(PyZwave_discover_ack_cb, NULL);
   ZW_GetNodeProtocolInfo(node_id);

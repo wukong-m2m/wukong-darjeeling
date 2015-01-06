@@ -22,42 +22,6 @@ extern unsigned int zwave_my_address;
 #define DEBUGF(...)
 
 
-static PyObject* pyzwave_receive(PyObject *self, PyObject *args) {
-  int wait_msec, len;
-
-  if (!initialised) {
-    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
-    return NULL;
-  }
-
-  if (!PyArg_ParseTuple( args, "i", &wait_msec))
-    return NULL;
-
-  len = PyZwave_receive(wait_msec);
-  if (len == 0) {
-    PyObject* return_value_list = PyList_New(0);
-    PyList_Append(return_value_list, Py_None);
-    PyList_Append(return_value_list, Py_None);
-    return return_value_list;
-  } else {
-    int i;
-
-    DEBUGF("PYZWAVE: Received %i bytes: ", len);
-    for (i=0; i<len; i++)
-      DEBUGF("[%x] ", PyZwave_messagebuffer[i]);
-    DEBUGF("\n");
-
-    PyObject* message_list = PyList_New(0);
-    for (i=0; i<len; i++) {
-      PyList_Append(message_list, PyInt_FromLong((long)PyZwave_messagebuffer[i] & 0xFF));
-    }
-    PyObject* return_value_list = PyList_New(0);
-    PyList_Append(return_value_list, PyInt_FromLong((long)PyZwave_src));
-    PyList_Append(return_value_list, message_list);
-    return return_value_list;
-  }
-}
-
 static PyObject* pyzwave_init(PyObject *self, PyObject *args) {
   char *host_or_dev_name;
   regex_t regex;
@@ -138,19 +102,77 @@ static PyObject* pyzwave_send(PyObject *self, PyObject *args) {
   }
 }
 
-static PyObject* pyzwave_setdebug(PyObject *self, PyObject *args) {
-  int print_debug_info;
-  if (!PyArg_ParseTuple( args, "i", &print_debug_info))
+static PyObject* pyzwave_receive(PyObject *self, PyObject *args) {
+  int wait_msec, len;
+
+  if (!initialised) {
+    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
     return NULL;
-  PyZwave_print_debug_info = print_debug_info;
+  }
+
+  if (!PyArg_ParseTuple( args, "i", &wait_msec))
+    return NULL;
+
+  len = PyZwave_receive(wait_msec);
+  if (len == 0) {
+    PyObject* return_value_list = PyList_New(0);
+    PyList_Append(return_value_list, Py_None);
+    PyList_Append(return_value_list, Py_None);
+    return return_value_list;
+  } else {
+    int i;
+
+    DEBUGF("PYZWAVE: Received %i bytes: ", len);
+    for (i=0; i<len; i++)
+      DEBUGF("[%x] ", PyZwave_messagebuffer[i]);
+    DEBUGF("\n");
+
+    PyObject* message_list = PyList_New(0);
+    for (i=0; i<len; i++) {
+      PyList_Append(message_list, PyInt_FromLong((long)PyZwave_messagebuffer[i] & 0xFF));
+    }
+    PyObject* return_value_list = PyList_New(0);
+    PyList_Append(return_value_list, PyInt_FromLong((long)PyZwave_src));
+    PyList_Append(return_value_list, message_list);
+    return return_value_list;
+  }
+}
+
+static PyObject* pyzwave_add(PyObject *self, PyObject *args) {
+  if (!initialised) {
+    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
+    return NULL;
+  }
+
+  if (ZW_AddNodeToNetwork(ADD_NODE_ANY|ADD_NODE_OPTION_HIGH_POWER) < 0) {
+    return NULL;
+  }
+
   Py_RETURN_NONE;
 }
 
-static PyObject* pyzwave_setVerbose(PyObject *self, PyObject *args) {
-  int vb;
-  if (!PyArg_ParseTuple( args, "i", &vb))
+static PyObject* pyzwave_delete(PyObject *self, PyObject *args) {
+  if (!initialised) {
+    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
     return NULL;
-  verbose = vb;
+  }
+  if (ZW_RemoveNodeFromNetwork(ADD_NODE_ANY|ADD_NODE_OPTION_HIGH_POWER) < 0) {
+    return NULL;
+  }
+
+  Py_RETURN_NONE;
+}
+
+static PyObject* pyzwave_stop(PyObject *self, PyObject *args) {
+  if (!initialised) {
+    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
+    return NULL;
+  }
+
+  if (ZW_AddNodeToNetwork(ADD_NODE_STOP) < 0) {
+    return NULL;
+  }
+
   Py_RETURN_NONE;
 }
 
@@ -202,44 +224,6 @@ static PyObject* pyzwave_poll(PyObject *self, PyObject *args) {
   return PyString_FromString(ret);
 }
 
-static PyObject* pyzwave_add(PyObject *self, PyObject *args) {
-  if (!initialised) {
-    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
-    return NULL;
-  }
-
-  if (ZW_AddNodeToNetwork(ADD_NODE_ANY|ADD_NODE_OPTION_HIGH_POWER) < 0) {
-    return NULL;
-  }
-
-  Py_RETURN_NONE;
-}
-
-static PyObject* pyzwave_delete(PyObject *self, PyObject *args) {
-  if (!initialised) {
-    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
-    return NULL;
-  }
-  if (ZW_RemoveNodeFromNetwork(ADD_NODE_ANY|ADD_NODE_OPTION_HIGH_POWER) < 0) {
-    return NULL;
-  }
-
-  Py_RETURN_NONE;
-}
-
-static PyObject* pyzwave_stop(PyObject *self, PyObject *args) {
-  if (!initialised) {
-    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
-    return NULL;
-  }
-
-  if (ZW_AddNodeToNetwork(ADD_NODE_STOP) < 0) {
-    return NULL;
-  }
-
-  Py_RETURN_NONE;
-}
-
 static PyObject* pyzwave_discover(PyObject *self, PyObject *args) {
   int i;
   PyObject* message_list;
@@ -252,57 +236,8 @@ static PyObject* pyzwave_discover(PyObject *self, PyObject *args) {
   PyList_Append(message_list, PyInt_FromLong((long)zwave_my_address & 0xFF));
     for (i=0; i<init_data_buf[0]+1; i++) {
       PyList_Append(message_list, PyInt_FromLong((long)init_data_buf[i] & 0xFF));
-
     }
     return message_list;
-}
-
-static PyObject* pyzwave_hardReset(PyObject *self, PyObject *args) {
-  if (!initialised) {
-    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
-    return NULL;
-  }
-
-  if (PyZwave_hard_reset() < 0) {
-    return NULL;
-  }
-  Py_RETURN_NONE;
-}
-
-static PyObject* pyzwave_getAddr(PyObject *self, PyObject *args) {
-  int i;
-  PyObject* message_list;
-
-  if (!initialised) {
-    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
-    return NULL;
-  }
-  unsigned long network_id = PyZwave_get_addr();
-  message_list = PyList_New(0);
-  for (i = 0; i < 4; i++){
-    PyList_Append(message_list, PyInt_FromLong((long)network_id & 0xFF));
-    network_id >>= 8;
-  }
-  PyList_Append(message_list, PyInt_FromLong((long)zwave_my_address & 0xFF));
-  return message_list;
-}
-
-static PyObject* pyzwave_isNodeFail(PyObject *self, PyObject *args) {
-  int node_id;
-
-  if (!PyArg_ParseTuple( args, "i", &node_id))
-    return NULL;
-
-  if (!initialised) {
-    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
-    return NULL;
-  }
-
-  // method 1:
-  //do_test(node_id, 10, 10);
-  //return PyInt_FromLong((long)main_ret);
-
-  return PyInt_FromLong((long)PyZwave_is_node_fail(node_id));
 }
 
 static PyObject* pyzwave_routing(PyObject *self, PyObject *args) {
@@ -326,6 +261,7 @@ static PyObject* pyzwave_routing(PyObject *self, PyObject *args) {
   }
   return neighbor_list;
 }
+
 static PyObject* pyzwave_getDeviceType(PyObject *self, PyObject *args) {
   int node_id;
   PyObject* device_type;
@@ -338,7 +274,7 @@ static PyObject* pyzwave_getDeviceType(PyObject *self, PyObject *args) {
     return NULL;
   }
 
-  PyZwave_getDeviceType((unsigned)node_id);
+  PyZwave_get_device_type((unsigned)node_id);
 
   device_type = PyList_New(0);
   PyList_Append(device_type, PyInt_FromLong((long)pyzwave_basic));
@@ -347,23 +283,118 @@ static PyObject* pyzwave_getDeviceType(PyObject *self, PyObject *args) {
   return device_type;
 }
 
+static PyObject* pyzwave_getAddr(PyObject *self, PyObject *args) {
+  int i;
+  PyObject* message_list;
+
+  if (!initialised) {
+    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
+    return NULL;
+  }
+  unsigned long network_id = PyZwave_get_addr();
+  message_list = PyList_New(0);
+  for (i = 0; i < 4; i++){
+    PyList_Append(message_list, PyInt_FromLong((long)network_id & 0xFF));
+    network_id >>= 8;
+  }
+  PyList_Append(message_list, PyInt_FromLong((long)zwave_my_address & 0xFF));
+  return message_list;
+}
+
+static PyObject* pyzwave_hardReset(PyObject *self, PyObject *args) {
+  if (!initialised) {
+    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
+    return NULL;
+  }
+
+  if (PyZwave_hard_reset() < 0) {
+    return NULL;
+  }
+  Py_RETURN_NONE;
+}
+
+static PyObject* pyzwave_isNodeFail(PyObject *self, PyObject *args) {
+  int node_id;
+
+  if (!PyArg_ParseTuple( args, "i", &node_id))
+    return NULL;
+
+  if (!initialised) {
+    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
+    return NULL;
+  }
+
+  // method 1:
+  //do_test(node_id, 10, 10);
+  //return PyInt_FromLong((long)main_ret);
+
+  return PyInt_FromLong((long)PyZwave_is_node_fail(node_id));
+}
+
+static PyObject* pyzwave_removeFail(PyObject *self, PyObject *args) {
+  int node_id;
+
+  if (!PyArg_ParseTuple( args, "i", &node_id))
+    return NULL;
+
+  if (!initialised) {
+    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
+    return NULL;
+  }
+
+  PyZwave_remove_fail(node_id);
+  Py_RETURN_NONE;
+}
+
+static PyObject* pyzwave_setdebug(PyObject *self, PyObject *args) {
+  int print_debug_info;
+
+  if (!PyArg_ParseTuple( args, "i", &print_debug_info))
+    return NULL;
+  PyZwave_print_debug_info = print_debug_info;
+  Py_RETURN_NONE;
+}
+
+static PyObject* pyzwave_setVerbose(PyObject *self, PyObject *args) {
+  int vb;
+
+  if (!PyArg_ParseTuple( args, "i", &vb))
+    return NULL;
+  verbose = vb;
+  Py_RETURN_NONE;
+}
+
+static PyObject* pyzwave_basicSet(PyObject *self, PyObject *args) {
+  int node_id, value;
+
+  if (!initialised) {
+    PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
+    return NULL;
+  }
+  if (!PyArg_ParseTuple( args, "ii", &node_id, &value))
+    return NULL;
+  PyZwave_basic_set((unsigned)node_id, (unsigned)value);
+  Py_RETURN_NONE;
+}
 
 PyMethodDef methods[] = {
-  {"init", pyzwave_init, METH_VARARGS, "Sets the IP address to connect to"},
+  {"init", pyzwave_init, METH_VARARGS, "Sets the address to connect to"},
   {"send", pyzwave_send, METH_VARARGS, "Sends a list of bytes to a node"},
+  {"receive", pyzwave_receive, METH_VARARGS, "Receive data"},
   {"add", pyzwave_add, METH_VARARGS, "Goes into add mode"},
   {"delete", pyzwave_delete, METH_VARARGS, "Goes into delete mode"},
   {"stop", pyzwave_stop, METH_VARARGS, "Stop adding/deleting nodes"},
   {"poll", pyzwave_poll, METH_VARARGS, "Polling current status"},
-  {"receive", pyzwave_receive, METH_VARARGS, "Receive data"},
+  {"discover", pyzwave_discover, METH_VARARGS, "Gets discover nodes"},
+  {"routing", pyzwave_routing, METH_VARARGS, "Gets node neighbors"},
+  {"getDeviceType", pyzwave_getDeviceType, METH_VARARGS, "Gets the device type of a node"},
+  {"getAddr", pyzwave_getAddr, METH_VARARGS, "Get Z-Wave address (network ID 4 bytes + node ID 1 byte)"},
+  {"hardReset", pyzwave_hardReset, METH_VARARGS, "Hard reset"},
+  {"isNodeFail", pyzwave_isNodeFail, METH_VARARGS, "Check if the node fails or not"},
+  {"removeFail", pyzwave_removeFail, METH_VARARGS, "Removes a failed node"},
   {"setdebug", pyzwave_setdebug, METH_VARARGS, "Turn debug info on or off"},
-  {"discover", pyzwave_discover, METH_VARARGS, "discover nodes"},
-  {"routing", pyzwave_routing, METH_VARARGS, "node neighbors"},
-  {"getDeviceType", pyzwave_getDeviceType, METH_VARARGS, "device type"},
-  {"getAddr", pyzwave_getAddr, METH_VARARGS, "get Z-Wave address (network ID 4 bytes + node ID 1 byte)"},
-  {"hardReset", pyzwave_hardReset, METH_VARARGS, "hard reset"},
-  {"isNodeFail", pyzwave_isNodeFail, METH_VARARGS, "check if the node fails or not"},
   {"setVerbose", pyzwave_setVerbose, METH_VARARGS, "Turn verbose on or off"},
+  {"basicSet", pyzwave_basicSet, METH_VARARGS, "Sets a value to a node"},
   {NULL, NULL, 0, NULL}
 };
 
