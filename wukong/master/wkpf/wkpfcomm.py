@@ -137,7 +137,7 @@ class Communication:
           wunode = WuNode(destination, location)
         retries=3
         while retries > 0:
-              wuClasses = self.getWuClassList(destination)
+          wuClasses = self.getWuClassList(destination)
           if wuClasses == None:
             retries=retries-1
           else:
@@ -151,8 +151,8 @@ class Communication:
         gevent.sleep(0)
         retries=3
         while retries > 0 :
-              wuObjects = self.getWuObjectList(destination)
-              print '[wkpfcomm] get %d wuobjects' % (len(wuObjects))
+          wuObjects = self.getWuObjectList(destination)
+          print '[wkpfcomm] get %d wuobjects' % (len(wuObjects))
           if wuObjects == None:
             retries=retries-1
           else:
@@ -247,9 +247,9 @@ class Communication:
         reply = self.agent.send(destination, pynvc.WKPF_GET_LOCATION, [offset], [pynvc.WKPF_GET_LOCATION_R, pynvc.WKPF_ERROR_R])
 
         if reply == None:
-      retries=retries-1
-      if retries == 0:
-        return ''
+          retries=retries-1
+          if retries == 0:
+            return ''
           continue
         if reply.command == pynvc.WKPF_ERROR_R:
           print "[wkpfcomm] WKPF RETURNED ERROR ", reply.command
@@ -402,13 +402,12 @@ class Communication:
           total_number_of_messages = reply.payload[3]
         if total_number_of_wuobjects is None:
           total_number_of_wuobjects = reply.payload[4]
+        index_of_message = reply.payload[2]
+        expected_num_byte = 5
+        if index_of_message < total_number_of_messages-1:
+          expected_num_byte = expected_num_byte + 4*OBJECTS_IN_MESSAGE
         else:
-          index_of_message = reply.payload[2]
-          expected_num_byte = 5
-          if index_of_message < total_number_of_messages-1:
-            expected_num_byte = expected_num_byte + 4*OBJECTS_IN_MESSAGE
-          else:
-            expected_num_byte = expected_num_byte + 4*(total_number_of_wuobjects-index_of_message*OBJECTS_IN_MESSAGE)
+          expected_num_byte = expected_num_byte + 4*(total_number_of_wuobjects-index_of_message*OBJECTS_IN_MESSAGE)
         if len(reply.payload) != expected_num_byte:
           continue
 

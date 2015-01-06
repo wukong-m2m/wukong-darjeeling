@@ -151,32 +151,6 @@
         <property name="current_value" access="readwrite" datatype="short"  />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="10"  />
     </WuClass>
-    <WuClass name="Binary_Sensors" id="1012" virtual="false" type="hard" privateCData="short">
-        <property name="current_value1" access="readwrite" datatype="boolean" default="false"  />
-        <property name="current_value2" access="readwrite" datatype="boolean" default="false"  />
-        <property name="current_value3" access="readwrite" datatype="boolean" default="false"  />
-        <property name="current_value4" access="readwrite" datatype="boolean" default="false"  />
-        <property name="current_value5" access="readwrite" datatype="boolean" default="false"  />
-        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="10" />
-    </WuClass>
-    <WuClass name="Sliders" id="1013" virtual="false" type="hard">
-        <property name="low_value" access="readwrite" datatype="short" default="0"/>
-        <property name="high_value" access="readwrite" datatype="short" default="255"/>
-        <property name="output1" access="readwrite" datatype="short" default="0"/>
-        <property name="output2" access="readwrite" datatype="short" default="0"/>
-        <property name="output3" access="readwrite" datatype="short" default="0"/>
-        <property name="output4" access="readwrite" datatype="short" default="0"/>
-        <property name="output5" access="readwrite" datatype="short" default="0"/>
-        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
-    </WuClass>
-    <WuClass name="Light_Sensors" id="1014" virtual="false" type="hard">
-        <property name="current_value1" access="readonly" datatype="short"  />
-        <property name="current_value2" access="readonly" datatype="short"  />
-        <property name="current_value3" access="readonly" datatype="short"  />
-        <property name="current_value4" access="readonly" datatype="short"  />
-        <property name="current_value5" access="readonly" datatype="short"  />
-        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="10"  />
-    </WuClass>
 
     <!-- Actuators -->
     <WuClass name="Light_Actuator" id="2001" virtual="false" type="hard">
