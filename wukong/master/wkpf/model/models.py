@@ -9,7 +9,6 @@ import simplejson as json
 from configuration import *
 import logging
 
-
 # It is a global view of the overall system, like devices, Wuclasses, WuObjects, Energy Consumptions on device.
 class WuSystem:
     __virtual_nodes = None
@@ -24,7 +23,7 @@ class WuSystem:
             wuobjects = {}
 
             # 1 is by default the network id of the controller
-            node = WuNode(1, '/' + LOCATION_ROOT, wuclasses, wuobjects, 'virtualdevice')
+            node = WuNode(WUKONG_GATEWAY, '/' + LOCATION_ROOT, wuclasses, wuobjects, 'virtualdevice')
             wuclassdef = WuObjectFactory.wuclassdefsbyid[44]
             wuobject = WuObjectFactory.createWuObject(wuclassdef, node, 1, False)
             cls.__virtual_nodes[1] = node

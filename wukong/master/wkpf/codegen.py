@@ -392,6 +392,9 @@ class CodeGen:
           uint8_t retval = WKPF_OK;
           wuobject_t *wuobject;
           wuobject = NULL;
+          wuobject++;
+          wuobject--;
+          wuobject = NULL;
           DEBUG_LOG(DBG_WKPF, "WKPF: (INIT) Running wkpf native init for node id: %x\\n", wkcomm_get_node_id());
         ''']
 

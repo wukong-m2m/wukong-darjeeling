@@ -84,6 +84,7 @@ uint8_t wkpf_call_multi_adaptor(wkcomm_address_t dest_node_id, uint8_t port_numb
 		DEBUG_LOG(DBG_WKPF, "Unknown port number %d\n", port_number);
 		return -1;
 	}
+	if (instance == 1) return wkpf_call_adaptor(dest_node_id, wuclass_id,property_number,value);
 
 	DEBUG_LOG(DBG_WKPF, "Send value %d to node %d\n", value, dest_node_id);
 	buf[0] = 0x60; // multi-channel cmd class

@@ -378,8 +378,8 @@ class WuApplication:
       gevent.sleep(0)
 
       # Remove Server node ID?
-      destination_ids.remove(1)
-      remaining_ids.remove(1)
+      destination_ids.remove(WUKONG_GATEWAY)
+      remaining_ids.remove(WUKONG_GATEWAY)
 
       for node_id in destination_ids:
         node = WuNode.node_dict[node_id]

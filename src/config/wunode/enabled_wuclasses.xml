@@ -3,6 +3,12 @@
     <WuClass name="Light_Actuator" appCanCreateInstances="false">
         <CreateInstance />
     </WuClass>
+    <WuClass name="Light_Sensor" appCanCreateInstances="false">
+        <CreateInstance />
+    </WuClass>
+    <WuClass name="Slider" appCanCreateInstances="false">
+        <CreateInstance />
+    </WuClass>
     <WuClass name="PIR_Sensor" appCanCreateInstances="false">
         <CreateInstance />
     </WuClass>

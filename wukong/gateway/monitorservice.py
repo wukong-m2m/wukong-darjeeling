@@ -9,6 +9,7 @@ import gevent
 from gevent.queue import Queue
 import json
 import ast
+import datetime
 
 import gtwconfig as CONFIG
 import logging
@@ -33,8 +34,8 @@ class SensorData:
                 value = payload[6]
             else:
                 value = (payload[6] << 8) + payload[7]
-
-            return SensorData(node_id, class_id, port, value, 0)
+            now = datetime.datetime.now()
+            return SensorData(node_id, class_id, port, value, now.year*10000000000+now.month*100000000+now.day*1000000+now.hour*10000+now.minute*100+now.second)
         return None
 
     @classmethod
@@ -54,17 +55,18 @@ class MonitorService(object):
             print "MongoDB instance " + url + " can't be connected."
             print "Please install the mongDB, pymongo module."
             sys.exit(-1)
+        print "MongoDB init"
         self._task = Queue()
 
     def handle_monitor_message(self, context, message):
-        self._task.put_nowait((contex, message))
+        self._task.put_nowait((context, message))
 
     def serve_monitor(self):
         while True:
             context, message = self._task.get()
-            data_collection = sensor.SensorData.createByPayload(context, message)
+            data_collection = SensorData.createByPayload(context, message)
+            logging.debug(data_collection.toDocument())
             if (data_collection != None):
-                logging.debug(data_collection.toDocument())
                 self._mongodb_client.wukong.readings.insert(ast.literal_eval(data_collection.toDocument()))
             gevent.sleep(0)
 

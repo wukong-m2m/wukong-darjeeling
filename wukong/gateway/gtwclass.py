@@ -197,6 +197,7 @@ class Gateway(object):
 
             if radio_address == self._radio_address:
                 if from_transport:
+                    payload = map(ord, payload)
                     if payload[0] == MPTN.WKPF_COMMAND_MONITOR:
                         self._monitor_handler(context, payload[1:])
                         gevent.sleep(0)

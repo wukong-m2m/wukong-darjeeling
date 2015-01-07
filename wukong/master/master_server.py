@@ -1035,6 +1035,10 @@ class Upload(tornado.web.RequestHandler):
 
     self.write(log)
 
+class SetRefresh(tornado.web.RequestHandler):  
+  def get(self, node_id, port_id, wuclass_id, value):
+    comm = getComm()
+    comm.setProperty(int(node_id), int(port_id), int(wuclass_id), 2, 'short', int(value))
 
 
 settings = dict(
@@ -1080,9 +1084,10 @@ wukong = tornado.web.Application([
   (r"/serialport",SerialPort),
   (r"/enablexml",EnabledWuClass),
   (r"/build",Build),
-  (r"/upload",Upload)
-  ,(r"/monitoring",Monitoring)
-  ,(r"/getvalue",GetValue)
+  (r"/upload",Upload),
+  (r"/monitoring",Monitoring),
+  (r"/getvalue",GetValue),
+  (r"/refresh/([0-9]*)/([0-9]*)/([0-9]*)/([0-9]*)", SetRefresh)
 ], IP, **settings)
 
 logging.info("Starting up...")

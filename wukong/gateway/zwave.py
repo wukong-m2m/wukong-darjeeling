@@ -26,6 +26,8 @@ class ZWTransport(object):
         self._mode = MPTN.STOP_MODE
         global _global_lock
         _global_lock = RLock()
+        pyzwave.setVerbose(0)
+        pyzwave.setdebug(0)
         pyzwave.init(dev_address)
 
         try:

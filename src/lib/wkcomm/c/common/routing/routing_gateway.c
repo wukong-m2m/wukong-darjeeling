@@ -201,6 +201,7 @@ void routing_handle_message(wkcomm_address_t wkcomm_addr, uint8_t *payload, uint
 
     msg_subtype = payload[MPTN_MSG_SUBTYPE_BYTE_OFFSET];
     DEBUG_LOG(DBG_WKROUTING, "routing handle msg_subtype is %d\n", msg_subtype);
+    DEBUG_LOG(DBG_WKROUTING, "did_table.my_did is %d\n", did_table.my_did);
 
     if (msg_type == MPTN_MSG_TYPE_DID &&
         msg_subtype == MPTN_MSG_SUBTYPE_DID_OFFR &&
@@ -266,7 +267,9 @@ void routing_discover_gateway()
 {
     // First get the known radio address
     #ifdef RADIO_USE_ZWAVE
-        did_table.gateway_did = 1;
+        did_table.gateway_did = 22;
+        //radio_zwave_address_t gateway_radio_address = 22;
+        //did_table.gateway_did |= gateway_radio_address;
     #endif
     #ifdef RADIO_USE_XBEE
         dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
