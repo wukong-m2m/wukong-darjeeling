@@ -38,6 +38,7 @@ class WuSystem:
     @classmethod
     def dumpAllResult(cls):
         logging.info(json.dumps(cls.__mapping_results))
+        return cls.__mapping_results
 
     @classmethod
     def addMappingResult(cls, appId, result):
