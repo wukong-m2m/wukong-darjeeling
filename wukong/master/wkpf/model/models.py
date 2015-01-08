@@ -8,10 +8,12 @@ from xml.parsers.expat import ExpatError
 import simplejson as json
 from configuration import *
 import logging
+import simplejson as json
 
 # It is a global view of the overall system, like devices, Wuclasses, WuObjects, Energy Consumptions on device.
 class WuSystem:
     __virtual_nodes = None
+    __mapping_results = {}
     @classmethod
     def getVirtualNodes(cls):
         # 20141128 Refactored globals.virtual_nodes and initializeVirtualNodes to a method that just returns
@@ -28,6 +30,22 @@ class WuSystem:
             wuobject = WuObjectFactory.createWuObject(wuclassdef, node, 1, False)
             cls.__virtual_nodes[1] = node
         return cls.__virtual_nodes
+
+    @classmethod
+    def hasMappingResult(cls, appId):
+        return appId in cls.__mapping_results
+
+    @classmethod
+    def dumpAllResult(cls):
+        logging.info(json.dumps(cls.__mapping_results))
+
+    @classmethod
+    def addMappingResult(cls, appId, result):
+        cls.__mapping_results[appId] = result
+
+    @classmethod
+    def lookUpComponent(cls, appId, componentId):
+        return cls.__mapping_results[appId][componentId]
 
 # Copy from original WuApplication, split the deployment functionality out into ApplicationManager.
 # At the same time, add some data fields for energy aware mapping

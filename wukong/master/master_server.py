@@ -40,6 +40,7 @@ from wkpf.wuapplication import WuApplication
 from wkpf.wuclasslibraryparser import *
 from wkpf.wkpfcomm import *
 from wkpf.util import *
+from wkpf.model.models import *
 
 import wkpf.globals
 from configuration import *
@@ -388,6 +389,7 @@ class map_application(tornado.web.RequestHandler):
       mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, [])
 
       ret = []
+      mapping_result = {}
       for component in wkpf.globals.applications[app_ind].changesets.components:
         obj_hash = {
           'instanceId': component.index,
@@ -407,9 +409,18 @@ class map_application(tornado.web.RequestHandler):
             'virtual': wuobj.virtual
           }
 
+          # We have one instance for each component for now
+          component_result = {
+            'nodeId': wuobj.wunode.id,
+            'portNumber': wuobj.port_number,
+            'classId' : wuobj.wuclassdef.id
+          }
+
           obj_hash['instances'].append(wuobj_hash)
+          mapping_result[component.index] = component_result
         
         ret.append(obj_hash)
+        WuSystem.addMappingResult(app_ind, mapping_result)
 
       self.content_type = 'application/json'
       self.write({
@@ -1040,6 +1051,17 @@ class SetRefresh(tornado.web.RequestHandler):
     comm = getComm()
     comm.setProperty(int(node_id), int(port_id), int(wuclass_id), 2, 'short', int(value))
 
+class Progression(tornado.web.RequestHandler):
+  def post(self):
+    config = json.loads(self.request.body)
+    comm = getComm()
+    if WuSystem.hasMappingResult(config['applicationId']):
+      for entity in config['entities']:
+        result = WuSystem.lookUpComponent(config['applicationId'], entity['componentId'])
+        if result:
+            comm.setProperty(int(result['nodeId']), int(result['portNumber']), int(result['classId']), 2, 'short', entity['value'])
+    self.write(config)
+
 
 settings = dict(
   static_path=os.path.join(os.path.dirname(__file__), "static"),
@@ -1087,7 +1109,8 @@ wukong = tornado.web.Application([
   (r"/upload",Upload),
   (r"/monitoring",Monitoring),
   (r"/getvalue",GetValue),
-  (r"/refresh/([0-9]*)/([0-9]*)/([0-9]*)/([0-9]*)", SetRefresh)
+  (r"/refresh/([0-9]*)/([0-9]*)/([0-9]*)/([0-9]*)", SetRefresh),
+  (r"/configuration", Progression)
 ], IP, **settings)
 
 logging.info("Starting up...")
