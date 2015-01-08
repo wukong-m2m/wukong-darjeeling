@@ -1,6 +1,7 @@
 #include "debug.h"
 #include "../../common/native_wuclasses/native_wuclasses.h"
 #include <avr/io.h>
+#include <stdlib.h>
 
 void wuclass_slider_setup(wuobject_t *wuobject) {}
 
@@ -32,10 +33,19 @@ void wuclass_slider_update(wuobject_t *wuobject) {
   wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_SLIDER_LOW_VALUE, &low);
   wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_SLIDER_HIGH_VALUE, &high);
   int16_t range = high-low;
-  int16_t output = (int16_t)((int32_t)ADCH*range/255+low);
-  wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_SLIDER_OUTPUT, output);
-
-  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Slider): Sensed %d, low %d, high %d, output %d\n", ADCH, low, high, output);
+  int16_t last_output;
+  wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_SLIDER_OUTPUT, &last_output);
+  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Slider): Sensed last_output is %d\n", last_output);
+  int16_t this_output = (int16_t)((int32_t)ADCH*range/255+low);
+  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Slider): Sensed this_output is %d\n", this_output);
+  if(abs(this_output - last_output) <= 5)
+  {
+    wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_SLIDER_OUTPUT, last_output);
+    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Slider): Sensed %d, low %d, high %d, last_output %d\n", ADCH, low, high, last_output);
+  }else{ 
+    wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_SLIDER_OUTPUT, this_output);
+    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Slider): Sensed %d, low %d, high %d, this_output %d\n", ADCH, low, high, this_output);
+  }
 }
 
 // ADC CHANNEL 0,  value for channel variable: 0

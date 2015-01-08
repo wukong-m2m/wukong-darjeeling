@@ -83,6 +83,11 @@
         <property name="output" access="readonly" datatype="short"  />
         <property name="remainder" access="readonly" datatype="short"  />
     </WuClass>
+    <WuClass name="Virtual_Slider" id="11" virtual="true" type="soft">
+        <property name="low_value" access="readwrite" datatype="short" default="0"/>
+        <property name="high_value" access="readwrite" datatype="short" default="255"/>
+        <property name="output" access="readwrite" datatype="short" default="20"/>
+    </WuClass>
     <WuClass name="Server" id="44" virtual="false" type="hard">
         <property name="input" access="readwrite" datatype="short" default="100"  />
     </WuClass>
@@ -99,7 +104,7 @@
     <!-- Sensors -->
     <WuClass name="Light_Sensor" id="1001" virtual="false" type="hard">
         <property name="current_value" access="readonly" datatype="short"  />
-        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="10"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="1000"  />
     </WuClass>
     <WuClass name="PIR_Sensor" id="1003" virtual="false" type="hard">
         <property name="current_value" access="readonly" datatype="boolean"  />

@@ -17,6 +17,10 @@ DEPLOY_PLATFORMS.append(config.get('DEPLOY_PLATFORM', 'avr_mega2560'))
 SIMULATION = config.get('SIMULATION', 'false')
 MONITORING = config.get('MONITORING', 'false')
 
+MONITORING_NODE=[23, 23]
+MONITORING_PORT=[2, 3]
+
+
 #XML_PATH = os.path.join(ROOT_PATH, 'wukong', 'Applications')
 COMPONENTXML_PATH = os.path.join(ROOT_PATH, 'wukong', 'ComponentDefinitions', 'WuKongStandardLibrary.xml')
 TEMPLATE_DIR = os.path.join(ROOT_PATH, 'wukong', 'tools', 'xml2java')

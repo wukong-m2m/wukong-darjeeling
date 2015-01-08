@@ -80,7 +80,7 @@
       var i;
       for(i=1;i<len+1;i++){
         $('#'+i).load('getvalue?arg1=IR%20Sensor&arg2='+node_id[i-1]+'&arg3='+port_id[i-1]+'&arg4=BL-7F%20entrance', function(){
-           setTimeout(refreshTable, 1000);
+           setTimeout(refreshTable, 2000);
         });
       }
       /*
