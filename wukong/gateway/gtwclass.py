@@ -172,7 +172,7 @@ class Gateway(object):
                 logger.error("receives invalid RPC message subtype and will not send any reply")
                 return None
 
-            logger.debug("receive RPC CMD message:\n" + log_msg)
+            # logger.debug("receive RPC CMD message:\n" + log_msg)
             header = utils.create_mult_proto_header_to_str(src_did, dest_did, msg_type, MPTN.MULT_PROTO_MSG_SUBTYPE_RPC_REP)
             payload = self._rpc_handler(context, dest_did, src_did, msg_type, msg_subtype, payload)
             return header + payload

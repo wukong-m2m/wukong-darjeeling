@@ -124,7 +124,7 @@ class DIDService(object):
             del self._did_to_mac[key]
 
     def _set_radio_address(self, radio_address, value=True):
-        assert isinstance(radio_address, int), "radio address(%s) must be integer instead of %s" % (str(radio_address), type(radio_address))
+        assert isinstance(radio_address, (int, long)), "radio address(%s) must be integer instead of %s" % (str(radio_address), type(radio_address))
         assert radio_address < self._db["GTWSELF_NETWORK_SIZE"], "radio address(%d) cannot excede upper bound %d" % (radio_address, self._db["GTWSELF_NETWORK_SIZE"])
         self._did_nodes[radio_address] = value
 

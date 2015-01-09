@@ -77,7 +77,7 @@ class ZWTransport(object):
         _global_lock.acquire(True)
         ret = None
         try:
-            logger.info("Zwave sending %d bytes %s to %X" % (len(payload),pprint.pformat(payload), radio_address))
+            logger.info("Zwave sending %d bytes %s to %X" % (len(payload), payload, radio_address))
             pyzwave.send(radio_address, payload)
         except:
             e = sys.exc_info()[0]

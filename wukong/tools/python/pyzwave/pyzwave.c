@@ -341,7 +341,7 @@ static PyObject* pyzwave_removeFail(PyObject *self, PyObject *args) {
     PyErr_SetString(PyExc_IOError, "Call pyzwave.init first.");
     return NULL;
   }
-
+  PyZwave_is_node_fail(node_id);
   PyZwave_remove_fail(node_id);
   Py_RETURN_NONE;
 }
