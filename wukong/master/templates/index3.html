@@ -1,0 +1,268 @@
+
+<html>
+<head>
+<title> Monitoring: Light Sensor 1 </title>
+</head>
+<body>
+  <h2 id="test_value"> Monitoring: Light Sensor 1 </h2>
+
+<!DOCTYPE html>
+
+<link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.min.css" />
+<script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="/static/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/static/js/index2.js"></script>
+<script>
+  var len;
+  var node_id=[];
+  var port_id=[];
+  var value_his=[];
+  var value_chart=[];
+  for (i = 0; i < 50; ++i) value_chart[i] = 0;
+  var tt=1;
+
+{% for index, app in enumerate(applications) %}
+
+              len={{index}}+1;
+              //len='{{ applications[index].id }}';
+              var str='{{ app.id }}';
+              var res=str.split('_');
+              node_id.push(res[0]);
+              port_id.push(res[1]);
+              var i = 0;
+              {% for value in applications[index].value_array %}
+                value_his.unshift({{value}});
+                value_chart.unshift({{value}});
+              {% end %}
+
+{% end %}
+
+
+</script>
+<meta charset="utf-8">
+<style>
+Light Sensor 1's Historial Chart
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  margin: auto;
+  position: relative;
+  width: 960px;
+}
+
+text {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+form {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+
+</style>
+<form>
+  <label><input type="radio" name="mode" value="grouped"> Grouped</label>
+  <label><input type="radio" name="mode" value="stacked" checked> Stacked</label>
+</form>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+var n = 1, // number of layers
+    m = 50, // number of samples per layer
+    stack = d3.layout.stack(),
+    layers = stack(d3.range(n).map(function() { return bumpLayer(m, .1); })),
+    yGroupMax = 255,
+    //yStackMax = d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y0 + d.y; }); });
+    yStackMax=255;
+
+var margin = {top: 40, right: 10, bottom: 20, left: 10},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var x = d3.scale.ordinal()
+    .domain(d3.range(m))
+    .rangeRoundBands([0, width], .08);
+
+var y = d3.scale.linear()
+    .domain([0, yStackMax])
+    .range([height, 0]);
+
+var color = d3.scale.linear()
+    .domain([0, n - 1])
+    .range(["#aad", "#556"]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .tickSize(0)
+    .tickPadding(6)
+    .orient("bottom");
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var layer = svg.selectAll(".layer")
+    .data(layers)
+  .enter().append("g")
+    .attr("class", "layer")
+    .style("fill", function(d, i) { return color(i); });
+
+var rect = layer.selectAll("rect")
+    .data(function(d) { return d; })
+  .enter().append("rect")
+    .attr("x", function(d) { return x(d.x); })
+    .attr("y", height)
+    .attr("width", x.rangeBand())
+    .attr("height", 0);
+
+rect.transition()
+    .attr("y", function(d) { return y(d.y0 + d.y); })
+    .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); });
+
+svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+
+d3.selectAll("input").on("change", change);
+
+var timeout = setTimeout(function() {
+  d3.select("input[value=\"grouped\"]").property("checked", true).each(change);
+}, 2000);
+
+function change() {
+  clearTimeout(timeout);
+  if (this.value === "grouped") transitionGrouped();
+  else transitionStacked();
+}
+
+function transitionGrouped() {
+  y.domain([0, yGroupMax]);
+
+  rect.transition()
+      .duration(500)
+      .attr("x", function(d, i, j) { return x(d.x) + x.rangeBand() / n * j; })
+      .attr("width", x.rangeBand() / n)
+    .transition()
+      .attr("y", function(d) { return y(d.y); })
+      .attr("height", function(d) { return height - y(d.y); });
+}
+
+function transitionStacked() {
+  y.domain([0, yStackMax]);
+
+  rect.transition()
+      .duration(500)
+      .attr("y", function(d) { return y(d.y0 + d.y); })
+      .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); })
+    .transition()
+      .attr("x", function(d) { return x(d.x); })
+      .attr("width", x.rangeBand());
+}
+
+// Inspired by Lee Byron's test data generator.
+function bumpLayer(n, o) {//n is width, o is noonsense
+
+  function bump(a) {
+
+    for (var i = 0; i < n; i++) {
+      a[i] = value_chart[n-i-1];
+      //console.log(value_chart[i]);
+    }
+  }
+
+  var a = [], i;//define a[],i
+  for (i = 0; i < n; ++i) a[i] = 0;//init?
+  for (i = 0; i < 1; ++i) bump(a);//give them value! Why 5 times?
+  return a.map(function(d, i) { return {x: i, y: Math.max(0, d)}; });
+}
+</script>
+
+<script type="text/javascript">
+    function loadXMLDoc()
+    {
+        if (window.XMLHttpRequest)
+        {// code for IE7+, Firefox, Chrome, Opera, Safari
+            xmlhttp=new XMLHttpRequest();
+        }
+        else
+        {// code for IE6, IE5
+            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        xmlhttp.onreadystatechange=function()
+        {
+          //console.log(xmlhttp.responseText);
+          //value_chart.push(xmlhttp.responseText);
+
+            if (xmlhttp.readyState==4 && (xmlhttp.status==200 || xmlhttp.status==304))
+            {
+              var str_tmp=xmlhttp.responseText;
+              var s = str_tmp.indexOf("[");//16
+              var e = str_tmp.indexOf("]");//20
+                //document.getElementById("test_value").innerHTML = parseInt(str_tmp.substring(s+1, e));//22
+                value_chart.unshift(parseInt(str_tmp.substring(s+1, e)));
+                //console.log(value_chart[0]);
+                //console.log("in");
+            }//console.log("out");
+        }
+        xmlhttp.open("GET","../../getvalue?arg1=IR%20Sensor&arg2="+node_id[0]+"&arg3="+port_id[0]+"&arg4=BL-7F%20entrance",true);
+        xmlhttp.send();
+    }
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function(){
+      refreshTable();
+    });
+
+    function refreshTable(){
+      //value_chart.push
+      loadXMLDoc();
+      layers = stack(d3.range(n).map(function() { return bumpLayer(m, .1); }));
+ d3.select("svg").remove();
+ svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+ //layer.remove();
+ layer = svg.selectAll(".layer")
+    .data(layers)
+  .enter().append("g")
+    .attr("class", "layer")
+    .style("fill", function(d, i) { return color(i); });
+//rect.remove();
+ rect = layer.selectAll("rect")
+    .data(function(d) { return d; })
+  .enter().append("rect")
+    .attr("x", function(d) { return x(d.x); })
+    //.attr("y", height)
+    .attr("y", function(d) { return y(d.y0 + d.y); })
+    .attr("width", x.rangeBand())
+    .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); });
+
+//rect.transition()
+//    .attr("y", function(d) { return y(d.y0 + d.y); })
+//    .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); });
+
+svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+
+d3.selectAll("input").on("change", change); 
+      setTimeout(refreshTable, 1000);
+    }
+</script>
+
+</body>
+</html>

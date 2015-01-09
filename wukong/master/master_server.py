@@ -162,11 +162,26 @@ class Test:
     self.id = str(n_id)+'_'+str(pt)
     self.sensor = name
     self.loc=loc
-    self.value = wkpf.globals.mongoDBClient.wukong.readings.find({ 'node_id':n_id , 'port':pt }).sort('timestamp',-1).limit(1)[0]['value']
-          #wkpf.globals.mongoDBClient.wukong.readings.find().sort({"timestamp":-1}).sort("timestamp":-1)['value']
+    self.value = wkpf.globals.mongoDBClient.wukong.readings.find({ 'node_id':n_id , 'port':pt }).sort('_id',-1).limit(1)[0]['value']
+    
+    
+class Test_array:
+  def __init__(self,name,n_id,pt,loc):
+    self.id = str(n_id)+'_'+str(pt)
+    self.sensor = name
+    self.loc=loc
+    self.value_array=[]
+    self.count=wkpf.globals.mongoDBClient.wukong.readings.find({ 'node_id':n_id , 'port':pt }).sort('_id',-1).limit(1).count()
+    if self.count>50 : 
+      self.count=50
+    print "CountT"
+    print self.count
+    for i in range(self.count):
+      self.value_array.append(wkpf.globals.mongoDBClient.wukong.readings.find({ 'node_id':n_id , 'port':pt }).sort('_id',-1).limit(1)[i]['value'])
+
 
 class Monitoring_Chart(tornado.web.RequestHandler):
-  def get(self):
+  def get(self, nodeID, port):
       comm = getComm()
       node_infos = comm.getAllNodeInfos(False)
       # print node_infos
@@ -174,22 +189,9 @@ class Monitoring_Chart(tornado.web.RequestHandler):
       list_id=[]
       list_port=[]
       list_loc=[]
-      for node in node_infos:
-        print node.id
-        print node.location
-        for port_number in node.wuobjects.keys():
-          wuobject = node.wuobjects[port_number]
-          print 'port:', port_number
-          print wuobject.wuclassdef.name
-          list_name.append(wuobject.wuclassdef.name)
-          list_id.append(node.id)
-          list_port.append(port_number)
-          list_loc.append(node.location)
 
-          
-      obj1 = Test('Light Sensor',23,2,'BL-7F ')#location tree
-      obj2 = Test('Slider',23,3,'BL-7F ')
-      self.render('templates/index3.html', applications=[obj1,obj2])
+      obj1 = Test_array('Light Sensor',int(nodeID),int(port),comm.getLocation(int(nodeID)))#location tree
+      self.render('templates/index3.html', applications=[obj1])
 
   def post(self):
     apps=wkpf.globals.mongoDBClient.wukong.readings.find().sort('timestamp',-1).limit(1)[2]
@@ -1145,7 +1147,7 @@ wukong = tornado.web.Application([
   (r"/build",Build),
   (r"/upload",Upload),
   (r"/monitoring",Monitoring),
-  (r"/monitoring_chart",Monitoring_Chart),
+  (r"/monitoring_chart/([0-9]*)/([0-9]*)",Monitoring_Chart),
   (r"/getvalue",GetValue),
   (r"/refresh/([0-9]*)/([0-9]*)/([0-9]*)/([0-9]*)", SetRefresh),
   (r"/configuration", Progression),
