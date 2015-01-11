@@ -9,12 +9,14 @@
 
     </head>
     <body>
-<script>
+<script>//load NodeID/PortID
 
    var len;
   var node_id=[];
   var port_id=[];
    var op=[];
+   var tt=0;
+function init(){
    {% for index, app in enumerate(applications) %}
 
               len={{index}}+1;
@@ -27,9 +29,11 @@
               var i = 0;
 
     {% end %}
+
+}
 </script>
-<script type="text/javascript">
-    function loadXMLDoc(n,p,loc)
+<script type="text/javascript">//update sensing data
+    function loadXMLDoc()
     {
         if (window.XMLHttpRequest)
         {// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -41,32 +45,31 @@
         }
         xmlhttp.onreadystatechange=function()
         {
-          //console.log(xmlhttp.responseText);
-          //value_chart.push(xmlhttp.responseText);
-
             if (xmlhttp.readyState==4 && (xmlhttp.status==200 || xmlhttp.status==304))
             {
+                console.log(xmlhttp.responseText);
               var str_tmp=xmlhttp.responseText;
               var s = str_tmp.indexOf("[");//16
               var e = str_tmp.indexOf("]");//20
-                //document.getElementById("test_value").innerHTML = parseInt(str_tmp.substring(s+1, e));//22
-                op[loc]=(parseInt(str_tmp.substring(s+1, e)));
-                //console.log(value_chart[0]);
-                //console.log("in");
+              var res=str_tmp.substring(s+1, e).split(",");
+for (i=0;i<len;i++){
+    op[i]=res[i];
+
+}
             }//console.log("out");
         }
-        xmlhttp.open("GET","../../getvalue?arg1=IR%20Sensor&arg2="+n+"&arg3="+p+"&arg4=BL-7F%20entrance",true);
+        xmlhttp.open("GET","../../getvalue_array",true);
         xmlhttp.send();
     }
 </script>
 
         <img src="/static/images/planar.png" width=1000 height=800 style="position:absolute; left:20px; top:20px; z-index:-1;"/>
         <script type="text/javascript">
-
+init();
 var circleData = [
-  { "cx": 300, "cy": 230, "radius": 70, "color" : "yellow", "opacity" : 0.5, "z":2 , "idx":0 },
-  { "cx": 700, "cy": 220, "radius": 70, "color" : "yellow", "opacity" : 1, "z":2 , "idx":1},
-  { "cx": 550, "cy": 100, "radius": 70, "color" : "yellow", "opacity" : 0.7, "z":2 , "idx":2},
+  { "cx": 130, "cy": 230, "radius": 70, "color" : "yellow", "opacity" : 0.5, "z":2 , "idx":0 },
+  { "cx": 550, "cy": 100, "radius": 70, "color" : "yellow", "opacity" : 1, "z":2 , "idx":1},
+  { "cx": 200, "cy": 420, "radius": 70, "color" : "yellow", "opacity" : 0.7, "z":2 , "idx":2},
   { "cx": 580, "cy": 300, "radius": 70, "color" : "yellow", "opacity" : 0.3, "z":2 , "idx":3}];
 var svgContainer = d3.select("body").append("svg")
                                      .attr("width",1000)
@@ -98,11 +101,8 @@ var circleAttributes = circles
     });
 
     function refreshTable(){
-        console.log("refresh");
-        for(i=0;i<len;i++){
-            loadXMLDoc(node_id[i],port_id[i],i);
-            console.log(op[i]);
-        }
+loadXMLDoc();
+        
          d3.select("svg").remove();
         svgContainer = d3.select("body").append("svg")
                                      .attr("width",1000)
@@ -121,7 +121,21 @@ var circleAttributes = circles
                         .style("fill", function (d) { return d.color; })            
                         .style("position", "absolute")
                         .style("z-index", 2);
-        setTimeout(refreshTable, 1000);
+
+        var text= svgContainer.selectAll("text")
+                        .data(circleData)
+                        .enter()
+                        .append("text");
+
+        var textLabels = text
+                 .attr("x", function(d) { return d.cx-10; })
+                 .attr("y", function(d) { return d.cy; })
+                 .text( function (d) { return op[d.idx]; })
+                 .attr("font-family", "sans-serif")
+                 .attr("font-size", "20px")
+                 .attr("fill", "red");
+
+        setTimeout(refreshTable, 300);
     }
 </script>
 

@@ -297,8 +297,10 @@ class GetValue(tornado.web.RequestHandler):
 
 class GetValue_array(tornado.web.RequestHandler):
   def get(self):
-      obj2 = Test('IR Sensor',int(self.get_argument("arg2")),int(self.get_argument("arg3")),'BL-7F entrance')
-      self.render('templates/value.html', applications=[obj2.value])
+      obj=[]
+      for i in range(MONITORING_COUNT):
+        obj.append(Test('IR Sensor',MONITORING_NODE[i],MONITORING_PORT[i],'BL-7F entrance').value)
+      self.render('templates/value.html', applications=obj)
 
 
 # Returns a form to upload new application
@@ -1220,6 +1222,7 @@ wukong = tornado.web.Application([
   (r"/monitoring_chart/([0-9]*)/([0-9]*)",Monitoring_Chart),
   (r"/monitoring_planar",Monitoring_Planar),
   (r"/getvalue",GetValue),
+  (r"/getvalue_array",GetValue_array),
   (r"/refresh/([0-9]*)/([0-9]*)/([0-9]*)/([0-9]*)", SetRefresh),
   (r"/configuration", Progression),
   (r"/getRefresh/([0-9]*)/([0-9]*)/([0-9]*)", GetRefresh)
