@@ -11,14 +11,13 @@
 <link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.min.css" />
 <script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="/static/bootstrap/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="/static/js/index2.js"></script>
+
 <script>
   var len;
   var node_id=[];
   var port_id=[];
-  var value_his=[];
   var value_chart=[];
-  for (i = 0; i < 50; ++i) value_chart[i] = 0;
+  //for (i = 0; i < 50; ++i) value_chart[i] = 0;
   var tt=1;
 
 {% for index, app in enumerate(applications) %}
@@ -31,8 +30,7 @@
               port_id.push(res[1]);
               var i = 0;
               {% for value in applications[index].value_array %}
-                value_his.unshift({{value}});
-                value_chart.unshift({{value}});
+                value_chart.push({{value}});
               {% end %}
 
 {% end %}
@@ -249,7 +247,18 @@ function bumpLayer(n, o) {//n is width, o is noonsense
     .attr("y", function(d) { return y(d.y0 + d.y); })
     .attr("width", x.rangeBand())
     .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); });
-
+  //try to add tag.
+  /*
+  rect.selectAll("text")
+    .data("3")
+    .enter().append("text")
+    .attr("x", function(d) { return x(d.x); })
+    .attr("y", function(d) { return y(d.y0 + d.y); })
+    .attr("dx", -3) // padding-right 右边距
+    .attr("dy", ".35em") // vertical-align: middle 标签垂直居中
+    .attr("text-anchor", "end") // text-align: right 文字水平居右
+    .text(String);
+*/
 //rect.transition()
 //    .attr("y", function(d) { return y(d.y0 + d.y); })
 //    .attr("height", function(d) { return y(d.y0) - y(d.y0 + d.y); });
@@ -259,7 +268,7 @@ svg.append("g")
     .attr("transform", "translate(0," + height + ")")
     .call(xAxis);
 
-d3.selectAll("input").on("change", change); 
+//d3.selectAll("input").on("change", change); 
       setTimeout(refreshTable, 1000);
     }
 </script>

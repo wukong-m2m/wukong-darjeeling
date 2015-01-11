@@ -172,12 +172,34 @@ class Test_array:
     self.loc=loc
     self.value_array=[]
     self.count=wkpf.globals.mongoDBClient.wukong.readings.find({ 'node_id':n_id , 'port':pt }).sort('_id',-1).limit(1).count()
-    if self.count>50 : 
-      self.count=50
+    if self.count>100 : 
+      self.count=100
     print "CountT"
     print self.count
     for i in range(self.count):
       self.value_array.append(wkpf.globals.mongoDBClient.wukong.readings.find({ 'node_id':n_id , 'port':pt }).sort('_id',-1).limit(1)[i]['value'])
+
+
+
+class Monitoring_Line(tornado.web.RequestHandler):
+  def get(self, nodeID, port):
+      comm = getComm()
+      node_infos = comm.getAllNodeInfos(False)
+      # print node_infos
+      list_name=[]
+      list_id=[]
+      list_port=[]
+      list_loc=[]
+
+      obj1 = Test_array('Light Sensor',int(nodeID),int(port),comm.getLocation(int(nodeID)))#location tree
+      self.render('templates/index4.html', applications=[obj1])
+
+  def post(self):
+    apps=wkpf.globals.mongoDBClient.wukong.readings.find().sort('timestamp',-1).limit(1)[2]
+    #apps = sorted([application.config() for application in wkpf.globals.applications], key=lambda k: k['app_name'])
+    self.content_type = 'application/json'
+    self.write(json.dumps(apps))
+    
 
 
 class Monitoring_Chart(tornado.web.RequestHandler):
@@ -204,6 +226,10 @@ class Monitoring(tornado.web.RequestHandler):
       comm = getComm()
       node_infos = comm.getAllNodeInfos(False)
       # print node_infos
+      list_name=[]
+      list_id=[]
+      list_port=[]
+      list_loc=[]
       for node in node_infos:
         print node.id
         print node.location
@@ -211,10 +237,52 @@ class Monitoring(tornado.web.RequestHandler):
           wuobject = node.wuobjects[port_number]
           print 'port:', port_number
           print wuobject.wuclassdef.name
-          
-      obj1 = Test('Light Sensor',MONITORING_NODE[0],MONITORING_PORT[0],'Kitchen')#location tree
-      obj2 = Test('Slider Sensor',MONITORING_NODE[1],MONITORING_PORT[1],'Kitchen')
-      self.render('templates/index2.html', applications=[obj1,obj2])
+          list_name.append(wuobject.wuclassdef.name)
+          list_id.append(node.id)
+          list_port.append(port_number)
+          list_loc.append(node.location)
+
+      obj=[]    
+      #obj1 = Test('Light Sensor',23,2,comm.getLocation(23))#location tree
+      #obj2 = Test('Slider',23,3,'BL-7F ')
+      for i in range(MONITORING_COUNT):
+        obj.append( Test('Light Sensor',MONITORING_NODE[i],MONITORING_PORT[i],comm.getLocation(MONITORING_NODE[i])) );
+
+      self.render('templates/index2.html', applications=obj)
+
+  def post(self):
+    apps=wkpf.globals.mongoDBClient.wukong.readings.find().sort('timestamp',-1).limit(1)[2]
+    #apps = sorted([application.config() for application in wkpf.globals.applications], key=lambda k: k['app_name'])
+    self.content_type = 'application/json'
+    self.write(json.dumps(apps))
+
+class Monitoring_Planar(tornado.web.RequestHandler):
+  def get(self):
+      comm = getComm()
+      node_infos = comm.getAllNodeInfos(False)
+      # print node_infos
+      list_name=[]
+      list_id=[]
+      list_port=[]
+      list_loc=[]
+      for node in node_infos:
+        print node.id
+        print node.location
+        for port_number in node.wuobjects.keys():
+          wuobject = node.wuobjects[port_number]
+          print 'port:', port_number
+          print wuobject.wuclassdef.name
+          list_name.append(wuobject.wuclassdef.name)
+          list_id.append(node.id)
+          list_port.append(port_number)
+          list_loc.append(node.location)
+
+      obj=[]    
+      for i in range(MONITORING_COUNT):
+        obj.append( Test('Light Sensor',MONITORING_NODE[i],MONITORING_PORT[i],comm.getLocation(MONITORING_NODE[i])) );
+    
+      
+      self.render('templates/index5.html', applications=obj)
 
   def post(self):
     apps=wkpf.globals.mongoDBClient.wukong.readings.find().sort('timestamp',-1).limit(1)[2]
@@ -224,11 +292,15 @@ class Monitoring(tornado.web.RequestHandler):
 
 class GetValue(tornado.web.RequestHandler):
   def get(self):
-      #obj1 = Test('IR Sensor',9,3,'BL-7F entrance')
-      #obj2 = Test('Ultra Sound Sensor',11,4,'BL-7F entrance')
       obj2 = Test('IR Sensor',int(self.get_argument("arg2")),int(self.get_argument("arg3")),'BL-7F entrance')
-      #self.render('templates/value.html', applications=[obj1,obj2])
       self.render('templates/value.html', applications=[obj2.value])
+
+class GetValue_array(tornado.web.RequestHandler):
+  def get(self):
+      obj=[]
+      for i in range(MONITORING_COUNT):
+        obj.append(Test('IR Sensor',MONITORING_NODE[i],MONITORING_PORT[i],'BL-7F entrance').value)
+      self.render('templates/value.html', applications=obj)
 
 
 # Returns a form to upload new application
@@ -1148,7 +1220,9 @@ wukong = tornado.web.Application([
   (r"/upload",Upload),
   (r"/monitoring",Monitoring),
   (r"/monitoring_chart/([0-9]*)/([0-9]*)",Monitoring_Chart),
+  (r"/monitoring_planar",Monitoring_Planar),
   (r"/getvalue",GetValue),
+  (r"/getvalue_array",GetValue_array),
   (r"/refresh/([0-9]*)/([0-9]*)/([0-9]*)/([0-9]*)", SetRefresh),
   (r"/configuration", Progression),
   (r"/getRefresh/([0-9]*)/([0-9]*)/([0-9]*)", GetRefresh)

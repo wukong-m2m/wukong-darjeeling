@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.min.css" />
+<script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="/static/bootstrap/js/bootstrap.min.js"></script>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <script src="http://d3js.org/d3.v2.js"></script>
+
+    </head>
+    <body>
+<script>//load NodeID/PortID
+
+   var len;
+  var node_id=[];
+  var port_id=[];
+   var op=[];
+   var tt=0;
+function init(){
+   {% for index, app in enumerate(applications) %}
+
+              len={{index}}+1;
+              //len='{{ applications[index].id }}';
+              var str='{{ app.id }}';
+              var res=str.split('_');
+              node_id.push(res[0]);
+              port_id.push(res[1]);
+              op.push(0);
+              var i = 0;
+
+    {% end %}
+
+}
+</script>
+<script type="text/javascript">//update sensing data
+    function loadXMLDoc()
+    {
+        if (window.XMLHttpRequest)
+        {// code for IE7+, Firefox, Chrome, Opera, Safari
+            xmlhttp=new XMLHttpRequest();
+        }
+        else
+        {// code for IE6, IE5
+            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        xmlhttp.onreadystatechange=function()
+        {
+            if (xmlhttp.readyState==4 && (xmlhttp.status==200 || xmlhttp.status==304))
+            {
+                console.log(xmlhttp.responseText);
+              var str_tmp=xmlhttp.responseText;
+              var s = str_tmp.indexOf("[");//16
+              var e = str_tmp.indexOf("]");//20
+              var res=str_tmp.substring(s+1, e).split(",");
+for (i=0;i<len;i++){
+    op[i]=res[i];
+
+}
+            }//console.log("out");
+        }
+        xmlhttp.open("GET","../../getvalue_array",true);
+        xmlhttp.send();
+    }
+</script>
+
+        <img src="/static/images/planar.png" width=1000 height=800 style="position:absolute; left:20px; top:20px; z-index:-1;"/>
+        <script type="text/javascript">
+init();
+var circleData = [
+  { "cx": 130, "cy": 230, "radius": 70, "color" : "yellow", "opacity" : 0.5, "z":2 , "idx":0 },
+  { "cx": 550, "cy": 100, "radius": 70, "color" : "yellow", "opacity" : 1, "z":2 , "idx":1},
+  { "cx": 200, "cy": 420, "radius": 70, "color" : "yellow", "opacity" : 0.7, "z":2 , "idx":2},
+  { "cx": 580, "cy": 300, "radius": 70, "color" : "yellow", "opacity" : 0.3, "z":2 , "idx":3}];
+var svgContainer = d3.select("body").append("svg")
+                                     .attr("width",1000)
+                                     .attr("height",800) 
+                        .style("z-index", 2);
+
+var circles = svgContainer.selectAll("circle")
+                           .data(circleData)
+                           .enter()
+                           .append("circle");
+
+var circleAttributes = circles
+                        .attr("cx", function (d) { return d.cx; })
+                        .attr("cy", function (d) { return d.cy; })
+                        .attr("r", function (d) { return d.radius; })
+                        .attr("fill-opacity", function (d) { return d.opacity; })
+                        .style("fill", function (d) { return d.color; })            
+                        .style("position", "absolute")
+                        .style("z-index", 2);
+
+
+
+
+        </script>
+    </body>
+<script type="text/javascript">
+    $(document).ready(function(){
+      refreshTable();
+    });
+
+    function refreshTable(){
+loadXMLDoc();
+        
+         d3.select("svg").remove();
+        svgContainer = d3.select("body").append("svg")
+                                     .attr("width",1000)
+                                     .attr("height",800) 
+                        .style("z-index", 2);
+        circles = svgContainer.selectAll("circle")
+                           .data(circleData)
+                           .enter()
+                           .append("circle");
+
+        circleAttributes = circles
+                        .attr("cx", function (d) { return d.cx; })
+                        .attr("cy", function (d) { return d.cy; })
+                        .attr("r", function (d) { return d.radius; })
+                        .attr("fill-opacity", function (d) { return op[d.idx]/255; })
+                        .style("fill", function (d) { return d.color; })            
+                        .style("position", "absolute")
+                        .style("z-index", 2);
+
+        var text= svgContainer.selectAll("text")
+                        .data(circleData)
+                        .enter()
+                        .append("text");
+
+        var textLabels = text
+                 .attr("x", function(d) { return d.cx-10; })
+                 .attr("y", function(d) { return d.cy; })
+                 .text( function (d) { return op[d.idx]; })
+                 .attr("font-family", "sans-serif")
+                 .attr("font-size", "20px")
+                 .attr("fill", "red");
+
+        setTimeout(refreshTable, 300);
+    }
+</script>
+
+</html>
