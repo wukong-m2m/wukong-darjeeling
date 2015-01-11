@@ -32,7 +32,7 @@
               var i = 0;
               {% for value in applications[index].value_array %}
                 value_his.unshift({{value}});
-                value_chart.unshift({{value}});
+                value_chart.push({{value}});
               {% end %}
 
 {% end %}
