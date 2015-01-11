@@ -49,9 +49,10 @@
               var res=str.split('_');
               node_id.push(res[0]);
               port_id.push(res[1]);
+              var url='/monitoring_chart/'.concat(res[0],'/',res[1]);
             </script>
             <tr class="application" id="app_{{ index+1 }}">
-              <td><a href="/applications/{{ index }}">{{ index+1 }}</a></td>
+              <td><a href=>{{ index+1 }}</a></td>
               <td id="docid">{{ app.id }}</td>
               <td><a1>{{ app.sensor }}</a1></td>
               <td><a2>{{ app.loc }}</a2></td>
@@ -80,19 +81,10 @@
       var i;
       for(i=1;i<len+1;i++){
         $('#'+i).load('getvalue?arg1=IR%20Sensor&arg2='+node_id[i-1]+'&arg3='+port_id[i-1]+'&arg4=BL-7F%20entrance', function(){
-           setTimeout(refreshTable, 2000);
+           
         });
       }
-      /*
-      i=9
-        $('#1').load('getvalue?arg1=IR%20Sensor&arg2='+i+'&arg3=3&arg4=BL-7F%20entrance', function(){
-           setTimeout(refreshTable, 1000);
-        });
-        $('#2').load('getvalue?arg1=IR%20Sensor&arg2=11&arg3=4&arg4=BL-7F%20entrance', function(){
-           setTimeout(refreshTable, 1000);
-        });
-        document.getElementById("1").innerHTML = len;
-      */
+      setTimeout(refreshTable, 1000);
     }
 </script>
 

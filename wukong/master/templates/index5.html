@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.min.css" />
+<script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="/static/bootstrap/js/bootstrap.min.js"></script>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <script src="http://d3js.org/d3.v2.js"></script>
+
+    </head>
+    <body>
+<script>
+
+   var len;
+  var node_id=[];
+  var port_id=[];
+   var op=[];
+   {% for index, app in enumerate(applications) %}
+
+              len={{index}}+1;
+              //len='{{ applications[index].id }}';
+              var str='{{ app.id }}';
+              var res=str.split('_');
+              node_id.push(res[0]);
+              port_id.push(res[1]);
+              op.push(0);
+              var i = 0;
+
+    {% end %}
+</script>
+<script type="text/javascript">
+    function loadXMLDoc(n,p,loc)
+    {
+        if (window.XMLHttpRequest)
+        {// code for IE7+, Firefox, Chrome, Opera, Safari
+            xmlhttp=new XMLHttpRequest();
+        }
+        else
+        {// code for IE6, IE5
+            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        xmlhttp.onreadystatechange=function()
+        {
+          //console.log(xmlhttp.responseText);
+          //value_chart.push(xmlhttp.responseText);
+
+            if (xmlhttp.readyState==4 && (xmlhttp.status==200 || xmlhttp.status==304))
+            {
+              var str_tmp=xmlhttp.responseText;
+              var s = str_tmp.indexOf("[");//16
+              var e = str_tmp.indexOf("]");//20
+                //document.getElementById("test_value").innerHTML = parseInt(str_tmp.substring(s+1, e));//22
+                op[loc]=(parseInt(str_tmp.substring(s+1, e)));
+                //console.log(value_chart[0]);
+                //console.log("in");
+            }//console.log("out");
+        }
+        xmlhttp.open("GET","../../getvalue?arg1=IR%20Sensor&arg2="+n+"&arg3="+p+"&arg4=BL-7F%20entrance",true);
+        xmlhttp.send();
+    }
+</script>
+
+        <img src="/static/images/planar.png" width=1000 height=800 style="position:absolute; left:20px; top:20px; z-index:-1;"/>
+        <script type="text/javascript">
+
+var circleData = [
+  { "cx": 300, "cy": 230, "radius": 70, "color" : "yellow", "opacity" : 0.5, "z":2 , "idx":0 },
+  { "cx": 700, "cy": 220, "radius": 70, "color" : "yellow", "opacity" : 1, "z":2 , "idx":1},
+  { "cx": 550, "cy": 100, "radius": 70, "color" : "yellow", "opacity" : 0.7, "z":2 , "idx":2},
+  { "cx": 580, "cy": 300, "radius": 70, "color" : "yellow", "opacity" : 0.3, "z":2 , "idx":3}];
+var svgContainer = d3.select("body").append("svg")
+                                     .attr("width",1000)
+                                     .attr("height",800) 
+                        .style("z-index", 2);
+
+var circles = svgContainer.selectAll("circle")
+                           .data(circleData)
+                           .enter()
+                           .append("circle");
+
+var circleAttributes = circles
+                        .attr("cx", function (d) { return d.cx; })
+                        .attr("cy", function (d) { return d.cy; })
+                        .attr("r", function (d) { return d.radius; })
+                        .attr("fill-opacity", function (d) { return d.opacity; })
+                        .style("fill", function (d) { return d.color; })            
+                        .style("position", "absolute")
+                        .style("z-index", 2);
+
+
+
+
+        </script>
+    </body>
+<script type="text/javascript">
+    $(document).ready(function(){
+      refreshTable();
+    });
+
+    function refreshTable(){
+        console.log("refresh");
+        for(i=0;i<len;i++){
+            loadXMLDoc(node_id[i],port_id[i],i);
+            console.log(op[i]);
+        }
+         d3.select("svg").remove();
+        svgContainer = d3.select("body").append("svg")
+                                     .attr("width",1000)
+                                     .attr("height",800) 
+                        .style("z-index", 2);
+        circles = svgContainer.selectAll("circle")
+                           .data(circleData)
+                           .enter()
+                           .append("circle");
+
+        circleAttributes = circles
+                        .attr("cx", function (d) { return d.cx; })
+                        .attr("cy", function (d) { return d.cy; })
+                        .attr("r", function (d) { return d.radius; })
+                        .attr("fill-opacity", function (d) { return op[d.idx]/255; })
+                        .style("fill", function (d) { return d.color; })            
+                        .style("position", "absolute")
+                        .style("z-index", 2);
+        setTimeout(refreshTable, 1000);
+    }
+</script>
+
+</html>
