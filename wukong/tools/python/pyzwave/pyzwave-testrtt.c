@@ -3054,19 +3054,18 @@ void ApplicationCommandHandler(unsigned char * buf, int len)
     int i;
     //  printf("LENGTH======TMPNR====== %d %d\n", len, len-4-1);
     execute_class_callback(src, class, buf+4, len-4-1);
-    printf("INFO:rtt.c ApplicationCommandHandler:\n");
     if (class == COMMAND_CLASS_BASIC) {
         if      (cmd == BASIC_SET) {
-            printf("\tNode %d, BASIC_SET: %02x\n", src, buf[5]);
+            printf("INFO:rtt.c ApplicationCommandHandler: Node %d, BASIC_SET: %02x\n", src, buf[5]);
         }
         else if (cmd == BASIC_GET) {
-            printf("\tNode %d, BASIC_GET\n", src);
+            printf("INFO:rtt.c ApplicationCommandHandler: Node %d, BASIC_GET\n", src);
         }
         else if (cmd == BASIC_REPORT) {
-            printf("\tNode %d, BASIC_REPORT: %02x\n", src, buf[5]);
+            printf("INFO:rtt.c ApplicationCommandHandler: Node %d, BASIC_REPORT: %02x\n", src, buf[5]);
         }
         else if (cmd == 0xff) {
-            printf("\tDebug: %02x %02x", buf[5],buf[6]);
+            printf("INFO:rtt.c ApplicationCommandHandler: Debug: %02x %02x", buf[5],buf[6]);
         }
     }
     else if (class == COMMAND_CLASS_ASSOCIATION ) {
@@ -3074,7 +3073,7 @@ void ApplicationCommandHandler(unsigned char * buf, int len)
             int gid = buf[5];
             int maxnod = buf[6];
             int nreport = buf[7];
-            printf("\tAssociation report: group=%d, max_node=%d, report_left=%d\n", gid,maxnod,nreport);
+            printf("INFO:rtt.c ApplicationCommandHandler: Association report: group=%d, max_node=%d, report_left=%d\n", gid,maxnod,nreport);
             for(i=8;i<len-1;i++) {
                 printf("   %d\n", buf[i]);
             }
@@ -3099,17 +3098,17 @@ void ApplicationCommandHandler(unsigned char * buf, int len)
                 if ( v > 0x7fffffff)
                     v = -(0xffffffff-v+1);
             }
-            printf("\tParameter %d = %d\n", no,v);
+            printf("INFO:rtt.c ApplicationCommandHandler: Parameter %d = %d\n", no,v);
         }
     }
     else if (class == COMMAND_CLASS_WAKE_UP) {
         if (cmd == WAKE_UP_NOTIFICATION) {
-            printf("\tnode %d is wakeup\n", src);
+            printf("INFO:rtt.c ApplicationCommandHandler: node %d is wakeup\n", src);
         }
     }
     else if (class == COMMAND_CLASS_SIMPLE_AV_CONTROL) {
         if (cmd == SIMPLE_AV_CONTROL_LEARN_REPORT) {
-            printf("\tLearn feedback is %c\n", buf[5]);
+            printf("INFO:rtt.c ApplicationCommandHandler: Learn feedback is %c\n", buf[5]);
         } else if (cmd == SIMPLE_AV_CONTROL_RAW_SET) {
             usleep(50*1000);
             zwavecmd_simple_av_send_raw(0,NULL);
@@ -3117,7 +3116,7 @@ void ApplicationCommandHandler(unsigned char * buf, int len)
     }
     else if (class == COMMAND_CLASS_MULTI_INSTANCE) {
         if (cmd == MULTI_INSTANCE_CMD_ENCAP_V2) {
-            printf("\tsrc=%d dest=%d\n", buf[5],buf[6]);
+            printf("INFO:rtt.c ApplicationCommandHandler: src=%d dest=%d\n", buf[5],buf[6]);
             g_instance_src = buf[5];
             g_instance_dst = buf[6];
             execute_class_callback(src, buf[7], buf+8,len-8-1);
@@ -3125,13 +3124,14 @@ void ApplicationCommandHandler(unsigned char * buf, int len)
     }
     else if (class == 0x20 && cmd == 0xff) {
         int k;
-        printf("\tDebug: ");
+        printf("INFO:rtt.c ApplicationCommandHandler: Debug: ");
         for(k=5;k<len-1;k++)
             printf("%02x ", buf[k]);
         printf("\n");
     }
     else {
         if (PyZwave_print_debug_info) {
+            printf("INFO:rtt.c ApplicationCommandHandler:\n");
             printf("\trxStatus = %d\n", rxStatus);
             printf("\tsrc_node = %d\n", src);
             printf("\tclass = %x\n", class);
@@ -3147,7 +3147,7 @@ void ApplicationCommandHandler(unsigned char * buf, int len)
     if (abs(delay) < 5000) {
         total_delay += delay;
         total_count++;
-        printf("\trtt time %d/%d ms\n", delay,total_delay/total_count);
+        printf("INFO:rtt.c ApplicationCommandHandler: rtt time %d/%d ms\n", delay,total_delay/total_count);
     }
     rtt_start_ms = 0;
 }
