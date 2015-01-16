@@ -33,6 +33,12 @@ class ModelManager:
         # return getComm().getNodeInfo(node_id)
         return self._node_infos[int(node_id)]
 
+    def getPossibleHostDevice(wuclassId):
+        if wuclassId in self._class_id_map:
+            return self._class_id_map[wuclassId]
+        else:
+            return []
+
     def updateMaps(self):
         self._class_id_map = {}
         for id in self._node_infos:

@@ -157,6 +157,11 @@ class WuLink:
     self.to_component = to_component
     self.to_property_name = to_property_name
     self.to_property = WuObjectFactory.wuclassdefsbyname[to_component.type].properties[to_property_name]
+    self.data_volume = 0
+
+  """ Used when we get progression report from progression server
+  def setDataVolume(bits):
+    self.data_volume = bits
 
 
 ########### in db #####################

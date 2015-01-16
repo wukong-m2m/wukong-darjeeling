@@ -1,12 +1,15 @@
-# In this file, we define the object oriented definition of mapper interface and several abstract mapper class,
-# so that when we want to define specific mapping strategy like energy efficiency, prolong system lifetime, QoS maximization,
-# Fault tolerant and etc, we can easily pick up a mapping model (greedy or ILP based) to implement it.
-#
-# A mapper accepts three parameters Wuapplication, WukongSystem, LocationTree as Parameters. After mapping, status of
-# the application will be set to be mapped, and mapping results will be recorded in the application also.
-#
-# Since a mapper is able to update the status of application and system, we need to synchronize every mapping operation in
-# AppManager.map()
+"""
+In this file, we define the object oriented definition of mapper interface and several abstract mapper class,
+so that when we want to define specific mapping strategy like energy efficiency, prolong system lifetime, QoS maximization,
+Fault tolerant and etc, we can easily pick up a mapping model (greedy or ILP based) to implement it.
+
+A mapper accepts three parameters Wuapplication, WukongSystem, LocationTree as Parameters. After mapping, status of
+the application will be set to be mapped, and mapping results will be recorded in the application also.
+
+Since a mapper is able to update the status of application and system, we need to synchronize every mapping operation in
+AppManager.map()
+
+"""
 
 from pulp import *
 
@@ -31,7 +34,7 @@ class AbstractSelectionMapper(AbstractMapper):
     self.variables = {}
 
   def map():
-    if (self.tree == None || self.application == None):
+    if (self.application == None || self.modelmanager == None):
       print "error mapping input"
       return
 
@@ -40,16 +43,17 @@ class AbstractSelectionMapper(AbstractMapper):
     print LPStatus[status]
     _apply_result()
 
-
   """The entry point for setting IP constraints for a mapping algorithm """
   def _build_problem():
+    pass
 
   """Apply energy constraints on device to the ILP problem."""
   def _apply_wudevice_energy_constraints(problem):
+    pass
 
   """Apply constraints from transforming mix-max to min problem."""
   def _apply_upper_bound_constraints(problem):
-
+    pass
 
   """Apply location based constraints to the ILP problem."""
   def _apply_location_constraints(problem):

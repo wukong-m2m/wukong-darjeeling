@@ -10,14 +10,13 @@ the intermediate results.
 from models import WuObjectFactory
 
 class FlowBasedProcess:
-    def __init__(changeset, datavolumn):
+    def __init__(changeset):
         self._edges = changeset.links
         self._component_dic = {}  # map component id to component
         self._component_class_dic = {} # map class id to a list of component in the fbp
-        self._from_edge_dic = {} # map component id to a list of from edge list
-        self._to_edge_dic = {} # map component id to a list of to edge list
+        self._from_edge_dic = {} # map component id to a list of edges end to the component
+        self._to_edge_dic = {} # map component id to a list of edges start from the component
         self._location_constraints_dic = {} # unused for now
-        self._datavolumn = datavolumn
 
         for component in changeset.components:
             self._component_dic[component.id] = component
@@ -39,4 +38,15 @@ class FlowBasedProcess:
                 self._from_edge_dic[link.to_component.id] = []
             self._from_edge_dic[link.to_component.id].append(link)
 
+    def getOutLinks(self, componentId):
+        if componentId in self._to_edge_dic:
+            return self._to_edge_dic[componentId]
+        else:
+            return []
+
+    def getInLinks(self, componentId):
+        if componentId in self._from_edge_dic:
+            return self._from_edge_dic[componentId]
+        else:
+            return []
 
