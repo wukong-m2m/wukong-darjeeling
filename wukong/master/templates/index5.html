@@ -15,6 +15,10 @@
   var node_id=[];
   var port_id=[];
    var op=[];
+   var ppnum=[];
+   for(i=0;i<6;i++){
+        ppnum.push(0);
+   }
    var tt=0;
 function init(){
    {% for index, app in enumerate(applications) %}
@@ -52,13 +56,19 @@ function init(){
               var s = str_tmp.indexOf("[");//16
               var e = str_tmp.indexOf("]");//20
               var res=str_tmp.substring(s+1, e).split(",");
+
 for (i=0;i<len;i++){
     op[i]=res[i];
-
 }
+console.log(res[len+1]);
+
+for (i=0;i<6;i++){
+    ppnum[i]=parseInt(res[len+i]);
+}
+console.log("%d,%d,%d,%d,%d,%d,",ppnum[0],ppnum[1],ppnum[2],ppnum[3],ppnum[4],ppnum[5]);
             }//console.log("out");
         }
-        xmlhttp.open("GET","../../getvalue_array",true);
+        xmlhttp.open("GET","getvalue_array",true);
         xmlhttp.send();
     }
 </script>
@@ -67,10 +77,15 @@ for (i=0;i<len;i++){
         <script type="text/javascript">
 init();
 var circleData = [
-  { "cx": 130, "cy": 230, "radius": 70, "color" : "yellow", "opacity" : 0.5, "z":2 , "idx":0 },
-  { "cx": 550, "cy": 100, "radius": 70, "color" : "yellow", "opacity" : 1, "z":2 , "idx":1},
-  { "cx": 200, "cy": 420, "radius": 70, "color" : "yellow", "opacity" : 0.7, "z":2 , "idx":2},
-  { "cx": 580, "cy": 300, "radius": 70, "color" : "yellow", "opacity" : 0.3, "z":2 , "idx":3}];
+  { "cx": 900, "cy": 400, "radius": 50, "color" : "yellow", "opacity" : 0.5, "z":2 , "idx":0 },
+  { "cx": 580, "cy": 500, "radius": 50, "color" : "yellow", "opacity" : 0.5, "z":2 , "idx":1},
+  { "cx": 350, "cy": 320, "radius": 50, "color" : "yellow", "opacity" : 0.5, "z":2 , "idx":2},
+  { "cx": 550, "cy": 200, "radius": 50, "color" : "yellow", "opacity" : 0.5, "z":2 , "idx":3}];
+  var ppData = [
+  { "cx": 130, "cy": 230, "w":70,"h":70, "idx":0 },
+  { "cx": 550, "cy": 100, "w":70,"h":70, "idx":1},
+  { "cx": 200, "cy": 420, "w":70,"h":70, "idx":2},
+  { "cx": 580, "cy": 400, "w":70,"h":70, "idx":3}];
 var svgContainer = d3.select("body").append("svg")
                                      .attr("width",1000)
                                      .attr("height",800) 
@@ -108,6 +123,86 @@ loadXMLDoc();
                                      .attr("width",1000)
                                      .attr("height",800) 
                         .style("z-index", 2);
+var g = svgContainer.append("g");
+var img = g.append("svg:image")
+    .attr("xlink:href", "http://www.clipartbest.com/cliparts/Kin/M77/KinM77yiq.png")
+    .attr("width", 70)
+    .attr("height", 70)
+    .attr("x", 450)
+    .attr("y",300);
+    img = g.append("svg:image")
+    .attr("xlink:href", "http://www.clipartbest.com/cliparts/Kin/M77/KinM77yiq.png")
+    .attr("width", 70)
+    .attr("height", 70)
+    .attr("x", 550)
+    .attr("y",300);
+    img = g.append("svg:image")
+    .attr("xlink:href", "http://www.clipartbest.com/cliparts/Kin/M77/KinM77yiq.png")
+    .attr("width", 70)
+    .attr("height", 70)
+    .attr("x", 650)
+    .attr("y",300);
+    img = g.append("svg:image")
+    .attr("xlink:href", "http://www.clipartbest.com/cliparts/Kin/M77/KinM77yiq.png")
+    .attr("width", 70)
+    .attr("height", 70)
+    .attr("x", 450)
+    .attr("y",400);
+    img = g.append("svg:image")
+    .attr("xlink:href", "http://www.clipartbest.com/cliparts/Kin/M77/KinM77yiq.png")
+    .attr("width", 70)
+    .attr("height", 70)
+    .attr("x", 550)
+    .attr("y",400);
+    img = g.append("svg:image")
+    .attr("xlink:href", "http://www.clipartbest.com/cliparts/Kin/M77/KinM77yiq.png")
+    .attr("width", 70)
+    .attr("height", 70)
+    .attr("x", 650)
+    .attr("y",400);
+var pplt=g.append("text")
+    .attr("x", 710)
+    .attr("y", 350)
+    .text( "x".concat(ppnum[0].toString()))
+    .attr("font-family", "sans-serif")
+    .attr("font-size", "20px")
+    .attr("fill", "red");
+    pplt=g.append("text")
+    .attr("x", 710)
+    .attr("y", 450)
+    .text( "x".concat(ppnum[1].toString()))
+    .attr("font-family", "sans-serif")
+    .attr("font-size", "20px")
+    .attr("fill", "red");
+    pplt=g.append("text")
+    .attr("x", 610)
+    .attr("y", 350)
+    .text( "x".concat(ppnum[2].toString()))
+    .attr("font-family", "sans-serif")
+    .attr("font-size", "20px")
+    .attr("fill", "red");
+    pplt=g.append("text")
+    .attr("x", 610)
+    .attr("y", 450)
+    .text( "x".concat(ppnum[3].toString()))
+    .attr("font-family", "sans-serif")
+    .attr("font-size", "20px")
+    .attr("fill", "red");
+    pplt=g.append("text")
+    .attr("x", 510)
+    .attr("y", 350)
+    .text( "x".concat(ppnum[4].toString()))
+    .attr("font-family", "sans-serif")
+    .attr("font-size", "20px")
+    .attr("fill", "red");
+    pplt=g.append("text")
+    .attr("x", 510)
+    .attr("y", 450)
+    .text( "x".concat(ppnum[5].toString()))
+    .attr("font-family", "sans-serif")
+    .attr("font-size", "20px")
+    .attr("fill", "red");
+
         circles = svgContainer.selectAll("circle")
                            .data(circleData)
                            .enter()
@@ -120,8 +215,38 @@ loadXMLDoc();
                         .attr("fill-opacity", function (d) { return op[d.idx]/255; })
                         .style("fill", function (d) { return d.color; })            
                         .style("position", "absolute")
-                        .style("z-index", 2);
+                        .style("z-index", 0);
 
+        pplt=g.append("text")
+    .attr("x", 960)
+    .attr("y", 400)
+    .text( op[0])
+    .attr("font-family", "sans-serif")
+    .attr("font-size", "20px")
+    .attr("fill", "red");
+        pplt=g.append("text")
+    .attr("x", 650)
+    .attr("y", 500)
+    .text( op[1])
+    .attr("font-family", "sans-serif")
+    .attr("font-size", "20px")
+    .attr("fill", "red");
+        pplt=g.append("text")
+    .attr("x", 420)
+    .attr("y", 320)
+    .text( op[2])
+    .attr("font-family", "sans-serif")
+    .attr("font-size", "20px")
+    .attr("fill", "red");
+        pplt=g.append("text")
+    .attr("x", 620)
+    .attr("y", 200)
+    .text( op[3])
+    .attr("font-family", "sans-serif")
+    .attr("font-size", "20px")
+    .attr("fill", "red");
+
+/*
         var text= svgContainer.selectAll("text")
                         .data(circleData)
                         .enter()
@@ -134,7 +259,7 @@ loadXMLDoc();
                  .attr("font-family", "sans-serif")
                  .attr("font-size", "20px")
                  .attr("fill", "red");
-
+*/
         setTimeout(refreshTable, 300);
     }
 </script>

@@ -163,7 +163,21 @@ class Test:
     self.sensor = name
     self.loc=loc
     self.value = wkpf.globals.mongoDBClient.wukong.readings.find({ 'node_id':n_id , 'port':pt }).sort('_id',-1).limit(1)[0]['value']
-    
+
+class Test_ppl:
+  def __init__(self,name,n_id,pt,loc):
+    self.id = str(n_id)+'_'+str(pt)
+    self.sensor = name
+    self.loc=loc
+    self.item=wkpf.globals.mongoDBClient.wukong.readings.find({ 'node_id':n_id , 'port':pt }).sort('_id',-1).limit(1)[0]
+    self.value = self.item["ppnum1"]
+    self.value_array=[]
+    self.value_array.append(self.item["ppnum1"])
+    self.value_array.append(self.item["ppnum2"])
+    self.value_array.append(self.item["ppnum3"])
+    self.value_array.append(self.item["ppnum4"])
+    self.value_array.append(self.item["ppnum5"])
+    self.value_array.append(self.item["ppnum6"])    
     
 class Test_array:
   def __init__(self,name,n_id,pt,loc):
@@ -191,7 +205,7 @@ class Monitoring_Line(tornado.web.RequestHandler):
       list_port=[]
       list_loc=[]
 
-      obj1 = Test_array('Light Sensor',int(nodeID),int(port),comm.getLocation(int(nodeID)))#location tree
+      obj1 = Test_array('Light Sensor',int(nodeID),int(port),"")#location tree
       self.render('templates/index4.html', applications=[obj1])
 
   def post(self):
@@ -212,7 +226,7 @@ class Monitoring_Chart(tornado.web.RequestHandler):
       list_port=[]
       list_loc=[]
 
-      obj1 = Test_array('Light Sensor',int(nodeID),int(port),comm.getLocation(int(nodeID)))#location tree
+      obj1 = Test_array('Light Sensor',int(nodeID),int(port),"room")#location tree
       self.render('templates/index3.html', applications=[obj1])
 
   def post(self):
@@ -246,7 +260,7 @@ class Monitoring(tornado.web.RequestHandler):
       #obj1 = Test('Light Sensor',23,2,comm.getLocation(23))#location tree
       #obj2 = Test('Slider',23,3,'BL-7F ')
       for i in range(MONITORING_COUNT):
-        obj.append( Test('Light Sensor',MONITORING_NODE[i],MONITORING_PORT[i],comm.getLocation(MONITORING_NODE[i])) );
+        obj.append( Test('Light Sensor',MONITORING_NODE[i],MONITORING_PORT[i],"room") );
 
       self.render('templates/index2.html', applications=obj)
 
@@ -279,7 +293,7 @@ class Monitoring_Planar(tornado.web.RequestHandler):
 
       obj=[]    
       for i in range(MONITORING_COUNT):
-        obj.append( Test('Light Sensor',MONITORING_NODE[i],MONITORING_PORT[i],comm.getLocation(MONITORING_NODE[i])) );
+        obj.append( Test('Light Sensor',MONITORING_NODE[i],MONITORING_PORT[i],"room") );
     
       
       self.render('templates/index5.html', applications=obj)
@@ -299,7 +313,13 @@ class GetValue_array(tornado.web.RequestHandler):
   def get(self):
       obj=[]
       for i in range(MONITORING_COUNT):
-        obj.append(Test('IR Sensor',MONITORING_NODE[i],MONITORING_PORT[i],'BL-7F entrance').value)
+        self.tmp=Test('IR Sensor',MONITORING_NODE[i],MONITORING_PORT[i],'BL-7F entrance').value
+        print "TMP=%d" %(self.tmp)
+        obj.append(self.tmp)
+      objtmp=Test_ppl('IR Sensor','kinect','kinect','BL-7F entrance')
+      obj.extend(objtmp.value_array)
+
+      print "objtmp.ppnum1=%d;ppnum2=%d;ppnum3=%d;ppnum4=%d;ppnum5=%d;ppnum6=%d;" %(objtmp.value_array[0],objtmp.value_array[1],objtmp.value_array[2],objtmp.value_array[3],objtmp.value_array[4],objtmp.value_array[5])
       self.render('templates/value.html', applications=obj)
 
 
