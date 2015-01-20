@@ -109,8 +109,13 @@ void wkreprog_impl_close() {
 
 void wkreprog_impl_reboot() {
 	// Reset using the watchdog timer.
+#if defined(WDTCSR)
 	WDTCSR = _BV(WDCE);
 	WDTCSR = _BV(WDE);
+#else
+	WDTCR = _BV(WDCE);
+	WDTCR = _BV(WDE);
+#endif
 	while (1) {
 	}
 }

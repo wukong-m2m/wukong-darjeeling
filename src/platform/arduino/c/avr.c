@@ -81,6 +81,35 @@ void avr_delay(unsigned long ms)
 }
 
 
+#ifdef __AVR_ATmega128__
+void avr_timerInit()
+{
+	// this needs to be called before setup() or some functions won't
+	// work there
+	sei();
+
+	// set timer 0 prescale factor to 64
+	// TODONR: This probably isn't correct for ATMega128, but at this moment I just want to get it to compile.
+	sbi(TCCR0, CS01);
+	sbi(TCCR0, CS00);
+
+	// enable timer 0 overflow interrupt
+	sbi(TIMSK, TOIE0);
+
+	// set a2d prescale factor to 128
+	// 16 MHz / 128 = 125 KHz, inside the desired 50-200 KHz range.
+	// XXX: this will not work properly for other clock speeds, and
+	// this code should use F_CPU to determine the prescale factor.
+	/*
+	sbi(ADCSRA, ADPS2);
+	sbi(ADCSRA, ADPS1);
+	sbi(ADCSRA, ADPS0);
+	*/
+
+	// enable a2d conversions
+	sbi(ADCSRA, ADEN);
+}
+#else
 void avr_timerInit()
 {
 	// this needs to be called before setup() or some functions won't
@@ -106,8 +135,8 @@ void avr_timerInit()
 
 	// enable a2d conversions
 	sbi(ADCSRA, ADEN);
-
 }
+#endif
 
 // adapted from the wiring stuff
 void avr_serialInit(uint32_t baud)
