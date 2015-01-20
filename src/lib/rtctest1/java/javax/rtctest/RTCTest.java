@@ -27,6 +27,10 @@ public class RTCTest implements IRTCTest {
 		this.instance_int = init_int_value;
 	}
 
+	public static int testReturn42() {
+		return 42;
+	}
+
 	// public static int check_gc(int a) {
 	// 	Runtime.getRuntime().gc();
 	// 	new RTCTest(); // allocate some memory and immediately release the object again

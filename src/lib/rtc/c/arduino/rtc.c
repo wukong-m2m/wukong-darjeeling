@@ -97,16 +97,26 @@ void rtc_flush() {
     rtc_codebuffer_position = rtc_codebuffer;
 }
 
-static void emit(uint16_t opcode) {
+static void do_emit(uint16_t opcode) {
     *(rtc_codebuffer_position++) = opcode;
 
     if (rtc_codebuffer_position >= rtc_codebuffer+RTC_CODEBUFFER_SIZE) // Buffer full, do a flush.
-        rtc_flush();
+        rtc_flush();    
+}
+
+static void emit(uint16_t opcode) {
+#ifdef AVRORA
+    avroraRTCTraceSingleWordInstruction(opcode);
+#endif
+    do_emit(opcode);
 }
 
 static void emit2(uint16_t opcode1, uint16_t opcode2) {
-    emit(opcode1);
-    emit(opcode2);
+#ifdef AVRORA
+    avroraRTCTraceDoubleWordInstruction(opcode1, opcode2);
+#endif
+    do_emit(opcode1);
+    do_emit(opcode2);
 }
 
 void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t *rtc_method_start_addresses) {

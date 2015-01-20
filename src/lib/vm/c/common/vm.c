@@ -85,7 +85,7 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 			finger = finger->next;
 		}
 		if (finger == NULL) {
-			DEBUG_LOG(true, "rtc niet gevonden.\n");
+			DEBUG_LOG(true, "rtctest1 niet gevonden.\n");
 			dj_panic(DJ_PANIC_MALFORMED_INFUSION);
 		}
 	}

@@ -21,12 +21,14 @@
 
 import javax.rtc.*;
 import javax.rtctest.*;
+import javax.darjeeling.Stopwatch;
 
 public class RTCApp
 {
 	public static void main(String args[])
 	{
 		// System.out.println("Hello world.");
+		// checkReturn42();
 		// checkCompareShort();
 		// checkCompareInt();
 		// checkCompareShort0();
@@ -57,14 +59,17 @@ public class RTCApp
 		// checkLookupSwitch();
 		// checkGC();
 		perftestBubbleSort();
+		RTC.avroraBreak();
 	}
 
 	public static void perftestBubbleSort() {
-		System.out.println("java:");
-		RTC.useRTC(false);
-		RTCTestBubbleSort.test_bubblesort();
-		System.out.println("rtc:");
+		// System.out.println("java:");
+		// RTC.useRTC(false);
+		// RTCTestBubbleSort.test_bubblesort();
+		// System.out.println("rtc:");
 		RTC.useRTC(true);
+		Stopwatch.resetAndStart();
+		Stopwatch.measure();
 		RTCTestBubbleSort.test_bubblesort();
 		System.out.println("native:");
 		RTCTestBubbleSort.test_bubblesort_native();
@@ -525,4 +530,9 @@ public class RTCApp
 	// 	System.out.println(" 0 GE 1 " + RTCTest.compare_short_GE((short)-100, (short)-100));
 	// 	System.out.println(" 1 GE 1 " + RTCTest.compare_short_GE((short)-99, (short)-100));
 	// }
+
+	public static void checkReturn42()
+	{
+		RTCTest.testReturn42();
+	}
 }

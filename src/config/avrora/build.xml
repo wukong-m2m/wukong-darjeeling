@@ -1,0 +1,33 @@
+<project default="all">
+
+	<!-- include native code for libraries -->
+	<!-- note that libraries should come after libraries they depend on
+		 (wkcomm first, the wkpf), or else loading the archive will fail -->
+	<property name="libs" value="uart, wkcomm, wkreprog, vm, base, darjeeling3, rtc, rtctest2, rtctest1"/>
+
+	<!-- Compile these applications -->
+	<property name="apps" value="rtcapp"/>
+
+	<!-- Platform and architecture selection -->
+	<property name="platform" value="arduino"/>
+	<property name="architecture" value="avr"/>
+	<property name="configuration" value="avrora"/>
+
+	<property name="mcu" value="atmega128"/>
+	<property name="app-archive-size" value="4096"/>
+
+	<property name="enabled_wuclasses" value="enabled_wuclasses.xml"/>
+
+	<!-- Import the rest from config.xml (magic) -->
+	<import file="../config.xml"/>
+
+	<!-- Import settings like the USB port the programmer is connected to -->
+	<import file="../../settings.xml"/>
+
+	<target name="avrora">
+		<exec executable="java">
+			<arg line="-jar /Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar -monitors=c-timer,rtc,c-print -single -mcu=atmega128 darjeeling.elf"/>
+			<!-- <arg line="-jar /Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar -monitors=calls,c-timer,c-print,stack -single -mcu=atmega128 -verbose=loader,atmel.flash darjeeling.elf"/> -->
+		</exec>
+	</target>
+</project>
