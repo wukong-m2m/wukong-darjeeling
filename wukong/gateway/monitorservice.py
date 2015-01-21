@@ -10,7 +10,7 @@ from gevent.queue import Queue
 import json
 import ast
 import datetime
-
+import date
 import gtwconfig as CONFIG
 import logging
 logging.basicConfig(level=CONFIG.LOG_LEVEL)
@@ -34,8 +34,7 @@ class SensorData:
                 value = payload[6]
             else:
                 value = (payload[6] << 8) + payload[7]
-            now = datetime.datetime.now()
-            return SensorData(node_id, class_id, port, value, now.year*10000000000+now.month*100000000+now.day*1000000+now.hour*10000+now.minute*100+now.second)
+            return SensorData(node_id, class_id, port, value, time.strftime("%Y%m%d%H%M%S"))
         return None
 
     @classmethod
