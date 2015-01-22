@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <errno.h>
 
 #ifdef _WIN32
 //#include <windows.h>
@@ -133,13 +134,13 @@ void zwave_check_state(unsigned char c);
 #define NODEINFO_OPTIONAL_FUNC_SUPPORT      0x80
 
 
-#define ADD_NODE_ANY		0x1
-#define ADD_NODE_CONTROLLER 	0x2
-#define ADD_NODE_SLAVE		0x3
-#define ADD_NODE_EXISTING	0x4
-#define ADD_NODE_STOP		0x5
-#define ADD_NODE_STOP_FAILED	0x6
-#define ADD_NODE_OPTION_HIGH_POWER	0x80
+#define ADD_NODE_ANY        0x1
+#define ADD_NODE_CONTROLLER     0x2
+#define ADD_NODE_SLAVE      0x3
+#define ADD_NODE_EXISTING   0x4
+#define ADD_NODE_STOP       0x5
+#define ADD_NODE_STOP_FAILED    0x6
+#define ADD_NODE_OPTION_HIGH_POWER  0x80
 
 #define TRANSMIT_OPTION_ACK                        0x01   //request acknowledge from destination node
 #define TRANSMIT_OPTION_LOW_POWER                          0x02   // transmit at low output power level (1/3 of normal RF range)
@@ -163,7 +164,7 @@ void zwave_check_state(unsigned char c);
 #define SCENE_CONTROLLER_REPORT 0x3
 
 
-#define COMMAND_CLASS_SCENE_ACTIVATION 							 0x2B
+#define COMMAND_CLASS_SCENE_ACTIVATION                           0x2B
 #define SCENE_ACTIVATION_SET                                                             0x01
 
 
@@ -199,15 +200,15 @@ void zwave_check_state(unsigned char c);
 
 
 // SIMPLE AV class
-#define COMMAND_CLASS_SIMPLE_AV_CONTROL			0x94
-#define SIMPLE_AV_CONTROL_SET				0x1
-#define SIMPLE_AV_CONTROL_GET				0x2
-#define SIMPLE_AV_CONTROL_REPORT			0x3
-#define SIMPLE_AV_CONTROL_SUPPORTED_GET			0x4
-#define SIMPLE_AV_CONTROL_SUPPORTED_REPORT		0x5
-#define SIMPLE_AV_CONTROL_LEARN         		0x20
-#define SIMPLE_AV_CONTROL_LEARN_REPORT         		0x21
-#define SIMPLE_AV_CONTROL_RAW_SET         		0x22
+#define COMMAND_CLASS_SIMPLE_AV_CONTROL         0x94
+#define SIMPLE_AV_CONTROL_SET               0x1
+#define SIMPLE_AV_CONTROL_GET               0x2
+#define SIMPLE_AV_CONTROL_REPORT            0x3
+#define SIMPLE_AV_CONTROL_SUPPORTED_GET         0x4
+#define SIMPLE_AV_CONTROL_SUPPORTED_REPORT      0x5
+#define SIMPLE_AV_CONTROL_LEARN                 0x20
+#define SIMPLE_AV_CONTROL_LEARN_REPORT              0x21
+#define SIMPLE_AV_CONTROL_RAW_SET               0x22
 
 // Configuration
 #define COMMAND_CLASS_CONFIGURATION                                                      0x70
@@ -251,7 +252,7 @@ void zwave_check_state(unsigned char c);
 #define THERMOSTAT_MODE_SUPPORTED_GET                                                    0x04
 #define THERMOSTAT_MODE_SUPPORTED_REPORT                                                 0x05
 
-#define COMMAND_CLASS_THERMOSTAT_SETPOINT						 0x43
+#define COMMAND_CLASS_THERMOSTAT_SETPOINT                        0x43
 #define THERMOSTAT_SETPOINT_VERSION                                                      0x01
 #define THERMOSTAT_SETPOINT_GET                                                          0x02
 #define THERMOSTAT_SETPOINT_REPORT                                                       0x03
@@ -274,13 +275,13 @@ void zwave_check_state(unsigned char c);
 #define MULTI_INSTANCE_CMD_ENCAP                                                         0x06
 #define MULTI_INSTANCE_GET                                                               0x04
 #define MULTI_INSTANCE_REPORT                                                            0x05
-#define MULTI_CHANNEL_END_POINT_GET_V2							 0x7
-#define MULTI_CHANNEL_END_POINT_REPORT_V2						 0x8
-#define MULTI_CHANNEL_CAPABILITY_GET_V2							 0x9
+#define MULTI_CHANNEL_END_POINT_GET_V2                           0x7
+#define MULTI_CHANNEL_END_POINT_REPORT_V2                        0x8
+#define MULTI_CHANNEL_CAPABILITY_GET_V2                          0x9
 #define MULTI_CHANNEL_END_POINT_FIND_V2                                                  0x0B
 #define MULTI_CHANNEL_END_POINT_FIND_REPORT_V2                                           0x0C
 
-#define MULTI_CHANNEL_CAPABILITY_REPORT_V2						 0xA
+#define MULTI_CHANNEL_CAPABILITY_REPORT_V2                       0xA
 #define MULTI_CHANNEL_CMD_ENCAP_V2                                                       0x0D
 
 #define COMMAND_CLASS_METER                                                              0x32
@@ -444,7 +445,7 @@ void clear_serial_api_queue(void)
     fd_set rs;
     int n;
 
-    write(zwavefd, &ack, 1);	// ack previous frames
+    write(zwavefd, &ack, 1);    // ack previous frames
 
     while(1) {
         to.tv_sec = 0;
@@ -469,7 +470,7 @@ void clear_serial_api_queue(void)
     }
     zstate = WAIT_SOF;
     /*
-       write(zwavefd, &ack, 1);	// ack previous frames
+       write(zwavefd, &ack, 1); // ack previous frames
 
        while(1) {
        FD_ZERO(&rs);
@@ -620,7 +621,7 @@ int ZW_SetDefault(void)
     unsigned char buf[255];
 
     buf[0] = ZW_REQ;
-    buf[1] = SetDefault;	// 0x42
+    buf[1] = SetDefault;    // 0x42
     buf[2] = NEXT_SEQ();
     return SerialAPI_request(buf, 3);
 }
@@ -843,7 +844,7 @@ int SerialAPI_soft_reset(void)
     unsigned char buf[2];
 
     buf[0] = ZW_REQ;
-    buf[1] = 0x08;	// FUNC_ID_SERIAL_API_SOFT_RESET
+    buf[1] = 0x08;  // FUNC_ID_SERIAL_API_SOFT_RESET
     return SerialAPI_request(buf, 2);
 }
 int SerialAPI_request(unsigned char *buf, int len)
@@ -880,38 +881,38 @@ int SerialAPI_request(unsigned char *buf, int len)
             }
             zwave_check_state(c);
         }
-        if (zstate != WAIT_SOF) {	// wait for WAIT_SOF statie (idle state)
+        if (zstate != WAIT_SOF) {   // wait for WAIT_SOF statie (idle state)
             printf("WARNING:rtt.c SerialAPI_request: not in ready state zstate=%d\n", zstate);
             usleep(100*1000);
-			// ACK the packet no matter what it is
-			c=6;
-			write(zwavefd,&c,1);
+            // ACK the packet no matter what it is
+            c=6;
+            write(zwavefd,&c,1);
             //continue;
         }
-		zstate = WAIT_SOF;
+        zstate = WAIT_SOF;
 
         // send SerialAPI request
-		zwave_retransmit_ptr=0;
+        zwave_retransmit_ptr=0;
         c=1;
-        write(zwavefd, &c, 1);	// SOF (start of frame)
-		zwave_retransmit_buffer[zwave_retransmit_ptr++] = c;
+        write(zwavefd, &c, 1);  // SOF (start of frame)
+        zwave_retransmit_buffer[zwave_retransmit_ptr++] = c;
         c = len+1;
-        write(zwavefd, &c, 1);	// len (length of frame)
-		zwave_retransmit_buffer[zwave_retransmit_ptr++] = c;
-        wlen = write(zwavefd, buf,len);	// REQ, cmd, data
+        write(zwavefd, &c, 1);  // len (length of frame)
+        zwave_retransmit_buffer[zwave_retransmit_ptr++] = c;
+        wlen = write(zwavefd, buf,len); // REQ, cmd, data
         if (wlen != len) {
             printf("WARNING:rtt.c SerialAPI_request: write fail %d %d\n", len,wlen);
         }
-		for(i=0;i<len;i++) {
-			zwave_retransmit_buffer[zwave_retransmit_ptr++] = buf[i];
-		}
+        for(i=0;i<len;i++) {
+            zwave_retransmit_buffer[zwave_retransmit_ptr++] = buf[i];
+        }
 
         crc = 0xff;
         crc = crc ^ (len+1);
         for(i=0;i<len;i++)
             crc = crc ^ buf[i];
-        write(zwavefd,&crc,1);	// LRC checksum
-		zwave_retransmit_buffer[zwave_retransmit_ptr++] = crc;
+        write(zwavefd,&crc,1);  // LRC checksum
+        zwave_retransmit_buffer[zwave_retransmit_ptr++] = crc;
         if (PyZwave_print_debug_info) {
             printf("DEBUG:rtt.c SerialAPI_request: Send len=%d ", len+1);
             for(i=0;i<len;i++)
@@ -950,10 +951,10 @@ int SerialAPI_request(unsigned char *buf, int len)
                 printf("WARNING:rtt.c SerialAPI_request: Ack error! zstate=%d ack_got=%d c=%d\n", zstate, ack_got, c);
                 //break;
             }
-			if (zstate == WAIT_RETRANSMIT) {
-				zstate = WAIT_SOF;
-				write(zwavefd, zwave_retransmit_buffer, zwave_retransmit_ptr);
-			}
+            if (zstate == WAIT_RETRANSMIT) {
+                zstate = WAIT_SOF;
+                write(zwavefd, zwave_retransmit_buffer, zwave_retransmit_ptr);
+            }
 
         }
         if (!retry--) {
@@ -1178,11 +1179,11 @@ void hsk200_configuration_report_cb(int src, void * payload, int len)
             printf("WARNING:rtt.c hsk200_configuration_report_cb: Error g_instance=%d, g_instance_src=%d\n", g_instance, g_instance_src);
             return;
         }
-        if ((buf[1]==0) && (buf[2]==23)) {	// key map
+        if ((buf[1]==0) && (buf[2]==23)) {  // key map
             memcpy(hsk200_keymap[g_instance_src-1], buf+6, HSK200_N_KEY/8);
             hsk200_keymap_report_check(NULL);
         }
-        else if ((buf[1]==0) && (buf[2]>=25) && (buf[2]<57)) {	// IR macro
+        else if ((buf[1]==0) && (buf[2]>=25) && (buf[2]<57)) {  // IR macro
             addr = (buf[2] - 25)*4;
             if ((addr + size) > (unsigned char)sizeof(ir_macro))
                 size = sizeof(ir_macro) - addr;
@@ -1190,7 +1191,7 @@ void hsk200_configuration_report_cb(int src, void * payload, int len)
             memset(ir_macro_flag+addr, 0xff, size);
             hsk200_macro_report_check(NULL);
         }
-        else if ((buf[1]==0) && (buf[2]==21)) {	// current key
+        else if ((buf[1]==0) && (buf[2]==21)) { // current key
             g_cur_key = 0;
             for (i=0; i<(buf[5]&0x7); i++) {
                 g_cur_key <<= 8;
@@ -1200,14 +1201,14 @@ void hsk200_configuration_report_cb(int src, void * payload, int len)
                 hsk200_keymap_flag[g_instance-1][g_cur_key] = 0x1;
             hsk200_key_data_report_check(NULL);
         }
-        else if ((buf[1]==0) && (buf[2]==1)) {	// key data
+        else if ((buf[1]==0) && (buf[2]==1)) {  // key data
             if (hsk200_keymap_flag[g_instance-1][g_cur_key] != 0x1)
                 return;
             memcpy(&hsk200_database[g_instance-1][g_cur_key][0], buf+6, size);
             hsk200_keymap_flag[g_instance-1][g_cur_key] |= 0x2;
             hsk200_key_data_report_check(NULL);
         }
-        else if ((buf[1]==0) && (buf[2]==11)) {	// key data
+        else if ((buf[1]==0) && (buf[2]==11)) { // key data
             if (hsk200_keymap_flag[g_instance-1][g_cur_key] != 0x3)
                 return;
             memcpy(&hsk200_database[g_instance-1][g_cur_key][40], buf+6, size);
@@ -1397,7 +1398,7 @@ void hsk200_set_key_finished(void * data, int txStatus)
         hsk200_keymap_flag[g_instance-1][g_cur_key] = 0x1;
     }
     //else {
-    //	hsk200_key_data_report_check(NULL);
+    //  hsk200_key_data_report_check(NULL);
     //}
     hsk200_key_data_report_check(NULL);
 }
@@ -1468,7 +1469,7 @@ void hsk200_keymap_report_check(void * data)
                 break;
             }
         }
-        if (j==HSK200_N_KEY/8) {	// no key found (all 0xff)
+        if (j==HSK200_N_KEY/8) {    // no key found (all 0xff)
             g_instance = i+1;
             if (send_data_fin)
                 zwavecmd_configuration_bulk_get(hsk200_node_id, 23, HSK200_N_KEY/8);
@@ -2722,8 +2723,8 @@ int zwave_init(void)
         server_addr.sin_family=AF_INET;
         server_addr.sin_port=htons(1001);
         server_addr.sin_addr=*((struct in_addr *)host->h_addr);
-        //	int ret_val = SetSocketBlockingEnabled(zwavefd, 0);
-        //	printf("blocking or not? %d\n", ret_val);
+        //  int ret_val = SetSocketBlockingEnabled(zwavefd, 0);
+        //  printf("blocking or not? %d\n", ret_val);
 
         if(connect(zwavefd,(struct sockaddr *)(&server_addr),sizeof(struct sockaddr)) < 0) {
             perror("ERROR:rtt.c zwave_init: connect\n");
@@ -2768,7 +2769,7 @@ int zwave_init(void)
     else {
         clear_serial_api_queue();
         if(verbose) printf("INFO:rtt.c zwave_init: ready.\n");
-        //usleep(100*1000);	// wait z-wave ready after reset
+        //usleep(100*1000); // wait z-wave ready after reset
     }
     PyZwave_print_debug_info = PyZwave_print_debug_info_old;
 
@@ -2885,7 +2886,7 @@ void dumpInitData(void)
         if(printed) printf("\n\t");
     }
     printf("\n");
-    init_data_buf[0]=init_data_buf_ptr-1;	//init_data_buf[0] stores the number of nodes(including self) in zwave
+    init_data_buf[0]=init_data_buf_ptr-1;   //init_data_buf[0] stores the number of nodes(including self) in zwave
 }
 void dumpBasicType(int bt)
 {
@@ -3024,9 +3025,9 @@ void dumpNodeProtocolInfo(void)
             printf("\toptional function support\n");
         dumpBasicType(zdata[3]);
         dumpGenericAndSpecificType(zdata[4],zdata[5]);
-		pyzwave_basic = zdata[3];
-		pyzwave_generic = zdata[4];
-		pyzwave_specific = zdata[5];
+        pyzwave_basic = zdata[3];
+        pyzwave_generic = zdata[4];
+        pyzwave_specific = zdata[5];
     }
 }
 
@@ -3047,7 +3048,7 @@ void ApplicationCommandHandler(unsigned char * buf, int len)
 {
     int rxStatus = buf[0];
     int src      = buf[1];
-    //	int cmd_len  = buf[2];
+    //  int cmd_len  = buf[2];
     int class    = buf[3];
     int cmd      = buf[4];
     int delay;
@@ -3226,31 +3227,31 @@ void zwave_check_state(unsigned char c)
             break;
         case WAIT_LEN:
             zlen = c-2;
-            //		printf("WAIT_LEN======TMPNR====== %d\n", zlen);
+            //      printf("WAIT_LEN======TMPNR====== %d\n", zlen);
             cksum = 0xff;
             cksum ^= c;
             zstate = WAIT_TYPE;
             break;
         case WAIT_TYPE:
             if (c == 1)
-                zstate = WAIT_COMMAND;	// response
+                zstate = WAIT_COMMAND;  // response
             else if (c == 0)
-                zstate = WAIT_REQUEST;	// request
+                zstate = WAIT_REQUEST;  // request
             cksum ^= c;
             break;
-        case WAIT_COMMAND:	// get the response command
+        case WAIT_COMMAND:  // get the response command
             curcmd = c;
             zstate = WAIT_DATA;
             zdataptr=0;
             cksum ^= c;
             break;
-        case WAIT_REQUEST:	// get the request command
+        case WAIT_REQUEST:  // get the request command
             curcmd = c;
             zstate = WAIT_EOF;
             zdataptr = 0;
             cksum ^= c;
             break;
-        case WAIT_DATA:		// get the data of response
+        case WAIT_DATA:     // get the data of response
             zlen--;
             zdata[zdataptr] = c;
             zdataptr++;
@@ -3275,7 +3276,7 @@ void zwave_check_state(unsigned char c)
                     dumpRouteInformation();
                     execute_senddata_ack_callback(TRANSMIT_COMPLETE_OK);
                 } else if (curcmd == ZW_SendData) {
-                    if (zdata[0] == 0) {	// zdata[0] is RetVal
+                    if (zdata[0] == 0) {    // zdata[0] is RetVal
                         printf("INFO:rtt.c zwave_check_state: queue overflow\n");
                         usleep(10000);
                     } else if (zdata[0] == 1) {
@@ -3314,16 +3315,16 @@ void zwave_check_state(unsigned char c)
                 cksum ^= c;
             }
             break;
-        case WAIT_EOF:		// get the data of request
+        case WAIT_EOF:      // get the data of request
             zlen--;
             zdata[zdataptr] = c;
             zdataptr++;
             if (zlen == 0) {
                 write(zwavefd, &ack,1);
                 zstate = WAIT_SOF;
-                if (curcmd == 4) {	// ApplicationCommandHandler
+                if (curcmd == 4) {  // ApplicationCommandHandler
                     ApplicationCommandHandler(zdata, zdataptr);
-                } else if (curcmd == 0x49) {	// ApplicationSlaveUpdate
+                } else if (curcmd == 0x49) {    // ApplicationSlaveUpdate
                     if (PyZwave_print_debug_info) {
                         printf("DEBUG:rtt.c zwave_check_state: ApplicationSlaveUpdate: ");
                         printf("  rxStatus = %02x", zdata[0]);
@@ -3487,15 +3488,15 @@ void usage(void)
     printf("    exit_time <t>: End this utility after <t> seconds.\n");
     printf("    returnroute: Set the RETURNROUTE option when we send data\n");
     printf("    basic set <id> <val> |get <id>\n");
-    printf("	    Send BASIC_SET or BASIC_GET command\n");
+    printf("        Send BASIC_SET or BASIC_GET command\n");
     printf("    multilevel set <id> <val>| get <id>\n");
-    printf("	    Send Multilevel Switch command\n");
+    printf("        Send Multilevel Switch command\n");
     printf("    start_level_change <id> <is_down>\n");
-    printf("	    Start to dim with specified direction\n");
+    printf("        Start to dim with specified direction\n");
     printf("    stop_level_change <id>\n");
-    printf("	    Stop to dimming\n");
+    printf("        Stop to dimming\n");
     printf("    scene set <id> <button> <scene id> | get <id> <button>\n");
-    printf(" 	    Send SCENE_CONF command\n");
+    printf("        Send SCENE_CONF command\n");
     printf("    association set <id> <group> <dest id>\n");
     printf("        Add <dest id> into <group>-th group\n");
     printf("    association get <id> <group>\n");
@@ -3503,9 +3504,9 @@ void usage(void)
     printf("    association group_get <id>\n");
     printf("        Return the number of supported group\n");
     printf("    association remove <id> <group> <dest id>\n");
-    printf("	    Remove the <dest id> from <group>-th group\n");
+    printf("        Remove the <dest id> from <group>-th group\n");
     printf("    manufacture get <id>\n");
-    printf("	    Get manufacture ID\n");
+    printf("        Get manufacture ID\n");
     printf("    configuration get <id> <no>\n");
     printf("        Get parameter #<no>\n");
     printf("    configuration set <id> <no> <value>\n");
@@ -3513,19 +3514,19 @@ void usage(void)
     printf("    configuration dump <id> <num>\n");
     printf("        Dump parameters from 1 to <num>\n");
     printf("    controller_change [start | stop]\n");
-    printf("	    Add a controller and shift the primary role to the new controller\n");
+    printf("        Add a controller and shift the primary role to the new controller\n");
     printf("    network add\n");
-    printf("	    Enter the learning mode to learn a new device\n");
+    printf("        Enter the learning mode to learn a new device\n");
     printf("    network addhigh\n");
-    printf("	    The same as 'network add'. However, the RF signal in the full power instead of reduced power\n");
+    printf("        The same as 'network add'. However, the RF signal in the full power instead of reduced power\n");
     printf("    network update\n");
-    printf("	    Refresh the routing table in the SUC\n");
+    printf("        Refresh the routing table in the SUC\n");
     printf("    network stop\n");
-    printf("   	    Leave the learning mode\n");
+    printf("        Leave the learning mode\n");
     printf("    network delete\n");
-    printf("	    Enter the learning mode to delete a device.\n");
+    printf("        Enter the learning mode to delete a device.\n");
     printf("    nodeupdate <id>\n");
-    printf("	    Update the routing table for node <id>\n");
+    printf("        Update the routing table for node <id>\n");
     printf("    simpleav set <id> <itemid> <key> <seq>\n");
     printf("        Send IR command <key> for device <dev>\n");
     printf("    simpleav learn <key>\n");
@@ -3539,7 +3540,7 @@ void usage(void)
     printf("    wakeup set <id> <v> <n>\n");
     printf("        set the wakeup notification sent to <n> at interval of <v>\n");
     printf("    wakeup nomore <id>\n");
-    printf("	    tell the node <id> that it can enter the sleep mode now\n");
+    printf("        tell the node <id> that it can enter the sleep mode now\n");
     printf("    battery get <id>\n");
     printf("        Get battery level of node <id>\n");
     printf("    controller type\n");
@@ -3620,7 +3621,7 @@ void do_test(int id,int v,int loop)
         }
         printf("INFO:rtt.c do_test: succ=%d fail=%d\n", succ,fail);
     }
-    if ((succ*100/(succ+fail)) >= 90) {	// > 90% successful
+    if ((succ*100/(succ+fail)) >= 90) { // > 90% successful
         main_ret = 0;
     }
     else {
@@ -4267,14 +4268,16 @@ int PyZwave_receiveByte(int wait_msec) {
     n = select(zwavefd+1,&rs,NULL,NULL,&to);
     if (n == 0) {
         return 0;
-    }
-    else if (n < 0) {
+    } else if (n < 0) {
         printf("ERROR:rtt.c PyZwave_receiveByte: select() error\n");
         exit(1);
     }
     n = (int)read(zwavefd, &c,1);
-    if (n != 1) {
-        printf("ERROR:rtt.c PyZwave_receiveByte: error! n=%d\n", n);
+    if (n == 0) {
+        printf("WARNING:rtt.c PyZwave_receiveByte: read no byte\n");
+        return 0;
+    } else if (n == -1) {
+        printf("ERROR:rtt.c PyZwave_receiveByte: error! %s\n", strerror(errno));
         exit(1);
     }
     zwave_check_state(c);
@@ -4469,7 +4472,7 @@ void PyZwave_check_all_remove_fail(void){
 
     for(i=2;i<=init_data_buf[0];i++) {
         int node_id = (unsigned)init_data_buf[i];
-    	if(PyZwave_is_node_fail(node_id)) {
+        if(PyZwave_is_node_fail(node_id)) {
             PyZwave_remove_fail(node_id);
             if(verbose) printf("INFO:rtt.c PyZwave_is_node_fail ZW_removeFailed for node id %d\n",init_data_buf[i]);
         }
@@ -4625,7 +4628,7 @@ int main(int argc, char *argv[])
             printf("ERROR:rtt.c main: Z-Wave device file is closed !\n");
             break;
         }
-        else if (n == 0) {	// timeout
+        else if (n == 0) {  // timeout
             if (nowait)
                 exit(main_ret);
 
