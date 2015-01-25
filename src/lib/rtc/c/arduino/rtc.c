@@ -934,10 +934,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_STD(R25, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1)+1);
             break;
             case JVM_SADD:
-                emit_POP(R22);
-                emit_POP(R23);
                 emit_POP(R24);
                 emit_POP(R25);
+                emit_POP(R22);
+                emit_POP(R23);
                 emit_ADD(R24, R22);
                 emit_ADC(R25, R23);
                 emit_PUSH(R25);
