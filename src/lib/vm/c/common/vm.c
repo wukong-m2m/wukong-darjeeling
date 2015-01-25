@@ -95,6 +95,9 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 	obj = dj_vm_createSysLibObject(vm, BASE_CDEF_java_lang_OutOfMemoryError);
 	vm_mem_setPanicExceptionObject(obj);
 
+#ifdef AVRORA
+	avroraPrintStr("DJ Go!\n\r");
+#endif AVRORA
 	DEBUG_LOG(true, "DJ Go!\n");
 
 	// start the main execution loop

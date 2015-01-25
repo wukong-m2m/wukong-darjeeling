@@ -190,6 +190,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     for (uint16_t pc=0; pc<method_length; pc++) {
         uint8_t opcode = dj_di_getU8(code + pc);
         DEBUG_LOG(DBG_RTCTRACE, "[rtc] JVM opcode %d (pc=%d, method length=%d)\n", opcode, pc, method_length);
+#ifdef AVRORA
+        avroraRTCTraceJavaOpcode(opcode);
+#endif
         switch (opcode) {
             case JVM_NOP:
             break;
@@ -2024,10 +2027,21 @@ void rtc_compile_lib(dj_infusion *infusion) {
         dj_di_pointer method_address = wkreprog_get_raw_position() + rtc_branch_table_size(methodimpl);
         rtc_method_start_addresses[i] = (native_method_function_t)(method_address/2);
 
+#ifdef AVRORA
+    avroraRTCTraceStartMethod(i, wkreprog_get_raw_position());
+#endif
+
         rtc_compile_method(methodimpl, infusion);
+
+#ifdef AVRORA
+    rtc_flush(); // Don't really need to do this unless we want to print the contents of Flash memory at this point.
+    dj_di_pointer tmp_address = wkreprog_get_raw_position();
+    wkreprog_close();
+    wkreprog_open_raw(tmp_address);
+    avroraRTCTraceEndMethod(wkreprog_get_raw_position());
+#endif
     }
 
-    wkreprog_close();
 
     // At this point, the addresses in the rtc_method_start_addresses are 0
     // for the native methods, while the handler table is 0 for the java methods.
