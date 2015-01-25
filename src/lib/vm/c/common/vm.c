@@ -97,7 +97,7 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 
 #ifdef AVRORA
 	avroraPrintStr("DJ Go!\n\r");
-#endif AVRORA
+#endif
 	DEBUG_LOG(true, "DJ Go!\n");
 
 	// start the main execution loop

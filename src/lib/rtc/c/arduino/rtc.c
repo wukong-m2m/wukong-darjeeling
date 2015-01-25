@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include "types.h"
 #include "panic.h"
 #include "debug.h"
@@ -11,9 +12,9 @@
 #include "opcodes.h"
 #include "rtc.h"
 #include "rtc_instructions.h"
+#include "rtc_optimiser.h"
 #include <avr/pgmspace.h>
 #include <avr/boot.h>
-#include <stddef.h>
 
 // PUSHREF
 #define emit_x_PUSHREF(reg)              emit_ST_XINC(reg)
@@ -84,6 +85,9 @@ uint16_t *rtc_codebuffer_position; // A pointer to somewhere within the buffer
 
 
 void rtc_flush() {
+    // Try to optimise the code currently in the buffer. This may affect rtc_codebuffer_position if we're able to compact the code.
+    rtc_optimise(rtc_codebuffer, &rtc_codebuffer_position);
+
     uint8_t *instructiondata = (uint8_t *)rtc_codebuffer;
     uint16_t count = rtc_codebuffer_position - rtc_codebuffer;
 #ifdef DARJEELING_DEBUG
