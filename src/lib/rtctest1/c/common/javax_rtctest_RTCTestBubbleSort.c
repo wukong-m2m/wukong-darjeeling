@@ -3,15 +3,12 @@
 
 // Split into separate function to avoid the compiler just optimising away the whole test.
 void javax_rtctest_RTCTestBubbleSort_void_test_bubblesort_native2(uint16_t NUMNUMBERS, uint16_t numbers[]) {
-	// Fill the array
-	for (int i=0; i<NUMNUMBERS; i++)
-		numbers[i] = (NUMNUMBERS - 1 - i);
-
 	// Then sort it
-	for (short i=0; i<NUMNUMBERS; i++) {
-		for (short j=0; j<NUMNUMBERS-i-1; j++) {
+	for (uint16_t i=0; i<NUMNUMBERS; i++) {
+		// uint16_t x=NUMNUMBERS-i-1; // Somehow this makes it a little slower at -Os. I expected no difference.
+		for (uint16_t j=0; j<NUMNUMBERS-i-1; j++) {
 			if (numbers[j]>numbers[j+1]) {
-				short temp = numbers[j];
+				uint16_t temp = numbers[j];
 				numbers[j] = numbers[j+1];
 				numbers[j+1] = temp;
 			}
@@ -22,6 +19,10 @@ void javax_rtctest_RTCTestBubbleSort_void_test_bubblesort_native2(uint16_t NUMNU
 void javax_rtctest_RTCTestBubbleSort_void_test_bubblesort_native() {
 	uint16_t NUMNUMBERS = 256;
 	uint16_t numbers[256];
+
+	// Fill the array
+	for (uint16_t i=0; i<NUMNUMBERS; i++)
+		numbers[i] = (NUMNUMBERS - 1 - i);
 
 	javax_darjeeling_Stopwatch_void_resetAndStart();
 
