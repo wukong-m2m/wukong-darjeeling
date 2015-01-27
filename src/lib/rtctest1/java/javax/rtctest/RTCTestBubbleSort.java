@@ -26,10 +26,11 @@ public class RTCTestBubbleSort {
 			int x=(NUMNUMBERS-i-1); // This doesn't get optimised the way I expected it would. Without this extra variable, it will calculate NUMNUMBERS-i-1 on each interation of the inner loop! (speedup 14.7M -> 14.2M cycles)
 			for (int j=0; j<x; j++) {
 				int j_plus_one = j+1; // Same goes for "j+1"
-				if (numbers[j]>numbers[j_plus_one]) {
-					short temp = numbers[j];
-					numbers[j] = numbers[j_plus_one];
-					numbers[j_plus_one] = temp;
+				short val_at_j = numbers[j];
+				short val_at_j_plus_one = numbers[j_plus_one];
+				if (val_at_j>val_at_j_plus_one) {
+					numbers[j] = val_at_j_plus_one;
+					numbers[j_plus_one] = val_at_j;
 				}
 			}
 		}
