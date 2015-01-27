@@ -22,14 +22,14 @@ public class RTCTestBubbleSort {
 	public static void do_bubblesort(short[] numbers) {
 		Stopwatch.resetAndStart();
 
-
-		for (short i=0; i<(short)NUMNUMBERS; i++) {
-			short x=(short)(NUMNUMBERS-i-1); // This doesn't get optimised the way I expected it would. Without this extra variable, it will calculate NUMNUMBERS-i-1 on each interation of the inner loop! (speedup 14.7M -> 14.2M cycles)
-			for (short j=0; j<x; j++) {
-				if (numbers[j]>numbers[j+1]) {
+		for (int i=0; i<NUMNUMBERS; i++) {
+			int x=(NUMNUMBERS-i-1); // This doesn't get optimised the way I expected it would. Without this extra variable, it will calculate NUMNUMBERS-i-1 on each interation of the inner loop! (speedup 14.7M -> 14.2M cycles)
+			for (int j=0; j<x; j++) {
+				int j_plus_one = j+1; // Same goes for "j+1"
+				if (numbers[j]>numbers[j_plus_one]) {
 					short temp = numbers[j];
-					numbers[j] = numbers[j+1];
-					numbers[((short)(j+1))] = temp;
+					numbers[j] = numbers[j_plus_one];
+					numbers[j_plus_one] = temp;
 				}
 			}
 		}
@@ -37,9 +37,9 @@ public class RTCTestBubbleSort {
 		Stopwatch.measure();
 	}
 
-	public static void swap(pair obj) {
-		short tmp = obj.a;
-		obj.a = obj.b;
-		obj.b = tmp;
-	}
+	// public static void swap(pair obj) {
+	// 	short tmp = obj.a;
+	// 	obj.a = obj.b;
+	// 	obj.b = tmp;
+	// }
 }
