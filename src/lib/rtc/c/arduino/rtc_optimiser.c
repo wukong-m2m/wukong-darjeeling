@@ -4,6 +4,7 @@
 
 #define IS_PUSH(x)			(((x) & 0xFE0F) == OPCODE_PUSH)
 #define IS_POP(x)			(((x) & 0xFE0F) == OPCODE_POP)
+#define IS_MOV(x)           (((x) & 0xFC00) == OPCODE_MOV)
 
 // 0000 000d dddd 0000
 #define GET_1REG_OPERAND(x)		(((x) & 0x01F0) >> 4)
@@ -225,16 +226,16 @@ void rtc_optimise(uint16_t *buffer, uint16_t **code_end) {
 
     do {
         found = false;
-        uint16_t *push_finger = buffer;
+        uint16_t *finger = buffer;
 
         // Go look for a PUSH
-        while (push_finger < *code_end) {
-            uint16_t push_finger_instr = *push_finger;
+        while (finger < *code_end) {
+            uint16_t finger_instr = *finger;
 
-            if (IS_PUSH(push_finger_instr)) {
+            if (IS_PUSH(finger_instr)) {
                 // We found a push, now look for the corresponding POP
                 uint8_t extra_stack_depth = 0;
-                uint16_t *pop_finger = push_finger+1;
+                uint16_t *pop_finger = finger+1;
 
                 // Go look for a PUSH
                 while (pop_finger < *code_end) {
@@ -251,7 +252,7 @@ void rtc_optimise(uint16_t *buffer, uint16_t **code_end) {
                             extra_stack_depth--;
                         } else {
                             // Corresponding POP found!
-                            if (rtc_maybe_optimise_push_pop(push_finger, pop_finger, code_end)) {
+                            if (rtc_maybe_optimise_push_pop(finger, pop_finger, code_end)) {
                                 found = true;
                                 break; // Break after optimising one instruction and start over again.
                             }
@@ -261,11 +262,40 @@ void rtc_optimise(uint16_t *buffer, uint16_t **code_end) {
                     pop_finger += is_double_word_instruction(pop_finger_instr) ? 2 : 1;
                 }
             }
+            // 2nd optimisation: MOV x, y; MOV x+1, y+1 -> MOVW x, y
+            if (IS_MOV(finger_instr)) {
+                if (finger+1 < *code_end) { // Check if there's another instruction in the buffer
+                    uint16_t finger_next_instr = *(finger+1);
+                    if (IS_MOV(finger_next_instr)) { // Two MOVs, now check the operands
+                        uint8_t src1 = GET_SRC_REG_OPERAND(finger_instr);
+                        uint8_t src2 = GET_SRC_REG_OPERAND(finger_next_instr);
+                        uint8_t dest1 = GET_DEST_REG_OPERAND(finger_instr);
+                        uint8_t dest2 = GET_DEST_REG_OPERAND(finger_next_instr);
+
+                        if (src1 % 2 == 0 && dest1 % 2 == 0
+                                && src1+1 == src2
+                                && dest1+1 == dest2) {
+                            // First instr operands are even, second operands are +1 from first. (ex: MOV r18, r20; MOV r19, r21  =>  MOVW r18, r20)
+                            rtc_optimise_drop_instruction(finger+1, code_end); // Drop the second MOV
+                            *finger = asm_MOVW(dest1, src1); // Change the first MOV to a MOVW to move both registers in 1 instruction
+                            found = true;
+                        } else if (
+                            src2 % 2 == 0 && dest2 % 2 == 0
+                                && src2+1 == src1
+                                && dest2+1 == dest1) {
+                            // Second instr operands are even, first operands are +1 from second. (ex: MOV r19, r21; MOV r18, r20  =>  MOVW r18, r20)
+                            rtc_optimise_drop_instruction(finger+1, code_end); // Drop the second MOV
+                            *finger = asm_MOVW(dest2, src2); // Change the first MOV to a MOVW to move both registers in 1 instruction
+                            found = true;
+                        }
+                    }
+                }
+            }
             if (found) {
                 break; // Break after optimising one instruction and start over again.
             }
 
-            push_finger += is_double_word_instruction(push_finger_instr) ? 2 : 1;
+            finger += is_double_word_instruction(finger_instr) ? 2 : 1;
         }
 
 
