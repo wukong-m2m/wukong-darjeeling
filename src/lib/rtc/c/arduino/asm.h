@@ -168,6 +168,10 @@
                                          + ((destreg) << 4) \
                                          + makeINaddress(address))
 
+// INC                                  1001 010d dddd 0011, with d=dest register
+#define OPCODE_INC                      0x9403
+#define asm_INC(reg)                    opcodeWithSingleRegOperand(OPCODE_INC, reg)
+
 // LD Rd, -X                            1001 000d dddd 1110, with d=dest register
 #define OPCODE_LD_DECX                  0x900E
 #define asm_LD_DECX(reg)                opcodeWithSingleRegOperand(OPCODE_LD_DECX, reg)
@@ -333,6 +337,7 @@
 #define emit_EOR(destreg, srcreg)       emit ( asm_EOR(destreg, srcreg) )
 #define emit_IJMP()                     emit ( asm_IJMP()  )
 #define emit_IN(destreg, address)       emit ( asm_IN(destreg, address) )
+#define emit_INC(reg)                   emit ( asm_INC(reg) )
 #define emit_LD_DECX(reg)               emit ( asm_LD_DECX(reg) )
 #define emit_LD_XINC(reg)               emit ( asm_LD_XINC(reg) )
 #define emit_LD_Z(reg)                  emit ( asm_LD_Z(reg) )

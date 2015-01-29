@@ -80,6 +80,7 @@ bool instruction_uses_target_reg(uint16_t instruction, uint16_t target_reg) {
     if (       (instruction & ONE_REG_OPERAND_MASK) == OPCODE_ASR          // 1001 010d dddd 0101
             || (instruction & ONE_REG_OPERAND_MASK) == OPCODE_COM          // 1001 010d dddd 0000
             || (instruction & ONE_REG_OPERAND_MASK) == OPCODE_DEC          // 1001 010d dddd 1010
+            || (instruction & ONE_REG_OPERAND_MASK) == OPCODE_INC          // 1001 010d dddd 0011
             || (instruction & ONE_REG_OPERAND_MASK) == OPCODE_LD_DECX      // 1001 000d dddd 1110
             || (instruction & ONE_REG_OPERAND_MASK) == OPCODE_LD_XINC      // 1001 000d dddd 1101
             || (instruction & ONE_REG_OPERAND_MASK) == OPCODE_LD_Z         // 1000 000d dddd 0000
@@ -297,8 +298,6 @@ void rtc_optimise(uint16_t *buffer, uint16_t **code_end) {
 
             finger += is_double_word_instruction(finger_instr) ? 2 : 1;
         }
-
-
     } while (found);
 }
 

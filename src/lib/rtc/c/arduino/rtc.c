@@ -1305,27 +1305,46 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 } else {
                     jvm_operand_signed_word = (int16_t)(((uint16_t)dj_di_getU8(code + ++pc) << 8) + dj_di_getU8(code + ++pc));
                 }
-                emit_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0));
-                emit_LDD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1);
-                emit_LDD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2);
-                emit_LDD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3);
-                if (jvm_operand_signed_word > 0) {
-                    // Positive operand
-                    emit_SUBI(R22, -(jvm_operand_signed_word & 0xFF));
-                    emit_SBCI(R23, -((jvm_operand_signed_word >> 8) & 0xFF)-1);
-                    emit_SBCI(R24, -1);
-                    emit_SBCI(R25, -1);
+                if (jvm_operand_signed_word == 1) {
+                    // Special case
+                    emit_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0));
+                    emit_INC(R22);
+                    emit_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0));
+                    emit_BRNE(22);
+                    emit_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1);
+                    emit_INC(R22);
+                    emit_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1);
+                    emit_BRNE(14);
+                    emit_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2);
+                    emit_INC(R22);
+                    emit_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2);
+                    emit_BRNE(6);
+                    emit_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3);
+                    emit_INC(R22);
+                    emit_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3);
                 } else {
-                    // Negative operand
-                    emit_SUBI(R22, (-jvm_operand_signed_word) & 0xFF);
-                    emit_SBCI(R23, ((-jvm_operand_signed_word) >> 8) & 0xFF);
-                    emit_SBCI(R24, 0);
-                    emit_SBCI(R25, 0);
+                    emit_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0));
+                    emit_LDD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1);
+                    emit_LDD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2);
+                    emit_LDD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3);
+                    if (jvm_operand_signed_word > 0) {
+                        // Positive operand
+                        emit_SUBI(R22, -(jvm_operand_signed_word & 0xFF));
+                        emit_SBCI(R23, -((jvm_operand_signed_word >> 8) & 0xFF)-1);
+                        emit_SBCI(R24, -1);
+                        emit_SBCI(R25, -1);
+                    } else {
+                        // Negative operand
+                        emit_SUBI(R22, (-jvm_operand_signed_word) & 0xFF);
+                        emit_SBCI(R23, ((-jvm_operand_signed_word) >> 8) & 0xFF);
+                        emit_SBCI(R24, 0);
+                        emit_SBCI(R25, 0);
+                    }
+                    emit_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0));
+                    emit_STD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1);
+                    emit_STD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2);
+                    emit_STD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3);
                 }
-                emit_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0));
-                emit_STD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1);
-                emit_STD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2);
-                emit_STD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3);
             break;
             case JVM_S2B:
             case JVM_S2C:
