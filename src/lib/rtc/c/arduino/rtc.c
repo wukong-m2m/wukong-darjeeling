@@ -195,7 +195,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
         uint8_t opcode = dj_di_getU8(code + pc);
         DEBUG_LOG(DBG_RTCTRACE, "[rtc] JVM opcode %d (pc=%d, method length=%d)\n", opcode, pc, method_length);
 #ifdef AVRORA
-        avroraRTCTraceJavaOpcode(opcode);
+        avroraRTCTraceDarjeelingOpcodeInProgmem(code + pc);
 #endif
         switch (opcode) {
             case JVM_NOP:
