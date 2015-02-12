@@ -231,12 +231,14 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_ICONST_4:
             case JVM_ICONST_5:
                 jvm_operand_byte0 = opcode - JVM_ICONST_0;
-                emit_LDI(R24, jvm_operand_byte0);
+                emit_LDI(R22, jvm_operand_byte0);
+                emit_LDI(R23, 0);
+                emit_LDI(R24, 0);
                 emit_LDI(R25, 0);
                 emit_PUSH(R25);
-                emit_PUSH(R25);
-                emit_PUSH(R25);
                 emit_PUSH(R24);
+                emit_PUSH(R23);
+                emit_PUSH(R22);
             break;
             case JVM_ACONST_NULL:
                 emit_LDI(R25, 0);
