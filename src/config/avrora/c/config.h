@@ -25,6 +25,7 @@
 
 #define AVRORA
 #include <stdint.h>
+#include "/Users/niels/git/avrora/src/avrora/monitors/AvroraTrace.h"
 #include "/Users/niels/git/avrora/src/avrora/monitors/AvroraPrint.h"
 #include "/Users/niels/git/avrora/src/avrora/monitors/AvroraTimer.h"
 #include "/Users/niels/git/avrora/src/avrora/monitors/AvroraRTC.h"

@@ -1056,24 +1056,48 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 			DEBUG_LOG(DBG_RTC, "[rtc] starting rtc compiled method %i at %p with return type %i\n", methodImplId.entity_id, handler, rettype);
 			switch (rettype) {
 				case JTID_VOID:
+#ifdef AVRORA
+    avroraTraceEnable();
+#endif
 					((native_void_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
+#ifdef AVRORA
+    avroraTraceDisable();
+#endif
 					returnFromMethod();
 					DEBUG_LOG(DBG_RTC, "[rtc] void call returned (void)\n");
 					break;
 				case JTID_SHORT:
+#ifdef AVRORA
+    avroraTraceEnable();
+#endif
 					ret16 = ((native_16bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
+#ifdef AVRORA
+    avroraTraceDisable();
+#endif
 					returnFromMethod();
 					pushShort(ret16);
 					DEBUG_LOG(DBG_RTC, "[rtc] 16b call returned %d\n", ret16);
 					break;
 				case JTID_INT:
+#ifdef AVRORA
+    avroraTraceEnable();
+#endif
 					ret32 = ((native_32bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
+#ifdef AVRORA
+    avroraTraceDisable();
+#endif
 					returnFromMethod();
 					pushInt(ret32);
 					DEBUG_LOG(DBG_RTC, "[rtc] 32b call returned %ld\n", ret32);
 					break;
 				case JTID_REF:
+#ifdef AVRORA
+    avroraTraceEnable();
+#endif
 					retref = ((native_ref_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
+#ifdef AVRORA
+    avroraTraceDisable();
+#endif
 					returnFromMethod();
 					pushRef(retref);
 					DEBUG_LOG(DBG_RTC, "[rtc] ref call returned %p\n", (void*)retref);

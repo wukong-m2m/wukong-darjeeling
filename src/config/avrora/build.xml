@@ -26,8 +26,34 @@
 
 	<target name="avrora">
 		<exec executable="java">
-			<arg line="-jar /Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar -monitors=c-timer,rtc,c-print -single -mcu=atmega128 darjeeling.elf"/>
-			<!-- <arg line="-jar /Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar -monitors=calls,c-timer,c-print,stack -single -mcu=atmega128 -verbose=loader,atmel.flash darjeeling.elf"/> -->
+			<arg line="
+				-jar /Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar
+				-monitors=c-timer,rtc,c-print -single -mcu=atmega128 darjeeling.elf"/>
+		</exec>
+	</target>
+
+	<target name="avrora-trace">
+		<exec executable="java">
+			<arg line="
+				-jar /Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar
+				-monitors=c-timer,rtc,c-print,trace -trace-only-when-enabled=true -single -mcu=atmega128 darjeeling.elf"/>
+		</exec>
+	</target>
+
+	<target name="avrora-gdb">
+		<exec executable="java">
+			<arg line="
+				-jar /Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar
+				-monitors=c-timer,rtc,gdb,c-print -port=4242 -single -mcu=atmega128 darjeeling.elf"/>
+		</exec>
+	</target>
+
+	<target name="avrora-jdb">
+		<exec executable="java">
+			<arg line="
+				-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n
+				-jar /Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar
+				-monitors=c-timer,rtc,c-print -single -mcu=atmega128 darjeeling.elf"/>
 		</exec>
 	</target>
 </project>
