@@ -102,7 +102,13 @@ char name[16];
 static int callDepth = 0;
 #endif
 
-
+#ifdef AVRORA
+#define AVRORATRACE_DISABLE()    avroraTraceDisable();
+#define AVRORATRACE_ENABLE()     avroraTraceEnable();
+#else
+#define AVRORATRACE_DISABLE()
+#define AVRORATRACE_ENABLE()
+#endif
 
 
 //if it is tossim we need a bunch of getter setters,
@@ -1056,48 +1062,32 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 			DEBUG_LOG(DBG_RTC, "[rtc] starting rtc compiled method %i at %p with return type %i\n", methodImplId.entity_id, handler, rettype);
 			switch (rettype) {
 				case JTID_VOID:
-#ifdef AVRORA
-    avroraTraceEnable();
-#endif
+					AVRORATRACE_ENABLE();
 					((native_void_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
-#ifdef AVRORA
-    avroraTraceDisable();
-#endif
+					AVRORATRACE_DISABLE();
 					returnFromMethod();
 					DEBUG_LOG(DBG_RTC, "[rtc] void call returned (void)\n");
 					break;
 				case JTID_SHORT:
-#ifdef AVRORA
-    avroraTraceEnable();
-#endif
+					AVRORATRACE_ENABLE();
 					ret16 = ((native_16bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
-#ifdef AVRORA
-    avroraTraceDisable();
-#endif
+					AVRORATRACE_DISABLE();
 					returnFromMethod();
 					pushShort(ret16);
 					DEBUG_LOG(DBG_RTC, "[rtc] 16b call returned %d\n", ret16);
 					break;
 				case JTID_INT:
-#ifdef AVRORA
-    avroraTraceEnable();
-#endif
+					AVRORATRACE_ENABLE();
 					ret32 = ((native_32bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
-#ifdef AVRORA
-    avroraTraceDisable();
-#endif
+					AVRORATRACE_DISABLE();
 					returnFromMethod();
 					pushInt(ret32);
 					DEBUG_LOG(DBG_RTC, "[rtc] 32b call returned %ld\n", ret32);
 					break;
 				case JTID_REF:
-#ifdef AVRORA
-    avroraTraceEnable();
-#endif
+					AVRORATRACE_ENABLE();
 					retref = ((native_ref_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
-#ifdef AVRORA
-    avroraTraceDisable();
-#endif
+					AVRORATRACE_DISABLE();
 					returnFromMethod();
 					pushRef(retref);
 					DEBUG_LOG(DBG_RTC, "[rtc] ref call returned %p\n", (void*)retref);
