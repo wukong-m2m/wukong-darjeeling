@@ -328,7 +328,8 @@
 #define emit_BRLT(offset)               emit ( asm_BRLT(offset) )
 #define emit_BRNE(offset)               emit ( asm_BRNE(offset) )
 #define emit_BRPL(offset)               emit ( asm_BRPL(offset) )
-#define emit_2_CALL(address)            emit2( asm_CALL1(address) , asm_CALL2(address) )
+// Flush the code buffer before emitting a CALL to prevent PUSH/POP pairs being optimised across a CALL instruction.
+#define emit_2_CALL(address)            { rtc_flush(); emit2( asm_CALL1(address) , asm_CALL2(address) ); }
 #define emit_CLR(destreg)               emit ( asm_CLR(destreg) )
 #define emit_COM(reg)                   emit ( asm_COM(reg) )
 #define emit_CP(destreg, srcreg)        emit ( asm_CP(destreg, srcreg) )

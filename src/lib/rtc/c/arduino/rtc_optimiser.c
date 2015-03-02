@@ -2,8 +2,11 @@
 #include "panic.h"
 #include "asm.h"
 
-#define IS_PUSH(x)			(((x) & 0xFE0F) == OPCODE_PUSH)
-#define IS_POP(x)			(((x) & 0xFE0F) == OPCODE_POP)
+// ST_XINC and LD_DECX are basically single operand opcodes just like PUSH/POP,
+// so the same optimisation code will work for both stacks as long as we respect
+// the proper sequence of POPs for instructions that get operands from both stacks.
+#define IS_PUSH(x)          ((((x) & 0xFE0F) == OPCODE_PUSH) || (((x) & 0xFE0F) == OPCODE_ST_XINC))
+#define IS_POP(x)           ((((x) & 0xFE0F) == OPCODE_POP) || (((x) & 0xFE0F) == OPCODE_LD_DECX))
 #define IS_MOV(x)           (((x) & 0xFC00) == OPCODE_MOV)
 
 // 0000 000d dddd 0000
