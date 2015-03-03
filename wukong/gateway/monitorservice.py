@@ -13,6 +13,7 @@ import datetime
 import date
 import gtwconfig as CONFIG
 import logging
+from pserverclient import ProgressionServerClient
 logging.basicConfig(level=CONFIG.LOG_LEVEL)
 logger = logging.getLogger( __name__ )
 
@@ -55,6 +56,8 @@ class MonitorService(object):
             print "Please install the mongDB, pymongo module."
             sys.exit(-1)
         print "MongoDB init"
+
+        self._pserver_client = ProgressionServerClient() if CONFIG.ENABLE_PROGRESSION else None
         self._task = Queue()
 
     def handle_monitor_message(self, context, message):
@@ -67,5 +70,7 @@ class MonitorService(object):
             logging.debug(data_collection.toDocument())
             if (data_collection != None):
                 self._mongodb_client.wukong.readings.insert(ast.literal_eval(data_collection.toDocument()))
+                if CONFIG.ENABLE_PROGRESSION:
+                    self._pserver_client.send(data_collection.node_id, data_collection_port, data_collection_value)
             gevent.sleep(0)
 

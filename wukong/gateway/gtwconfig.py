@@ -34,3 +34,7 @@ TRANSPORT_DEV_ADDR = config.get('DEV_ADDR', '/dev/ttyACM0')
 TRANSPORT_DEV_TYPE = config.get('GATEWAY_TYPE', 'zwave')
 # TRANSPORT_DEV_TYPE = config.get('GATEWAY_TYPE', 'zigbee')
 # TRANSPORT_DEV_TYPE = config.get('GATEWAY_TYPE', 'udp')
+
+ENABLE_PROGRESSION = True
+PSERVER_IP = 'localhost'
+PSERVER_UDP_PORT = 8000
