@@ -213,17 +213,22 @@ uint8_t wkpf_propagate_dirty_properties() {
 		// nvmcomm_poll(); // Process incoming messages
 		wuobject_property_t *dirty_property = wkpf_get_property(dirty_wuobject, dirty_property_number);
 		if (dirty_property->status & PROPERTY_STATUS_NEEDS_PUSH) {
+			uint8_t status = dirty_property->status;
+			wkpf_propagating_dirty_property_succeeded(dirty_property);
 			wkpf_error_code = wkpf_propagate_property(dirty_wuobject, dirty_property_number, &(dirty_property->value));
+			if (wkpf_error_code != WKPF_OK) {
+				dirty_property->status = status;
+			}
 		} else { // PROPERTY_STATUS_NEEDS_PULL
 			DEBUG_LOG(DBG_WKPF, "WKPF: (pull) requesting initial value for property %x at port %x\n", dirty_property_number, dirty_wuobject->port_number);
 			wkpf_error_code = wkpf_pull_property(dirty_wuobject->port_number, dirty_property_number);
-		}
-		if (wkpf_error_code == WKPF_OK) {
-			wkpf_propagating_dirty_property_succeeded(dirty_property);
-		} else { // TODONR: need better retry mechanism
-			DEBUG_LOG(DBG_WKPF, "WKPF: ------!!!------ Propagating property failed: port %x property %x error %x\n", dirty_wuobject->port_number, dirty_property_number, wkpf_error_code);
-			wkpf_propagating_dirty_property_failed(dirty_property);
-			return wkpf_error_code;
+			if (wkpf_error_code == WKPF_OK) {
+				wkpf_propagating_dirty_property_succeeded(dirty_property);
+			} else { // TODONR: need better retry mechanism
+				DEBUG_LOG(DBG_WKPF, "WKPF: ------!!!------ Propagating property failed: port %x property %x error %x\n", dirty_wuobject->port_number, dirty_property_number, wkpf_error_code);
+				wkpf_propagating_dirty_property_failed(dirty_property);
+				return wkpf_error_code;
+			}
 		}
 	}
 	return WKPF_OK;
