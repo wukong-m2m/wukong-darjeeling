@@ -218,6 +218,8 @@ uint8_t wkpf_propagate_dirty_properties() {
 			wkpf_error_code = wkpf_propagate_property(dirty_wuobject, dirty_property_number, &(dirty_property->value));
 			if (wkpf_error_code != WKPF_OK) {
 				dirty_property->status = status;
+				wkpf_propagating_dirty_property_failed(dirty_property);
+				return wkpf_error_code;
 			}
 		} else { // PROPERTY_STATUS_NEEDS_PULL
 			DEBUG_LOG(DBG_WKPF, "WKPF: (pull) requesting initial value for property %x at port %x\n", dirty_property_number, dirty_wuobject->port_number);
