@@ -265,9 +265,9 @@ Block.prototype.attach=function(parent) {
         }
 		$('#propertyeditor').empty();
 		$('#propertyeditor').append('<div id=propertyeditor_tab>');
-		$('#propertyeditor_tab').append('<ul><li><a href=#propertyeditor_loc>Location Policy</a></li><li style="display:none"><a href=#propertyeditor_ft>Fault Tolerance</a></li><li><a href=#propertyeditor_default>Default Value</a></li><li style="display:none"><a href=#propertyeditor_monitor>Monitors</a></li></ul>');
+        $('#propertyeditor_tab').append('<ul><li><a href=#propertyeditor_loc>Location Policy</a></li><li style="display:none"><a href=#propertyeditor_ft>Fault Tolerance</a></li><li><a href=#propertyeditor_default>Default Value</a></li><li id=context_tab><a href=#propertyeditor_context>Context</a></li><li style="display:none"><a href=#propertyeditor_monitor>Monitors</a></li></ul>');
 
-		$('#propertyeditor_tab').append('<div id=propertyeditor_loc>Location: <input type=text id=propertyeditor_location_hierarchy style="width:300px"></input>'+
+        $('#propertyeditor_tab').append('<div id=propertyeditor_loc>Location: <input type=text id=propertyeditor_location_hierarchy style="width:300px"></input>'+
                                         '<button class="chooseLocNode" for="propertyeditor_location_hierarchy">Choose Tree Node</button><br>'+
                                         'Function: <input type=text id=propertyeditor_location_function style="width:300px"></input><br>'+
                                         'Functions Supported: use, range, farthest, closest, ~, |, &</div>');
@@ -286,17 +286,23 @@ Block.prototype.attach=function(parent) {
 		$('#propertyeditor_reactiontime').spinner();
 		$('#propertyeditor_reactiontime').spinner("value",self.reaction_time);
 
- 
-		$("#propertyeditor_tab").append('<div id=propertyeditor_default></div></div>');
+
+        $("#propertyeditor_tab").append('<div id=propertyeditor_default></div>');
+        $("#propertyeditor_tab").append('<div id=propertyeditor_context></div>');
 		$("#propertyeditor_tab").append('<div id=propertyeditor_monitor></div></div>');
 		$("#propertyeditor_default").empty();
 		$("#propertyeditor_monitor").empty();
+
+        if (Block.current.type != "Plugin") {
+            $("#context_tab").css("display", "none");
+        }
+
 		$("#propertyeditor_tab").tabs();
 		
 		var _siglist = Block.current.getSignals();
 		for(i=0;i<_siglist.length;i++) {
     		var sig = _siglist[i];
-    		$('#propertyeditor_default').append(sig.name);
+    		$('#propertyeditor_default').append(sig.name + ":");
     		$('#propertyeditor_default').append('<input type=text id=s'+sig.name+'></input><br>');
     		try {
     			$('#s'+sig.name).val(self.sigProper[sig.name]);

@@ -187,4 +187,7 @@
     <WuClass name="Dimmer" id="2007" virtual="false" type="hard">
         <property name="level" access="readwrite" datatype="short" default="0"  />
     </WuClass>
+    <WuClass name="Plugin" id="2007" virtual="false" type="soft">
+        <property name="name" access="read" datatype="short" default=""/>
+    </WuClass>
 </WuKong>

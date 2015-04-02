@@ -17,8 +17,9 @@ def make_main(path=COMPONENTXML_PATH):
   for wuClass in dom.getElementsByTagName('WuClass'):
     name = wuClass.getAttribute('name')
     properties = wuClass.getElementsByTagName('property')
-    output = open(prefix + name.lower() + postfix, 'w')
-    output.write(jinja2_env.get_template('component.js.tmpl').render(func_name=name, properties=properties))
-    output.close()
+    if (not os.path.exists(prefix + name.lower() + postfix)):
+        output = open(prefix + name.lower() + postfix, 'w')
+        output.write(jinja2_env.get_template('component.js.tmpl').render(func_name=name, properties=properties))
+        output.close()
 
   logging.info("make_js_complete")

@@ -1,0 +1,7 @@
+<WuKong>
+    <Context id = "1" name = "Location"/>
+    <Context id = "2" name = "UID"/>
+    <Context id = "3" name = "Gesture"/>
+    <Context id = "4" name = "Activity"/>
+    <Context id = "5" name = "Situation"/>
+</WuKong>
