@@ -62,7 +62,7 @@ void load_features_data() {
 
         while ((read = getline(&line, &len, fp)) != -1) {
         	if (prefix("MyDID", line)) {
-				int devid;
+				int did;
 				if (!sscanf(line, CONFIG_FILE_MYDID_STRING, &did)) {
 					printf("MyDID in %s not in expected format, aborting...\n", posix_config_filename);
 					abort();
