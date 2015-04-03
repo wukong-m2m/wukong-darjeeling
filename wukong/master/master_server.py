@@ -193,6 +193,11 @@ class Test_array:
     for i in range(self.count):
       self.value_array.append(wkpf.globals.mongoDBClient.wukong.readings.find({ 'node_id':n_id , 'port':pt }).sort('_id',-1).limit(1)[i]['value'])
 
+class LoadContexts(tornado.web.RequestHandler):
+  def post(self):
+    contexts = {'1' : 'Location', '2' : 'UID'};
+    self.content_type = 'application/json'
+    self.write(json.dumps(contexts))
 
 
 class Monitoring_Line(tornado.web.RequestHandler):
@@ -213,8 +218,6 @@ class Monitoring_Line(tornado.web.RequestHandler):
     #apps = sorted([application.config() for application in wkpf.globals.applications], key=lambda k: k['app_name'])
     self.content_type = 'application/json'
     self.write(json.dumps(apps))
-    
-
 
 class Monitoring_Chart(tornado.web.RequestHandler):
   def get(self, nodeID, port):
@@ -1231,6 +1234,7 @@ wukong = tornado.web.Application([
   (r"/loc_tree/save", save_landmark),
   (r"/loc_tree/load", load_landmark),
   (r"/loc_tree/land_mark", add_landmark),
+  (r"/contexts", LoadContexts),
   (r"/componentxml",WuLibrary),
   (r"/componentxmluser",WuLibraryUser),
   (r"/wuclasssource",WuClassSource),

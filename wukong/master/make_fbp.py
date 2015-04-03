@@ -16,11 +16,13 @@ def addHead():
             '\t\t'+'<link type="text/css" href="/static/css/jquery.contextMenu.css" rel="stylesheet" />'+'\n'+
             '\t\t'+'<link type="text/css" href="/static/css/fbp.css" rel="stylesheet" />'+'\n'+
             '\t\t'+'<link type="text/css" href="/static/css/jquery.treeview.css" rel="stylesheet"/>\n'+
+            '\t\t'+'<link type="text/css" href="/static/css/multiple-select.css" rel="stylesheet"/>\n'+
 
             '\t\t'+'<script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>'+'\n'+
 			'\t\t'+'<script type="text/javascript" src="/static/js/jquery-ui-1.9.2.custom.min.js"></script>'+'\n'+
 			'\t\t'+'<script type="text/javascript" src="/static/js/jquery.contextMenu.js"></script>'+'\n'+
 			'\t\t'+'<script type="text/javascript" src="/static/js/jquery.treeview.js"></script>'+'\n'+
+			'\t\t'+'<script type="text/javascript" src="/static/js/jquery.multiple.select.js"></script>'+'\n'+
 			'\t\t'+'<script type="text/javascript" src="/static/js/jcanvas.js"></script>'+'\n'+
 			'\t\t'+'<script type="text/javascript" src="/static/js/json2.js"></script>'+'\n'+
 			'\t\t'+'<script type="text/javascript" src="/static/js/block.js"></script>'+'\n'+

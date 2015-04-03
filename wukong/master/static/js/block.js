@@ -291,10 +291,28 @@ Block.prototype.attach=function(parent) {
         $("#propertyeditor_tab").append('<div id=propertyeditor_context></div>');
 		$("#propertyeditor_tab").append('<div id=propertyeditor_monitor></div></div>');
 		$("#propertyeditor_default").empty();
+        $("#propertyeditor_context").empty();
 		$("#propertyeditor_monitor").empty();
 
         if (Block.current.type != "Plugin") {
             $("#context_tab").css("display", "none");
+        } else {
+            $("#propertyeditor_tab li").removeClass("ui-tabs-active");
+            $("#propertyeditor_tab li").removeClass("ui-state-active");
+            $("#context_tab").addClass("ui-tabs-active");
+            $("#context_tab").addClass("ui-state-active");
+            $.post('/contexts', function(data) {
+                var contexts = jQuery.parseJSON(data);
+                var selector = '<select id="context_select" multiple="multiple">';
+                for(var key in contexts) {
+                    selector += '<option value="' + key +'">' + contexts[key] + '</option>';
+                }
+                selector += '</select>';
+                $("#propertyeditor_context").append(selector);
+                $('#context_select').css({'width': 300});
+                $('#context_select').multipleSelect();
+                $("#context_select").multipleSelect("setSelects", Block.current.contexts);
+            });
         }
 
 		$("#propertyeditor_tab").tabs();
@@ -352,11 +370,13 @@ Block.prototype.attach=function(parent) {
 					self.location = $('#propertyeditor_location_hierarchy').val()+'#'+$('#propertyeditor_location_function').val();
 					self.group_size = $('#propertyeditor_groupsize').spinner("value");
 					self.reaction_time = $('#propertyeditor_reactiontime').spinner("value");
-					for(i=0;i<_siglist.length;i++){
+                    self.contexts = $("#context_select").multipleSelect("getSelects");
+                    for(i=0;i<_siglist.length;i++){
 						sig = _siglist[i];
 						self.sigProper[sig.name]=$('#s'+sig.name).val();
 					}
 					$('#propertyeditor').dialog("close");
+
 				},
 				'Cancel': function() {
 					$('#propertyeditor').dialog("close");
