@@ -64,6 +64,11 @@ void dj_panic(int32_t panictype)
             DEBUG_LOG(true, "PANIC: unknown panic type %d!\n", panictype);
             break;
     }*/
+#ifdef AVRORA
+    avroraPrintStr("PANIC!\n\r");
+    avroraPrintInt32(panictype);
+    asm volatile ("break");
+#endif
     DEBUG_LOG(true, "PANIC: %d!\n", panictype);
     if (dj_exec_getRunlevel() < RUNLEVEL_PANIC) {
         dj_exec_setRunlevel(panictype);
