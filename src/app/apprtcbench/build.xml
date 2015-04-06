@@ -1,0 +1,11 @@
+<project default="all">
+	<!-- set the name of the library -->
+	<property name="name" value="apprtcbench"/>
+	
+	<!-- list of libraries this library depends on -->
+	<!-- Only list Java libraries here -->
+	<property name="lib-depends" value="base, darjeeling3, rtc, rtcbench"/>
+
+	<!-- include the library build template -->
+	<import file="../app.xml"/>	
+</project>
