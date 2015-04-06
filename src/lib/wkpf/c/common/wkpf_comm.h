@@ -59,7 +59,7 @@ extern void wkpf_comm_handle_message(void *msg); // Will be called with a pointe
 #define WKPF_COMM_CMD_ERROR_R                     0xAF
 
 #define WUKONG_MONITOR_PROPERTY                   0xB5
-#define WUKONG_GATEWAY 22
+#define WUKONG_GATEWAY 1
 
 #define DEVICE_NATIVE_ZWAVE_SWITCH1 64
 #define DEVICE_NATIVE_ZWAVE_SWITCH2 65

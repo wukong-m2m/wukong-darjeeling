@@ -6,9 +6,6 @@
     <WuClass name="Light_Sensor" appCanCreateInstances="false">
         <CreateInstance />
     </WuClass>
-    <WuClass name="Virtual_Slider" appCanCreateInstances="true">
-        <CreateInstance />
-    </WuClass>
     <WuClass name="PIR_Sensor" appCanCreateInstances="false">
         <CreateInstance />
     </WuClass>

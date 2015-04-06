@@ -267,7 +267,7 @@ void routing_discover_gateway()
 {
     // First get the known radio address
     #ifdef RADIO_USE_ZWAVE
-        did_table.gateway_did = 22;
+        did_table.gateway_did = 1;
         //radio_zwave_address_t gateway_radio_address = 22;
         //did_table.gateway_did |= gateway_radio_address;
     #endif
