@@ -163,9 +163,11 @@ void avr_serialPrint(char * str)
 #ifdef AVRORA
 	int i;
 	for (i=0; str[i]!=0; i++) {
-		if (str[i] == '\n')
-			avroraPrintChar('\r');
-		avroraPrintChar(str[i]);
+		if (str[i] == '\n') {
+			avroraPrintCharBuffer();
+		} else {
+			avroraWriteCharBuffer(str[i]);
+		}
 	}
 #else // !AVRORA
 	int i;
