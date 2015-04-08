@@ -20,6 +20,7 @@
  */
  
 #include "avr.h"
+#include "config.h"
 
 // the prescaler is set so that timer0 ticks every 64 clock cycles, and the
 // the overflow handler is called every 256 ticks.
@@ -159,12 +160,21 @@ void avr_serialInit(uint32_t baud)
 
 void avr_serialPrint(char * str)
 {
+#ifdef AVRORA
+	int i;
+	for (i=0; str[i]!=0; i++) {
+		if (str[i] == '\n')
+			avroraPrintChar('\r');
+		avroraPrintChar(str[i]);
+	}
+#else // !AVRORA
 	int i;
 	for (i=0; str[i]!=0; i++) {
 		if (str[i] == '\n')
 			avr_serialWrite('\r');
 		avr_serialWrite(str[i]);
 	}
+#endif // AVRORA
 }
 void avr_serialVPrint(char * format, va_list arg)
 {
