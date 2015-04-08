@@ -73,23 +73,34 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 	// TMPRTC
 	{
 		dj_infusion *finger = vm->infusions;
-		bool found = false;
 
 		while (finger!=NULL)
 		{
 			// Look for any infusion starting with "rtc"
 			dj_di_pointer name = dj_di_header_getInfusionName(finger->header);
-			if (       dj_di_getU8(name)=='r'
+			if ((      dj_di_getU8(name+0)=='r'
 					&& dj_di_getU8(name+1)=='t'
 					&& dj_di_getU8(name+2)=='c'
 					&& dj_di_getU8(name+3)=='b'
-					) {
+					&& dj_di_getU8(name+4)=='e'
+					&& dj_di_getU8(name+5)=='n'
+					&& dj_di_getU8(name+6)=='c'
+					&& dj_di_getU8(name+7)=='h'
+				) || (
+				       dj_di_getU8(name+0)=='r'
+					&& dj_di_getU8(name+1)=='t'
+					&& dj_di_getU8(name+2)=='c'
+					&& dj_di_getU8(name+3)=='t'
+					&& dj_di_getU8(name+4)=='e'
+					&& dj_di_getU8(name+5)=='s'
+					&& dj_di_getU8(name+6)=='t'
+				)) {
 				rtc_compile_lib(finger);
-				found = true;
+				break;
 			}
 			finger = finger->next;
 		}
-		if (found == false) {
+		if (finger == NULL) {
 			DEBUG_LOG(true, "No rtc infusions found.\n");
 			dj_panic(DJ_PANIC_MALFORMED_INFUSION);
 		}

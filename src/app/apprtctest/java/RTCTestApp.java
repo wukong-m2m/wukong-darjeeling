@@ -28,7 +28,7 @@ public class RTCTestApp
 	public static void main(String args[])
 	{
 		// System.out.println("Hello world.");
-		checkReturn42();
+		checkReturnValues();
 		// checkCompareShort();
 		// checkCompareInt();
 		// checkCompareShort0();
@@ -516,8 +516,13 @@ public class RTCTestApp
 	// 	System.out.println(" 1 GE 1 " + RTCTest.compare_short_GE((short)-99, (short)-100));
 	// }
 
-	public static void checkReturn42()
+	public static void checkReturnValues()
 	{
-		RTCTest.testReturn42();
+		System.out.println("Boolean true " + RTCTest.testReturnBoolean());
+		System.out.println("Byte -42 " + RTCTest.testReturnByte());
+		System.out.println("Short -4200 " + RTCTest.testReturnShort());
+		System.out.println("Int -420000 " + RTCTest.testReturnInt());
+		System.out.println("Char x " + RTCTest.testReturnChar());
+		System.out.println("Ref -42 " + RTCTest.testReturnRef().instance_int);
 	}
 }

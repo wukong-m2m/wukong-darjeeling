@@ -1068,6 +1068,9 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 					returnFromMethod();
 					DEBUG_LOG(DBG_RTC, "[rtc] void call returned (void)\n");
 					break;
+				case JTID_BOOLEAN:
+				case JTID_CHAR:
+				case JTID_BYTE:
 				case JTID_SHORT:
 					AVRORATRACE_ENABLE();
 					ret16 = ((native_16bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);

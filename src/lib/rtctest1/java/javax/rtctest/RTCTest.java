@@ -27,9 +27,25 @@ public class RTCTest implements IRTCTest {
 		this.instance_int = init_int_value;
 	}
 
-	public static int testReturn42() {
-		return 42;
+	public static boolean testReturnBoolean() {
+		return true;
 	}
+	public static byte testReturnByte() {
+		return -42;
+	}
+	public static short testReturnShort() {
+		return -4200;
+	}
+	public static int testReturnInt() {
+		return -420000;
+	}
+	public static char testReturnChar() {
+		return 'x';
+	}
+	public static RTCTest testReturnRef() {
+		return new RTCTest(-42);
+	}
+	// not supported yet: float, double, long
 
 	// public static int check_gc(int a) {
 	// 	Runtime.getRuntime().gc();
