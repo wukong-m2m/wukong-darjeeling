@@ -149,6 +149,15 @@ void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t 
     wkreprog_close();
 }
 
+void emit_x_CALL(uint16_t target) {
+    // Flush the code buffer before emitting a CALL to prevent PUSH/POP pairs being optimised across a CALL instruction.
+    emit_PUSH(RXH);
+    emit_PUSH(RXL);
+    rtc_flush();
+    emit2( asm_CALL1(target) , asm_CALL2(target) );
+    emit_POP(RXL);
+    emit_POP(RXH);
+}
 
 #define rtc_branch_table_size(methodimpl) (dj_di_methodImplementation_getNumberOfBranchTargets(methodimpl)*SIZEOF_RJMP)
 #define rtc_branch_target_table_address(i) (branch_target_table_start_ptr + i*SIZEOF_RJMP)
@@ -311,7 +320,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
                 emit_LDI(R24, jvm_operand_byte0); // infusion id
                 emit_LDI(R25, jvm_operand_byte1); // entity id
-                emit_2_CALL((uint16_t)&RTC_LDS);
+                emit_x_CALL((uint16_t)&RTC_LDS);
 
 
                 // Post possible GC: need to reset Y to the start of the stack frame's local references (the frame may have moved, so the old value may not be correct)
@@ -661,7 +670,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_PUSH(RXL);
 
                 // make the call
-                emit_2_CALL((uint16_t)&dj_object_getReferences);
+                emit_x_CALL((uint16_t)&dj_object_getReferences);
 
                 // POP important stuff
                 emit_POP(RXL);
@@ -722,7 +731,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_PUSH(RXL);
 
                 // make the call
-                emit_2_CALL((uint16_t)&dj_object_getReferences);
+                emit_x_CALL((uint16_t)&dj_object_getReferences);
 
                 // POP important stuff
                 emit_POP(RXL);
@@ -999,7 +1008,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_POP(R23);
                 emit_POP(R24);
                 emit_POP(R25);
-                emit_2_CALL((uint16_t)&__divmodhi4);
+                emit_x_CALL((uint16_t)&__divmodhi4);
                 if (opcode == JVM_SDIV) {
                     emit_PUSH(R23);
                     emit_PUSH(R22);
@@ -1138,7 +1147,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_POP(R19);
                 emit_POP(R20);
                 emit_POP(R21);
-                emit_2_CALL((uint16_t)&__mulsi3);
+                emit_x_CALL((uint16_t)&__mulsi3);
                 emit_PUSH(R25);
                 emit_PUSH(R24);
                 emit_PUSH(R23);
@@ -1154,7 +1163,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_POP(R23);
                 emit_POP(R24);
                 emit_POP(R25);
-                emit_2_CALL((uint16_t)&__divmodsi4);
+                emit_x_CALL((uint16_t)&__divmodsi4);
                 if (opcode == JVM_IDIV) {
                     emit_PUSH(R21);
                     emit_PUSH(R20);
@@ -1800,11 +1809,11 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                         || opcode == JVM_INVOKEINTERFACE) {
                     jvm_operand_byte2 = dj_di_getU8(code + ++pc);
                     emit_LDI(R22, jvm_operand_byte2); // nr_ref_args
-                    emit_2_CALL((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE);
+                    emit_x_CALL((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE);
                 } else if (opcode == JVM_INVOKESPECIAL) {
-                    emit_2_CALL((uint16_t)&RTC_INVOKESPECIAL);
+                    emit_x_CALL((uint16_t)&RTC_INVOKESPECIAL);
                 } else if (opcode == JVM_INVOKESTATIC) {
-                    emit_2_CALL((uint16_t)&RTC_INVOKESTATIC);
+                    emit_x_CALL((uint16_t)&RTC_INVOKESTATIC);
                 }
 
 
@@ -1834,7 +1843,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
                 emit_LDI(R24, jvm_operand_byte0); // infusion id
                 emit_LDI(R25, jvm_operand_byte1); // entity id
-                emit_2_CALL((uint16_t)&RTC_NEW);
+                emit_x_CALL((uint16_t)&RTC_NEW);
 
 
                 // Post possible GC: need to reset Y to the start of the stack frame's local references (the frame may have moved, so the old value may not be correct)
@@ -1860,7 +1869,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_POP(R22); // size
                 emit_POP(R23);
                 emit_LDI(R24, jvm_operand_byte0); // (int) element type
-                emit_2_CALL((uint16_t)&dj_int_array_create);
+                emit_x_CALL((uint16_t)&dj_int_array_create);
 
 
                 // Post possible GC: need to reset Y to the start of the stack frame's local references (the frame may have moved, so the old value may not be correct)
@@ -1888,7 +1897,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_POP(R23);
                 emit_LDI(R24, jvm_operand_byte0); // infusion id
                 emit_LDI(R25, jvm_operand_byte1); // entity id
-                emit_2_CALL((uint16_t)&RTC_ANEWARRAY);
+                emit_x_CALL((uint16_t)&RTC_ANEWARRAY);
 
 
                 // Post possible GC: need to reset Y to the start of the stack frame's local references (the frame may have moved, so the old value may not be correct)
@@ -1928,7 +1937,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_PUSH(RXL);
 
                 // make the call
-                emit_2_CALL((uint16_t)&RTC_CHECKCAST);
+                emit_x_CALL((uint16_t)&RTC_CHECKCAST);
 
                 // POP important stuff
                 emit_POP(RXL);
@@ -1949,7 +1958,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_PUSH(RXL);
 
                 // make the call
-                emit_2_CALL((uint16_t)&RTC_INSTANCEOF);
+                emit_x_CALL((uint16_t)&RTC_INSTANCEOF);
 
                 // POP important stuff
                 emit_POP(RXL);
