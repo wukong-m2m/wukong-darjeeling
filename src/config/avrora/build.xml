@@ -3,10 +3,12 @@
 	<!-- include native code for libraries -->
 	<!-- note that libraries should come after libraries they depend on
 		 (wkcomm first, the wkpf), or else loading the archive will fail -->
-	<property name="libs" value="uart, wkcomm, wkreprog, vm, base, darjeeling3, rtc, rtcbench"/>
+	<property name="libs" value="uart, wkcomm, wkreprog, vm, base, darjeeling3, rtc, rtctest2, rtctest1"/>
+	<!-- <property name="libs" value="uart, wkcomm, wkreprog, vm, base, darjeeling3, rtc, rtcbench"/> -->
 
 	<!-- Compile these applications -->
-	<property name="apps" value="apprtcbench"/>
+	<property name="apps" value="apprtctest"/>
+	<!-- <property name="apps" value="apprtcbench"/> -->
 
 	<!-- Platform and architecture selection -->
 	<property name="platform" value="arduino"/>

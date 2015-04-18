@@ -48,6 +48,7 @@
 #define SPaddress_L 0x5D
 #define SPaddress_H 0x5E
 
+bool rtc_is_double_word_instruction(uint16_t instruction);
 
 // 6 bit offset q has to be inserted in the opcode like this:
 // 00q0 qq00 0000 0qqq
@@ -87,7 +88,6 @@
 #define opcodeWithSrcAndDestRegOperand(opcode, destreg, srcreg) ((opcode) + ((destreg) << 4) + makeSourceRegister(srcreg))
 
 
-
 // ADC                                  0001 11rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_ADC                      0x1C00
 #define asm_ADC(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_ADC, destreg, srcreg)
@@ -107,6 +107,11 @@
 // ASR                                  1001 010d dddd 0101
 #define OPCODE_ASR                      0x9405
 #define asm_ASR(reg)                    opcodeWithSingleRegOperand(OPCODE_ASR, reg)
+
+// BREAK                                1001 0101 1001 1000
+#define OPCODE_BREAK                    0x9598
+#define asm_BREAK(reg)                  OPCODE_BREAK
+
 
 // BREQ                                 1111 00kk kkkk k001, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
 #define OPCODE_BREQ                     0xF001
@@ -172,6 +177,14 @@
 #define OPCODE_INC                      0x9403
 #define asm_INC(reg)                    opcodeWithSingleRegOperand(OPCODE_INC, reg)
 
+// JMP                                  1001 010k kkkk 110k
+//                                      kkkk kkkk kkkk kkkk, with k the address in WORDS, not bytes. PC <- k
+// TODO: support addresses > 128K
+#define SIZEOF_JMP                      4
+#define OPCODE_JMP                      0x940C
+#define asm_JMP1(address)               OPCODE_JMP
+#define asm_JMP2(address)               (address/2)
+
 // LD Rd, -X                            1001 000d dddd 1110, with d=dest register
 #define OPCODE_LD_DECX                  0x900E
 #define asm_LD_DECX(reg)                opcodeWithSingleRegOperand(OPCODE_LD_DECX, reg)
@@ -226,6 +239,10 @@
 // MUL                                  1001 11rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_MUL                      0x9C00
 #define asm_MUL(destreg, srcreg)        opcodeWithSrcAndDestRegOperand(OPCODE_MUL, destreg, srcreg)
+
+// NOP                                  0000 0000 0000 0000
+#define OPCODE_NOP                      0x0000
+#define asm_NOP()                       OPCODE_NOP
 
 // OR                                   0010 10rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_OR                       0x2800
@@ -323,6 +340,7 @@
 #define emit_ADIW(reg, constant)        emit ( asm_ADIW(reg, constant) )
 #define emit_AND(destreg, srcreg)       emit ( asm_AND(destreg, srcreg) )
 #define emit_ASR(reg)                   emit ( asm_ASR(reg) )
+#define emit_BREAK()                    emit ( asm_BREAK() )
 #define emit_BREQ(offset)               emit ( asm_BREQ(offset) )
 #define emit_BRGE(offset)               emit ( asm_BRGE(offset) )
 #define emit_BRLT(offset)               emit ( asm_BRLT(offset) )
@@ -334,9 +352,10 @@
 #define emit_CPC(destreg, srcreg)       emit ( asm_CPC(destreg, srcreg) )
 #define emit_DEC(reg)                   emit ( asm_DEC(reg) )
 #define emit_EOR(destreg, srcreg)       emit ( asm_EOR(destreg, srcreg) )
-#define emit_IJMP()                     emit ( asm_IJMP()  )
+#define emit_IJMP()                     emit ( asm_IJMP() )
 #define emit_IN(destreg, address)       emit ( asm_IN(destreg, address) )
 #define emit_INC(reg)                   emit ( asm_INC(reg) )
+#define emit_2_JMP(address)             emit2( asm_JMP1(address) , asm_JMP2(address) )
 #define emit_LD_DECX(reg)               emit ( asm_LD_DECX(reg) )
 #define emit_LD_XINC(reg)               emit ( asm_LD_XINC(reg) )
 #define emit_LD_Z(reg)                  emit ( asm_LD_Z(reg) )
@@ -349,6 +368,7 @@
 #define emit_MOV(destreg, srcreg)       emit ( asm_MOV(destreg, srcreg) )
 #define emit_MOVW(destreg, srcreg)      emit ( asm_MOVW(destreg, srcreg) )
 #define emit_MUL(destreg, srcreg)       emit ( asm_MUL(destreg, srcreg) )
+#define emit_NOP()                      emit ( asm_NOP() )
 #define emit_OR(destreg, srcreg)        emit ( asm_OR(destreg, srcreg) )
 #define emit_PUSH(reg)                  emit ( asm_PUSH(reg) )
 #define emit_POP(reg)                   emit ( asm_POP(reg) )

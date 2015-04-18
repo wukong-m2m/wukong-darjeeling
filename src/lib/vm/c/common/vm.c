@@ -94,6 +94,7 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 					&& dj_di_getU8(name+4)=='e'
 					&& dj_di_getU8(name+5)=='s'
 					&& dj_di_getU8(name+6)=='t'
+					&& dj_di_getU8(name+7)=='1'
 				)) {
 				rtc_compile_lib(finger);
 				break;

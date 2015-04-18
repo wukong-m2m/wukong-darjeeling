@@ -28,8 +28,8 @@ public class RTCTestApp
 	public static void main(String args[])
 	{
 		// System.out.println("Hello world.");
-		checkReturnValues();
-		// checkCompareShort();
+		// checkReturnValues();
+		checkCompareShort();
 		// checkCompareInt();
 		// checkCompareShort0();
 		// checkCompareInt0();
@@ -489,40 +489,40 @@ public class RTCTestApp
 	// 	System.out.println(" 1 GE 1 " + RTCTest.compare_int_GE(-99999, -100000));
 	// }
 
-	// public static void checkCompareShort()
-	// {
-	// 	System.out.println("-1 EQ 0 " + RTCTest.compare_short_EQ((short)-101, (short)-100));
-	// 	System.out.println(" 0 EQ 1 " + RTCTest.compare_short_EQ((short)-100, (short)-100));
-	// 	System.out.println(" 1 EQ 0 " + RTCTest.compare_short_EQ((short)-99, (short)-100));
-
-	// 	System.out.println("-1 NE 1 " + RTCTest.compare_short_NE((short)-101, (short)-100));
-	// 	System.out.println(" 0 NE 0 " + RTCTest.compare_short_NE((short)-100, (short)-100));
-	// 	System.out.println(" 1 NE 1 " + RTCTest.compare_short_NE((short)-99, (short)-100));
-
-	// 	System.out.println("-1 LT 1 " + RTCTest.compare_short_LT((short)-101, (short)-100));
-	// 	System.out.println(" 0 LT 0 " + RTCTest.compare_short_LT((short)-100, (short)-100));
-	// 	System.out.println(" 1 LT 0 " + RTCTest.compare_short_LT((short)-99, (short)-100));
-
-	// 	System.out.println("-1 LE 1 " + RTCTest.compare_short_LE((short)-101, (short)-100));
-	// 	System.out.println(" 0 LE 1 " + RTCTest.compare_short_LE((short)-100, (short)-100));
-	// 	System.out.println(" 1 LE 0 " + RTCTest.compare_short_LE((short)-99, (short)-100));
-
-	// 	System.out.println("-1 GT 0 " + RTCTest.compare_short_GT((short)-101, (short)-100));
-	// 	System.out.println(" 0 GT 0 " + RTCTest.compare_short_GT((short)-100, (short)-100));
-	// 	System.out.println(" 1 GT 1 " + RTCTest.compare_short_GT((short)-99, (short)-100));
-
-	// 	System.out.println("-1 GE 0 " + RTCTest.compare_short_GE((short)-101, (short)-100));
-	// 	System.out.println(" 0 GE 1 " + RTCTest.compare_short_GE((short)-100, (short)-100));
-	// 	System.out.println(" 1 GE 1 " + RTCTest.compare_short_GE((short)-99, (short)-100));
-	// }
-
-	public static void checkReturnValues()
+	public static void checkCompareShort()
 	{
-		System.out.println("Boolean true " + RTCTest.testReturnBoolean());
-		System.out.println("Byte -42 " + RTCTest.testReturnByte());
-		System.out.println("Short -4200 " + RTCTest.testReturnShort());
-		System.out.println("Int -420000 " + RTCTest.testReturnInt());
-		System.out.println("Char x " + RTCTest.testReturnChar());
-		System.out.println("Ref -42 " + RTCTest.testReturnRef().instance_int);
+		System.out.println("-1 EQ 0 " + RTCTest.compare_short_EQ((short)-101, (short)-100));
+		System.out.println(" 0 EQ 1 " + RTCTest.compare_short_EQ((short)-100, (short)-100));
+		System.out.println(" 1 EQ 0 " + RTCTest.compare_short_EQ((short)-99, (short)-100));
+
+		System.out.println("-1 NE 1 " + RTCTest.compare_short_NE((short)-101, (short)-100));
+		System.out.println(" 0 NE 0 " + RTCTest.compare_short_NE((short)-100, (short)-100));
+		System.out.println(" 1 NE 1 " + RTCTest.compare_short_NE((short)-99, (short)-100));
+
+		System.out.println("-1 LT 1 " + RTCTest.compare_short_LT((short)-101, (short)-100));
+		System.out.println(" 0 LT 0 " + RTCTest.compare_short_LT((short)-100, (short)-100));
+		System.out.println(" 1 LT 0 " + RTCTest.compare_short_LT((short)-99, (short)-100));
+
+		System.out.println("-1 LE 1 " + RTCTest.compare_short_LE((short)-101, (short)-100));
+		System.out.println(" 0 LE 1 " + RTCTest.compare_short_LE((short)-100, (short)-100));
+		System.out.println(" 1 LE 0 " + RTCTest.compare_short_LE((short)-99, (short)-100));
+
+		System.out.println("-1 GT 0 " + RTCTest.compare_short_GT((short)-101, (short)-100));
+		System.out.println(" 0 GT 0 " + RTCTest.compare_short_GT((short)-100, (short)-100));
+		System.out.println(" 1 GT 1 " + RTCTest.compare_short_GT((short)-99, (short)-100));
+
+		System.out.println("-1 GE 0 " + RTCTest.compare_short_GE((short)-101, (short)-100));
+		System.out.println(" 0 GE 1 " + RTCTest.compare_short_GE((short)-100, (short)-100));
+		System.out.println(" 1 GE 1 " + RTCTest.compare_short_GE((short)-99, (short)-100));
 	}
+
+	// public static void checkReturnValues()
+	// {
+	// 	System.out.println("Boolean true " + RTCTest.testReturnBoolean());
+	// 	System.out.println("Byte -42 " + RTCTest.testReturnByte());
+	// 	System.out.println("Short -4200 " + RTCTest.testReturnShort());
+	// 	System.out.println("Int -420000 " + RTCTest.testReturnInt());
+	// 	System.out.println("Char x " + RTCTest.testReturnChar());
+	// 	System.out.println("Ref -42 " + RTCTest.testReturnRef().instance_int);
+	// }
 }

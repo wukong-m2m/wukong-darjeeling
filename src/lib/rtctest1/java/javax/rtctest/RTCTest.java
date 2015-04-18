@@ -27,24 +27,24 @@ public class RTCTest implements IRTCTest {
 		this.instance_int = init_int_value;
 	}
 
-	public static boolean testReturnBoolean() {
-		return true;
-	}
-	public static byte testReturnByte() {
-		return -42;
-	}
-	public static short testReturnShort() {
-		return -4200;
-	}
-	public static int testReturnInt() {
-		return -420000;
-	}
-	public static char testReturnChar() {
-		return 'x';
-	}
-	public static RTCTest testReturnRef() {
-		return new RTCTest(-42);
-	}
+	// public static boolean testReturnBoolean() {
+	// 	return true;
+	// }
+	// public static byte testReturnByte() {
+	// 	return -42;
+	// }
+	// public static short testReturnShort() {
+	// 	return -4200;
+	// }
+	// public static int testReturnInt() {
+	// 	return -420000;
+	// }
+	// public static char testReturnChar() {
+	// 	return 'x';
+	// }
+	// public static RTCTest testReturnRef() {
+	// 	return new RTCTest(-42);
+	// }
 	// not supported yet: float, double, long
 
 	// public static int check_gc(int a) {
@@ -488,47 +488,47 @@ public class RTCTest implements IRTCTest {
 	// 		return 0;
 	// }
 
-	// public static short compare_short_EQ(short x, short y) {
-	// 	if (x == y)
-	// 		return (short)1;
-	// 	else
-	// 		return (short)0;
-	// }
+	public static short compare_short_EQ(short x, short y) {
+		if (x == y)
+			return (short)1;
+		else
+			return (short)0;
+	}
 
-	// public static short compare_short_NE(short x, short y) {
-	// 	if (x != y)
-	// 		return (short)1;
-	// 	else
-	// 		return (short)0;
-	// }
+	public static short compare_short_NE(short x, short y) {
+		if (x != y)
+			return (short)1;
+		else
+			return (short)0;
+	}
 
-	// public static short compare_short_LT(short x, short y) {
-	// 	if (x < y)
-	// 		return (short)1;
-	// 	else
-	// 		return (short)0;
-	// }
+	public static short compare_short_LT(short x, short y) {
+		if (x < y)
+			return (short)1;
+		else
+			return (short)0;
+	}
 
-	// public static short compare_short_LE(short x, short y) {
-	// 	if (x <= y)
-	// 		return (short)1;
-	// 	else
-	// 		return (short)0;
-	// }
+	public static short compare_short_LE(short x, short y) {
+		if (x <= y)
+			return (short)1;
+		else
+			return (short)0;
+	}
 
-	// public static short compare_short_GT(short x, short y) {
-	// 	if (x > y)
-	// 		return (short)1;
-	// 	else
-	// 		return (short)0;
-	// }
+	public static short compare_short_GT(short x, short y) {
+		if (x > y)
+			return (short)1;
+		else
+			return (short)0;
+	}
 
-	// public static short compare_short_GE(short x, short y) {
-	// 	if (x >= y)
-	// 		return (short)1;
-	// 	else
-	// 		return (short)0;
-	// }
+	public static short compare_short_GE(short x, short y) {
+		if (x >= y)
+			return (short)1;
+		else
+			return (short)0;
+	}
 
 	// public static native short GetFortyThree();
 

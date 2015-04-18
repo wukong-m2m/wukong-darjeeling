@@ -15,13 +15,6 @@
 // 0000 10rd dddd rrrr
 #define GET_SRC_REG_OPERAND(x)  (((x) & 0x000F) + (((x) & 0x0200) >> 5))
 
-#define OPCODE_PUSH                     0x920F
-#define asm_PUSH(reg)                   opcodeWithSingleRegOperand(OPCODE_PUSH, reg)
-
-// POP                                  1001 000d dddd 1111
-#define OPCODE_POP                      0x900F
-
-
 void rtc_optimise_drop_instruction(uint16_t *instr, uint16_t **code_end) {
     void *address = (void *)instr;
 
@@ -157,15 +150,6 @@ bool instruction_uses_target_reg(uint16_t instruction, uint16_t target_reg) {
     return false;
 }
 
-bool is_double_word_instruction(uint16_t instruction) {
-    const uint16_t CALL_MASK            = 0xFE0E;
-    const uint16_t LDS_MASK             = 0xFE0F;
-    const uint16_t STS_MASK             = 0xFE0F;
-
-    return (instruction & CALL_MASK)                == OPCODE_CALL         // 1001 010k kkkk 111k kkkk kkkk kkkk kkkk 
-            || (instruction & LDS_MASK)             == OPCODE_LDS          // 1001 000d dddd 0000 kkkk kkkk kkkk kkkk
-            || (instruction & STS_MASK)             == OPCODE_STS;         // 1001 001d dddd 0000 kkkk kkkk kkkk kkkk
-}
 
 
 // void rtc_optimise(uint16_t *buffer, uint16_t **code_end) {
@@ -205,7 +189,7 @@ bool rtc_maybe_optimise_push_pop(uint16_t *push_finger, uint16_t *pop_finger, ui
             return false;
         }
 
-        check_reg_write_finger += is_double_word_instruction(check_reg_write_finger_instr) ? 2 : 1;
+        check_reg_write_finger += rtc_is_double_word_instruction(check_reg_write_finger_instr) ? 2 : 1;
     }
 
     // No conflicting writes inbetween the PUSH and POP, so we can optimise
@@ -263,7 +247,7 @@ void rtc_optimise(uint16_t *buffer, uint16_t **code_end) {
                         }
                     }
 
-                    pop_finger += is_double_word_instruction(pop_finger_instr) ? 2 : 1;
+                    pop_finger += rtc_is_double_word_instruction(pop_finger_instr) ? 2 : 1;
                 }
             }
             // 2nd optimisation: MOV x, y; MOV x+1, y+1 -> MOVW x, y
@@ -299,7 +283,7 @@ void rtc_optimise(uint16_t *buffer, uint16_t **code_end) {
                 break; // Break after optimising one instruction and start over again.
             }
 
-            finger += is_double_word_instruction(finger_instr) ? 2 : 1;
+            finger += rtc_is_double_word_instruction(finger_instr) ? 2 : 1;
         }
     } while (found);
 }
