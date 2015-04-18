@@ -1,10 +1,6 @@
 #ifndef FIXFFT_H
 #define FIXFFT_H
 
-#include <WProgram.h>
-
-
-
 
 /*
   fix_fft() - perform forward/inverse fast Fourier transform.
@@ -15,7 +11,6 @@
   Results are from 0 to n/2, (fr[0];fi[0]) contains DC component.
 */
 int fix_fft(char fr[], char fi[], int m, int inverse);
-
 
 
 /*
@@ -33,6 +28,7 @@ int fix_fft(char fr[], char fi[], int m, int inverse);
   real and imaginary samples in the complex array.
 */
 int fix_fftr(char f[], int m, int inverse);
+
 
 /* 
 	fft_windowing() - perform windowing on data to eliminate noise

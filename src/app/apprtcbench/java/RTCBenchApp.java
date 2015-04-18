@@ -36,12 +36,16 @@ public class RTCBenchApp
 		// RTC.useRTC(false);
 		// RTCTestBubbleSort.test_bubblesort();
 		RTC.useRTC(true);
-		Stopwatch.resetAndStart();
-		Stopwatch.measure();
-		System.out.println("rtc:");
-		RTCTestBubbleSort.test_bubblesort();
-		System.out.println("native:");
+		// Stopwatch.resetAndStart();
+		// Stopwatch.measure();
+		System.out.println("native sort:");
 		RTCTestBubbleSort.test_bubblesort_native();
+		System.out.println("rtc sort:");
+		RTCTestBubbleSort.test_bubblesort();
+		System.out.println("native fft:");
+		RTCTestFixFFT.test_fixfft_native();
+		System.out.println("rtc fft:");
+		RTCTestFixFFT.test_fixfft();
 		System.out.println("done.");
 	}
 }

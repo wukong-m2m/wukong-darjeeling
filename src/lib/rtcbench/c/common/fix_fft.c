@@ -1,6 +1,6 @@
+#include <stdint.h>
 #include <avr/pgmspace.h>
 #include "fix_fft.h"
-#include <WProgram.h>
 
 // #define TEST_FFT_WINDOWING
 
@@ -49,7 +49,7 @@
 // signed 8-bit values written into Arduino's 32k EEPROM memory
 // Technically we could get along with a quarter of this data table but I think we shouldn't.
 
-const prog_int8_t Sinewave[N_WAVE] PROGMEM = {
+const int8_t Sinewave[N_WAVE] PROGMEM = {
 0, 3, 6, 9, 12, 15, 18, 21,
 24, 28, 31, 34, 37, 40, 43, 46,
 48, 51, 54, 57, 60, 63, 65, 68,
@@ -94,13 +94,13 @@ const prog_int8_t Sinewave[N_WAVE] PROGMEM = {
 	Returns char value which can be used for integer arithmetic
 */
 
-inline char SIN8(int n)
+inline char SIN8(int16_t n)
 {
   n = n % N_WAVE;
   return pgm_read_byte_near(Sinewave+n);
 }
 
-inline char COS8(int n)
+inline char COS8(int16_t n)
 {
   n = (n + N_WAVE/4) % N_WAVE;
   return pgm_read_byte_near(Sinewave+n);
@@ -120,7 +120,7 @@ inline char FIX_MPY(char a, char b)
 // Multiply, then scale back to one signed 8-bit value
 
     /* shift right one less bit (i.e. 7-1) */
-    int c = ((int)a * (int)b) >> 6;
+    int16_t c = ((int16_t)a * (int16_t)b) >> 6;
     /* last bit shifted out = rounding-bit */
     b = c & 0x01;
     /* last shift + rounding bit */
@@ -137,10 +137,10 @@ inline char FIX_MPY(char a, char b)
 
   Aug 2011 untergeek@makefurt.de
 */
-void fft_windowing(char f[], int m)
+void fft_windowing(char f[], int16_t m)
 {
-    int M = 1 << m;
-    int n, rad;
+    int16_t M = 1 << m;
+    int16_t n, rad;
     for (n = 0; n < M; n++) {
 #ifdef TEST_FFT_WINDOWING
 	Serial.print(n, DEC);
@@ -148,12 +148,13 @@ void fft_windowing(char f[], int m)
 	Serial.print(f[n], DEC);
 	Serial.print(" weighted by ");
 #endif
-        rad = (N_WAVE * n) / M;		// calculate index for pseudo-cos function from lookup table
-                                        // N_WAVE is 2pi, so to speak, so calculate N_WAVE* n / M
-					// Pseudo cos lookup table contains values from -127É127, so
-					// set 0.5cos(n) to be sinewave[n]/256, accepting 1bit error.
-        f[n] = char((int(f[n])*(127 - int(COS8(rad)) ) ) / 256);
-// is                      0.5 - 0.5 cos(2 * pi* n / M)
+        rad = (N_WAVE * n) / M;
+		// calculate index for pseudo-cos function from lookup table
+		// N_WAVE is 2pi, so to speak, so calculate N_WAVE* n / M
+		// Pseudo cos lookup table contains values from -127â€¦127, so
+		// set 0.5cos(n) to be sinewave[n]/256, accepting 1bit error.
+         f[n] = (char)(((int16_t)(f[n])*(127 - (int16_t)(COS8(rad)) ) ) / 256);
+		// is 0.5 - 0.5 cos(2 * pi* n / M)
 #ifdef TEST_FFT_WINDOWING
 	Serial.print(COS8(rad), DEC);
 	Serial.print(" -> "); 
@@ -168,9 +169,9 @@ void fft_windowing(char f[], int m)
   RESULT (in-place FFT), with 0 <= n < 2**m; set inverse to
   0 for forward transform (FFT), or 1 for iFFT.
 */
-int fix_fft(char fr[], char fi[], int m, int inverse)
+int16_t fix_fft(char fr[], char fi[], int m, int inverse)
 {
-	int mr, nn, i, j, l, k, istep, n, scale, shift;			//int is 16-bit on Arduino (32bit on original system
+	int16_t mr, nn, i, j, l, k, istep, n, scale, shift;			//int is 16-bit on Arduino (32bit on original system
 	char qr, qi, tr, ti, wr, wi;					// char is 8-bit signed
 
 	n = 1 << m;
@@ -283,9 +284,9 @@ int fix_fft(char fr[], char fi[], int m, int inverse)
   that fix_fft "sees" consecutive real samples as alternating
   real and imaginary samples in the complex array.
 */
-int fix_fftr(char f[], int m, int inverse)
+int fix_fftr(char f[], int16_t m, int16_t inverse)
 {
-    int i, N = 1<<(m-1), scale = 0;
+    int16_t i, N = 1<<(m-1), scale = 0;
     char tt, *fr=f, *fi=&f[N];
 
     if (inverse)

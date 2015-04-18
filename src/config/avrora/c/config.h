@@ -30,7 +30,6 @@
 #include "/Users/niels/git/avrora/src/avrora/monitors/AvroraTimer.h"
 #include "/Users/niels/git/avrora/src/avrora/monitors/AvroraRTC.h"
 
-// Allocate 4k heap for the VM
 #define HEAPSIZE 2048
 
 // 'Time slices' are 128 instructions
