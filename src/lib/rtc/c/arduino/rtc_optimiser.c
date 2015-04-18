@@ -242,8 +242,8 @@ void rtc_optimise(uint16_t *buffer, uint16_t **code_end) {
                             // Corresponding POP found!
                             if (rtc_maybe_optimise_push_pop(finger, pop_finger, code_end)) {
                                 found = true;
-                                break; // Break after optimising one instruction and start over again.
                             }
+                            break; // No point to search further, since we found the corresponding POP already.
                         }
                     }
 
