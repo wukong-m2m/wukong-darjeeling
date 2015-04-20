@@ -2004,11 +2004,6 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 // for addresses > 128K as well. (but this won't work for methods > 128K)
                 rtc_flush(); // Finish writing, and also make sure we won't optimise across basic block boundaries.
                 tmp_current_position = wkreprog_get_raw_position();
-                avroraPrintStr("BRANCHTARGET!");
-                avroraPrintInt16(branch_target_count);
-                avroraPrintHex32(rtc_branch_target_table_address(branch_target_count));
-                avroraPrintHex32(tmp_current_position);
-                avroraPrintStr("BRANCHTARGET.");
                 wkreprog_close();
                 wkreprog_open_raw(rtc_branch_target_table_address(branch_target_count));
                 emit_raw_word(tmp_current_position/2 - branch_target_table_start_ptr/2);
@@ -2026,8 +2021,6 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
         }
     }
     rtc_flush();
-
-avroraPrintStr("sint1");
 
     tmp_current_position = wkreprog_get_raw_position();
     wkreprog_close();
@@ -2074,10 +2067,6 @@ avroraPrintStr("sint1");
                 if (target_offset_in_bytes >= -128
                         && target_offset_in_bytes <= 126) {
                     // Fits in a normal BR__ instruction.
-                    avroraPrintStr("sinterklaas");
-                    avroraPrintHex16(target_address_in_bytes);
-                    avroraPrintInt16(target_offset_in_bytes);
-                    avroraPrintStr("sinterklaas");
                     switch (avr_instruction) {
                         case OPCODE_BREQ: emit_BREQ(target_offset_in_bytes); break;
                         case OPCODE_BRNE: emit_BRNE(target_offset_in_bytes); break;
