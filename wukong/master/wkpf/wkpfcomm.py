@@ -6,7 +6,7 @@ from globals import *
 from configuration import *
 import simulator
 if WKPFCOMM_AGENT == "GATEWAY":
-  from transportv2 import *
+  from transportv3 import *
 else:
   from transport import *
 

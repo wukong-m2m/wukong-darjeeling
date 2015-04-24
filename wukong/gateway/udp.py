@@ -3,7 +3,7 @@ from gevent.lock import RLock
 import sys
 import pprint
 import gtwconfig as CONFIG
-import mptn as MPTN
+import mptnUtils as MPTN
 import socket
 
 import logging
@@ -98,6 +98,7 @@ class UDPTransport(object):
         ret = None
         try:
             #ret = pyzwave.getDeviceType(radio_address)
+            pass
         finally:
             _global_lock.release()
         return ret
@@ -161,8 +162,7 @@ class UDPTransport(object):
             pass
         elif type == 1:
             # Handle property change request
-        pass
-
+            pass
 
     def discover(self):
         _global_lock.acquire(True)
@@ -187,6 +187,7 @@ class UDPTransport(object):
         ret = None
         try:
             #ret = pyzwave.poll()
+            pass
         finally:
             _global_lock.release()
         return ret

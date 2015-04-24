@@ -11,6 +11,7 @@ import signal
 import gtwconfig as CONFIG
 from gtwclass import Gateway
 import zwave
+import udp
 
 import logging
 logging.basicConfig(level=CONFIG.LOG_LEVEL)
@@ -20,16 +21,18 @@ def main():
     shutdown_event = Event()
 
 
-    if CONFIG.TRANSPORT_DEV_TYPE == 'zwave':
-        transport_device = zwave.ZWTransport(CONFIG.TRANSPORT_DEV_ADDR, "zwave")
-    elif CONFIG.TRANSPORT_DEV_TYPE == 'zigbee':
+    if CONFIG.TRANSPORT_INTERFACE_TYPE == 'zwave':
+        transport_interface = zwave.ZWTransport(CONFIG.TRANSPORT_INTERFACE_ADDR, "zwave")
+    elif CONFIG.TRANSPORT_INTERFACE_TYPE == 'udp':
+        transport_interface = udp.UDPTransport(CONFIG.TRANSPORT_INTERFACE_ADDR, "udp")
+    elif CONFIG.TRANSPORT_INTERFACE_TYPE == 'zigbee':
         raise NotImplementedError
-        # transport_device = zigbee.ZBTransport(CONFIG.TRANSPORT_DEV_ADDR, "zigbee")
-    elif CONFIG.TRANSPORT_DEV_TYPE == 'ip':
-        raise NotImplementedError
-        # transport_device = ip.UDPTransport(CONFIG.TRANSPORT_DEV_ADDR, "udp")
+        # transport_interface = zigbee.ZBTransport(CONFIG.TRANSPORT_DEV_ADDR, "zigbee")
+    else:
+        logger.error("Unsupported type of transport interface")
+        exit(-1)
 
-    g = Gateway(transport_device)
+    g = Gateway(transport_interface)
 
     # run
     if not g.start(CONFIG.SELF_TCP_PORT):

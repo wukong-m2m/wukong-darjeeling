@@ -10,7 +10,6 @@ from gevent.queue import Queue
 import json
 import ast
 import datetime
-import date
 import gtwconfig as CONFIG
 import logging
 from pserverclient import ProgressionServerClient
