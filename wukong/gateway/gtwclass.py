@@ -7,7 +7,8 @@ import utils
 from rpcservice import RPCService
 from didservice import DIDService
 from autonet import AutoNet
-from monitorservice import MonitorService
+if CONFIG.ENABLE_MONITOR:
+    from monitorservice import MonitorService
 
 import struct
 import logging
