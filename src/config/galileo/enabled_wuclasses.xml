@@ -1,9 +1,29 @@
 <WuKong>
-    <WuClass name="Threshold" appCanCreateInstances="true"/>
+    <WuClass name="Button" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Touch_Sensor" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
     <WuClass name="Light_Actuator" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
-    <WuClass name="PIR_Sensor" appCanCreateInstances="false">
+    <WuClass name="Buzzer" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Slider" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Sound_Sensor" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Light_Sensor" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Temperature_Sensor" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Relay" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
 </WuKong>
