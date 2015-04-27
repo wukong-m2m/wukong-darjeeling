@@ -66,4 +66,9 @@ typedef int64_t dj_time_t;
 #define RADIO_USE_NETWORKSERVER
 // #define RADIO_USE_UDP
 
+// GPIO: choose 1
+// #define INTEL_GALILEO_GEN1
+#define INTEL_GALILEO_GEN2
+// #define INTEL_EDISON
+
 #endif
