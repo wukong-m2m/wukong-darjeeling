@@ -210,4 +210,7 @@
     <WuClass name="Relay" id="2009" virtual="false" type="hard">
         <property name="on_off" access="readwrite" datatype="boolean" default="false"  />
     </WuClass>
+    <WuClass name="Grove_LCD" id="2010" virtual="false" type="hard">
+        <property name="value" access="readwrite" datatype="short" default="42"  />
+    </WuClass>
 </WuKong>
