@@ -11,10 +11,9 @@ import json
 import ast
 import datetime
 import gtwconfig as CONFIG
-import logging
 from pserverclient import ProgressionServerClient
-logging.basicConfig(level=CONFIG.LOG_LEVEL)
-logger = logging.getLogger( __name__ )
+import color_logging, logging
+logger = logging
 
 class SensorData:
     def __init__(self, node_id, wuclass_id, port, value, timestamp):
@@ -71,5 +70,5 @@ class MonitorService(object):
                 self._mongodb_client.wukong.readings.insert(ast.literal_eval(data_collection.toDocument()))
                 if CONFIG.ENABLE_PROGRESSION:
                     self._pserver_client.send(data_collection.node_id, data_collection_port, data_collection_value)
-            gevent.sleep(0)
+            gevent.sleep(0.001)
 

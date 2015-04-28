@@ -13,19 +13,18 @@ from gtwclass import Gateway
 import zwave
 import udp
 
-import logging
-logging.basicConfig(level=CONFIG.LOG_LEVEL)
-logger = logging.getLogger( __name__ )
+import color_logging, logging
+logger = logging
 
 def main():
     shutdown_event = Event()
 
 
-    if CONFIG.TRANSPORT_INTERFACE_TYPE == 'zwave':
+    if CONFIG.TRANSPORT_INTERFACE_TYPE.lower() == 'zwave':
         transport_interface = zwave.ZWTransport(CONFIG.TRANSPORT_INTERFACE_ADDR, "zwave")
-    elif CONFIG.TRANSPORT_INTERFACE_TYPE == 'udp':
+    elif CONFIG.TRANSPORT_INTERFACE_TYPE.lower() == 'udp':
         transport_interface = udp.UDPTransport(CONFIG.TRANSPORT_INTERFACE_ADDR, "udp")
-    elif CONFIG.TRANSPORT_INTERFACE_TYPE == 'zigbee':
+    elif CONFIG.TRANSPORT_INTERFACE_TYPE.lower() == 'zigbee':
         raise NotImplementedError
         # transport_interface = zigbee.ZBTransport(CONFIG.TRANSPORT_DEV_ADDR, "zigbee")
     else:
@@ -35,7 +34,7 @@ def main():
     g = Gateway(transport_interface)
 
     # run
-    if not g.start(CONFIG.SELF_TCP_PORT):
+    if not g.start(CONFIG.SELF_TCP_SERVER_PORT):
         logger.error("Fail to start. Going down.")
         exit(0)
 

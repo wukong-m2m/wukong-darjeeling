@@ -4,6 +4,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import tornado.ioloop
 import hashlib
 import logging
+logger = logging
+logger.debug = logging.warning
 import collections
 import gevent
 from gevent.event import AsyncResult
@@ -20,7 +22,7 @@ from tinyrpc.protocols.jsonrpc import JSONRPCProtocol
 from tinyrpc.transports import ClientTransport
 from tinyrpc import RPCClient
 from transport import NetworkServerAgent
-import mptnUtils
+import mptnUtils as MPTN
 import ipaddress
 from gevent.lock import RLock
 import json
@@ -76,8 +78,11 @@ class DeferredQueue:
                 print '[transport] found'
                 return defer_id, defer
             else:
-                print "[transport] Either one of " + str(defer.allowed_replies) + " expected from defer " + str(defer) + " does not match or the sequence number got skewed: " + str(deliver)
-        print '[transport] not found'
+                print "[transport] Either one of %s \
+                expected from defer %s does not match or \
+                the sequence number got skewed: %s" % (str(defer.allowed_replies), str(defer), str(deliver))
+
+        print '[transport] defer not found'
         return False, False
 
     def add_defer(self, defer):
@@ -117,10 +122,10 @@ def new_deliver(*args):
     return Message(*args)
 
 '''
-A tasks queue and a messages queue
+A transport_agent_out_tasks queue and a message queue
 '''
-tasks = gevent.queue.Queue()
-messages = gevent.queue.Queue()
+transport_agent_out_tasks = gevent.queue.Queue()
+broker_messages = gevent.queue.Queue()
 
 
 '''
@@ -161,71 +166,45 @@ class TransportAgent:
 RPCClientAgent connects to gateway by TCPClient
 '''
 class RPCTCPClient(ClientTransport):
-    def __init__(self, server_did, server_ip, server_port):
-        self.server_did = server_did
-        self.server_ip = server_ip
-        self.server_port = server_port
+    def __init__(self, server_id, server_address):
+        self.server_id = server_id
+        self.server_address = server_address
 
-    def _process_message(self, message):
-        dest_did, src_did, msg_type, msg_subtype = mptnUtils.extract_mult_proto_header_from_str(message)
+    def handle_rpcrep_message(self, packet):
+        dest_id, src_id, msg_type, payload = packet
 
-        if len(message) <= mptnUtils.MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET:
-            print "[transport] RPC drops message since payload is empty"
+        if dest_id is None:
+            logger.error("RPCREP packet is shorter than required.\n%s" % str(packet))
             return None
 
-        payload = message[mptnUtils.MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET:]
-        
-        if dest_did != getIDService().get_master_did():
-            print "[transport] RPC drops message since DEST DID (%X) is not master" % dest_did
+        if msg_type != MPTN.MPTN_MSGTYPE_RPCREP:
+            logger.error("RPCREP drops message since msg_type 0x%X is not RPCREP" % msg_type)
             return None
 
-        if not getIDService().is_did_valid(src_did):
-            print "[transport] RPC drops message since SRC DID (%X) is not valid" % src_did
+        if dest_id != MPTN.MASTER_ID:
+            logger.error("RPCREP drops RPCREP message since dest_id %s 0x%X is not master" % (MPTN.ID_TO_STRING(dest_id), dest_id))
             return None
 
-        if msg_type != mptnUtils.MULT_PROTO_MSG_TYPE_RPC:
-            print "[transport] RPC drops message since msg_type (%X) is not RPC" % msg_type
+        if not getIDService().is_id_valid(src_id):
+            logger.error("RPCREP drops RPCREP message since src_id %s 0x%X is not valid" % (MPTN.ID_TO_STRING(src_id), src_id))
             return None
 
-        if msg_subtype != mptnUtils.MULT_PROTO_MSG_SUBTYPE_RPC_REP:
-            print "[transport] RPC drops message since msg_type (%X) is not RPC" % msg_subtype
-            return None
-
-        print "[transport] RPC REP is received \n%s" % mptnUtils.formatted_print([payload])
+        logger.debug("got RPCREP message from src_id %s:\n%s" % (MPTN.ID_TO_STRING(src_id), MPTN.formatted_print([payload])))
 
         return payload
 
     def send_message(self, message, expect_reply=True):
-        address = (self.server_ip, self.server_port)
-        for i in xrange(mptnUtils.CONNECTION_RETRIES):
-            try:
-                sock = socket.create_connection(address, mptnUtils.NETWORK_TIMEOUT)
-                break
-            except IOError as e:
-                print '[transport] RPC failed to connect to gateway %s:%s: %s' % (address[0], address[1], str(e))
-        else:
-            if sock is not None: sock.close()
+        message = MPTN.create_packet_to_str(self.server_id, MPTN.MASTER_ID, MPTN.MPTN_MSGTYPE_RPCCMD, message)
+        logger.debug("RPC sending message: \n%s" % (MPTN.formatted_print(MPTN.split_packet_to_list(message))))
+
+        packet = MPTN.socket_send(None, self.server_id, message, expect_reply=True)
+        if packet is None:
+            logger.error("cannot get RPCREP from gateway ID 0x%X %s addr=%s due to network problem" % (self.server_id,
+                MPTN.ID_TO_STRING(self.server_id), str(self.server_address)))
             return None
 
-        ret = None
-        try:
-            #sock.settimeout(mptnUtils.NETWORK_TIMEOUT)
-            message = getIDService().create_rpc_message_str(self.server_did, message)
-            mptnUtils.special_send(sock, message)
+        ret = self.handle_rpcrep_message(packet)
 
-            if expect_reply:
-                message = mptnUtils.special_recv(sock)
-                ret = self._process_message(message)
-
-        except socket.timeout:
-            print "[transport] RPC socket is timeout with addr=%s with msg=%s" % (str(address), message)
-        except socket.error as e:
-            print"[transport] RPC gets socket error %s with addr=%s with msg=%s" % (str(e), str(address), message)
-        except struct.error as e:
-            print "[transport] RPC python struct cannot interpret message %s with error %s" % (message, str(e))
-        finally:
-            sock.close()
-        
         if expect_reply:
             return ret
 
@@ -239,23 +218,40 @@ class RPCAgent(TransportAgent):
 
     def __init__(self):
         self._mode = 'stop'
-        TransportAgent.__init__(self)
+        self._clients = {}
+        self._protocol_handlers = {}
+        self._protocol_handlers[MPTN.MPTN_MSGTYPE_IDREQ] = MPTN.ProtocolHandler(
+            MPTN.ONLY_FROM_TCP_SERVER, getIDService().handle_idreq_message)
+        self._protocol_handlers[MPTN.MPTN_MSGTYPE_GWIDREQ] = MPTN.ProtocolHandler(
+            MPTN.ONLY_FROM_TCP_SERVER, getIDService().handle_gwidreq_message)
+        self._protocol_handlers[MPTN.MPTN_MSGTYPE_RPCREP] = MPTN.ProtocolHandler(
+            MPTN.ONLY_FROM_TCP_SERVER, MPTN.handle_reply_message)
+        self._protocol_handlers[MPTN.MPTN_MSGTYPE_FWDREQ] = MPTN.ProtocolHandler(
+            MPTN.ONLY_FROM_TCP_SERVER, getIDService().handle_fwdreq_message)
+        MPTN.set_message_handler(self._process_message)
+        MPTN.set_self_id(MPTN.MASTER_ID)
+        MPTN.set_nexthop_lookup_function(getIDService()._find_nexthop_for_id)
         self._remove_timeout_greenlet = gevent.spawn(self._remove_timeout)
+        TransportAgent.__init__(self)
+        gevent.sleep(0)
 
     def _remove_timeout(self,):
         while True:
             getDeferredQueue().removeTimeoutDefer()
-            gevent.sleep(1)
+            gevent.sleep(2.5)
 
-    def _create_client_stub(self, did, ip, port):
-        assert isinstance(did, int), "did should be integer"
-        assert isinstance(ip, basestring), "port should be string"
-        assert isinstance(port, int), "port should be integer"
-        rpc_client = RPCClient(
-                JSONRPCProtocol(),
-                RPCTCPClient(did, ip, port)
-            )
-        return rpc_client.get_proxy() # Usage: ret_obj.func()
+    def _get_client_rpc_stub(self, mptn_id, address):
+        logger.debug("get client RPC stub for ID %s %X addr %s" % (MPTN.ID_TO_STRING(mptn_id), mptn_id, str(address)))
+        stub = self._clients.get(mptn_id)
+        if stub is None:
+            assert isinstance(mptn_id, int), "mptn_id should be integer"
+            assert isinstance(address, tuple) and len(address) == 2, "address should be a 2-tuple"
+            assert isinstance(address[0], basestring), "port should be string"
+            assert isinstance(address[1], int), "port should be integer"
+            rpc_client = RPCClient(JSONRPCProtocol(), RPCTCPClient(mptn_id, address))
+            stub = rpc_client.get_proxy()
+            self._clients[mptn_id] = stub
+        return stub
 
     # non-blocking method
     def deferSend(self, destination, command, payload, allowed_replies, cb, error_cb):
@@ -275,7 +271,7 @@ class RPCAgent(TransportAgent):
                 int(round(time.time() * 1000)) + 10000
         )
 
-        tasks.put_nowait(defer)
+        transport_agent_out_tasks.put_nowait(defer)
         return defer
 
     # blocking method
@@ -297,7 +293,7 @@ class RPCAgent(TransportAgent):
                 int(round(time.time() * 1000)) + 5000
         )
 
-        tasks.put_nowait(defer)
+        transport_agent_out_tasks.put_nowait(defer)
 
         return result.get()
 
@@ -317,7 +313,7 @@ class RPCAgent(TransportAgent):
                 0
         )
 
-        tasks.put_nowait(defer)
+        transport_agent_out_tasks.put_nowait(defer)
 
         return result.get()
 
@@ -337,7 +333,7 @@ class RPCAgent(TransportAgent):
                 0
         )
 
-        tasks.put_nowait(defer)
+        transport_agent_out_tasks.put_nowait(defer)
 
         return result.get()
 
@@ -357,7 +353,7 @@ class RPCAgent(TransportAgent):
                 0
         )
 
-        tasks.put_nowait(defer)
+        transport_agent_out_tasks.put_nowait(defer)
 
         return result.get()
 
@@ -368,7 +364,7 @@ class RPCAgent(TransportAgent):
 
         if self._mode != 'stop' and to_mode != 'stop':
             return False
-        
+
         if self._mode == 'stop' and to_mode == 'stop':
             return True
 
@@ -378,26 +374,27 @@ class RPCAgent(TransportAgent):
             getIDService().stop_accepting()
 
         count = 0
-        for did, ip, port in getIDService().get_all_gateways():
-            gateway = self._create_client_stub(did, ip, port)
+        for gateway in getIDService().get_all_gateways():
+            gateway_stub = self._get_client_rpc_stub(gateway.id, gateway.tcp_address)
             try:
                 if to_mode == 'add':
-                    if gateway.add():
+                    if gateway_stub.add():
                         count += 1
-                elif to_mode == 'delete': 
-                    if gateway.delete():
+                elif to_mode == 'delete':
+                    if gateway_stub.delete():
                         count += 1
-                else: 
-                    if gateway.stop():
+                else:
+                    if gateway_stub.stop():
                         count += 1
             except:
-                print "[transport] RPC call %s() to gateway (%d %s) fails" % (to_mode, did, str((ip, port)))
-        
+                logger.error("RPC learn failed %s with gateway ID %s 0x%X addr=%s" % (to_mode,
+                    MPTN.ID_TO_STRING(gateway.id), gatetway.id, str(gateway.tcp_address)))
+
         if count > 0:
             self._mode = to_mode
             return True
 
-        print "[transport] RPC calls %s() to all gateways fail or no gateway found" % to_mode
+        logger.error("RPC learn failed into %s mode with all gateways or no gateway" % to_mode)
         getIDService().stop_accepting()
         return False
 
@@ -412,144 +409,36 @@ class RPCAgent(TransportAgent):
 
     def poll(self):
         ret = []
-        for did, ip, port in getIDService().get_all_gateways():
-            gateway = self._create_client_stub(did, ip, port)
+        for gateway in getIDService().get_all_gateways():
+            gateway_stub = self._get_client_rpc_stub(gateway.id, gateway.tcp_address)
             try:
-                p = gateway.poll()
-                ret.append(p)
+                ret.append(gateway_stub.poll())
             except:
-                print "[transport] RPC poll() to gateway(%d %s) fails" % (did, str((ip, port)))
-        
+                logger.error("RPC poll fails with gateway ID=%s 0x%X addr=%s" % (MPTN.ID_TO_STRING(gateway.id), gateway.id,
+                    str(gateway.tcp_address)))
+
         if len(ret):
             return "; ".join(ret)
-        
-        print "[transport] RPC poll() to gateway(%d %s) fail or no gateway found" % (did, str((ip, port)))
-        return "Not available"
+        else:
+            logger.error("RPC poll fails with all gateways or no gateway")
+            return "Not available"
 
     def _process_message(self, context, message):
-        if len(message) < mptnUtils.MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET:
-            print "[transport] TCP Server receives message with header shorter than required %s" % mptnUtils.print_packet(str(message))
-            return None, None
+        dest_id, src_id, msg_type, payload = MPTN.extract_packet_from_str(message)
 
-        dest_did, src_did, msg_type, msg_subtype = mptnUtils.extract_mult_proto_header_from_str(message)
-        payload = message[mptnUtils.MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET:] if len(message) > mptnUtils.MULT_PROTO_MSG_PAYLOAD_BYTE_OFFSET else None
+        if dest_id is None:
+            log_msg = MPTN.formatted_print(MPTN.split_packet_to_list(message))
+            logger.error("RPC processing message with too short header: %s" % log_msg)
+            return
 
-        assert isinstance(context, tuple), "[transport] TCP Server context should be an IP address tuple"
-        context_str = ':'.join([str(i) for i in context])
-        log_msg = [context_str] + mptnUtils.split_packet_header(message)
-        if payload is not None: log_msg.append(payload)
-        log_msg = mptnUtils.formatted_print(log_msg)
+        protocol_handler = self._protocol_handlers.get(msg_type)
+        if protocol_handler is None:
+            log_msg = MPTN.formatted_print(MPTN.split_packet_to_list(message))
+            print "RPC processing unknown message type 0x%X, message:\n%s" % (msg_type, log_msg)
+            return
 
-        if msg_type == mptnUtils.MULT_PROTO_MSG_TYPE_PFX:
-            # Only PFX REQ message from gateway would get here
-            if msg_subtype != mptnUtils.MULT_PROTO_MSG_SUBTYPE_PFX_REQ:
-                print "[transport] TCP Server receives message subtype other than PFX UPD and will not send any reply"
-                return None, None
-
-            if dest_did != getIDService().get_master_did() and src_did != 0xFFFFFFFF:
-                print "[transport] TCP server: PFX REQ with incorrect src did = %X and/or dest did = %X" % (src_did, dest_did)
-                return None, None
-
-            if payload is None:
-                print "[transport] TCP server: PFX REQ might have the payload"
-                return None, None
-            
-            # _pfx_req_handler "RADDR=%d;LEN=%d;PORT=%d;MAC=%s"            
-            m = re.match("RADDR=(\d+);LEN=(\d+);PORT=(\d+);MAC=(.+)",payload)
-            if m is None or len(m.group(4)) != 8:
-                print "[transport] TCP server: PFX REQ payload should be RADDR=int;LEN=int;PORT=int;MAC=8bytes"
-                return None, None
-
-            print "[transport] TCP Server receives PFX REQ message:\n" + log_msg
-            raddr = int(m.group(1)) 
-            raddr_len = int(m.group(2))
-            port = int(m.group(3))
-            mac = m.group(4)
-
-            dest_did = getIDService().get_or_allocate_gateway_did(raddr, raddr_len, context[0], port, mac)
-            msg_subtype = mptnUtils.MULT_PROTO_MSG_SUBTYPE_PFX_ACK if dest_did != 0xFFFFFFFF else mptnUtils.MULT_PROTO_MSG_SUBTYPE_PFX_NAK
-            message = mptnUtils.create_mult_proto_header_to_str(dest_did, getIDService().get_master_did(), msg_type, msg_subtype)
-
-            log_msg = mptnUtils.split_packet_header(message)
-            log_msg = mptnUtils.formatted_print(log_msg)
-            if msg_subtype == mptnUtils.MULT_PROTO_MSG_SUBTYPE_PFX_ACK:
-                print "[transport] TCP Server replies PFX ACK message:\n" + log_msg
-            else:
-                print "[transport] TCP Server replies PFX NAK message:\n" + log_msg
-
-            return (1, message)
-
-        elif msg_type == mptnUtils.MULT_PROTO_MSG_TYPE_DID:
-            # Only DID UPD message from gateway would get here
-            if msg_subtype != mptnUtils.MULT_PROTO_MSG_SUBTYPE_DID_UPD:
-                print "[transport] TCP server receives invalid DID message subtype %X and will not send any reply" % msg_subtype
-                return None, None
-
-            if not getIDService().is_did_valid(dest_did):
-                print "[transport] TCP server: DID UPD with incorrect src did = %X and/or dest did = %X" % (src_did, dest_did)
-                return None, None
-
-            if payload is None:
-                print "[transport] TCP server: DID UPD might have the payload"
-                return None, None
-
-            if len(payload) != 8:
-                print "[transport] TCP server: DID UPD payload must be 8 bytes (MAC address)"
-                return None, None
-
-            print "[transport] TCP Server receives DID UPD message:\n" + log_msg
-            # _did_req_handler
-            registering_did = src_did
-            gateway_did = dest_did
-            mac_addr = payload
-            registered_did = getIDService().allocate_device_did(registering_did, gateway_did, mac_addr)
-            msg_subtype = mptnUtils.MULT_PROTO_MSG_SUBTYPE_DID_ACK if registered_did != 0xFFFFFFFF else mptnUtils.MULT_PROTO_MSG_SUBTYPE_DID_NAK
-            message = mptnUtils.create_mult_proto_header_to_str(registered_did, getIDService().get_master_did(), msg_type, msg_subtype)
-
-            log_msg = mptnUtils.split_packet_header(message)
-            log_msg = mptnUtils.formatted_print(log_msg)
-            if msg_subtype == mptnUtils.MULT_PROTO_MSG_SUBTYPE_DID_ACK:
-                print "[transport] TCP Server replies DID ACK message:\n" + log_msg
-            else:
-                print "[transport] TCP Server replies DID NAK message:\n" + log_msg
-
-            return (1, message)
-
-        # For the rest of msg_type
-        # Check if SRC_DID is on MPTN network
-        # Also check if DEST_DID is on MPTN network
-        # Drop if one of test is not passed
-        if dest_did != getIDService().get_master_did():
-            print "[transport] TCP server drops message since DEST DID (%X) is not master" % dest_did
-            return None, None
-
-        if not getIDService().is_did_valid(src_did):
-            print "[transport] TCP server drops message since SRC DID (%X) is not valid" % src_did
-            return None, None        
-        
-        if msg_type == mptnUtils.MULT_PROTO_MSG_TYPE_FWD:
-            # Check if DEST_DID is on the same network and get radio address of it
-            #   True:   send to transport and return back to source gateway or master
-            #   False:  find and then send to radio address of destination IP hop
-            if payload is None:
-                print "[transport] TCP server: packet FWD might have the payload"
-                return None, None
-
-            if msg_subtype != mptnUtils.MULT_PROTO_MSG_SUBTYPE_FWD:
-                print "[transport] TCP server receives invalid FWD FWD message subtype and will not send any reply"
-                return None, None 
-            
-            print message
-            print "[transport] TCP Server receives FWD FWD message:\n" + log_msg
-
-            msg_subtype = mptnUtils.MULT_PROTO_MSG_SUBTYPE_FWD_ACK
-            header = mptnUtils.create_mult_proto_header_to_str(src_did, dest_did, msg_type, msg_subtype)
-
-            return (2, (header, src_did, payload))
-
-        else:
-            print "[transport] TCP server receives unknown message with type %X\n%s" % (msg_type, log_msg)
-            return None, None 
+        protocol_handler.handler(context, dest_id, src_id, msg_type, payload)
+        return
 
     def receive(self, timeout_msec=100):
         try:
@@ -558,157 +447,130 @@ class RPCAgent(TransportAgent):
             server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             server.bind(('', 9010))
             server.listen(500)
-        except socket.error as msg:
+        except socket.error as e:
             server.close()
-            print "[transport] TCP Server cannot start due to socket error: %s" % msg
+            logger.error("TCP Server cannot start: socket error %s" % str(e))
             return
 
-        def handle_socket(sock, addr):
-            try:
-                print "[transport] TCP Server accepts connection from address %s" % str(addr)
-                sock.settimeout(mptnUtils.NETWORK_TIMEOUT)
-                message = mptnUtils.special_recv(sock)
-                status, response = self._process_message(addr, message)
-                if status is None:
-                    return
-
-                if status == 1:
-                    mptnUtils.special_send(sock, response)
-
-                elif status == 2:
-                    mptnUtils.special_send(sock, response[0])
-                    src = response[1]
-                    reply = response[2]
-                    if src and reply:
-                        reply = map(ord, reply)
-                        deliver = new_deliver(src, reply[0], reply[1:])
-                        messages.put_nowait(deliver)
-                        print '[transport] TCP Server receive: put a message to messages'
-
-            except socket.timeout:
-                print "[transport] TCP Server socket is timeout from addr=%s with msg=%s" % (str(addr),message)
-            except socket.error as e:
-                print "[transport] TCP Server gets socket error %s from addr=%s with msg=%s" % (str(e), str(addr), message)
-            except struct.error as e:
-                print "[transport] TCP Server python struct cannot interpret message %s" % message
-            finally:
-                sock.close()
-            getDeferredQueue().removeTimeoutDefer()
-
-        print "[transport] TCP server for MPTN is listening on %s" % str(server.getsockname())
+        logger.info("TCP server listens on %s" % str(server.getsockname()))
         while True:
             new_sock, address = server.accept()
             prevent_socket_inheritance(new_sock)
-            gevent.spawn(handle_socket, new_sock, address)
-            gevent.sleep(0.01)
+            logger.info("TCP Server accepts from address %s" % str(address))
+            gevent.spawn(MPTN.handle_socket, new_sock, address)
+            gevent.sleep(0.001)
 
     def handler(self):
         while True:
-            defer = tasks.get()
+            defer = transport_agent_out_tasks.get()
             #print 'handler: getting defer from task queue'
 
             if defer.message.command == "discovery":
                 #print 'handler: processing discovery request'
                 discovered_nodes = []
-                for did, ip, port in getIDService().get_all_gateways():
-                    gateway = self._create_client_stub(did, ip, port)
+                for gateway in getIDService().get_all_gateways():
+                    # logger.debug("discover get gateway ID %s %X addr=%s" % (MPTN.ID_TO_STRING(gateway.id), gateway.id, str(gateway.tcp_address)))
+                    gateway_stub = self._get_client_rpc_stub(gateway.id, gateway.tcp_address)
                     try:
-                        d = gateway.discover()
-                        max_num = 2**(getIDService().get_gateway_raddr_len(did)*8)-1
-                        prefix = getIDService().get_gateway_prefix(did)
-                        for i in xrange(len(d)):
-                            if d[i] > max_num:
-                                print "[transport] RPC discover() to gateway(%d %s) fails due to incorrect radio address %d" % (did, str((ip, port)), d[i])
-                                d = []
-                                break
-                            d[i] = prefix | d[i]
-                        discovered_nodes += d
-                    except:
-                        print "[transport] RPC discover() to gateway(%d %s) fails" % (did, str((ip, port)))
+                        gateway_discovered_nodes = gateway_stub.discover()
+                        network_size = gateway.network_size
+                        prefix = gateway.prefix
+                        for node_address in gateway_discovered_nodes:
+                            if node_address >= network_size:
+                                logger.error("RPC discover fails with gateway ID=%s addr=%s: discovered nodes %d" % (
+                                    MPTN.ID_TO_STRING(gateway.id),
+                                    str(gateway.tcp_address), gateway_discovered_nodes[i])
+                                )
+                                continue
+                            discovered_nodes.append(prefix | node_address)
+                    except Exception as e:
+                        logger.error("RPC discover fails with gateway ID=%s addr=%s; error=%s" % (MPTN.ID_TO_STRING(gateway.id),
+                            str(gateway.tcp_address), str(e)))
                 defer.callback(discovered_nodes)
 
             elif defer.message.command == "routing":
                 #print 'handler: processing routing request'
                 routing = {}
-                for did, ip, port in getIDService().get_all_gateways():
-                    gateway = self._create_client_stub(did, ip, port)
+                for gateway in getIDService().get_all_gateways():
+                    gateway_stub = self._get_client_rpc_stub(gateway.id, gateway.tcp_address)
                     try:
                         r = gateway.routing()
-                        max_num = 2**(getIDService().get_gateway_raddr_len(did)*8)-1
-                        prefix = getIDService().get_gateway_prefix(did)
-                        for rnode, rlist in r.items():
-                            if rnode > max_num:
-                                break
-                            rnode = prefix | rnode
-                            for i in xrange(len(rlist)):
-                                if rlist[i] > max_num:
-                                    print "[transport] RPC routing() to gateway(%d %s) fails due to incorrect radio address %d in the routing list of device DID %d" % (did, str((ip, port)), rlist[i], rnode)
-                                    rlist = []
-                                    break
-                                rlist[i] = prefix | rlist[i]
-                            if len(rlist) == 0:
-                                break
-                            routing[rnode] = rlist
+                        network_size = gateway.network_size
+                        prefix = gateway.prefix
+                        neighbers = []
+                        for node, l in r.items():
+                            if node > network_size: continue
+                            node = prefix | node
+                            if len(l) == 0: break
+                            for i in xrange(len(l)):
+                                if l[i] >= network_size:
+                                    logger.error("RPC routing fails with gateway ID=%s addr=%s: discovered_nodes %d" % (
+                                        gateway.id, str(gateway.tcp_address), l[i], node))
+                                    continue
+                                neighbers.append(prefix | l[i])
+                            routing[node] = neighbers
                     except:
-                        print "[transport] RPC routing() to gateway(%s) fails" % gw_addr
+                        logger.error("RPC routing fails with gateway ID=%s addr=%s" % (MPTN.ID_TO_STRING(gateway.id), str(gateway.tcp_address)))
 
                 defer.callback(routing)
 
             elif defer.message.command == "device_type":
                 device_type = None
-                dev_did = defer.message.destination
-                dev_addr = getIDService().get_device_raddr(dev_did)
-                if dev_addr is None:
+                node_id = defer.message.destination
+                node_address = getIDService().get_node_addr(dev_id)
+                if node_address is None:
                     device_type = [1, 255, 0]
                 else:
-                    gw_did, gw_ip, gw_port = getIDService().get_gateway(dev_did)
-                    if gw_did is not None:
-                        gateway = self._create_client_stub(gw_did, gw_ip, gw_port)
+                    gateway = getIDService().get_gateway(dev_id)
+                    if gateway is not None:
+                        gateway = self._get_client_rpc_stub(gateway.id, gateway.tcp_address)
                         try:
-                            device_type = gateway.getDeviceType(dev_addr)
+                            device_type = gateway.getDeviceType(node_address)
                         except:
-                            print "[transport] RPC getDeviceType() to DID(%d) and gateway(%d %s) fails" % (dev_did, gw_did, str((gw_ip, gw_port)))
+                            logger.error("RPC getDeviceType ID=%s fails with gateway ID=%s addr=%s" % (MPTN.ID_TO_STRING(node_id),
+                                MPTN.ID_TO_STRING(gateway.id), str(gateway.tcp_address)))
 
                 defer.callback(device_type)
 
             else: # defer.message.command is 'send'
                 retries = 1
-                dev_did = defer.message.destination
+                node_id = defer.message.destination
                 command = defer.message.command
                 payload = defer.message.payload
 
-                dev_addr = getIDService().get_device_raddr(dev_did)
-                if dev_addr is None:
+                node_address = getIDService().get_node_addr(node_id)
+                gateway = getIDService().get_gateway(node_id)
+                if gateway is None or node_address is None:
                     retries = 0
                 else:
-                    gw_did, gw_ip, gw_port = getIDService().get_gateway(dev_did)
+                    gateway_stub = self._get_client_rpc_stub(gw_id, gw_ip, gw_port)
 
-                    if gw_did is None:
-                        retries = 0
-                    else:
-                        gateway = self._create_client_stub(gw_did, gw_ip, gw_port)
+                    # prevent pyzwave send got preempted and defer is not in queue
+                    if len(defer.allowed_replies) > 0:
+                        logger.info("RPC send adds defer %s to agent queue" % str(defer))
+                        getAgent().append(defer)
 
-                        # prevent pyzwave send got preempted and defer is not in queue
-                        if len(defer.allowed_replies) > 0:
-                            print "[transport] handler: appending defer %s to queue" % str(defer)
-                            getAgent().append(defer)
+                    while retries > 0:
+                        try:
+                            #print "handler: sending message from defer"
+                            header = MPTN.create_packet_to_str(
+                                node_id,
+                                MPTN.MASTER_ID,
+                                MPTN.MPTN_MSGTYPE_FWDREQ,
+                                None
+                            )
+                            message = map(ord, header) + [command] + payload
+                            success, message = gateway_stub.send(node_address, message)
 
-                        while retries > 0:
-                            try:
-                                #print "handler: sending message from defer"
-                                message = getIDService().create_fwd_message_byte_list(dev_did, [command] + payload)
-
-                                success, msg = gateway.send(dev_addr, message)
-
-                                if success: break
-
-                                print "[transport] RPC send() replies %s so retries %d time(s)" % (msg, retries)
-                            except:
-                                print "[transport] RPC send() to DID(%d) and gateway(%d %s) fails" % (dev_did, gw_did, str((gw_ip, gw_port)))
-                            retries -= 1
+                            if success: break
+                            else: logger.error("RPC send got error replies: %s (retries %d-th time)" % (message, retries))
+                        except:
+                            logger.error("RPC send to ID=%s via gateway ID=%d addr=%s fails" % (node_id,
+                                gateway.id, str(gateway.tcp_address)))
+                        retries -= 1
 
                 if retries == 0 or len(defer.allowed_replies) == 0:
-                    print "[transport] handler: returns immediately to handle failures, or defer has no expected replies"
+                    logger.info("RPC send handler: returns immediately to handle failures, or defer has no expected replies")
                     defer.callback(None)
 
             gevent.sleep(0)
@@ -744,8 +606,9 @@ class MockAgent(TransportAgent):
                 error_callback,
                 self.verify(allowed_replies),
                 allowed_replies,
-                new_message(destination, command, self.getNextSequenceNumberAsPrefixPayload() + payload), int(round(time.time() * 1000)) + 10000)
-        tasks.put_nowait(defer)
+                new_message(destination, command, self.getNextSequenceNumberAsPrefixPayload() + payload),
+                    int(round(time.time() * 1000)) + 10000)
+        transport_agent_out_tasks.put_nowait(defer)
         return defer
     def getDeviceType(self,node):   #mock only wudevice, not sure what does the 3 fields do though, feel free to change it if you understand it
         return (None, 0xff, None)
@@ -763,8 +626,9 @@ class MockAgent(TransportAgent):
                 error_callback,
                 self.verify(allowed_replies),
                 allowed_replies,
-                new_message(destination, command, self.getNextSequenceNumberAsPrefixPayload() + payload), int(round(time.time() * 1000)) + 10000)
-        tasks.put_nowait(defer)
+                new_message(destination, command, self.getNextSequenceNumberAsPrefixPayload() + payload),
+                    int(round(time.time() * 1000)) + 10000)
+        transport_agent_out_tasks.put_nowait(defer)
 
         message = result.get() # blocking
 
@@ -784,7 +648,7 @@ class MockAgent(TransportAgent):
                 None,
                 new_message(1, "routing", 0),
                 0)
-        tasks.put_nowait(defer)
+        transport_agent_out_tasks.put_nowait(defer)
 
         return result.get()
 
@@ -811,7 +675,7 @@ class MockAgent(TransportAgent):
     # to be run in a thread, and others will use ioloop to monitor this thread
     def handler(self):
         while 1:
-            defer = tasks.get()
+            defer = transport_agent_out_tasks.get()
 
             if defer.message.command == "discovery":
                 defer.callback(self.discovery())
@@ -839,8 +703,8 @@ class BrokerAgent:
     def run(self):
         while 1:
             # monitor pipes from receive
-            deliver = messages.get()
-            print '[transport] getting messages from nodes'
+            deliver = broker_messages.get()
+            print '[transport] getting message from nodes'
             print '[transport] ' + str(deliver)
 
             # display logs from nodes if received
@@ -861,7 +725,7 @@ class BrokerAgent:
                 # remove it
                 getDeferredQueue().remove_defer(defer_id)
             else:
-                # if it is special messages
+                # if it is special message
                 if not is_master_busy():
                     if deliver.command == pynvc.GROUP_NOTIFY_NODE_FAILURE:
                         print "[transport] reconfiguration message received"
@@ -869,10 +733,14 @@ class BrokerAgent:
                     else:
                         print "[transport] Failure: Unknown message received"
                 else:
-                    #log = "Incorrect reply received. Message type correct, but didnt pass verification: " + str(message)
+                    #log = "Incorrect reply received. Message type correct, but mptn_idnt pass verification: " + str(message)
                     print "[transport] message discarded"
                     print '[transport] ' + str(deliver)
             gevent.sleep(0)
+
+Gateway = collections.namedtuple("Gateway", "id, tcp_address, if_address, if_address_len, prefix, prefix_len,\
+    network, network_size, netmask, hostmask, value")
+NodeInfo = collections.namedtuple("NodeInfo", "id, if_address, is_gateway, gateway_id, value")
 
 class IDService:
     _id_server = None
@@ -883,213 +751,338 @@ class IDService:
         return cls._id_server
 
     def __init__(self):
-        self._device_dids = mptnUtils.DBDict("master_dev_dids.sqlite")
-        self._gateway_dids = mptnUtils.DBDict("master_gtw_dids.sqlite")
-        self._device_macs = mptnUtils.DBDict("master_dev_macs.sqlite")
-        self._is_insertable = False
+        self._is_joinable = False
         self._global_lock = RLock()
+        self._nodes_db = MPTN.DBDict("master_node_info.sqlite")
+        self._gateways_db = MPTN.DBDict("master_gateway_info.sqlite")
+        self._init_lookup()
 
-    def _update_gateways(self, new_did, new_ip, new_port, new_mask):
-        if len(self._gateway_dids) < 2:
-            return
-        # update other gateway PFX UPD
-        to_new_gateway_str = []
-        new_did_str = str(ipaddress.ip_address(new_did))
-        for did, ip, port in self.get_all_gateways():
-            # payload "DID/MASK=IP:PORT"
-            did_str = str(ipaddress.ip_address(did))
-            mask = self.get_gateway_prefix_bit_len(did)
-            if did == new_did:
-                to_new_gateway_str.append("%s/%d=%s:%d" % (did_str, mask, ip, port))
-            else:
-                header = mptnUtils.create_mult_proto_header_to_str(did, getIDService().get_master_did(), mptnUtils.MULT_PROTO_MSG_TYPE_PFX, mptnUtils.MULT_PROTO_MSG_SUBTYPE_PFX_UPD)
-                payload = "%s/%d=%s:%d" % (new_did_str, new_mask, new_ip, new_port)
-                self._send_to((ip, port), header+payload)
+    def _init_lookup(self):
+        with self._global_lock:
+            self._nodes_lookup = {int(key):value for (key,value) in self._nodes_db.iteritems()}
+            self._values_lookup = {node.value:node_id for (node_id, node) in self._nodes_lookup.iteritems()}
+            self._gateways_lookup = {int(key):value for (key,value) in self._gateways_db.iteritems()}
+            # _nexthop_lookup: key = "MPTN ID/NETMASK" STRING, value = NextHop namedtuple
+            self._nexthop_lookup = {MPTN.ID_NETWORK_FROM_STRING("%s/%s"%(MPTN.ID_TO_STRING(int(gateway_id)),MPTN.ID_TO_STRING(gateway.netmask))):MPTN.NextHop(id=int(gateway_id),tcp_address=gateway.tcp_address) for (gateway_id, gateway) in self._gateways_lookup.iteritems()}
+            self._nexthop_hash = hash(frozenset(self._nexthop_lookup.items()))
 
-        header = mptnUtils.create_mult_proto_header_to_str(new_did, getIDService().get_master_did(), mptnUtils.MULT_PROTO_MSG_TYPE_PFX, mptnUtils.MULT_PROTO_MSG_SUBTYPE_PFX_UPD)
-        payload = ";".join(to_new_gateway_str)
-        self._send_to((ip, port), header+payload)
+    def is_id_valid(self, mptn_id):
+        return mptn_id in self._nodes_lookup
 
-    def _send_to(self, address, message):
-        for i in xrange(mptnUtils.CONNECTION_RETRIES):
-            try:
-                sock = socket.create_connection(address, mptnUtils.NETWORK_TIMEOUT)
-                break
-            except IOError as e:
-                print '[transport] failed to connect to gateway %s:%s: %s', address[0], address[1], str(e)
-        else:
-            if sock is not None: sock.close()
-            return None
-
-        try:
-            #sock.settimeout(mptnUtils.NETWORK_TIMEOUT)
-            mptnUtils.special_send(sock, message)
-
-        except socket.timeout:
-            print "[transport] gateway socket is timeout with addr=%s with msg=%s" % (str(address), message)
-        except socket.error as e:
-            print"[transport] gets socket error %s to gateway with addr=%s with msg=%s" % (str(e), str(address), message)
-        except struct.error as e:
-            print "[transport] python struct cannot interpret message %s to gateway with error %s" % (message, str(e))
-        finally:
-            sock.close()
-    
-    def get_master_did(self):
-        return 0
-
-    def is_did_valid(self, did):
-        if did in self._device_dids:
-            return True
-
-        if did in self._gateway_dids:
-            return True
+    def is_id_gateway(self, mptn_id):
+        return mptn_id in self._gateways_lookup
 
     def start_accepting(self):
         with self._global_lock:
-            self._is_insertable = True
+            self._is_joinable = True
 
     def stop_accepting(self):
         with self._global_lock:
-            self._is_insertable = False
-
-    def allocate_device_did(self, did, gateway_did, mac_addr=None):
-        if mac_addr is not None and mac_addr in self._device_macs:
-            if self._device_macs[mac_addr] != did:
-                return 0xFFFFFFFF
-        
-        with self._global_lock:
-            if self._is_insertable or ALLOW_MASTER_ALWAYS_JOINABLE:
-                if mac_addr is not None:
-                    mac_addr = ":".join(map(lambda x:"%02X"%x,map(ord,mac_addr)))
-                    self._device_macs[mac_addr] = did
-                prefix_bit_len = self.get_gateway_prefix_bit_len(gateway_did)
-                raddr = (did << prefix_bit_len) >> prefix_bit_len
-                tmp_dict = {"gtwdid":gateway_did,"raddr":raddr,"mac":mac_addr}
-                self._device_dids[did] = json.dumps(tmp_dict)
-            return did
-        return 0xFFFFFFFF
-
-    def get_or_allocate_gateway_did(self, g_raddr, g_raddr_len, g_ip, g_port, g_mac_addr=None):
-        error_did = 0xFFFFFFFF
-        for did, g_json_info in self._gateway_dids.iteritems():
-            did = int(did)
-            g_info = json.loads(g_json_info)
-            if g_ip == g_info["ip"] and g_port == g_info["port"]:
-                if g_raddr_len != g_info["raddr_len"] or g_raddr != g_info["raddr"]:
-                    print "[DID] there is a gateway's DID %d(%s) matching the ip %s and port %d instead of the radio address %d (?=%d) or its length %d (?=%d)" %(did, str(ipaddress.ip_address(did)), g_info["ip"], g_info["port"], g_addr, g_info["raddr"], g_raddr, g_info["raddr_len"], g_raddr_len)
-                    return error_did
-                print "[DID] one gateway's DID %d(%s) found to match the ip %s and port %d" %(did, str(ipaddress.ip_address(did)), g_info["ip"], g_info["port"])
-                return did
-        else:
-            max_len = mptnUtils.MULT_PROTO_LEN_DID
-            prefix_bit_len = (max_len-g_raddr_len)*8
-
-            if g_raddr_len > max_len:
-                print "[DID] gateway's radio address length exceeds %d bytes" % max_len
-                return error_did
-
-            if g_raddr > 2**(g_raddr_len*8):
-                print "[DID] gateway's radio address %d exceeds %d" % (g_raddr, 2**(g_raddr_len*8))
-                return error_did
-
-            if g_raddr_len == 4:
-                raise NotImplementedError
-            elif g_raddr_len == 1:
-                candidates = ipaddress.ip_network("0.0.0.0/16").subnets(prefixlen_diff=8)
-            elif g_raddr_len == 2:
-                candidates = ipaddress.ip_network("0.0.0.0/8").subnets(prefixlen_diff=8)
-            else:
-                return error_did
-
-            for c in candidates:
-                for did in self._gateway_dids:
-                    did = int(did)
-                    if ipaddress.ip_address(did) in c:
-                        break
-                else:
-                    prefix = int(c.network_address)
-                    break
-            else:
-                print "[DID] cannot find any available gateway DID for the ip %s and port %d" %(ip, port)
-                return error_did
-                    
-            did = prefix | g_raddr
-            netmask = int("1"*prefix_bit_len + "0"*g_raddr_len*8, 2)
-            prefix = did & netmask
-            g_mac_addr = ":".join(map(lambda x:"%02X"%x,map(ord,g_mac_addr)))
-            self._gateway_dids[did] = json.dumps({"ip":g_ip, "port":g_port, "prefix":prefix, "prefix_bit_len":prefix_bit_len, "raddr":g_raddr, "raddr_len":g_raddr_len, "mac":g_mac_addr})
-            gevent.spawn(self._update_gateways, did, g_ip, g_port, prefix_bit_len)
-            return did
+            self._is_joinable = False
 
     def get_all_gateways(self):
-        ret = []
-        for did, g_json_info in self._gateway_dids.iteritems():
-            did = int(did)
-            g_info = json.loads(g_json_info)
-            ret.append((did, g_info["ip"], g_info["port"]))
-        return ret
+        return self._gateways_lookup.itervalues()
 
-    def get_gateway(self, did):
-        if did not in self._device_dids:
-            print "[DID] cannot find device based on DID %d" % did 
-            return None, None, None        
-        
-        d_info = json.loads(self._device_dids[did])
-        if d_info["gtwdid"] not in self._gateway_dids:
-            print "[DID] cannot find gateway based on DID %d" % did 
-            return None, None, None
+    def get_gateway(self, mptn_id):
+        if not self.is_id_valid(mptn_id):
+            print "cannot find ID %d" % mptn_id
+            return None
 
-        g_info = json.loads(self._gateway_dids[d_info["gtwdid"]])
-        return d_info["gtwdid"], g_info["ip"], g_info["port"]
+        if not self.is_id_gateway(mptn_id):
+            mptn_id = self._node_lookup[mptn_id].gateway_id
 
-    def get_device_raddr(self, did):
-        if did in self._device_dids:
-            d_info = json.loads(self._device_dids[did])
-            return d_info["raddr"]
+        return self._gateways_lookup[mptn_id]
 
-        print "[DID] cannot find device's radio address based on DID %d" % did 
+    def get_node_addr(self, mptn_id):
+        node = self._node_lookup.get(mptn_id)
+        if node is None: return None
+        return node.if_address
+
+    def _get_user_permission(self, to_check_id, gatetway_id, value):
+        # TBD
+        return True
+
+    def _find_nexthop_for_id(self, mptn_id):
+        if mptn_id is None or mptn_id == MPTN.MASTER_ID:
+            return None
+
+        for network, next_hop in self._nexthop_lookup.iteritems():
+            if MPTN.IS_ID_IN_NETWORK(mptn_id, network):
+                return next_hop
+            gevent.sleep(0)
+
         return None
 
-    def get_gateway_raddr_len(self, did):
-        if did in self._gateway_dids:
-            g_info = json.loads(self._gateway_dids[did])
-            return g_info["raddr_len"]
+    def _add_new_node(self, node_info):
+        self._nodes_db[node_info.id] = node_info
+        self._nodes_lookup[node_info.id] = node_info
+        self._values_lookup[node_info.value] = node_info.id
 
-        print "[DID] cannot find gateway's radio address len based on DID %d" % did 
-        return None
+    def _del_old_node(self, mptn_id, value):
+        node_id = self._values_lookup.pop(value)
+        if mptn_id != node_id:
+            logger.error("del_old_node ID unmatches")
+            self._values_lookup[value] = node_id
+            exit(-1)
+        self._nodes_db.pop(node_id)
+        self._nodes_lookup.pop(node_id)
 
-    def get_gateway_prefix(self, did):
-        if did in self._gateway_dids:
-            g_info = json.loads(self._gateway_dids[did])
-            return g_info["prefix"]
+    def _alloc_node_id(self, to_check_id, gateway_id, value):
+        ERROR_ID = 0xFFFFFFFF
+        with self._global_lock:
+            old_id = self._values_lookup.get(value)
+            if old_id is not None:
+                if old_id != to_check_id:
+                    logger.error("IDREQ odd things happened: both to-check ID %s 0x%X and old ID %s 0x%X has the same value=%s could be the same gateway or different gateways" % (
+                        MPTN.ID_TO_STRING(to_check_id), to_check_id, MPTN.ID_TO_STRING(old_id), old_id, value))
+                    return ERROR_ID
 
-        print "[DID] cannot find gateway's prefix based on DID %d" % did 
-        return None
+                elif old_id == ERROR_ID:
+                    logger.error("IDREQ DB inconsistent: cannot insert an 0xFFFFFFFF into db")
+                    exit(-1)
 
-    def get_gateway_prefix_bit_len(self, did):
-        if did in self._gateway_dids:
-            g_info = json.loads(self._gateway_dids[did])
-            return g_info["prefix_bit_len"]
+                else:
+                    gateway = self.get_gateway(to_check_id)
+                    if gateway is not None and gateway.id == gateway_id:
+                        return to_check_id
+                    else:
+                        return ERROR_ID
 
-        print "[DID] cannot find gateway's prefix len based on DID %d" % did 
-        return None
+            # old_id is None
+            # It needs to allocate a new ID
+            else:
+                if not (self._is_joinable or ALLOW_MASTER_ALWAYS_JOINABLE):
+                    logger.error("IDREQ cannot be handled at this time")
+                    return ERROR_ID
 
-    def get_gateway_mac(self, did):
-        if did in self._gateway_dids:
-            g_info = json.loads(self._gateway_dids[did])
-            return g_info["mac"]
+                if to_check_id == ERROR_ID or self.is_id_valid(to_check_id):
+                    logger.error("IDREQ to-check ID %s 0x%X cannot be a valid one or 0xFFFFFFFF" % (MPTN.ID_TO_STRING(to_check_id), to_check_id))
+                    return ERROR_ID
 
-        print "[DID] cannot find gateway's mac based on DID %d" % did 
-        return None
+                if self.is_id_gateway(to_check_id):
+                    logger.error("IDREQ to-check ID %s 0x%X should not be a gateway" % (MPTN.ID_TO_STRING(to_check_id), to_check_id))
+                    return ERROR_ID
 
-    def create_fwd_message_byte_list(self, did, message):
-        header = mptnUtils.create_mult_proto_header_to_str(did, getIDService().get_master_did(), mptnUtils.MULT_PROTO_MSG_TYPE_FWD, mptnUtils.MULT_PROTO_MSG_SUBTYPE_FWD)
-        header = map(ord, header)
-        return header+message
+                if not self._get_user_permission(to_check_id, gateway_id, value):
+                    logger.error("IDREQ to-check ID %s 0x%X is not approved by user" % (MPTN.ID_TO_STRING(to_check_id), to_check_id))
+                    return ERROR_ID
 
-    def create_rpc_message_str(self, did, message):
-        header = mptnUtils.create_mult_proto_header_to_str(did, getIDService().get_master_did(), mptnUtils.MULT_PROTO_MSG_TYPE_RPC, mptnUtils.MULT_PROTO_MSG_SUBTYPE_RPC_CMD)
-        return header+message
+                gateway = self.get_gateway(gateway_id)
+                if not MPTN.IS_ID_IN_NETWORK(to_check_id, gateway.network):
+                    logger.error("IDREQ to-check ID %s 0x%X is not in gateway(ID %s 0x%X)'s network" % (MPTN.ID_TO_STRING(to_check_id), to_check_id, MPTN.ID_TO_STRING(gateway_id), gateway_id))
+                    return ERROR_ID
+
+                if_addr = to_check_id & gateway.hostmask
+                self._add_new_node(NodeInfo(id=to_check_id, is_gateway=False, gateway_id=gateway_id, value=value, if_address=if_addr))
+                return to_check_id
+
+    def _alloc_gateway_id(self, to_check_id, if_addr, if_addr_len, if_netmask, ip, port, value):
+        ERROR_ID = 0xFFFFFFFF
+
+        with self._global_lock:
+            old_id = self._values_lookup.get(value)
+            if old_id is not None:
+                if old_id != to_check_id:
+                    logger.error("GWIDREQ odd things happened: both to-check ID %s 0x%X and old ID %s 0x%X has the same value=%s could be the same gateway or different gateways" % (MPTN.ID_TO_STRING(to_check_id), to_check_id,
+                        MPTN.ID_TO_STRING(old_id), old_id, value))
+                    return ERROR_ID
+
+                elif old_id == ERROR_ID:
+                    logger.error("GWIDREQ inconsistent: cannot insert an 0xFFFFFFFF into db")
+                    exit(-1)
+
+                # Got an old ID to check
+                else:
+                    if self.is_id_valid(to_check_id) and not self.is_id_gateway(to_check_id):
+                        logger.error("GWIDREQ got a non-gateway to check ID")
+                        return ERROR_ID
+
+                    gateway = self.get_gateway(to_check_id)
+                    if gateway.value != value:
+                        logger.error("GWIDREQ value unmatched")
+                        return ERROR_ID
+
+                    if gateway.tcp_address[0] != ip or gateway.tcp_address[1] != port:
+                        logger.error("GWIDREQ tcp_address unmatched")
+                        return ERROR_ID
+
+                    if gateway.if_address != if_addr:
+                        logger.error("GWIDREQ if_addr unmatched")
+                        return ERROR_ID
+
+                    if gateway.if_address_len != if_addr_len:
+                        logger.error("GWIDREQ if_address_len unmatched")
+                        return ERROR_ID
+
+                    if gateway.netmask != if_netmask:
+                        logger.error("GWIDREQ netmask unmatched")
+                        return ERROR_ID
+
+                    return to_check_id
+
+            # old_id is None
+            # It needs to allocate a new ID
+            else:
+                """
+                Gateway = collections.namedtuple("Gateway", "id, tcp_address, if_address, if_address_len, prefix, prefix_len,\
+                    network, network_size, netmask, hostmask, value")
+                """
+                if if_addr_len > MPTN.MPTN_ID_LEN:
+                    logger.error("GWIDREQ gateway if_addr_len is too long to support: %d bytes" % if_addr_len)
+                    return ERROR_ID
+
+                elif if_addr_len == 2 or if_addr_len == 1:
+                    if if_addr >= 2 ** (if_addr_len*8):
+                        logger.error("GWIDREQ gateway if_addr %d >= network_size %d" % (if_addr, network_size))
+                        return ERROR_ID
+
+                    super_net = "%s/%d" % (MPTN.ID_TO_STRING(if_addr), (MPTN.MPTN_ID_LEN-if_addr_len)*8) # "0.0.0.0/24" for ZW, "0.0.0.0/16" for ZB
+                    subnet_candidates = MPTN.ID_NETWORK_FROM_STRING(super_net).supernet(prefixlen_diff=8).subnets(prefixlen_diff=8)
+                elif if_addr_len == 4:
+
+                    super_net = "%s/%s" % (MPTN.ID_TO_STRING(if_addr), MPTN.ID_TO_STRING(if_netmask))
+                    subnet_candidates = [MPTN.ID_NETWORK_FROM_STRING(super_net)]
+                else:
+                    logger.error("GWIDREQ unsupported gateway if_addr_len %d" % (if_addr_len))
+                    return ERROR_ID
+
+                for gateway in self.get_all_gateways():
+                    if gateway.tcp_address == (ip, port):
+                        logger.error("GWIDREQ found duplicate TCP Address, prefer new one %s to old one %s" % (str((ip, port)), str(gateway.tcp_address)))
+                        self._gateways_db.pop(gateway.id)
+                        self._gateways_lookup.pop(gateway.id)
+                        self._nexthop_lookup.pop(gateway.network)
+                        self._nexthop_hash = hash(frozenset(self._nexthop_lookup.items()))
+                        self._del_old_node(gateway.id, gateway.value)
+                        break
+
+                interface = MPTN.ID_INTERFACE_FROM_TUPLE(MPTN.ID_TO_STRING(if_addr), MPTN.ID_TO_STRING(if_netmask))
+                network_size = interface.network.num_addresses
+                hostmask = int(interface.network.hostmask)
+                prefix_len = interface.network.prefixlen
+                netmask = int(interface.network.netmask)
+
+                network = None
+                for subnet in subnet_candidates:
+                    for gateway in self.get_all_gateways():
+                        if MPTN.IS_ID_IN_NETWORK(gateway.id, subnet):
+                            break
+                        gevent.sleep(0)
+                    else:
+                        # it's a unused one
+                        prefix = int(subnet.network_address)
+                        network = subnet
+                        break
+                    gevent.sleep(0)
+                else:
+                    logger.error("GWIDREQ cannot find free gateway ID for if_addr=%s if_addr_len=%d if_netmask=%s ip=%s port=%d value=%s" % (ID_TO_STRING(if_addr), if_addr_len, ID_TO_STRING(if_netmask). ip, port, value))
+                    return ERROR_ID
+
+                new_id = prefix | if_addr
+                gateway = Gateway(id=new_id, tcp_address=(ip, port),
+                    if_address=if_addr, if_address_len=if_addr_len,
+                    prefix=prefix, prefix_len=prefix_len,
+                    network=network, network_size=network_size,
+                    netmask=netmask, hostmask=hostmask,
+                    value=value)
+
+                self._gateways_db[new_id] = gateway
+                self._gateways_lookup[new_id] = gateway
+
+                self._nexthop_lookup[network] = MPTN.NextHop(id=new_id,tcp_address=(ip, port))
+                self._nexthop_hash = hash(frozenset(self._nexthop_lookup.items()))
+
+                node = NodeInfo(id=new_id, is_gateway=True, gateway_id=new_id, value=value, if_address=if_addr)
+                self._add_new_node(node)
+                return new_id
+
+    def handle_gwidreq_message(self, context, dest_id, src_id, msg_type, payload):
+        message = MPTN.create_packet_to_str(src_id, dest_id, MPTN.MPTN_MSGTYPE_GWIDNAK, None)
+        if dest_id != MPTN.MASTER_ID:
+            logger.error("GWIDREQ dest id 0x%X is not Master" % (src_id, dest_id, MPTN.MASTER_ID))
+            MPTN.socket_send(context, 0xFFFFFFFF, message)
+            return
+
+        if src_id != 0xFFFFFFFF and not self.is_id_gateway(src_id):
+            logger.error("GWIDREQ src id 0x%X is not valid" % (src_id, dest_id, MPTN.MASTER_ID))
+            MPTN.socket_send(context, 0xFFFFFFFF, message)
+            return
+
+        if payload is None:
+            logger.error("GWIDREQ might have the payload")
+            MPTN.socket_send(context, 0xFFFFFFFF, message)
+            return
+
+        ip = context.address[0]
+
+        # m = re.match("IFADDR=(\d+);IFADDRLEN=(\d+);IFNETMASK=(\d+);PORT=(\d+);VAL=(.+)",payload)
+        # if m is None or len(m.group(5)) != MPTN.GWIDREQ_PAYLOAD_LEN:
+        #     logger.error("GWIDREQ payload should be IFADDR=int;IFADDRLEN=int;IFNETMASK=int;PORT=int;VAL=16bytes")
+        #     MPTN.socket_send(context, 0xFFFFFFFF, message)
+        #     return
+
+        # if_addr = int(m.group(1))
+        # if_addr_len = int(m.group(2))
+        # if_netmask = int(m.group(3))
+        # port = int(m.group(4))
+        # value = m.group(5)
+
+        payload = json.loads(payload)
+        if_addr = payload["IFADDR"]
+        if_addr_len = payload["IFADDRLEN"]
+        if_netmask = payload["IFNETMASK"]
+        port = payload["PORT"]
+        try:
+            value = struct.pack("!%dB"%MPTN.GWIDREQ_PAYLOAD_LEN, *payload["VAL"])
+        except Exception as e:
+            logger.error("GWIDREQ payload should be a json 'IFADDR':int, 'IFADDRLEN':int, 'IFNETMASK':int, 'PORT':int, 'VAL':list with 16 unsigned chars")
+            MPTN.socket_send(context, 0xFFFFFFFF, message)
+            return
+
+        new_id = self._alloc_gateway_id(src_id, if_addr, if_addr_len, if_netmask, ip, port, value)
+        msg_type = MPTN.MPTN_MSGTYPE_GWIDACK if new_id != 0xFFFFFFFF else MPTN.MPTN_MSGTYPE_GWIDNAK
+        message = MPTN.create_packet_to_str(new_id, MPTN.MASTER_ID, msg_type, None)
+        context.id = new_id
+        MPTN.socket_send(context, new_id, message)
+        logger.info("GWIDREQ new ID %s 0x%X is ACK-ed with details: if_addr=%s, if_addr_len=%d, if_netmask=%s, ip=%s, port=%d" % (MPTN.ID_TO_STRING(new_id), new_id, MPTN.ID_TO_STRING(if_addr), if_addr_len, MPTN.ID_TO_STRING(if_netmask), MPTN.ID_TO_STRING(ip), port))
+        return
+
+    def handle_idreq_message(self, context, dest_id, src_id, msg_type, payload):
+        gateway_id = dest_id
+        to_check_id = src_id
+
+        message = MPTN.create_packet_to_str(src_id, dest_id, MPTN.MPTN_MSGTYPE_IDNAK, None)
+        if not is_id_gateway(gateway_id):
+            logger.error("IDREQ with unknown gateway ID 0x%X" % gateway_id)
+            MPTN.socket_send(context, 0xFFFFFFFF, message)
+            return
+
+        if payload is None or len(payload) != MPTN.IDREQ_PAYLOAD_LEN:
+            logger.error("IDREQ might have a %d-byte payload" % MPTN.IDREQ_PAYLOAD_LEN)
+            MPTN.socket_send(context, 0xFFFFFFFF, message)
+            return
+
+        new_id = self._alloc_node_id(to_check_id, gateway_id, payload)
+        msg_type = MPTN.MPTN_MSGTYPE_IDACK if new_id != 0xFFFFFFFF else MPTN.MPTN_MSGTYPE_IDNAK
+        message = MPTN.create_packet_to_str(new_id, MPTN.MASTER_ID, msg_type, None)
+        context.id = new_id
+        MPTN.socket_send(context, new_id, message)
+
+        logger.info("IDREQ new ID %s 0x%X is ACK-ed with details: gateway_id=%s" % (MPTN.ID_TO_STRING(new_id), new_id, MPTN.ID_TO_STRING(gateway_id)))
+
+    def handle_fwdreq_message(self, context, dest_id, src_id, msg_type, payload):
+        msg_type = MPTN.MPTN_MSGTYPE_FWDACK
+        if payload is None:
+            logger.error("FWDREQ should have payload")
+            msg_type = MPTN.MPTN_MSGTYPE_FWDNAK
+
+        message = MPTN.create_packet_to_str(src_id, dest_id, msg_type, payload)
+        MPTN.socket_send(context, new_id, message)
+
+        if msg_type == MPTN.MPTN_MSGTYPE_FWDACK:
+            payload = map(ord, payload)
+            broker_messages.put_nowait(new_deliver(src_id, payload[0], payload[1:]))
+        return
 
 def getMockAgent():
     return MockAgent.init()

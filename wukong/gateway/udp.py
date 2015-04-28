@@ -6,9 +6,8 @@ import gtwconfig as CONFIG
 import mptnUtils as MPTN
 import socket
 
-import logging
-logging.basicConfig(level=CONFIG.LOG_LEVEL)
-logger = logging.getLogger( __name__ )
+import color_logging, logging
+logger = logging
 
 TIMEOUT = 100
 
@@ -54,7 +53,7 @@ class UDPTransport(object):
         return self._node_id
 
     def get_radio_addr_len(self):
-        return MPTN.RADIO_ADDRESS_LEN_ZW
+        return MPTN.IP_ADDRESS_LEN
 
     def get_learning_mode(self):
         return self._mode

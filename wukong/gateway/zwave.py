@@ -12,9 +12,8 @@ import pprint
 import gtwconfig as CONFIG
 import mptnUtils as MPTN
 
-import logging
-logging.basicConfig(level=CONFIG.LOG_LEVEL)
-logger = logging.getLogger( __name__ )
+import color_logging, logging
+logger = logging
 
 TIMEOUT = 100
 
@@ -41,7 +40,7 @@ class ZWTransport(object):
         self._network_id = sum(b[i] << ((len(b)-1-i) * 8) for i in range(len(b)))
         self._node_id = _addr[4]
 
-        logger.info("Zwave transport interface %s initialized on %s with Network ID %s and Node ID %s" % (name, dev_address, hex(self._network_id), hex(self._node_id)))
+        logger.info("transport interface %s initialized on %s with Network ID %s and Node ID %s" % (name, dev_address, hex(self._network_id), hex(self._node_id)))
 
     def get_name(self):
         return self._name
@@ -50,7 +49,7 @@ class ZWTransport(object):
         return self._node_id
 
     def get_addr_len(self):
-        return MPTN.RADIO_ADDRESS_LEN_ZW
+        return MPTN.ZW_ADDRESS_LEN
 
     def get_learning_mode(self):
         return self._mode
@@ -120,7 +119,7 @@ class ZWTransport(object):
             total_nodes = nodes[1]
             # remaining are the discovered nodes
             ret = nodes[2:]
-            logger.debug("---------------------" + str(zwave_controller), str(total_nodes), str(ret))
+            logger.debug("---------------------%s, %s, %s" % (str(zwave_controller), str(total_nodes), str(ret)))
             try:
                 ret.remove(zwave_controller)
             except ValueError:
@@ -136,7 +135,7 @@ class ZWTransport(object):
                 pass
         return ret
 
-    def add_mode(self):
+    def add(self):
         ret = False
         with _global_lock:
             try:
@@ -147,7 +146,7 @@ class ZWTransport(object):
                 logger.error("fails to be ADD mode, now in %s mode", self._mode[1])
         return ret
 
-    def delete_mode(self):
+    def delete(self):
         ret = False
         with _global_lock:
             try:
@@ -158,7 +157,7 @@ class ZWTransport(object):
                 logger.error("fails to be DEL mode, now in %s mode", self._mode[1])
         return ret
 
-    def stop_mode(self):
+    def stop(self):
         ret = False
         with _global_lock:
             try:
@@ -170,7 +169,7 @@ class ZWTransport(object):
         return ret
 
     def get_learn_handlers(self):
-        return {'a':self.add_mode, 'd':self.delete_mode, 's':self.stop_mode}
+        return {'a':self.add, 'd':self.delete, 's':self.stop}
 
     def get_rpc_function_lists(self):
         return (self.send, self.getDeviceType, self.routing, self.discover, self.add, self.delete, self.stop, self.poll)
