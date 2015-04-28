@@ -41,8 +41,8 @@ class IDService(object):
         self._nexthop_db = DBDict("gtw_nexthop_table.sqlite")
         self._init_nexthop_lookup()
 
-        # _value_db: key = MPTN ID, value = unique value (such as MAC address)
-        self._value_db = DBDict("gtw_value_table.sqlite")
+        # _uuid_db: key = MPTN ID, value = UUID (such as MAC address)
+        self._uuid_db = DBDict("gtw_uuid_table.sqlite")
 
         self._settings_db = DBDict("gtw_settings_db.sqlite")
         self._init_settings_db(autonet_mac_addr)
@@ -104,7 +104,7 @@ class IDService(object):
             exit(-1)
 
     def _clear_settings_db(self):
-        for d in [self._settings_db, self._addr_db, self._nexthop_db, self._value_db]:
+        for d in [self._settings_db, self._addr_db, self._nexthop_db, self._uuid_db]:
             d.clear()
 
     def _init_get_prefix_from_master(self):
@@ -122,7 +122,7 @@ class IDService(object):
         payload = json.dumps({"IFADDR":self._transport_if_addr,
             "IFADDRLEN":self._transport_if_addr_len,
             "IFNETMASK":self._id_netmask, "PORT":CONFIG.SELF_TCP_SERVER_PORT,
-            "VAL":self._settings_db["GTWSELF_UNIQUE_VALUE"]})
+            "UUID":self._settings_db["GTWSELF_UNIQUE_VALUE"]})
         # payload = "IFADDR=%d;IFADDRLEN=%d;IFNETMASK=%d;PORT=%d;VAL=%s" % (self._transport_if_addr,
         #     self._transport_if_addr_len, self._id_netmask, CONFIG.SELF_TCP_SERVER_PORT,
         #     struct.pack("!%dB"%MPTN.GWIDREQ_PAYLOAD_LEN, *self._settings_db["GTWSELF_UNIQUE_VALUE"]))
@@ -275,7 +275,7 @@ class IDService(object):
             logger.error("IDREQ length of payload %d should be %d" % (len(payload), MPTN.IDREQ_PAYLOAD_LEN))
             return
 
-        value = payload
+        uuid = payload
 
         try:
             temp_addr = int(context.address)
@@ -290,18 +290,18 @@ class IDService(object):
         # New addresss from transport interface
         if not self.is_addr_valid(temp_addr):
             if CONFIG.UNITTEST_MODE:
-                message = MPTN.create_packet_to_str(dest_id, src_id, msg_type, value)
+                message = MPTN.create_packet_to_str(dest_id, src_id, msg_type, uuid)
                 self._id_req_queue.put_nowait(message)
 
                 dest_id = temp_id
                 src_id = MPTN.MASTER_ID
                 msg_type = MPTN.MPTN_MSGTYPE_IDACK
-                message = MPTN.create_packet_to_str(dest_id, src_id, msg_type, value)
+                message = MPTN.create_packet_to_str(dest_id, src_id, msg_type, uuid)
                 MPTN.transport_if_send(temp_addr, message)
                 return
 
             else:
-                message = MPTN.create_packet_to_str(dest_id, src_id, msg_type, value)
+                message = MPTN.create_packet_to_str(dest_id, src_id, msg_type, uuid)
                 packet = MPTN.socket_send(context, MPTN.MASTER_ID, message, expect_reply=True)
                 if packet is None:
                     logger.error("IDREQ cannot be confirmed ID=%d (%s) Addr=%d (%s)" % (temp_id, MPTN.ID_TO_STRING(temp_id), temp_addr))
@@ -311,17 +311,17 @@ class IDService(object):
                     logger.error("IDREQ invalid responce for dest ID=%X (%s), src ID=%X (%s)" % (dest_id, MPTN.ID_TO_STRING(dest_id), src_id, MPTN.ID_TO_STRING(src_id)) )
                     return
                 self._alloc_address(temp_addr)
-                self._value_db[temp_id] = value
+                self._uuid_db[temp_id] = uuid
                 return
 
-        # Known address to check value
-        elif self._value_db[temp_id] == payload:
+        # Known address to check uuid
+        elif self._uuid_db[temp_id] == payload:
             message = MPTN.create_packet_to_str(src_id, dest_id, MPTN.MPTN_MSGTYPE_IDACK, None)
             MPTN.transport_if_send(temp_addr, message)
             return
 
         else:
-            logger.error("IDREQ comes with a valid ID %d %s and an unknown value %s" % (temp_id, MPTN.ID_TO_STRING(temp_id), str(map(ord, value))))
+            logger.error("IDREQ comes with a valid ID %d %s and an unknown uuid %s" % (temp_id, MPTN.ID_TO_STRING(temp_id), str(map(ord, uuid))))
 
     def handle_fwdreq_message(self, context, dest_id, src_id, msg_type, payload):
         if payload is None:

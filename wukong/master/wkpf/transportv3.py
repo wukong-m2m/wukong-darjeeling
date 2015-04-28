@@ -739,8 +739,8 @@ class BrokerAgent:
             gevent.sleep(0)
 
 Gateway = collections.namedtuple("Gateway", "id, tcp_address, if_address, if_address_len, prefix, prefix_len,\
-    network, network_size, netmask, hostmask, value")
-NodeInfo = collections.namedtuple("NodeInfo", "id, if_address, is_gateway, gateway_id, value")
+    network, network_size, netmask, hostmask, uuid")
+NodeInfo = collections.namedtuple("NodeInfo", "id, if_address, is_gateway, gateway_id, uuid")
 
 class IDService:
     _id_server = None
@@ -760,7 +760,7 @@ class IDService:
     def _init_lookup(self):
         with self._global_lock:
             self._nodes_lookup = {int(key):value for (key,value) in self._nodes_db.iteritems()}
-            self._values_lookup = {node.value:node_id for (node_id, node) in self._nodes_lookup.iteritems()}
+            self._uuids_lookup = {node.uuid:node_id for (node_id, node) in self._nodes_lookup.iteritems()}
             self._gateways_lookup = {int(key):value for (key,value) in self._gateways_db.iteritems()}
             # _nexthop_lookup: key = "MPTN ID/NETMASK" STRING, value = NextHop namedtuple
             self._nexthop_lookup = {MPTN.ID_NETWORK_FROM_STRING("%s/%s"%(MPTN.ID_TO_STRING(int(gateway_id)),MPTN.ID_TO_STRING(gateway.netmask))):MPTN.NextHop(id=int(gateway_id),tcp_address=gateway.tcp_address) for (gateway_id, gateway) in self._gateways_lookup.iteritems()}
@@ -798,7 +798,7 @@ class IDService:
         if node is None: return None
         return node.if_address
 
-    def _get_user_permission(self, to_check_id, gatetway_id, value):
+    def _get_user_permission(self, to_check_id, gatetway_id, uuid):
         # TBD
         return True
 
@@ -816,25 +816,25 @@ class IDService:
     def _add_new_node(self, node_info):
         self._nodes_db[node_info.id] = node_info
         self._nodes_lookup[node_info.id] = node_info
-        self._values_lookup[node_info.value] = node_info.id
+        self._uuids_lookup[node_info.uuid] = node_info.id
 
-    def _del_old_node(self, mptn_id, value):
-        node_id = self._values_lookup.pop(value)
+    def _del_old_node(self, mptn_id, uuid):
+        node_id = self._uuids_lookup.pop(uuid)
         if mptn_id != node_id:
             logger.error("del_old_node ID unmatches")
-            self._values_lookup[value] = node_id
+            self._uuids_lookup[uuid] = node_id
             exit(-1)
         self._nodes_db.pop(node_id)
         self._nodes_lookup.pop(node_id)
 
-    def _alloc_node_id(self, to_check_id, gateway_id, value):
+    def _alloc_node_id(self, to_check_id, gateway_id, uuid):
         ERROR_ID = 0xFFFFFFFF
         with self._global_lock:
-            old_id = self._values_lookup.get(value)
+            old_id = self._uuids_lookup.get(uuid)
             if old_id is not None:
                 if old_id != to_check_id:
-                    logger.error("IDREQ odd things happened: both to-check ID %s 0x%X and old ID %s 0x%X has the same value=%s could be the same gateway or different gateways" % (
-                        MPTN.ID_TO_STRING(to_check_id), to_check_id, MPTN.ID_TO_STRING(old_id), old_id, value))
+                    logger.error("IDREQ odd things happened: both to-check ID %s 0x%X and old ID %s 0x%X has the same uuid=%s could be the same gateway or different gateways" % (
+                        MPTN.ID_TO_STRING(to_check_id), to_check_id, MPTN.ID_TO_STRING(old_id), old_id, uuid))
                     return ERROR_ID
 
                 elif old_id == ERROR_ID:
@@ -863,7 +863,7 @@ class IDService:
                     logger.error("IDREQ to-check ID %s 0x%X should not be a gateway" % (MPTN.ID_TO_STRING(to_check_id), to_check_id))
                     return ERROR_ID
 
-                if not self._get_user_permission(to_check_id, gateway_id, value):
+                if not self._get_user_permission(to_check_id, gateway_id, uuid):
                     logger.error("IDREQ to-check ID %s 0x%X is not approved by user" % (MPTN.ID_TO_STRING(to_check_id), to_check_id))
                     return ERROR_ID
 
@@ -873,18 +873,18 @@ class IDService:
                     return ERROR_ID
 
                 if_addr = to_check_id & gateway.hostmask
-                self._add_new_node(NodeInfo(id=to_check_id, is_gateway=False, gateway_id=gateway_id, value=value, if_address=if_addr))
+                self._add_new_node(NodeInfo(id=to_check_id, is_gateway=False, gateway_id=gateway_id, uuid=uuid, if_address=if_addr))
                 return to_check_id
 
-    def _alloc_gateway_id(self, to_check_id, if_addr, if_addr_len, if_netmask, ip, port, value):
+    def _alloc_gateway_id(self, to_check_id, if_addr, if_addr_len, if_netmask, ip, port, uuid):
         ERROR_ID = 0xFFFFFFFF
 
         with self._global_lock:
-            old_id = self._values_lookup.get(value)
+            old_id = self._uuids_lookup.get(uuid)
             if old_id is not None:
                 if old_id != to_check_id:
-                    logger.error("GWIDREQ odd things happened: both to-check ID %s 0x%X and old ID %s 0x%X has the same value=%s could be the same gateway or different gateways" % (MPTN.ID_TO_STRING(to_check_id), to_check_id,
-                        MPTN.ID_TO_STRING(old_id), old_id, value))
+                    logger.error("GWIDREQ odd things happened: both to-check ID %s 0x%X and old ID %s 0x%X has the same uuid=%s could be the same gateway or different gateways" % (MPTN.ID_TO_STRING(to_check_id), to_check_id,
+                        MPTN.ID_TO_STRING(old_id), old_id, uuid))
                     return ERROR_ID
 
                 elif old_id == ERROR_ID:
@@ -898,8 +898,8 @@ class IDService:
                         return ERROR_ID
 
                     gateway = self.get_gateway(to_check_id)
-                    if gateway.value != value:
-                        logger.error("GWIDREQ value unmatched")
+                    if gateway.uuid != uuid:
+                        logger.error("GWIDREQ uuid unmatched")
                         return ERROR_ID
 
                     if gateway.tcp_address[0] != ip or gateway.tcp_address[1] != port:
@@ -925,7 +925,7 @@ class IDService:
             else:
                 """
                 Gateway = collections.namedtuple("Gateway", "id, tcp_address, if_address, if_address_len, prefix, prefix_len,\
-                    network, network_size, netmask, hostmask, value")
+                    network, network_size, netmask, hostmask, uuid")
                 """
                 if if_addr_len > MPTN.MPTN_ID_LEN:
                     logger.error("GWIDREQ gateway if_addr_len is too long to support: %d bytes" % if_addr_len)
@@ -953,7 +953,7 @@ class IDService:
                         self._gateways_lookup.pop(gateway.id)
                         self._nexthop_lookup.pop(gateway.network)
                         self._nexthop_hash = hash(frozenset(self._nexthop_lookup.items()))
-                        self._del_old_node(gateway.id, gateway.value)
+                        self._del_old_node(gateway.id, gateway.uuid)
                         break
 
                 interface = MPTN.ID_INTERFACE_FROM_TUPLE(MPTN.ID_TO_STRING(if_addr), MPTN.ID_TO_STRING(if_netmask))
@@ -975,7 +975,7 @@ class IDService:
                         break
                     gevent.sleep(0)
                 else:
-                    logger.error("GWIDREQ cannot find free gateway ID for if_addr=%s if_addr_len=%d if_netmask=%s ip=%s port=%d value=%s" % (ID_TO_STRING(if_addr), if_addr_len, ID_TO_STRING(if_netmask). ip, port, value))
+                    logger.error("GWIDREQ cannot find free gateway ID for if_addr=%s if_addr_len=%d if_netmask=%s ip=%s port=%d uuid=%s" % (ID_TO_STRING(if_addr), if_addr_len, ID_TO_STRING(if_netmask). ip, port, uuid))
                     return ERROR_ID
 
                 new_id = prefix | if_addr
@@ -984,7 +984,7 @@ class IDService:
                     prefix=prefix, prefix_len=prefix_len,
                     network=network, network_size=network_size,
                     netmask=netmask, hostmask=hostmask,
-                    value=value)
+                    uuid=uuid)
 
                 self._gateways_db[new_id] = gateway
                 self._gateways_lookup[new_id] = gateway
@@ -992,7 +992,7 @@ class IDService:
                 self._nexthop_lookup[network] = MPTN.NextHop(id=new_id,tcp_address=(ip, port))
                 self._nexthop_hash = hash(frozenset(self._nexthop_lookup.items()))
 
-                node = NodeInfo(id=new_id, is_gateway=True, gateway_id=new_id, value=value, if_address=if_addr)
+                node = NodeInfo(id=new_id, is_gateway=True, gateway_id=new_id, uuid=uuid, if_address=if_addr)
                 self._add_new_node(node)
                 return new_id
 
@@ -1015,9 +1015,9 @@ class IDService:
 
         ip = context.address[0]
 
-        # m = re.match("IFADDR=(\d+);IFADDRLEN=(\d+);IFNETMASK=(\d+);PORT=(\d+);VAL=(.+)",payload)
+        # m = re.match("IFADDR=(\d+);IFADDRLEN=(\d+);IFNETMASK=(\d+);PORT=(\d+);UUID=(.+)",payload)
         # if m is None or len(m.group(5)) != MPTN.GWIDREQ_PAYLOAD_LEN:
-        #     logger.error("GWIDREQ payload should be IFADDR=int;IFADDRLEN=int;IFNETMASK=int;PORT=int;VAL=16bytes")
+        #     logger.error("GWIDREQ payload should be IFADDR=int;IFADDRLEN=int;IFNETMASK=int;PORT=int;UUID=16bytes")
         #     MPTN.socket_send(context, 0xFFFFFFFF, message)
         #     return
 
@@ -1025,7 +1025,7 @@ class IDService:
         # if_addr_len = int(m.group(2))
         # if_netmask = int(m.group(3))
         # port = int(m.group(4))
-        # value = m.group(5)
+        # uuid = m.group(5)
 
         payload = json.loads(payload)
         if_addr = payload["IFADDR"]
@@ -1033,13 +1033,13 @@ class IDService:
         if_netmask = payload["IFNETMASK"]
         port = payload["PORT"]
         try:
-            value = struct.pack("!%dB"%MPTN.GWIDREQ_PAYLOAD_LEN, *payload["VAL"])
+            uuid = struct.pack("!%dB"%MPTN.GWIDREQ_PAYLOAD_LEN, *payload["UUID"])
         except Exception as e:
-            logger.error("GWIDREQ payload should be a json 'IFADDR':int, 'IFADDRLEN':int, 'IFNETMASK':int, 'PORT':int, 'VAL':list with 16 unsigned chars")
+            logger.error("GWIDREQ payload should be a json 'IFADDR':int, 'IFADDRLEN':int, 'IFNETMASK':int, 'PORT':int, 'UUID':list with 16 unsigned chars")
             MPTN.socket_send(context, 0xFFFFFFFF, message)
             return
 
-        new_id = self._alloc_gateway_id(src_id, if_addr, if_addr_len, if_netmask, ip, port, value)
+        new_id = self._alloc_gateway_id(src_id, if_addr, if_addr_len, if_netmask, ip, port, uuid)
         msg_type = MPTN.MPTN_MSGTYPE_GWIDACK if new_id != 0xFFFFFFFF else MPTN.MPTN_MSGTYPE_GWIDNAK
         message = MPTN.create_packet_to_str(new_id, MPTN.MASTER_ID, msg_type, None)
         context.id = new_id
