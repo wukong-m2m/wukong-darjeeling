@@ -107,7 +107,7 @@ LICENSE:
 //	static void	RunMonitor(void);
 #endif
 
-//#define	_DEBUG_SERIAL_
+#define	_DEBUG_SERIAL_
 //#define	_DEBUG_WITH_LEDS_
 
 
@@ -235,6 +235,8 @@ LICENSE:
 	#define SIGNATURE_BYTES 0x1E9801
 #elif defined (__AVR_ATmega2561__)
 	#define SIGNATURE_BYTES 0x1e9802
+#elif defined (__AVR_ATmega644__)
+	#define SIGNATURE_BYTES 0x1e960a
 #else
 	#error "no signature definition for MCU available"
 #endif
@@ -254,7 +256,8 @@ LICENSE:
 	#define	UART_DOUBLE_SPEED			U2X
 
 #elif defined(__AVR_ATmega64__) || defined(__AVR_ATmega128__) || defined(__AVR_ATmega162__) \
-	 || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega2561__)
+	 || defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega2561__) \
+	 || defined(__AVR_ATmega644__)
 	/* ATMega with two USART, use UART0 */
 	#define	UART_BAUD_RATE_LOW			UBRR0L
 	#define	UART_STATUS_REG				UCSR0A
@@ -408,8 +411,10 @@ static unsigned char recchar_timeout(void)
 	{
 		// wait for data
 		count++;
+#if defined PORTK
 		if ((count % 1000)==0)
 			PORTK ^= 1;
+#endif
 		if (count > MAX_TIME_COUNT)
 		{
 		unsigned int	data;
@@ -420,7 +425,7 @@ static unsigned char recchar_timeout(void)
 		#endif
 			UART_STATUS_REG	&=	0xfd;
 			boot_rww_enable();				// enable application section
-			PORTK ^= 8;
+			//PORTK ^= 8;
 			PROGLED_PORT	&=	~(1<<PROGLED_PIN);	// turn LED off
 
 			if (data != 0xffff)					//*	make sure its valid before jumping to it.
@@ -482,8 +487,8 @@ int main(void)
 	PROGLED_DDR		|=	(1<<PROGLED_PIN);
 //	PROGLED_PORT	&=	~(1<<PROGLED_PIN);	// active low LED ON
 	PROGLED_PORT	|=	(1<<PROGLED_PIN);	// active high LED ON
-	DDRK |= 0xf;
-	PORTK = 0;
+	//DDRK |= 0xf;
+	//PORTK = 0;
 	
 
 #ifdef _DEBUG_WITH_LEDS_
@@ -522,7 +527,7 @@ int main(void)
 	sendchar('2');
 	sendchar(0x0d);
 	sendchar(0x0a);
-
+	
 	delay_ms(100);
 #endif
 
@@ -535,7 +540,7 @@ int main(void)
 			if (boot_timer > boot_timeout)
 			{
 				boot_state	=	1; // (after ++ -> boot_state=2 bootloader timeout, jump to main 0x00000 )
-				PORTK=1;
+				//PORTK=1;
 			}
 		#ifdef BLINK_LED_WHILE_WAITING
 			if ((boot_timer % 1000) == 0)
@@ -552,7 +557,7 @@ int main(void)
 	if (boot_state==1)
 	{
 		//*	main loop
-		PORTK=3;
+		//PORTK=3;
 		while (!isLeave)
 		{
 			/*
@@ -570,7 +575,7 @@ int main(void)
 				{
 				//	c	=	recchar();
 					c	=	recchar_timeout();
-					PORTK^=4;
+					//PORTK^=4;
 				}
 
 			#ifdef ENABLE_MONITOR
@@ -1018,7 +1023,7 @@ int main(void)
 	}
 	PROGLED_PORT	&=	~(1<<PROGLED_PIN);	// turn LED off
 #endif
-	PORTK=0xf;
+	//PORTK=0xf;
 
 #ifdef _DEBUG_SERIAL_
 	sendchar('j');
@@ -1853,13 +1858,13 @@ char	getCharFlag;
 
 		#ifdef DDRK
 			case 'K':
-				DDRK	=	0xff;
+				//DDRK	=	0xff;
 				while (!Serial_Available())
 				{
-					PORTK	^=	0xff;
+					//PORTK	^=	0xff;
 					delay_ms(200);
 				}
-				PORTK	=	0;
+				//PORTK	=	0;
 				break;
 		#endif
 
