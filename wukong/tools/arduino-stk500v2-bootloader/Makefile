@@ -395,6 +395,16 @@ penguino: begin gccversion sizebefore build sizeafter end
 			mv $(TARGET).hex stk500boot_v2_penguino.hex
 
 
+############################################################
+#	Aug 23, 2010 	<MLS> Adding atmega2561 support
+mega644P: MCU = atmega644
+mega644P: F_CPU = 11059200
+mega644P: BOOTLOADER_ADDRESS = F000
+mega644P:	CFLAGS += -D_MEGA_BOARD_ -UART_BAUDRATE_DOUBLE_SPEED=1
+mega644P:	begin gccversion sizebefore build sizeafter end 
+			mv $(TARGET).hex stk500boot_v2_mega644.hex
+
+
 # Default target.
 all: begin gccversion sizebefore build sizeafter end
 
@@ -589,7 +599,7 @@ clean clean_list program debug gdb-config
 
 # Added 20130312 Niels Reijers
 darjeeling_flash_page.hex:
-	avr-gcc -std=gnu99 -Wall -Werror -Os -mmcu=atmega2560 darjeeling_flash_page.c -o darjeeling_flash_page.o
+	avr-gcc -std=gnu99 -Wall -Werror -Os -mmcu=atmega644 darjeeling_flash_page.c -o darjeeling_flash_page.o
 	avr-objcopy -j .reprogram_flash_page --change-section-address .reprogram_flash_page=0x3F000 -O ihex darjeeling_flash_page.o darjeeling_flash_page.hex
 
 upload_bootloader: mega2560 darjeeling_flash_page.hex
@@ -597,3 +607,12 @@ upload_bootloader: mega2560 darjeeling_flash_page.hex
 	$(AVRDUDE) -p atmega2560 -P usb -c usbasp -D -V -U flash:w:stk500boot_v2_mega2560.hex:i # Flash the Arduino bootloader. Don't erase. Don't verify until we figure out what's wrong with TINYusbISP reading flash memory, since it will fail anyway.
 	$(AVRDUDE) -p atmega2560 -P usb -c usbasp -D -V -U flash:w:darjeeling_flash_page.hex:i # Add our own code in the NRWW section. Don't erase. Don't verify until we figure out what's wrong with TINYusbISP reading flash memory, since it will fail anyway.
 	$(AVRDUDE) -p atmega2560 -P usb -c usbasp       -U lock:w:0x0F:m -U hfuse:w:0x10:m # Restore lock and hfuse to Arduino default setting + Enable JTAG by clearing/programming OCDEN and JTAGEN bits
+
+
+upload_bootloader_644: mega644P
+	avr-gcc -std=gnu99 -Wall -Werror -Os -mmcu=atmega644 darjeeling_flash_page.c -o darjeeling_flash_page.o
+	avr-objcopy -j .reprogram_flash_page --change-section-address .reprogram_flash_page=0xFC00 -O ihex darjeeling_flash_page.o darjeeling_flash_page.hex
+	$(AVRDUDE) -p atmega644P -P usb -c usbasp -e    -U lock:w:0x3F:m -U efuse:w:0xFD:m -U hfuse:w:0xDA:m -U lfuse:w:0xFF:m # Erase and set bits so we can write to NRWW section
+	$(AVRDUDE) -p atmega644P -P usb -c usbasp -D -V -U flash:w:stk500boot_v2_mega644.hex:i # Flash the Arduino bootloader. Don't erase. Don't verify until we figure out what's wrong with TINYusbISP reading flash memory, since it will fail anyway.
+	$(AVRDUDE) -p atmega644P -P usb -c usbasp -D -V -U flash:w:darjeeling_flash_page.hex:i # Add our own code in the NRWW section. Don't erase. Don't verify until we figure out what's wrong with TINYusbISP reading flash memory, since it will fail anyway.
+	$(AVRDUDE) -p atmega644P -P usb -c usbasp       -U lock:w:0x0F:m -U hfuse:w:0x12:m # Restore lock and hfuse to Arduino default setting + Enable JTAG by clearing/programming OCDEN and JTAGEN bits
