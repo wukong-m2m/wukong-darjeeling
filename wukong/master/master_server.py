@@ -75,10 +75,10 @@ from make_js import make_main
 from make_fbp import fbp_main
 def import_wuXML():
   make_main()
-
+  
 def make_FBP():
   test_1 = fbp_main()
-  test_1.make()
+  test_1.make() 
 
 wkpf.globals.location_tree = LocationTree(LOCATION_ROOT)
 
@@ -177,8 +177,8 @@ class Test_ppl:
     self.value_array.append(self.item["ppnum3"])
     self.value_array.append(self.item["ppnum4"])
     self.value_array.append(self.item["ppnum5"])
-    self.value_array.append(self.item["ppnum6"])
-
+    self.value_array.append(self.item["ppnum6"])    
+    
 class Test_array:
   def __init__(self,name,n_id,pt,loc):
     self.id = str(n_id)+'_'+str(pt)
@@ -186,7 +186,7 @@ class Test_array:
     self.loc=loc
     self.value_array=[]
     self.count=wkpf.globals.mongoDBClient.wukong.readings.find({ 'node_id':n_id , 'port':pt }).sort('_id',-1).limit(1).count()
-    if self.count>100 :
+    if self.count>100 : 
       self.count=100
     print "CountT"
     print self.count
@@ -259,7 +259,7 @@ class Monitoring(tornado.web.RequestHandler):
           list_port.append(port_number)
           list_loc.append(node.location)
 
-      obj=[]
+      obj=[]    
       #obj1 = Test('Light Sensor',23,2,comm.getLocation(23))#location tree
       #obj2 = Test('Slider',23,3,'BL-7F ')
       for i in range(MONITORING_COUNT):
@@ -294,11 +294,11 @@ class Monitoring_Planar(tornado.web.RequestHandler):
           list_port.append(port_number)
           list_loc.append(node.location)
 
-      obj=[]
+      obj=[]    
       for i in range(MONITORING_COUNT):
         obj.append( Test('Light Sensor',MONITORING_NODE[i],MONITORING_PORT[i],"room") );
-
-
+    
+      
       self.render('templates/index5.html', applications=obj)
 
   def post(self):
@@ -476,8 +476,8 @@ class deploy_application(tornado.web.RequestHandler):
               app=wkpf.globals.applications[app_ind],
               app_id=app_id, node_infos=node_infos,
               logs=wkpf.globals.applications[app_ind].logs(),
-              changesets=wkpf.globals.applications[app_ind].changesets,
-              set_location=False,
+              changesets=wkpf.globals.applications[app_ind].changesets, 
+              set_location=False, 
               default_location=LOCATION_ROOT)
       self.content_type = 'application/json'
       self.write({'status':0, 'page': deployment})
@@ -494,7 +494,7 @@ class deploy_application(tornado.web.RequestHandler):
       # signal deploy in other greenlet task
       wusignal.signal_deploy(platforms)
       wkpf.globals.set_active_application_index(app_ind)
-
+         
       self.content_type = 'application/json'
       self.write({
         'status':0,
@@ -547,7 +547,7 @@ class map_application(tornado.web.RequestHandler):
 
           obj_hash['instances'].append(wuobj_hash)
           mapping_result[component.index] = component_result
-
+        
         ret.append(obj_hash)
         WuSystem.addMappingResult(app_id, mapping_result)
 
@@ -608,7 +608,7 @@ class poll(tornado.web.RequestHandler):
         'deploy_status': application.deploy_status,
         'mapping_status': application.mapping_status,
         'wukong_status': wkpf.globals.get_wukong_status(),
-        'application_status': application.status,
+        'application_status': application.status, 
         'returnCode': application.returnCode})
 
       # TODO: log should not be requested in polling, should be in a separate page
@@ -696,7 +696,7 @@ class testrtt(tornado.web.RequestHandler):
 
     comm = getComm()
     node_infos = comm.getAllNodeInfos(False)
-
+    
     rebuildTree(node_infos)
     testrtt = template.Loader(os.getcwd()).load('templates/testrtt.html').generate(log=['Please press the buttons to add/remove nodes.'], node_infos=node_infos, set_location=True, default_location = LOCATION_ROOT)
     self.content_type = 'application/json'
@@ -712,7 +712,7 @@ class refresh_nodes(tornado.web.RequestHandler):
       node_infos = getComm().getActiveNodeInfos(True)
     rebuildTree(node_infos)
     print ("node_infos in refresh nodes:",node_infos)
-    #furniture data loaded from fake data for purpose of
+    #furniture data loaded from fake data for purpose of 
     #getComm().getRoutingInformation()
     # default is false
     set_location = self.get_argument('set_location', False)
@@ -734,7 +734,7 @@ class nodes(tornado.web.RequestHandler):
     info = None
     comm = getComm()
     info = comm.getNodeInfo(nodeId)
-
+    
     self.content_type = 'application/json'
     self.write({'status':0, 'node_info': info})
 
@@ -784,7 +784,7 @@ class nodes(tornado.web.RequestHandler):
             self.content_type = 'application/json'
             self.write({'status':1, 'mesg': 'Cannot set location, please try again.'})
 
-class WuLibrary(tornado.web.RequestHandler):
+class WuLibrary(tornado.web.RequestHandler):  
   def get(self):
     self.content_type = 'application/xml'
     try:
@@ -803,7 +803,7 @@ class WuLibrary(tornado.web.RequestHandler):
     except:
       self.write('<error>1</error>')
     self.write('')
-class WuLibraryUser(tornado.web.RequestHandler):
+class WuLibraryUser(tornado.web.RequestHandler):  
   def get(self):
     self.content_type = 'application/xml'
     appid = self.get_argument('appid')
@@ -861,7 +861,7 @@ class SerialPort(tornado.web.RequestHandler):
         pass
     self.write(json.dumps(available))
 
-class EnabledWuClass(tornado.web.RequestHandler):
+class EnabledWuClass(tornado.web.RequestHandler): 
   def get(self):
     self.content_type = 'application/xml'
     try:
@@ -880,7 +880,7 @@ class EnabledWuClass(tornado.web.RequestHandler):
     except:
       pass
 
-class WuClassSource(tornado.web.RequestHandler):
+class WuClassSource(tornado.web.RequestHandler):  
   def get(self):
     self.content_type = 'text/plain'
     try:
@@ -950,7 +950,7 @@ class WuClassSource(tornado.web.RequestHandler):
     paths = [os.path.join(APP_DIR, dirname) for dirname in os.listdir(APP_DIR)] + ['../../src/lib/wkpf/c/common/native_wuclasses/', '../../src/lib/wkpf/c/arduino/native_wuclasses/','../javax/wukong/virtualwuclasses/']
     # If an app is passed in, then its dir will be the first to search
     if app:
-      paths = [app.dir]
+      paths = [app.dir] 
     for path in paths:
       if not os.path.isdir(path): continue
       filename = path +'/'+ p
@@ -960,17 +960,17 @@ class WuClassSource(tornado.web.RequestHandler):
     # returns None if not found
     return None
 
-class loc_tree(tornado.web.RequestHandler):
+class loc_tree(tornado.web.RequestHandler): 
   def post(self):
     global node_infos
-
+      
     addloc = template.Loader(os.getcwd()).load('templates/display_locationTree.html').generate(node_infos=node_infos)
     wkpf.globals.location_tree.printTree()
     disploc = wkpf.globals.location_tree.getJson()
 
     self.content_type = 'application/json'
     self.write({'loc':json.dumps(disploc),'node':addloc})
-
+  
   def get(self, node_id):
     global node_infos
     node_id = int(node_id)
@@ -981,12 +981,12 @@ class loc_tree(tornado.web.RequestHandler):
         return
     else:
         print curNode.distanceModifier
-        self.write({'status':0, 'message':'succeed in finding node id'+str(node_id),
+        self.write({'status':0, 'message':'succeed in finding node id'+str(node_id), 
                     'distanceModifierByName':curNode.distanceModifierToString(), 'distanceModifierById':curNode.distanceModifierIdToString(),
-                    'centerPnt':curNode.centerPnt,
+                    'centerPnt':curNode.centerPnt, 
                     'size':curNode.size, 'location':curNode.getLocationStr(), 'local_coord':curNode.getOriginalPnt(),
-                    'global_coord':curNode.getGlobalOrigPnt(), 'landmarks': json.dumps(curNode.getLandmarkList())})
-
+                    'global_coord':curNode.getGlobalOrigPnt(), 'landmarks': json.dumps(curNode.getLandmarkList())}) 
+    
   def put(self, node_id):
     global node_infos
     node_id = int(node_id)
@@ -1002,7 +1002,7 @@ class loc_tree(tornado.web.RequestHandler):
         curNode.setLGSDFromStr(local_coord, global_coord, size, direction)
         self.write({'status':0,'message':'find node id '+str(node_id)})
 
-class sensor_info(tornado.web.RequestHandler):
+class sensor_info(tornado.web.RequestHandler):  
     def get(self, node_id, sensor_id):
         global node_infos
         node_id = int(node_id)
@@ -1046,7 +1046,7 @@ class edit_loc_tree(tornado.web.RequestHandler):
         else:
             self.write({'status':1,'message':'parentNode does not exist in location tree :('})
             return
-
+                
 
 class tree_modifier(tornado.web.RequestHandler):
   def put(self, mode):
@@ -1070,17 +1070,17 @@ class tree_modifier(tornado.web.RequestHandler):
                 self.write({'status':1,'message':'deleting faild due to not able to find common direct father of the two nodes'})
                 return
     self.write({'status':1,'message':'operation faild due to not able to find common direct father of the two nodes'})
-
-
+    
+ 
 class save_landmark(tornado.web.RequestHandler):
   def put(self):
-
+        
         self.write({'tree':wkpf.globals.location_tree})
 
   def post(self):
         wkpf.globals.location_tree.saveTree()
         self.write({'message':'Save Successfully!'})
-
+        
 class load_landmark(tornado.web.RequestHandler):
     def post(self):
         flag = os.path.exists("../LocalData/landmarks.txt")
@@ -1089,7 +1089,7 @@ class load_landmark(tornado.web.RequestHandler):
             self.write({'message':'Load Successfully!'})
         else:
             self.write({'message':'"../LocalData/landmarks.txt" does not exist '})
-
+        
 class add_landmark(tornado.web.RequestHandler):
   def put(self):
     global landId
@@ -1106,7 +1106,7 @@ class add_landmark(tornado.web.RequestHandler):
     msg = ''
     if(operation=="1"):
       landId += 1
-      landmark = LandmarkNode(name, location+"@"+coordinate, size, direct)
+      landmark = LandmarkNode(name, location+"@"+coordinate, size, direct) 
       rt_val = wkpf.globals.location_tree.addLandmark(landmark)
       msg = 'add fails'
       wkpf.globals.location_tree.printTree()
@@ -1119,7 +1119,7 @@ class add_landmark(tornado.web.RequestHandler):
     if rt_val == False:
         self.write({'status':1, 'id':name, 'msg':msg})
 
-class Build(tornado.web.RequestHandler):
+class Build(tornado.web.RequestHandler):  
   def get(self):
     self.content_type = 'text/plain'
     cmd = self.get_argument('cmd')
@@ -1137,7 +1137,7 @@ class Build(tornado.web.RequestHandler):
     self.write(log)
 
 
-class Upload(tornado.web.RequestHandler):
+class Upload(tornado.web.RequestHandler):  
   def get(self):
     self.content_type = 'text/plain'
     cmd = self.get_argument('cmd')
@@ -1156,7 +1156,7 @@ class Upload(tornado.web.RequestHandler):
       fcntl.ioctl(s, termios.TIOCMBIS, dtr)
       fcntl.ioctl(s, termios.TIOCMBIC, dtr)
       s.close()
-
+      
       command = 'killall avrdude;(cd ../../src/config/wunode; ant avrdude 2>&1 | cat> tmp)&'
       os.system(command)
       log='start'
@@ -1175,7 +1175,7 @@ class Upload(tornado.web.RequestHandler):
 
     self.write(log)
 
-class SetRefresh(tornado.web.RequestHandler):
+class SetRefresh(tornado.web.RequestHandler):  
   def get(self, node_id, port_id, wuclass_id, value):
     comm = getComm()
     comm.setProperty(int(node_id), int(port_id), int(wuclass_id), 2, 'short', int(value))

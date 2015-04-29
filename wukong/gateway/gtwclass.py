@@ -57,6 +57,7 @@ class Gateway(object):
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_RTPING] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TCP_SERVER, self._id_service.handle_rtping_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_RTREQ] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TCP_SERVER, self._id_service.handle_rtreq_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_FWDREQ] = MPTN.ProtocolHandler(MPTN.VALID_FROM_ALL, self._id_service.handle_fwdreq_message)
+        self._protocol_handlers[MPTN.MPTN_MSGTYPE_GWDISCOVER] = MPTN.ProtocolHandler(MPTN.VALID_FROM_ALL, self._id_service.handle_gwdiscover_message)
 
         self._spawn_handlers.append(self._id_service.rt_ping_forever)
         if CONFIG.UNITTEST_MODE:
@@ -132,7 +133,7 @@ class Gateway(object):
             gevent.sleep(0)
 
     def _serve_transport_if_forever(self):
-        def handle_transport_if(self, src_addr, message):
+        def handle_transport_if(src_addr, message):
             logger.debug("transport interface %s receives message from address %X" % (self._transport_if_name, src_addr))
             self._process_message(MPTN.new_if_context(src_addr), message)
 

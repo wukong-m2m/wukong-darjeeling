@@ -26,7 +26,7 @@ import mptnUtils as MPTN
 import ipaddress
 from gevent.lock import RLock
 import json
-import re
+import traceback
 
 try:
     import fcntl
@@ -386,9 +386,9 @@ class RPCAgent(TransportAgent):
                 else:
                     if gateway_stub.stop():
                         count += 1
-            except:
-                logger.error("RPC learn failed %s with gateway ID %s 0x%X addr=%s" % (to_mode,
-                    MPTN.ID_TO_STRING(gateway.id), gatetway.id, str(gateway.tcp_address)))
+            except Exception as e:
+                logger.error("RPC learn failed %s with gateway ID %s 0x%X addr=%s error=%s\n%s" % (to_mode,
+                    MPTN.ID_TO_STRING(gateway.id), gatetway.id, str(gateway.tcp_address), str(e), traceback.format_exc()))
 
         if count > 0:
             self._mode = to_mode
@@ -413,9 +413,9 @@ class RPCAgent(TransportAgent):
             gateway_stub = self._get_client_rpc_stub(gateway.id, gateway.tcp_address)
             try:
                 ret.append(gateway_stub.poll())
-            except:
-                logger.error("RPC poll fails with gateway ID=%s 0x%X addr=%s" % (MPTN.ID_TO_STRING(gateway.id), gateway.id,
-                    str(gateway.tcp_address)))
+            except Exception as e:
+                logger.error("RPC poll fails with gateway ID=%s 0x%X addr=%s; error=%s\n%s" % (MPTN.ID_TO_STRING(gateway.id), gateway.id,
+                    str(gateway.tcp_address), str(e), traceback.format_exc()))
 
         if len(ret):
             return "; ".join(ret)
@@ -447,9 +447,9 @@ class RPCAgent(TransportAgent):
             server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             server.bind(('', 9010))
             server.listen(500)
-        except socket.error as e:
+        except Exception as e:
             server.close()
-            logger.error("TCP Server cannot start: socket error %s" % str(e))
+            logger.error("TCP Server cannot start: socket error %s\n%s" % (str(e), traceback.format_exc()))
             return
 
         logger.info("TCP server listens on %s" % str(server.getsockname()))
@@ -484,8 +484,8 @@ class RPCAgent(TransportAgent):
                                 continue
                             discovered_nodes.append(prefix | node_address)
                     except Exception as e:
-                        logger.error("RPC discover fails with gateway ID=%s addr=%s; error=%s" % (MPTN.ID_TO_STRING(gateway.id),
-                            str(gateway.tcp_address), str(e)))
+                        logger.error("RPC discover fails with gateway ID=%s addr=%s; error=%s\n%s" % (MPTN.ID_TO_STRING(gateway.id),
+                            str(gateway.tcp_address), str(e), traceback.format_exc()))
                 defer.callback(discovered_nodes)
 
             elif defer.message.command == "routing":
@@ -510,25 +510,24 @@ class RPCAgent(TransportAgent):
                                 neighbers.append(prefix | l[i])
                             routing[node] = neighbers
                     except:
-                        logger.error("RPC routing fails with gateway ID=%s addr=%s" % (MPTN.ID_TO_STRING(gateway.id), str(gateway.tcp_address)))
+                        logger.error("RPC routing fails with gateway ID=%s addr=%s; error=%s\n%s" % (MPTN.ID_TO_STRING(gateway.id), str(gateway.tcp_address), str(e), traceback.format_exc()))
 
                 defer.callback(routing)
 
             elif defer.message.command == "device_type":
                 device_type = None
                 node_id = defer.message.destination
-                node_address = getIDService().get_node_addr(dev_id)
+                node_address = getIDService().get_node_addr(node_id)
                 if node_address is None:
                     device_type = [1, 255, 0]
                 else:
-                    gateway = getIDService().get_gateway(dev_id)
+                    gateway = getIDService().get_gateway(node_id)
                     if gateway is not None:
                         gateway = self._get_client_rpc_stub(gateway.id, gateway.tcp_address)
                         try:
                             device_type = gateway.getDeviceType(node_address)
                         except:
-                            logger.error("RPC getDeviceType ID=%s fails with gateway ID=%s addr=%s" % (MPTN.ID_TO_STRING(node_id),
-                                MPTN.ID_TO_STRING(gateway.id), str(gateway.tcp_address)))
+                            logger.error("RPC getDeviceType ID=%s fails with gateway ID=%s addr=%s; error=%s\n%s" % (MPTN.ID_TO_STRING(node_id), MPTN.ID_TO_STRING(gateway.id), str(gateway.tcp_address), str(e), traceback.format_exc()))
 
                 defer.callback(device_type)
 
@@ -565,8 +564,8 @@ class RPCAgent(TransportAgent):
                             if success: break
                             else: logger.error("RPC send got error replies: %s (retries %d-th time)" % (message, retries))
                         except:
-                            logger.error("RPC send to ID=%s via gateway ID=%d addr=%s fails" % (node_id,
-                                gateway.id, str(gateway.tcp_address)))
+                            logger.error("RPC send to ID=%s via gateway ID=%d addr=%s fails; error=%s\n%s" % (node_id,
+                                gateway.id, str(gateway.tcp_address), str(e), traceback.format_exc()))
                         retries -= 1
 
                 if retries == 0 or len(defer.allowed_replies) == 0:
@@ -794,7 +793,7 @@ class IDService:
         return self._gateways_lookup[mptn_id]
 
     def get_node_addr(self, mptn_id):
-        node = self._node_lookup.get(mptn_id)
+        node = self._nodes_lookup.get(mptn_id)
         if node is None: return None
         return node.if_address
 
@@ -828,18 +827,18 @@ class IDService:
         self._nodes_lookup.pop(node_id)
 
     def _alloc_node_id(self, to_check_id, gateway_id, uuid):
-        ERROR_ID = 0xFFFFFFFF
+        ERROR_ID = MPTN.MPTN_MAX_ID
         with self._global_lock:
             old_id = self._uuids_lookup.get(uuid)
             if old_id is not None:
-                if old_id != to_check_id:
-                    logger.error("IDREQ odd things happened: both to-check ID %s 0x%X and old ID %s 0x%X has the same uuid=%s could be the same gateway or different gateways" % (
-                        MPTN.ID_TO_STRING(to_check_id), to_check_id, MPTN.ID_TO_STRING(old_id), old_id, uuid))
-                    return ERROR_ID
-
-                elif old_id == ERROR_ID:
+                if old_id == ERROR_ID:
                     logger.error("IDREQ DB inconsistent: cannot insert an 0xFFFFFFFF into db")
                     exit(-1)
+
+                if old_id != to_check_id:
+                    logger.error("IDREQ odd things happened: both to-check ID %s 0x%X and old ID %s 0x%X has the same uuid=%s could be the same node or different nodes" % (
+                        MPTN.ID_TO_STRING(to_check_id), to_check_id, MPTN.ID_TO_STRING(old_id), old_id, str(map(ord, uuid))))
+                    return ERROR_ID
 
                 else:
                     gateway = self.get_gateway(to_check_id)
@@ -877,24 +876,24 @@ class IDService:
                 return to_check_id
 
     def _alloc_gateway_id(self, to_check_id, if_addr, if_addr_len, if_netmask, ip, port, uuid):
-        ERROR_ID = 0xFFFFFFFF
+        ERROR_ID = MPTN.MPTN_MAX_ID
 
         with self._global_lock:
             old_id = self._uuids_lookup.get(uuid)
             if old_id is not None:
-                if old_id != to_check_id:
-                    logger.error("GWIDREQ odd things happened: both to-check ID %s 0x%X and old ID %s 0x%X has the same uuid=%s could be the same gateway or different gateways" % (MPTN.ID_TO_STRING(to_check_id), to_check_id,
-                        MPTN.ID_TO_STRING(old_id), old_id, uuid))
-                    return ERROR_ID
-
-                elif old_id == ERROR_ID:
+                if old_id == ERROR_ID:
                     logger.error("GWIDREQ inconsistent: cannot insert an 0xFFFFFFFF into db")
                     exit(-1)
 
-                # Got an old ID to check
+                if to_check_id != ERROR_ID and old_id != to_check_id:
+                    logger.error("GWIDREQ odd things happened: both to-check ID %s 0x%X and old ID %s 0x%X has the same uuid=%s could be the same gateway or different gateways" % (MPTN.ID_TO_STRING(to_check_id), to_check_id,
+                        MPTN.ID_TO_STRING(old_id), old_id, str(map(ord, uuid))))
+                    return ERROR_ID
+
+                # It's a  Got an old ID to check
                 else:
-                    if self.is_id_valid(to_check_id) and not self.is_id_gateway(to_check_id):
-                        logger.error("GWIDREQ got a non-gateway to check ID")
+                    if to_check_id == ERROR_ID or (self.is_id_valid(to_check_id) and not self.is_id_gateway(to_check_id)):
+                        logger.error("GWIDREQ got a invalid tocheck ID")
                         return ERROR_ID
 
                     gateway = self.get_gateway(to_check_id)
@@ -948,7 +947,7 @@ class IDService:
 
                 for gateway in self.get_all_gateways():
                     if gateway.tcp_address == (ip, port):
-                        logger.error("GWIDREQ found duplicate TCP Address, prefer new one %s to old one %s" % (str((ip, port)), str(gateway.tcp_address)))
+                        logger.error("GWIDREQ found duplicate TCP Address %s, delete old uuid %s" % (str((ip, port)), str(map(ord, gateway.uuid))))
                         self._gateways_db.pop(gateway.id)
                         self._gateways_lookup.pop(gateway.id)
                         self._nexthop_lookup.pop(gateway.network)
@@ -975,7 +974,7 @@ class IDService:
                         break
                     gevent.sleep(0)
                 else:
-                    logger.error("GWIDREQ cannot find free gateway ID for if_addr=%s if_addr_len=%d if_netmask=%s ip=%s port=%d uuid=%s" % (ID_TO_STRING(if_addr), if_addr_len, ID_TO_STRING(if_netmask). ip, port, uuid))
+                    logger.error("GWIDREQ cannot find free gateway ID for if_addr=%s if_addr_len=%d if_netmask=%s ip=%s port=%d uuid=%s" % (ID_TO_STRING(if_addr), if_addr_len, ID_TO_STRING(if_netmask). ip, port, str(map(ord, uuid))))
                     return ERROR_ID
 
                 new_id = prefix | if_addr
@@ -1000,17 +999,17 @@ class IDService:
         message = MPTN.create_packet_to_str(src_id, dest_id, MPTN.MPTN_MSGTYPE_GWIDNAK, None)
         if dest_id != MPTN.MASTER_ID:
             logger.error("GWIDREQ dest id 0x%X is not Master" % (src_id, dest_id, MPTN.MASTER_ID))
-            MPTN.socket_send(context, 0xFFFFFFFF, message)
+            MPTN.socket_send(context, MPTN.MPTN_MAX_ID, message)
             return
 
-        if src_id != 0xFFFFFFFF and not self.is_id_gateway(src_id):
+        if src_id != MPTN.MPTN_MAX_ID and not self.is_id_gateway(src_id):
             logger.error("GWIDREQ src id 0x%X is not valid" % (src_id, dest_id, MPTN.MASTER_ID))
-            MPTN.socket_send(context, 0xFFFFFFFF, message)
+            MPTN.socket_send(context, MPTN.MPTN_MAX_ID, message)
             return
 
         if payload is None:
             logger.error("GWIDREQ might have the payload")
-            MPTN.socket_send(context, 0xFFFFFFFF, message)
+            MPTN.socket_send(context, MPTN.MPTN_MAX_ID, message)
             return
 
         ip = context.address[0]
@@ -1035,12 +1034,12 @@ class IDService:
         try:
             uuid = struct.pack("!%dB"%MPTN.GWIDREQ_PAYLOAD_LEN, *payload["UUID"])
         except Exception as e:
-            logger.error("GWIDREQ payload should be a json 'IFADDR':int, 'IFADDRLEN':int, 'IFNETMASK':int, 'PORT':int, 'UUID':list with 16 unsigned chars")
-            MPTN.socket_send(context, 0xFFFFFFFF, message)
+            logger.error("GWIDREQ payload should be a json 'IFADDR':int, 'IFADDRLEN':int, 'IFNETMASK':int, 'PORT':int, 'UUID':list with 16 unsigned chars; error=%s\n%s" % (str(e), traceback.format_exc()))
+            MPTN.socket_send(context, MPTN.MPTN_MAX_ID, message)
             return
 
         new_id = self._alloc_gateway_id(src_id, if_addr, if_addr_len, if_netmask, ip, port, uuid)
-        msg_type = MPTN.MPTN_MSGTYPE_GWIDACK if new_id != 0xFFFFFFFF else MPTN.MPTN_MSGTYPE_GWIDNAK
+        msg_type = MPTN.MPTN_MSGTYPE_GWIDACK if new_id != MPTN.MPTN_MAX_ID else MPTN.MPTN_MSGTYPE_GWIDNAK
         message = MPTN.create_packet_to_str(new_id, MPTN.MASTER_ID, msg_type, None)
         context.id = new_id
         MPTN.socket_send(context, new_id, message)
@@ -1052,23 +1051,26 @@ class IDService:
         to_check_id = src_id
 
         message = MPTN.create_packet_to_str(src_id, dest_id, MPTN.MPTN_MSGTYPE_IDNAK, None)
-        if not is_id_gateway(gateway_id):
+        if not self.is_id_gateway(gateway_id):
             logger.error("IDREQ with unknown gateway ID 0x%X" % gateway_id)
-            MPTN.socket_send(context, 0xFFFFFFFF, message)
+            MPTN.socket_send(context, MPTN.MPTN_MAX_ID, message)
             return
 
         if payload is None or len(payload) != MPTN.IDREQ_PAYLOAD_LEN:
             logger.error("IDREQ might have a %d-byte payload" % MPTN.IDREQ_PAYLOAD_LEN)
-            MPTN.socket_send(context, 0xFFFFFFFF, message)
+            MPTN.socket_send(context, MPTN.MPTN_MAX_ID, message)
             return
 
         new_id = self._alloc_node_id(to_check_id, gateway_id, payload)
-        msg_type = MPTN.MPTN_MSGTYPE_IDACK if new_id != 0xFFFFFFFF else MPTN.MPTN_MSGTYPE_IDNAK
+        msg_type = MPTN.MPTN_MSGTYPE_IDACK if new_id != MPTN.MPTN_MAX_ID else MPTN.MPTN_MSGTYPE_IDNAK
         message = MPTN.create_packet_to_str(new_id, MPTN.MASTER_ID, msg_type, None)
         context.id = new_id
         MPTN.socket_send(context, new_id, message)
 
-        logger.info("IDREQ new ID %s 0x%X is ACK-ed with details: gateway_id=%s" % (MPTN.ID_TO_STRING(new_id), new_id, MPTN.ID_TO_STRING(gateway_id)))
+        if msg_type == MPTN.MPTN_MSGTYPE_IDACK:
+            logger.info("IDREQ new ID %s 0x%X is ACK-ed with details: gateway_id=%s" % (MPTN.ID_TO_STRING(new_id), new_id, MPTN.ID_TO_STRING(gateway_id)))
+        else:
+            logger.info("IDREQ tocheck ID %s 0x%X is NAK-ed with details: gateway_id=%s" % (MPTN.ID_TO_STRING(to_check_id), to_check_id, MPTN.ID_TO_STRING(gateway_id)))
 
     def handle_fwdreq_message(self, context, dest_id, src_id, msg_type, payload):
         msg_type = MPTN.MPTN_MSGTYPE_FWDACK

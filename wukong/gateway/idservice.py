@@ -98,7 +98,7 @@ class IDService(object):
 
         # Check whether master is online and gateway's own "MPTN ID/prefix" is valid or not
         self._init_get_prefix_from_master()
-        if self._id == 0xFFFFFFFF:
+        if self._id == MPTN.MPTN_MAX_ID:
             logger.error("_init_settings_db cannot initialize gateway because of no valid ID")
             self._clear_settings_db()
             exit(-1)
@@ -108,10 +108,10 @@ class IDService(object):
             d.clear()
 
     def _init_get_prefix_from_master(self):
-        if "GTWSELF_ID" not in self._settings_db: self._settings_db["GTWSELF_ID"] = 0xFFFFFFFF
+        if "GTWSELF_ID" not in self._settings_db: self._settings_db["GTWSELF_ID"] = MPTN.MPTN_MAX_ID
         self._id = self._settings_db["GTWSELF_ID"]
         MPTN.set_self_id(self._id)
-        if self._id != 0xFFFFFFFF:
+        if self._id != MPTN.MPTN_MAX_ID:
             self._network = MPTN.ID_NETWORK_FROM_TUPLE(MPTN.ID_TO_STRING(self._id),str(self._id_prefix_len))
             self._id_prefix = self._id & self._id_netmask
 
@@ -145,7 +145,7 @@ class IDService(object):
             return None
 
         elif dest_id != self._id:
-            if self._id == 0xFFFFFFFF:
+            if self._id == MPTN.MPTN_MAX_ID:
                 self._settings_db["GTWSELF_ID"] = dest_id
                 self._id = dest_id
                 MPTN.set_self_id(self._id)
@@ -267,7 +267,7 @@ class IDService(object):
             logger.error("IDREQ dest ID should be 0 not %X (%s)" % (dest_id, MPTN.ID_TO_STRING(dest_id)))
             return
 
-        if src_id != 0xFFFFFFFF:
+        if src_id != MPTN.MPTN_MAX_ID:
             logger.error("IDREQ src ID should be 0xFFFFFFFF not %X (%s)" % (dest_id, MPTN.ID_TO_STRING(dest_id)))
             return
 
@@ -304,19 +304,22 @@ class IDService(object):
                 message = MPTN.create_packet_to_str(dest_id, src_id, msg_type, uuid)
                 packet = MPTN.socket_send(context, MPTN.MASTER_ID, message, expect_reply=True)
                 if packet is None:
-                    logger.error("IDREQ cannot be confirmed ID=%d (%s) Addr=%d (%s)" % (temp_id, MPTN.ID_TO_STRING(temp_id), temp_addr))
+                    logger.error("IDREQ cannot be confirmed ID=%d (%s) Addr=%d" % (temp_id, MPTN.ID_TO_STRING(temp_id), temp_addr))
                     return
                 dest_id, src_id, msg_type, _ = packet
                 if dest_id != temp_id or src_id != MPTN.MASTER_ID or msg_type != MPTN.MPTN_MSGTYPE_IDACK:
-                    logger.error("IDREQ invalid responce for dest ID=%X (%s), src ID=%X (%s)" % (dest_id, MPTN.ID_TO_STRING(dest_id), src_id, MPTN.ID_TO_STRING(src_id)) )
+                    logger.error("IDREQ invalid response for dest ID=%X (%s), src ID=%X (%s)" % (dest_id, MPTN.ID_TO_STRING(dest_id), src_id, MPTN.ID_TO_STRING(src_id)) )
                     return
                 self._alloc_address(temp_addr)
                 self._uuid_db[temp_id] = uuid
+                message = MPTN.create_packet_to_str(dest_id, src_id, MPTN.MPTN_MSGTYPE_IDACK, None)
+                MPTN.transport_if_send(temp_addr, message)
                 return
 
         # Known address to check uuid
         elif self._uuid_db[temp_id] == payload:
-            message = MPTN.create_packet_to_str(src_id, dest_id, MPTN.MPTN_MSGTYPE_IDACK, None)
+            dest_id = temp_id
+            message = MPTN.create_packet_to_str(dest_id, MPTN.MASTER_ID, MPTN.MPTN_MSGTYPE_IDACK, None)
             MPTN.transport_if_send(temp_addr, message)
             return
 
@@ -355,7 +358,7 @@ class IDService(object):
         if self._is_id_in_gwself_network(dest_id):
             logger.debug("FWDREQ to transport interface directly")
             message = map(ord, MPTN.create_packet_to_str(dest_id, src_id, msg_type, payload))
-            ret = self._transport_if_send(self._get_address_from_id(dest_id), message)
+            ret = MPTN.transport_if_send(self._get_address_from_id(dest_id), message)
 
             msg_type = MPTN.MPTN_MSGTYPE_FWDACK
             if not ret[0]:
@@ -372,6 +375,28 @@ class IDService(object):
 
         logger.error("FWDREQ dest ID %X %s is neither the master, the gateway, nor within MPTN" % (dest_id, MPTN.ID_TO_STRING(dest_id)))
         return
+
+    def handle_gwdiscover_message(self, context, dest_id, src_id, msg_type, payload):
+        if context.direction != MPTN.ONLY_FROM_TRANSPORT_INTERFACE:
+            logger.error("GWDISCOVER cannot be from TCP Server")
+            return
+
+        if payload is not None:
+            logger.error("GWDISCOVER should not have the payload")
+            return
+
+        if dest_id != MPTN.MPTN_MAX_ID:
+            logger.error("GWDISCOVER dest_id should be 0xFFFFFFFF")
+            return
+
+        if self.is_id_valid(src_id):
+            logger.error("GWDISCOVER src ID %X %s should not be found in network" % (src_id, MPTN.ID_TO_STRING(src_id)))
+            return
+
+        src_id = self._id
+        msg_type = MPTN.MPTN_MSGTYPE_GWOFFER
+        message = MPTN.create_packet_to_str(dest_id, src_id, msg_type, uuid.uuid4().bytes)
+        MPTN.transport_if_send(self._get_address_from_id(dest_id), message)
 
     def handle_rtping_message(self, context, dest_id, src_id, msg_type, payload):
         raise NotImplementedError
