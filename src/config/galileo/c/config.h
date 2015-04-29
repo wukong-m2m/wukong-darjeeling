@@ -64,5 +64,6 @@ typedef int64_t dj_time_t;
 // #define RADIO_USE_ZWAVE
 // #define RADIO_USE_XBEE
 #define RADIO_USE_NETWORKSERVER
+// #define RADIO_USE_UDP
 
 #endif
