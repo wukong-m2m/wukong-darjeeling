@@ -599,7 +599,7 @@ clean clean_list program debug gdb-config
 
 # Added 20130312 Niels Reijers
 darjeeling_flash_page.hex:
-	avr-gcc -std=gnu99 -Wall -Werror -Os -mmcu=atmega644 darjeeling_flash_page.c -o darjeeling_flash_page.o
+	avr-gcc -std=gnu99 -Wall -Werror -Os -mmcu=atmega2560 darjeeling_flash_page.c -o darjeeling_flash_page.o
 	avr-objcopy -j .reprogram_flash_page --change-section-address .reprogram_flash_page=0x3F000 -O ihex darjeeling_flash_page.o darjeeling_flash_page.hex
 
 upload_bootloader: mega2560 darjeeling_flash_page.hex
