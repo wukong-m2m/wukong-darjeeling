@@ -12,6 +12,7 @@ import pprint
 import gtwconfig as CONFIG
 import mptnUtils as MPTN
 
+import traceback
 import color_logging, logging
 logger = logging
 
@@ -61,11 +62,11 @@ class ZWTransport(object):
 
                 if src and reply:
                     logger.debug("receives message %s from address %X" % (reply, src))
-                    reply = ''.join([chr(byte) for byte in reply])
+                    reply = "".join(map(chr, reply))
                     return (src, reply)
-            except:
-                ret = sys.exc_info()[0]
-                logger.error("receives exception %s", str(e))
+            except Exception as e:
+                ret = traceback.format_exc()
+                logger.error("receives exception %s\n%s" % (str(e), ret))
         return (None, None)
 
     def send_raw(self, address, payload):
@@ -74,8 +75,9 @@ class ZWTransport(object):
             try:
                 logger.info("sending %d bytes %s to %X" % (len(payload), payload, address))
                 pyzwave.send(address, payload)
-            except:
-                ret = sys.exc_info()[0]
+            except Exception as e:
+                ret = traceback.format_exc()
+                logger.error("send_raw exception %s\n%s" % (str(e), ret))
         return ret
 
     def send(self, address, payload):
@@ -91,8 +93,8 @@ class ZWTransport(object):
         with _global_lock:
             try:
                 ret = pyzwave.getDeviceType(address)
-            except:
-                pass
+            except Exception as e:
+                logger.error("getDeviceType exception %s\n%s" % (str(e), traceback.format_exc()))
         return ret
 
     def getNodeRoutingInfo(self, address):
@@ -142,8 +144,9 @@ class ZWTransport(object):
                 pyzwave.add()
                 self._mode = MPTN.ADD_MODE
                 ret = True
-            except:
-                logger.error("fails to be ADD mode, now in %s mode", self._mode[1])
+            except Exception as e:
+                logger.error("fails to be ADD mode, now in %s mode error: %s\n%s" % (self._mode[1],
+                    str(e), traceback.format_exc()))
         return ret
 
     def delete(self):
@@ -153,8 +156,9 @@ class ZWTransport(object):
                 pyzwave.delete()
                 self._mode = MPTN.DEL_MODE
                 ret = True
-            except:
-                logger.error("fails to be DEL mode, now in %s mode", self._mode[1])
+            except Exception as e:
+                logger.error("fails to be DEL mode, now in %s mode error: %s\n%s" % (self._mode[1],
+                    str(e), traceback.format_exc()))
         return ret
 
     def stop(self):
@@ -164,8 +168,9 @@ class ZWTransport(object):
                 pyzwave.stop()
                 self._mode = MPTN.STOP_MODE
                 ret = True
-            except:
-                logger.error("fails to be STOP mode, now in %s mode", self._mode[1])
+            except Exception as e:
+                logger.error("fails to be STOP mode, now in %s mode error: %s\n%s" % (self._mode[1],
+                    str(e), traceback.format_exc()))
         return ret
 
     def get_learn_handlers(self):

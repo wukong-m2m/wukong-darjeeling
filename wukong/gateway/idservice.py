@@ -1,16 +1,16 @@
-try:
-    import netifaces
-except:
-    print "Please install the netifaces module from pypi"
-    print "e.g. sudo pip install netifaces"
-    exit(-1)
+# try:
+#     import netifaces
+# except:
+#     print "Please install the netifaces module from pypi"
+#     print "e.g. sudo pip install netifaces"
+#     exit(-1)
 
-try:
-    import pytrie
-except:
-    print "Please install the netifaces module from pypi"
-    print "e.g. sudo pip install pytrie"
-    exit(-1)
+# try:
+#     import pytrie
+# except:
+#     print "Please install the netifaces module from pypi"
+#     print "e.g. sudo pip install pytrie"
+#     exit(-1)
 
 import gtwconfig as CONFIG
 import mptnUtils as MPTN
@@ -68,14 +68,6 @@ class IDService(object):
 
         elif self._transport_if_addr_len == 4:
             assert isinstance(self._transport_if_addr, tuple) and (len(self._transport_if_addr) == 2) and isinstance(self._transport_if_addr[0], basestring) and isinstance(self._transport_if_addr[1], basestring), "_init_settings_db UDP interface address must be a tuple with 2 strings ('IP', 'NETMASK') where NETMASK could be either a single number or or a string representation"
-
-            # try:
-            #     nc_if = netifaces.ifaddresses(self._transport_if_addr[0])[netifaces.AF_INET][0]
-            #     interface = MPTN.ID_INTERFACE_FROM_TUPLE( net_if['addr'], net_if['netmask'])
-            # except (IndexError, KeyError, ValueError):
-            #     logger.error("cannot find any IP address from the the network interface %s" % CONFIG.TRANSPORT_INTERFACE_ADDR)
-            #     self._clear_settings_db()
-            #     exit(-1)
 
             interface = MPTN.ID_INTERFACE_FROM_TUPLE(self._transport_if_addr[0], self._transport_if_addr[1])
 
@@ -337,6 +329,7 @@ class IDService(object):
 
         if self._is_id_master(dest_id):
             logger.debug("FWDREQ is to master")
+            message = MPTN.create_packet_to_str(dest_id, src_id, msg_type, payload)
             if not self._forward_to_next_hop(context, dest_id, message):
                 logger.error("FWDREQ to master failed")
             return # no need to return FWDACK back via transport interface

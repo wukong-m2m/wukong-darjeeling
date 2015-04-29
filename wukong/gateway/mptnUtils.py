@@ -39,7 +39,7 @@ ONLY_FROM_TRANSPORT_INTERFACE = 2
 VALID_FROM_ALL = 3
 
 MASTER_ID = 0
-MPTN_UDP_PORT = 9002
+MPTN_UDP_PORT = 5775 # 0x57 for 'W', 0x75 for 'u'
 
 MPTN_TCP_PACKET_SIZE = struct.calcsize("!L")
 MPTN_TCP_NONCE_SIZE = struct.calcsize("!8B")
@@ -329,7 +329,7 @@ def reconnect(address):
             return sock
         except IOError as e:
             logger.error('reconnect to %s with error=%s' % (str(address), str(e)))
-        gevent.sleep(3)
+        # gevent.sleep(3)
     else:
         if sock is not None: sock.close()
         return None

@@ -11,7 +11,7 @@ import signal
 import gtwconfig as CONFIG
 from gtwclass import Gateway
 import zwave
-import udp
+import udp2 as udp
 
 import color_logging, logging
 logger = logging

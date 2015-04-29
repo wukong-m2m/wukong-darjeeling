@@ -41,8 +41,8 @@ class UDPTransport(object):
         self._node_id=1
         self.devices=[]
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.bind(('', 3939))
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.bind(('', 3939))
         self.enterLearnMode = False
 
 

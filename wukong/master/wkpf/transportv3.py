@@ -388,7 +388,7 @@ class RPCAgent(TransportAgent):
                         count += 1
             except Exception as e:
                 logger.error("RPC learn failed %s with gateway ID %s 0x%X addr=%s error=%s\n%s" % (to_mode,
-                    MPTN.ID_TO_STRING(gateway.id), gatetway.id, str(gateway.tcp_address), str(e), traceback.format_exc()))
+                    MPTN.ID_TO_STRING(gateway.id), gateway.id, str(gateway.tcp_address), str(e), traceback.format_exc()))
 
         if count > 0:
             self._mode = to_mode
@@ -542,7 +542,7 @@ class RPCAgent(TransportAgent):
                 if gateway is None or node_address is None:
                     retries = 0
                 else:
-                    gateway_stub = self._get_client_rpc_stub(gw_id, gw_ip, gw_port)
+                    gateway_stub = self._get_client_rpc_stub(gateway.id, gateway.tcp_address)
 
                     # prevent pyzwave send got preempted and defer is not in queue
                     if len(defer.allowed_replies) > 0:
@@ -788,7 +788,7 @@ class IDService:
             return None
 
         if not self.is_id_gateway(mptn_id):
-            mptn_id = self._node_lookup[mptn_id].gateway_id
+            mptn_id = self._nodes_lookup[mptn_id].gateway_id
 
         return self._gateways_lookup[mptn_id]
 
@@ -998,12 +998,12 @@ class IDService:
     def handle_gwidreq_message(self, context, dest_id, src_id, msg_type, payload):
         message = MPTN.create_packet_to_str(src_id, dest_id, MPTN.MPTN_MSGTYPE_GWIDNAK, None)
         if dest_id != MPTN.MASTER_ID:
-            logger.error("GWIDREQ dest id 0x%X is not Master" % (src_id, dest_id, MPTN.MASTER_ID))
+            logger.error("GWIDREQ dest id 0x%X is not Master" % (dest_id))
             MPTN.socket_send(context, MPTN.MPTN_MAX_ID, message)
             return
 
         if src_id != MPTN.MPTN_MAX_ID and not self.is_id_gateway(src_id):
-            logger.error("GWIDREQ src id 0x%X is not valid" % (src_id, dest_id, MPTN.MASTER_ID))
+            logger.error("GWIDREQ src id 0x%X is not valid" % (src_id))
             MPTN.socket_send(context, MPTN.MPTN_MAX_ID, message)
             return
 
@@ -1079,7 +1079,7 @@ class IDService:
             msg_type = MPTN.MPTN_MSGTYPE_FWDNAK
 
         message = MPTN.create_packet_to_str(src_id, dest_id, msg_type, payload)
-        MPTN.socket_send(context, new_id, message)
+        MPTN.socket_send(context, src_id, message)
 
         if msg_type == MPTN.MPTN_MSGTYPE_FWDACK:
             payload = map(ord, payload)
