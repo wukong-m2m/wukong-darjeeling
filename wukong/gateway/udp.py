@@ -7,7 +7,10 @@ import mptnUtils as MPTN
 import socket
 
 import color_logging, logging
-logger = logging
+import traceback
+import struct
+logging.basicConfig(level=CONFIG.LOG_LEVEL)
+logger = logging.getLogger( __name__ )
 
 TIMEOUT = 100
 
@@ -53,7 +56,11 @@ class UDPTransport(object):
         return self._node_id
 
     def get_radio_addr_len(self):
+<<<<<<< Updated upstream
         return MPTN.IP_ADDRESS_LEN
+=======
+        return MPTN.RADIO_ADDRESS_LEN_UDP
+>>>>>>> Stashed changes
 
     def get_learning_mode(self):
         return self._mode
@@ -61,15 +68,20 @@ class UDPTransport(object):
     def recv(self):
         _global_lock.acquire(True)
         try:
+            reply,src = self.sock.recvfrom(1000)
             #src, reply = pyzwave.receive(TIMEOUT)
+            print 'reply=',reply
+            print 'src=',src
+            host = src[0]
+            port = src[1]
+            d1,d2,src,ip,port,t = struct.unpack('BBBIH',reply)
 
             if src and reply:
-                logger.debug("UDP receives message %s from radio address %X" % (reply, src))
-                reply = ''.join([chr(byte) for byte in reply])
+                logger.debug("UDP receives message %s from radio address %s" % (reply, host))
                 return (src, reply)
         except:
             e = sys.exc_info()[0]
-            logger.error("UDP receives exception %s", str(e))
+            logger.error("UDP receives exception %s", traceback.format_exc())
         finally:
             _global_lock.release()
 
@@ -96,8 +108,12 @@ class UDPTransport(object):
         _global_lock.acquire(True)
         ret = None
         try:
+<<<<<<< Updated upstream
             #ret = pyzwave.getDeviceType(radio_address)
             pass
+=======
+            ret = 0
+>>>>>>> Stashed changes
         finally:
             _global_lock.release()
         return ret
@@ -162,6 +178,8 @@ class UDPTransport(object):
         elif type == 1:
             # Handle property change request
             pass
+        pass
+
 
     def discover(self):
         _global_lock.acquire(True)
@@ -185,8 +203,8 @@ class UDPTransport(object):
         _global_lock.acquire(True)
         ret = None
         try:
-            #ret = pyzwave.poll()
-            pass
+            ret = '"OK"'
+            print 'poll'
         finally:
             _global_lock.release()
         return ret
