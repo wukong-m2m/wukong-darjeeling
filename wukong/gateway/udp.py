@@ -56,11 +56,7 @@ class UDPTransport(object):
         return self._node_id
 
     def get_radio_addr_len(self):
-<<<<<<< Updated upstream
-        return MPTN.IP_ADDRESS_LEN
-=======
         return MPTN.RADIO_ADDRESS_LEN_UDP
->>>>>>> Stashed changes
 
     def get_learning_mode(self):
         return self._mode
