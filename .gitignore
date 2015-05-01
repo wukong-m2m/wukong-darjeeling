@@ -43,3 +43,4 @@ wkdeploy.dja
 *.sqlite
 fbp.html
 wukong/tools/testrtt/testrtt
+.gradle
