@@ -5,6 +5,7 @@ import sys
 import gtwconfig as CONFIG
 import mptnUtils as MPTN
 import struct
+import pickle
 
 try:
     import netifaces
@@ -68,6 +69,7 @@ class UDPTransport(object):
         self.enterLearnMode = False
         self.last_node_id = 0
         self.devices=[]
+        self.loadDevice()
         self._init_socket()
 
     def _init_socket(self):
@@ -188,7 +190,8 @@ class UDPTransport(object):
                 d.port = port
                 found = True
                 self.last_node_id = d.nodeid
-                break
+                self._mode = MPTN.STOP_MODE
+                return
 
         if type == 2 and not found and self.enterLearnMode and self._mode == MPTN.ADD_MODE:
             newid = 2
@@ -201,21 +204,36 @@ class UDPTransport(object):
                         break
                 if not found:
                     newd = UDPDevice(newid,ip,port)
+                    self.devices.append(newd)
+                    self.saveDevice()
                     break
                 pass
             self.last_node_id = newid
             self._mode = MPTN.STOP_MODE
         elif type == 2 and found and self.enterLearnMode and self._mode == MPTN.DEL_MODE:
-            for i in range(self.devices):
+            for i in range(len(self.devices)):
                 d = self.devices[i]
                 if d.nodeid == nodeid:
                     del self.devices[i]
+                    self.saveDevice()
                     return
                 pass
             pass
             self.last_node_id = 0
             self._mode = MPTN.STOP_MODE
 
+    def saveDevice(self):
+        f = open('devices.pk','w')
+        pickle.dump(self.devices,f)
+        f.close()
+
+    def loadDevice(self):
+        try:
+            f = open('devices.pk')
+            self.devices = pickle.load(f)
+            f.close()
+        except:
+            pass
     def discover(self):
         ret = []
         with _global_lock:
