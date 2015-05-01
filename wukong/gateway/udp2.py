@@ -79,8 +79,8 @@ class UDPTransport(object):
         self.sock.bind(('', self._port))
 
         logger.info("transport interface %s initialized on %s IP=%s PORT=%d with Node ID %s/%s" % (self._name,
-            self._dev_addr, MPTN.ID_FROM_STRING(self._ip), self._port,
-            MPTN.ID_FROM_STRING(self._node_id[0]), str(self._node_id[1])
+            self._dev_addr, MPTN.ID_TO_STRING(self._ip), self._port,
+            MPTN.ID_TO_STRING(self._node_id[0]), str(self._node_id[1])
             )
         )
 
@@ -127,7 +127,7 @@ class UDPTransport(object):
         with _global_lock:
             try:
                 message = "".join(map(chr, payload))
-                logger.info("sending %d bytes %s to %X" % (len(message), message, address))
+                logger.info("sending %d bytes %s to %s" % (len(message), message, MPTN.ID_TO_STRING(address)))
                 sock = socket.socket(socket.AF_INET, # Internet
                                     socket.SOCK_DGRAM) # UDP
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -239,6 +239,7 @@ class UDPTransport(object):
         except:
             pass
     def discover(self):
+        # a list = MPTN.get_all_addresses()
         ret = []
         with _global_lock:
             ret=[]

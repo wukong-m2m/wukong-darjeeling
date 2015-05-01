@@ -23,6 +23,8 @@ import struct
 from datetime import datetime
 import uuid
 import json
+import hashlib
+import traceback
 import color_logging, logging
 logger = logging
 
@@ -34,12 +36,13 @@ class IDService(object):
         self._transport_if_addr = transport_if_addr
         self._transport_if_addr_len = transport_if_len
 
-        # _addr_db: key = address, value = True or False
-        self._addr_db = DBDict("gtw_addr_table.sqlite")
-
         # _nexthop_db: key = "MPTN ID/NETMASK" STRING, value = next hop's tcp_address tuple ("IP" STRING, PORT INT)
         self._nexthop_db = DBDict("gtw_nexthop_table.sqlite")
         self._init_nexthop_lookup()
+
+        # _addr_db: key = address, value = True or False
+        self._addr_db = DBDict("gtw_addr_table.sqlite")
+        MPTN.set_address_allocation_table(self._addr_db)
 
         # _uuid_db: key = MPTN ID, value = UUID (such as MAC address)
         self._uuid_db = DBDict("gtw_uuid_table.sqlite")
@@ -47,8 +50,7 @@ class IDService(object):
         self._settings_db = DBDict("gtw_settings_db.sqlite")
         self._init_settings_db(autonet_mac_addr)
 
-        if CONFIG.UNITTEST_MODE:
-            self._id_req_queue = Queue()
+        if CONFIG.UNITTEST_MODE: self._id_req_queue = Queue()
 
         logger.info("IDService initialized with gateway ID is %s 0x%X" % (MPTN.ID_TO_STRING(self._settings_db["GTWSELF_ID"]),self._settings_db["GTWSELF_ID"]))
 
@@ -95,6 +97,12 @@ class IDService(object):
             self._clear_settings_db()
             exit(-1)
 
+        try:
+            self._nexthop_lookup.pop("%s/%d"%(MPTN.ID_TO_STRING(self._id), self._id_prefix_len))
+        except Exception as e:
+            pass
+        return
+
     def _clear_settings_db(self):
         for d in [self._settings_db, self._addr_db, self._nexthop_db, self._uuid_db]:
             d.clear()
@@ -126,7 +134,7 @@ class IDService(object):
             return None
 
         # log_msg = MPTN.formatted_print(MPTN.split_packet_to_list(message))
-        dest_id, src_id, msg_type, _ = packet
+        dest_id, src_id, msg_type, payload = packet
 
         if msg_type == MPTN.MPTN_MSGTYPE_GWIDNAK:
             logger.error("GWIDREQ GWIDREQ is refused by master")
@@ -143,21 +151,30 @@ class IDService(object):
                 MPTN.set_self_id(self._id)
                 self._network = MPTN.ID_NETWORK_FROM_TUPLE(MPTN.ID_TO_STRING(self._id),str(self._id_prefix_len))
                 self._id_prefix = dest_id & self._id_netmask
-                logger.info("GWIDREQ successfully get new ID %d including prefix" % dest_id)
+                logger.info("GWIDREQ successfully get new ID %s including prefix" % MPTN.ID_TO_STRING(dest_id))
             else:
                 logger.error("GWIDREQ get an ID %d %s different from old one %d %s" % (dest_id, MPTN.ID_TO_STRING(dest_id), self._id, MPTN.ID_TO_STRING(self._id)))
                 exit(-1)
         else:
-            logger.info("GWIDREQ successfully check the ID with master")
+            logger.info("GWIDREQ successfully check the ID %s with master"% MPTN.ID_TO_STRING(dest_id))
 
     def _init_nexthop_lookup(self):
         self._nexthop_lookup = {MPTN.ID_NETWORK_FROM_STRING(network_string):MPTN.NextHop(id=MPTN.ID_FROM_STRING(network_string),tcp_address=tcp_address) for (network_string, tcp_address) in self._nexthop_db.iteritems()}
-        self._nexthop_hash = hash(frozenset(self._nexthop_lookup.items()))
         MPTN.set_nexthop_lookup_function(self._find_nexthop_for_id)
+        self._update_nexthop_hash()
+
+    def _update_nexthop_hash(self):
+        j = "EmPtY"
+        nexthop_db = {key:value for (key,value) in self._nexthop_db.iteritems()}
+        if len(nexthop_db) > 0:
+            j = json.dumps(nexthop_db, sort_keys=True)
+        h = hashlib.sha512()
+        h.update(j)
+        self._nexthop_hash = h.digest()
 
     def _alloc_address(self, address):
         assert isinstance(address, (int, long)), "_alloc_address %s must be integer instead of %s" % (str(address), type(address))
-        assert address < self._transport_network_size, "_alloc_address %d cannot excede upper bound %d" % (address, self._transport_network_size)
+        assert MPTN.IS_ID_IN_NETWORK(address, self._network), "_alloc_address %d cannot excede upper bound %d" % (address, self._transport_network_size)
         self._addr_db[address] = True
 
     def _dealloc_address(self, address):
@@ -247,8 +264,10 @@ class IDService(object):
                 gevent.sleep(wait_sec)
             gevent.sleep(wait_sec/2)
 
-    def rt_ping_forever(self):
+    def rtping_forever(self):
         while True:
+            message = MPTN.create_packet_to_str(MPTN.MASTER_ID, self._id, MPTN.MPTN_MSGTYPE_RTPING, self._nexthop_hash)
+            MPTN.socket_send(None, MPTN.MASTER_ID, message)
             gevent.sleep(5)
 
     '''
@@ -298,7 +317,7 @@ class IDService(object):
                 if packet is None:
                     logger.error("IDREQ cannot be confirmed ID=%d (%s) Addr=%d" % (temp_id, MPTN.ID_TO_STRING(temp_id), temp_addr))
                     return
-                dest_id, src_id, msg_type, _ = packet
+                dest_id, src_id, msg_type, payload = packet
                 if dest_id != temp_id or src_id != MPTN.MASTER_ID or msg_type != MPTN.MPTN_MSGTYPE_IDACK:
                     logger.error("IDREQ invalid response for dest ID=%X (%s), src ID=%X (%s)" % (dest_id, MPTN.ID_TO_STRING(dest_id), src_id, MPTN.ID_TO_STRING(src_id)) )
                     return
@@ -392,7 +411,65 @@ class IDService(object):
         MPTN.transport_if_send(self._get_address_from_id(dest_id), message)
 
     def handle_rtping_message(self, context, dest_id, src_id, msg_type, payload):
-        raise NotImplementedError
+        if payload is None:
+            logger.error("RTPING should have the payload")
+            return
+
+        if dest_id != self._id:
+            logger.error("RTPING dest_id should be me")
+            return
+
+        if not self.is_id_valid(src_id):
+            logger.error("RTPING src ID %X %s should be found in network" % (src_id, MPTN.ID_TO_STRING(src_id)))
+            return
+
+        if payload != self._nexthop_hash:
+            logger.debug("RTPING got different hash %s. mine is %s. need to update routing table" % (str(map(ord, payload)), str(map(ord, self._nexthop_hash))))
+            message = MPTN.create_packet_to_str(MPTN.MASTER_ID, self._id, MPTN.MPTN_MSGTYPE_RTREQ, None)
+            MPTN.socket_send(None, MPTN.MASTER_ID, message)
 
     def handle_rtreq_message(self, context, dest_id, src_id, msg_type, payload):
-        raise NotImplementedError
+        logger.error("RTREQ does not implement")
+
+    def handle_rtrep_message(self, context, dest_id, src_id, msg_type, payload):
+        if payload is None:
+            logger.error("RTREP should have the payload")
+            return
+
+        if dest_id != self._id:
+            logger.error("RTREP dest_id should be me")
+            return
+
+        if not self.is_id_valid(src_id):
+            logger.error("RTREP src ID %X %s should be found in network" % (src_id, MPTN.ID_TO_STRING(src_id)))
+            return
+
+        if payload is None:
+            logger.error("RTREP payload should not be empty")
+            return
+
+        try:
+            rtrep_nexthop = json.loads(payload)
+        except Exception as e:
+            logger.error("RTREP payload %s cannot be loaded as json. error=%s\n%s" % (payload, str(e), traceback.format_exc()))
+            return
+
+        self._nexthop_lookup.clear()
+        try:
+            for network_string, tcp_address in rtrep_nexthop.iteritems():
+                network = MPTN.ID_NETWORK_FROM_STRING(network_string)
+                if MPTN.IS_ID_IN_NETWORK(self._id, network): continue
+                self._nexthop_lookup[network] = MPTN.NextHop(id=MPTN.ID_FROM_STRING(network_string),tcp_address=tuple(tcp_address))
+        except Exception as e:
+            logger.error("RTREP got an incorrect json as payload %s. error=%s\n%s" % (payload, str(e), traceback.format_exc()))
+            self._nexthop_lookup = {MPTN.ID_NETWORK_FROM_STRING(network_string):MPTN.NextHop(id=MPTN.ID_FROM_STRING(network_string),tcp_address=tcp_address) for (network_string, tcp_address) in self._nexthop_db.iteritems()}
+            return
+
+        self._nexthop_db.clear()
+        for network_string, tcp_address in rtrep_nexthop.iteritems():
+            self._nexthop_db[network_string] = tuple(tcp_address)
+
+        self._update_nexthop_hash()
+        # logger.info("new hash is %s" % str(map(ord, payload)))
+        # logger.info("db %s lookup %s" % (str(self._nexthop_db), str(self._nexthop_lookup)))
+        return

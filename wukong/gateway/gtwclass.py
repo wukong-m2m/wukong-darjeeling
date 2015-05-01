@@ -27,7 +27,6 @@ class Gateway(object):
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_GWIDNAK] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TCP_SERVER, MPTN.handle_reply_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_IDACK] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TCP_SERVER, MPTN.handle_reply_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_IDNAK] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TCP_SERVER, MPTN.handle_reply_message)
-        self._protocol_handlers[MPTN.MPTN_MSGTYPE_RTREP] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TCP_SERVER, MPTN.handle_reply_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_FWDACK] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TCP_SERVER, MPTN.handle_reply_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_FWDNAK] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TCP_SERVER, MPTN.handle_reply_message)
         MPTN.set_message_handler(self._process_message)
@@ -56,10 +55,11 @@ class Gateway(object):
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_IDREQ] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TRANSPORT_INTERFACE, self._id_service.handle_idreq_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_RTPING] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TCP_SERVER, self._id_service.handle_rtping_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_RTREQ] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TCP_SERVER, self._id_service.handle_rtreq_message)
+        self._protocol_handlers[MPTN.MPTN_MSGTYPE_RTREP] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TCP_SERVER, self._id_service.handle_rtrep_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_FWDREQ] = MPTN.ProtocolHandler(MPTN.VALID_FROM_ALL, self._id_service.handle_fwdreq_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_GWDISCOVER] = MPTN.ProtocolHandler(MPTN.VALID_FROM_ALL, self._id_service.handle_gwdiscover_message)
 
-        self._spawn_handlers.append(self._id_service.rt_ping_forever)
+        self._spawn_handlers.append(self._id_service.rtping_forever)
         if CONFIG.UNITTEST_MODE:
             self._spawn_handlers.append(self._id_service.clear_id_req_queue)
 

@@ -5,6 +5,7 @@ from model.models import *
 from globals import *
 from configuration import *
 import simulator
+import traceback
 if WKPFCOMM_AGENT == "GATEWAY":
   from transportv3 import *
 else:
@@ -43,6 +44,7 @@ class Communication:
       except Exception as e:
         print "Exception while creating agent"
         print e
+        print traceback.format_exc()
         is_not_connected()
         self.agent = getMockAgent()
         if SIMULATION == "true":

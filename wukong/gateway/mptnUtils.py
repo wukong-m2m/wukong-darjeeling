@@ -23,7 +23,7 @@ NonceCallback = collections.namedtuple("NonceCallback", "id, callback")
 NextHop = collections.namedtuple("NextHop", "id, tcp_address")
 Peer = collections.namedtuple("Peer", "socket, id, address")
 
-CONNECTION_RETRIES = 2
+CONNECTION_RETRIES = 1
 NETWORK_TIMEOUT = 3.0
 
 ZW_ADDRESS_LEN = 1
@@ -119,8 +119,8 @@ def formatted_print(msg):
         r += '\n'
     return r
 
-def create_packet_to_str(dest_did, src_did, msg_type, payload):
-    header = struct.pack(HEADER_FORMAT_STR, dest_did, src_did, msg_type)
+def create_packet_to_str(dest_id, src_id, msg_type, payload):
+    header = struct.pack(HEADER_FORMAT_STR, dest_id, src_id, msg_type)
     if payload is not None: return header + payload
     return header
 
@@ -160,6 +160,17 @@ def set_self_id(mptn_id):
     except Exception as e:
         logger.error("set_self_id unknown error: %s\n%s" % (str(e), traceback.format_exc()))
 
+addr_to_bool_db = None
+def set_address_allocation_table(db):
+    global addr_to_bool_db
+    addr_to_bool_db = db
+
+def get_all_addresses():
+    global addr_to_bool_db
+    if addr_to_bool_db is None: return None
+    # remember that if addr_to_bool_db changes, return values won't reflect that
+    return addr_to_bool_db.keys()
+
 class ConnectionManager(object):
     _manager = None
     @classmethod
@@ -190,7 +201,7 @@ class ConnectionManager(object):
     def remove_peer(self, address):
         with self.mptn_lock:
             if address is None or address not in self.mptn_conn_by_addr:
-                logger.info("remove_peer not find address %s. Continue, anyway" % str(address))
+                # logger.info("remove_peer not find address %s. Continue, anyway" % str(address))
                 return
 
             try:
@@ -261,40 +272,32 @@ def socket_recv(sock, addr, peer_id):
         try:
             nonce = sock.recv(MPTN_TCP_NONCE_SIZE)
             if nonce == "":
-                logger.error("handle_socket closed when getting nonce. addr=%s, nonce=%s, size_string=%s, size=%d, message=\n%s" % (
-                    str(addr), str(map(ord, nonce)), str(map(ord, size_string)), size,
-                    str(formatted_print(split_packet_to_list(message)))
-                    )
-                )
-                logger.debug("handle_socket closed when getting nonce. before %s" % str(ConnectionManager.init()))
+                logger.error("handle_socket closed. nonce. addr=%s" % (str(addr)))
+                logger.debug("handle_socket closed. connections before %s" % str(ConnectionManager.init()))
                 ConnectionManager.init().remove_peer(addr)
-                logger.debug("handle_socket closed when getting nonce. after %s" % str(ConnectionManager.init()))
+                logger.debug("handle_socket closed. connections after %s" % str(ConnectionManager.init()))
                 return
 
             size_string = sock.recv(MPTN_TCP_PACKET_SIZE)
             if size_string == "":
-                logger.error("handle_socket closed when getting size. addr=%s, nonce=%s, size_string=%s, size=%d, message=\n%s" % (
-                    str(addr), str(map(ord, nonce)), str(map(ord, size_string)), size,
-                    str(formatted_print(split_packet_to_list(message)))
-                    )
-                )
-                logger.debug("handle_socket closed when getting size. before %s" % str(ConnectionManager.init()))
+                logger.error("handle_socket closed. size. addr=%s, nonce=%s" % (str(addr), str(map(ord, nonce))))
+                logger.debug("handle_socket closed. connections before %s" % str(ConnectionManager.init()))
                 ConnectionManager.init().remove_peer(addr)
-                logger.debug("handle_socket closed when getting size. after %s" % str(ConnectionManager.init()))
+                logger.debug("handle_socket closed. connections after %s" % str(ConnectionManager.init()))
                 return
             size = socket.ntohl(struct.unpack("!L", size_string)[0])
 
             while len(message) < size:
                 part_msg = sock.recv(size - len(message))
                 if part_msg == "":
-                    logger.error("handle_socket closed when getting message. addr=%s, nonce=%s, size_string=%s, size=%d, message=\n%s" % (
+                    logger.error("handle_socket closed. message. addr=%s, nonce=%s, size_string=%s, size=%d, message=\n%s" % (
                         str(addr), str(map(ord, nonce)), str(map(ord, size_string)), size,
                         str(formatted_print(split_packet_to_list(message)))
                         )
                     )
-                    logger.debug("handle_socket closed when getting message. before %s" % str(ConnectionManager.init()))
+                    logger.debug("handle_socket closed. connections before %s" % str(ConnectionManager.init()))
                     ConnectionManager.init().remove_peer(addr)
-                    logger.debug("handle_socket closed when getting message. after %s" % str(ConnectionManager.init()))
+                    logger.debug("handle_socket closed. connections after %s" % str(ConnectionManager.init()))
                     return
                 message += part_msg
 
@@ -340,7 +343,7 @@ def socket_send(context, dest_id, message, expect_reply=False):
         return None
 
     if context is not None and context.direction == ONLY_FROM_TCP_SERVER and context.id == dest_id:
-        logger.debug("socket_send reuses socket since context ID is the same as dest_id %s" % str(dest_id))
+        # logger.debug("socket_send reuses socket since context ID is the same as dest_id %s" % str(dest_id))
         next_hop_id = dest_id
         address = context.address
         sock = context.socket
@@ -348,7 +351,7 @@ def socket_send(context, dest_id, message, expect_reply=False):
 
     else:
         next_hop = find_nexthop_for_id(dest_id)
-        logger.debug("socket_send next_hop is %s" % str(next_hop))
+        # logger.debug("socket_send next_hop is %s" % str(next_hop))
         if next_hop is None:
             logger.error("socket_send next hop for dest ID %s 0x%X cannot be found"%(ID_TO_STRING(dest_id), dest_id))
             return None
@@ -360,16 +363,16 @@ def socket_send(context, dest_id, message, expect_reply=False):
         nonce = os.urandom(MPTN_TCP_NONCE_SIZE)
 
     if sock is None:
-        logger.debug("socket_send no socket found for ID %s"%ID_TO_STRING(next_hop_id))
+        # logger.debug("socket_send no socket found for ID %s"%ID_TO_STRING(next_hop_id))
         sock = reconnect(address)
         if sock is None:
-            logger.error("socket_send cannot re-setup socket for next_hop_id=%s addr=%s msg is\n%s" % (ID_TO_STRING(next_hop_id), str(address), formatted_print(split_packet_to_list(message))))
+            # logger.error("socket_send cannot re-setup socket for next_hop_id=%s addr=%s msg is\n%s" % (ID_TO_STRING(next_hop_id), str(address), formatted_print(split_packet_to_list(message))))
             return
         try:
             sock.send(self_id_net_endian_string)
         except Exception as e:
-            logger.error("socket_send self_id_net_endian_string error=%s. addr=%s, self_id_net_endian_string=%s, nonce=%s, size=%s, message is\n%s\nerror=%s\n%s" % (str(address), ID_TO_STRING(self_id_net_endian_string),
-                    str(map(ord, nonce)), str(size),
+            logger.error("socket_send self_id_net_endian_string error=%s. addr=%s, self_id_net_endian_string=%s, nonce=%s, message is\n%s\nerror=%s\n%s" % (str(address), ID_TO_STRING(self_id_net_endian_string),
+                    str(map(ord, nonce)),
                     str(formatted_print(split_packet_to_list(message))),
                     str(e), traceback.format_exc()
                     )
@@ -379,7 +382,7 @@ def socket_send(context, dest_id, message, expect_reply=False):
         ConnectionManager.init().add_peer(address, Peer(socket=sock, id=next_hop_id, address=address))
         gevent.sleep(0)
 
-    logger.debug("socket_send message %s to ID %s" % (str(message), ID_TO_STRING(next_hop_id)))
+    # logger.debug("socket_send message %s to ID %s" % (str(message), ID_TO_STRING(next_hop_id)))
     size = 0
     try:
         sock.send(nonce)
@@ -387,9 +390,9 @@ def socket_send(context, dest_id, message, expect_reply=False):
         sock.send(size)
         sock.sendall(message)
     except Exception as e:
-        logger.error("socket_send nonce addr=%s, self_id_net_endian_string=%s, nonce=%s, size=%s, message is\n%s\nerror=%s\n%s" % (str(address),
+        logger.error("socket_send nonce addr=%s, self_id_net_endian_string=%s, nonce=%s, message is\n%s\nerror=%s\n%s" % (str(address),
                 ID_TO_STRING(self_id_net_endian_string),
-                str(map(ord, nonce)), str(size),
+                str(map(ord, nonce)),
                 str(formatted_print(split_packet_to_list(message))),
                 str(e), traceback.format_exc()
                 )

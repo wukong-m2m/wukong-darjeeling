@@ -26,6 +26,7 @@ import mptnUtils as MPTN
 import ipaddress
 from gevent.lock import RLock
 import json
+import hashlib
 import traceback
 
 try:
@@ -226,6 +227,10 @@ class RPCAgent(TransportAgent):
             MPTN.ONLY_FROM_TCP_SERVER, getIDService().handle_gwidreq_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_RPCREP] = MPTN.ProtocolHandler(
             MPTN.ONLY_FROM_TCP_SERVER, MPTN.handle_reply_message)
+        self._protocol_handlers[MPTN.MPTN_MSGTYPE_RTPING] = MPTN.ProtocolHandler(
+            MPTN.ONLY_FROM_TCP_SERVER, getIDService().handle_rtping_message)
+        self._protocol_handlers[MPTN.MPTN_MSGTYPE_RTREQ] = MPTN.ProtocolHandler(
+            MPTN.ONLY_FROM_TCP_SERVER, getIDService().handle_rtreq_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_FWDREQ] = MPTN.ProtocolHandler(
             MPTN.ONLY_FROM_TCP_SERVER, getIDService().handle_fwdreq_message)
         MPTN.set_message_handler(self._process_message)
@@ -761,9 +766,20 @@ class IDService:
             self._nodes_lookup = {int(key):value for (key,value) in self._nodes_db.iteritems()}
             self._uuids_lookup = {node.uuid:node_id for (node_id, node) in self._nodes_lookup.iteritems()}
             self._gateways_lookup = {int(key):value for (key,value) in self._gateways_db.iteritems()}
-            # _nexthop_lookup: key = "MPTN ID/NETMASK" STRING, value = NextHop namedtuple
+            self._update_nexthop_hash()
+
+            # _nexthop_lookup: key = network object genereated from an interface string "MPTN ID/NETMASK" STRING
+            #                  value = NextHop namedtuple
             self._nexthop_lookup = {MPTN.ID_NETWORK_FROM_STRING("%s/%s"%(MPTN.ID_TO_STRING(int(gateway_id)),MPTN.ID_TO_STRING(gateway.netmask))):MPTN.NextHop(id=int(gateway_id),tcp_address=gateway.tcp_address) for (gateway_id, gateway) in self._gateways_lookup.iteritems()}
-            self._nexthop_hash = hash(frozenset(self._nexthop_lookup.items()))
+
+    def _update_nexthop_hash(self):
+        self._nexthop_db = {"%s/%d"%(MPTN.ID_TO_STRING(int(gateway_id)),gateway.prefix_len):gateway.tcp_address for (gateway_id, gateway) in self._gateways_lookup.iteritems()}
+        self._nexthop_db_json = "EmPtY"
+        if len(self._nexthop_db) > 0:
+            self._nexthop_db_json = json.dumps(self._nexthop_db, sort_keys=True)
+        h = hashlib.sha512()
+        h.update(self._nexthop_db_json)
+        self._nexthop_hash = h.digest()
 
     def is_id_valid(self, mptn_id):
         return mptn_id in self._nodes_lookup
@@ -826,6 +842,21 @@ class IDService:
         self._nodes_db.pop(node_id)
         self._nodes_lookup.pop(node_id)
 
+    def _add_new_gateway(self, gateway_id, gateway):
+        self._gateways_db[gateway_id] = gateway
+        self._gateways_lookup[gateway_id] = gateway
+        self._update_nexthop_hash()
+        self._nexthop_lookup[gateway.network] = MPTN.NextHop(id=gateway_id,tcp_address=gateway.tcp_address)
+
+    def _del_old_gateway(self, gateway_id):
+        self._gateways_db.pop(gateway_id)
+        gateway = self._gateways_lookup.pop(gateway_id)
+        self._update_nexthop_hash()
+        try:
+            self._nexthop_lookup.pop(gateway.network)
+        except Exception as e:
+            logger.error("_del_old_gateway gateway_id %s %X occurs error:%s\n%s" % (MPTN.ID_TO_STRING(gateway_id), gateway_id, str(e), traceback.format_exc()))
+
     def _alloc_node_id(self, to_check_id, gateway_id, uuid):
         ERROR_ID = MPTN.MPTN_MAX_ID
         with self._global_lock:
@@ -871,7 +902,7 @@ class IDService:
                     logger.error("IDREQ to-check ID %s 0x%X is not in gateway(ID %s 0x%X)'s network" % (MPTN.ID_TO_STRING(to_check_id), to_check_id, MPTN.ID_TO_STRING(gateway_id), gateway_id))
                     return ERROR_ID
 
-                if_addr = to_check_id & gateway.hostmask
+                if_addr = (to_check_id & gateway.hostmask) if (gateway.if_address_len == 1 or gateway.if_address_len == 2) else to_check_id
                 self._add_new_node(NodeInfo(id=to_check_id, is_gateway=False, gateway_id=gateway_id, uuid=uuid, if_address=if_addr))
                 return to_check_id
 
@@ -948,10 +979,7 @@ class IDService:
                 for gateway in self.get_all_gateways():
                     if gateway.tcp_address == (ip, port):
                         logger.error("GWIDREQ found duplicate TCP Address %s, delete old uuid %s" % (str((ip, port)), str(map(ord, gateway.uuid))))
-                        self._gateways_db.pop(gateway.id)
-                        self._gateways_lookup.pop(gateway.id)
-                        self._nexthop_lookup.pop(gateway.network)
-                        self._nexthop_hash = hash(frozenset(self._nexthop_lookup.items()))
+                        self._del_old_gateway(gateway.id)
                         self._del_old_node(gateway.id, gateway.uuid)
                         break
 
@@ -985,11 +1013,7 @@ class IDService:
                     netmask=netmask, hostmask=hostmask,
                     uuid=uuid)
 
-                self._gateways_db[new_id] = gateway
-                self._gateways_lookup[new_id] = gateway
-
-                self._nexthop_lookup[network] = MPTN.NextHop(id=new_id,tcp_address=(ip, port))
-                self._nexthop_hash = hash(frozenset(self._nexthop_lookup.items()))
+                self._add_new_gateway(new_id, gateway)
 
                 node = NodeInfo(id=new_id, is_gateway=True, gateway_id=new_id, uuid=uuid, if_address=if_addr)
                 self._add_new_node(node)
@@ -1074,6 +1098,15 @@ class IDService:
 
     def handle_fwdreq_message(self, context, dest_id, src_id, msg_type, payload):
         msg_type = MPTN.MPTN_MSGTYPE_FWDACK
+
+        if not self.is_id_valid(src_id):
+            logger.error("invalid FWDREQ src ID %X %s: not found in network" % (src_id, MPTN.ID_TO_STRING(src_id)))
+            msg_type = MPTN.MPTN_MSGTYPE_FWDNAK
+
+        if dest_id != MPTN.MASTER_ID:
+            logger.error("invalid FWDREQ dest_id %X %s: not Master" % (src_id, MPTN.ID_TO_STRING(dest_id)))
+            msg_type = MPTN.MPTN_MSGTYPE_FWDNAK
+
         if payload is None:
             logger.error("FWDREQ should have payload")
             msg_type = MPTN.MPTN_MSGTYPE_FWDNAK
@@ -1084,6 +1117,46 @@ class IDService:
         if msg_type == MPTN.MPTN_MSGTYPE_FWDACK:
             payload = map(ord, payload)
             broker_messages.put_nowait(new_deliver(src_id, payload[0], payload[1:]))
+        return
+
+    def handle_rtping_message(self, context, dest_id, src_id, msg_type, payload):
+        if not self.is_id_valid(src_id):
+            logger.error("invalid RTPING src ID %X %s: not found in network" % (src_id, MPTN.ID_TO_STRING(src_id)))
+            return
+
+        if dest_id != MPTN.MASTER_ID:
+            logger.error("invalid RTPING dest_id %X %s: not Master" % (src_id, MPTN.ID_TO_STRING(dest_id)))
+            return
+
+        if payload is None:
+            logger.error("RTPING should have payload")
+            return
+
+        if payload == self._nexthop_hash:
+            # logger.debug("RTPING got the same hash. no need reply")
+            return
+
+        message = MPTN.create_packet_to_str(src_id, dest_id, MPTN.MPTN_MSGTYPE_RTPING, self._nexthop_hash)
+        # logger.info("new hash is %s" % str(map(ord, self._nexthop_hash)))
+        # logger.info("db %s lookup %s" % (str(self._nexthop_db), str(self._nexthop_lookup)))
+        MPTN.socket_send(None, src_id, message)
+        return
+
+    def handle_rtreq_message(self, context, dest_id, src_id, msg_type, payload):
+        if not self.is_id_valid(src_id):
+            logger.error("invalid RTREQ src ID %X %s: not found in network" % (src_id, MPTN.ID_TO_STRING(src_id)))
+            return
+
+        if dest_id != MPTN.MASTER_ID:
+            logger.error("invalid RTREQ dest_id %X %s: not Master" % (src_id, MPTN.ID_TO_STRING(dest_id)))
+            return
+
+        if payload is not None:
+            logger.error("RTREQ should not have payload")
+            return
+
+        message = MPTN.create_packet_to_str(src_id, dest_id, MPTN.MPTN_MSGTYPE_RTREP, self._nexthop_db_json)
+        MPTN.socket_send(None, src_id, message)
         return
 
 def getMockAgent():
