@@ -8,33 +8,33 @@
 
 	<!-- Task for the infuser  -->
 	<taskdef name="infuser" classname="org.csiro.darjeeling.infuser.ant.InfuserTask">
-		<classpath path="${taskdefspath}/infuser/build/infuser.jar"/>
+		<classpath path="${taskdefspath}/infuser/build/libs/infuser-1.0.jar"/>
 	</taskdef>
 
 	<!-- CArray Task  -->
 	<taskdef name="carray" classname="org.csiro.darjeeling.carray.ant.CArrayTask">
-		<classpath path="${taskdefspath}/infuser/build/infuser.jar"/>
+		<classpath path="${taskdefspath}/infuser/build/libs/infuser-1.0.jar"/>
 	</taskdef>
 
 	<!-- DJArchive Task -->
 	<taskdef name="djarchive" classname="org.csiro.darjeeling.djarchive.ant.DJAddToArchiveTask">
-		<classpath path="${taskdefspath}/infuser/build/infuser.jar"/>
+		<classpath path="${taskdefspath}/infuser/build/libs/infuser-1.0.jar"/>
 	</taskdef>
 
 	<!-- WKPFTable Task -->
 	<taskdef name="wkpftable" classname="org.csiro.darjeeling.wkpftable.ant.WKPFTableTask">
-		<classpath path="${taskdefspath}/infuser/build/infuser.jar"/>
+		<classpath path="${taskdefspath}/infuser/build/libs/infuser-1.0.jar"/>
 	</taskdef>
 
 	<!-- LibInit Task -->
 	<taskdef name="generatelibinit" classname="org.csiro.darjeeling.libinit.ant.LibInitTask">
-		<classpath path="${taskdefspath}/infuser/build/infuser.jar"/>
+		<classpath path="${taskdefspath}/infuser/build/libs/infuser-1.0.jar"/>
 	</taskdef>
 
 	<!-- Task for the switch statement  -->
 <!-- 	<path id="antcontrib-classpath" path="${taskdefspath}/../ant/ant-contrib-1.0b3.jar"/>
 	<taskdef name="switch" classname="net.sf.antcontrib.logic.Switch" loaderRef="swithtask" classpathref="antcontrib-classpath">
-		<classpath path="${taskdefspath}/infuser/build/infuser.jar"/>
+		<classpath path="${taskdefspath}/infuser/build/libs/infuser-1.0.jar"/>
 	</taskdef>
  -->
 	<taskdef resource="net/sf/antcontrib/antlib.xml">
