@@ -106,7 +106,9 @@ class UDPTransport(object):
             if data != "":
                 logger.debug("receives message %s from address %s" % (data, str(addr)))
                 if t == 1:
-                    return (MPTN.ID_FROM_STRING(addr[0]), data[10:])
+                    data = data[10:]
+                    print "MPTN message: ", ord(data[0]), ord(data[1])
+                    return (MPTN.ID_FROM_STRING(addr[0]), data)
                 elif t == 2:
                     self.refreshDeviceData(data)
                     return (None,None)
@@ -146,6 +148,7 @@ class UDPTransport(object):
 
     def getDeviceType(self, address):
         ret = None
+        logger.info('get device type for %x' % address)
         with _global_lock:
             try:
                 # ret = pyzwave.getDeviceType(address)
