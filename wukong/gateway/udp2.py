@@ -149,6 +149,7 @@ class UDPTransport(object):
         with _global_lock:
             try:
                 # ret = pyzwave.getDeviceType(address)
+                ret = 0xff
                 pass
             except Exception as e:
                 logger.error("getDeviceType exception %s\n%s" % (str(e), traceback.format_exc()))
@@ -237,6 +238,9 @@ class UDPTransport(object):
     def discover(self):
         ret = []
         with _global_lock:
+            ret=[]
+            for i in range(len(self.devices)):
+                ret.append(self.devices[i].nodeid)
             # nodes = pyzwave.discover()
             # zwave_controller = nodes[0]
             # total_nodes = nodes[1]
