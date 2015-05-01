@@ -82,19 +82,18 @@ public class RTCTestFixFFT {
 		SIN8 and COS8 - 8-bit pseudo sine and cosine for better handling. 
 		Normalized to y * N_WAVE_HALF and x * N_WAVE / 2pi .
 		Returns char value which can be used for integer arithmetic
-	*/
-
-	private static byte SIN8(short n)
+	private static final byte SIN8(short n)
 	{
 	  n = (short)(n % N_WAVE);
 	  return Sinewave[n];
 	}
 
-	private static byte COS8(short n)
+	private static final byte COS8(short n)
 	{
 	  n = (short)((n + N_WAVE/4) % N_WAVE);
 	  return Sinewave[n];
 	}
+	*/
 
 
 
@@ -103,19 +102,24 @@ public class RTCTestFixFFT {
 	  Substitute inline assembly for hardware-specific
 	  optimization suited to a particluar DSP processor.
 	  Scaling ensures that result remains 16-bit.
-	*/
 	private static byte FIX_MPY(byte a, byte b)
 	{ 
 		// Multiply, then scale back to one signed 8-bit value
 
-	    /* shift right one less bit (i.e. 7-1) */
+		// Original
+	    // // shift right one less bit (i.e. 7-1)
+	    // short c = (short)(((short)a * (short)b) >> 6);
+	    // // last bit shifted out = rounding-bit
+	    // b = (byte)(c & 0x01);
+	    // // last shift + rounding bit
+	    // a = (byte)((c >> 1) + b);
+	    // return a;
+
+		// Reformatted to make it easier to inline
 	    short c = (short)(((short)a * (short)b) >> 6);
-	    /* last bit shifted out = rounding-bit */
-	    b = (byte)(c & 0x01);
-	    /* last shift + rounding bit */
-	    a = (byte)((c >> 1) + b);
-	    return a;
+	    return (byte)((c >> 1) + ((byte)(c & 0x01)));
 	}
+	*/
 
 
 	/*
@@ -198,8 +202,10 @@ public class RTCTestFixFFT {
 			for (m=0; m<l; ++m) {
 				j = (short)(m << k);
 				/* 0 <= j < N_WAVE/2 */
-				wr =  COS8(j);
-				wi = (byte)-SIN8(j);
+				// wr =  COS8(j);
+				// wi = (byte)-SIN8(j);
+				wr =  Sinewave[((j + N_WAVE/4) % N_WAVE)]; // COS8(j)
+				wi = (byte)-Sinewave[(j % N_WAVE)]; // -SIN8(j)
 				if (inverse)
 					wi = (byte)-wi;
 				if (shift) {
@@ -208,8 +214,15 @@ public class RTCTestFixFFT {
 				}
 				for (i=m; i<n; i+=istep) {
 					j = (short)(i + l);
-					tr = (byte)(FIX_MPY(wr,fr[j]) - FIX_MPY(wi,fi[j]));
-					ti = (byte)(FIX_MPY(wr,fi[j]) + FIX_MPY(wi,fr[j]));
+					// tr = (byte)(FIX_MPY(wr,fr[j]) - FIX_MPY(wi,fi[j]));
+					// ti = (byte)(FIX_MPY(wr,fi[j]) + FIX_MPY(wi,fr[j]));
+					// Inlined FIX_MPY
+					short c1 = (short)(((short)wr * (short)fr[j]) >> 6);
+					short c2 = (short)(((short)wi * (short)fi[j]) >> 6);
+					short c3 = (short)(((short)wr * (short)fi[j]) >> 6);
+					short c4 = (short)(((short)wi * (short)fr[j]) >> 6);
+					tr = (byte)((byte)((c1 >> 1) + ((byte)(c1 & 0x01))) - (byte)((c2 >> 1) + ((byte)(c2 & 0x01))));
+					ti = (byte)((byte)((c3 >> 1) + ((byte)(c3 & 0x01))) + (byte)((c4 >> 1) + ((byte)(c4 & 0x01))));
 					qr = fr[i];
 					qi = fi[i];
 					if (shift) {

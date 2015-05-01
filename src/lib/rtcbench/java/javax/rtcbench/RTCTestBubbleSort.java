@@ -3,7 +3,7 @@ package javax.rtcbench;
 import javax.darjeeling.Stopwatch;
 
 public class RTCTestBubbleSort {
-	public class pair { public short a; public short b; }
+	// public class pair { public short a; public short b; }
 
 	private final static short NUMNUMBERS = 256;
 
@@ -18,6 +18,23 @@ public class RTCTestBubbleSort {
 		// Then sort it
 		do_bubblesort(numbers);
 	}
+
+	// public static void do_bubblesort(short[] numbers) {
+	// 	Stopwatch.resetAndStart();
+
+	// 	for (int i=0; i<NUMNUMBERS; i++) {
+	// 		for (int j=0; j<NUMNUMBERS-i-1; j++) {
+	// 			if (numbers[j]>numbers[j+1]) {
+	// 				short temp = numbers[j];
+	// 				numbers[j] = numbers[j+1];
+	// 				numbers[j+1] = temp;
+	// 			}
+	// 		}
+	// 	}
+
+	// 	Stopwatch.measure();
+	// }
+
 
 	public static void do_bubblesort(short[] numbers) {
 		Stopwatch.resetAndStart();
