@@ -97,28 +97,37 @@ class UDPTransport(object):
         return self._mode
 
     def recv(self):
-        try:
-            data, addr = self.sock.recvfrom(1024)
+        while True:
+            try:
+                data, addr = self.sock.recvfrom(1024)
+                if ord(data[0]) != 0xAA or ord(data[1]) != 0x55:
+                    # Drop the unknown packet
+                    print "Get unknown packet ",ord(data[0]),ord(data[1])
+                    continue
+                nodeid = ord(data[2])
+                ip = struct.unpack("I",data[3:7])
+                port = struct.unpack('H',data[7:9])
+                t = ord(data[9])
+                print "type=",type
 
-            t = ord(data[9])
-            print "data=",data
-            print "t=",t
-            if data != "":
-                logger.debug("receives message %s from address %s" % (data, str(addr)))
-                if t == 1:
-                    data = data[10:]
-                    print "MPTN message: ", ord(data[0]), ord(data[1])
-                    return (MPTN.ID_FROM_STRING(addr[0]), data)
-                elif t == 2:
-                    self.refreshDeviceData(data)
-                    return (None,None)
-                else:
-                    return (None,None)
-        except Exception as e:
-            ret = traceback.format_exc()
-            logger.error("receives exception %s\n%s" % (str(e), ret))
-            self.sock.close()
-            self._init_socket()
+                print "data=",data
+                print MPTN.ID_FROM_STRING(addr[0])
+                nodeid = (MPTN.ID_FROM_STRING(addr[0]) & 0xffffff00) | nodeid
+                if data != "":
+                    logger.debug("receives message %s from address %s" % (data, str(addr)))
+                    if t == 1:
+                        data = data[10:]
+                        return (nodeid, data)
+                    elif t == 2:
+                        self.refreshDeviceData(data)
+                        continue
+                    else:
+                        continue
+            except Exception as e:
+                ret = traceback.format_exc()
+                logger.error("receives exception %s\n%s" % (str(e), ret))
+                self.sock.close()
+                self._init_socket()
 
         return (None, None)
 
@@ -126,6 +135,9 @@ class UDPTransport(object):
         ret = None
         with _global_lock:
             try:
+                address = self.getDeviceAddress(address)
+                if address == 0:
+                    return None
                 message = "".join(map(chr, payload))
                 logger.info("sending %d bytes %s to %s" % (len(message), message, MPTN.ID_TO_STRING(address)))
                 sock = socket.socket(socket.AF_INET, # Internet
@@ -146,6 +158,13 @@ class UDPTransport(object):
         logger.error(msg)
         return (False, msg)
 
+    def getDeviceAddress(self,addr):
+        a = addr & 0xff
+        for d in self.devices:
+            if d.nodeid == a:
+                return d.ip
+        logger.error('Address %d is not registered yet' % a)
+        return 0
     def getDeviceType(self, address):
         ret = None
         logger.info('get device type for %x' % address)
@@ -181,8 +200,8 @@ class UDPTransport(object):
             return
         data = data[2:]
         nodeid = ord(data[0])
-        ip = struct.unpack("I",data[1:5])
-        port = struct.unpack('H',data[5:7])
+        ip = struct.unpack("I",data[1:5])[0]
+        port = struct.unpack('H',data[5:7])[0]
         type = ord(data[7])
         print "type=",type
 
