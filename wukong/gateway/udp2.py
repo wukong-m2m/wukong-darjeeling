@@ -135,15 +135,16 @@ class UDPTransport(object):
         ret = None
         with _global_lock:
             try:
-                address = self.getDeviceAddress(address)
+                address,port = self.getDeviceAddress(address)
                 if address == 0:
                     return None
                 message = "".join(map(chr, payload))
-                logger.info("sending %d bytes %s to %s" % (len(message), message, MPTN.ID_TO_STRING(address)))
+                logger.info("sending %d bytes %s to %s at port %d" % (len(message), message, MPTN.ID_TO_STRING(address),port))
                 sock = socket.socket(socket.AF_INET, # Internet
                                     socket.SOCK_DGRAM) # UDP
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                sock.sendto(message, (MPTN.ID_TO_STRING(address), MPTN.MPTN_UDP_PORT))
+                #sock.sendto(message, (MPTN.ID_TO_STRING(address), MPTN.MPTN_UDP_PORT))
+                sock.sendto(message, (MPTN.ID_TO_STRING(address), port))
                 sock.close()
             except Exception as e:
                 ret = traceback.format_exc()
@@ -162,9 +163,9 @@ class UDPTransport(object):
         a = addr & 0xff
         for d in self.devices:
             if d.nodeid == a:
-                return d.ip
+                return (d.ip,d.port)
         logger.error('Address %d is not registered yet' % a)
-        return 0
+        return 0,0
     def getDeviceType(self, address):
         ret = None
         logger.info('get device type for %x' % address)
