@@ -80,7 +80,7 @@ class IDService(object):
 
         self._transport_if_addr = int(interface.ip)
         self._transport_network_size = interface.network.num_addresses
-        self._id_hostmask = int(interface.network.hostmask)
+        self._id_hostmask = int(interface.network.hostmask) if (self._id_prefix_len == 2 or self._id_prefix_len == 1) else MPTN.MPTN_MAX_ID
         self._id_prefix_len = interface.network.prefixlen
         self._id_netmask = int(interface.network.netmask)
 
@@ -293,7 +293,12 @@ class IDService(object):
         except Exception as e:
             logger.error("IDREQ cannot turn interface address %s into integer" % str(context.address))
             exit(-1)
-        temp_id = self._id_prefix | temp_addr
+
+        if self._id_prefix_len == 1 or self._id_prefix_len == 2:
+            temp_id = self._id_prefix | temp_addr
+
+        elif self._id_prefix_len == 4:
+            temp_id = temp_addr
 
         dest_id = self._id
         src_id = temp_id
