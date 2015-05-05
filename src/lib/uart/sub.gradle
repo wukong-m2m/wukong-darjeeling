@@ -1,0 +1,5 @@
+djsources {
+    uart {
+        basedir = 'lib/uart'
+    }
+}

@@ -1,0 +1,6 @@
+// NRTODO: dit moet eigenlijk ['arduino', 'wudevice'] zijn
+ext.djPlatform=['arduino', 'arduino.wudevice']
+ext.djConfig='avrora'
+ext.mcu='atmega2560'
+ext.djArchitecture='avr'
+ext.projectRoot='/Users/niels/git/rtc/src'

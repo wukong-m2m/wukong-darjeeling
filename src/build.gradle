@@ -1,0 +1,98 @@
+defaultTasks 'darjeelingExecutable'
+
+apply plugin: DarjeelingLibPlugin
+apply plugin: 'c'
+apply from: "config.gradle"
+apply from: "${djArchitecture}.gradle"
+
+apply from: 'core/sub.gradle'
+apply from: 'lib/uart/sub.gradle'
+apply from: 'lib/wkcomm/sub.gradle'
+apply from: 'lib/wkreprog/sub.gradle'
+apply from: 'lib/wkpf/sub.gradle'
+
+
+def addSourceSet(DjSource djsource) {    
+    println "addSourceSet: ${djsource.name}"
+    project.model {
+        components {
+            darjeeling(NativeExecutableSpec) {
+                sources.create(djsource.name, CSourceSet) {
+                    source {
+                        srcDir djsource.basedir + '/c/common'
+                        djPlatform.each { p ->
+                            srcDir djsource.basedir + "/c/${p}"
+                        }
+                        include '**/*.c'
+                    }
+                    exportedHeaders {
+                        srcDir djsource.basedir + '/include/common'
+                        djPlatform.each { p ->
+                            srcDir djsource.basedir + "/include/${p}"
+                        }
+                    }
+                    djsource.cDependencies.each { dep ->
+                        lib ( sources[dep.name] )
+                    }
+                    lib ( sources['core'] )
+
+                    if (djsource.cGenerateCodeTask != null) {
+                        source {
+                            djsource.cGenerateCodeTask.outputs.getFiles().each { f ->
+                                srcDir "${f}/c"
+                            }
+                            include '**/*.c'
+                            builtBy (djsource.cGenerateCodeTask) // To create task dependency between the lifecycle task for this source set and the code gen task
+                        }
+                        exportedHeaders {
+                            djsource.cGenerateCodeTask.outputs.getFiles().each { f ->
+                                srcDir "${f}/include"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }   
+}
+
+class DarjeelingLibPlugin implements Plugin<Project> {
+    void apply(Project project) {
+        def djsources = project.container(DjSource)
+        djsources.all { djsource ->
+            project.afterEvaluate {
+                project.addSourceSet(djsource)
+            }
+        }
+        project.extensions.djsources = djsources   
+    }
+}
+class DjSource {
+    final String name
+    String basedir
+    Task cGenerateCodeTask = null
+    List<CSourceSet> cDependencies
+
+    DjSource(String name) {
+        this.name = name
+    }
+}
+
+
+
+
+model {
+    components {
+        darjeeling(NativeExecutableSpec) {
+            targetPlatform 'avr'
+            sources {
+                main(CSourceSet) {  
+                    source {
+                        srcDirs "."
+                        include 'main.c'
+                    }
+                }
+            }
+        }
+    }
+}

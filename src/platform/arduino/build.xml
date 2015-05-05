@@ -1,6 +1,0 @@
-<project default="all">
-	
-	<!-- Import the generic platform.xml -->
-	<import file="../platform.xml"/>
-	
-</project>

@@ -4,7 +4,7 @@
 #include "wkpf_gc.h"
 #include "wkpf_comm.h"
 #include "wkcomm.h"
-#include "native_wuclasses/native_wuclasses.h"
+#include "native_wuclasses.h"
 #ifdef LOAD_ENABLED_WUCLASSES_AT_STARTUP
 #include "posix_utils.h"
 #include "../posix/wkpf_process_enabled_wuclasses_xml.h"
