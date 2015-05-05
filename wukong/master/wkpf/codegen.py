@@ -365,13 +365,13 @@ class CodeGen:
         return (wuTypedefs, wuClasses)
 
     @staticmethod
-    def generateEnabledWuclasses(logger, enabled_wuclasses_filename, wuclasses, c_dir):
+    def generateEnabledWuclasses(logger, enabled_wuclasses_filename, wuclasses, c_dir_src):
         # By catlikethief 2013.04.11
         # Try to generate native_wuclasses.c by parsing another xml file
-        native_wuclasses_path = os.path.join(c_dir, 'GENERATEDenabled_wuclasses.c')
+        native_wuclasses_path = os.path.join(c_dir_src, 'GENERATEDenabled_wuclasses.c')
         native_wuclasses = open(native_wuclasses_path, 'w')
         # For posix we need a function to process lines of another enabled_wuclasses file at startup
-        native_wuclasses_path_posix = os.path.join(c_dir, 'GENERATEDposix_process_enabled_wuclass.c')
+        native_wuclasses_path_posix = os.path.join(c_dir_src, 'GENERATEDposix_process_enabled_wuclass.c')
         native_wuclasses_posix = open(native_wuclasses_path_posix, 'w')
 
         header_lines = ['#include <debug.h>\n',
@@ -384,7 +384,7 @@ class CodeGen:
             '#include <string.h>\n',
             '#include "wkcomm.h"\n',
             '#include "wkpf_wuclasses.h"\n',
-            '#include "../common/native_wuclasses/native_wuclasses.h"\n'
+            '#include "native_wuclasses.h"\n'
         ]
         init_function_lines = ['''
         uint8_t wkpf_native_wuclasses_init() {
@@ -444,7 +444,7 @@ class CodeGen:
                 init_function_lines.append('''
                         %s.flags |= WKPF_WUCLASS_FLAG_APP_CAN_CREATE_INSTANCE;''' % wuclass.getCName())
 
-            header_lines_posix.append('#include "../common/native_wuclasses/%s.h"\n' % wuclass.getCFileName())
+            header_lines_posix.append('#include "%s.h"\n' % wuclass.getCFileName())
             init_function_lines_posix.append('''
             if (!strcmp(wuclassname, "%s")) {
                 wkpf_register_wuclass(&%s);
@@ -478,15 +478,7 @@ class CodeGen:
 
 
     @staticmethod
-    def generate(logger, wutypedefs, wuclasses, c_dir, java_virtualclasses_dir, java_constants_dir, java_package, enabled_wuclasses):
-        if c_dir:
-            c_dir_src = c_dir + '/c'
-            c_dir_include = c_dir + '/include'
-            if not os.path.exists(c_dir_src):
-                os.makedirs(c_dir_src)
-            if not os.path.exists(c_dir_include):
-                os.makedirs(c_dir_include)
-
+    def generate(logger, wutypedefs, wuclasses, c_dir_src, c_dir_include, java_virtualclasses_dir, java_constants_dir, java_package, enabled_wuclasses):
         enumTypedefs = [x for x in wutypedefs.keys() if wutypedefs[x].isEnumTypedef()]
 
         # Lines
@@ -643,7 +635,7 @@ class CodeGen:
           ##endif
           #''')
 
-          if c_dir:
+          if c_dir_src:
             wuclass_native_header_path = os.path.join(c_dir_include, wuClass.getCFileName() + '.h')
             wuclass_native_header = open(wuclass_native_header_path, 'w')
             wuclass_native_header.writelines(wuclass_native_header_lines)
@@ -666,7 +658,7 @@ class CodeGen:
         }
         ''')
 
-        if c_dir:
+        if c_dir_src:
             global_vm_header_filename = 'GENERATEDwkpf_wuclass_library.h'
             global_vm_header_path = os.path.join(c_dir_include, global_vm_header_filename)
             global_vm_header = open(global_vm_header_path, 'w')
@@ -692,19 +684,28 @@ if __name__ == "__main__":
     parser.add_option('-p', '--java_package', dest='java_package')
     (options, args) = parser.parse_args()
 
-    print options, args
+    # print options, args
 
     wuTypedefs, wuClasses = CodeGen.getStandardLibrary(logging.getLogger(), options.component_file)
 
+    if options.c_dir:
+        c_dir_src = options.c_dir + '/c'
+        c_dir_include = options.c_dir + '/include'
+        if not os.path.exists(c_dir_src):
+            os.makedirs(c_dir_src)
+        if not os.path.exists(c_dir_include):
+            os.makedirs(c_dir_include)
+
     enabled_wuclasses = []
     if options.enabled_file and os.path.exists(options.enabled_file) and options.c_dir:
-        enabled_wuclasses = CodeGen.generateEnabledWuclasses(logging.getLogger(), options.enabled_file, wuClasses, options.c_dir)
+        enabled_wuclasses = CodeGen.generateEnabledWuclasses(logging.getLogger(), options.enabled_file, wuClasses, c_dir_src)
 
     if os.path.exists(options.component_file):
         CodeGen.generate(logging.getLogger(),
                          wuTypedefs,
                          wuClasses,
-                         options.c_dir,
+                         c_dir_src,
+                         c_dir_include,
                          options.java_virtualclasses_dir,
                          options.java_constants_dir,
                          options.java_package,
