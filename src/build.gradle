@@ -13,7 +13,6 @@ apply from: 'lib/wkpf/sub.gradle'
 
 
 def addSourceSet(DjSource djsource) {    
-    println "addSourceSet: ${djsource.name}"
     project.model {
         components {
             darjeeling(NativeExecutableSpec) {
@@ -80,19 +79,48 @@ class DjSource {
 
 
 
+// TODONR: make this, and other infuser tasks depend on the infuser project
+task generate_libinit {
+    def destDir = new File("${buildDir}/generated-libinit")
+    outputs.dir destDir
+    outputs.upToDateWhen { return false }
+    doLast {
+        if (destDir.exists()) {
+            destDir.deleteDir()
+        }
+        destDir.mkdirs()
+        ant.taskdef(name: 'generate_libinit',
+            classname: 'org.csiro.darjeeling.libinit.ant.LibInitTask',
+            classpath: "${projectRoot}/infuser/build/libs/infuser-1.0.jar")
+        ant.generate_libinit(dest: "${destDir}/GENERATED_libinit.c", libDir: "${projectRoot}/lib", libraries: djLibraries.join(' '))
+    }
+}
 
-model {
-    components {
-        darjeeling(NativeExecutableSpec) {
-            targetPlatform 'avr'
-            sources {
-                main(CSourceSet) {  
-                    source {
-                        srcDirs "."
-                        include 'main.c'
+
+project.afterEvaluate { // Doing this in after evaluate because otherwise the 'core' sourceset won't exist yet, so libinit can't depend on it.
+    project.model {
+        components {
+            darjeeling(NativeExecutableSpec) {
+                targetPlatform 'avr'
+                sources {
+                    main(CSourceSet) {  
+                        source {
+                            srcDirs "."
+                            include 'main.c'
+                        }
+                    }
+                    libinit(CSourceSet) {  
+                        source {
+                            generate_libinit.outputs.getFiles().each { f ->
+                                srcDir "${f}"
+                            }
+                            include '**/*.c'
+                            builtBy(generate_libinit)
+                        }
+                        lib ( sources['core'] )
                     }
                 }
             }
         }
     }
-}
+} 

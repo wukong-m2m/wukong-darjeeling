@@ -5,7 +5,6 @@
 int main() { return 0; }
 const unsigned char di_lib_infusions_archive_data[0];
 const unsigned char di_app_infusion_archive_data[0];
-void dj_libraries_init() {}
 uint8_t wkpf_native_wuclasses_init() { return 0; }
 
 
