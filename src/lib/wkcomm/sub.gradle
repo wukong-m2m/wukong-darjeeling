@@ -1,0 +1,6 @@
+djsources {
+    wkcomm {
+        basedir = 'lib/wkcomm'
+        cDependencies = [ uart ]
+    }
+}

@@ -1,0 +1,33 @@
+model {
+    toolChains {
+        gcc(Gcc) {
+            target('avr') { t ->
+				t.getcCompiler().setExecutable('avr-gcc');
+				t.getCppCompiler().setExecutable('avr-g++');
+				t.getObjcCompiler().setExecutable('avr-gcc');
+				t.getObjcppCompiler().setExecutable('avr-g++');
+				t.getAssembler().setExecutable('avr-as');
+				t.getLinker().setExecutable('avr-gcc');
+				t.getStaticLibArchiver().setExecutable('avr-ar');
+            }
+        }
+    }
+    platforms {
+        avr {
+            architecture 'avr'
+        }
+    }
+}
+
+binaries.all {
+    cCompiler.args "-mmcu=${mcu}"
+    cCompiler.args "-Os"
+    cCompiler.args "-I/Users/niels/git/rtc/src/config/${djConfig}/c"
+    cCompiler.args "-I/Users/niels/git/rtc/src/architecture/${djArchitecture}/c"
+    cCompiler.args "-std=gnu99"
+    cCompiler.args "-ggdb"
+    cCompiler.args "-Wall"
+    cCompiler.args "-Werror"
+    linker.args "-mmcu=${mcu}"
+    linker.args "-Wl,--section-start=.reprogram_flash_page=0x1F800"
+}

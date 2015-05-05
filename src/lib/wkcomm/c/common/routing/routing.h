@@ -5,7 +5,7 @@
 
 #include "types.h"
 #include "config.h"
-#include "../wkcomm.h"
+#include "wkcomm.h"
 
 extern void routing_init();
 

@@ -1,0 +1,6 @@
+djsources {
+    wkreprog {
+        basedir = 'lib/wkreprog'
+        cDependencies = [ wkcomm ]
+    }
+}

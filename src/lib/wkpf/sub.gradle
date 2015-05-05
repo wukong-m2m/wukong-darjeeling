@@ -1,0 +1,29 @@
+task generate_wkpf(type: Exec) {
+	def componentLibraryXml = file("${projectRoot}/../wukong/ComponentDefinitions/WuKongStandardLibrary.xml")
+	def enabledClassesXml = file("${projectRoot}/config/avrora/enabled_wuclasses.xml")
+	def pythonScript = file("${projectRoot}/../wukong/master/wkpf/codegen.py")
+	def destDir = new File("${buildDir}/generated-wkpf")
+	inputs.file componentLibraryXml
+	inputs.file enabledClassesXml
+	inputs.file pythonScript
+	outputs.dir destDir
+
+	// we only need to generate the C part here
+	executable pythonScript
+	args '--input_xml', componentLibraryXml, '--enabled_xml', enabledClassesXml, '--c_dir', destDir
+
+	doFirst {
+		if (destDir.exists()) {
+			destDir.deleteDir()
+		}
+		destDir.mkdirs()
+	}
+}
+
+djsources {
+    wkpf {
+        basedir = 'lib/wkpf'
+        cGenerateCodeTask = generate_wkpf
+        cDependencies = [ wkreprog, wkcomm ]
+    }
+}
