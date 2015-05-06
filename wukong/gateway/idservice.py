@@ -80,8 +80,8 @@ class IDService(object):
 
         self._transport_if_addr = int(interface.ip)
         self._transport_network_size = interface.network.num_addresses
-        self._id_hostmask = int(interface.network.hostmask) if (self._id_prefix_len == 2 or self._id_prefix_len == 1) else MPTN.MPTN_MAX_ID
         self._id_prefix_len = interface.network.prefixlen
+        self._id_hostmask = int(interface.network.hostmask) if (self._transport_if_addr_len == 2 or self._transport_if_addr_len == 1) else MPTN.MPTN_MAX_ID
         self._id_netmask = int(interface.network.netmask)
 
         if "GTWSELF_UNIQUE_VALUE" not in self._settings_db:
@@ -294,10 +294,10 @@ class IDService(object):
             logger.error("IDREQ cannot turn interface address %s into integer" % str(context.address))
             exit(-1)
 
-        if self._id_prefix_len == 1 or self._id_prefix_len == 2:
+        if self._transport_if_addr_len == 1 or self._transport_if_addr_len == 2:
             temp_id = self._id_prefix | temp_addr
 
-        elif self._id_prefix_len == 4:
+        elif self._transport_if_addr_len == 4:
             temp_id = temp_addr
 
         dest_id = self._id
@@ -374,7 +374,7 @@ class IDService(object):
 
         if self._is_id_in_gwself_network(dest_id):
             logger.debug("FWDREQ to transport interface directly")
-            message = map(ord, MPTN.create_packet_to_str(dest_id, src_id, msg_type, payload))
+            message = MPTN.create_packet_to_str(dest_id, src_id, msg_type, payload)
             ret = MPTN.transport_if_send(self._get_address_from_id(dest_id), message)
 
             msg_type = MPTN.MPTN_MSGTYPE_FWDACK
@@ -382,8 +382,10 @@ class IDService(object):
                 msg_type = MPTN.MPTN_MSGTYPE_FWDACK
                 logger.error("FWDREQ to transport address %X fail" % self._get_address_from_id(dest_id))
 
-            message = MPTN.create_packet_to_str(src_id, dest_id, msg_type, None)
-            MPTN.socket_send(context, src_id, message)
+            if not self._is_id_in_gwself_network(src_id):
+                message = MPTN.create_packet_to_str(src_id, dest_id, msg_type, None)
+                MPTN.socket_send(context, src_id, message)
+
             return
 
         logger.debug("FWDREQ may be sent to other gateway's network")
