@@ -26,11 +26,11 @@ class ZWTransport(object):
         self._mode = MPTN.STOP_MODE
         global _global_lock
         _global_lock = RLock()
-        pyzwave.setVerbose(0)
-        pyzwave.setdebug(0)
-        pyzwave.init(dev_address)
 
         try:
+            pyzwave.setVerbose(0)
+            pyzwave.setdebug(0)
+            pyzwave.init(dev_address)
             _addr = pyzwave.getAddr()
         except:
             print "PyZwave module has been updated. Please RE-INSTALL the pyzwave module in the wukong/tools/python/pyzwave"
