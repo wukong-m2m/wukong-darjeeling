@@ -44,6 +44,8 @@ def addSourceSet(DjSource djsource) {
                         lib ( sources[dep.name] )
                     }
                     lib ( sources['core'] )
+                    lib ( sources['config'] )
+                    lib ( sources['architecture'] )
 
                     if (djsource.cGenerateCodeTask != null) {
                         source {
@@ -106,16 +108,41 @@ task generate_libinit {
     }
 }
 
+model {
+    components {
+        darjeeling(NativeExecutableSpec) {
+            sources {
+                config(CSourceSet) { 
+                    source { } 
+                    exportedHeaders {
+                        srcDir "${projectRoot}/config/${djConfig}/include"
+                    }
+                }
+                architecture(CSourceSet) {  
+                    source {
+                        srcDir "${projectRoot}/architecture/${djArchitecture}/c"
+                        include '**/*.c'
+                    }
+                    exportedHeaders {
+                        srcDir "${projectRoot}/architecture/${djArchitecture}/include"
+                    }
+                }
+            }
+        }
+    }
+}
 
-project.afterEvaluate { // Doing this in after evaluate because otherwise the 'core' sourceset won't exist yet, so libinit can't depend on it.
+// Doing this in after evaluate because otherwise the 'core' sourceset won't exist yet, so libinit can't depend on it,
+// and the libraries won't exist, so main can't depend on it.
+project.afterEvaluate {
     project.model {
         components {
             darjeeling(NativeExecutableSpec) {
                 sources {
                     main(CSourceSet) {  
                         source {
-                            srcDirs "."
-                            include 'main.c'
+                            srcDir "${projectRoot}/config/${djConfig}/c"
+                            include '**/*.c'
                         }
                     }
                     libinit(CSourceSet) {  
@@ -127,6 +154,8 @@ project.afterEvaluate { // Doing this in after evaluate because otherwise the 'c
                             builtBy(generate_libinit)
                         }
                         lib ( sources['core'] )
+                        lib ( sources['config'] )
+                        lib ( sources['architecture'] )
                     }
                 }
             }
