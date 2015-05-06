@@ -27,8 +27,6 @@ model {
 binaries.all {
     cCompiler.args "-mmcu=${djMcu}"
     cCompiler.args "-Os"
-    cCompiler.args "-I/Users/niels/git/rtc/src/config/${djConfig}/c"
-    cCompiler.args "-I/Users/niels/git/rtc/src/architecture/${djArchitecture}/c"
     cCompiler.args "-std=gnu99"
     cCompiler.args "-ggdb"
     cCompiler.args "-Wall"
