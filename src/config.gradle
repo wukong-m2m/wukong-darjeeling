@@ -1,5 +1,5 @@
 // NRTODO: dit moet eigenlijk ['arduino', 'wudevice'] zijn
-ext.djPlatform=['arduino', 'arduino.wudevice']
+ext.djPlatform='arduino.wudevice'
 ext.djConfig='avrora'
 ext.djArchitecture='avr'
 ext.djLibraries=['uart', 'wkcomm', 'wkreprog', 'wkpf']
