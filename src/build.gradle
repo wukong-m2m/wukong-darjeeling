@@ -6,12 +6,36 @@ apply from: "config.gradle"
 apply from: "platforms.gradle"
 apply from: "architecture-${djArchitecture}.gradle"
 
+// We always load all source sets, so we can add required sets even if they're not in the library list, or not in the right order
 apply from: 'core/sub.gradle'
 apply from: 'lib/uart/sub.gradle'
 apply from: 'lib/wkcomm/sub.gradle'
 apply from: 'lib/wkreprog/sub.gradle'
 apply from: 'lib/wkpf/sub.gradle'
 
+// Add dependencies to djLibraries
+// (I'm sure this could be prettier...)
+while (true) {
+    def missing = []
+    djLibraries.each { l ->
+        djsources[l].cDependencies.each { d ->
+            if (!(d.name in djLibraries) && !(d.name in missing)) {
+                missing.add(d.name)
+            }
+        }
+    }
+    if (missing.isEmpty()) {
+        break
+    } else {
+        missing.each { d ->
+            djLibraries.add(0, d)
+        }
+        missing.clear()
+    }
+}
+
+// Turn platform into list of directory names to include
+// (for example 'arduino.wudevice' becomes ['arduino', 'arduino.wudevice'])
 ext.allPlatforms = []
 ext.djPlatform.tokenize('.').each { p ->
     if (allPlatforms.size == 0){
@@ -21,8 +45,8 @@ ext.djPlatform.tokenize('.').each { p ->
     }
 }
 
-
 def addSourceSet(DjSource djsource) {
+    // Add the source sets to the model
     project.model {
         components {
             darjeeling(NativeExecutableSpec) {
@@ -40,8 +64,8 @@ def addSourceSet(DjSource djsource) {
                             srcDir djsource.basedir + "/include/${p}"
                         }
                     }
-                    djsource.cDependencies.each { dep ->
-                        lib ( sources[dep.name] )
+                    djsource.cDependencies.each { d ->
+                        lib ( sources[d.name] )
                     }
                     lib ( sources['core'] )
                     lib ( sources['config'] )
@@ -72,7 +96,11 @@ class DarjeelingLibPlugin implements Plugin<Project> {
         def djsources = project.container(DjSource)
         djsources.all { djsource ->
             project.afterEvaluate {
-                project.addSourceSet(djsource)
+                // Only add libraries that are enabled, and the core sourceset
+                // (others may still be added as dependencies in addSourceSet)
+                if (djsource.name == 'core' || djsource.name in project.ext.djLibraries) {
+                    project.addSourceSet(djsource)
+                }
             }
         }
         project.extensions.djsources = djsources   
