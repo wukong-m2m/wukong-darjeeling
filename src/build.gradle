@@ -3,7 +3,8 @@ defaultTasks 'darjeelingExecutable'
 apply plugin: DarjeelingLibPlugin
 apply plugin: 'c'
 apply from: "config.gradle"
-apply from: "${djArchitecture}.gradle"
+apply from: "platforms.gradle"
+apply from: "architecture-${djArchitecture}.gradle"
 
 apply from: 'core/sub.gradle'
 apply from: 'lib/uart/sub.gradle'
@@ -110,7 +111,6 @@ project.afterEvaluate { // Doing this in after evaluate because otherwise the 'c
     project.model {
         components {
             darjeeling(NativeExecutableSpec) {
-                targetPlatform 'avr'
                 sources {
                     main(CSourceSet) {  
                         source {

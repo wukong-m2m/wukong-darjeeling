@@ -1,4 +1,9 @@
 model {
+    components {
+        darjeeling(NativeExecutableSpec) {
+            targetPlatform 'avr'
+        }
+    }
     toolChains {
         gcc(Gcc) {
             target('avr') { t ->
@@ -20,7 +25,7 @@ model {
 }
 
 binaries.all {
-    cCompiler.args "-mmcu=${mcu}"
+    cCompiler.args "-mmcu=${djMcu}"
     cCompiler.args "-Os"
     cCompiler.args "-I/Users/niels/git/rtc/src/config/${djConfig}/c"
     cCompiler.args "-I/Users/niels/git/rtc/src/architecture/${djArchitecture}/c"
@@ -28,6 +33,6 @@ binaries.all {
     cCompiler.args "-ggdb"
     cCompiler.args "-Wall"
     cCompiler.args "-Werror"
-    linker.args "-mmcu=${mcu}"
+    linker.args "-mmcu=${djMcu}"
     linker.args "-Wl,--section-start=.reprogram_flash_page=0x1F800"
 }

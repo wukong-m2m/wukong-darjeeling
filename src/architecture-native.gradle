@@ -1,0 +1,7 @@
+binaries.all {
+    cCompiler.args "-gdwarf-2"
+    cCompiler.args "-ggdb"
+    cCompiler.args "-Wall"
+    cCompiler.args "-Werror"
+    cCompiler.args "-std=gnu99"
+}
