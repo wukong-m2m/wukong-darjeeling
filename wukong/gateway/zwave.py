@@ -30,7 +30,14 @@ class ZWTransport(object):
         try:
             pyzwave.setVerbose(0)
             pyzwave.setdebug(0)
-            pyzwave.init(dev_address)
+        except:
+            print "PyZwave module has been updated. Please RE-INSTALL the pyzwave module in the wukong/tools/python/pyzwave"
+            print "Using command: sudo python setup.py install"
+            exit(-1)
+
+        pyzwave.init(dev_address)
+
+        try:
             _addr = pyzwave.getAddr()
         except:
             print "PyZwave module has been updated. Please RE-INSTALL the pyzwave module in the wukong/tools/python/pyzwave"
