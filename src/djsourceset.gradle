@@ -1,0 +1,188 @@
+apply plugin: DjSourceSetPlugin
+
+class DjSourceSetPlugin implements Plugin<Project> {
+    void apply(Project project) {
+        def djsources = project.container(DjSourceSet)
+        djsources.all { djsource ->
+            project.afterEvaluate {
+                // Only add libraries that are enabled, and the core sourceset
+                if (djsource.name == 'core' || djsource.name in project.ext.djLibraries) {
+                    djsource.addTasks(project)
+                }
+            }
+        }
+        project.extensions.djsources = djsources   
+    }
+}
+class DjSourceSet {
+    Project project
+    final String name
+    String basedir
+    Task cGenerateCodeTask = null
+    List<DjSourceSet> cDependencies
+    List<DjSourceSet> javaDependencies
+
+    DjSourceSet(String name) {
+        this.name = name
+    }
+
+    boolean sourceSetContainsJavaCode() {
+        return new File(this.basedir + '/java').exists()
+    }
+
+    void addTasks(Project project) {
+        this.project = project
+        if (this.sourceSetContainsJavaCode()) {
+            this.addJavaTasks()
+            this.addJavaCSourceSet()
+        }
+        this.addCSourceSet()
+    }
+
+    String libToJarName(String lib) {
+        return "${project.buildDir}/${lib}.jar"
+    }
+    String libToInfusionCSourceSetName(DjSourceSet lib) {
+        return "infusion_c_${lib.name}"
+    }
+    String libToInfusionDir(DjSourceSet lib) {
+        return "${project.buildDir}/infusion-${lib.name}"
+    }
+
+    void addJavaTasks() {
+        def srcDir = "${this.basedir}/java"
+        def outputClassesDir = new File("${project.buildDir}/classes-${this.name}")
+        def infusionDir = new File(libToInfusionDir(this))
+        def outputJar = libToJarName(this.name)
+        def bootclasspath = libToJarName('base')
+        def classpath = this.javaDependencies.collect { lib -> libToJarName(lib.name) }.join(':')
+
+        def javac_task = project.tasks.create(name: 'javac_'+this.name) {
+            inputs.files project.fileTree(dir: srcDir).include('**/*.java')
+            outputs.dir outputClassesDir
+            this.javaDependencies.each { jlib ->
+                dependsOn("jar_${jlib.name}")
+            }
+            doLast {
+                project.ensureEmptyDir(outputClassesDir)
+                ant.javac (
+                    srcdir: srcDir,
+                    destdir: outputClassesDir,
+                    bootclasspath: this.name != 'base' ? bootclasspath : '', // No point in setting a bootclasspath if that's what we're building.
+                    classpath: classpath,
+                    includeantruntime: false
+                )
+            }
+        }
+        def jar_task = project.tasks.create(name: 'jar_'+this.name) {
+            dependsOn(javac_task)
+            inputs.files project.fileTree(dir: outputClassesDir).include('**/*.class')
+            outputs.file outputJar
+            doLast {
+                ant.jar (destfile: outputJar) {
+                    fileset(dir: outputClassesDir, includes: '**/*.class')
+                }
+            }
+        }
+        def infusion_task = project.tasks.create(name: 'infusion_'+this.name) {
+            dependsOn(javac_task)
+            inputs.files project.fileTree(dir: outputClassesDir).include('**/*.class')
+            outputs.dir infusionDir
+            this.javaDependencies.each { jlib ->
+                dependsOn("infusion_${jlib.name}")
+            }
+            doLast {
+                ant.taskdef(name: 'infuser',
+                    classname: 'org.csiro.darjeeling.infuser.ant.InfuserTask',
+                    classpath: "${project.projectRoot}/infuser/build/libs/infuser-1.0.jar")
+                def infusionheaders = javaDependencies.collect { jlib -> "infusion-${jlib.name}/${jlib.name}.dih"}
+                project.ensureEmptyDir(infusionDir)
+                ant.infuser(
+                        name: this.name,
+                        infusionfile: "${infusionDir}/${this.name}.di",
+                        headerfile: "${infusionDir}/${this.name}.dih",
+                        hfile: "${infusionDir}/jlib_${this.name}.h",
+                        cfile: "${infusionDir}/jlib_${this.name}.c",
+                        debugfile: "${infusionDir}/jlib_${this.name}.debug") {
+                    fileset(dir: outputClassesDir, includes: '**/*.class')
+                    javaDependencies.each { jlib ->
+                        fileset(dir: libToInfusionDir(jlib), includes: "${jlib.name}.dih")
+                    }
+                }
+            }
+        }
+    }
+    // No idea why I can't do this in addJavaTasks...
+    void addJavaCSourceSet(){
+        project.model {
+            components {
+                darjeeling(NativeExecutableSpec) {
+                    sources.create(libToInfusionCSourceSetName(this), CSourceSet) {
+                        source {
+                            srcDir libToInfusionDir(this)
+                            include '**/*.c'
+                            builtBy(project.tasks['infusion_'+this.name])
+                        }
+                        exportedHeaders {
+                            srcDir libToInfusionDir(this)
+                        }
+                        lib ( sources['core'] )
+                        lib ( sources['config'] )
+                        lib ( sources['architecture'] )
+                    }
+                }
+            }
+        }
+    }
+
+    void addCSourceSet() {
+        // Add the source sets to the model
+        project.model {
+            components {
+                darjeeling(NativeExecutableSpec) {
+                    sources.create(this.name, CSourceSet) {
+                        source {
+                            srcDir this.basedir + '/c/common'
+                            project.allPlatforms.each { p ->
+                                srcDir this.basedir + "/c/${p}"
+                            }
+                            include '**/*.c'
+                        }
+                        exportedHeaders {
+                            srcDir this.basedir + '/include/common'
+                            project.allPlatforms.each { p ->
+                                srcDir this.basedir + "/include/${p}"
+                            }
+                        }
+                        lib ( sources['core'] )
+                        lib ( sources['config'] )
+                        lib ( sources['architecture'] )
+                        this.cDependencies.each { d ->
+                            lib ( sources[d.name] )
+                            if (d.sourceSetContainsJavaCode()) {
+                                lib ( sources[libToInfusionCSourceSetName(d)] )
+                            }
+                        }
+                        if (this.sourceSetContainsJavaCode()) {
+                            lib ( sources[libToInfusionCSourceSetName(this)])
+                        }
+                        if (this.cGenerateCodeTask != null) {
+                            source {
+                                this.cGenerateCodeTask.outputs.getFiles().each { f ->
+                                    srcDir "${f}/c"
+                                }
+                                include '**/*.c'
+                                builtBy (this.cGenerateCodeTask) // To create task dependency between the lifecycle task for this source set and the code gen task
+                            }
+                            exportedHeaders {
+                                this.cGenerateCodeTask.outputs.getFiles().each { f ->
+                                    srcDir "${f}/include"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }   
+    }
+}

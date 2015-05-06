@@ -1,0 +1,6 @@
+djsources {
+    vm {
+        basedir = 'lib/vm'
+        cDependencies = [ vm_dev, base ]
+    }
+}

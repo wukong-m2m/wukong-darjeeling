@@ -1,0 +1,7 @@
+djsources {
+    darjeeling3 {
+        basedir = 'lib/darjeeling3'
+        cDependencies = [ vm_dev, base ]
+        javaDependencies = [ base ]
+    }
+}

@@ -1,7 +1,7 @@
 defaultTasks 'darjeelingExecutable'
 
-apply plugin: DarjeelingLibPlugin
 apply plugin: 'c'
+apply from: "djsourceset.gradle"
 apply from: "config.gradle"
 apply from: "platforms.gradle"
 apply from: "architecture-${djArchitecture}.gradle"
@@ -12,6 +12,18 @@ apply from: 'lib/uart/sub.gradle'
 apply from: 'lib/wkcomm/sub.gradle'
 apply from: 'lib/wkreprog/sub.gradle'
 apply from: 'lib/wkpf/sub.gradle'
+apply from: 'lib/vm_dev/sub.gradle'
+apply from: 'lib/base/sub.gradle'
+apply from: 'lib/vm/sub.gradle'
+apply from: 'lib/darjeeling3/sub.gradle'
+
+// Helper functions
+def ensureEmptyDir(File destDir) {
+    if (destDir.exists()) {
+        destDir.deleteDir()
+    }
+    destDir.mkdirs()
+}
 
 // Add dependencies to djLibraries
 // (I'm sure this could be prettier...)
@@ -19,6 +31,11 @@ while (true) {
     def missing = []
     djLibraries.each { l ->
         djsources[l].cDependencies.each { d ->
+            if (!(d.name in djLibraries) && !(d.name in missing)) {
+                missing.add(d.name)
+            }
+        }
+        djsources[l].javaDependencies.each { d ->
             if (!(d.name in djLibraries) && !(d.name in missing)) {
                 missing.add(d.name)
             }
@@ -45,90 +62,13 @@ ext.djPlatform.tokenize('.').each { p ->
     }
 }
 
-def addSourceSet(DjSource djsource) {
-    // Add the source sets to the model
-    project.model {
-        components {
-            darjeeling(NativeExecutableSpec) {
-                sources.create(djsource.name, CSourceSet) {
-                    source {
-                        srcDir djsource.basedir + '/c/common'
-                        allPlatforms.each { p ->
-                            srcDir djsource.basedir + "/c/${p}"
-                        }
-                        include '**/*.c'
-                    }
-                    exportedHeaders {
-                        srcDir djsource.basedir + '/include/common'
-                        allPlatforms.each { p ->
-                            srcDir djsource.basedir + "/include/${p}"
-                        }
-                    }
-                    djsource.cDependencies.each { d ->
-                        lib ( sources[d.name] )
-                    }
-                    lib ( sources['core'] )
-                    lib ( sources['config'] )
-                    lib ( sources['architecture'] )
-
-                    if (djsource.cGenerateCodeTask != null) {
-                        source {
-                            djsource.cGenerateCodeTask.outputs.getFiles().each { f ->
-                                srcDir "${f}/c"
-                            }
-                            include '**/*.c'
-                            builtBy (djsource.cGenerateCodeTask) // To create task dependency between the lifecycle task for this source set and the code gen task
-                        }
-                        exportedHeaders {
-                            djsource.cGenerateCodeTask.outputs.getFiles().each { f ->
-                                srcDir "${f}/include"
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }   
-}
-
-class DarjeelingLibPlugin implements Plugin<Project> {
-    void apply(Project project) {
-        def djsources = project.container(DjSource)
-        djsources.all { djsource ->
-            project.afterEvaluate {
-                // Only add libraries that are enabled, and the core sourceset
-                // (others may still be added as dependencies in addSourceSet)
-                if (djsource.name == 'core' || djsource.name in project.ext.djLibraries) {
-                    project.addSourceSet(djsource)
-                }
-            }
-        }
-        project.extensions.djsources = djsources   
-    }
-}
-class DjSource {
-    final String name
-    String basedir
-    Task cGenerateCodeTask = null
-    List<CSourceSet> cDependencies
-
-    DjSource(String name) {
-        this.name = name
-    }
-}
-
-
-
 // TODONR: make this, and other infuser tasks depend on the infuser project
 task generate_libinit {
     def destDir = new File("${buildDir}/generated-libinit")
     outputs.dir destDir
     outputs.upToDateWhen { return false }
     doLast {
-        if (destDir.exists()) {
-            destDir.deleteDir()
-        }
-        destDir.mkdirs()
+        ensureEmptyDir(destDir)
         ant.taskdef(name: 'generate_libinit',
             classname: 'org.csiro.darjeeling.libinit.ant.LibInitTask',
             classpath: "${projectRoot}/infuser/build/libs/infuser-1.0.jar")
@@ -160,8 +100,8 @@ model {
     }
 }
 
-// Doing this in after evaluate because otherwise the 'core' sourceset won't exist yet, so libinit can't depend on it,
-// and the libraries won't exist, so main can't depend on it.
+// Doing this in after evaluate because otherwise the 'core' sourceset won't exist yet,
+// so libinit can't depend on it, and the libraries won't exist, so main can't depend on it.
 project.afterEvaluate {
     project.model {
         components {
@@ -172,6 +112,9 @@ project.afterEvaluate {
                             srcDir "${projectRoot}/config/${djConfig}/c"
                             include '**/*.c'
                         }
+                        lib ( sources['core'] )
+                        lib ( sources['config'] )
+                        lib ( sources['architecture'] )
                     }
                     libinit(CSourceSet) {  
                         source {
@@ -184,6 +127,11 @@ project.afterEvaluate {
                         lib ( sources['core'] )
                         lib ( sources['config'] )
                         lib ( sources['architecture'] )
+                        djsources.each { l ->
+                            if (l.sourceSetContainsJavaCode() && l.name in djLibraries) {
+                                lib ( sources[l.libToInfusionCSourceSetName(l)] )
+                            }
+                        }
                     }
                 }
             }

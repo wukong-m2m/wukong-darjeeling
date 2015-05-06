@@ -1,4 +1,4 @@
 ext.djPlatform='arduino.wudevice'
 ext.djConfig='avrora'
-ext.djLibraries=['wkreprog', 'wkpf']
+ext.djLibraries=['wkreprog', 'wkpf', 'base', 'vm', 'darjeeling3']
 ext.projectRoot='/Users/niels/git/rtc/src'

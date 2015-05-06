@@ -1,0 +1,17 @@
+// The structure for the vm and base libraries is a bit of a mess.
+// VM depends on base to supply it with identifiers for certain classes,
+// mostly for exceptions it wants to throw. Base on the other hand,
+// depends on vm for various reasons (stack manipulation, creating
+// objects, etc).
+// To 'solve' this circular dependency, I split the header files for vm
+// into a separate project, so base can build on those, and then the
+// real vm set can build on base.
+// Maybe they should just be a single library, but for now I'd prefer
+// to keep them separated since its always easier to merge things than
+// to split them again.
+
+djsources {
+    vm_dev {
+        basedir = 'lib/vm_dev'
+    }
+}
