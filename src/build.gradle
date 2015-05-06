@@ -11,22 +11,31 @@ apply from: 'lib/wkcomm/sub.gradle'
 apply from: 'lib/wkreprog/sub.gradle'
 apply from: 'lib/wkpf/sub.gradle'
 
+ext.allPlatforms = []
+ext.djPlatform.tokenize('.').each { p ->
+    if (allPlatforms.size == 0){
+        ext.allPlatforms.add(p)
+    } else {
+        ext.allPlatforms.add(ext.allPlatforms.last() + '.' + p)
+    }
+}
 
-def addSourceSet(DjSource djsource) {    
+
+def addSourceSet(DjSource djsource) {
     project.model {
         components {
             darjeeling(NativeExecutableSpec) {
                 sources.create(djsource.name, CSourceSet) {
                     source {
                         srcDir djsource.basedir + '/c/common'
-                        djPlatform.each { p ->
+                        allPlatforms.each { p ->
                             srcDir djsource.basedir + "/c/${p}"
                         }
                         include '**/*.c'
                     }
                     exportedHeaders {
                         srcDir djsource.basedir + '/include/common'
-                        djPlatform.each { p ->
+                        allPlatforms.each { p ->
                             srcDir djsource.basedir + "/include/${p}"
                         }
                     }
