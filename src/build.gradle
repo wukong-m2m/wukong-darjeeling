@@ -111,8 +111,7 @@ model {
 
 task createLibArchive {
     def destDir = new File("${buildDir}/lib_infusions")
-    def archiveFile = "${destDir}/lib_infusions.dja"
-    def archiveCFile = "${destDir}/lib_infusion.dja.c"
+    ext.archiveFile = "${destDir}/lib_infusions.dja"
     def libInfusions = []
 
     djLibraries.each { l ->
@@ -127,28 +126,16 @@ task createLibArchive {
 
     doLast {
         ensureEmptyDir(destDir)
-        def djarchive_type_lib_infusion = 0
-        def djarchive_type_app_infusion = 1
-        def djarchive_type_wkpf_link_table = 2
-        def djarchive_type_wkpf_component_map = 3
-        def djarchive_type_wkpf_initvalues = 4
-        def djarchive_type_ecocast_capsule_buffer = 5
         ant.djarchive(dest: archiveFile,
                              src: libInfusions.join(' '),
                              filetype: ant.djarchive_type_lib_infusion,
                              mode: "create")
-        ant.carray(dest: archiveCFile,
-                             src: archiveFile,
-                             arrayname: 'di_lib_infusions_archive',
-                             arraysize: 0,
-                             keywords: "${carray_lib_keywords}")
     }
 }
 
 task createAppArchive {
     def destDir = new File("${buildDir}/app_infusion")
-    def archiveFile = "${destDir}/app_infusion.dja"
-    def archiveCFile = "${destDir}/app_infusiondja.c"
+    ext.archiveFile = "${destDir}/app_infusion.dja"
 
     def appDjSource = djsources[djApp]
     inputs.file appDjSource.getInfusionFileName() 
@@ -161,11 +148,6 @@ task createAppArchive {
                              src: appDjSource.getInfusionFileName(),
                              filetype: ant.djarchive_type_app_infusion,
                              mode: 'create')
-        ant.carray(dest: archiveCFile,
-                             src: archiveFile,
-                             arrayname: 'di_app_infusion_archive',
-                             arraysize: djAppArchiveSize,
-                             keywords: "${carray_app_keywords}")
     }
 }
 
@@ -205,24 +187,6 @@ project.afterEvaluate {
                             }
                         }
                     }
-                    lib_infusions(CSourceSet) {  
-                        source {
-                            createLibArchive.outputs.getFiles().each { f ->
-                                srcDir "${f}"
-                            }
-                            include '**/*.c'
-                            builtBy(createLibArchive)
-                        }
-                    }
-                    app_infusion(CSourceSet) {  
-                        source {
-                            createAppArchive.outputs.getFiles().each { f ->
-                                srcDir "${f}"
-                            }
-                            include '**/*.c'
-                            builtBy(createAppArchive)
-                        }
-                    }
                 }
             }
         }
@@ -230,5 +194,7 @@ project.afterEvaluate {
 }
 
 task darjeeling {
+    // Architectures should create a task called 'platformSpecificAssemble'
+    // which depends on 'assemble', and possibly other platform specific tasks
     dependsOn platformSpecificAssemble
 }

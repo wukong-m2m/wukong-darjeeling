@@ -5,3 +5,32 @@ binaries.all {
     cCompiler.args "-Werror"
     cCompiler.args "-std=gnu99"
 }
+
+task platformSpecificAssemble { }
+
+project.afterEvaluate {
+    // Add these in afterEvaluate, otherwise these tasks won't exist yet
+    task copyFiles {
+        dependsOn assemble
+        dependsOn tasks['createLibArchive']
+        dependsOn tasks['createAppArchive']
+
+        def destDir = new File("${buildDir}/darjeeling")
+        def libInfusion = tasks['createLibArchive'].ext.archiveFile
+        def appInfusion = tasks['createAppArchive'].ext.archiveFile
+        def executable = djTargetElfFile
+
+        inputs.file libInfusion
+        inputs.file appInfusion
+        inputs.file executable
+        outputs.dir destDir
+
+        doLast {
+            ensureEmptyDir(destDir)
+            copy { from libInfusion into destDir }
+            copy { from appInfusion into destDir }
+            copy { from executable into destDir }
+        }
+    }
+    platformSpecificAssemble.dependsOn copyFiles
+}

@@ -145,7 +145,7 @@ void * dj_mem_alloc(uint16_t size, uint16_t id)
 	{
 		// still not enough memory, return null
         DEBUG_LOG(DBG_DARJEELING, "dj_mem_alloc: NULL!\n");
-        return nullref;
+        return NULL;
 	}
 
 	ret = (heap_chunk*)left_pointer;
