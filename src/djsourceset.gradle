@@ -4,10 +4,11 @@ class DjSourceSetPlugin implements Plugin<Project> {
     void apply(Project project) {
         def djsources = project.container(DjSourceSet)
         djsources.all { djsource ->
+            djsource.project = project
             project.afterEvaluate {
                 // Only add libraries that are enabled, and the core sourceset
                 if (djsource.name == 'core' || djsource.name in project.ext.djLibraries) {
-                    djsource.addTasks(project)
+                    djsource.addTasks()
                 }
             }
         }
@@ -19,7 +20,7 @@ class DjSourceSet {
     final String name
     String basedir
     Task cGenerateCodeTask = null
-    List<DjSourceSet> cDependencies
+    List<DjSourceSet> cDependencies 
     List<DjSourceSet> javaDependencies
 
     DjSourceSet(String name) {
@@ -30,8 +31,7 @@ class DjSourceSet {
         return new File(this.basedir + '/java').exists()
     }
 
-    void addTasks(Project project) {
-        this.project = project
+    void addTasks() {
         if (this.sourceSetContainsJavaCode()) {
             this.addJavaTasks()
             this.addJavaCSourceSet()
@@ -40,19 +40,28 @@ class DjSourceSet {
     }
 
     String libToJarName(String lib) {
-        return "${project.buildDir}/${lib}.jar"
+        return "${this.project.buildDir}/${lib}.jar"
     }
     String libToInfusionCSourceSetName(DjSourceSet lib) {
         return "infusion_c_${lib.name}"
     }
+    String getInfusionTaskName() {
+        return "infusion_${this.name}"
+    }
     String libToInfusionDir(DjSourceSet lib) {
-        return "${project.buildDir}/infusion-${lib.name}"
+        return "${this.project.buildDir}/infusion-${lib.name}"
+    }
+    String getInfusionDir() {
+        return libToInfusionDir(this)
+    }
+    String getInfusionFileName() {
+        return "${this.getInfusionDir()}/${this.name}.di"
     }
 
     void addJavaTasks() {
         def srcDir = "${this.basedir}/java"
         def outputClassesDir = new File("${project.buildDir}/classes-${this.name}")
-        def infusionDir = new File(libToInfusionDir(this))
+        def infusionDir = new File(getInfusionDir())
         def outputJar = libToJarName(this.name)
         def bootclasspath = libToJarName('base')
         def classpath = this.javaDependencies.collect { lib -> libToJarName(lib.name) }.join(':')
@@ -84,7 +93,7 @@ class DjSourceSet {
                 }
             }
         }
-        def infusion_task = project.tasks.create(name: 'infusion_'+this.name) {
+        def infusion_task = project.tasks.create(name: this.getInfusionTaskName()) {
             dependsOn(javac_task)
             inputs.files project.fileTree(dir: outputClassesDir).include('**/*.class')
             outputs.dir infusionDir
@@ -99,7 +108,7 @@ class DjSourceSet {
                 project.ensureEmptyDir(infusionDir)
                 ant.infuser(
                         name: this.name,
-                        infusionfile: "${infusionDir}/${this.name}.di",
+                        infusionfile: this.getInfusionFileName(),
                         headerfile: "${infusionDir}/${this.name}.dih",
                         hfile: "${infusionDir}/jlib_${this.name}.h",
                         cfile: "${infusionDir}/jlib_${this.name}.c",
@@ -121,7 +130,7 @@ class DjSourceSet {
                         source {
                             srcDir libToInfusionDir(this)
                             include '**/*.c'
-                            builtBy(project.tasks['infusion_'+this.name])
+                            builtBy(project.tasks[this.getInfusionTaskName()])
                         }
                         exportedHeaders {
                             srcDir libToInfusionDir(this)
