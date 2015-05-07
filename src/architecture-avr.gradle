@@ -34,3 +34,5 @@ binaries.all {
     linker.args "-mmcu=${djMcu}"
     linker.args "-Wl,--section-start=.reprogram_flash_page=0x1F800"
 }
+
+project.ext.carray_lib_keywords = 'PROGMEM'
