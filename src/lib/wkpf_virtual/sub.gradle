@@ -1,0 +1,7 @@
+djsources {
+    wkpf_virtual {
+        basedir = 'lib/wkpf_virtual'
+        cDependencies = [ vm_dev, base, wkcomm, wkpf ]
+        javaDependencies = [ base ]
+    }
+}

@@ -16,6 +16,13 @@ apply from: 'lib/vm_dev/sub.gradle'
 apply from: 'lib/base/sub.gradle'
 apply from: 'lib/vm/sub.gradle'
 apply from: 'lib/darjeeling3/sub.gradle'
+apply from: 'lib/wkpf_virtual/sub.gradle'
+apply from: 'lib/wknode/sub.gradle'
+apply from: 'lib/ecocast/sub.gradle'
+apply from: 'lib/rtc/sub.gradle'
+apply from: 'lib/rtctest2/sub.gradle'
+apply from: 'lib/rtctest1/sub.gradle'
+apply from: 'lib/rtcbench/sub.gradle'
 
 // Helper functions
 def ensureEmptyDir(File destDir) {
