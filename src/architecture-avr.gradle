@@ -1,6 +1,6 @@
 model {
     components {
-        darjeeling(NativeExecutableSpec) {
+        'darjeeling.elf'(NativeExecutableSpec) {
             targetPlatform 'avr'
         }
     }
@@ -27,12 +27,72 @@ model {
 binaries.all {
     cCompiler.args "-mmcu=${djMcu}"
     cCompiler.args "-Os"
-    cCompiler.args "-std=gnu99"
+    cCompiler.args "-finline-limit-0"
     cCompiler.args "-ggdb"
     cCompiler.args "-Wall"
     cCompiler.args "-Werror"
+    cCompiler.args "-std=gnu99"
     linker.args "-mmcu=${djMcu}"
     linker.args "-Wl,--section-start=.reprogram_flash_page=0x1F800"
 }
 
 project.ext.carray_lib_keywords = 'PROGMEM'
+project.ext.carray_app_keywords = 'PROGMEM __attribute__ ((aligned (SPM_PAGESIZE)))'
+
+task createIHexFiles {
+    dependsOn assemble
+
+    def destDir = new File("${buildDir}/darjeeling")
+    def djIHex = "${destDir}/darjeeling.ihex"
+    def djEepromIHex = "${destDir}/darjeeling_eeprom.ihex"
+
+    inputs.file new File(djTargetElfFile)
+    outputs.dir destDir
+
+    doLast {
+        ensureEmptyDir(destDir)
+
+        // Create darjeeling.ihex
+        exec {
+            executable 'avr-objcopy'
+            args '-j', '.text', '-j', '.data', '-O', 'ihex', djTargetElfFile, djIHex
+        }
+        // Create darjeeling_eeprom.ihex
+        exec {
+            executable 'avr-objcopy'
+            args '-j', '.eeprom', '-O', 'ihex', djTargetElfFile, djEepromIHex
+        }
+    }    
+}
+
+task platformSpecificAssemble(dependsOn: createIHexFiles) << {
+    exec {
+        executable 'avr-size'
+        args '-C', djTargetElfFile
+    }
+}
+
+
+
+/// AVR helper tasks
+task avrdude(dependsOn: platformSpecificAssemble) << {
+    exec {
+        executable 'avrdude'
+        args '-p', 'atmega2560', '-P', "${avrdudeprogrammer}", '-c', 'wiring', '-U', 'flash:w:darjeeling.ihex'
+    }
+}
+
+task avarice << {
+    exec {
+        executable 'avarice'
+        args '-g', '-j', 'usb', '-B', '4000000', ':4242'
+    }
+}
+
+task avrora(dependsOn: assemble) << {
+    javaexec {
+        main '-jar'
+        args '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,rtc,c-print', '-single', '-mcu=atmega128', djTargetElfFile
+    }
+}
+
