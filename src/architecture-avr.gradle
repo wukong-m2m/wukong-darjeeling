@@ -36,6 +36,50 @@ binaries.all {
     linker.args "-Wl,--section-start=.reprogram_flash_page=0x1F800"
 }
 
+// AVR tasks: transform infusion archives to c arrays
+project.afterEvaluate {
+    // Add these in afterEvaluate, otherwise these tasks won't exist yet
+    task createCArrays {
+        dependsOn tasks['createLibArchive']
+        dependsOn tasks['createAppArchive']
+        ext.destDir = new File("${buildDir}/carrays")
+        def appArchiveFile = tasks['createAppArchive'].ext.archiveFile
+        def appArchiveCFile = "${destDir}/app_infusiondja.c"
+        def libArchiveFile = tasks['createLibArchive'].ext.archiveFile
+        def libArchiveCFile = "${destDir}/lib_infusionsdja.c"
+
+        doLast {
+            ensureEmptyDir(destDir)
+            ant.carray(dest: libArchiveCFile,
+                                 src: libArchiveFile,
+                                 arrayname: 'di_lib_infusions_archive',
+                                 arraysize: 0,
+                                 keywords: "${carray_lib_keywords}")
+            ant.carray(dest: appArchiveCFile,
+                                 src: appArchiveFile,
+                                 arrayname: 'di_app_infusion_archive',
+                                 arraysize: djAppArchiveSize,
+                                 keywords: "${carray_app_keywords}")
+        }
+    }
+    project.model {
+        components {
+            'darjeeling.elf'(NativeExecutableSpec) {
+                sources {
+                    main(CSourceSet) {  
+                        source {
+                            srcDir createCArrays.destDir
+                            include '**/*.c'
+                            builtBy(createCArrays)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// AVR tasks: platformSpecificAssemble
 project.ext.carray_lib_keywords = 'PROGMEM'
 project.ext.carray_app_keywords = 'PROGMEM __attribute__ ((aligned (SPM_PAGESIZE)))'
 
@@ -71,8 +115,6 @@ task platformSpecificAssemble(dependsOn: createIHexFiles) << {
         args '-C', djTargetElfFile
     }
 }
-
-
 
 /// AVR helper tasks
 task avrdude(dependsOn: platformSpecificAssemble) << {
