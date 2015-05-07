@@ -1,10 +1,12 @@
 defaultTasks 'darjeeling'
+project.ext.djTargetElfFile = "${buildDir}/binaries/darjeeling.elfExecutable/darjeeling.elf"
 
 apply plugin: 'c'
 apply from: "djsourceset.gradle"
 apply from: "config.gradle"
 apply from: "platforms.gradle"
 apply from: "architecture-${djArchitecture}.gradle"
+apply from: 'taskdefs.gradle'
 
 // We always load all source sets, so we can add required sets even if they're not in the library list, or not in the right order
 apply from: 'core/sub.gradle'
@@ -23,6 +25,9 @@ apply from: 'lib/rtc/sub.gradle'
 apply from: 'lib/rtctest2/sub.gradle'
 apply from: 'lib/rtctest1/sub.gradle'
 apply from: 'lib/rtcbench/sub.gradle'
+// Also load the source set for the app we want to build
+apply from: "app/${djApp}/sub.gradle"
+
 
 // Helper functions
 def ensureEmptyDir(File destDir) {
@@ -76,16 +81,13 @@ task generateLibinit {
     outputs.upToDateWhen { return false }
     doLast {
         ensureEmptyDir(destDir)
-        ant.taskdef(name: 'generate_libinit',
-            classname: 'org.csiro.darjeeling.libinit.ant.LibInitTask',
-            classpath: "${projectRoot}/infuser/build/libs/infuser-1.0.jar")
         ant.generate_libinit(dest: "${destDir}/GENERATED_libinit.c", libDir: "${projectRoot}/lib", libraries: djLibraries.join(' '))
     }
 }
 
 model {
     components {
-        darjeeling(NativeExecutableSpec) {
+        'darjeeling.elf'(NativeExecutableSpec) {
             sources {
                 config(CSourceSet) { 
                     source { } 
@@ -113,23 +115,18 @@ task createLibArchive {
     def archiveCFile = "${destDir}/lib_infusion.dja.c"
     def libInfusions = []
 
-    djsources.each { l ->
-        if (l.sourceSetContainsJavaCode()) {
-            inputs.file l.getInfusionFileName() 
-            dependsOn l.getInfusionTaskName()
-            libInfusions.add l.getInfusionFileName()
+    djLibraries.each { l ->
+        def s = djsources[l]
+        if (s.sourceSetContainsJavaCode()) {
+            inputs.file s.getInfusionFileName() 
+            dependsOn s.getInfusionTaskName()
+            libInfusions.add s.getInfusionFileName()
         }
     }
     outputs.dir destDir
 
     doLast {
         ensureEmptyDir(destDir)
-        ant.taskdef(name: 'djarchive',
-            classname: 'org.csiro.darjeeling.djarchive.ant.DJAddToArchiveTask',
-            classpath: "${projectRoot}/infuser/build/libs/infuser-1.0.jar")
-        ant.taskdef(name: 'carray',
-            classname: 'org.csiro.darjeeling.carray.ant.CArrayTask',
-            classpath: "${projectRoot}/infuser/build/libs/infuser-1.0.jar")
         def djarchive_type_lib_infusion = 0
         def djarchive_type_app_infusion = 1
         def djarchive_type_wkpf_link_table = 2
@@ -138,7 +135,7 @@ task createLibArchive {
         def djarchive_type_ecocast_capsule_buffer = 5
         ant.djarchive(dest: archiveFile,
                              src: libInfusions.join(' '),
-                             filetype: djarchive_type_lib_infusion,
+                             filetype: ant.djarchive_type_lib_infusion,
                              mode: "create")
         ant.carray(dest: archiveCFile,
                              src: archiveFile,
@@ -148,8 +145,28 @@ task createLibArchive {
     }
 }
 
-task darjeeling {
-    dependsOn assemble
+task createAppArchive {
+    def destDir = new File("${buildDir}/app_infusion")
+    def archiveFile = "${destDir}/app_infusion.dja"
+    def archiveCFile = "${destDir}/app_infusiondja.c"
+
+    def appDjSource = djsources[djApp]
+    inputs.file appDjSource.getInfusionFileName() 
+    dependsOn appDjSource.getInfusionTaskName()
+    outputs.dir destDir
+
+    doLast {
+        ensureEmptyDir(destDir)
+        ant.djarchive(dest: archiveFile,
+                             src: appDjSource.getInfusionFileName(),
+                             filetype: ant.djarchive_type_app_infusion,
+                             mode: 'create')
+        ant.carray(dest: archiveCFile,
+                             src: archiveFile,
+                             arrayname: 'di_app_infusion_archive',
+                             arraysize: djAppArchiveSize,
+                             keywords: "${carray_app_keywords}")
+    }
 }
 
 // Doing this in after evaluate because otherwise the 'core' sourceset won't exist yet,
@@ -157,7 +174,7 @@ task darjeeling {
 project.afterEvaluate {
     project.model {
         components {
-            darjeeling(NativeExecutableSpec) {
+            'darjeeling.elf'(NativeExecutableSpec) {
                 sources {
                     main(CSourceSet) {  
                         source {
@@ -167,6 +184,9 @@ project.afterEvaluate {
                         lib ( sources['core'] )
                         lib ( sources['config'] )
                         lib ( sources['architecture'] )
+                        djLibraries.each { l ->
+                            lib ( sources[l] )
+                        }
                     }
                     libinit(CSourceSet) {  
                         source {
@@ -194,8 +214,21 @@ project.afterEvaluate {
                             builtBy(createLibArchive)
                         }
                     }
+                    app_infusion(CSourceSet) {  
+                        source {
+                            createAppArchive.outputs.getFiles().each { f ->
+                                srcDir "${f}"
+                            }
+                            include '**/*.c'
+                            builtBy(createAppArchive)
+                        }
+                    }
                 }
             }
         }
     }
+}
+
+task darjeeling {
+    dependsOn platformSpecificAssemble
 }

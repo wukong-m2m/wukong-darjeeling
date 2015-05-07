@@ -6,8 +6,10 @@ class DjSourceSetPlugin implements Plugin<Project> {
         djsources.all { djsource ->
             djsource.project = project
             project.afterEvaluate {
-                // Only add libraries that are enabled, and the core sourceset
-                if (djsource.name == 'core' || djsource.name in project.ext.djLibraries) {
+                // Only add libraries that are enabled, the core sourceset, and the app we want to include
+                if (djsource.name == 'core'
+                    || djsource.name == project.ext.djApp
+                    || djsource.name in project.ext.djLibraries) {
                     djsource.addTasks()
                 }
             }
@@ -101,9 +103,6 @@ class DjSourceSet {
                 dependsOn("infusion_${jlib.name}")
             }
             doLast {
-                ant.taskdef(name: 'infuser',
-                    classname: 'org.csiro.darjeeling.infuser.ant.InfuserTask',
-                    classpath: "${project.projectRoot}/infuser/build/libs/infuser-1.0.jar")
                 def infusionheaders = javaDependencies.collect { jlib -> "infusion-${jlib.name}/${jlib.name}.dih"}
                 project.ensureEmptyDir(infusionDir)
                 ant.infuser(
@@ -125,7 +124,7 @@ class DjSourceSet {
     void addJavaCSourceSet(){
         project.model {
             components {
-                darjeeling(NativeExecutableSpec) {
+                'darjeeling.elf'(NativeExecutableSpec) {
                     sources.create(libToInfusionCSourceSetName(this), CSourceSet) {
                         source {
                             srcDir libToInfusionDir(this)
@@ -148,7 +147,7 @@ class DjSourceSet {
         // Add the source sets to the model
         project.model {
             components {
-                darjeeling(NativeExecutableSpec) {
+                'darjeeling.elf'(NativeExecutableSpec) {
                     sources.create(this.name, CSourceSet) {
                         source {
                             srcDir this.basedir + '/c/common'

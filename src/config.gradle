@@ -1,4 +1,21 @@
-ext.djPlatform='arduino.wudevice'
-ext.djConfig='avrora'
-ext.djLibraries=['wkreprog', 'wkpf', 'base', 'vm', 'darjeeling3', 'rtc', 'rtcbench', 'rtctest1', 'rtctest2', 'wknode', 'wkpf_virtual']
-ext.projectRoot='/Users/niels/git/rtc/src'
+if (true) {
+	ext.djPlatform='arduino.avrora'
+	ext.djConfig='avrora'
+	ext.djLibraries=['wkreprog', 'base', 'vm', 'darjeeling3', 'rtc', 'rtcbench']
+	ext.djApp='apprtcbench'
+	ext.djAppArchiveSize=4096
+	ext.projectRoot='/Users/niels/git/rtc/src'
+
+	// TODONR: Should be moved to different settings file
+	ext.avrdudeprogrammer='/dev/tty.usbmodem1431'
+} else {
+	ext.djPlatform='posix'
+	ext.djConfig='native'
+	ext.djLibraries=['wkreprog', 'base', 'vm', 'darjeeling3', 'rtc', 'rtcbench']
+	ext.djApp='helloworld'
+	ext.djAppArchiveSize=4096
+	ext.projectRoot='/Users/niels/git/rtc/src'
+
+	// TODONR: Should be moved to different settings file
+	ext.avrdudeprogrammer='/dev/tty.usbmodem1431'	
+}

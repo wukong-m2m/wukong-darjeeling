@@ -1,0 +1,18 @@
+ant.taskdef(name: 'djarchive',
+    classname: 'org.csiro.darjeeling.djarchive.ant.DJAddToArchiveTask',
+    classpath: "${projectRoot}/infuser/build/libs/infuser-1.0.jar")
+ant.taskdef(name: 'carray',
+    classname: 'org.csiro.darjeeling.carray.ant.CArrayTask',
+    classpath: "${projectRoot}/infuser/build/libs/infuser-1.0.jar")
+ant.taskdef(name: 'infuser',
+    classname: 'org.csiro.darjeeling.infuser.ant.InfuserTask',
+    classpath: "${project.projectRoot}/infuser/build/libs/infuser-1.0.jar")
+ant.taskdef(name: 'generate_libinit',
+    classname: 'org.csiro.darjeeling.libinit.ant.LibInitTask',
+    classpath: "${projectRoot}/infuser/build/libs/infuser-1.0.jar")
+ant.djarchive_type_lib_infusion = 0
+ant.djarchive_type_app_infusion = 1
+ant.djarchive_type_wkpf_link_table = 2
+ant.djarchive_type_wkpf_component_map = 3
+ant.djarchive_type_wkpf_initvalues = 4
+ant.djarchive_type_ecocast_capsule_buffer = 5
