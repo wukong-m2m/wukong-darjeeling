@@ -20,9 +20,8 @@ task generate_wkpf(type: Exec) {
 	}
 }
 
-djsources {
+djlibsource {
     wkpf {
-        basedir = 'lib/wkpf'
         cGenerateCodeTask = generate_wkpf
         cDependencies = [ wkreprog, wkcomm ]
     }

@@ -1,6 +1,5 @@
-djsources {
+djlibsource {
     ecocast {
-        basedir = 'lib/ecocast'
         cDependencies = [ wkcomm, wkreprog ]
     }
 }

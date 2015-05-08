@@ -2,21 +2,50 @@ apply plugin: DjSourceSetPlugin
 
 class DjSourceSetPlugin implements Plugin<Project> {
     void apply(Project project) {
-        def djsources = project.container(DjSourceSet)
-        djsources.all { djsource ->
+        def djlibsource = project.container(DjLibSourceSet)
+        def djappsource = project.container(DjAppSourceSet)
+        project.extensions.djlibsource = djlibsource
+        project.extensions.djappsource = djappsource
+        djlibsource.all { djsource ->
             djsource.project = project
             project.afterEvaluate {
-                // Only add libraries that are enabled, the core sourceset, and the app we want to include
-                if (djsource.name == 'core'
-                    || djsource.name == project.ext.djApp
-                    || djsource.name in project.ext.djLibraries) {
+                // Only add libraries that are enabled
+                if (djsource.name in project.ext.djLibraries) {
                     djsource.addTasks()
                 }
             }
         }
-        project.extensions.djsources = djsources   
+        djappsource.all { djsource ->
+            djsource.project = project
+            project.afterEvaluate {
+                // Only the sub.gradle for the current application
+                // will be processed, so we can just add it.
+                djsource.addTasks()
+            }
+        }
     }
 }
+
+
+class DjAppSourceSet extends DjSourceSet {
+    DjAppSourceSet(String name) {
+        super(name)
+        this.basedir = 'app/' + name
+    }
+    def propertyMissing(String name) {
+        // This is a bit ugly, but when defining the dependencies
+        // for an application, we want to be able to just list something
+        // like [ base, vm, wkpf ] instead of using strings.
+        return project.djlibsource[name]
+    }
+}
+class DjLibSourceSet extends DjSourceSet {
+    DjLibSourceSet(String name) {
+        super(name)
+        this.basedir = 'lib/' + name
+    }
+}
+
 class DjSourceSet {
     Project project
     final String name
@@ -34,6 +63,7 @@ class DjSourceSet {
     }
 
     void addTasks() {
+        println "adding " + this.name
         if (this.sourceSetContainsJavaCode()) {
             this.addJavaTasks()
             this.addJavaCSourceSet()
@@ -135,8 +165,6 @@ class DjSourceSet {
                             srcDir libToInfusionDir(this)
                         }
                         lib ( sources['core'] )
-                        lib ( sources['config'] )
-                        lib ( sources['architecture'] )
                     }
                 }
             }
@@ -163,8 +191,6 @@ class DjSourceSet {
                             }
                         }
                         lib ( sources['core'] )
-                        lib ( sources['config'] )
-                        lib ( sources['architecture'] )
                         this.cDependencies.each { d ->
                             lib ( sources[d.name] )
                             if (d.sourceSetContainsJavaCode()) {

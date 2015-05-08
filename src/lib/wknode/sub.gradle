@@ -1,6 +1,5 @@
-djsources {
+djlibsource {
     wknode {
-        basedir = 'lib/wknode'
         cDependencies = [ vm_dev ]
         javaDependencies = [ base ]
     }

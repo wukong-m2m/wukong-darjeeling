@@ -1,6 +1,5 @@
-djsources {
+djlibsource {
     rtc {
-        basedir = 'lib/rtc'
         cDependencies = [ vm_dev, wkreprog ]
         javaDependencies = [ base ]
     }
