@@ -1,6 +1,5 @@
-djsources {
+djlibsource {
     rtctest1 {
-        basedir = 'lib/rtctest1'
         cDependencies = [ darjeeling3 ]
         javaDependencies = [ base, darjeeling3, rtctest2 ]
     }

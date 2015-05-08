@@ -1,6 +1,5 @@
-djsources {
+djappsource {
     helloworld {
-        basedir = 'app/helloworld'
-        javaDependencies = [ base, darjeeling3 ]
+        javaDependencies = [ base ]
     }
 }

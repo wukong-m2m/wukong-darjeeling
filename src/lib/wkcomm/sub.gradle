@@ -1,6 +1,5 @@
-djsources {
+djlibsource {
     wkcomm {
-        basedir = 'lib/wkcomm'
         cDependencies = [ uart ]
     }
 }

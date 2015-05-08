@@ -10,8 +10,7 @@
 // to keep them separated since its always easier to merge things than
 // to split them again.
 
-djsources {
+djlibsource {
     vm_dev {
-        basedir = 'lib/vm_dev'
     }
 }

@@ -1,6 +1,5 @@
-djsources {
+djlibsource {
     rtcbench {
-        basedir = 'lib/rtcbench'
         cDependencies = [ darjeeling3 ]
         javaDependencies = [ base, darjeeling3, rtc ]
     }

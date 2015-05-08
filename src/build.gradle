@@ -9,7 +9,6 @@ apply from: "architecture-${djArchitecture}.gradle"
 apply from: 'taskdefs.gradle'
 
 // We always load all source sets, so we can add required sets even if they're not in the library list, or not in the right order
-apply from: 'core/sub.gradle'
 apply from: 'lib/uart/sub.gradle'
 apply from: 'lib/wkcomm/sub.gradle'
 apply from: 'lib/wkreprog/sub.gradle'
@@ -42,17 +41,23 @@ def ensureEmptyDir(File destDir) {
 while (true) {
     def missing = []
     djLibraries.each { l ->
-        djsources[l].cDependencies.each { d ->
+        djlibsource[l].cDependencies.each { d ->
             if (!(d.name in djLibraries) && !(d.name in missing)) {
                 missing.add(d.name)
             }
         }
-        djsources[l].javaDependencies.each { d ->
+        djlibsource[l].javaDependencies.each { d ->
             if (!(d.name in djLibraries) && !(d.name in missing)) {
                 missing.add(d.name)
             }
         }
     }
+    djappsource.first().javaDependencies.each { d ->
+        if (!(d.name in djLibraries) && !(d.name in missing)) {
+            missing.add(d.name)
+        }
+    }
+
     if (missing.isEmpty()) {
         break
     } else {
@@ -85,22 +90,27 @@ task generateLibinit {
     }
 }
 
+
 model {
     components {
         'darjeeling.elf'(NativeExecutableSpec) {
             sources {
-                config(CSourceSet) { 
-                    source { } 
-                    exportedHeaders {
-                        srcDir "${projectRoot}/config/${djConfig}/include"
-                    }
-                }
-                architecture(CSourceSet) {  
+                core(CSourceSet) {
                     source {
+                        srcDir "${projectRoot}/core/c/common"
+                        project.allPlatforms.each { p ->
+                            srcDir "${projectRoot}/core/c/${p}"
+                        }
+                        include '**/*.c'
                         srcDir "${projectRoot}/architecture/${djArchitecture}/c"
                         include '**/*.c'
                     }
                     exportedHeaders {
+                        srcDir "${projectRoot}/core/include/common"
+                        project.allPlatforms.each { p ->
+                            srcDir "${projectRoot}/core/include/${p}"
+                        }
+                        srcDir "${projectRoot}/config/${djConfig}/include"
                         srcDir "${projectRoot}/architecture/${djArchitecture}/include"
                     }
                 }
@@ -115,7 +125,7 @@ task createLibArchive {
     def libInfusions = []
 
     djLibraries.each { l ->
-        def s = djsources[l]
+        def s = djlibsource[l]
         if (s.sourceSetContainsJavaCode()) {
             inputs.file s.getInfusionFileName() 
             dependsOn s.getInfusionTaskName()
@@ -137,7 +147,7 @@ task createAppArchive {
     def destDir = new File("${buildDir}/app_infusion")
     ext.archiveFile = "${destDir}/app_infusion.dja"
 
-    def appDjSource = djsources[djApp]
+    def appDjSource = djappsource.first()
     inputs.file appDjSource.getInfusionFileName() 
     dependsOn appDjSource.getInfusionTaskName()
     outputs.dir destDir
@@ -164,8 +174,6 @@ project.afterEvaluate {
                             include '**/*.c'
                         }
                         lib ( sources['core'] )
-                        lib ( sources['config'] )
-                        lib ( sources['architecture'] )
                         djLibraries.each { l ->
                             lib ( sources[l] )
                         }
@@ -179,9 +187,7 @@ project.afterEvaluate {
                             builtBy(generateLibinit)
                         }
                         lib ( sources['core'] )
-                        lib ( sources['config'] )
-                        lib ( sources['architecture'] )
-                        djsources.each { l ->
+                        djlibsource.each { l ->
                             if (l.sourceSetContainsJavaCode() && l.name in djLibraries) {
                                 lib ( sources[l.libToInfusionCSourceSetName(l)] )
                             }

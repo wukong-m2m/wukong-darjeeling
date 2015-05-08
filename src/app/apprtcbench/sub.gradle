@@ -1,6 +1,5 @@
-djsources {
+djappsource {
     apprtcbench {
-        basedir = 'app/apprtcbench'
         javaDependencies = [ base, darjeeling3, rtc, rtcbench ]
     }
 }
