@@ -37,6 +37,7 @@ binaries.all {
 }
 
 // AVR tasks: transform infusion archives to c arrays
+// and add those C files to the application model
 project.afterEvaluate {
     // Add these in afterEvaluate, otherwise these tasks won't exist yet
     task createCArrays {
@@ -86,9 +87,9 @@ project.ext.carray_app_keywords = 'PROGMEM __attribute__ ((aligned (SPM_PAGESIZE
 task createIHexFiles {
     dependsOn assemble
 
+    ext.destDir = new File("${buildDir}/darjeeling")
     def djIHex = "${destDir}/darjeeling.ihex"
     def djEepromIHex = "${destDir}/darjeeling_eeprom.ihex"
-    ext.destDir = new File("${buildDir}/darjeeling")
 
     inputs.file new File(djTargetElfFile)
     outputs.dir destDir
