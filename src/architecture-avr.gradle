@@ -86,9 +86,9 @@ project.ext.carray_app_keywords = 'PROGMEM __attribute__ ((aligned (SPM_PAGESIZE
 task createIHexFiles {
     dependsOn assemble
 
-    def destDir = new File("${buildDir}/darjeeling")
     def djIHex = "${destDir}/darjeeling.ihex"
     def djEepromIHex = "${destDir}/darjeeling_eeprom.ihex"
+    ext.destDir = new File("${buildDir}/darjeeling")
 
     inputs.file new File(djTargetElfFile)
     outputs.dir destDir

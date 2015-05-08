@@ -15,10 +15,10 @@ project.afterEvaluate {
         dependsOn tasks['createLibArchive']
         dependsOn tasks['createAppArchive']
 
-        def destDir = new File("${buildDir}/darjeeling")
         def libInfusion = tasks['createLibArchive'].ext.archiveFile
         def appInfusion = tasks['createAppArchive'].ext.archiveFile
         def executable = djTargetElfFile
+        ext.destDir = new File("${buildDir}/darjeeling")
 
         inputs.file libInfusion
         inputs.file appInfusion

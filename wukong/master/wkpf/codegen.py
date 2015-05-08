@@ -688,6 +688,9 @@ if __name__ == "__main__":
 
     wuTypedefs, wuClasses = CodeGen.getStandardLibrary(logging.getLogger(), options.component_file)
 
+
+    c_dir_src = None
+    c_dir_include = None
     if options.c_dir:
         c_dir_src = options.c_dir + '/c'
         c_dir_include = options.c_dir + '/include'

@@ -51,11 +51,43 @@ class DjAppSourceSet extends DjSourceSet {
     void addTasks() {
         super.addTasks()
         if (wkpfTableXml != null) {
-            addWkpfTablesToCreateAppArchiveTasks()
+            // WuKong specifics:
+            addWkpfTablesToCreateAppArchiveTask()
+            addGenerateVirtualWuClassesTask()
         }
     }
 
-    def addWkpfTablesToCreateAppArchiveTasks() {
+    void addGenerateVirtualWuClassesTask() {
+        def generateVirtualWuClasses = project.tasks.create(name: 'generateVirtualWuClasses') {
+            def componentLibraryXml = "${project.projectRoot}/../wukong/ComponentDefinitions/WuKongStandardLibrary.xml"
+            def pythonScript = "${project.projectRoot}/../wukong/master/wkpf/codegen.py"
+
+            ext.destDir = new File("${project.buildDir}/generated-virtual-wuclasses")
+            def destDirClasses = new File(destDir, '/javax/wukong/virtualwuclasses')
+            inputs.file componentLibraryXml
+            inputs.file pythonScript
+            outputs.dir destDir
+
+
+            // we only need to generate the Java part here, C will be generated from lib/wkpf/sub.gradle
+            doLast {
+                project.ensureEmptyDir(destDir)
+                destDirClasses.mkdirs()
+                exec {
+                    executable pythonScript
+                    args '--input_xml', componentLibraryXml, '--java_package', 'javax.wukong.virtualwuclasses', '--java_constants_dir', destDirClasses, '--java_virtualclasses_dir', destDirClasses
+                }
+            }
+        }
+        // Add the virtual classes, both the generated and normal sources, to the sourcepath of the wk application
+        def wukongVirtualClassesDir = project.projectRoot + '/../wukong'
+        def wukongGeneratedVirtualClassesDir = generateVirtualWuClasses.destDir
+        project.tasks['javac_'+this.name].sourcepath = "${wukongVirtualClassesDir}:${wukongGeneratedVirtualClassesDir}"
+        // And make sure they get generated before the application is compiled
+        project.tasks['javac_'+this.name].dependsOn generateVirtualWuClasses
+    }
+
+    void addWkpfTablesToCreateAppArchiveTask() {
         def tableXml = new File("${basedir}/${wkpfTableXml}")
         def outputBase = "${project.tasks.createAppArchive.destDir.toString()}/${name}"
 
@@ -150,6 +182,7 @@ class DjSourceSet {
         def classpath = this.javaDependencies.collect { lib -> libToJarName(lib.name) }.join(':')
 
         def javac_task = project.tasks.create(name: 'javac_'+this.name) {
+            ext.sourcepath = '' // May set this externally. Useful for WK applications.
             inputs.files project.fileTree(dir: srcDir).include('**/*.java')
             outputs.dir outputClassesDir
             this.javaDependencies.each { jlib ->
@@ -162,6 +195,7 @@ class DjSourceSet {
                     destdir: outputClassesDir,
                     bootclasspath: this.name != 'base' ? bootclasspath : '', // No point in setting a bootclasspath if that's what we're building.
                     classpath: classpath,
+                    sourcepath: sourcepath,
                     includeantruntime: false
                 )
             }
