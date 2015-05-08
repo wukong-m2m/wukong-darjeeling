@@ -7,7 +7,7 @@ class DjSourceSetPlugin implements Plugin<Project> {
         project.extensions.djlibsource = djlibsource
         project.extensions.djappsource = djappsource
         djlibsource.all { djsource ->
-            djsource.project = project
+            djsource.init(project)
             project.afterEvaluate {
                 // Only add libraries that are enabled
                 if (djsource.name in project.ext.djLibraries) {
@@ -16,7 +16,7 @@ class DjSourceSetPlugin implements Plugin<Project> {
             }
         }
         djappsource.all { djsource ->
-            djsource.project = project
+            djsource.init(project)
             project.afterEvaluate {
                 // Only the sub.gradle for the current application
                 // will be processed, so we can just add it.
@@ -26,23 +26,71 @@ class DjSourceSetPlugin implements Plugin<Project> {
     }
 }
 
-
 class DjAppSourceSet extends DjSourceSet {
+    String wkpfTableXml
+
     DjAppSourceSet(String name) {
         super(name)
-        this.basedir = 'app/' + name
     }
+    void init(Project project) {
+        super.init(project);
+        this.basedir = "${project.projectRoot}/app/${name}"
+    }
+
     def propertyMissing(String name) {
         // This is a bit ugly, but when defining the dependencies
         // for an application, we want to be able to just list something
         // like [ base, vm, wkpf ] instead of using strings.
-        return project.djlibsource[name]
+        if (project.djlibsource.any {n -> n.name==name}) {
+            return project.djlibsource[name]
+        } else {
+            throw new MissingPropertyException("NOT FOUND ${name}")
+        }
+    }
+
+    void addTasks() {
+        super.addTasks()
+        if (wkpfTableXml != null) {
+            addWkpfTablesToCreateAppArchiveTasks()
+        }
+    }
+
+    def addWkpfTablesToCreateAppArchiveTasks() {
+        def tableXml = new File("${basedir}/${wkpfTableXml}")
+        def outputBase = "${project.tasks.createAppArchive.destDir.toString()}/${name}"
+
+        // Not sure if this kind of injection is the proper way in Gradle?
+        project.tasks.createAppArchive.inputs.file tableXml
+        project.tasks.createAppArchive.doLast {
+            ant.wkpftable (
+                src: tableXml,
+                dest: outputBase
+            )
+
+        // Add to existing application dja (containing application Java code)
+        ant.djarchive(dest: archiveFile,
+                             src: "${outputBase}.wkpf_linktable",
+                             filetype: ant.djarchive_type_wkpf_linktable,
+                             mode: 'append') // Can change this to 'create' to build a picokong application
+        ant.djarchive(dest: archiveFile,
+                             src: "${outputBase}.wkpf_componentmap",
+                             filetype: ant.djarchive_type_wkpf_componentmap,
+                             mode: 'append')
+        ant.djarchive(dest: archiveFile,
+                             src: "${outputBase}.wkpf_initvalues",
+                             filetype: ant.djarchive_type_wkpf_initvalues,
+                             mode: 'append')
+        }
     }
 }
+
 class DjLibSourceSet extends DjSourceSet {
     DjLibSourceSet(String name) {
         super(name)
-        this.basedir = 'lib/' + name
+    }
+    void init(Project project) {
+        super.init(project);
+        this.basedir = "${project.projectRoot}/lib/${name}"
     }
 }
 
@@ -56,6 +104,9 @@ class DjSourceSet {
 
     DjSourceSet(String name) {
         this.name = name
+    }
+    void init (Project project) {
+        this.project = project
     }
 
     boolean sourceSetContainsJavaCode() {

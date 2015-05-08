@@ -2,8 +2,8 @@ defaultTasks 'darjeeling'
 project.ext.djTargetElfFile = "${buildDir}/binaries/darjeeling.elfExecutable/darjeeling.elf"
 
 apply plugin: 'c'
-apply from: "djsourceset.gradle"
 apply from: "config.gradle"
+apply from: "djsourceset.gradle"
 apply from: "platforms.gradle"
 apply from: "architecture-${djArchitecture}.gradle"
 apply from: 'taskdefs.gradle'
@@ -144,7 +144,7 @@ task createLibArchive {
 }
 
 task createAppArchive {
-    def destDir = new File("${buildDir}/app_infusion")
+    ext.destDir = new File("${buildDir}/app_infusion")
     ext.archiveFile = "${destDir}/app_infusion.dja"
 
     def appDjSource = djappsource.first()

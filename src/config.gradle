@@ -9,10 +9,10 @@ if (false) {
 	// TODONR: Should be moved to different settings file
 	ext.avrdudeprogrammer='/dev/tty.usbmodem1431'
 } else {
-	ext.djPlatform='posix'
+	ext.djPlatform='posix.pc'
 	ext.djConfig='native'
-	ext.djLibraries=['wkreprog', 'base', 'vm', 'darjeeling3']
-	ext.djApp='helloworld'
+	ext.djLibraries=['wkreprog', 'base', 'vm', 'darjeeling3', 'wkpf']
+	ext.djApp='wkdeploy'
 	ext.djAppArchiveSize=4096
 	ext.projectRoot='/Users/niels/git/rtc/src'
 }

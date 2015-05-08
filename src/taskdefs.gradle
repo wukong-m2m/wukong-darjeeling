@@ -10,9 +10,13 @@ ant.taskdef(name: 'infuser',
 ant.taskdef(name: 'generate_libinit',
     classname: 'org.csiro.darjeeling.libinit.ant.LibInitTask',
     classpath: "${projectRoot}/infuser/build/libs/infuser-1.0.jar")
+ant.taskdef(name: 'wkpftable',
+    classname: 'org.csiro.darjeeling.wkpftable.ant.WKPFTableTask',
+    classpath: "${projectRoot}/infuser/build/libs/infuser-1.0.jar")
+
 ant.djarchive_type_lib_infusion = 0
 ant.djarchive_type_app_infusion = 1
-ant.djarchive_type_wkpf_link_table = 2
-ant.djarchive_type_wkpf_component_map = 3
+ant.djarchive_type_wkpf_linktable = 2
+ant.djarchive_type_wkpf_componentmap = 3
 ant.djarchive_type_wkpf_initvalues = 4
 ant.djarchive_type_ecocast_capsule_buffer = 5
