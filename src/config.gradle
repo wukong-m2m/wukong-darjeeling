@@ -1,4 +1,4 @@
-if (false) {
+if (true) {
 	ext.djPlatform='arduino.avrora'
 	ext.djConfig='avrora'
 	ext.djLibraries=['wkreprog', 'base', 'vm', 'darjeeling3', 'rtc', 'rtcbench']

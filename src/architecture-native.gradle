@@ -7,7 +7,6 @@ binaries.all {
 }
 
 task platformSpecificAssemble { }
-
 project.afterEvaluate {
     // Add these in afterEvaluate, otherwise these tasks won't exist yet
     task copyFiles {

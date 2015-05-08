@@ -1,8 +1,9 @@
 defaultTasks 'darjeeling'
-project.ext.djTargetElfFile = "${buildDir}/binaries/darjeeling.elfExecutable/darjeeling.elf"
-
 apply plugin: 'c'
 apply from: "config.gradle"
+// Build in a subdir for each config
+buildDir = new File(buildDir, djConfig)
+project.ext.djTargetElfFile = "${buildDir}/binaries/darjeeling.elfExecutable/darjeeling.elf"
 apply from: "djsourceset.gradle"
 apply from: "platforms.gradle"
 apply from: "architecture-${djArchitecture}.gradle"
@@ -37,34 +38,22 @@ def ensureEmptyDir(File destDir) {
 }
 
 // Add dependencies to djLibraries
-// (I'm sure this could be prettier...)
 while (true) {
-    def missing = []
-    djLibraries.each { l ->
-        djlibsource[l].cDependencies.each { d ->
-            if (!(d.name in djLibraries) && !(d.name in missing)) {
-                missing.add(d.name)
-            }
-        }
-        djlibsource[l].javaDependencies.each { d ->
-            if (!(d.name in djLibraries) && !(d.name in missing)) {
-                missing.add(d.name)
-            }
-        }
-    }
-    djappsource.first().javaDependencies.each { d ->
-        if (!(d.name in djLibraries) && !(d.name in missing)) {
-            missing.add(d.name)
-        }
-    }
+    def libDependencies = djLibraries
+            .collect { l -> [ djlibsource[l].cDependencies, djlibsource[l].javaDependencies ] }
+            .inject([]) { x,y -> x+y } // Flatten list of lists
+            .findAll { x -> x != null }
+            .inject([]) { x,y -> x+y } // Flatten list of lists
+    def appDependencies = djappsource.first().javaDependencies
+    def allDependencyNames = (libDependencies + appDependencies).collect { d -> d.name }
+    def missingDependencies = allDependencyNames.findAll { d -> !(d in djLibraries) }
 
-    if (missing.isEmpty()) {
+    if (missingDependencies.isEmpty()) {
         break
     } else {
-        missing.each { d ->
+        missingDependencies.each { d ->
             djLibraries.add(0, d)
         }
-        missing.clear()
     }
 }
 
@@ -89,7 +78,6 @@ task generateLibinit {
         ant.generate_libinit(dest: "${destDir}/GENERATED_libinit.c", libDir: "${projectRoot}/lib", libraries: djLibraries.join(' '))
     }
 }
-
 
 model {
     components {
