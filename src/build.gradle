@@ -28,7 +28,6 @@ apply from: 'lib/rtcbench/sub.gradle'
 // Also load the source set for the app we want to build
 apply from: "app/${djApp}/sub.gradle"
 
-
 // Helper functions
 def ensureEmptyDir(File destDir) {
     if (destDir.exists()) {
@@ -75,7 +74,7 @@ task generateLibinit {
     outputs.upToDateWhen { return false }
     doLast {
         ensureEmptyDir(destDir)
-        ant.generate_libinit(dest: "${destDir}/GENERATED_libinit.c", libDir: "${projectRoot}/lib", libraries: djLibraries.join(' '))
+        ant.generate_libinit(dest: "${destDir}/GENERATED_libinit.c", libDir: "${project.rootDir}/lib", libraries: djLibraries.join(' '))
     }
 }
 
@@ -85,21 +84,21 @@ model {
             sources {
                 core(CSourceSet) {
                     source {
-                        srcDir "${projectRoot}/core/c/common"
+                        srcDir "${project.rootDir}/core/c/common"
                         project.allPlatforms.each { p ->
-                            srcDir "${projectRoot}/core/c/${p}"
+                            srcDir "${project.rootDir}/core/c/${p}"
                         }
                         include '**/*.c'
-                        srcDir "${projectRoot}/architecture/${djArchitecture}/c"
+                        srcDir "${project.rootDir}/architecture/${djArchitecture}/c"
                         include '**/*.c'
                     }
                     exportedHeaders {
-                        srcDir "${projectRoot}/core/include/common"
+                        srcDir "${project.rootDir}/core/include/common"
                         project.allPlatforms.each { p ->
-                            srcDir "${projectRoot}/core/include/${p}"
+                            srcDir "${project.rootDir}/core/include/${p}"
                         }
-                        srcDir "${projectRoot}/config/${djConfig}/include"
-                        srcDir "${projectRoot}/architecture/${djArchitecture}/include"
+                        srcDir "${project.rootDir}/config/${djConfig}/include"
+                        srcDir "${project.rootDir}/architecture/${djArchitecture}/include"
                     }
                 }
             }
@@ -158,7 +157,7 @@ project.afterEvaluate {
                 sources {
                     main(CSourceSet) {  
                         source {
-                            srcDir "${projectRoot}/config/${djConfig}/c"
+                            srcDir "${project.rootDir}/config/${djConfig}/c"
                             include '**/*.c'
                         }
                         lib ( sources['core'] )

@@ -4,7 +4,6 @@ if (true) {
 	ext.djLibraries=['wkreprog', 'base', 'vm', 'darjeeling3', 'rtc', 'rtcbench']
 	ext.djApp='apprtcbench'
 	ext.djAppArchiveSize=4096
-	ext.projectRoot='/Users/niels/git/rtc/src'
 
 	// TODONR: Should be moved to different settings file
 	ext.avrdudeprogrammer='/dev/tty.usbmodem1431'
@@ -14,5 +13,4 @@ if (true) {
 	ext.djLibraries=['wkreprog', 'base', 'vm', 'darjeeling3', 'wkpf']
 	ext.djApp='wkdeploy'
 	ext.djAppArchiveSize=4096
-	ext.projectRoot='/Users/niels/git/rtc/src'
 }
