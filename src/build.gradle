@@ -1,32 +1,11 @@
 defaultTasks 'darjeeling'
 apply plugin: 'c'
+
+// Setup basic configuration parameters
 apply from: "config.gradle"
-// Build in a subdir for each config
 buildDir = new File(buildDir, djConfig)
 project.ext.djTargetElfFile = "${buildDir}/binaries/darjeeling.elfExecutable/darjeeling.elf"
-apply from: "djsourceset.gradle"
-apply from: "platforms.gradle"
-apply from: "architecture-${djArchitecture}.gradle"
 apply from: 'taskdefs.gradle'
-
-// We always load all source sets, so we can add required sets even if they're not in the library list, or not in the right order
-apply from: 'lib/uart/sub.gradle'
-apply from: 'lib/wkcomm/sub.gradle'
-apply from: 'lib/wkreprog/sub.gradle'
-apply from: 'lib/wkpf/sub.gradle'
-apply from: 'lib/vm_dev/sub.gradle'
-apply from: 'lib/base/sub.gradle'
-apply from: 'lib/vm/sub.gradle'
-apply from: 'lib/darjeeling3/sub.gradle'
-apply from: 'lib/wkpf_virtual/sub.gradle'
-apply from: 'lib/wknode/sub.gradle'
-apply from: 'lib/ecocast/sub.gradle'
-apply from: 'lib/rtc/sub.gradle'
-apply from: 'lib/rtctest2/sub.gradle'
-apply from: 'lib/rtctest1/sub.gradle'
-apply from: 'lib/rtcbench/sub.gradle'
-// Also load the source set for the app we want to build
-apply from: "app/${djApp}/sub.gradle"
 
 // Helper functions
 def ensureEmptyDir(File destDir) {
@@ -36,35 +15,52 @@ def ensureEmptyDir(File destDir) {
     destDir.mkdirs()
 }
 
-// Add dependencies to djLibraries
-while (true) {
-    def libDependencies = djLibraries
-            .collect { l -> [ djlibsource[l].cDependencies, djlibsource[l].javaDependencies ] }
-            .inject([]) { x,y -> x+y } // Flatten list of lists
-            .findAll { x -> x != null }
-            .inject([]) { x,y -> x+y } // Flatten list of lists
-    def appDependencies = djappsource.first().javaDependencies
-    def allDependencyNames = (libDependencies + appDependencies).collect { d -> d.name }
-    def missingDependencies = allDependencyNames.findAll { d -> !(d in djLibraries) }
 
-    if (missingDependencies.isEmpty()) {
-        break
-    } else {
-        missingDependencies.each { d ->
-            djLibraries.add(0, d)
+class CreateDjArchiveTask extends DefaultTask {
+    class ArchivePart {
+        String filename
+        int filetype
+    }
+
+    String archiveFile
+    def archiveParts = []
+
+    @OutputDirectory
+    File destDir
+
+    void addPart(String name, int type, dependsOnTask) {
+        def part = new ArchivePart()
+        part.filename = name
+        part.filetype = type
+        archiveParts.add(part)
+        inputs.file name
+        dependsOn dependsOnTask
+    }
+
+    @TaskAction
+    void createArchive() {
+        project.ensureEmptyDir(destDir)
+        boolean first = true
+        archiveParts.each { part ->
+            println "Adding ${part.filename} to ${archiveFile}"
+            ant.djarchive(dest: archiveFile,
+                                 src: part.filename,
+                                 filetype: part.filetype,
+                                 mode: first ? 'create' : 'append')
+            first = false
         }
     }
 }
 
-// Turn platform into list of directory names to include
-// (for example 'arduino.wudevice' becomes ['arduino', 'arduino.wudevice'])
-ext.allPlatforms = []
-ext.djPlatform.tokenize('.').each { p ->
-    if (allPlatforms.size == 0){
-        ext.allPlatforms.add(p)
-    } else {
-        ext.allPlatforms.add(ext.allPlatforms.last() + '.' + p)
-    }
+// Basic tasks
+task createLibArchive (type: CreateDjArchiveTask) {
+    destDir = new File("${buildDir}/lib_infusions")
+    archiveFile = "${destDir}/lib_infusions.dja"
+}
+
+task createAppArchive (type: CreateDjArchiveTask) {
+    destDir = new File("${buildDir}/app_infusion")
+    archiveFile = "${destDir}/app_infusion.dja"
 }
 
 // TODONR: make this, and other infuser tasks depend on the infuser project
@@ -78,6 +74,16 @@ task generateLibinit {
     }
 }
 
+task architectureSpecificAssemble {
+    dependsOn assemble
+    // Can be filled in by architectures
+}
+
+task darjeeling {
+    dependsOn architectureSpecificAssemble
+}
+
+// Basic C source sets, excluding libraries and possibly infusions.
 model {
     components {
         'darjeeling.elf'(NativeExecutableSpec) {
@@ -101,93 +107,63 @@ model {
                         srcDir "${project.rootDir}/architecture/${djArchitecture}/include"
                     }
                 }
-            }
-        }
-    }
-}
-
-task createLibArchive {
-    ext.destDir = new File("${buildDir}/lib_infusions")
-    ext.archiveFile = "${destDir}/lib_infusions.dja"
-    def libInfusions = []
-
-    djLibraries.each { l ->
-        def s = djlibsource[l]
-        if (s.sourceSetContainsJavaCode()) {
-            inputs.file s.getInfusionFileName() 
-            dependsOn s.getInfusionTaskName()
-            libInfusions.add s.getInfusionFileName()
-        }
-    }
-    outputs.dir destDir
-
-    doLast {
-        ensureEmptyDir(destDir)
-        ant.djarchive(dest: archiveFile,
-                             src: libInfusions.join(' '),
-                             filetype: ant.djarchive_type_lib_infusion,
-                             mode: "create")
-    }
-}
-
-task createAppArchive {
-    ext.destDir = new File("${buildDir}/app_infusion")
-    ext.archiveFile = "${destDir}/app_infusion.dja"
-
-    def appDjSource = djappsource.first()
-    inputs.file appDjSource.getInfusionFileName() 
-    dependsOn appDjSource.getInfusionTaskName()
-    outputs.dir destDir
-
-    doLast {
-        ensureEmptyDir(destDir)
-        ant.djarchive(dest: archiveFile,
-                             src: appDjSource.getInfusionFileName(),
-                             filetype: ant.djarchive_type_app_infusion,
-                             mode: 'create')
-    }
-}
-
-// Doing this in after evaluate because otherwise the 'core' sourceset won't exist yet,
-// so libinit can't depend on it, and the libraries won't exist, so main can't depend on it.
-project.afterEvaluate {
-    project.model {
-        components {
-            'darjeeling.elf'(NativeExecutableSpec) {
-                sources {
-                    main(CSourceSet) {  
-                        source {
-                            srcDir "${project.rootDir}/config/${djConfig}/c"
-                            include '**/*.c'
-                        }
-                        lib ( sources['core'] )
-                        djLibraries.each { l ->
-                            lib ( sources[l] )
-                        }
+                main(CSourceSet) {  
+                    source {
+                        srcDir "${project.rootDir}/config/${djConfig}/c"
+                        include '**/*.c'
                     }
-                    libinit(CSourceSet) {  
-                        source {
-                            generateLibinit.outputs.getFiles().each { f ->
-                                srcDir "${f}"
-                            }
-                            include '**/*.c'
-                            builtBy(generateLibinit)
+                    lib ( sources['core'] )
+                }
+                libinit(CSourceSet) {  
+                    source {
+                        generateLibinit.outputs.getFiles().each { f ->
+                            srcDir "${f}"
                         }
-                        lib ( sources['core'] )
-                        djlibsource.each { l ->
-                            if (l.sourceSetContainsJavaCode() && l.name in djLibraries) {
-                                lib ( sources[l.libToInfusionCSourceSetName(l)] )
-                            }
-                        }
+                        include '**/*.c'
+                        builtBy(generateLibinit)
                     }
+                    lib ( sources['core'] )
                 }
             }
         }
     }
 }
 
-task darjeeling {
-    // Architectures should create a task called 'platformSpecificAssemble'
-    // which depends on 'assemble', and possibly other platform specific tasks
-    dependsOn platformSpecificAssemble
+// Turn platform into list of directory names to include
+// (for example 'arduino.wudevice' becomes ['arduino', 'arduino.wudevice'])
+ext.allPlatforms = []
+ext.djPlatform.tokenize('.').each { p ->
+    if (allPlatforms.size == 0){
+        ext.allPlatforms.add(p)
+    } else {
+        ext.allPlatforms.add(ext.allPlatforms.last() + '.' + p)
+    }
 }
+
+
+// Load libraries and application
+apply from: "djsourceset.gradle"
+apply from: "platforms.gradle"
+apply from: "architecture-${djArchitecture}.gradle"
+def loadDjApp(String name) {
+    apply from: "app/${name}/sub.gradle"
+    djappsource[name].addTasks()
+
+}
+def maybeLoadDjLibrary(String name) {
+    if (djlibsource.findByName(name) == null) {
+        apply from: "lib/${name}/sub.gradle"
+        djlibsource[name].addTasks()
+    }
+}
+// Load any libraries explicitly included in the config (dependencies will be loaded from addTasks())
+ext.djLibraries.each { lib ->
+    maybeLoadDjLibrary(lib)
+}
+// And load the application (dependencies will be loaded from addTasks())
+loadDjApp(ext.djApp)
+
+
+
+
+

@@ -1,6 +1,6 @@
 djlibsource {
     wknode {
-        cDependencies = [ vm_dev ]
-        javaDependencies = [ base ]
+        cDependencies = [ 'vm_dev', 'vm' ]
+        javaDependencies = [ 'base' ]
     }
 }

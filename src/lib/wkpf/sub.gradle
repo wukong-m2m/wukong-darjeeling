@@ -20,6 +20,6 @@ task generate_wkpf(type: Exec) {
 djlibsource {
     wkpf {
         cGenerateCodeTask = generate_wkpf
-        cDependencies = [ wkreprog, wkcomm ]
+        cDependencies = [ 'wkreprog', 'wkcomm' ]
     }
 }

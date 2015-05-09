@@ -1,5 +1,5 @@
 djlibsource {
     wkreprog {
-        cDependencies = [ wkcomm ]
+        cDependencies = [ 'wkcomm' ]
     }
 }

@@ -1,5 +1,5 @@
 djappsource {
     wkpftest {
-        javaDependencies = [ base, wkpf_virtual ]
+        javaDependencies = [ 'base', 'wkpf_virtual' ]
     }
 }

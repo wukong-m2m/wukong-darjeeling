@@ -1,6 +1,6 @@
 djlibsource {
     rtc {
-        cDependencies = [ vm_dev, wkreprog ]
-        javaDependencies = [ base ]
+        cDependencies = [ 'vm_dev', 'vm', 'wkreprog' ]
+        javaDependencies = [ 'base' ]
     }
 }

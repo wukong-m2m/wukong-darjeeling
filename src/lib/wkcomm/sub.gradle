@@ -1,5 +1,5 @@
 djlibsource {
     wkcomm {
-        cDependencies = [ uart ]
+        cDependencies = [ 'uart' ]
     }
 }

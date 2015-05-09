@@ -1,5 +1,5 @@
 djlibsource {
     vm {
-        cDependencies = [ vm_dev, base ]
+        cDependencies = [ 'vm_dev', 'base' ]
     }
 }

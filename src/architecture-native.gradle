@@ -6,30 +6,24 @@ binaries.all {
     cCompiler.args "-std=gnu99"
 }
 
-task platformSpecificAssemble { }
-project.afterEvaluate {
-    // Add these in afterEvaluate, otherwise these tasks won't exist yet
-    task copyFiles {
-        dependsOn assemble
-        dependsOn tasks['createLibArchive']
-        dependsOn tasks['createAppArchive']
+tasks.architectureSpecificAssemble { 
+    dependsOn tasks['createLibArchive']
+    dependsOn tasks['createAppArchive']
 
-        def libInfusion = tasks['createLibArchive'].ext.archiveFile
-        def appInfusion = tasks['createAppArchive'].ext.archiveFile
-        def executable = djTargetElfFile
-        ext.destDir = new File("${buildDir}/darjeeling")
+    def libInfusion = tasks['createLibArchive'].archiveFile
+    def appInfusion = tasks['createAppArchive'].archiveFile
+    def executable = djTargetElfFile
+    ext.destDir = new File("${buildDir}/darjeeling")
 
-        inputs.file libInfusion
-        inputs.file appInfusion
-        inputs.file executable
-        outputs.dir destDir
+    inputs.file libInfusion
+    inputs.file appInfusion
+    inputs.file executable
+    outputs.dir destDir
 
-        doLast {
-            ensureEmptyDir(destDir)
-            copy { from libInfusion into destDir }
-            copy { from appInfusion into destDir }
-            copy { from executable into destDir }
-        }
+    doLast {
+        ensureEmptyDir(destDir)
+        copy { from libInfusion into destDir }
+        copy { from appInfusion into destDir }
+        copy { from executable into destDir }
     }
-    platformSpecificAssemble.dependsOn copyFiles
 }

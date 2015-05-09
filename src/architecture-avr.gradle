@@ -1,29 +1,3 @@
-model {
-    components {
-        'darjeeling.elf'(NativeExecutableSpec) {
-            targetPlatform 'avr'
-        }
-    }
-    toolChains {
-        gcc(Gcc) {
-            target('avr') { t ->
-				t.getcCompiler().setExecutable('avr-gcc');
-				t.getCppCompiler().setExecutable('avr-g++');
-				t.getObjcCompiler().setExecutable('avr-gcc');
-				t.getObjcppCompiler().setExecutable('avr-g++');
-				t.getAssembler().setExecutable('avr-as');
-				t.getLinker().setExecutable('avr-gcc');
-				t.getStaticLibArchiver().setExecutable('avr-ar');
-            }
-        }
-    }
-    platforms {
-        avr {
-            architecture 'avr'
-        }
-    }
-}
-
 binaries.all {
     cCompiler.args "-mmcu=${djMcu}"
     cCompiler.args "-Os"
@@ -38,51 +12,69 @@ binaries.all {
 
 // AVR tasks: transform infusion archives to c arrays
 // and add those C files to the application model
-project.afterEvaluate {
-    // Add these in afterEvaluate, otherwise these tasks won't exist yet
-    task createCArrays {
-        dependsOn tasks['createLibArchive']
-        dependsOn tasks['createAppArchive']
-        ext.destDir = new File("${buildDir}/carrays")
-        def appArchiveFile = tasks['createAppArchive'].ext.archiveFile
-        def appArchiveCFile = "${destDir}/app_infusiondja.c"
-        def libArchiveFile = tasks['createLibArchive'].ext.archiveFile
-        def libArchiveCFile = "${destDir}/lib_infusionsdja.c"
+task createCArrays {
+    dependsOn tasks['createLibArchive']
+    dependsOn tasks['createAppArchive']
+    ext.destDir = new File("${buildDir}/carrays")
+    def appArchiveFile = tasks['createAppArchive'].archiveFile
+    def appArchiveCFile = "${destDir}/app_infusiondja.c"
+    def libArchiveFile = tasks['createLibArchive'].archiveFile
+    def libArchiveCFile = "${destDir}/lib_infusionsdja.c"
 
-        doLast {
-            ensureEmptyDir(destDir)
-            ant.carray(dest: libArchiveCFile,
-                                 src: libArchiveFile,
-                                 arrayname: 'di_lib_infusions_archive',
-                                 arraysize: 0,
-                                 keywords: "${carray_lib_keywords}")
-            ant.carray(dest: appArchiveCFile,
-                                 src: appArchiveFile,
-                                 arrayname: 'di_app_infusion_archive',
-                                 arraysize: djAppArchiveSize,
-                                 keywords: "${carray_app_keywords}")
-        }
+    inputs.file appArchiveFile
+    inputs.file libArchiveFile
+    outputs.dir destDir
+
+    doLast {
+        ensureEmptyDir(destDir)
+        ant.carray(dest: libArchiveCFile,
+                             src: libArchiveFile,
+                             arrayname: 'di_lib_infusions_archive',
+                             arraysize: 0,
+                             keywords: 'PROGMEM')
+        ant.carray(dest: appArchiveCFile,
+                             src: appArchiveFile,
+                             arrayname: 'di_app_infusion_archive',
+                             arraysize: djAppArchiveSize,
+                             keywords: 'PROGMEM __attribute__ ((aligned (SPM_PAGESIZE)))')
     }
-    project.model {
-        components {
-            'darjeeling.elf'(NativeExecutableSpec) {
-                sources {
-                    main(CSourceSet) {  
-                        source {
-                            srcDir createCArrays.destDir
-                            include '**/*.c'
-                            builtBy(createCArrays)
-                        }
+}
+
+model {
+    components {
+        'darjeeling.elf'(NativeExecutableSpec) {
+            targetPlatform 'avr'
+            sources {
+                main(CSourceSet) {  
+                    source {
+                        srcDir createCArrays.destDir
+                        include '**/*.c'
+                        builtBy(createCArrays)
                     }
                 }
             }
         }
     }
+    toolChains {
+        gcc(Gcc) {
+            target('avr') { t ->
+                t.getcCompiler().setExecutable('avr-gcc');
+                t.getCppCompiler().setExecutable('avr-g++');
+                t.getObjcCompiler().setExecutable('avr-gcc');
+                t.getObjcppCompiler().setExecutable('avr-g++');
+                t.getAssembler().setExecutable('avr-as');
+                t.getLinker().setExecutable('avr-gcc');
+                t.getStaticLibArchiver().setExecutable('avr-ar');
+            }
+        }
+    }
+    platforms {
+        avr {
+            architecture 'avr'
+        }
+    }
 }
 
-// AVR tasks: platformSpecificAssemble
-project.ext.carray_lib_keywords = 'PROGMEM'
-project.ext.carray_app_keywords = 'PROGMEM __attribute__ ((aligned (SPM_PAGESIZE)))'
 
 task createIHexFiles {
     dependsOn assemble
@@ -110,15 +102,18 @@ task createIHexFiles {
     }    
 }
 
-task platformSpecificAssemble(dependsOn: createIHexFiles) << {
-    exec {
-        executable 'avr-size'
-        args '-C', djTargetElfFile
+tasks.architectureSpecificAssemble {
+    dependsOn createIHexFiles
+    doLast {
+        exec {
+            executable 'avr-size'
+            args '-C', djTargetElfFile
+        }
     }
 }
 
 /// AVR helper tasks
-task avrdude(dependsOn: platformSpecificAssemble) << {
+task avrdude(dependsOn: architectureSpecificAssemble) << {
     exec {
         executable 'avrdude'
         args '-p', 'atmega2560', '-P', "${avrdudeprogrammer}", '-c', 'wiring', '-U', 'flash:w:darjeeling.ihex'
