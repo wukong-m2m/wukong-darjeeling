@@ -1,5 +1,5 @@
 djappsource {
     helloworld {
-        javaDependencies = [ base ]
+        javaDependencies = [ 'base' ]
     }
 }

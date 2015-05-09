@@ -1,5 +1,5 @@
 djlibsource {
     ecocast {
-        cDependencies = [ wkcomm, wkreprog ]
+        cDependencies = [ 'wkcomm', 'wkreprog' ]
     }
 }

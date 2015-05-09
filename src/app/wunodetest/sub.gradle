@@ -1,6 +1,6 @@
 djappsource {
     wunodetest {
-        javaDependencies = [ base, wknode ]
+        javaDependencies = [ 'base', 'wknode' ]
         wkpfTableXml = 'java/WKDeploy.xml'
     }
 }

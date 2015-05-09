@@ -1,6 +1,6 @@
 djlibsource {
     rtcbench {
-        cDependencies = [ darjeeling3 ]
-        javaDependencies = [ base, darjeeling3, rtc ]
+        cDependencies = [ 'darjeeling3' ]
+        javaDependencies = [ 'base', 'darjeeling3', 'rtc' ]
     }
 }

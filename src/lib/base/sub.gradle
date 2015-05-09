@@ -1,5 +1,5 @@
 djlibsource {
     base {
-        cDependencies = [ vm_dev ]
+        cDependencies = [ 'vm_dev' ] // Shouldn't depend on vm to avoid circular dependency
     }
 }

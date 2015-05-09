@@ -1,7 +1,7 @@
-if (true) {
+if (false) {
 	ext.djPlatform='arduino.avrora'
 	ext.djConfig='avrora'
-	ext.djLibraries=['wkreprog', 'base', 'vm', 'darjeeling3', 'rtc', 'rtcbench']
+	ext.djLibraries=['wkreprog', 'darjeeling3']
 	ext.djApp='apprtcbench'
 	ext.djAppArchiveSize=4096
 

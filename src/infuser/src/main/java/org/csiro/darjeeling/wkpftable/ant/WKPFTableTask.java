@@ -109,7 +109,7 @@ public class WKPFTableTask extends Task
 				fout.write((byte)data.get(i));
 			fout.close();
 		} catch (IOException ioex) {
-			throw new org.apache.tools.ant.BuildException("IO error while writing: " + src);
+			throw new org.apache.tools.ant.BuildException("IO error while writing: " + filename);
 		}
 	}
 
