@@ -48,7 +48,6 @@ class DjSourceSet {
     }
 
     void addTasks() {
-        println "adding " + this.name
         if (this.sourceSetContainsJavaCode()) {
             this.addJavaTasks()
             this.addJavaGeneratedCSourceSet()
@@ -203,7 +202,7 @@ class DjLibSourceSet extends DjSourceSet {
     }
     void init(Project project) {
         super.init(project);
-        this.basedir = "${project.projectRoot}/lib/${name}"
+        this.basedir = "${project.project.rootDir}/lib/${name}"
     }
 }
 
@@ -217,7 +216,7 @@ class DjAppSourceSet extends DjSourceSet {
     }
     void init(Project project) {
         super.init(project);
-        this.basedir = "${project.projectRoot}/app/${name}"
+        this.basedir = "${project.project.rootDir}/app/${name}"
     }
 
     def propertyMissing(String name) {
@@ -242,8 +241,8 @@ class DjAppSourceSet extends DjSourceSet {
 
     void addGenerateVirtualWuClassesTask() {
         def generateVirtualWuClasses = project.tasks.create(name: 'generateVirtualWuClasses') {
-            def componentLibraryXml = "${project.projectRoot}/../wukong/ComponentDefinitions/WuKongStandardLibrary.xml"
-            def pythonScript = "${project.projectRoot}/../wukong/master/wkpf/codegen.py"
+            def componentLibraryXml = "${project.project.rootDir}/../wukong/ComponentDefinitions/WuKongStandardLibrary.xml"
+            def pythonScript = "${project.project.rootDir}/../wukong/master/wkpf/codegen.py"
 
             ext.destDir = new File("${project.buildDir}/generated-virtual-wuclasses")
             def destDirClasses = new File(destDir, '/javax/wukong/virtualwuclasses')
@@ -263,7 +262,7 @@ class DjAppSourceSet extends DjSourceSet {
             }
         }
         // Add the virtual classes, both the generated and normal sources, to the sourcepath of the wk application
-        def wukongVirtualClassesDir = project.projectRoot + '/../wukong'
+        def wukongVirtualClassesDir = project.project.rootDir + '/../wukong'
         def wukongGeneratedVirtualClassesDir = generateVirtualWuClasses.destDir
         project.tasks['javac_'+this.name].sourcepath = "${wukongVirtualClassesDir}:${wukongGeneratedVirtualClassesDir}"
         // And make sure they get generated before the application is compiled
@@ -282,16 +281,16 @@ class DjAppSourceSet extends DjSourceSet {
                 dest: outputBase
             )
 
-        // Add to existing application dja (containing application Java code)
-        ant.djarchive(dest: archiveFile,
+            // Add to existing application dja (containing application Java code)
+            ant.djarchive(dest: archiveFile,
                              src: "${outputBase}.wkpf_linktable",
                              filetype: ant.djarchive_type_wkpf_linktable,
                              mode: 'append') // Can change this to 'create' to build a picokong application
-        ant.djarchive(dest: archiveFile,
+            ant.djarchive(dest: archiveFile,
                              src: "${outputBase}.wkpf_componentmap",
                              filetype: ant.djarchive_type_wkpf_componentmap,
                              mode: 'append')
-        ant.djarchive(dest: archiveFile,
+            ant.djarchive(dest: archiveFile,
                              src: "${outputBase}.wkpf_initvalues",
                              filetype: ant.djarchive_type_wkpf_initvalues,
                              mode: 'append')

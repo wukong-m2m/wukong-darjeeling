@@ -1,7 +1,7 @@
 task generate_wkpf(type: Exec) {
-	def componentLibraryXml = file("${projectRoot}/../wukong/ComponentDefinitions/WuKongStandardLibrary.xml")
-	def enabledClassesXml = file("${projectRoot}/config/${djConfig}/enabled_wuclasses.xml")
-	def pythonScript = file("${projectRoot}/../wukong/master/wkpf/codegen.py")
+	def componentLibraryXml = file("${project.rootDir}/../wukong/ComponentDefinitions/WuKongStandardLibrary.xml")
+	def enabledClassesXml = file("${project.rootDir}/config/${djConfig}/enabled_wuclasses.xml")
+	def pythonScript = file("${project.rootDir}/../wukong/master/wkpf/codegen.py")
 	ext.destDir = new File("${buildDir}/generated-wkpf")
 	inputs.file componentLibraryXml
 	inputs.file enabledClassesXml

@@ -1,0 +1,14 @@
+djappsource {
+    eco_app {
+        javaDependencies = [ base ]
+    }
+}
+
+project.afterEvaluate {
+    project.tasks.createAppArchive.doLast {
+        ant.djarchive(dest: archiveFile,
+                         src: "${project.rootDir}/app/eco_app/zeros.dat",
+                         filetype: ant.djarchive_type_wkpf_linktable,
+                         mode: 'append') // Can change this to 'create' to build a picokong application
+    } 
+}

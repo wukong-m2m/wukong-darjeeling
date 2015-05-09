@@ -1,0 +1,6 @@
+djappsource {
+    wkemptyapp {
+        javaDependencies = [ base, wkpf_virtual ]
+        wkpfTableXml = 'java/WKEmptyApp.xml'
+    }
+}

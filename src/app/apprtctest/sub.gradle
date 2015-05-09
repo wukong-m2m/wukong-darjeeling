@@ -1,0 +1,5 @@
+djappsource {
+    apprtctest {
+        javaDependencies = [ base, darjeeling3, rtc, rtctest2, rtctest1 ]
+    }
+}
