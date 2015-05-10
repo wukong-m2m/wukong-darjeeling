@@ -127,22 +127,20 @@ class DjSourceSet {
     // No idea why I can't do this in addJavaTasks...
     void addJavaGeneratedCSourceSet(){
         project.model {
-            components {
-                'darjeeling.elf'(NativeExecutableSpec) {
-                    sources.create(libToInfusionCSourceSetName(this), CSourceSet) {
-                        source {
-                            srcDir this.getInfusionDir()
-                            include '**/*.c'
-                            builtBy(project.tasks[this.getInfusionTaskName()])
-                        }
-                        exportedHeaders {
-                            srcDir this.getInfusionDir()
-                        }
-                        lib ( sources['core'] )
+            components.darjeeling {
+                sources.create(libToInfusionCSourceSetName(this), CSourceSet) {
+                    source {
+                        srcDir this.getInfusionDir()
+                        include '**/*.c'
+                        builtBy(project.tasks[this.getInfusionTaskName()])
                     }
-                    // libinit sourceset depends on the sourceset we just created
-                    sources.libinit.lib ( sources[libToInfusionCSourceSetName(this)] )
+                    exportedHeaders {
+                        srcDir this.getInfusionDir()
+                    }
+                    lib ( sources['core'] )
                 }
+                // libinit sourceset depends on the sourceset we just created
+                sources.libinit.lib ( sources[libToInfusionCSourceSetName(this)] )
             }
         }
     }
@@ -150,51 +148,49 @@ class DjSourceSet {
     void addCSourceSet() {
         // Add the source sets to the model
         project.model {
-            components {
-                'darjeeling.elf'(NativeExecutableSpec) {
-                    sources.create(this.name, CSourceSet) {
+            components.darjeeling {
+                sources.create(this.name, CSourceSet) {
+                    source {
+                        srcDir this.basedir + '/c/common'
+                        project.allPlatforms.each { p ->
+                            srcDir this.basedir + "/c/${p}"
+                        }
+                        include '**/*.c'
+                    }
+                    exportedHeaders {
+                        srcDir this.basedir + '/include/common'
+                        project.allPlatforms.each { p ->
+                            srcDir this.basedir + "/include/${p}"
+                        }
+                    }
+                    lib ( sources['core'] )
+                    this.cDependencies.each { clibname ->
+                        lib ( sources[clibname] )
+                        def clib = project.djlibsource[clibname]
+                        if (clib.sourceSetContainsJavaCode()) {
+                            lib ( sources[libToInfusionCSourceSetName(clib)] )
+                        }
+                    }
+                    if (this.sourceSetContainsJavaCode()) {
+                        lib ( sources[libToInfusionCSourceSetName(this)])
+                    }
+                    if (this.cGenerateCodeTask != null) {
                         source {
-                            srcDir this.basedir + '/c/common'
-                            project.allPlatforms.each { p ->
-                                srcDir this.basedir + "/c/${p}"
+                            this.cGenerateCodeTask.outputs.getFiles().each { f ->
+                                srcDir "${f}/c"
                             }
                             include '**/*.c'
+                            builtBy (this.cGenerateCodeTask) // To create task dependency between the lifecycle task for this source set and the code gen task
                         }
                         exportedHeaders {
-                            srcDir this.basedir + '/include/common'
-                            project.allPlatforms.each { p ->
-                                srcDir this.basedir + "/include/${p}"
-                            }
-                        }
-                        lib ( sources['core'] )
-                        this.cDependencies.each { clibname ->
-                            lib ( sources[clibname] )
-                            def clib = project.djlibsource[clibname]
-                            if (clib.sourceSetContainsJavaCode()) {
-                                lib ( sources[libToInfusionCSourceSetName(clib)] )
-                            }
-                        }
-                        if (this.sourceSetContainsJavaCode()) {
-                            lib ( sources[libToInfusionCSourceSetName(this)])
-                        }
-                        if (this.cGenerateCodeTask != null) {
-                            source {
-                                this.cGenerateCodeTask.outputs.getFiles().each { f ->
-                                    srcDir "${f}/c"
-                                }
-                                include '**/*.c'
-                                builtBy (this.cGenerateCodeTask) // To create task dependency between the lifecycle task for this source set and the code gen task
-                            }
-                            exportedHeaders {
-                                this.cGenerateCodeTask.outputs.getFiles().each { f ->
-                                    srcDir "${f}/include"
-                                }
+                            this.cGenerateCodeTask.outputs.getFiles().each { f ->
+                                srcDir "${f}/include"
                             }
                         }
                     }
-                    // main sourceset depends on the sourceset we just created
-                    sources.main.lib ( sources[this.name] )
                 }
+                // main sourceset depends on the sourceset we just created
+                sources.main.lib ( sources[this.name] )
             }
         }   
     }

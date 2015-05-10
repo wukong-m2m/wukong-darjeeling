@@ -41,16 +41,14 @@ task createCArrays {
 }
 
 model {
-    components {
-        'darjeeling.elf'(NativeExecutableSpec) {
-            targetPlatform 'avr'
-            sources {
-                main(CSourceSet) {  
-                    source {
-                        srcDir createCArrays.destDir
-                        include '**/*.c'
-                        builtBy(createCArrays)
-                    }
+    components.darjeeling {
+        targetPlatform 'avr'
+        sources {
+            main(CSourceSet) {  
+                source {
+                    srcDir createCArrays.destDir
+                    include '**/*.c'
+                    builtBy(createCArrays)
                 }
             }
         }

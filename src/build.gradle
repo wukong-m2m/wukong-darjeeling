@@ -4,7 +4,7 @@ apply plugin: 'c'
 // Setup basic configuration parameters
 apply from: "config.gradle"
 buildDir = new File(buildDir, djConfig)
-project.ext.djTargetElfFile = "${buildDir}/binaries/darjeeling.elfExecutable/darjeeling.elf"
+project.ext.djTargetElfFile = "${buildDir}/binaries/darjeelingExecutable/darjeeling"
 apply from: 'taskdefs.gradle'
 
 // Helper functions
@@ -75,8 +75,10 @@ task generateLibinit {
 }
 
 task architectureSpecificAssemble {
-    dependsOn assemble
     // Can be filled in by architectures
+    //  dependsOn assemble, but if I do that here I'll get an error when adding model components...
+    //  seems a smelly to me that just touching the assemble task somehow affects the whole project state
+    //  such that I can't add components anymore.
 }
 
 task darjeeling {
@@ -86,7 +88,7 @@ task darjeeling {
 // Basic C source sets, excluding libraries and possibly infusions.
 model {
     components {
-        'darjeeling.elf'(NativeExecutableSpec) {
+        darjeeling(NativeExecutableSpec) {
             sources {
                 core(CSourceSet) {
                     source {
@@ -164,6 +166,6 @@ ext.djLibraries.each { lib ->
 loadDjApp(ext.djApp)
 
 
-
+architectureSpecificAssemble.dependsOn assemble
 
 
