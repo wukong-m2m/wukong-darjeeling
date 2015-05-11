@@ -73,10 +73,7 @@ model {
     }
 }
 
-
-task createIHexFiles {
-    dependsOn assemble
-
+tasks.architectureSpecificAssemble {
     ext.destDir = new File("${buildDir}/darjeeling")
     def djIHex = "${destDir}/darjeeling.ihex"
     def djEepromIHex = "${destDir}/darjeeling_eeprom.ihex"
@@ -97,11 +94,10 @@ task createIHexFiles {
             executable 'avr-objcopy'
             args '-j', '.eeprom', '-O', 'ihex', djTargetElfFile, djEepromIHex
         }
-    }    
+    }
 }
 
-tasks.architectureSpecificAssemble {
-    dependsOn createIHexFiles
+tasks.darjeeling {
     doLast {
         exec {
             executable 'avr-size'
@@ -111,7 +107,7 @@ tasks.architectureSpecificAssemble {
 }
 
 /// AVR helper tasks
-task avrdude(dependsOn: architectureSpecificAssemble) << {
+task avrdude(dependsOn: darjeeling) << {
     exec {
         executable 'avrdude'
         args '-p', 'atmega2560', '-P', "${avrdudeprogrammer}", '-c', 'wiring', '-U', 'flash:w:darjeeling.ihex'
@@ -125,7 +121,7 @@ task avarice << {
     }
 }
 
-task avrora(dependsOn: assemble) << {
+task avrora(dependsOn: darjeeling) << {
     javaexec {
         main '-jar'
         args '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,rtc,c-print', '-single', '-mcu=atmega128', djTargetElfFile
