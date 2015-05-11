@@ -110,7 +110,14 @@ tasks.darjeeling {
 task avrdude(dependsOn: darjeeling) << {
     exec {
         executable 'avrdude'
-        args '-p', 'atmega2560', '-P', "${avrdudeprogrammer}", '-c', 'wiring', '-U', 'flash:w:darjeeling.ihex'
+        args '-p', djMcu, '-P', avrdudeprogrammer, '-c', 'wiring', '-U', 'flash:w:darjeeling.ihex'
+    }
+}
+
+task avrdude_eeprom(dependsOn: darjeeling) << {
+    exec {
+        executable 'avrdude'
+        args '-p', djMcu, '-P', avrdudeprogrammer, '-c', 'wiring', '-U', 'flash:w:darjeeling.ihex', '-U', 'eeprom:w:darjeeling_eeprom.ihex'
     }
 }
 

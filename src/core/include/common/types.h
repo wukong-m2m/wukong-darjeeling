@@ -31,12 +31,14 @@
 #include "program_mem.h"
 #include "pointerwidth.h"
 
+
 // the "ref_t"  type and  the "null" constant  are now defined  in the
 // platform-specific file "pointerwidth.h", but in both cases they are
 // 16-bits wide.
 
 // common types
 typedef uint16_t runtime_id_t;
+typedef long long int dj_time_t;
 
 // keep this a multiple of 2, to keep the size of the blocks a multiple of 2 (for 16-bit architectures)
 #define MONITOR_BLOCK_SIZE 8

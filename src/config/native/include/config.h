@@ -30,9 +30,6 @@
 // 'Time slices' are 32 instructions
 #define RUNSIZE 32
 
-//Use 64-bit values to store time
-typedef long dj_time_t;
-
 // #define PACK_STRUCTS
 // #define ALIGN_16
 

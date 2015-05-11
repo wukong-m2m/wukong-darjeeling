@@ -19,8 +19,6 @@
  * along with Darjeeling.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import javax.darjeeling.Darjeeling;
-
 public class HelloWorld
 {
 	public static void main(String args[])

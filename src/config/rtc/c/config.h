@@ -29,8 +29,6 @@
 // 'Time slices' are 128 instructions
 #define RUNSIZE 128
 
-typedef unsigned long long int dj_time_t;
-
 #define PACK_STRUCTS
 #define ALIGN_16
 

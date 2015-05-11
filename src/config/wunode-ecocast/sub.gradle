@@ -1,0 +1,6 @@
+djConfig {
+	platform = 'arduino.wudevice'
+	libraries = ['wkreprog', 'ecocast']
+	app = 'eco_app'
+	appArchiveSize = 4096
+}
