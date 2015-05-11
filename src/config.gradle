@@ -1,16 +1,53 @@
-if (true) {
-	ext.djPlatform='arduino.avrora'
-	ext.djConfig='avrora'
-	ext.djLibraries=['wkreprog', 'darjeeling3']
-	ext.djApp='apprtcbench'
-	ext.djAppArchiveSize=4096
+apply plugin: DjConfigPlugin
 
-	// TODONR: Should be moved to different settings file
-	ext.avrdudeprogrammer='/dev/tty.usbmodem1431'
-} else {
-	ext.djPlatform='posix.pc'
-	ext.djConfig='native'
-	ext.djLibraries=['wkreprog', 'base', 'vm', 'darjeeling3', 'wkpf']
-	ext.djApp='wkdeploy'
-	ext.djAppArchiveSize=4096
+// Add plugin to run addTasks for all djlibsource and djappsource
+// declared in the sub.gradle files in /lib/* and /app/*
+class DjConfigPlugin implements Plugin<Project> {
+    void apply(Project project) {
+        project.extensions.djConfig = new DjConfig(project)
+        project.ext.djConfig = project.extensions.djConfig
+    }
 }
+
+class DjConfig {
+    Project project
+
+    String platform
+    List<String> libraries
+    String app
+    int appArchiveSize
+
+    DjConfig(Project project) {
+        this.project = project
+    }
+
+    List<String> getAllPlatforms () {
+        // Turn platform into list of directory names to include
+        // (for example 'arduino.wudevice' becomes ['arduino', 'arduino.wudevice'])
+        def allPlatforms = []
+        this.platform.tokenize('.').each { p ->
+            if (allPlatforms.size == 0){
+                allPlatforms.add(p)
+            } else {
+                allPlatforms.add(allPlatforms.last() + '.' + p)
+            }
+        }
+        return allPlatforms
+    }
+}
+
+// Determine the name of the configuration to use
+def userDir = new File(System.getProperty('user.dir')).toPath()
+if (!project.hasProperty('djConfigname')) {
+    if (userDir.getNameCount() >= 2
+            && userDir.getName(userDir.getNameCount()-2).toString() == 'config') {
+        ext.djConfigname = userDir.getName(userDir.getNameCount()-1).toString()
+    } else {
+        throw new GradleException('No config specified. A configuration can be selected using the commandline option ("gradle -PdjConfigname=<configname>"), or by starting the build from one of the config directories ("gradle -b ../../build.gradle").')
+    }
+}
+
+// Load the corresponding config file
+apply from: "${rootDir}/config/${djConfigname}/sub.gradle"
+
+

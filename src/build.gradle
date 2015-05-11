@@ -2,8 +2,9 @@ defaultTasks 'darjeeling'
 apply plugin: 'c'
 
 // Setup basic configuration parameters
-apply from: "config.gradle"
-buildDir = new File(buildDir, djConfig)
+apply from: 'config.gradle'
+
+buildDir = new File(buildDir, djConfigname)
 project.ext.djTargetElfFile = "${buildDir}/binaries/darjeelingExecutable/darjeeling"
 apply from: 'taskdefs.gradle'
 
@@ -70,7 +71,7 @@ task generateLibinit {
     outputs.upToDateWhen { return false }
     doLast {
         ensureEmptyDir(destDir)
-        ant.generate_libinit(dest: "${destDir}/GENERATED_libinit.c", libDir: "${project.rootDir}/lib", libraries: djLibraries.join(' '))
+        ant.generate_libinit(dest: "${destDir}/GENERATED_libinit.c", libDir: "${project.rootDir}/lib", libraries: djConfig.libraries.join(' '))
     }
 }
 
@@ -93,7 +94,7 @@ model {
                 core(CSourceSet) {
                     source {
                         srcDir "${project.rootDir}/core/c/common"
-                        project.allPlatforms.each { p ->
+                        project.djConfig.getAllPlatforms().each { p ->
                             srcDir "${project.rootDir}/core/c/${p}"
                         }
                         include '**/*.c'
@@ -102,16 +103,16 @@ model {
                     }
                     exportedHeaders {
                         srcDir "${project.rootDir}/core/include/common"
-                        project.allPlatforms.each { p ->
+                        project.djConfig.getAllPlatforms().each { p ->
                             srcDir "${project.rootDir}/core/include/${p}"
                         }
-                        srcDir "${project.rootDir}/config/${djConfig}/include"
+                        srcDir "${project.rootDir}/config/${djConfigname}/include"
                         srcDir "${project.rootDir}/architecture/${djArchitecture}/include"
                     }
                 }
                 main(CSourceSet) {  
                     source {
-                        srcDir "${project.rootDir}/config/${djConfig}/c"
+                        srcDir "${project.rootDir}/config/${djConfigname}/c"
                         include '**/*.c'
                     }
                     lib ( sources['core'] )
@@ -131,18 +132,6 @@ model {
     }
 }
 
-// Turn platform into list of directory names to include
-// (for example 'arduino.wudevice' becomes ['arduino', 'arduino.wudevice'])
-ext.allPlatforms = []
-ext.djPlatform.tokenize('.').each { p ->
-    if (allPlatforms.size == 0){
-        ext.allPlatforms.add(p)
-    } else {
-        ext.allPlatforms.add(ext.allPlatforms.last() + '.' + p)
-    }
-}
-
-
 // Load libraries and application
 apply from: "djsourceset.gradle"
 apply from: "platforms.gradle"
@@ -159,13 +148,14 @@ def maybeLoadDjLibrary(String name) {
     }
 }
 // Load any libraries explicitly included in the config (dependencies will be loaded from addTasks())
-ext.djLibraries.each { lib ->
+ext.djConfig.libraries.each { lib ->
     maybeLoadDjLibrary(lib)
 }
 // And load the application (dependencies will be loaded from addTasks())
-loadDjApp(ext.djApp)
+loadDjApp(ext.djConfig.app)
 
 
 architectureSpecificAssemble.dependsOn assemble
+
 
 

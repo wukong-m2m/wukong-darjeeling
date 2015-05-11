@@ -1,4 +1,4 @@
-switch (ext.djPlatform) {
+switch (ext.djConfig.platform) {
 	case 'arduino.wudevice':
 		ext.djArchitecture='avr'
 		ext.djMcu='atmega2560'
@@ -11,5 +11,5 @@ switch (ext.djPlatform) {
 		ext.djArchitecture='native'
 	break
 	default:
-		throw new GradleException('Unknown platform: ' + ext.djPlatform)
+		throw new GradleException('Unknown platform: ' + ext.djConfig.platform)
 }

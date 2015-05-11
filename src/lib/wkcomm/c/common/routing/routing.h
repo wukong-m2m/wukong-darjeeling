@@ -22,12 +22,12 @@ wkcomm_address_t routing_get_node_id();
 
 // These will be called by the radios when it receives a message
 #ifdef RADIO_USE_ZWAVE
-#include "radios/radio_zwave.h"
+#include "../radios/radio_zwave.h"
 extern void routing_handle_zwave_message(radio_zwave_address_t zwave_addr, uint8_t *payload, uint8_t length);
 #endif // RADIO_USE_ZWAVE
 
 #ifdef RADIO_USE_XBEE
-#include "radios/radio_xbee.h"
+#include "../radios/radio_xbee.h"
 extern void routing_handle_xbee_message(radio_xbee_address_t xbee_addr, uint8_t *payload, uint8_t length);
 #endif // RADIO_USE_XBEE
 
