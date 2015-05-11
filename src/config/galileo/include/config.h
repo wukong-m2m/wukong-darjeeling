@@ -21,20 +21,21 @@
  
 #ifndef __config_h
 #define __config_h
+#include <sys/types.h>
+#include <stdio.h>
 
 // Allocate 4k heap for the VM
 #define HEAPSIZE 4096
 
-// 'Time slices' are 128 instructions
-#define RUNSIZE 128
+// 'Time slices' are 32 instructions
+#define RUNSIZE 32
 
-typedef unsigned long long int dj_time_t;
 
-#define PACK_STRUCTS
-#define ALIGN_16
+// #define PACK_STRUCTS
+// #define ALIGN_16
 
 /* Please see common/debug.h */
- #define DARJEELING_DEBUG
+// #define DARJEELING_DEBUG
 // #define DARJEELING_DEBUG_FRAME
 // #define DARJEELING_DEBUG_MEM_TRACE
 // #define DARJEELING_DEBUG_TRACE
@@ -45,24 +46,27 @@ typedef unsigned long long int dj_time_t;
 // #define DBG_WKPF true
 // #define DBG_WKPFGC true
 // #define DBG_WKPFUPDATE true
-#define DBG_WKCOMM true
-#define DBG_WKREPROG true
+// #define DBG_WKCOMM true
+// #define DBG_WKREPROG true
 // #define DBG_ZWAVETRACE true
-// #define DBG_WKPFGH true
-#define DBG_ECO true
 
-void avr_serialPrintf(char * format, ...);
-#define DARJEELING_PRINTF avr_serialPrintf
+#define DARJEELING_PRINTF printf
 
 #define DARJEELING_PGMSPACE_MACRO
 
 // Routing: choose 1
 #define ROUTING_USE_NONE
-//#define ROUTING_USE_DSDV
+// #define ROUTING_USE_DSDV
 // #define ROUTING_USE_WUKONG
 
 // Radios: choose as many as the routing protocol allows (max 1 for routing_none)
-#define RADIO_USE_ZWAVE
+// #define RADIO_USE_ZWAVE
 // #define RADIO_USE_XBEE
+#define RADIO_USE_NETWORKSERVER
+
+// GPIO: choose 1
+// #define INTEL_GALILEO_GEN1
+#define INTEL_GALILEO_GEN2
+// #define INTEL_EDISON
 
 #endif

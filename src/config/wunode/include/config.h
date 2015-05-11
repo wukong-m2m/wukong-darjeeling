@@ -21,22 +21,18 @@
  
 #ifndef __config_h
 #define __config_h
-#include <sys/types.h>
-
+#include <avr/wdt.h>
 // Allocate 4k heap for the VM
 #define HEAPSIZE 4096
 
-// 'Time slices' are 32 instructions
-#define RUNSIZE 32
+// 'Time slices' are 128 instructions
+#define RUNSIZE 128
 
-//Use 64-bit values to store time
-typedef int64_t dj_time_t;
-
-// #define PACK_STRUCTS
-// #define ALIGN_16
+#define PACK_STRUCTS
+#define ALIGN_16
 
 /* Please see common/debug.h */
-// #define DARJEELING_DEBUG
+#define DARJEELING_DEBUG
 // #define DARJEELING_DEBUG_FRAME
 // #define DARJEELING_DEBUG_MEM_TRACE
 // #define DARJEELING_DEBUG_TRACE
@@ -46,22 +42,31 @@ typedef int64_t dj_time_t;
 // #define DBG_DARJEELING_GC true
 // #define DBG_WKPF true
 // #define DBG_WKPFGC true
-// #define DBG_WKPFUPDATE true
+#define DBG_WKPFUPDATE true
 // #define DBG_WKCOMM true
 // #define DBG_WKREPROG true
 // #define DBG_ZWAVETRACE true
+// #define DBG_WKPFGH true
+// #define DBG_WKROUTING true
+// #define DBG_WIFI true
 
-#define DARJEELING_PRINTF printf
+void avr_serialPrintf(char * format, ...);
+#define DARJEELING_PRINTF avr_serialPrintf
 
 #define DARJEELING_PGMSPACE_MACRO
 
 // Routing: choose 1
-#define ROUTING_USE_NONE
-// #define ROUTING_USE_DSDV
-// #define ROUTING_USE_WUKONG
+#define ROUTING_USE_GATEWAY
+//#define ROUTING_USE_NONE
+//#define ROUTING_USE_DSDV
+//#define ROUTING_USE_WUKONG
 
 // Radios: choose as many as the routing protocol allows (max 1 for routing_none)
 #define RADIO_USE_ZWAVE
 // #define RADIO_USE_XBEE
-
+// #define RADIO_USE_WIFI
+#define HAS_WDT
+#define platform_wdt_init() wdt_enable(WDTO_2S)
+#define platform_wdt_reset() wdt_reset()
+//#define platform_wdt_reset()
 #endif

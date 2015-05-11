@@ -22,15 +22,13 @@
 #ifndef __config_h
 #define __config_h
 #include <sys/types.h>
+#include <stdio.h>
 
 // Allocate 4k heap for the VM
 #define HEAPSIZE 4096
 
 // 'Time slices' are 32 instructions
 #define RUNSIZE 32
-
-//Use 64-bit values to store time
-typedef int64_t dj_time_t;
 
 // #define PACK_STRUCTS
 // #define ALIGN_16
@@ -61,13 +59,7 @@ typedef int64_t dj_time_t;
 // #define ROUTING_USE_WUKONG
 
 // Radios: choose as many as the routing protocol allows (max 1 for routing_none)
-// #define RADIO_USE_ZWAVE
+#define RADIO_USE_ZWAVE
 // #define RADIO_USE_XBEE
-#define RADIO_USE_NETWORKSERVER
-
-// GPIO: choose 1
-// #define INTEL_GALILEO_GEN1
-#define INTEL_GALILEO_GEN2
-// #define INTEL_EDISON
 
 #endif

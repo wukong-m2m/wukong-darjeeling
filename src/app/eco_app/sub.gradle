@@ -1,7 +1,8 @@
 djappsource {
     eco_app {
+    	cDependencies = [ 'vm' ]
         javaDependencies = [ 'base' ]
     }
 }
 
-project.tasks.createAppArchive.addPart("${project.rootDir}/app/eco_app/zeros.dat", djarchive_type_ecocast_capsule_buffer, null)
+project.tasks.createAppArchive.addPart("${project.rootDir}/app/eco_app/java/zeros.dat", ant.djarchive_type_ecocast_capsule_buffer, null)
