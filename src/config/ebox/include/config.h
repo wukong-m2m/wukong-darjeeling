@@ -22,6 +22,7 @@
 #ifndef __config_h
 #define __config_h
 #include <sys/types.h>
+#include <stdio.h>
 
 // Allocate 4k heap for the VM
 #define HEAPSIZE 4096
@@ -30,7 +31,7 @@
 #define RUNSIZE 32
 
 //Use 64-bit values to store time
-typedef int64_t dj_time_t;
+typedef long dj_time_t;
 
 // #define PACK_STRUCTS
 // #define ALIGN_16

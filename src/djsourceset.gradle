@@ -152,14 +152,14 @@ class DjSourceSet {
                 sources.create(this.name, CSourceSet) {
                     source {
                         srcDir this.basedir + '/c/common'
-                        project.allPlatforms.each { p ->
+                        project.djConfig.getAllPlatforms().each { p ->
                             srcDir this.basedir + "/c/${p}"
                         }
                         include '**/*.c'
                     }
                     exportedHeaders {
                         srcDir this.basedir + '/include/common'
-                        project.allPlatforms.each { p ->
+                        project.djConfig.getAllPlatforms().each { p ->
                             srcDir this.basedir + "/include/${p}"
                         }
                     }

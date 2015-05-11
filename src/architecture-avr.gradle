@@ -35,7 +35,7 @@ task createCArrays {
         ant.carray(dest: appArchiveCFile,
                              src: appArchiveFile,
                              arrayname: 'di_app_infusion_archive',
-                             arraysize: djAppArchiveSize,
+                             arraysize: djConfig.appArchiveSize,
                              keywords: 'PROGMEM __attribute__ ((aligned (SPM_PAGESIZE)))')
     }
 }
