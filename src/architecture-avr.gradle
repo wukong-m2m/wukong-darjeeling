@@ -1,13 +1,16 @@
 binaries.all {
     cCompiler.args "-mmcu=${djMcu}"
-    cCompiler.args "-Os"
-    cCompiler.args "-finline-limit-0"
-    cCompiler.args "-ggdb"
-    cCompiler.args "-Wall"
-    cCompiler.args "-Werror"
-    cCompiler.args "-std=gnu99"
+    cCompiler.args '-Os'
+    cCompiler.args '-finline-limit-0'
+    cCompiler.args '-ggdb'
+    cCompiler.args '-Wall'
+    cCompiler.args '-Werror'
+    cCompiler.args '-std=gnu99'
+    cCompiler.args '-fdata-sections'
+    cCompiler.args '-ffunction-sections'
     linker.args "-mmcu=${djMcu}"
-    linker.args "-Wl,--section-start=.reprogram_flash_page=0x1F800"
+    linker.args '-Wl,--section-start=.reprogram_flash_page=0x1F800'
+    linker.args '-Wl,--gc-sections'
 }
 
 // AVR tasks: transform infusion archives to c arrays
@@ -78,7 +81,7 @@ tasks.architectureSpecificAssemble {
     def djIHex = "${destDir}/darjeeling.ihex"
     def djEepromIHex = "${destDir}/darjeeling_eeprom.ihex"
 
-    inputs.file new File(djTargetElfFile)
+    inputs.file djTargetElfFile
     outputs.dir destDir
 
     doLast {
@@ -93,6 +96,9 @@ tasks.architectureSpecificAssemble {
         exec {
             executable 'avr-objcopy'
             args '-j', '.eeprom', '-O', 'ihex', djTargetElfFile, djEepromIHex
+        }
+        copy {
+            from djTargetElfFile into destDir
         }
     }
 }

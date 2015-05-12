@@ -6,16 +6,7 @@
 __comp__*
 a.out
 GENERATED*
-history.xml
-temp_di_app_infusion_archive.c
-temp_di_lib_infusions_archive.c
-darjeeling.elf
-darjeeling.ihex
-darjeeling_eeprom.ihex
-darjeeling.a
-darjeeling-avr.map
 build
-lib_infusions.dja
 programflash.data
 .tags
 .tags_sorted_by_file

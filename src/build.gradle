@@ -5,7 +5,7 @@ apply plugin: 'c'
 apply from: 'config.gradle'
 
 buildDir = new File(buildDir, djConfigname)
-project.ext.djTargetElfFile = "${buildDir}/binaries/darjeelingExecutable/darjeeling"
+project.ext.djTargetElfFile = new File("${buildDir}/binaries/darjeelingExecutable/darjeeling")
 apply from: 'taskdefs.gradle'
 
 // Helper functions
