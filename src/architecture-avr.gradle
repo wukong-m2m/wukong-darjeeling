@@ -78,10 +78,12 @@ model {
 
 tasks.architectureSpecificAssemble {
     ext.destDir = new File("${buildDir}/darjeeling")
+    ext.djTargetElfFile = new File("${buildDir}/darjeeling/darjeeling.elf")
+
     def djIHex = "${destDir}/darjeeling.ihex"
     def djEepromIHex = "${destDir}/darjeeling_eeprom.ihex"
 
-    inputs.file djTargetElfFile
+    inputs.file djTargetBinary
     outputs.dir destDir
 
     doLast {
@@ -90,24 +92,25 @@ tasks.architectureSpecificAssemble {
         // Create darjeeling.ihex
         exec {
             executable 'avr-objcopy'
-            args '-j', '.text', '-j', '.data', '-O', 'ihex', djTargetElfFile, djIHex
+            args '-j', '.text', '-j', '.data', '-O', 'ihex', djTargetBinary, djIHex
         }
         // Create darjeeling_eeprom.ihex
         exec {
             executable 'avr-objcopy'
-            args '-j', '.eeprom', '-O', 'ihex', djTargetElfFile, djEepromIHex
+            args '-j', '.eeprom', '-O', 'ihex', djTargetBinary, djEepromIHex
         }
         copy {
-            from djTargetElfFile into destDir
+            from djTargetBinary into destDir rename { f -> f+'.elf' }
         }
     }
 }
+
 
 tasks.darjeeling {
     doLast {
         exec {
             executable 'avr-size'
-            args '-C', djTargetElfFile
+            args '-C', architectureSpecificAssemble.djTargetElfFile
         }
     }
 }
@@ -137,7 +140,20 @@ task avarice << {
 task avrora(dependsOn: darjeeling) << {
     javaexec {
         main '-jar'
-        args '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,rtc,c-print', '-single', '-mcu=atmega128', djTargetElfFile
+        args '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,rtc,c-print', '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
     }
 }
 
+task avrora_gdb(dependsOn: darjeeling) << {
+    javaexec {
+        main '-jar'
+        args '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,rtc,gdb,c-print,trace', '-trace-only-when-enabled=true', '-port=4242', '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
+    }
+}
+
+task avrora_jdb(dependsOn: darjeeling) << {
+    javaexec {
+        main '-jar'
+        args '-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n', '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,rtc,c-print', '-trace-only-when-enabled=true', '-port=4242', '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
+    }
+}
