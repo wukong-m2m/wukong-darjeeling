@@ -1,5 +1,5 @@
 #include "debug.h"
-#include "../../common/native_wuclasses/native_wuclasses.h"
+#include "native_wuclasses.h"
 #include <avr/io.h>
 
 void wuclass_pressure_sensor_0_setup(wuobject_t *wuobject) {

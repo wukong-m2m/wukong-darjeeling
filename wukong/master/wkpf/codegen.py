@@ -417,7 +417,7 @@ class CodeGen:
 
             appCanCreateInstancesAtt = wuclass_element.getAttribute('appCanCreateInstances')
             appCanCreateInstances = True if (appCanCreateInstancesAtt.lower()=='true' or appCanCreateInstancesAtt=='1') else False
-            print appCanCreateInstances, appCanCreateInstancesAtt
+            # print appCanCreateInstances, appCanCreateInstancesAtt
             startup_instances = wuclass_element.getElementsByTagName('CreateInstance');
 
             header_lines.append('#include "%s.h"\n' % wuclass.getCFileName())
@@ -679,14 +679,6 @@ class CodeGen:
                 "sizeof(%s)" % (wuClass.getPrivateCData()) if wuClass.hasPrivateCData() else "0", 
                 wuclass_native_impl_properties_lines))  
 
-          if wuClass.hasPrivateCData():
-            wuclass_native_impl_lines.append('''
-              %s {
-                return (%s *)wkpf_get_private_wuobject_data(wuobject);
-              }
-            ''' %(wuClass.getPrivateCDataGetFunction(),
-                  wuClass.getPrivateCData()))
-
           #wuclass_native_impl_lines.append('''
           ##endif
           #''')
@@ -723,13 +715,13 @@ class CodeGen:
             global_vm_header.close()
 
             global_arduinoIDE_header_filename = 'GENERATEDwkpf_wuclass_library_arduinoIDE.h'
-            global_arduinoIDE_header_path = os.path.join(c_dir, global_arduinoIDE_header_filename)
+            global_arduinoIDE_header_path = os.path.join(c_dir_include, global_arduinoIDE_header_filename)
             global_arduinoIDE_header = open(global_arduinoIDE_header_path, 'w')
             global_arduinoIDE_header.writelines(global_arduinoIDE_header_lines)
             global_arduinoIDE_header.close()
 
             global_arduinoIDE_wuclass_native_impl_filename = 'GENERATEDwuclass_arduinoIDE.h'
-            global_arduinoIDE_wuclass_native_impl_path = os.path.join(c_dir, global_arduinoIDE_wuclass_native_impl_filename)
+            global_arduinoIDE_wuclass_native_impl_path = os.path.join(c_dir_src, global_arduinoIDE_wuclass_native_impl_filename)
             global_arduinoIDE_wuclass_native_impl = open(global_arduinoIDE_wuclass_native_impl_path, 'w')
             global_arduinoIDE_wuclass_native_impl.writelines(global_arduinoIDE_wuclass_native_impl_lines)
             global_arduinoIDE_wuclass_native_impl.close()

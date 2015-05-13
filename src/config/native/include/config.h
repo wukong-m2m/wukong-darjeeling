@@ -56,7 +56,7 @@
 #define DARJEELING_PGMSPACE_MACRO
 
 // Routing: choose 1
-// #define ROUTING_USE_NONE
+#define ROUTING_USE_NONE
 // #define ROUTING_USE_GATEWAY
 // #define ROUTING_USE_DSDV
 // #define ROUTING_USE_WUKONG

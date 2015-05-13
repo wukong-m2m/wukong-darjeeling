@@ -1,9 +1,9 @@
 #include "debug.h"
-#include "../../common/native_wuclasses/native_wuclasses.h"
+#include "native_wuclasses.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "../../../../../config/galileo/c/config.h"
+#include "config.h"
 
 void wuclass_button_setup(wuobject_t *wuobject) {
     #ifdef INTEL_GALILEO_GEN1

@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "../../../../../config/galileo/c/config.h"
+#include "config.h"
 
 void wuclass_light_actuator_setup(wuobject_t *wuobject) {
     #ifdef INTEL_GALILEO_GEN1

@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
-#include "../../common/native_wuclasses/native_wuclasses.h"
+#include "native_wuclasses.h"
 #include "LCD_RGB_Suli.h"
 #include "config.h"
 

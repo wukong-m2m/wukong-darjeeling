@@ -1,5 +1,5 @@
 #include "debug.h"
-#include "../../common/native_wuclasses/native_wuclasses.h"
+#include "native_wuclasses.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
