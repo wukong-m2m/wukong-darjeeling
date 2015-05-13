@@ -12,7 +12,7 @@ tasks.architectureSpecificAssemble {
 
     def libInfusion = tasks['createLibArchive'].archiveFile
     def appInfusion = tasks['createAppArchive'].archiveFile
-    def executable = djTargetElfFile
+    def executable = djTargetBinary
     ext.destDir = new File("${buildDir}/darjeeling")
 
     inputs.file libInfusion
@@ -24,6 +24,6 @@ tasks.architectureSpecificAssemble {
         ensureEmptyDir(destDir)
         copy { from libInfusion into destDir }
         copy { from appInfusion into destDir }
-        copy { from executable into destDir }
+        copy { from djTargetBinary into new File(destDir, 'darjeeling.elf') }
     }
 }
