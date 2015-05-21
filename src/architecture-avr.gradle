@@ -78,9 +78,8 @@ model {
 
 tasks.architectureSpecificAssemble {
     ext.djTargetElfFile = new File("${buildDir}/darjeeling/darjeeling.elf")
-
-    def djIHex = "${destDir}/darjeeling.ihex"
-    def djEepromIHex = "${destDir}/darjeeling_eeprom.ihex"
+    ext.djIHex = "${destDir}/darjeeling.ihex"
+    ext.djEepromIHex = "${destDir}/darjeeling_eeprom.ihex"
 
     inputs.file djTargetBinary
 
@@ -115,14 +114,14 @@ tasks.darjeeling {
 task avrdude(dependsOn: darjeeling) << {
     exec {
         executable 'avrdude'
-        args '-p', djMcu, '-P', avrdudeprogrammer, '-c', 'wiring', '-U', 'flash:w:darjeeling.ihex'
+        args '-p', djMcu, '-P', avrdudeprogrammer, '-c', 'wiring', '-U', "flash:w:${architectureSpecificAssemble.djIHex}"
     }
 }
 
 task avrdude_eeprom(dependsOn: darjeeling) << {
     exec {
         executable 'avrdude'
-        args '-p', djMcu, '-P', avrdudeprogrammer, '-c', 'wiring', '-U', 'flash:w:darjeeling.ihex', '-U', 'eeprom:w:darjeeling_eeprom.ihex'
+        args '-p', djMcu, '-P', avrdudeprogrammer, '-c', 'wiring', '-U', "flash:w:${architectureSpecificAssemble.djIHex}", '-U', "eeprom:w:${architectureSpecificAssemble.djEepromIHex}"
     }
 }
 
