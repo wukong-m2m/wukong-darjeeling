@@ -36,18 +36,3 @@ class DjConfig {
     }
 }
 
-// Determine the name of the configuration to use
-def userDir = new File(System.getProperty('user.dir')).toPath()
-if (!project.hasProperty('djConfigname')) {
-    if (userDir.getNameCount() >= 2
-            && userDir.getName(userDir.getNameCount()-2).toString() == 'config') {
-        ext.djConfigname = userDir.getName(userDir.getNameCount()-1).toString()
-    } else {
-        throw new GradleException('No config specified. A configuration can be selected using the commandline option ("gradle -PdjConfigname=<configname>"), or by starting the build from one of the config directories ("gradle -b ../../build.gradle").')
-    }
-}
-
-// Load the corresponding config file
-apply from: "${rootDir}/config/${djConfigname}/sub.gradle"
-
-

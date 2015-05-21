@@ -77,17 +77,13 @@ model {
 }
 
 tasks.architectureSpecificAssemble {
-    ext.destDir = new File("${buildDir}/darjeeling")
     ext.djTargetElfFile = new File("${buildDir}/darjeeling/darjeeling.elf")
     ext.djIHex = "${destDir}/darjeeling.ihex"
     ext.djEepromIHex = "${destDir}/darjeeling_eeprom.ihex"
 
     inputs.file djTargetBinary
-    outputs.dir destDir
 
     doLast {
-        ensureEmptyDir(destDir)
-
         // Create darjeeling.ihex
         exec {
             executable 'avr-objcopy'
