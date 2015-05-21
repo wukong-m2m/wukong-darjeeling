@@ -1,22 +1,24 @@
 defaultTasks 'darjeeling'
 apply plugin: 'c'
 apply from: 'taskdefs.gradle'
+apply from: 'configplugin.gradle'
+apply from: 'djsourcesetplugin.gradle'
 
-task architectureSpecificAssemble {
-    // Can be filled in by architectures
-    //  dependsOn assemble, but if I do that here I'll get an error when adding model components...
-    //  seems a smelly to me that just touching the assemble task somehow affects the whole project state
-    //  such that I can't add components anymore.
+// Determine the name of the configuration to use
+def userDir = new File(System.getProperty('user.dir')).toPath()
+if (!project.hasProperty('djConfigname')) {
+    if (userDir.getNameCount() >= 2
+            && userDir.getName(userDir.getNameCount()-2).toString() == 'config') {
+        ext.djConfigname = userDir.getName(userDir.getNameCount()-1).toString()
+    } else {
+        throw new GradleException('No config specified. A configuration can be selected using the commandline option ("gradle -PdjConfigname=<configname>"), or by starting the build from one of the config directories ("gradle -b ../../build.gradle").')
+    }
 }
 
-task darjeeling {
-    dependsOn architectureSpecificAssemble
-}
-
-// Setup basic configuration parameters
-apply from: 'config.gradle'
+// Set some basic variables
+ext.configDir = "${rootDir}/config/${djConfigname}"
 buildDir = new File(buildDir, djConfigname)
-project.ext.djTargetBinary = new File("${buildDir}/binaries/darjeelingExecutable/darjeeling")
+ext.djTargetBinary = new File("${buildDir}/binaries/darjeelingExecutable/darjeeling")
 
 // Helper functions
 def ensureEmptyDir(File destDir) {
@@ -26,6 +28,22 @@ def ensureEmptyDir(File destDir) {
     destDir.mkdirs()
 }
 
+//// Main build tasks
+task architectureSpecificAssemble {
+    // Can be filled in by architectures
+    //  dependsOn assemble, but if I do that here I'll get an error when adding model components...
+    //  seems a smelly to me that just touching the assemble task somehow affects the whole project state
+    //  such that I can't add components anymore.
+    ext.destDir = new File("${buildDir}/darjeeling")
+    outputs.dir destDir
+    doFirst {
+        ensureEmptyDir(destDir)
+    }
+}
+
+task darjeeling {
+    dependsOn architectureSpecificAssemble
+}
 
 class CreateDjArchiveTask extends DefaultTask {
     class ArchivePart {
@@ -133,9 +151,13 @@ model {
     }
 }
 
-// Load libraries and application
-apply from: "djsourceset.gradle"
+// Load the config file
+apply from: "${configDir}/sub.gradle"
+
+// Load the platform definition for this config
 apply from: "platforms.gradle"
+
+// Load the libraries and application
 apply from: "architecture-${djArchitecture}.gradle"
 def loadDjApp(String name) {
     apply from: "app/${name}/sub.gradle"
@@ -156,6 +178,7 @@ ext.djConfig.libraries.each { lib ->
 loadDjApp(ext.djConfig.app)
 
 
+// Don't do this earlier, since refering to the assemble task too soon will somehow break the build script.
 architectureSpecificAssemble.dependsOn assemble
 
 
