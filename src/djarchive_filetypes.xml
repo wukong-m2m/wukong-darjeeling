@@ -1,8 +1,0 @@
-<project name="djarchive_filetypes">
-	<property name="djarchive_type_lib_infusion" value="0"/>
-	<property name="djarchive_type_app_infusion" value="1"/>
-	<property name="djarchive_type_wkpf_link_table" value="2"/>
-	<property name="djarchive_type_wkpf_component_map" value="3"/>
-	<property name="djarchive_type_wkpf_initvalues" value="4"/>
-	<property name="djarchive_type_ecocast_capsule_buffer" value="5"/>
-</project>
