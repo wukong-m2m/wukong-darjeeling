@@ -522,7 +522,7 @@ public class SimulatorUI extends JPanel implements TreeSelectionListener, Action
                     if (masterdir == null)
                         masterdir = new File(wukong_root + "/wukong/master").getAbsolutePath();
                     if (vmdir == null)
-                        vmdir = new File(wukong_root + "/src/config/native-simulator").getAbsolutePath();
+                        vmdir = new File(wukong_root + "/src/build/native-simulator/darjeeling").getAbsolutePath();
                     if (networkdir == null) {
                         System.err.println("Please specify at least the network directory.");
                         System.exit(1);
