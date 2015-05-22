@@ -936,12 +936,12 @@ class Build(tornado.web.RequestHandler):
     self.content_type = 'text/plain'
     cmd = self.get_argument('cmd')
     if cmd == 'start':
-      command = 'cd ../../src/config/wunode; rm -f tmp'
+      command = 'mkdir -p ../../src/build; cd ../../src/build; rm -f tmp'
       os.system(command)
-      os.system('(cd ../../src/config/wunode; ant 2>&1 | cat > tmp)&')
+      os.system('(cd ../../src/; gradle -PdjConfigname=wunode 2>&1 | cat > build/tmp)&')
       log = 'start'
     elif cmd == 'poll':
-      f = open("../../src/config/wunode/tmp", "r")
+      f = open("../../src/build/tmp", "r")
       log = f.readlines()
       log = "".join(log)
       f.close()
@@ -955,7 +955,7 @@ class Upload(tornado.web.RequestHandler):
     cmd = self.get_argument('cmd')
     if cmd == 'start':
       port = self.get_argument("port")
-      command = 'cd ../../src/config/wunode; rm -f tmp'
+      command = 'mkdir -p ../../src/build; cd ../../src/build; rm -f tmp'
       os.system(command)
       f = open("../../src/settings.xml","w")
       s = '<project name="settings">' + '\n' + \
@@ -969,11 +969,11 @@ class Upload(tornado.web.RequestHandler):
       fcntl.ioctl(s, termios.TIOCMBIC, dtr)
       s.close()
       
-      command = 'killall avrdude;(cd ../../src/config/wunode; ant avrdude 2>&1 | cat> tmp)&'
+      command = 'killall avrdude;(cd ../../src; gradle -PdjConfigname=wunode avrdude 2>&1 | cat> build/tmp)&'
       os.system(command)
       log='start'
     elif cmd == 'poll':
-      f = open("../../src/config/wunode/tmp", "r")
+      f = open("../../src/build/tmp", "r")
       log = f.readlines()
       log = "".join(log)
       f.close()

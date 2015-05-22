@@ -328,7 +328,7 @@ class WuApplication:
 
       # Build the Java code
       self.logDeployStatus('Compressing application code to bytecode format...')
-      pp = Popen('cd %s/..; ant clean; ant' % (JAVA_OUTPUT_DIR), shell=True, stdout=PIPE, stderr=PIPE)
+      pp = Popen('cd %s/src; gradle -PdjConfigname=wkdeploy createAppArchive' % (ROOT_PATH), shell=True, stdout=PIPE, stderr=PIPE)
       self.returnCode = None
       (infomsg,errmsg) = pp.communicate()
       gevent.sleep(0)
@@ -357,7 +357,7 @@ class WuApplication:
         remaining_ids.remove(node_id)
         self.logDeployStatus("Deploying to node %d, remaining %s" % (node_id, str(remaining_ids)))
         retries = 3
-        if not comm.reprogram(node_id, os.path.join(JAVA_OUTPUT_DIR, '..', 'build', 'wkdeploy.dja'), retry=retries):
+        if not comm.reprogram(node_id, os.path.join(ROOT_PATH, 'src', 'build', 'wkdeploy', 'app_infusion', 'app_infusion.dja'), retry=retries):
           self.errorDeployStatus("Deploy was unsucessful after %d tries!" % (retries))
           return False
         self.logDeployStatus('...has completed')

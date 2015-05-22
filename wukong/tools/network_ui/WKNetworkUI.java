@@ -500,7 +500,7 @@ public class WKNetworkUI extends JPanel implements TreeSelectionListener, Action
                 if (masterdir == null)
                     masterdir = new File(wukong_root + "/wukong/master").getAbsolutePath();
                 if (vmdir == null)
-                    vmdir = new File(wukong_root + "/src/config/native-simulator").getAbsolutePath();
+                    vmdir = new File(wukong_root + "/src/build/native-simulator/darjeeling").getAbsolutePath();
                 if (standardlibraryxml == null)
                     standardlibraryxml = new File(wukong_root + "/wukong/ComponentDefinitions/WuKongStandardLibrary.xml").getAbsolutePath();
 

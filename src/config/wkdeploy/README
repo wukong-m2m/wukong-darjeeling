@@ -1,0 +1,3 @@
+It doesn't really matter what's in this config, as long as the app is wkdeploy.
+The master will use this config to generate the application archive only, not to build a full VM.
+
