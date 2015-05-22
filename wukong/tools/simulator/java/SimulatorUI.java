@@ -59,12 +59,12 @@ public class SimulatorUI extends JPanel implements TreeSelectionListener, Action
 
         //Set icons for sensors and actuators
         tree.setCellRenderer(new DefaultTreeCellRenderer() {
-            private Icon sensorIcon = new ImageIcon("sensorIcon.png");
-            private Icon actuatorIcon = new ImageIcon("actuatorIcon.png");
-            private Icon unknownNodeDirectoryIcon = new ImageIcon("unknownNodeDirectoryIcon.png");
-            private Icon runningChildProcessIcon = new ImageIcon("runningChildProcessIcon.png");
-            private Icon stoppedChildProcessIcon = new ImageIcon("stoppedChildProcessIcon.png");
-            private Icon externalClientIcon = new ImageIcon("externalClientIcon.png");
+            private Icon sensorIcon = new ImageIcon(getClass().getResource("sensorIcon.png"));
+            private Icon actuatorIcon = new ImageIcon(getClass().getResource("actuatorIcon.png"));
+            private Icon unknownNodeDirectoryIcon = new ImageIcon(getClass().getResource("unknownNodeDirectoryIcon.png"));
+            private Icon runningChildProcessIcon = new ImageIcon(getClass().getResource("runningChildProcessIcon.png"));
+            private Icon stoppedChildProcessIcon = new ImageIcon(getClass().getResource("stoppedChildProcessIcon.png"));
+            private Icon externalClientIcon = new ImageIcon(getClass().getResource("externalClientIcon.png"));
             @Override
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean isLeaf, int row, boolean focused) {
                 Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, isLeaf, row, focused);

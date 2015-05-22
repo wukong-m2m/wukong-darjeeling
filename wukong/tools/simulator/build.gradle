@@ -1,0 +1,48 @@
+defaultTasks 'jar'
+apply plugin: 'java'
+
+dependencies {
+	compile files('jpathwatch-0-95.jar')
+	runtime files('jpathwatch-0-95.jar')
+}
+
+sourceSets {
+	main {
+		java {
+			srcDir "java"
+		}
+		resources {
+			srcDir "resources"
+		}
+	}
+}
+
+jar {
+	from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+	manifest {
+		attributes 'Main-Class': 'SimulatorUI'
+	}
+}
+
+
+task run {
+	dependsOn jar
+	doLast {
+		ant.java(dir: '.',
+				 jar: 'build/libs/simulator.jar',
+				 fork: true,
+				 spawn: true)
+	}
+}
+
+task run_network_server_only {
+	dependsOn jar
+	doLast {
+		ant.java(dir: '.',
+				 jar: 'build/libs/simulator.jar',
+				 fork: true,
+				 spawn: true) {
+			arg(value: '-network-server-only')
+		}
+	}
+}
