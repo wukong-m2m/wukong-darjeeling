@@ -1,0 +1,1 @@
+ext.avrdudeprogrammer='/dev/<fill in your device name here>'

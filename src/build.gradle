@@ -3,6 +3,11 @@ apply plugin: 'c'
 apply from: 'taskdefs.gradle'
 apply from: 'configplugin.gradle'
 apply from: 'djsourcesetplugin.gradle'
+if (new File("${project.rootDir}/usersettings.gradle").exists()) {
+    apply from: 'usersettings.gradle'
+} else {
+    println 'No usersettings.gradle file found. Make a copy usersettings.gradle.dist and fill in the required fields to use avrdude.'
+}
 
 // Determine the name of the configuration to use
 def userDir = new File(System.getProperty('user.dir')).toPath()

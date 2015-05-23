@@ -17,7 +17,7 @@ WKDeploy.xml
 WKDeployCustomComponents.xml
 master.cfg
 src/config/native/config.txt
-src/settings.xml
+src/usersettings.gradle
 stk500boot.eep
 stk500boot.elf
 stk500boot.lss
