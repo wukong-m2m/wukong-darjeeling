@@ -4,10 +4,3 @@ djConfig {
 	app = 'wkemptyapp'
 	appArchiveSize = 4096
 }
-
-tasks.architectureSpecificAssemble { 
-    doLast {
-        copy { from "${configDir}/install_service.sh" into destDir }
-        copy { from "${configDir}/service" into new File(destDir, 'service') }
-    }
-}

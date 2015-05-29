@@ -1,15 +1,54 @@
-switch (ext.djConfig.platform) {
-	case 'arduino.wudevice':
-		ext.djArchitecture='avr'
-		ext.djMcu='atmega2560'
-	break
-	case 'arduino.avrora':
-		ext.djArchitecture='avr'
-		ext.djMcu='atmega128'
-	break
-	case ~/^posix.*/:
-		ext.djArchitecture='native'
-	break
-	default:
-		throw new GradleException('Unknown platform: ' + ext.djConfig.platform)
+// Set basic platform properties
+switch (djConfig.getAllPlatforms().last()) {
+    case 'arduino.wudevice':
+        ext.djArchitecture='avr'
+        ext.djMcu='atmega2560'
+    break
+    case 'arduino.avrora':
+        ext.djArchitecture='avr'
+        ext.djMcu='atmega128'
+    break
+    case ~/^posix.*/:
+        ext.djArchitecture='native'
+    break
+    default:
+        throw new GradleException('Unknown platform: ' + ext.djConfig.platform)
+}
+
+// Specific extras for Intel Galileo/Edison and eBox
+// (native build that will be installed as a service on remote device)
+if (djConfig.getAllPlatforms().last() == 'posix.galileo') {
+    tasks.architectureSpecificAssemble {
+        doLast {
+            copy { from "${configDir}/install_service.sh" into destDir }
+            copy { from "${configDir}/service" into new File(destDir, 'service') }
+        }
+    }
+
+    tasks.addRule("Pattern: install<IP address>: installs the Darjeeling service to the Galileo/Edison at IP address.") { String taskName ->
+        if (taskName.startsWith("install")) {
+            task(taskName) {
+                dependsOn darjeeling
+
+                doLast {
+                    def destIP = (taskName - 'install')
+                    def remoteTmpDir = "/tmp/darjeeling"
+
+                    println "Installing to: " + destIP
+                    exec {
+                        executable 'ssh'
+                        args "root@${destIP}", "rm -rf ${remoteTmpDir}"
+                    }
+                    exec {
+                        executable 'scp'
+                        args '-r', "${buildDir}/darjeeling",  "root@${destIP}:${remoteTmpDir}"
+                    }
+                    exec {
+                        executable 'ssh'
+                        args "root@${destIP}", "cd ${remoteTmpDir}; ./install_service.sh"
+                    }
+                }
+            }
+        }
+    }
 }
