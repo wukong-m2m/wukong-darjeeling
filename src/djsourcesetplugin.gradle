@@ -15,6 +15,17 @@ class DjSourceSetPlugin implements Plugin<Project> {
     }
 }
 
+project.ext.loadDjAppSourceSet = { String name ->
+    apply from: "app/${name}/sub.gradle"
+    djappsource[name].addTasks()
+}
+project.ext.loadDjLibrarySourceSet = { String name ->
+    if (djlibsource.findByName(name) == null) {
+        apply from: "lib/${name}/sub.gradle"
+        djlibsource[name].addTasks()
+    }
+}
+
 class DjSourceSet {
     Project project
     final String name
@@ -45,10 +56,10 @@ class DjSourceSet {
 
     void loadDependencies() {
         this.cDependencies.each { clibname ->
-            project.maybeLoadDjLibrary(clibname)
+            project.loadDjLibrarySourceSet(clibname)
         }
         this.javaDependencies.each { jlibname ->
-            project.maybeLoadDjLibrary(jlibname)
+            project.loadDjLibrarySourceSet(jlibname)
         }
     }
 
