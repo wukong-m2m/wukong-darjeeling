@@ -164,23 +164,13 @@ apply from: "platforms.gradle"
 
 // Load the libraries and application
 apply from: "architecture-${djArchitecture}.gradle"
-def loadDjApp(String name) {
-    apply from: "app/${name}/sub.gradle"
-    djappsource[name].addTasks()
 
-}
-def maybeLoadDjLibrary(String name) {
-    if (djlibsource.findByName(name) == null) {
-        apply from: "lib/${name}/sub.gradle"
-        djlibsource[name].addTasks()
-    }
-}
 // Load any libraries explicitly included in the config (dependencies will be loaded from addTasks())
 ext.djConfig.libraries.each { lib ->
-    maybeLoadDjLibrary(lib)
+    loadDjLibrarySourceSet(lib)
 }
 // And load the application (dependencies will be loaded from addTasks())
-loadDjApp(ext.djConfig.app)
+loadDjAppSourceSet(ext.djConfig.app)
 
 
 // Don't do this earlier, since refering to the assemble task too soon will somehow break the build script.
