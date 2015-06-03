@@ -1,4 +1,3 @@
-defaultTasks 'darjeeling'
 apply plugin: 'c'
 apply from: 'taskdefs.gradle'
 apply from: 'configplugin.gradle'
@@ -18,6 +17,9 @@ if (!project.hasProperty('djConfigname')) {
     } else {
         throw new GradleException('No config specified. A configuration can be selected using the commandline option ("gradle -PdjConfigname=<configname>"), or by starting the build from one of the config directories ("gradle -b ../../build.gradle").')
     }
+}
+if (!project.hasProperty("buildStaticLibrary")) {
+    ext.buildStaticLibrary = false
 }
 
 // Set some basic variables
@@ -113,7 +115,7 @@ task generateLibinit {
 // Basic C source sets, excluding libraries and possibly infusions.
 model {
     components {
-        darjeeling(NativeExecutableSpec) {
+        darjeeling(buildStaticLibrary ? NativeLibrarySpec : NativeExecutableSpec) {
             sources {
                 core(CSourceSet) {
                     source {
@@ -178,9 +180,13 @@ ext.djConfig.libraries.each { lib ->
 // And load the application (dependencies will be loaded from addTasks())
 loadDjAppSourceSet(ext.djConfig.app)
 
-
 // Don't do this earlier, since refering to the assemble task too soon will somehow break the build script.
 architectureSpecificAssemble.dependsOn assemble
 
-
-
+// If we build a static library (for Arduino), then set the default task to darjeelingStaticLibrary, since the normal
+// default will also try to build a shared library, which will fail for avr-gcc.
+if (buildStaticLibrary) {
+    defaultTasks 'darjeelingStaticLibrary'
+} else {
+    defaultTasks 'darjeeling'
+}
