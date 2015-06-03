@@ -131,20 +131,21 @@ class UDPTransport(object):
 
         return (None, None)
 
-    def send_raw(self, address, payload):
+    def send_raw(self, nodeid, payload):
         ret = None
         with _global_lock:
             try:
-                address,port = self.getDeviceAddress(address)
+                address,port = self.getDeviceAddress(nodeid)
                 if address == 0:
                     return None
+                header = chr(0xaa) + chr(0x55) + chr(nodeid) + struct.pack('I', address) + struct.pack('H', port) + chr(1)
                 message = "".join(map(chr, payload))
                 logger.info("sending %d bytes %s to %s at port %d" % (len(message), message, MPTN.ID_TO_STRING(address),port))
                 sock = socket.socket(socket.AF_INET, # Internet
                                     socket.SOCK_DGRAM) # UDP
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 #sock.sendto(message, (MPTN.ID_TO_STRING(address), MPTN.MPTN_UDP_PORT))
-                sock.sendto(message, (MPTN.ID_TO_STRING(address), port))
+                sock.sendto(header+message, (MPTN.ID_TO_STRING(address), port))
                 sock.close()
             except Exception as e:
                 ret = traceback.format_exc()
