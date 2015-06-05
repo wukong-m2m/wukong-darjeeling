@@ -3,4 +3,5 @@ djConfig {
 	libraries = ['darjeeling3', 'wkpf_virtual']
 	app = 'wkemptyapp'
 	appArchiveSize = 4096
+	buildStaticLibrary=true
 }
