@@ -1,9 +1,0 @@
-<project>
-
-	<path id="platform-includes">
-	</path>
-		
-	<defineset id="platform-defines">
-	</defineset>	
-	
-</project>

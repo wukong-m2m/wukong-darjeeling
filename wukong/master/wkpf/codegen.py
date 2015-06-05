@@ -227,8 +227,10 @@ class WuClass:
     def hasPrivateCData(self):
       return self._privateCData != ''
 
-    def getPrivateCDataGetFunction(self):
-      return '''%s *%s_getPrivateData(wuobject_t *wuobject)''' % (self._privateCData, self.getCName())
+
+    def getPrivateCDataGetMacro(self):
+      return '''#define %s_getPrivateData(wuobject) ((%s *)wkpf_get_private_wuobject_data(wuobject))''' % (self.getCName(), self._privateCData)
+
 
 # Now both WuClass and WuObject have node id attribute, because each could represent at different stages of mapping process
 # The wuClass in WuObject is just for reference only, the node_id shouldn't be used
@@ -363,15 +365,13 @@ class CodeGen:
         return (wuTypedefs, wuClasses)
 
     @staticmethod
-    def generateNativeWuclasses(logger, enabled_wuclasses_filename, wuclasses, c_dir):
+    def generateEnabledWuclasses(logger, enabled_wuclasses_filename, wuclasses, c_dir_src):
         # By catlikethief 2013.04.11
         # Try to generate native_wuclasses.c by parsing another xml file
-        native_wuclasses_filename = 'GENERATEDnative_wuclasses.c'
-        native_wuclasses_path = os.path.join(c_dir, native_wuclasses_filename)
+        native_wuclasses_path = os.path.join(c_dir_src, 'GENERATEDenabled_wuclasses.c')
         native_wuclasses = open(native_wuclasses_path, 'w')
         # For posix we need a function to process lines of another enabled_wuclasses file at startup
-        native_wuclasses_filename_posix = 'GENERATEDprocess_enabled_wuclass.c'
-        native_wuclasses_path_posix = os.path.join(c_dir, "..", "..", "posix", native_wuclasses_filename_posix)
+        native_wuclasses_path_posix = os.path.join(c_dir_src, 'GENERATEDposix_process_enabled_wuclass.c')
         native_wuclasses_posix = open(native_wuclasses_path_posix, 'w')
 
         header_lines = ['#include <debug.h>\n',
@@ -385,7 +385,7 @@ class CodeGen:
             '#include <string.h>\n',
             '#include "wkcomm.h"\n',
             '#include "wkpf_wuclasses.h"\n',
-            '#include "../common/native_wuclasses/native_wuclasses.h"\n'
+            '#include "native_wuclasses.h"\n'
         ]
         init_function_lines = ['''
         uint8_t wkpf_native_wuclasses_init() {
@@ -403,23 +403,21 @@ class CodeGen:
             printf("[posix init] Registering wuclass %s", wuclassname);
         ''']
 
-
-        dom = parseString(open(enabled_wuclasses_filename).read())
-
-        wuclasses_list = []
-        enabled_wuclasses = dom.getElementsByTagName("WuClass")
         portCnt = 1
-        for wuclass_element in enabled_wuclasses:
+        dom = parseString(open(enabled_wuclasses_filename).read())
+        enabled_wuclasses = []
+        for wuclass_element in dom.getElementsByTagName("WuClass"):
             wuclass_name = wuclass_element.getAttribute('name')
             tmp = [wuclass for wuclass in wuclasses if wuclass.getName() == wuclass_name]
             if len(tmp) == 0:
                 print "Wuclass %s not found in standard library." % (wuclass_name)
                 sys.exit(1)
             wuclass = tmp[0]
+            enabled_wuclasses.append(wuclass)
 
             appCanCreateInstancesAtt = wuclass_element.getAttribute('appCanCreateInstances')
             appCanCreateInstances = True if (appCanCreateInstancesAtt.lower()=='true' or appCanCreateInstancesAtt=='1') else False
-            print appCanCreateInstances, appCanCreateInstancesAtt
+            # print appCanCreateInstances, appCanCreateInstancesAtt
             startup_instances = wuclass_element.getElementsByTagName('CreateInstance');
 
             header_lines.append('#include "%s.h"\n' % wuclass.getCFileName())
@@ -463,8 +461,9 @@ class CodeGen:
                 init_function_lines.append('''
                         %s.flags |= WKPF_WUCLASS_FLAG_APP_CAN_CREATE_INSTANCE;''' % wuclass.getCName())
 
-            header_lines_posix.append('#include "../common/native_wuclasses/%s.h"\n' % wuclass.getCFileName())
+            header_lines_posix.append('#include "%s.h"\n' % wuclass.getCFileName())
             init_function_lines_posix_register_class.append('''
+
             if (!strcmp(wuclassname, "%s")) {
                 wkpf_register_wuclass(&%s);
                 if (appCanCreateInstances)
@@ -487,11 +486,11 @@ class CodeGen:
         native_wuclasses_posix.writelines(header_lines_posix)
         native_wuclasses_posix.writelines(init_function_lines_posix_register_class)
         native_wuclasses_posix.close()
-
+        return enabled_wuclasses # Will be used to generate only the enabled C files (otherwise the Gradle build will fail unless there's a native implementation for everything in the std library)
 
 
     @staticmethod
-    def generate(logger, wutypedefs, wuclasses, c_dir, java_virtualclasses_dir, java_constants_dir, java_package):
+    def generate(logger, wutypedefs, wuclasses, c_dir_src, c_dir_include, java_virtualclasses_dir, java_constants_dir, java_package, enabled_wuclasses):
         enumTypedefs = [x for x in wutypedefs.keys() if wutypedefs[x].isEnumTypedef()]
 
         # Lines
@@ -607,13 +606,9 @@ class CodeGen:
                   wuClass.getCDefineName(),
                   wuClass.getCDefineName(),
                   wuClass.getCName(),
-                  "extern " + wuClass.getPrivateCDataGetFunction() + ";" if wuClass.hasPrivateCData() else ''
+                  wuClass.getPrivateCDataGetMacro() if wuClass.hasPrivateCData() else ''
                 ))
 
-          print "wuClass"
-          print wuClass.getCDefineName(),
-          print wuClass.getCSetupName(),
-          print wuClass.getCUpdateName(),
           # Generate C implementation for each native component implementation
           wuclass_native_impl_lines.append('''
           #include "native_wuclasses.h"
@@ -684,28 +679,21 @@ class CodeGen:
                 "sizeof(%s)" % (wuClass.getPrivateCData()) if wuClass.hasPrivateCData() else "0", 
                 wuclass_native_impl_properties_lines))  
 
-          if wuClass.hasPrivateCData():
-            wuclass_native_impl_lines.append('''
-              %s {
-                return (%s *)wkpf_get_private_wuobject_data(wuobject);
-              }
-            ''' %(wuClass.getPrivateCDataGetFunction(),
-                  wuClass.getPrivateCData()))
-
           #wuclass_native_impl_lines.append('''
           ##endif
           #''')
 
-          if c_dir:
-            wuclass_native_header_path = os.path.join(c_dir, wuClass.getCFileName() + '.h')
+          if c_dir_src:
+            wuclass_native_header_path = os.path.join(c_dir_include, wuClass.getCFileName() + '.h')
             wuclass_native_header = open(wuclass_native_header_path, 'w')
             wuclass_native_header.writelines(wuclass_native_header_lines)
             wuclass_native_header.close()
 
-            wuclass_native_impl_path = os.path.join(c_dir, wuClass.getCFileName() + '.c')
-            wuclass_native_impl = open(wuclass_native_impl_path, 'w')
-            wuclass_native_impl.writelines(wuclass_native_impl_lines)
-            wuclass_native_impl.close()
+            if wuClass in enabled_wuclasses:
+                wuclass_native_impl_path = os.path.join(c_dir_src, wuClass.getCFileName() + '.c')
+                wuclass_native_impl = open(wuclass_native_impl_path, 'w')
+                wuclass_native_impl.writelines(wuclass_native_impl_lines)
+                wuclass_native_impl.close()
 
           if java_virtualclasses_dir and wuClass.isVirtual():
             wuclass_virtual_super_path = os.path.join(java_virtualclasses_dir, wuClass.getJavaGenClassName() + '.java')
@@ -719,22 +707,21 @@ class CodeGen:
         ''')
 
         global_arduinoIDE_wuclass_native_impl_lines.append("{0,0,0,0,0,0,NULL,{0}}" + "\n" + "};")
-
-        if c_dir:
+        if c_dir_src:
             global_vm_header_filename = 'GENERATEDwkpf_wuclass_library.h'
-            global_vm_header_path = os.path.join(c_dir, global_vm_header_filename)
+            global_vm_header_path = os.path.join(c_dir_include, global_vm_header_filename)
             global_vm_header = open(global_vm_header_path, 'w')
             global_vm_header.writelines(global_vm_header_lines)
             global_vm_header.close()
 
             global_arduinoIDE_header_filename = 'GENERATEDwkpf_wuclass_library_arduinoIDE.h'
-            global_arduinoIDE_header_path = os.path.join(c_dir, global_arduinoIDE_header_filename)
+            global_arduinoIDE_header_path = os.path.join(c_dir_include, global_arduinoIDE_header_filename)
             global_arduinoIDE_header = open(global_arduinoIDE_header_path, 'w')
             global_arduinoIDE_header.writelines(global_arduinoIDE_header_lines)
             global_arduinoIDE_header.close()
 
             global_arduinoIDE_wuclass_native_impl_filename = 'GENERATEDwuclass_arduinoIDE.h'
-            global_arduinoIDE_wuclass_native_impl_path = os.path.join(c_dir, global_arduinoIDE_wuclass_native_impl_filename)
+            global_arduinoIDE_wuclass_native_impl_path = os.path.join(c_dir_src, global_arduinoIDE_wuclass_native_impl_filename)
             global_arduinoIDE_wuclass_native_impl = open(global_arduinoIDE_wuclass_native_impl_path, 'w')
             global_arduinoIDE_wuclass_native_impl.writelines(global_arduinoIDE_wuclass_native_impl_lines)
             global_arduinoIDE_wuclass_native_impl.close()
@@ -758,20 +745,34 @@ if __name__ == "__main__":
     parser.add_option('-p', '--java_package', dest='java_package')
     (options, args) = parser.parse_args()
 
-    print options, args
+    # print options, args
 
     wuTypedefs, wuClasses = CodeGen.getStandardLibrary(logging.getLogger(), options.component_file)
 
+
+    c_dir_src = None
+    c_dir_include = None
+    if options.c_dir:
+        c_dir_src = options.c_dir + '/c'
+        c_dir_include = options.c_dir + '/include'
+        if not os.path.exists(c_dir_src):
+            os.makedirs(c_dir_src)
+        if not os.path.exists(c_dir_include):
+            os.makedirs(c_dir_include)
+
+    enabled_wuclasses = []
     if options.enabled_file and os.path.exists(options.enabled_file) and options.c_dir:
-        CodeGen.generateNativeWuclasses(logging.getLogger(), options.enabled_file, wuClasses, options.c_dir)
+        enabled_wuclasses = CodeGen.generateEnabledWuclasses(logging.getLogger(), options.enabled_file, wuClasses, c_dir_src)
 
     if os.path.exists(options.component_file):
         CodeGen.generate(logging.getLogger(),
                          wuTypedefs,
                          wuClasses,
-                         options.c_dir,
+                         c_dir_src,
+                         c_dir_include,
                          options.java_virtualclasses_dir,
                          options.java_constants_dir,
-                         options.java_package)
+                         options.java_package,
+                         enabled_wuclasses)
     else:
         print "path to component library doesn't exist: ", options.component_file

@@ -1,0 +1,5 @@
+djlibsource {
+    wkreprog {
+        cDependencies = [ 'wkcomm' ]
+    }
+}

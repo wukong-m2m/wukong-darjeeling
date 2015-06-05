@@ -1,2 +1,2 @@
-file darjeeling.elf
+file ../../build/rtc/darjeeling/darjeeling.elf
 target remote localhost:4242

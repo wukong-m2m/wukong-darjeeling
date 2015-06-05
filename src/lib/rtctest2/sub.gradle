@@ -1,0 +1,6 @@
+djlibsource {
+    rtctest2 {
+        cDependencies = [ ]
+        javaDependencies = [ 'base', 'darjeeling3' ]
+    }
+}

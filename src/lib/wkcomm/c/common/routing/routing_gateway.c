@@ -6,7 +6,7 @@
 #include "routing.h"
 #include "debug.h"
 #include <string.h>
-#include "../../../wkpf/c/common/wkpf_config.h"
+#include "../../../wkpf/include/common/wkpf_config.h"
 #include "djtimer.h"
 
 // routing_none doesn't contain any routing protocol, but will just forward messages to the radio layer.

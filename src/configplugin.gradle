@@ -1,0 +1,38 @@
+apply plugin: DjConfigPlugin
+
+// Add plugin to run addTasks for all djlibsource and djappsource
+// declared in the sub.gradle files in /lib/* and /app/*
+class DjConfigPlugin implements Plugin<Project> {
+    void apply(Project project) {
+        project.extensions.djConfig = new DjConfig(project)
+        project.ext.djConfig = project.extensions.djConfig
+    }
+}
+
+class DjConfig {
+    Project project
+
+    String platform
+    List<String> libraries
+    String app
+    int appArchiveSize
+
+    DjConfig(Project project) {
+        this.project = project
+    }
+
+    List<String> getAllPlatforms () {
+        // Turn platform into list of directory names to include
+        // (for example 'arduino.wudevice' becomes ['arduino', 'arduino.wudevice'])
+        def allPlatforms = []
+        this.platform.tokenize('.').each { p ->
+            if (allPlatforms.size == 0){
+                allPlatforms.add(p)
+            } else {
+                allPlatforms.add(allPlatforms.last() + '.' + p)
+            }
+        }
+        return allPlatforms
+    }
+}
+

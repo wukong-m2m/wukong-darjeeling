@@ -1,0 +1,6 @@
+djConfig {
+	platform = 'posix.pc'
+	libraries = ['darjeeling3', 'wkpf_virtual']
+	app = 'helloworld'
+	appArchiveSize = 4096
+}

@@ -1,0 +1,154 @@
+binaries.all {
+    cCompiler.args "-mmcu=${djMcu}"
+    cCompiler.args '-Os'
+    cCompiler.args '-finline-limit-0'
+    cCompiler.args '-ggdb'
+    cCompiler.args '-Wall'
+    cCompiler.args '-Werror'
+    cCompiler.args '-std=gnu99'
+    cCompiler.args '-fdata-sections'
+    cCompiler.args '-ffunction-sections'
+    linker.args "-mmcu=${djMcu}"
+    linker.args "-Wl,--section-start=.reprogram_flash_page=${djReprogramFlashPageAddress}"
+    linker.args '-Wl,--gc-sections'
+}
+
+// AVR tasks: transform infusion archives to c arrays
+// and add those C files to the application model
+task createCArrays {
+    dependsOn tasks['createLibArchive']
+    dependsOn tasks['createAppArchive']
+    ext.destDir = new File("${buildDir}/carrays")
+    def appArchiveFile = tasks['createAppArchive'].archiveFile
+    def appArchiveCFile = "${destDir}/app_infusiondja.c"
+    def libArchiveFile = tasks['createLibArchive'].archiveFile
+    def libArchiveCFile = "${destDir}/lib_infusionsdja.c"
+
+    inputs.file appArchiveFile
+    inputs.file libArchiveFile
+    outputs.dir destDir
+
+    doLast {
+        ensureEmptyDir(destDir)
+        ant.carray(dest: libArchiveCFile,
+                             src: libArchiveFile,
+                             arrayname: 'di_lib_infusions_archive',
+                             arraysize: 0,
+                             keywords: 'PROGMEM')
+        ant.carray(dest: appArchiveCFile,
+                             src: appArchiveFile,
+                             arrayname: 'di_app_infusion_archive',
+                             arraysize: djConfig.appArchiveSize,
+                             keywords: 'PROGMEM __attribute__ ((aligned (SPM_PAGESIZE)))')
+    }
+}
+
+model {
+    components.darjeeling {
+        targetPlatform 'avr'
+        sources {
+            main(CSourceSet) {  
+                source {
+                    srcDir createCArrays.destDir
+                    include '**/*.c'
+                    builtBy(createCArrays)
+                }
+            }
+        }
+    }
+    toolChains {
+        gcc(Gcc) {
+            target('avr') { t ->
+                t.getcCompiler().setExecutable('avr-gcc');
+                t.getCppCompiler().setExecutable('avr-g++');
+                t.getObjcCompiler().setExecutable('avr-gcc');
+                t.getObjcppCompiler().setExecutable('avr-g++');
+                t.getAssembler().setExecutable('avr-as');
+                t.getLinker().setExecutable('avr-gcc');
+                t.getStaticLibArchiver().setExecutable('avr-ar');
+            }
+        }
+    }
+    platforms {
+        avr {
+            architecture 'avr'
+        }
+    }
+}
+
+tasks.architectureSpecificAssemble {
+    ext.djTargetElfFile = new File("${buildDir}/darjeeling/darjeeling.elf")
+    ext.djIHex = "${destDir}/darjeeling.ihex"
+    ext.djEepromIHex = "${destDir}/darjeeling_eeprom.ihex"
+
+    inputs.file djTargetBinary
+
+    doLast {
+        // Create darjeeling.ihex
+        exec {
+            executable 'avr-objcopy'
+            args '-j', '.text', '-j', '.data', '-O', 'ihex', djTargetBinary, djIHex
+        }
+        // Create darjeeling_eeprom.ihex
+        exec {
+            executable 'avr-objcopy'
+            args '-j', '.eeprom', '-O', 'ihex', djTargetBinary, djEepromIHex
+        }
+        copy {
+            from djTargetBinary into destDir rename { f -> f+'.elf' }
+        }
+    }
+}
+
+
+tasks.darjeeling {
+    doLast {
+        exec {
+            executable 'avr-size'
+            args '-C', architectureSpecificAssemble.djTargetElfFile
+        }
+    }
+}
+
+/// AVR helper tasks
+task avrdude(dependsOn: darjeeling) << {
+    exec {
+        executable 'avrdude'
+        args '-p', djMcu, '-P', avrdudeprogrammer, '-c', 'wiring', '-U', "flash:w:${architectureSpecificAssemble.djIHex}"
+    }
+}
+
+task avrdude_eeprom(dependsOn: darjeeling) << {
+    exec {
+        executable 'avrdude'
+        args '-p', djMcu, '-P', avrdudeprogrammer, '-c', 'wiring', '-U', "flash:w:${architectureSpecificAssemble.djIHex}", '-U', "eeprom:w:${architectureSpecificAssemble.djEepromIHex}"
+    }
+}
+
+task avarice << {
+    exec {
+        executable 'avarice'
+        args '-g', '-j', 'usb', '-B', '4000000', ':4242'
+    }
+}
+
+task avrora(dependsOn: darjeeling) << {
+    javaexec {
+        main '-jar'
+        args '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,rtc,c-print', '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
+    }
+}
+
+task avrora_gdb(dependsOn: darjeeling) << {
+    javaexec {
+        main '-jar'
+        args '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,rtc,gdb,c-print,trace', '-trace-only-when-enabled=true', '-port=4242', '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
+    }
+}
+
+task avrora_jdb(dependsOn: darjeeling) << {
+    javaexec {
+        main '-jar'
+        args '-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n', '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,rtc,c-print', '-trace-only-when-enabled=true', '-port=4242', '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
+    }
+}

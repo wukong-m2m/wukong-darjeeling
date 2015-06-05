@@ -1,11 +1,11 @@
 #include "debug.h"
-#include "../../common/native_wuclasses/native_wuclasses.h"
+#include "native_wuclasses.h"
 
 #include <avr/io.h>
-#include "../../../../uart/c/common/uart.h"
+#include "../../../../uart/include/common/uart.h"
 #include "wkcomm.h"
-#include "../../common/native_wuclasses/GENERATEDwuclass_gh_sensor.h"
-#include "../../common/wkpf_links.h"
+#include "GENERATEDwuclass_gh_sensor.h"
+#include "wkpf_links.h"
 
 int counter;
 uint8_t state, wid, returnWid;

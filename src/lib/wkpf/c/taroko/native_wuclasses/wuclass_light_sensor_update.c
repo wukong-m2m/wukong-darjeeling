@@ -1,5 +1,5 @@
 #include "debug.h"
-#include "../../common/native_wuclasses/native_wuclasses.h"
+#include "native_wuclasses.h"
 
 void wuclass_light_sensor_setup(wuobject_t *wuobject) {}
 

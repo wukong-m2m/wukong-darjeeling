@@ -1,0 +1,302 @@
+apply plugin: DjSourceSetPlugin
+
+// Add plugin to run addTasks for all djlibsource and djappsource
+// declared in the sub.gradle files in /lib/* and /app/*
+class DjSourceSetPlugin implements Plugin<Project> {
+    void apply(Project project) {
+        project.extensions.djlibsource = project.container(DjLibSourceSet)
+        project.extensions.djappsource = project.container(DjAppSourceSet)
+        project.extensions.djlibsource.all { djsource ->
+            djsource.init(project)
+        }
+        project.extensions.djappsource.all { djsource ->
+            djsource.init(project)
+        }
+    }
+}
+
+project.ext.loadDjAppSourceSet = { String name ->
+    apply from: "app/${name}/sub.gradle"
+    djappsource[name].addTasks()
+}
+project.ext.loadDjLibrarySourceSet = { String name ->
+    if (djlibsource.findByName(name) == null) {
+        apply from: "lib/${name}/sub.gradle"
+        djlibsource[name].addTasks()
+    }
+}
+
+class DjSourceSet {
+    Project project
+    final String name
+    String basedir
+    Task cGenerateCodeTask = null
+    List<DjSourceSet> cDependencies 
+    List<DjSourceSet> javaDependencies
+
+    DjSourceSet(String name) {
+        this.name = name
+    }
+    void init (Project project) {
+        this.project = project
+    }
+
+    boolean sourceSetContainsJavaCode() {
+        return new File(this.basedir + '/java').exists()
+    }
+
+    void addTasks() {
+        this.loadDependencies()
+        if (this.sourceSetContainsJavaCode()) {
+            this.addJavaTasks()
+            this.addJavaGeneratedCSourceSet()
+        }
+        this.addCSourceSet()
+    }
+
+    void loadDependencies() {
+        this.cDependencies.each { clibname ->
+            project.loadDjLibrarySourceSet(clibname)
+        }
+        this.javaDependencies.each { jlibname ->
+            project.loadDjLibrarySourceSet(jlibname)
+        }
+    }
+
+
+    String libToJarName(String libname) { return "${this.project.buildDir}/${libname}.jar" }
+    String libToInfusionCSourceSetName(DjSourceSet lib) { return "infusion_c_${lib.name}" }
+    String getInfusionTaskName() { return "infusion_${this.name}" }
+    String libToInfusionDir(String libname) { return "${this.project.buildDir}/infusion-${libname}" }
+    String getInfusionDir() { return this.libToInfusionDir(this.name) }
+    String getInfusionFileName() { return "${this.getInfusionDir()}/${this.name}.di" }
+
+
+    void addJavaTasks() {
+        def srcDir = "${this.basedir}/java"
+        def outputClassesDir = new File("${project.buildDir}/classes-${this.name}")
+        def infusionDir = new File(this.getInfusionDir())
+        def outputJar = libToJarName(this.name)
+        def bootclasspath = libToJarName('base')
+        def classpath = this.javaDependencies.collect { libname -> libToJarName(libname) }.join(':')
+
+        def javac_task = project.tasks.create(name: 'javac_'+this.name) {
+            ext.sourcepath = '' // May set this externally. Useful for WK applications.
+            inputs.files project.fileTree(dir: srcDir).include('**/*.java')
+            outputs.dir outputClassesDir
+            this.javaDependencies.each { jlibname ->
+                dependsOn("jar_${jlibname}")
+            }
+            doLast {
+                project.ensureEmptyDir(outputClassesDir)
+                ant.javac (
+                    srcdir: srcDir,
+                    destdir: outputClassesDir,
+                    bootclasspath: this.name != 'base' ? bootclasspath : '', // No point in setting a bootclasspath if that's what we're building.
+                    classpath: classpath,
+                    sourcepath: sourcepath,
+                    includeantruntime: false
+                )
+            }
+        }
+        def jar_task = project.tasks.create(name: 'jar_'+this.name) {
+            dependsOn(javac_task)
+            inputs.files project.fileTree(dir: outputClassesDir).include('**/*.class')
+            outputs.file outputJar
+            doLast {
+                ant.jar (destfile: outputJar) {
+                    fileset(dir: outputClassesDir, includes: '**/*.class')
+                }
+            }
+        }
+        def infusion_task = project.tasks.create(name: this.getInfusionTaskName()) {
+            dependsOn(javac_task)
+            inputs.files project.fileTree(dir: outputClassesDir).include('**/*.class')
+            outputs.dir infusionDir
+            this.javaDependencies.each { jlibname ->
+                dependsOn("infusion_${jlibname}")
+            }
+            doLast {
+                def infusionheaders = javaDependencies.collect { jlibname -> "infusion-${jlibname}/${jlibname}.dih"}
+                project.ensureEmptyDir(infusionDir)
+                ant.infuser(
+                        name: this.name,
+                        infusionfile: this.getInfusionFileName(),
+                        headerfile: "${infusionDir}/${this.name}.dih",
+                        hfile: "${infusionDir}/jlib_${this.name}.h",
+                        cfile: "${infusionDir}/jlib_${this.name}.c",
+                        debugfile: "${infusionDir}/jlib_${this.name}.debug") {
+                    fileset(dir: outputClassesDir, includes: '**/*.class')
+                    javaDependencies.each { jlibname ->
+                        fileset(dir: libToInfusionDir(jlibname), includes: "${jlibname}.dih")
+                    }
+                }
+            }
+        }
+        addToInfusionArchiveTask(infusion_task)
+    }
+    // No idea why I can't do this in addJavaTasks...
+    void addJavaGeneratedCSourceSet(){
+        project.model {
+            components.darjeeling {
+                sources.create(libToInfusionCSourceSetName(this), CSourceSet) {
+                    source {
+                        srcDir this.getInfusionDir()
+                        include '**/*.c'
+                        builtBy(project.tasks[this.getInfusionTaskName()])
+                    }
+                    exportedHeaders {
+                        srcDir this.getInfusionDir()
+                    }
+                    lib ( sources['core'] )
+                }
+                // libinit sourceset depends on the sourceset we just created
+                sources.libinit.lib ( sources[libToInfusionCSourceSetName(this)] )
+            }
+        }
+    }
+
+    void addCSourceSet() {
+        // Add the source sets to the model
+        project.model {
+            components.darjeeling {
+                sources.create(this.name, CSourceSet) {
+                    source {
+                        srcDir this.basedir + '/c/common'
+                        project.djConfig.getAllPlatforms().each { p ->
+                            srcDir this.basedir + "/c/${p}"
+                        }
+                        include '**/*.c'
+                    }
+                    exportedHeaders {
+                        srcDir this.basedir + '/include/common'
+                        project.djConfig.getAllPlatforms().each { p ->
+                            srcDir this.basedir + "/include/${p}"
+                        }
+                    }
+                    lib ( sources['core'] )
+                    this.cDependencies.each { clibname ->
+                        lib ( sources[clibname] )
+                        def clib = project.djlibsource[clibname]
+                        if (clib.sourceSetContainsJavaCode()) {
+                            lib ( sources[libToInfusionCSourceSetName(clib)] )
+                        }
+                    }
+                    if (this.sourceSetContainsJavaCode()) {
+                        lib ( sources[libToInfusionCSourceSetName(this)])
+                    }
+                    if (this.cGenerateCodeTask != null) {
+                        source {
+                            this.cGenerateCodeTask.outputs.getFiles().each { f ->
+                                srcDir "${f}/c"
+                            }
+                            include '**/*.c'
+                            builtBy (this.cGenerateCodeTask) // To create task dependency between the lifecycle task for this source set and the code gen task
+                        }
+                        exportedHeaders {
+                            this.cGenerateCodeTask.outputs.getFiles().each { f ->
+                                srcDir "${f}/include"
+                            }
+                        }
+                    }
+                }
+                // main sourceset depends on the sourceset we just created
+                sources.main.lib ( sources[this.name] )
+            }
+        }   
+    }
+}
+
+// Not much extra processing is needed for libraries
+class DjLibSourceSet extends DjSourceSet {
+    DjLibSourceSet(String name) {
+        super(name)
+    }
+    void init(Project project) {
+        super.init(project);
+        this.basedir = "${project.project.rootDir}/lib/${name}"
+    }
+    void addToInfusionArchiveTask(Task createInfusionTask) {
+        project.tasks.createLibArchive.addPart(this.getInfusionFileName(), project.ant.djarchive_type_lib_infusion, createInfusionTask)
+    }
+}
+
+// Application source sets get some extra functionality
+// for WuKong applications.
+class DjAppSourceSet extends DjSourceSet {
+    String wkpfTableXml
+
+    DjAppSourceSet(String name) {
+        super(name)
+    }
+    void init(Project project) {
+        super.init(project);
+        this.basedir = "${project.project.rootDir}/app/${name}"
+    }
+    void addTasks() {
+        super.addTasks()
+        if (wkpfTableXml != null) {
+            // WuKong specifics:
+            addGenerateWkpfTablesTask()
+            addGenerateVirtualWuClassesTask()
+        }
+    }
+    void addToInfusionArchiveTask(Task createInfusionTask) {
+        project.tasks.createAppArchive.addPart(this.getInfusionFileName(), project.ant.djarchive_type_app_infusion, createInfusionTask)
+    }
+
+    void addGenerateVirtualWuClassesTask() {
+        def generateVirtualWuClasses = project.tasks.create(name: 'generateVirtualWuClasses') {
+            def componentLibraryXml = "${project.project.rootDir}/../wukong/ComponentDefinitions/WuKongStandardLibrary.xml"
+            def pythonScript = "${project.project.rootDir}/../wukong/master/wkpf/codegen.py"
+
+            ext.destDir = new File("${project.buildDir}/generated-virtual-wuclasses")
+            def destDirClasses = new File(destDir, '/javax/wukong/virtualwuclasses')
+            inputs.file componentLibraryXml
+            inputs.file pythonScript
+            outputs.dir destDir
+
+
+            // we only need to generate the Java part here, C will be generated from lib/wkpf/sub.gradle
+            doLast {
+                project.ensureEmptyDir(destDir)
+                destDirClasses.mkdirs()
+                project.exec {
+                    executable pythonScript
+                    args '--input_xml', componentLibraryXml, '--java_package', 'javax.wukong.virtualwuclasses', '--java_constants_dir', destDirClasses, '--java_virtualclasses_dir', destDirClasses
+                }
+            }
+        }
+        // Add the virtual classes, both the generated and normal sources, to the sourcepath of the wk application
+        def wukongVirtualClassesDir = "${project.rootDir}/../wukong"
+        def wukongGeneratedVirtualClassesDir = generateVirtualWuClasses.destDir
+        project.tasks['javac_'+this.name].sourcepath = "${wukongVirtualClassesDir}:${wukongGeneratedVirtualClassesDir}"
+        // And make sure they get generated before the application is compiled
+        project.tasks['javac_'+this.name].dependsOn generateVirtualWuClasses
+    }
+
+    void addGenerateWkpfTablesTask() {
+        def tableXml = new File("${basedir}/${wkpfTableXml}")
+        def destDir = new File("${project.buildDir}/generated-wkpf-tables")
+        def outputBase = "${destDir}/${name}"
+
+        def generateWkpfTables = project.tasks.create(name: 'generateWkpfTables') {
+            inputs.file tableXml
+            outputs.dir destDir
+            doLast {
+                project.ensureEmptyDir(destDir)
+                // TODONR: if this fails with an exception, the next run will think the task is up to date
+                ant.wkpftable (
+                    src: tableXml,
+                    dest: outputBase
+                )
+            }
+        }
+
+        // Tell the createAppArchive task to include these tables.
+        project.tasks.createAppArchive.addPart("${outputBase}.wkpf_linktable", project.ant.djarchive_type_wkpf_linktable, generateWkpfTables)
+        project.tasks.createAppArchive.addPart("${outputBase}.wkpf_componentmap", project.ant.djarchive_type_wkpf_componentmap, generateWkpfTables)
+        project.tasks.createAppArchive.addPart("${outputBase}.wkpf_initvalues", project.ant.djarchive_type_wkpf_initvalues, generateWkpfTables)
+    }
+}
+

@@ -6,16 +6,7 @@
 __comp__*
 a.out
 GENERATED*
-history.xml
-temp_di_app_infusion_archive.c
-temp_di_lib_infusions_archive.c
-darjeeling.elf
-darjeeling.ihex
-darjeeling_eeprom.ihex
-darjeeling.a
-darjeeling-avr.map
 build
-lib_infusions.dja
 programflash.data
 .tags
 .tags_sorted_by_file
@@ -26,7 +17,7 @@ WKDeploy.xml
 WKDeployCustomComponents.xml
 master.cfg
 src/config/native/config.txt
-src/settings.xml
+src/usersettings.gradle
 stk500boot.eep
 stk500boot.elf
 stk500boot.lss
@@ -43,3 +34,4 @@ wkdeploy.dja
 *.sqlite
 fbp.html
 wukong/tools/testrtt/testrtt
+.gradle

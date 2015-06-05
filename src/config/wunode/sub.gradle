@@ -1,0 +1,6 @@
+djConfig {
+	platform = 'arduino.wudevice'
+	libraries = ['darjeeling3', 'wkpf_virtual']
+	app = 'wkemptyapp'
+	appArchiveSize = 4096
+}

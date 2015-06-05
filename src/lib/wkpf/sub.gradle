@@ -1,0 +1,25 @@
+task generate_wkpf(type: Exec) {
+	def componentLibraryXml = file("${project.rootDir}/../wukong/ComponentDefinitions/WuKongStandardLibrary.xml")
+	def enabledClassesXml = file("${project.rootDir}/config/${djConfigname}/enabled_wuclasses.xml")
+	def pythonScript = file("${project.rootDir}/../wukong/master/wkpf/codegen.py")
+	ext.destDir = new File("${buildDir}/generated-wkpf")
+	inputs.file componentLibraryXml
+	inputs.file enabledClassesXml
+	inputs.file pythonScript
+	outputs.dir destDir
+
+	// we only need to generate the C part here
+	executable pythonScript
+	args '--input_xml', componentLibraryXml, '--enabled_xml', enabledClassesXml, '--c_dir', destDir
+
+	doFirst {
+        project.ensureEmptyDir(destDir)
+	}
+}
+
+djlibsource {
+    wkpf {
+        cGenerateCodeTask = generate_wkpf
+        cDependencies = [ 'wkreprog', 'wkcomm' ]
+    }
+}

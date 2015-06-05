@@ -1,5 +1,0 @@
-<project default="all">
-
-	<import file="../platform.xml"/>
-
-</project>

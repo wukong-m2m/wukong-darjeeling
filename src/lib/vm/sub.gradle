@@ -1,0 +1,5 @@
+djlibsource {
+    vm {
+        cDependencies = [ 'vm_dev', 'base' ]
+    }
+}

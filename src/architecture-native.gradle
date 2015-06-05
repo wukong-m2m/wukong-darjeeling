@@ -1,0 +1,26 @@
+binaries.all {
+    cCompiler.args "-gdwarf-2"
+    cCompiler.args "-ggdb"
+    cCompiler.args "-Wall"
+    cCompiler.args "-Werror"
+    cCompiler.args "-std=gnu99"
+}
+
+tasks.architectureSpecificAssemble { 
+    dependsOn tasks['createLibArchive']
+    dependsOn tasks['createAppArchive']
+
+    def libInfusion = tasks['createLibArchive'].archiveFile
+    def appInfusion = tasks['createAppArchive'].archiveFile
+    def executable = djTargetBinary
+
+    inputs.file libInfusion
+    inputs.file appInfusion
+    inputs.file executable
+
+    doLast {
+        copy { from libInfusion into destDir }
+        copy { from appInfusion into destDir }
+        copy { from djTargetBinary into destDir rename { f -> 'darjeeling.elf' } }
+    }
+}

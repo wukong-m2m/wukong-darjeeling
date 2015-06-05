@@ -1,0 +1,5 @@
+djlibsource {
+    ecocast {
+        cDependencies = [ 'wkcomm', 'wkreprog' ]
+    }
+}

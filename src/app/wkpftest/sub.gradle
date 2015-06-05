@@ -1,0 +1,5 @@
+djappsource {
+    wkpftest {
+        javaDependencies = [ 'base', 'wkpf_virtual' ]
+    }
+}

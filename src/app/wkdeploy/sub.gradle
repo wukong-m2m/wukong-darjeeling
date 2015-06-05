@@ -1,0 +1,6 @@
+djappsource {
+    wkdeploy {
+        javaDependencies = [ 'base', 'wkpf_virtual' ]
+        wkpfTableXml = 'java/WKDeploy.xml'
+    }
+}
