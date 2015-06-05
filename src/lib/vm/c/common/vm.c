@@ -88,6 +88,47 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 	DEBUG_LOG(true, "All threads terminated.\n\r");
 }
 
+dj_vm *g_vm;
+void dj_vm_main_init(dj_di_pointer di_lib_infusions_archive_data,
+ 				dj_di_pointer di_app_infusion_archive_data,
+ 				dj_named_native_handler handlers[],
+ 				uint8_t handlers_length) {
+	dj_object * obj;
+
+	// create a new VM
+	g_vm = dj_vm_create();
+
+	// store the application archive
+	g_vm->di_app_infusion_archive_data = di_app_infusion_archive_data;
+
+	// tell the execution engine to use the newly created VM instance
+	dj_exec_setVM(g_vm);
+	// set run level before loading libraries since they need to execute initialisation code
+	dj_exec_setRunlevel(RUNLEVEL_RUNNING);
+
+	dj_vm_loadInfusionArchive(g_vm, di_lib_infusions_archive_data, handlers, handlers_length);
+	dj_di_pointer di_app_infusion_data = dj_archive_get_file(di_app_infusion_archive_data, 0);
+	dj_vm_loadInfusion(g_vm, di_app_infusion_data, NULL, 0);
+
+	// pre-allocate an OutOfMemoryError object
+	obj = dj_vm_createSysLibObject(g_vm, BASE_CDEF_java_lang_OutOfMemoryError);
+	vm_mem_setPanicExceptionObject(obj);
+
+	DEBUG_LOG(true, "Darjeeling is go!\n\r");
+}
+
+int dj_vm_loop()
+{
+	// start the main execution loop
+	if  (dj_vm_countLiveThreads(g_vm)>0) {
+		dj_vm_schedule(g_vm);
+		if (g_vm->currentThread!=NULL)
+			if (g_vm->currentThread->status==THREADSTATUS_RUNNING)
+				dj_exec_run(RUNSIZE);
+		return 0;
+	}
+	return 1;
+}
 
 /**
  * Constructs a new virtual machine context.
