@@ -9,7 +9,7 @@ binaries.all {
     cCompiler.args '-fdata-sections'
     cCompiler.args '-ffunction-sections'
     linker.args "-mmcu=${djMcu}"
-    linker.args '-Wl,--section-start=.reprogram_flash_page=0x1F800'
+    linker.args "-Wl,--section-start=.reprogram_flash_page=${djReprogramFlashPageAddress}"
     linker.args '-Wl,--gc-sections'
 }
 

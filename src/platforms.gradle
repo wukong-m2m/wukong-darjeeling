@@ -3,10 +3,12 @@ switch (djConfig.getAllPlatforms().last()) {
     case 'arduino.wudevice':
         ext.djArchitecture='avr'
         ext.djMcu='atmega2560'
+        ext.djReprogramFlashPageAddress='0x3F000'
     break
     case 'arduino.avrora':
         ext.djArchitecture='avr'
         ext.djMcu='atmega128'
+        ext.djReprogramFlashPageAddress='0x1F800'
     break
     case ~/^posix.*/:
         ext.djArchitecture='native'
