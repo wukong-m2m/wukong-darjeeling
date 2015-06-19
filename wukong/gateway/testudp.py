@@ -23,7 +23,10 @@ if __name__ == "__main__":
         HOST = socket.gethostbyname(hardcode_ip)
         sock.sendto(p,(HOST,5775))
         p = sock.recv(1000)
-        print [p]
+        if ord(p[0]) == 0xAA and ord(p[1]) == 0x55:
+            print "Node ID is %d" % ord(p[2])
+        else:
+            print "Unknown message:",[p]
 
     elif sys.argv[3] == 'ID':
         dest_id = MPTN.MASTER_ID

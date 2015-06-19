@@ -216,6 +216,7 @@ class UDPTransport(object):
                 found = True
                 self.last_node_id = d.nodeid
                 self._mode = MPTN.STOP_MODE
+                self.send_raw(self.last_node_id,[self.last_node_id])
                 return
 
         if type == 2 and not found and self.enterLearnMode and self._mode == MPTN.ADD_MODE:
@@ -246,6 +247,7 @@ class UDPTransport(object):
             pass
             self.last_node_id = 0
             self._mode = MPTN.STOP_MODE
+        self.send_raw(self.last_node_id,[self.last_node_id])
 
     def saveDevice(self):
         f = open('devices.pk','w')
