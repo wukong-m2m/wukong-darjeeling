@@ -1,21 +1,4 @@
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <time.h>
-#include "core.h"
-#include "hooks.h"
-#include "types.h"
 #include "config.h"
-#include "debug.h"
-#include "djtimer.h"
-#include "routing/routing.h"
-#include "radio_wifi.h"
-#include "posix_utils.h"
 
 // Here we have a circular dependency between radio_X and routing.
 // Bit of a code smell, but since the two are supposed to be used together I'm leaving it like this for now.
