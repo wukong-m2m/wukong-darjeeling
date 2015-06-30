@@ -2,7 +2,7 @@
 
 #ifdef RADIO_USE_WIFI
 
-#include "radio_wifi.h"
+#include "radio_wifi1.h"
 #include <stdlib.h>
 #include <string.h>
 #include "djtimer.h"

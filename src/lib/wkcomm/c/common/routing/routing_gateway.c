@@ -101,6 +101,21 @@ wkcomm_address_t addr_xbee_to_wkcomm(radio_xbee_address_t xbee_addr) {
 }
 #endif // RADIO_USE_XBEE
 
+#ifdef RADIO_USE_WIFI
+#include "../radios/radio_wifi.h"
+radio_wifi_address_t prefix_mask, host_mask;
+#define GET_ID_RADIO_ADDRESS(x) (x)
+wkcomm_address_t GET_ID_PREFIX(wkcomm_address_t wkcomm_addr){
+    return wkcomm_addr & (wkcomm_address_t)(prefix_mask);
+}
+radio_wifi_address_t addr_wkcomm_to_wifi(wkcomm_address_t wkcomm_addr) {
+    return (radio_wifi_address_t)(wkcomm_addr);
+}
+wkcomm_address_t addr_wifi_to_wkcomm(radio_wifi_address_t wifi_addr) {
+    return (wkcomm_address_t)(wifi_addr);
+}
+#endif // RADIO_USE_WIFI
+
 // MY NODE ID
 // Get my own node id
 wkcomm_address_t routing_get_node_id() {
@@ -110,6 +125,9 @@ wkcomm_address_t routing_get_node_id() {
     #endif
     #ifdef RADIO_USE_XBEE
         return addr_xbee_to_wkcomm(radio_xbee_get_node_id());
+    #endif
+    #ifdef RADIO_USE_WIFI
+        return addr_wifi_to_wkcomm(radio_wifi_get_node_id());
     #endif
 }
 
@@ -140,10 +158,14 @@ uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
     }
     DEBUG_LOG(DBG_WKROUTING, "]\n");
 
-    if (GET_ID_PREFIX(id_table.my_id) != GET_ID_PREFIX(dest) || dest == MPTN_MASTER_ID)
-    {
+    #ifdef RADIO_USE_WIFI
         dest = id_table.gateway_id;
-    }
+    #else
+        if (GET_ID_PREFIX(id_table.my_id) != GET_ID_PREFIX(dest) || dest == MPTN_MASTER_ID)
+        {
+            dest = id_table.gateway_id;
+        }
+    #endif
     DEBUG_LOG(DBG_WKROUTING, "routing send dest id is %d\n", dest);
     #ifdef RADIO_USE_ZWAVE
         return radio_zwave_send(addr_wkcomm_to_zwave(dest), rt_payload, length);
@@ -151,8 +173,12 @@ uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
     #ifdef RADIO_USE_XBEE
         return radio_xbee_send(addr_wkcomm_to_xbee(dest), rt_payload, length);
     #endif
+    #ifdef RADIO_USE_WIFI
+        return radio_wifi_send(addr_wkcomm_to_wifi(dest), rt_payload, length);
+    #endif
     return 0;
 }
+
 uint8_t routing_send_raw(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
     #ifdef RADIO_USE_ZWAVE
         return radio_zwave_send_raw(addr_wkcomm_to_zwave(dest), payload, length);
@@ -160,9 +186,11 @@ uint8_t routing_send_raw(wkcomm_address_t dest, uint8_t *payload, uint8_t length
     #ifdef RADIO_USE_XBEE
         return radio_xbee_send_raw(addr_wkcomm_to_xbee(dest), payload, length);
     #endif
+    #ifdef RADIO_USE_WIFI
+        return radio_wifi_send_raw(addr_wkcomm_to_wifi(dest), payload, length);
+    #endif
     return 0;
 }
-
 
 // RECEIVING
     // Since this library doesn't contain any routing, we just always pass the message up to wkcomm.
@@ -182,6 +210,14 @@ void routing_handle_xbee_message(radio_xbee_address_t xbee_addr, uint8_t *payloa
     //wkcomm_handle_message(addr_xbee_to_wkcomm(xbee_addr), payload, length);
 }
 #endif // RADIO_USE_XBEE
+
+#ifdef RADIO_USE_WIFI
+void routing_handle_wifi_message(radio_wifi_address_t wifi_addr, uint8_t *payload, uint8_t length) {
+    routing_handle_message(addr_wifi_to_wkcomm(wifi_addr), payload, length);
+    //wkcomm_handle_message(addr_wifi_to_wkcomm(wifi_addr), payload, length);
+}
+#endif // RADIO_USE_WIFI
+
 
 void routing_handle_message(wkcomm_address_t wkcomm_addr, uint8_t *payload, uint8_t length)
 {
@@ -274,6 +310,9 @@ void routing_handle_message(wkcomm_address_t wkcomm_addr, uint8_t *payload, uint
             #ifdef RADIO_USE_XBEE
                 radio_xbee_send(addr_wkcomm_to_xbee(id_table.gateway_id), payload, MPTN_PAYLOAD_BYTE_OFFSET);
             #endif
+            #ifdef RADIO_USE_WIFI
+                radio_wifi_send(addr_wkcomm_to_wifi(id_table.gateway_id), payload, MPTN_PAYLOAD_BYTE_OFFSET);
+            #endif
         }
         DEBUG_LOG(DBG_WKROUTING, "r_handle drops unknown packet\n");
         //DEBUG_LOG(DBG_WKROUTING, "forward\n");
@@ -283,19 +322,24 @@ void routing_handle_message(wkcomm_address_t wkcomm_addr, uint8_t *payload, uint
 
 // INIT
 void routing_init() {
-    DEBUG_LOG(DBG_WKROUTING, "routing_init\n");
+    DEBUG_LOG(DBG_WKROUTING, "r_init\n");
     #ifdef RADIO_USE_ZWAVE
         radio_zwave_init();
     #endif
     #ifdef RADIO_USE_XBEE
         radio_xbee_init();
     #endif
+    #ifdef RADIO_USE_WIFI
+        radio_wifi_init();
+        prefix_mask = radio_wifi_get_prefix_mask();
+        host_mask = ~prefix_mask;
+    #endif
     routing_poweron_init();
 }
 
 void routing_poweron_init()
 {
-    DEBUG_LOG(DBG_WKROUTING, "routing_poweron_init\n");
+    DEBUG_LOG(DBG_WKROUTING, "r_poweron_init\n");
     id_table.my_id = wkpf_config_get_myid();
     id_table.gateway_id = wkpf_config_get_gwid();
     wkpf_config_get_uuid(id_table.uuid);
@@ -307,14 +351,15 @@ void routing_poweron_init()
 dj_time_t routing_search_time = 0;
 #ifdef RADIO_USE_ZWAVE
 #define BROADCAST_ADDRESS 0xFF
-uint8_t scan_id = BROADCAST_ADDRESS;
+radio_zwave_address_t scan_id = BROADCAST_ADDRESS;
 #endif
 #ifdef RADIO_USE_XBEE
 #define BROADCAST_ADDRESS 0xFFFF
-uint16_t scan_id = BROADCAST_ADDRESS;
+radio_xbee_address_t scan_id = BROADCAST_ADDRESS;
 #endif
 #ifdef RADIO_USE_WIFI
-
+#define BROADCAST_ADDRESS 0xFFFFFFFF
+radio_wifi_address_t scan_id = BROADCAST_ADDRESS;
 #endif
 void routing_discover_gateway()
 {
@@ -333,7 +378,7 @@ void routing_discover_gateway()
             id_table.uuid[i] = 0;
         }
         wkpf_config_set_uuid(id_table.uuid);
-        DEBUG_LOG(DBG_WKROUTING, "routing discover start: gw_id=%d my_id=%d\n",id_table.gateway_id,id_table.my_id);
+        DEBUG_LOG(DBG_WKROUTING, "r_discover: gw_id=%d my_id=%d\n",id_table.gateway_id,id_table.my_id);
     }
     for (i = MPTN_DEST_BYTE_OFFSET; i < MPTN_DEST_BYTE_OFFSET+MPTN_ID_LEN; ++i)
     {
@@ -354,6 +399,12 @@ void routing_discover_gateway()
 #ifdef RADIO_USE_XBEE
     radio_xbee_send(addr_wkcomm_to_xbee(scan_id++), rt_payload, MPTN_PAYLOAD_BYTE_OFFSET);
     if ((scan_id & 1) ==0) radio_xbee_send(addr_wkcomm_to_xbee(BROADCAST_ADDRESS), rt_payload, MPTN_PAYLOAD_BYTE_OFFSET);
+#endif
+#ifdef RADIO_USE_WIFI
+    radio_wifi_address_t host_mask = ~prefix_mask, prefix = id_table.my_id & prefix_mask;
+    scan_id = ((scan_id + 1) & host_mask) | prefix;
+    radio_wifi_send(addr_wkcomm_to_wifi(scan_id), rt_payload, MPTN_PAYLOAD_BYTE_OFFSET);
+    if ((scan_id & 1) ==0) radio_wifi_send(addr_wkcomm_to_wifi((BROADCAST_ADDRESS & host_mask) | prefix), rt_payload, MPTN_PAYLOAD_BYTE_OFFSET);
 #endif
 }
 
@@ -396,6 +447,9 @@ void routing_id_req()    //send ID request
 #ifdef RADIO_USE_XBEE
     radio_xbee_send(addr_wkcomm_to_xbee(id_table.gateway_id), rt_payload, MPTN_PAYLOAD_BYTE_OFFSET + MPTN_UUID_LEN);
 #endif
+#ifdef RADIO_USE_WIFI
+    radio_wifi_send(addr_wkcomm_to_wifi(id_table.gateway_id), rt_payload, MPTN_PAYLOAD_BYTE_OFFSET + MPTN_UUID_LEN);
+#endif
 }
 
 // POLL
@@ -409,6 +463,9 @@ void routing_poll() {
     #endif
     #ifdef RADIO_USE_XBEE
         radio_xbee_poll();
+    #endif
+    #ifdef RADIO_USE_WIFI
+        radio_wifi_poll();
     #endif
     if (dj_timer_getTimeMillis() - routing_search_time > 3000)
     {

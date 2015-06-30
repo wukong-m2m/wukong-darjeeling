@@ -23,6 +23,7 @@ char* posix_pc_network_directory = "./djnetwork";
 bool posix_pc_network_directory_specified = false;
 char* posix_network_server_address = "127.0.0.1";
 int posix_network_server_port = 10008;
+char* posix_interface_name = "wlan0";
 char* posix_enabled_wuclasses_xml = NULL;
 char posix_config_filename[1024];
 char posix_app_infusion_filename[1024];
@@ -40,6 +41,7 @@ void posix_print_commandline_help() {
 "                                         For example \"-u 2=/dev/ttyACM0 to conn)\" causes reads and writes to uart 2 to be redirected to /dev/ACM0.\n"
 "  -s, --network_server address[:port]    Connect to the WuKongNetworkServer running at address. The port is optional, and is 10008 by default.\n"
 "  -i, --network_server_id id             Set the id this client will use to connect to WuKongNetworkServer.java\n"
+"  -n, --interface_name name              The network interface name to connect to gateway\n"
 "\n"
 "OPTIONS FOR POSIX_PC PLATFORM ONLY:\n"
 "  -d, --network_directory dir            Set the directory to use to simulate sensors and actuators. A subdirectory node_id will be created for each node.\n"
@@ -53,9 +55,6 @@ void posix_print_commandline_help() {
 "                                         (needs to be enabled in config.h by defining LOAD_ENABLED_WUCLASSES_AT_STARTUP)\n"
 	);
 }
-
-
-
 
 void posix_parse_uart_arg(char *arg) {
 	int uart = arg[0];
@@ -86,6 +85,11 @@ void posix_parse_networkserver_arg(char *arg) {
 void posix_parse_network_server_id_arg(char *arg) {
 	posix_local_network_id = atoi(arg);
 	printf("[posix platform parameters] Network id: %d\n", posix_local_network_id);
+}
+
+void posix_parse_interface_name_arg(char *arg){
+	posix_interface_name = arg;
+	printf("[posix platform parameters] Interface name: %s\n", posix_interface_name);
 }
 
 void posix_parse_network_directory_arg(char *arg) {
@@ -147,13 +151,14 @@ void posix_parse_command_line(int argc, char* argv[]) {
 			{"network_server",      required_argument, 0, 's'},
 			{"network_server_id",      required_argument, 0, 'i'},
 			{"network_directory",      required_argument, 0, 'd'},
+			{"interface_name", 		required_argument, 0, 'f'},
 			{0, 0, 0, 0}
 		};
 
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long (argc, argv, "hau:s:i:d:e:",
+		c = getopt_long (argc, argv, "hau:s:i:d:e:f:",
 		    long_options, &option_index);
 
 		/* Detect the end of the options. */
@@ -178,6 +183,9 @@ void posix_parse_command_line(int argc, char* argv[]) {
 				break;
 			case 'd':
 				posix_parse_network_directory_arg(optarg);
+				break;
+			case 'n':
+				posix_parse_interface_name_arg(optarg);
 				break;
 			case 'e':
 				posix_enabled_wuclasses_xml = optarg;

@@ -13,6 +13,7 @@ extern bool posix_arg_addnode;
 extern uint32_t posix_local_network_id;
 extern char* posix_pc_network_directory;
 extern char* posix_network_server_address;
+extern char* posix_interface_name;
 extern int posix_network_server_port;
 extern char* posix_enabled_wuclasses_xml;
 extern char posix_config_filename[1024];

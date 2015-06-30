@@ -45,8 +45,8 @@ extern void routing_handle_local_message(radio_networkserver_address_t local_add
 
 #ifdef RADIO_USE_WIFI
 #include "radios/radio_wifi.h"
-extern void routing_handle_wifi_message(uint8_t wifi_cid, uint8_t *payload, uint8_t length);
-extern void wifi_server_disconnect(uint8_t cid);
+extern void routing_handle_wifi_message(radio_wifi_address_t wifi_addr, uint8_t *payload, uint8_t length);
+// extern void wifi_server_disconnect(uint8_t cid);
 #endif // RADIO_USE_WIFI
 
 #endif // ROUTING_NONEH

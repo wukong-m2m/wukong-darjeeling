@@ -108,7 +108,7 @@ class UDPTransport(object):
                 ip = struct.unpack("I",data[3:7])
                 port = struct.unpack('H',data[7:9])
                 t = ord(data[9])
-                print "type=",type
+                print "type=",t
 
                 print "data=",data
                 print MPTN.ID_FROM_STRING(addr[0])
@@ -116,7 +116,8 @@ class UDPTransport(object):
                 if data != "":
                     logger.debug("receives message %s from address %s" % (data, str(addr)))
                     if t == 1:
-                        data = data[10:]
+                        # data[10] is the size of the payload
+                        data = data[11:]
                         return (nodeid, data)
                     elif t == 2:
                         self.refreshDeviceData(data)
@@ -131,14 +132,14 @@ class UDPTransport(object):
 
         return (None, None)
 
-    def send_raw(self, nodeid, payload):
+    def send_raw(self, nodeid, payload, raw_type=1):
         ret = None
         with _global_lock:
             try:
                 address,port = self.getDeviceAddress(nodeid)
-                if address == 0:
-                    return None
-                header = chr(0xaa) + chr(0x55) + chr(nodeid) + struct.pack('I', address) + struct.pack('H', port) + chr(1)
+                if address == 0: return None
+
+                header = chr(0xaa) + chr(0x55) + chr(nodeid) + struct.pack('I', address) + struct.pack('H', port) + chr(raw_type) + chr(len(payload))
                 message = "".join(map(chr, payload))
                 logger.info("sending %d bytes %s to %s at port %d" % (len(message), message, MPTN.ID_TO_STRING(address),port))
                 sock = socket.socket(socket.AF_INET, # Internet
@@ -196,16 +197,16 @@ class UDPTransport(object):
         return ret
 
     def refreshDeviceData(self,data):
-        if ord(data[0]) != 0xAA or ord(data[1]) != 0x55:
-            # Drop the unknown packet
-            print "Get unknown packet ",data[0],data[1]
-            return
+        # if ord(data[0]) != 0xAA or ord(data[1]) != 0x55:
+        #     # Drop the unknown packet
+        #     print "Get unknown packet ",data[0],data[1]
+        #     return
         data = data[2:]
         nodeid = ord(data[0])
         ip = struct.unpack("I",data[1:5])[0]
         port = struct.unpack('H',data[5:7])[0]
-        type = ord(data[7])
-        print "type=",type
+        # t = ord(data[7])
+        # print "type=",t
 
         # refresh the values in the IP table
         found = False
@@ -216,10 +217,10 @@ class UDPTransport(object):
                 found = True
                 self.last_node_id = d.nodeid
                 self._mode = MPTN.STOP_MODE
-                self.send_raw(self.last_node_id,[self.last_node_id])
+                self.send_raw(self.last_node_id,[self.last_node_id],raw_type=2)
                 return
 
-        if type == 2 and not found and self.enterLearnMode and self._mode == MPTN.ADD_MODE:
+        if not found and self.enterLearnMode and self._mode == MPTN.ADD_MODE: # and t == 2
             newid = 2
             while True:
                 found = False
@@ -236,7 +237,7 @@ class UDPTransport(object):
                 pass
             self.last_node_id = newid
             self._mode = MPTN.STOP_MODE
-        elif type == 2 and found and self.enterLearnMode and self._mode == MPTN.DEL_MODE:
+        elif found and self.enterLearnMode and self._mode == MPTN.DEL_MODE: # and t == 2
             for i in range(len(self.devices)):
                 d = self.devices[i]
                 if d.nodeid == nodeid:
@@ -247,7 +248,7 @@ class UDPTransport(object):
             pass
             self.last_node_id = 0
             self._mode = MPTN.STOP_MODE
-        self.send_raw(self.last_node_id,[self.last_node_id])
+        self.send_raw(self.last_node_id,[self.last_node_id],raw_type=2)
 
     def saveDevice(self):
         f = open('devices.pk','w')

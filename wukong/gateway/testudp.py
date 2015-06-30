@@ -18,7 +18,8 @@ if __name__ == "__main__":
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind(("",port))
     if sys.argv[3] == 'info':
-        p = struct.pack('BBBBBBBBBB', 0xAA,0x55,0,address&0xff,(address>>8)&0xff,(address>>16)&0xff,(address>>24)&0xff,port%256,port/256,2)
+        payload_length = 0
+        p = struct.pack('11B', 0xAA,0x55,0,address&0xff,(address>>8)&0xff,(address>>16)&0xff,(address>>24)&0xff,port%256,port/256,2,payload_length)
 
         HOST = socket.gethostbyname(hardcode_ip)
         sock.sendto(p,(HOST,5775))
@@ -33,7 +34,8 @@ if __name__ == "__main__":
         src_id = MPTN.MPTN_MAX_ID
         msg_type = MPTN.MPTN_MSGTYPE_IDREQ
         message = MPTN.create_packet_to_str(dest_id, src_id, msg_type, uuid.uuid4().bytes)
-        p = struct.pack('BBBBBBBBBB', 0xAA,0x55,int(sys.argv[4]),address&0xff,(address>>8)&0xff,(address>>16)&0xff,(address>>24)&0xff,port%256,port/256,1)
+        payload_length = len(message)
+        p = struct.pack('11B', 0xAA,0x55,int(sys.argv[4]),address&0xff,(address>>8)&0xff,(address>>16)&0xff,(address>>24)&0xff,port%256,port/256,1,payload_length)
         p = p+message
 
         HOST = socket.gethostbyname(hardcode_ip)
@@ -54,7 +56,8 @@ if __name__ == "__main__":
         msg_type = MPTN.MPTN_MSGTYPE_FWDREQ
 
         message = MPTN.create_packet_to_str(dest_id, src_id, msg_type, payload)
-        p = struct.pack('BBBBBBBBBB', 0xAA,0x55,src_id&0xff,address&0xff,(address>>8)&0xff,(address>>16)&0xff,(address>>24)&0xff,port%256,port/256,1)
+        payload_length = len(message)
+        p = struct.pack('11B', 0xAA,0x55,src_id&0xff,address&0xff,(address>>8)&0xff,(address>>16)&0xff,(address>>24)&0xff,port%256,port/256,1,payload_length)
         p = p+message
 
         HOST = socket.gethostbyname(hardcode_ip)
