@@ -249,7 +249,7 @@ class RPCAgent(TransportAgent):
         logger.debug("get client RPC stub for ID %s %X addr %s" % (MPTN.ID_TO_STRING(mptn_id), mptn_id, str(address)))
         stub = self._clients.get(mptn_id)
         if stub is None:
-            assert isinstance(mptn_id, int), "mptn_id should be integer"
+            assert isinstance(mptn_id, (int, long)), "mptn_id should be integer"
             assert isinstance(address, tuple) and len(address) == 2, "address should be a 2-tuple"
             assert isinstance(address[0], basestring), "port should be string"
             assert isinstance(address[1], int), "port should be integer"
