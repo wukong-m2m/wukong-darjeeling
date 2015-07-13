@@ -36,7 +36,7 @@
 
 dj_time_t wifi_time_init = 0;
 
-radio_wifi_address_t radio_udp_gw_ip = 0;
+radio_wifi_address_t radio_udp_gw_ip = 1;
 uint16_t radio_udp_gw_port = 5775;
 uint16_t radio_wifi_self_port = 5775;
 
@@ -47,7 +47,8 @@ uint8_t radio_wifi_host_address = 0;
 
 int radio_wifi_sockfd;
 
-uint8_t radio_wifi_receive_buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+3+ROUTING_MPTN_OVERHEAD+UDP_OVERHEAD]; // 3 for wkcomm overhead
+#define BUF_SIZE WKCOMM_MESSAGE_PAYLOAD_SIZE+3+ROUTING_MPTN_OVERHEAD+UDP_OVERHEAD
+uint8_t radio_wifi_receive_buffer[BUF_SIZE]; // 3 for wkcomm overhead
 dj_hook radio_wifi_shutdownHook;
 
 void radio_wifi_shutdown(void *data) {
@@ -59,27 +60,31 @@ void radio_wifi_platform_dependent_init(void) {
     dj_hook_add(&dj_core_shutdownHook, &radio_wifi_shutdownHook);
 
     int fd = socket(AF_INET, SOCK_DGRAM, 0);
+    // get ip/netmask from interface
+    char ipstr[INET_ADDRSTRLEN];
     struct ifreq ifr;
-
     memset(&ifr, 0, sizeof(ifr));
     ifr.ifr_addr.sa_family = AF_INET;
     strncpy(ifr.ifr_name, posix_interface_name, IFNAMSIZ-1);
+    // get ip
     if (ioctl(fd, SIOCGIFADDR, &ifr) < 0) {
         fprintf(stderr, "Unable to get interface: %d\n", errno);
         close(fd);
         return;
     }
+    inet_ntop(AF_INET, &(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), ipstr, INET_ADDRSTRLEN);
+    printf("ip: %s /", ipstr);
     radio_wifi_ip_big_endian = ntohl((((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr).s_addr);
-
+    // get netmask
     if (ioctl(fd, SIOCGIFNETMASK, &ifr) < 0) {
         fprintf(stderr, "Unable to get interface: %d\n", errno);
         close(fd);
         return;
     }
+    inet_ntop(AF_INET, &(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), ipstr, INET_ADDRSTRLEN);
+    printf("netmask: %s\n", ipstr);
     radio_wifi_prefix_mask_big_endian = ntohl((((struct sockaddr_in *)&ifr.ifr_netmask)->sin_addr).s_addr);
-
     radio_udp_gw_ip = (radio_wifi_ip_big_endian & radio_wifi_prefix_mask_big_endian) | radio_udp_gw_ip;
-    // close(fd);
 
     struct sockaddr_in servaddr;
     memset(&servaddr, 0, sizeof(servaddr));
@@ -88,7 +93,14 @@ void radio_wifi_platform_dependent_init(void) {
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     if (bind(fd, (struct sockaddr *)&servaddr, sizeof(struct sockaddr)) == -1)
     {
-        fprintf(stderr, "Unable to bind");
+        fprintf(stderr, "Unable to bind\n");
+        close(fd);
+        return;
+    }
+    int broadcastEnable = 1;
+    if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &broadcastEnable, sizeof(broadcastEnable)) == -1)
+    {
+        fprintf(stderr, "Unable to SO_BROADCAST\n");
         close(fd);
         return;
     }
@@ -107,7 +119,7 @@ void radio_wifi_platform_dependent_gateway_discovery(void){
     if (wifi_time_init == 0) {
         wifi_time_init = dj_timer_getTimeMillis();
     }
-    if ((dj_timer_getTimeMillis()-wifi_time_init > 1000)) {
+    if ((dj_timer_getTimeMillis()-wifi_time_init > 500)) {
         wifi_time_init = dj_timer_getTimeMillis();
         uint8_t send_buffer[UDP_OVERHEAD];
         send_buffer[0] = 0xAA;
@@ -128,10 +140,21 @@ void radio_wifi_platform_dependent_gateway_discovery(void){
         cliaddr.sin_port = htons(radio_udp_gw_port);
         cliaddr.sin_addr.s_addr = htonl(radio_udp_gw_ip);
         int retval = sendto(radio_wifi_sockfd, send_buffer, UDP_OVERHEAD, 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr));
-        DEBUG_LOG(DBG_WKCOMM, "msg sent to %d, length %d, retval %d\n", radio_udp_gw_ip, UDP_OVERHEAD, retval);
-        radio_udp_gw_ip = (radio_wifi_ip_big_endian & radio_wifi_prefix_mask_big_endian) | ((radio_udp_gw_ip+1) & (~radio_wifi_prefix_mask_big_endian));
+        char ipstr[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &(cliaddr.sin_addr), ipstr, INET_ADDRSTRLEN);
+        DEBUG_LOG(DBG_WKCOMM, "r_wifi discovery sent to %s, length %d, retval %d\n", ipstr, UDP_OVERHEAD, retval);
         if (retval == -1)
             fprintf(stderr, "r_wifi discovery send fail: %d\n", retval);
+        // alternatively broadcast
+        if ((radio_udp_gw_ip & 1) == 0){
+            cliaddr.sin_addr.s_addr = htonl(radio_wifi_ip_big_endian | ~radio_wifi_prefix_mask_big_endian);
+            retval = sendto(radio_wifi_sockfd, send_buffer, UDP_OVERHEAD, 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr));
+            inet_ntop(AF_INET, &(cliaddr.sin_addr), ipstr, INET_ADDRSTRLEN);
+            DEBUG_LOG(DBG_WKCOMM, "r_wifi discovery sent to %s, length %d, retval %d\n", ipstr, UDP_OVERHEAD, retval);
+            if (retval == -1)
+                fprintf(stderr, "r_wifi discovery send fail: %d\n", retval);
+        }
+        radio_udp_gw_ip = (radio_wifi_ip_big_endian & radio_wifi_prefix_mask_big_endian) | ((radio_udp_gw_ip+1) & (~radio_wifi_prefix_mask_big_endian));
     }
 }
 
@@ -149,9 +172,9 @@ void radio_wifi_platform_dependent_poll(void) {
 
     struct sockaddr_in si_other;
     int slen = sizeof(si_other);
-    int retval = recvfrom(radio_wifi_sockfd, radio_wifi_receive_buffer, UDP_OVERHEAD, MSG_DONTWAIT, (struct sockaddr *) &si_other, (socklen_t *)&slen);
-    if (retval == UDP_OVERHEAD && radio_wifi_receive_buffer[0] == 0xAA
-            && radio_wifi_receive_buffer[0] == 0x55 ) {
+    int retval = recvfrom(radio_wifi_sockfd, radio_wifi_receive_buffer, BUF_SIZE, MSG_DONTWAIT, (struct sockaddr *) &si_other, (socklen_t *)&slen);
+    if (retval >= UDP_OVERHEAD && radio_wifi_receive_buffer[0] == 0xAA
+            && radio_wifi_receive_buffer[1] == 0x55 ) {
         radio_wifi_address_t src = ntohl(si_other.sin_addr.s_addr);
         // radio_wifi_address_t src?? = radio_wifi_receive_buffer[3]
         //                                     + (((uint32_t)radio_wifi_receive_buffer[4]) << 8)
@@ -159,23 +182,23 @@ void radio_wifi_platform_dependent_poll(void) {
         //                                     + (((uint32_t)radio_wifi_receive_buffer[6]) << 24);
         // uint16_t port = radio_wifi_receive_buffer[7] + (((uint16_t)radio_wifi_receive_buffer[8]) << 8);
         uint8_t type = radio_wifi_receive_buffer[9], length = radio_wifi_receive_buffer[10];
-        recv(radio_wifi_sockfd, radio_wifi_receive_buffer, length, 0);
-        DEBUG_LOG(DBG_WKCOMM, "r_wifi msg from %d, length %d\n", src, length);
+        char ipstr[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &(si_other.sin_addr), ipstr, INET_ADDRSTRLEN);
+        DEBUG_LOG(DBG_WKCOMM, "r_wifi msg from %s, length %d, type %d\n", ipstr, length, type);
         if (posix_arg_addnode && type == UDP_GW_CMD && length == 1){
-            radio_wifi_host_address = radio_wifi_receive_buffer[0];
+            radio_wifi_host_address = radio_wifi_receive_buffer[UDP_OVERHEAD];
             posix_arg_addnode = false;
             radio_udp_gw_ip = src;
             wkpf_config_set_gwid(radio_udp_gw_ip);
+            radio_wifi_ip_big_endian = (radio_wifi_prefix_mask_big_endian & radio_udp_gw_ip) | radio_wifi_host_address;
 #ifdef ROUTING_USE_GATEWAY
             routing_discover_gateway();
 #endif
         } else if (!posix_arg_addnode && type == UDP_GW_FWD){
+            for (int j = 0; j < length; ++j) radio_wifi_receive_buffer[j] = radio_wifi_receive_buffer[UDP_OVERHEAD+j];
+            radio_wifi_receive_buffer[length] = 0;
             routing_handle_wifi_message(src, radio_wifi_receive_buffer, length);
         }
-    }
-    else
-    {
-        fprintf(stderr, "r_wifi recv fail: %d\n", retval);
     }
 }
 
@@ -200,7 +223,9 @@ uint8_t radio_wifi_platform_dependent_send_raw(radio_wifi_address_t dest, uint8_
     cliaddr.sin_port = htons(radio_udp_gw_port);
     cliaddr.sin_addr.s_addr = htonl(dest);
     int retval = sendto(radio_wifi_sockfd, send_buffer, length+UDP_OVERHEAD, 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr));
-    DEBUG_LOG(DBG_WKCOMM, "msg sent to %d, length %d, retval %d\n", dest, length, retval);
+    char ipstr[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &(cliaddr.sin_addr), ipstr, INET_ADDRSTRLEN);
+    DEBUG_LOG(DBG_WKCOMM, "r_wifi sent to %s, length %d, retval %d\n", ipstr, length, retval);
     if (retval != -1)
         return 0;
     else

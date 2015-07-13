@@ -6,6 +6,9 @@
 #include "routing.h"
 #include "debug.h"
 #include <string.h>
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include "../../../wkpf/c/common/wkpf_config.h"
 #include "djtimer.h"
 
@@ -116,6 +119,13 @@ wkcomm_address_t addr_wifi_to_wkcomm(radio_wifi_address_t wifi_addr) {
 }
 #endif // RADIO_USE_WIFI
 
+void routing_inet_ntop(char* ipstr, wkcomm_address_t ip)
+{
+    struct sockaddr_in si_other;
+    si_other.sin_addr.s_addr = htonl(ip);
+    inet_ntop(AF_INET, &(si_other.sin_addr), ipstr, INET_ADDRSTRLEN);
+}
+
 // MY NODE ID
 // Get my own node id
 wkcomm_address_t routing_get_node_id() {
@@ -135,6 +145,7 @@ wkcomm_address_t routing_get_node_id() {
 uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
     uint8_t rt_payload[MPTN_PAYLOAD_BYTE_OFFSET+WKCOMM_MESSAGE_PAYLOAD_SIZE+3]; // 3 bytes for wkcomm
     uint8_t i;
+    char ipstr[INET_ADDRSTRLEN];
 
     wkcomm_address_t temp_id;
     for (temp_id = dest, i = 0; i < MPTN_ID_LEN; ++i)
@@ -153,7 +164,7 @@ uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
 
     DEBUG_LOG(DBG_WKROUTING, "routing send packet:[");
     for (i = 0; i < length; ++i){
-        DEBUG_LOG(DBG_WKROUTING, "%d", rt_payload[i]);
+        DEBUG_LOG(DBG_WKROUTING, "%X", rt_payload[i]);
         DEBUG_LOG(DBG_WKROUTING, " ");
     }
     DEBUG_LOG(DBG_WKROUTING, "]\n");
@@ -166,7 +177,8 @@ uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
             dest = id_table.gateway_id;
         }
     #endif
-    DEBUG_LOG(DBG_WKROUTING, "routing send dest id is %d\n", dest);
+    routing_inet_ntop(ipstr, dest);
+    DEBUG_LOG(DBG_WKROUTING, "routing send dest id is %s\n", ipstr);
     #ifdef RADIO_USE_ZWAVE
         return radio_zwave_send(addr_wkcomm_to_zwave(dest), rt_payload, length);
     #endif
@@ -223,6 +235,7 @@ void routing_handle_message(wkcomm_address_t wkcomm_addr, uint8_t *payload, uint
 {
     wkcomm_address_t dest=0, src=0;
     uint8_t msg_type, i;
+    char ipstr[INET_ADDRSTRLEN];
 
     DEBUG_LOG(DBG_WKROUTING, "r_handle packet:[ ");
     for (i = 0; i < length; ++i){
@@ -260,7 +273,8 @@ void routing_handle_message(wkcomm_address_t wkcomm_addr, uint8_t *payload, uint
         {
             id_table.gateway_id = src;
             wkpf_config_set_gwid(src);
-            DEBUG_LOG(DBG_WKROUTING, "r_handle: get gateway id=%d\n",src);
+            routing_inet_ntop(ipstr, src);
+            DEBUG_LOG(DBG_WKROUTING, "r_handle: get gateway id %s\n", ipstr);
             DEBUG_LOG(DBG_WKROUTING, "r_handle: get uuid=");
             for (i = 0; i < MPTN_UUID_LEN; ++i)
             {
@@ -277,14 +291,15 @@ void routing_handle_message(wkcomm_address_t wkcomm_addr, uint8_t *payload, uint
         if (msg_type == MPTN_MSGTYPE_IDACK && src == 0)
         {
             DEBUG_LOG(DBG_WKROUTING, "r_handle: recv IDACK packet\n");
+            routing_inet_ntop(ipstr, dest);
             if (dest != id_table.my_id){
                 wkpf_config_set_myid(dest);
                 id_table.my_id = dest;
-                DEBUG_LOG(DBG_WKROUTING, "r_handle: set id=%d\n",dest);
+                DEBUG_LOG(DBG_WKROUTING, "r_handle: set id=%s\n",ipstr);
                 // id_table.gateway_id = GET_ID_PREFIX(dest) | GET_ID_RADIO_ADDRESS(id_table.gateway_id);
                 // wkpf_config_set_gwid(id_table.gateway_id);
             } else {
-                DEBUG_LOG(DBG_WKROUTING, "r_handle: the same ID=%d\n",dest);
+                DEBUG_LOG(DBG_WKROUTING, "r_handle: the same ID=%s\n",ipstr);
             }
             routing_mode = NORMAL_MODE;
         }
@@ -366,6 +381,7 @@ void routing_discover_gateway()
     // DEBUG_LOG(DBG_WKROUTING, "routing discover gateway_id before=%d\n",id_table.gateway_id);
     uint8_t rt_payload[MPTN_PAYLOAD_BYTE_OFFSET]; //Autonet MAC address
     uint8_t i;
+    char ipstr[INET_ADDRSTRLEN];
     if (routing_mode != GATEWAY_DISCOVERY_MODE)
     {
         routing_mode = GATEWAY_DISCOVERY_MODE;
@@ -382,7 +398,10 @@ void routing_discover_gateway()
             id_table.uuid[i] = 0;
         }
         wkpf_config_set_uuid(id_table.uuid);
-        DEBUG_LOG(DBG_WKROUTING, "r_discover: gw_id=%d my_id=%d\n",id_table.gateway_id,id_table.my_id);
+        routing_inet_ntop(ipstr, id_table.gateway_id);
+        DEBUG_LOG(DBG_WKROUTING, "r_discover: gw_id=%s ", ipstr);
+        routing_inet_ntop(ipstr, id_table.my_id);
+        DEBUG_LOG(DBG_WKROUTING, "my_id=%s\n", ipstr);
     }
     for (i = MPTN_DEST_BYTE_OFFSET; i < MPTN_DEST_BYTE_OFFSET+MPTN_ID_LEN; ++i)
     {
@@ -425,9 +444,13 @@ void routing_get_mac_address()
 
 void routing_id_req()    //send ID request
 {
+    char ipstr[INET_ADDRSTRLEN];
     if (routing_mode != ID_REQ_MODE)
     {
-        DEBUG_LOG(DBG_WKROUTING, "routing id req start: gw_id=%d my_id=%d\n",id_table.gateway_id,id_table.my_id);
+        routing_inet_ntop(ipstr, id_table.gateway_id);
+        DEBUG_LOG(DBG_WKROUTING, "r_idreq: gw_id=%s ", ipstr);
+        routing_inet_ntop(ipstr, id_table.my_id);
+        DEBUG_LOG(DBG_WKROUTING, "my_id=%s\n", ipstr);
         routing_mode = ID_REQ_MODE;
     }
     uint8_t rt_payload[MPTN_PAYLOAD_BYTE_OFFSET + MPTN_UUID_LEN];
