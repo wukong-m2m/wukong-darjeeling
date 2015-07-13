@@ -173,6 +173,10 @@ void radio_wifi_platform_dependent_poll(void) {
             routing_handle_wifi_message(src, radio_wifi_receive_buffer, length);
         }
     }
+    else
+    {
+        fprintf(stderr, "r_wifi recv fail: %d\n", retval);
+    }
 }
 
 uint8_t radio_wifi_platform_dependent_send_raw(radio_wifi_address_t dest, uint8_t *payload, uint8_t length) {

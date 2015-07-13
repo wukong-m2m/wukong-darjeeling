@@ -6,7 +6,4 @@
     <WuClass name="Light_Actuator" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
-    <WuClass name="Numeric_Controller" appCanCreateInstances="false">
-    	<CreateInstance />
-    </WuClass>
 </WuKong>
