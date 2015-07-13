@@ -128,7 +128,7 @@ void radio_wifi_platform_dependent_gateway_discovery(void){
         cliaddr.sin_port = htons(radio_udp_gw_port);
         cliaddr.sin_addr.s_addr = htonl(radio_udp_gw_ip);
         int retval = sendto(radio_wifi_sockfd, send_buffer, UDP_OVERHEAD, 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr));
-        DEBUG_LOG(DBG_WKCOMM, "msg sent to %d, length %d, retval %d\n", radio_udp_gw_ip, length, retval);
+        DEBUG_LOG(DBG_WKCOMM, "msg sent to %d, length %d, retval %d\n", radio_udp_gw_ip, UDP_OVERHEAD, retval);
         radio_udp_gw_ip = (radio_wifi_ip_big_endian & radio_wifi_prefix_mask_big_endian) | ((radio_udp_gw_ip+1) & (~radio_wifi_prefix_mask_big_endian));
         if (retval == -1)
             fprintf(stderr, "r_wifi discovery send fail: %d\n", retval);
@@ -159,7 +159,7 @@ void radio_wifi_platform_dependent_poll(void) {
         //                                     + (((uint32_t)radio_wifi_receive_buffer[6]) << 24);
         // uint16_t port = radio_wifi_receive_buffer[7] + (((uint16_t)radio_wifi_receive_buffer[8]) << 8);
         uint8_t type = radio_wifi_receive_buffer[9], length = radio_wifi_receive_buffer[10];
-        recv(radio_wifi_sockfd, radio_wifi_receive_buffer, length, 0)
+        recv(radio_wifi_sockfd, radio_wifi_receive_buffer, length, 0);
         DEBUG_LOG(DBG_WKCOMM, "r_wifi msg from %d, length %d\n", src, length);
         if (posix_arg_addnode && type == UDP_GW_CMD && length == 1){
             radio_wifi_host_address = radio_wifi_receive_buffer[0];
