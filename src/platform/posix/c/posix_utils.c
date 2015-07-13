@@ -151,14 +151,14 @@ void posix_parse_command_line(int argc, char* argv[]) {
 			{"network_server",      required_argument, 0, 's'},
 			{"network_server_id",      required_argument, 0, 'i'},
 			{"network_directory",      required_argument, 0, 'd'},
-			{"interface_name", 		required_argument, 0, 'f'},
+			{"interface_name", 		required_argument, 0, 'n'},
 			{0, 0, 0, 0}
 		};
 
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long (argc, argv, "hau:s:i:d:e:f:",
+		c = getopt_long (argc, argv, "hau:s:i:d:e:n:",
 		    long_options, &option_index);
 
 		/* Detect the end of the options. */

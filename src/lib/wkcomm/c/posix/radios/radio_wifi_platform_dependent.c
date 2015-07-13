@@ -124,7 +124,7 @@ void radio_wifi_platform_dependent_poll(void) {
         // uint16_t port = radio_wifi_receive_buffer[4] + (((uint16_t)radio_wifi_receive_buffer[5]) << 8);
         uint8_t type = radio_wifi_receive_buffer[6], length = radio_wifi_receive_buffer[7];
 
-        recv(radio_wifi_sockfd, radio_wifi_receive_buffer, length, 0)
+        recv(radio_wifi_sockfd, radio_wifi_receive_buffer, length, 0);
         DEBUG_LOG(DBG_WKCOMM, "r_wifi msg from %d, length %d\n", src, length);
         if (posix_arg_addnode && type == UDP_GW_CMD && length == 1){
             radio_wifi_host_address = radio_wifi_receive_buffer[0];

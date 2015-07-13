@@ -422,7 +422,7 @@ void routing_id_req()    //send ID request
 {
     if (routing_mode != ID_REQ_MODE)
     {
-        DEBUG_LOG(DBG_WKROUTING, "routing id req start: gw_id=%d my_id=%d\n",id_table.gw_id,id_table.my_id);
+        DEBUG_LOG(DBG_WKROUTING, "routing id req start: gw_id=%d my_id=%d\n",id_table.gateway_id,id_table.my_id);
         routing_mode = ID_REQ_MODE;
     }
     uint8_t rt_payload[MPTN_PAYLOAD_BYTE_OFFSET + MPTN_UUID_LEN];
