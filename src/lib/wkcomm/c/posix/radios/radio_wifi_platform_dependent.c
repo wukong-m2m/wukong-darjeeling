@@ -20,6 +20,7 @@
 #include "djtimer.h"
 #include "routing/routing.h"
 #include "posix_utils.h"
+#include "../../../wkpf/c/common/wkpf_config.h"
 
 // Here we have a circular dependency between radio_X and routing.
 // Bit of a code smell, but since the two are supposed to be used together I'm leaving it like this for now.
@@ -33,7 +34,9 @@
 
 #define UDP_OVERHEAD 11
 
-radio_wifi_address_t radio_udp_gw_ip;
+dj_time_t wifi_time_init = 0;
+
+radio_wifi_address_t radio_udp_gw_ip = 0;
 uint16_t radio_udp_gw_port = 5775;
 uint16_t radio_wifi_self_port = 5775;
 
@@ -74,6 +77,8 @@ void radio_wifi_platform_dependent_init(void) {
         return;
     }
     radio_wifi_prefix_mask_big_endian = ntohl((((struct sockaddr_in *)&ifr.ifr_netmask)->sin_addr).s_addr);
+
+    radio_udp_gw_ip = (radio_wifi_ip_big_endian & radio_wifi_prefix_mask_big_endian) | radio_udp_gw_ip;
     // close(fd);
 
     struct sockaddr_in servaddr;
@@ -98,6 +103,38 @@ radio_wifi_address_t radio_wifi_platform_dependent_get_prefix_mask(){
     return radio_wifi_prefix_mask_big_endian;
 }
 
+void radio_wifi_platform_dependent_gateway_discovery(void){
+    if (wifi_time_init == 0) {
+        wifi_time_init = dj_timer_getTimeMillis();
+    }
+    if ((dj_timer_getTimeMillis()-wifi_time_init > 1000)) {
+        wifi_time_init = dj_timer_getTimeMillis();
+        uint8_t send_buffer[UDP_OVERHEAD];
+        send_buffer[0] = 0xAA;
+        send_buffer[1] = 0x55;
+        send_buffer[2] = radio_wifi_host_address;
+        send_buffer[3] = radio_wifi_platform_dependent_get_node_id() & 0xFF;
+        send_buffer[4] = (radio_wifi_platform_dependent_get_node_id() >> 8) & 0xFF;
+        send_buffer[5] = (radio_wifi_platform_dependent_get_node_id() >> 16) & 0xFF;
+        send_buffer[6] = (radio_wifi_platform_dependent_get_node_id() >> 24) & 0xFF;
+        send_buffer[7] = radio_wifi_self_port & 0xFF;
+        send_buffer[8] = (radio_wifi_self_port >> 8) & 0xFF;
+        send_buffer[9] = UDP_GW_CMD;
+        send_buffer[10] = 0;
+
+        struct sockaddr_in cliaddr;
+        memset(&cliaddr, 0, sizeof(cliaddr));
+        cliaddr.sin_family = AF_INET;
+        cliaddr.sin_port = htons(radio_udp_gw_port);
+        cliaddr.sin_addr.s_addr = htonl(radio_udp_gw_ip);
+        int retval = sendto(radio_wifi_sockfd, send_buffer, UDP_OVERHEAD, 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr));
+        DEBUG_LOG(DBG_WKCOMM, "msg sent to %d, length %d, retval %d\n", radio_udp_gw_ip, length, retval);
+        radio_udp_gw_ip = (radio_wifi_ip_big_endian & radio_wifi_prefix_mask_big_endian) | ((radio_udp_gw_ip+1) & (~radio_wifi_prefix_mask_big_endian));
+        if (retval == -1)
+            fprintf(stderr, "r_wifi discovery send fail: %d\n", retval);
+    }
+}
+
 void radio_wifi_platform_dependent_poll(void) {
     // TMP CODE TO PREVENT THE BUSY LOOP FROM GOING TO 100% CPU LOAD
     // THIS IS OBVIOUSLY NOT THE BEST WAY TO DO IT...
@@ -106,29 +143,29 @@ void radio_wifi_platform_dependent_poll(void) {
     tim.tv_nsec = 1000000L; // 1 millisecond
     nanosleep(&tim , &tim2);
     // END TMP CODE
+    if (posix_arg_addnode){
+        radio_wifi_platform_dependent_gateway_discovery();
+    }
 
-    uint8_t start_aa_55;
-    int retval = recv(radio_wifi_sockfd, &start_aa_55, 1, MSG_DONTWAIT);
-    if (retval > 0 && start_aa_55 == 0xAA) {
-        recv(radio_wifi_sockfd, &start_aa_55, 1, 0);
-        if (start_aa_55 != 0x55) {
-            DEBUG_LOG(DBG_WKCOMM, "not 0x55\n");
-            return;
-        }
-        recv(radio_wifi_sockfd, radio_wifi_receive_buffer, 1, 0); // skip src_host_addr 1
-        recv(radio_wifi_sockfd, radio_wifi_receive_buffer, 8, 0); // ip_addr 4, port 2, type 1, length 1
-        radio_wifi_address_t src = radio_wifi_receive_buffer[0]
-                                            + (((uint32_t)radio_wifi_receive_buffer[1]) << 8)
-                                            + (((uint32_t)radio_wifi_receive_buffer[2]) << 16)
-                                            + (((uint32_t)radio_wifi_receive_buffer[3]) << 24);
-        // uint16_t port = radio_wifi_receive_buffer[4] + (((uint16_t)radio_wifi_receive_buffer[5]) << 8);
-        uint8_t type = radio_wifi_receive_buffer[6], length = radio_wifi_receive_buffer[7];
-
-        recv(radio_wifi_sockfd, radio_wifi_receive_buffer, length, 0);
+    struct sockaddr_in si_other;
+    int slen = sizeof(si_other);
+    int retval = recvfrom(radio_wifi_sockfd, radio_wifi_receive_buffer, UDP_OVERHEAD, MSG_DONTWAIT, (struct sockaddr *) &si_other, (socklen_t *)&slen);
+    if (retval == UDP_OVERHEAD && radio_wifi_receive_buffer[0] == 0xAA
+            && radio_wifi_receive_buffer[0] == 0x55 ) {
+        radio_wifi_address_t src = ntohl(si_other.sin_addr.s_addr);
+        // radio_wifi_address_t src?? = radio_wifi_receive_buffer[3]
+        //                                     + (((uint32_t)radio_wifi_receive_buffer[4]) << 8)
+        //                                     + (((uint32_t)radio_wifi_receive_buffer[5]) << 16)
+        //                                     + (((uint32_t)radio_wifi_receive_buffer[6]) << 24);
+        // uint16_t port = radio_wifi_receive_buffer[7] + (((uint16_t)radio_wifi_receive_buffer[8]) << 8);
+        uint8_t type = radio_wifi_receive_buffer[9], length = radio_wifi_receive_buffer[10];
+        recv(radio_wifi_sockfd, radio_wifi_receive_buffer, length, 0)
         DEBUG_LOG(DBG_WKCOMM, "r_wifi msg from %d, length %d\n", src, length);
         if (posix_arg_addnode && type == UDP_GW_CMD && length == 1){
             radio_wifi_host_address = radio_wifi_receive_buffer[0];
             posix_arg_addnode = false;
+            radio_udp_gw_ip = src;
+            wkpf_config_set_gwid(radio_udp_gw_ip);
 #ifdef ROUTING_USE_GATEWAY
             routing_discover_gateway();
 #endif

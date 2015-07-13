@@ -357,10 +357,10 @@ radio_zwave_address_t scan_id = BROADCAST_ADDRESS;
 #define BROADCAST_ADDRESS 0xFFFF
 radio_xbee_address_t scan_id = BROADCAST_ADDRESS;
 #endif
-#ifdef RADIO_USE_WIFI
-#define BROADCAST_ADDRESS 0xFFFFFFFF
-radio_wifi_address_t scan_id = BROADCAST_ADDRESS;
-#endif
+// #ifdef RADIO_USE_WIFI
+// #define BROADCAST_ADDRESS 0xFFFFFFFF
+// radio_wifi_address_t scan_id = BROADCAST_ADDRESS;
+// #endif
 void routing_discover_gateway()
 {
     // DEBUG_LOG(DBG_WKROUTING, "routing discover gateway_id before=%d\n",id_table.gateway_id);
@@ -371,8 +371,12 @@ void routing_discover_gateway()
         routing_mode = GATEWAY_DISCOVERY_MODE;
         id_table.my_id = routing_get_node_id();
         wkpf_config_set_myid(id_table.my_id);
+#ifdef RADIO_USE_WIFI
+        id_table.gateway_id = wkpf_config_get_gwid();
+#else
         id_table.gateway_id = 0;
         wkpf_config_set_gwid(id_table.gateway_id);
+#endif
         for (i = 0; i < MPTN_UUID_LEN; ++i)
         {
             id_table.uuid[i] = 0;
@@ -394,17 +398,18 @@ void routing_discover_gateway()
     routing_search_time = dj_timer_getTimeMillis();
 #ifdef RADIO_USE_ZWAVE
     radio_zwave_send(addr_wkcomm_to_zwave(scan_id++), rt_payload, MPTN_PAYLOAD_BYTE_OFFSET);
-    if ((scan_id & 1) ==0) radio_zwave_send(addr_wkcomm_to_zwave(BROADCAST_ADDRESS), rt_payload, MPTN_PAYLOAD_BYTE_OFFSET);
+    if ((scan_id & 1) ==1) radio_zwave_send(addr_wkcomm_to_zwave(BROADCAST_ADDRESS), rt_payload, MPTN_PAYLOAD_BYTE_OFFSET);
 #endif
 #ifdef RADIO_USE_XBEE
     radio_xbee_send(addr_wkcomm_to_xbee(scan_id++), rt_payload, MPTN_PAYLOAD_BYTE_OFFSET);
-    if ((scan_id & 1) ==0) radio_xbee_send(addr_wkcomm_to_xbee(BROADCAST_ADDRESS), rt_payload, MPTN_PAYLOAD_BYTE_OFFSET);
+    if ((scan_id & 1) ==1) radio_xbee_send(addr_wkcomm_to_xbee(BROADCAST_ADDRESS), rt_payload, MPTN_PAYLOAD_BYTE_OFFSET);
 #endif
 #ifdef RADIO_USE_WIFI
-    radio_wifi_address_t host_mask = ~prefix_mask, prefix = id_table.my_id & prefix_mask;
-    scan_id = ((scan_id + 1) & host_mask) | prefix;
-    radio_wifi_send(addr_wkcomm_to_wifi(scan_id), rt_payload, MPTN_PAYLOAD_BYTE_OFFSET);
-    if ((scan_id & 1) ==0) radio_wifi_send(addr_wkcomm_to_wifi((BROADCAST_ADDRESS & host_mask) | prefix), rt_payload, MPTN_PAYLOAD_BYTE_OFFSET);
+    // radio_wifi_address_t host_mask = ~prefix_mask, prefix = id_table.my_id & prefix_mask;
+    // scan_id = (scan_id & host_mask) | prefix;
+    radio_wifi_send(addr_wkcomm_to_wifi(id_table.gateway_id), rt_payload, MPTN_PAYLOAD_BYTE_OFFSET);
+    // scan_id = ((scan_id + 1) & host_mask) | prefix;
+    // if ((scan_id & 1) ==1) radio_wifi_send(addr_wkcomm_to_wifi((BROADCAST_ADDRESS & host_mask) | prefix), rt_payload, MPTN_PAYLOAD_BYTE_OFFSET);
 #endif
 }
 
