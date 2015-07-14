@@ -3,6 +3,7 @@ import struct
 import os
 import gevent
 import ipaddress
+import time
 from gevent.lock import RLock
 from gevent.event import AsyncResult
 from gevent import socket
@@ -226,12 +227,22 @@ class ConnectionManager(object):
                 logger.error("nonce collision occurs. nonce of ID %s's replaces that of old ID %s's" % (ID_TO_STRING(nncb.id), ID_TO_STRING(old_nncb.id)))
                 old_nncb.callback.set(None)
                 del old_nncb
-            self.nonce_cache[nonce] = nncb
+            self.nonce_cache[nonce] = (nncb, int(round(time.time()*1000))+10000)
+            self.remove_timeout_nonce()
 
     def pop_nonce(self, nonce):
         with self.nonce_lock:
             if nonce not in self.nonce_cache: return None
-            return self.nonce_cache.pop(nonce)
+            self.remove_timeout_nonce()
+            return self.nonce_cache.pop(nonce)[0]
+
+    def remove_timeout_nonce(self):
+        with self.nonce_lock:
+            for nonce, t in self.nonce_cache.items():
+                if t[1] < int(round(time.time() * 1000)):
+                    t[0].callback.set(None)
+                    self.nonce_cache.pop(nonce)
+
 
 def handle_reply_message(context, dest_id, src_id, msg_type, payload):
     nncb = ConnectionManager.init().pop_nonce(context.nonce)
