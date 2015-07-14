@@ -389,7 +389,7 @@ class IDService(object):
             return
 
         logger.debug("FWDREQ may be sent to other gateway's network")
-        if self._forward_to_next_hop(context, next_hop.id, message):
+        if self._forward_to_next_hop(context, dest_id, message):
             return
 
         logger.error("FWDREQ dest ID %X %s is neither the master, the gateway, nor within MPTN" % (dest_id, MPTN.ID_TO_STRING(dest_id)))
