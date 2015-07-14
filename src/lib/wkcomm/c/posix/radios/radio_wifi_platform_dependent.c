@@ -249,7 +249,7 @@ uint8_t radio_wifi_platform_dependent_send_raw(radio_wifi_address_t dest, uint8_
 }
 
 uint8_t radio_wifi_platform_dependent_send(radio_wifi_address_t dest, uint8_t *payload, uint8_t length) {
-    if(dest == 0) return 0;
+    if(dest == 0 || posix_arg_addnode) return 0;
     return radio_wifi_platform_dependent_send_raw(dest, payload, length);
 }
 

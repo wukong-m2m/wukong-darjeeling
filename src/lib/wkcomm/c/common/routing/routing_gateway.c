@@ -6,9 +6,6 @@
 #include "routing.h"
 #include "debug.h"
 #include <string.h>
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include "../../../wkpf/c/common/wkpf_config.h"
 #include "djtimer.h"
 
@@ -119,11 +116,15 @@ wkcomm_address_t addr_wifi_to_wkcomm(radio_wifi_address_t wifi_addr) {
 }
 #endif // RADIO_USE_WIFI
 
+#define IP_ADDRSTRLEN 16
 void routing_inet_ntop(char* ipstr, wkcomm_address_t ip)
 {
-    struct sockaddr_in si_other;
-    si_other.sin_addr.s_addr = htonl(ip);
-    inet_ntop(AF_INET, &(si_other.sin_addr), ipstr, INET_ADDRSTRLEN);
+    unsigned char bytes[4];
+    bytes[0] = ip & 0xFF;
+    bytes[1] = (ip >> 8) & 0xFF;
+    bytes[2] = (ip >> 16) & 0xFF;
+    bytes[3] = (ip >> 24) & 0xFF;
+    snprintf(ipstr, IP_ADDRSTRLEN, "%d.%d.%d.%d", bytes[3], bytes[2], bytes[1], bytes[0]); 
 }
 
 // MY NODE ID
@@ -145,7 +146,7 @@ wkcomm_address_t routing_get_node_id() {
 uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
     uint8_t rt_payload[MPTN_PAYLOAD_BYTE_OFFSET+WKCOMM_MESSAGE_PAYLOAD_SIZE+3]; // 3 bytes for wkcomm
     uint8_t i;
-    char ipstr[INET_ADDRSTRLEN];
+    char ipstr[IP_ADDRSTRLEN];
 
     wkcomm_address_t temp_id;
     for (temp_id = dest, i = 0; i < MPTN_ID_LEN; ++i)
@@ -235,7 +236,7 @@ void routing_handle_message(wkcomm_address_t wkcomm_addr, uint8_t *payload, uint
 {
     wkcomm_address_t dest=0, src=0;
     uint8_t msg_type, i;
-    char ipstr[INET_ADDRSTRLEN];
+    char ipstr[IP_ADDRSTRLEN];
 
     DEBUG_LOG(DBG_WKROUTING, "r_handle packet:[ ");
     for (i = 0; i < length; ++i){
@@ -381,7 +382,7 @@ void routing_discover_gateway()
     // DEBUG_LOG(DBG_WKROUTING, "routing discover gateway_id before=%d\n",id_table.gateway_id);
     uint8_t rt_payload[MPTN_PAYLOAD_BYTE_OFFSET]; //Autonet MAC address
     uint8_t i;
-    char ipstr[INET_ADDRSTRLEN];
+    char ipstr[IP_ADDRSTRLEN];
     if (routing_mode != GATEWAY_DISCOVERY_MODE)
     {
         routing_mode = GATEWAY_DISCOVERY_MODE;
@@ -444,7 +445,7 @@ void routing_get_mac_address()
 
 void routing_id_req()    //send ID request
 {
-    char ipstr[INET_ADDRSTRLEN];
+    char ipstr[IP_ADDRSTRLEN];
     if (routing_mode != ID_REQ_MODE)
     {
         routing_inet_ntop(ipstr, id_table.gateway_id);
