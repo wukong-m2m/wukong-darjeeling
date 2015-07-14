@@ -48,7 +48,7 @@ uint8_t radio_wifi_virtual_host_address;
 int radio_wifi_sockfd;
 
 #define BUF_SIZE WKCOMM_MESSAGE_PAYLOAD_SIZE+3+ROUTING_MPTN_OVERHEAD+UDP_OVERHEAD
-uint8_t radio_wifi_receive_buffer[BUF_SIZE]; // 3 for wkcomm overhead
+uint8_t radio_wifi_receive_buffer[BUF_SIZE+1]; // 3 for wkcomm overhead
 dj_hook radio_wifi_shutdownHook;
 
 void radio_wifi_shutdown(void *data) {
@@ -61,7 +61,7 @@ void radio_wifi_platform_dependent_gateway_discovery(void){
     }
     if ((dj_timer_getTimeMillis()-wifi_time_init > 500)) {
         wifi_time_init = dj_timer_getTimeMillis();
-        uint8_t send_buffer[UDP_OVERHEAD];
+        uint8_t send_buffer[UDP_OVERHEAD+1];
         send_buffer[0] = 0xAA;
         send_buffer[1] = 0x55;
         send_buffer[2] = radio_wifi_virtual_host_address;
@@ -82,17 +82,17 @@ void radio_wifi_platform_dependent_gateway_discovery(void){
         int retval = sendto(radio_wifi_sockfd, send_buffer, UDP_OVERHEAD, 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr));
         char ipstr[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &(cliaddr.sin_addr), ipstr, INET_ADDRSTRLEN);
-        DEBUG_LOG(DBG_WKCOMM, "r_wifi discovery sent to %s, length %d, retval %d\n", ipstr, UDP_OVERHEAD, retval);
+        DEBUG_LOG(DBG_WIFI, "r_wifi discovery sent to %s, length %d, retval %d\n", ipstr, UDP_OVERHEAD, retval);
         if (retval == -1)
-            fprintf(stderr, "r_wifi discovery send fail: %d\n", retval);
+            DEBUG_LOG(DBG_WIFI, "r_wifi discovery send fail: %d\n", retval);
         // alternatively broadcast
         if ((radio_udp_gw_ip & 1) == 0){
             cliaddr.sin_addr.s_addr = htonl(radio_wifi_ip_big_endian | ~radio_wifi_prefix_mask_big_endian);
             retval = sendto(radio_wifi_sockfd, send_buffer, UDP_OVERHEAD, 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr));
             inet_ntop(AF_INET, &(cliaddr.sin_addr), ipstr, INET_ADDRSTRLEN);
-            DEBUG_LOG(DBG_WKCOMM, "r_wifi discovery sent to %s, length %d, retval %d\n", ipstr, UDP_OVERHEAD, retval);
+            DEBUG_LOG(DBG_WIFI, "r_wifi discovery sent to %s, length %d, retval %d\n", ipstr, UDP_OVERHEAD, retval);
             if (retval == -1)
-                fprintf(stderr, "r_wifi discovery send fail: %d\n", retval);
+                DEBUG_LOG(DBG_WIFI, "r_wifi discovery send fail: %d\n", retval);
         }
         radio_udp_gw_ip = (radio_wifi_ip_big_endian & radio_wifi_prefix_mask_big_endian) | ((radio_udp_gw_ip+1) & (~radio_wifi_prefix_mask_big_endian));
     }
@@ -112,21 +112,21 @@ void radio_wifi_platform_dependent_init(void) {
     strncpy(ifr.ifr_name, posix_interface_name, IFNAMSIZ-1);
     // get ip
     if (ioctl(fd, SIOCGIFADDR, &ifr) < 0) {
-        fprintf(stderr, "Unable to get interface: %d\n", errno);
+        DEBUG_LOG(DBG_WIFI, "Unable to get interface: %d\n", errno);
         close(fd);
         return;
     }
     inet_ntop(AF_INET, &(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), ipstr, INET_ADDRSTRLEN);
-    printf("ip: %s /", ipstr);
+    DEBUG_LOG(DBG_WIFI, "ip: %s /", ipstr);
     radio_wifi_ip_big_endian = ntohl((((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr).s_addr);
     // get netmask
     if (ioctl(fd, SIOCGIFNETMASK, &ifr) < 0) {
-        fprintf(stderr, "Unable to get interface: %d\n", errno);
+        DEBUG_LOG(DBG_WIFI, "Unable to get interface: %d\n", errno);
         close(fd);
         return;
     }
     inet_ntop(AF_INET, &(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), ipstr, INET_ADDRSTRLEN);
-    printf("netmask: %s\n", ipstr);
+    DEBUG_LOG(DBG_WIFI, "netmask: %s\n", ipstr);
     radio_wifi_prefix_mask_big_endian = ntohl((((struct sockaddr_in *)&ifr.ifr_netmask)->sin_addr).s_addr);
 
 
@@ -142,14 +142,14 @@ void radio_wifi_platform_dependent_init(void) {
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     if (bind(fd, (struct sockaddr *)&servaddr, sizeof(struct sockaddr)) == -1)
     {
-        fprintf(stderr, "Unable to bind\n");
+        DEBUG_LOG(DBG_WIFI, "Unable to bind\n");
         close(fd);
         return;
     }
     int broadcastEnable = 1;
     if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &broadcastEnable, sizeof(broadcastEnable)) == -1)
     {
-        fprintf(stderr, "Unable to SO_BROADCAST\n");
+        DEBUG_LOG(DBG_WIFI, "Unable to SO_BROADCAST\n");
         close(fd);
         return;
     }
@@ -181,7 +181,7 @@ void radio_wifi_platform_dependent_poll(void) {
     int slen = sizeof(si_other);
     int retval = recvfrom(radio_wifi_sockfd, radio_wifi_receive_buffer, BUF_SIZE, MSG_DONTWAIT, (struct sockaddr *) &si_other, (socklen_t *)&slen);
     if (retval > 0){
-        DEBUG_LOG(DBG_WKCOMM, "r_wifi msg retval %d\n", retval);
+        DEBUG_LOG(DBG_WIFI, "r_wifi msg retval %d\n", retval);
     }
     if (retval >= UDP_OVERHEAD && radio_wifi_receive_buffer[0] == 0xAA
             && radio_wifi_receive_buffer[1] == 0x55 ) {
@@ -195,7 +195,7 @@ void radio_wifi_platform_dependent_poll(void) {
 
         char ipstr[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &(si_other.sin_addr), ipstr, INET_ADDRSTRLEN);
-        DEBUG_LOG(DBG_WKCOMM, "r_wifi msg from %s, length %d, type %d\n", ipstr, length, type);
+        DEBUG_LOG(DBG_WIFI, "r_wifi msg from %s, length %d, type %d\n", ipstr, length, type);
 
         if (posix_arg_addnode && type == UDP_GW_CMD && length == 1){
             radio_wifi_virtual_host_address = radio_wifi_receive_buffer[UDP_OVERHEAD];
@@ -219,7 +219,7 @@ void radio_wifi_platform_dependent_poll(void) {
 }
 
 uint8_t radio_wifi_platform_dependent_send_raw(radio_wifi_address_t dest, uint8_t *payload, uint8_t length) {
-    uint8_t send_buffer[length+UDP_OVERHEAD];
+    uint8_t send_buffer[BUF_SIZE+1];
     send_buffer[0] = 0xAA;
     send_buffer[1] = 0x55;
     send_buffer[2] = radio_wifi_virtual_host_address;
@@ -241,7 +241,7 @@ uint8_t radio_wifi_platform_dependent_send_raw(radio_wifi_address_t dest, uint8_
     int retval = sendto(radio_wifi_sockfd, send_buffer, length+UDP_OVERHEAD, 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr));
     char ipstr[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(cliaddr.sin_addr), ipstr, INET_ADDRSTRLEN);
-    DEBUG_LOG(DBG_WKCOMM, "r_wifi sent to %s, length %d, retval %d\n", ipstr, length, retval);
+    DEBUG_LOG(DBG_WIFI, "r_wifi sent to %s, length %d, retval %d\n", ipstr, length, retval);
     if (retval != -1)
         return 0;
     else
