@@ -42,8 +42,8 @@ _global_lock = None
 # The complete design document is available at
 #    https://docs.google.com/document/d/1IrsSE-QA0cvoSgMTKLS3NJvTj24pOzujBMnZ8_1AxWk/edit?usp=sharing
 class UDPDevice(object):
-    def __init__(self,nodeid,ip,port):
-        self.nodeid = nodeid
+    def __init__(self,host_id,ip,port):
+        self.host_id = host_id
         self.ip = ip
         self.port = port
         self.wuclasses=[]
@@ -64,10 +64,13 @@ class UDPTransport(object):
             logger.error("cannot find any IP address from the IP network interface %s" % CONFIG.TRANSPORT_INTERFACE_ADDR)
             self._clear_settings_db()
             exit(-1)
-        self._ip = self._node_id[0]
+        self._ip = MPTN.ID_FROM_STRING(self._node_id[0])
+        self._netmask = MPTN.ID_FROM_STRING(self._node_id[1])
+        self._prefix = self._ip & self._netmask
+        self._hostmask = ((1 << (MPTN.IP_ADDRESS_LEN * 8)) - 1) ^ self._prefix
         self._port = MPTN.MPTN_UDP_PORT
         self.enterLearnMode = False
-        self.last_node_id = 0
+        self.last_host_id = 0
         self.devices=[]
         self.loadDevice()
         self._init_socket()
@@ -102,23 +105,25 @@ class UDPTransport(object):
                 data, addr = self.sock.recvfrom(1024)
                 if ord(data[0]) != 0xAA or ord(data[1]) != 0x55:
                     # Drop the unknown packet
-                    print "Get unknown packet ",ord(data[0]),ord(data[1])
+                    logger.error("Get unknown packet %s" % (map(ord, data[:2])))
                     continue
-                nodeid = ord(data[2])
+
+                host_id = ord(data[2])
                 ip = struct.unpack("I",data[3:7])
                 port = struct.unpack('H',data[7:9])
                 t = ord(data[9])
-                print "type=",t
-
-                print "data=",data
-                print MPTN.ID_FROM_STRING(addr[0])
-                nodeid = (MPTN.ID_FROM_STRING(addr[0]) & 0xffffff00) | nodeid
+                logger.debug("recv type=%s, data=%s, ip=%s, port=%d, short_id=%d" % (t, map(ord, data), MPTN.ID_FROM_STRING(addr[0]), addr[1], host_id))
+                node_id = self._prefix | host_id
                 if data != "":
-                    logger.debug("receives message %s from address %s" % (data, str(addr)))
+                    logger.debug("recv message %s from address %s" % (data, str(addr)))
                     if t == 1:
                         # data[10] is the size of the payload
+                        # block unknown sender
+                        if self.getDeviceAddress(host_id)[0] == 0:
+                            logger.debug("drop unknown sender's packet")
+                            continue
                         data = data[11:]
-                        return (nodeid, data)
+                        return (node_id, data)
                     elif t == 2:
                         self.refreshDeviceData(data)
                         continue
@@ -132,16 +137,17 @@ class UDPTransport(object):
 
         return (None, None)
 
-    def send_raw(self, nodeid, payload, raw_type=1):
+    def send_raw(self, address, payload, raw_type=1):
         ret = None
         with _global_lock:
             try:
-                address,port = self.getDeviceAddress(nodeid)
+                host_id = address & self._hostmask
+                address, port = self.getDeviceAddress(host_id)
                 if address == 0: return None
 
-                header = chr(0xaa) + chr(0x55) + chr(nodeid) + struct.pack('I', address) + struct.pack('H', port) + chr(raw_type) + chr(len(payload))
+                header = chr(0xaa) + chr(0x55) + chr(host_id) + struct.pack('I', address) + struct.pack('H', port) + chr(raw_type) + chr(len(payload))
                 message = "".join(map(chr, payload))
-                logger.info("sending %d bytes %s to %s at port %d" % (len(message), message, MPTN.ID_TO_STRING(address),port))
+                logger.info("sending %d bytes %s to %s, port %d" % (len(message), map(ord, message), MPTN.ID_TO_STRING(address),port))
                 sock = socket.socket(socket.AF_INET, # Internet
                                     socket.SOCK_DGRAM) # UDP
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -161,12 +167,11 @@ class UDPTransport(object):
         logger.error(msg)
         return (False, msg)
 
-    def getDeviceAddress(self,addr):
-        a = addr & 0xff
+    def getDeviceAddress(self, host_id):
         for d in self.devices:
-            if d.nodeid == a:
+            if d.host_id == host_id:
                 return (d.ip,d.port)
-        logger.error('Address %d is not registered yet' % a)
+        logger.error('Address %d is not registered yet' % host_id)
         return 0,0
     def getDeviceType(self, address):
         ret = None
@@ -174,7 +179,7 @@ class UDPTransport(object):
         with _global_lock:
             try:
                 # ret = pyzwave.getDeviceType(address)
-                ret = 0xff
+                ret = (0xff,0xff,0xff)
                 pass
             except Exception as e:
                 logger.error("getDeviceType exception %s\n%s" % (str(e), traceback.format_exc()))
@@ -202,31 +207,38 @@ class UDPTransport(object):
         #     print "Get unknown packet ",data[0],data[1]
         #     return
         data = data[2:]
-        nodeid = ord(data[0])
+        host_id = ord(data[0])
         ip = struct.unpack("I",data[1:5])[0]
         port = struct.unpack('H',data[5:7])[0]
         # t = ord(data[7])
         # print "type=",t
+        if host_id == (self._ip & self._hostmask):
+            return
 
         # refresh the values in the IP table
         found = False
         for d in self.devices:
-            if d.nodeid == nodeid:
+            if d.host_id == host_id:
                 d.ip = ip
                 d.port = port
                 found = True
-                self.last_node_id = d.nodeid
+                self.last_host_id = d.host_id
                 self._mode = MPTN.STOP_MODE
-                self.send_raw(self.last_node_id,[self.last_node_id],raw_type=2)
-                return
+                self.send_raw(self.last_host_id,[self.last_host_id],raw_type=2)
+                break
 
         if not found and self.enterLearnMode and self._mode == MPTN.ADD_MODE: # and t == 2
             newid = 2
             while True:
                 found = False
                 for d in self.devices:
-                    if d.nodeid == newid:
+                    if d.host_id == newid:
                         newid = newid + 1
+                        if newid == (self._ip & self._hostmask):
+                            newid += 1
+                        if newid & self._hostmask == 0:
+                            logger.error("ID is exhausted")
+                            return
                         found = True
                         break
                 if not found:
@@ -235,20 +247,20 @@ class UDPTransport(object):
                     self.saveDevice()
                     break
                 pass
-            self.last_node_id = newid
+            self.last_host_id = newid
             self._mode = MPTN.STOP_MODE
         elif found and self.enterLearnMode and self._mode == MPTN.DEL_MODE: # and t == 2
             for i in range(len(self.devices)):
                 d = self.devices[i]
-                if d.nodeid == nodeid:
+                if d.host_id == host_id:
                     del self.devices[i]
                     self.saveDevice()
                     return
                 pass
             pass
-            self.last_node_id = 0
+            self.last_host_id = 0
             self._mode = MPTN.STOP_MODE
-        self.send_raw(self.last_node_id,[self.last_node_id],raw_type=2)
+        self.send_raw(self.last_host_id,[self.last_host_id],raw_type=2)
 
     def saveDevice(self):
         f = open('devices.pk','w')
@@ -268,7 +280,7 @@ class UDPTransport(object):
         with _global_lock:
             ret=[]
             for i in range(len(self.devices)):
-                ret.append(self.devices[i].nodeid)
+                ret.append(self.devices[i].host_id)
             # nodes = pyzwave.discover()
             # zwave_controller = nodes[0]
             # total_nodes = nodes[1]
@@ -286,7 +298,7 @@ class UDPTransport(object):
         print "polled"
         with _global_lock:
             if self._mode == MPTN.STOP_MODE:
-                ret = 'Node: %d' % self.last_node_id
+                ret = 'Node: %d' % self.last_host_id
             else:
                 ret = 'ready'
             pass

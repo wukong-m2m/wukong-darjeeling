@@ -412,10 +412,9 @@ class IDService(object):
             logger.error("GWDISCOVER src ID %X %s should not be found in network" % (src_id, MPTN.ID_TO_STRING(src_id)))
             return
 
-        src_id = self._id
         msg_type = MPTN.MPTN_MSGTYPE_GWOFFER
-        message = MPTN.create_packet_to_str(dest_id, src_id, msg_type, uuid.uuid4().bytes)
-        MPTN.transport_if_send(self._get_address_from_id(dest_id), message)
+        message = MPTN.create_packet_to_str(dest_id, self._id, msg_type, uuid.uuid4().bytes)
+        MPTN.transport_if_send(self._get_address_from_id(src_id), message)
 
     def handle_rtping_message(self, context, dest_id, src_id, msg_type, payload):
         if payload is None:
