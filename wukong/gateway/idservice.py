@@ -389,6 +389,7 @@ class IDService(object):
             return
 
         logger.debug("FWDREQ may be sent to other gateway's network")
+        message = MPTN.create_packet_to_str(dest_id, src_id, msg_type, payload)
         if self._forward_to_next_hop(context, dest_id, message):
             return
 
