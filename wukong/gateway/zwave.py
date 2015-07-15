@@ -10,11 +10,11 @@ from gevent.lock import RLock
 import sys
 import pprint
 import gtwconfig as CONFIG
-import mptn as MPTN
+import mptnUtils as MPTN
 
-import logging
-logging.basicConfig(level=CONFIG.LOG_LEVEL)
-logger = logging.getLogger( __name__ )
+import traceback
+import color_logging, logging
+logger = logging
 
 TIMEOUT = 100
 
@@ -26,8 +26,15 @@ class ZWTransport(object):
         self._mode = MPTN.STOP_MODE
         global _global_lock
         _global_lock = RLock()
-        pyzwave.setVerbose(0)
-        pyzwave.setdebug(0)
+
+        try:
+            pyzwave.setVerbose(0)
+            pyzwave.setdebug(0)
+        except:
+            print "PyZwave module has been updated. Please RE-INSTALL the pyzwave module in the wukong/tools/python/pyzwave"
+            print "Using command: sudo python setup.py install"
+            exit(-1)
+
         pyzwave.init(dev_address)
 
         try:
@@ -41,139 +48,140 @@ class ZWTransport(object):
         self._network_id = sum(b[i] << ((len(b)-1-i) * 8) for i in range(len(b)))
         self._node_id = _addr[4]
 
-        logger.info("Zwave radio interface %s initialized on %s with Network ID %s and Node ID %s" % (name, 
-            dev_address, hex(self._network_id), hex(self._node_id)))
+        logger.info("transport interface %s initialized on %s with Network ID %s and Node ID %s" % (name, dev_address, hex(self._network_id), hex(self._node_id)))
 
     def get_name(self):
         return self._name
 
-    def get_radio_address(self):
+    def get_address(self):
         return self._node_id
 
-    def get_radio_addr_len(self):
-        return MPTN.RADIO_ADDRESS_LEN_ZW
+    def get_addr_len(self):
+        return MPTN.ZW_ADDRESS_LEN
 
     def get_learning_mode(self):
         return self._mode
 
     def recv(self):
-        _global_lock.acquire(True)
-        try:
-            src, reply = pyzwave.receive(TIMEOUT)
+        with _global_lock:
+            try:
+                src, reply = pyzwave.receive(TIMEOUT)
 
-            if src and reply:
-                logger.debug("Zwave receives message %s from radio address %X" % (reply, src))
-                reply = ''.join([chr(byte) for byte in reply])
-                return (src, reply)
-        except:
-            e = sys.exc_info()[0]
-            logger.error("Zwave receives exception %s", str(e))
-        finally:
-            _global_lock.release()
-
+                if src and reply:
+                    logger.debug("receives message %s from address %X" % (reply, src))
+                    reply = "".join(map(chr, reply))
+                    return (src, reply)
+            except Exception as e:
+                ret = traceback.format_exc()
+                logger.error("receives exception %s\n%s" % (str(e), ret))
         return (None, None)
 
-    def send_raw(self, radio_address, payload):
-        _global_lock.acquire(True)
+    def send_raw(self, address, payload):
         ret = None
-        try:
-            logger.info("Zwave sending %d bytes %s to %X" % (len(payload), payload, radio_address))
-            pyzwave.send(radio_address, payload)
-        except:
-            e = sys.exc_info()[0]
-            ret = "Zwave send occurs IO error %s" % e
-            logger.error(ret)
-        finally:
-            _global_lock.release()
-        return ret
-
-    def send(self, radio_address, payload):
-        self.send_raw(radio_address, [0x88]+payload)
-
-    def get_device_type(self, radio_address):
-        _global_lock.acquire(True)
-        ret = None
-        try:
-            ret = pyzwave.getDeviceType(radio_address)
-        finally:
-            _global_lock.release()
-        return ret
-
-    def routing(self, radio_address):
-        _global_lock.acquire(True)
-        routing = []
-        try:
-            routing = pyzwave.routing(radio_address)
+        with _global_lock:
             try:
-                routing.remove(gateway_id)
+                logger.info("sending %d bytes %s to %X" % (len(payload), payload, address))
+                pyzwave.send(address, payload)
+            except Exception as e:
+                ret = traceback.format_exc()
+                logger.error("send_raw exception %s\n%s" % (str(e), ret))
+        return ret
+
+    def send(self, address, payload):
+        ret = self.send_raw(address, [0x88]+payload)
+        if ret is None: return (True, None)
+
+        msg = "%s fails to send to address %d with error %s\n\tmsg: %s" % (self._transport.get_name(), address, ret, payload)
+        logger.error(msg)
+        return (False, msg)
+
+    def getDeviceType(self, address):
+        ret = None
+        with _global_lock:
+            try:
+                ret = pyzwave.getDeviceType(address)
+            except Exception as e:
+                logger.error("getDeviceType exception %s\n%s" % (str(e), traceback.format_exc()))
+        return ret
+
+    def getNodeRoutingInfo(self, address):
+        ret = []
+        with _global_lock:
+            ret = pyzwave.routing(address)
+            try:
+                ret.remove(gateway_id)
             except ValueError:
                 pass
-        finally:
-            _global_lock.release()
-        return routing
+        return ret
+
+    def routing(self):
+        ret = {}
+        for node_raddr in self.discover():
+            ret[node_raddr] = self.getNodeRoutingInfo(node_raddr)
+        return ret
 
     def discover(self):
-        _global_lock.acquire(True)
-        discovered_nodes = []
-        try:
+        ret = []
+        with _global_lock:
             nodes = pyzwave.discover()
-            gateway_id = nodes[0]
+            zwave_controller = nodes[0]
             total_nodes = nodes[1]
             # remaining are the discovered nodes
-            discovered_nodes = nodes[2:]
-            print "---------------------", gateway_id, total_nodes, discovered_nodes
+            ret = nodes[2:]
+            logger.debug("---------------------%s, %s, %s" % (str(zwave_controller), str(total_nodes), str(ret)))
             try:
-                discovered_nodes.remove(gateway_id)
+                ret.remove(zwave_controller)
             except ValueError:
-                pass # sometimes gateway_id is not in the list
-        finally:
-            _global_lock.release()
-        return discovered_nodes
+                pass # sometimes zwave_controller is not in the list
+        return ret
 
     def poll(self):
-        _global_lock.acquire(True)
         ret = None
-        try:
-            ret = pyzwave.poll()
-        finally:
-            _global_lock.release()
+        with _global_lock:
+            try:
+                ret = pyzwave.poll()
+            except:
+                pass
         return ret
 
-    def add_mode(self):
-        _global_lock.acquire(True)
+    def add(self):
         ret = False
-        try:
-            pyzwave.add()
-            self._mode = MPTN.ADD_MODE
-            ret = True
-        except:
-            logger.error("Zwave is not in ADD mode but %s mode", self._mode[1])
-        finally:
-            _global_lock.release()
+        with _global_lock:
+            try:
+                pyzwave.add()
+                self._mode = MPTN.ADD_MODE
+                ret = True
+            except Exception as e:
+                logger.error("fails to be ADD mode, now in %s mode error: %s\n%s" % (self._mode[1],
+                    str(e), traceback.format_exc()))
         return ret
 
-    def delete_mode(self):
-        _global_lock.acquire(True)
+    def delete(self):
         ret = False
-        try:
-            pyzwave.delete()
-            self._mode = MPTN.DEL_MODE
-            ret = True
-        except:
-            logger.error("Zwave is not in enters DEL mode but %s mode", self._mode[1])
-        finally:
-            _global_lock.release()
+        with _global_lock:
+            try:
+                pyzwave.delete()
+                self._mode = MPTN.DEL_MODE
+                ret = True
+            except Exception as e:
+                logger.error("fails to be DEL mode, now in %s mode error: %s\n%s" % (self._mode[1],
+                    str(e), traceback.format_exc()))
         return ret
 
-    def stop_mode(self):
-        _global_lock.acquire(True)
+    def stop(self):
         ret = False
-        try:
-            pyzwave.stop()
-            self._mode = MPTN.STOP_MODE
-            ret = True
-        except:
-            logger.error("Zwave is not in enters ADD mode but %s mode", self._mode[1])
-        finally:
-            _global_lock.release()
+        with _global_lock:
+            try:
+                pyzwave.stop()
+                self._mode = MPTN.STOP_MODE
+                ret = True
+            except Exception as e:
+                logger.error("fails to be STOP mode, now in %s mode error: %s\n%s" % (self._mode[1],
+                    str(e), traceback.format_exc()))
         return ret
+
+    def get_learn_handlers(self):
+        return {'a':self.add, 'd':self.delete, 's':self.stop}
+
+    def get_rpc_function_lists(self):
+        return (self.send, self.getDeviceType, self.routing, self.discover, self.add, self.delete, self.stop, self.poll)

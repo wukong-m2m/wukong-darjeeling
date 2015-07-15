@@ -32,6 +32,7 @@ darjeeling_flash_page.hex
 wkdeploy.dja
 *.db
 *.sqlite
+*.pk
 fbp.html
 wukong/tools/testrtt/testrtt
 .gradle
