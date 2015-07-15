@@ -6,7 +6,7 @@
 #include "routing.h"
 #include "debug.h"
 #include <string.h>
-#include "../../../wkpf/c/common/wkpf_config.h"
+#include "../../../../wkpf/c/common/wkpf_config.h"
 #include "../wkcomm.h"
 #include "djtimer.h"
 

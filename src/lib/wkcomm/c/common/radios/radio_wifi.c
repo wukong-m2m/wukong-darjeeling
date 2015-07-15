@@ -3,7 +3,7 @@
 // Here we have a circular dependency between radio_X and routing.
 // Bit of a code smell, but since the two are supposed to be used together I'm leaving it like this for now.
 // (routing requires at least 1 radio_ library to be linked in)
-#include "../../common/routing/routing.h"
+#include "../routing/routing.h"
 
 #ifdef RADIO_USE_WIFI
 
