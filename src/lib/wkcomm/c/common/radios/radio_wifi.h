@@ -1,5 +1,5 @@
-#ifndef RADIO_LOCALH
-#define RADIO_LOCALH
+#ifndef RADIO_WIFIH
+#define RADIO_WIFIH
 
 #include "types.h"
 
@@ -12,4 +12,4 @@ extern void radio_wifi_poll(void);
 extern uint8_t radio_wifi_send(radio_wifi_address_t dest, uint8_t *payload, uint8_t length);
 extern uint8_t radio_wifi_send_raw(radio_wifi_address_t dest, uint8_t *payload, uint8_t length);
 
-#endif // RADIO_LOCALH
+#endif // RADIO_WIFIH
