@@ -18,9 +18,9 @@
 #include "config.h"
 #include "debug.h"
 #include "djtimer.h"
-#include "routing/routing.h"
+#include "../../common/routing/routing.h"
 #include "posix_utils.h"
-#include "../../../wkpf/c/common/wkpf_config.h"
+#include "../../../../wkpf/include/common/wkpf_config.h"
 
 // Here we have a circular dependency between radio_X and routing.
 // Bit of a code smell, but since the two are supposed to be used together I'm leaving it like this for now.
