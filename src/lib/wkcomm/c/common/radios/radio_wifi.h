@@ -1,5 +1,5 @@
-#ifndef RADIO_LOCALH
-#define RADIO_LOCALH
+#ifndef RADIO_WIFIH
+#define RADIO_WIFIH
 
 #include "types.h"
 
