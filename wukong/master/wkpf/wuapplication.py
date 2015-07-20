@@ -1,4 +1,8 @@
 # vim:ts=2 sw=2 expandtab
+#
+# 2015 July 10, HY modified
+#   Add .disable property to WuApplication
+#
 import sys, os, traceback, time, re, copy
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from model.models import WuClassDef, WuComponent, WuLink
@@ -24,7 +28,7 @@ from globals import *
 ChangeSets = namedtuple('ChangeSets', ['components', 'links', 'heartbeatgroups'])
 
 class WuApplication:
-  def __init__(self, id='', app_name='', desc='', file='', dir='', outputDir="", templateDir=TEMPLATE_DIR, componentXml=open(COMPONENTXML_PATH).read()):
+  def __init__(self, id='', app_name='', desc='', file='', dir='', outputDir="", templateDir=TEMPLATE_DIR, componentXml=open(COMPONENTXML_PATH).read(),disabled=False):
     self.id = id
     self.app_name = app_name
     self.desc = desc
@@ -38,6 +42,7 @@ class WuApplication:
     self.deployed = False
     self.mapper = None
     self.inspector = None
+    self.disabled = disabled
     # 5 levels: self.logger.debug, self.logger.info, self.logger.warn, self.logger.error, self.logger.critical
     self.logger = logging.getLogger(self.id[:5])
     self.logger.setLevel(logging.DEBUG) # to see all levels
@@ -97,7 +102,9 @@ class WuApplication:
 
   def setFlowDom(self, flowDom):
     self.applicationDom = flowDom
-    self.name = flowDom.getElementsByTagName('application')[0].getAttribute('name')
+    applicationEle = flowDom.getElementsByTagName('application')[0]
+    self.name = applicationEle.getAttribute('name')
+    self.disabled = len(applicationEle.getElementsByTagName('disabled')) > 0
 
   def setOutputDir(self, outputDir):
     self.destinationDir = outputDir
@@ -162,7 +169,7 @@ class WuApplication:
     return self.status
 
   def config(self):
-    return {'id': self.id, 'app_name': self.app_name, 'desc': self.desc, 'dir': self.dir, 'xml': self.xml, 'version': self.version}
+    return {'id': self.id, 'app_name': self.app_name, 'desc': self.desc, 'dir': self.dir, 'xml': self.xml, 'version': self.version,'disabled':self.disabled}
 
   def __repr__(self):
     return json.dumps(self.config())
@@ -170,7 +177,9 @@ class WuApplication:
   def parseApplication(self):
       componentInstanceMap = {}
       wuLinkMap = {}
-      application_hashed_name = self.applicationDom.getElementsByTagName('application')[0].getAttribute('name')
+      applicationEle = self.applicationDom.getElementsByTagName('application')[0]
+      application_hashed_name = applicationEle.getAttribute('name')
+      self.disabled = len(applicationEle.getElementsByTagName('disabled')) > 0
 
       components = self.applicationDom.getElementsByTagName('component')
       self.instanceIds = []
@@ -240,25 +249,25 @@ class WuApplication:
       self.instanceIds.append(0)
       #assumption: at most 99 properties for each instance, at most 999 instances
       #store hashed result of links to avoid duplicated links: (fromInstanceId*100+fromProperty)*100000+toInstanceId*100+toProperty
-      linkSet = []  
+      linkSet = []
       # links
       for linkTag in self.applicationDom.getElementsByTagName('link'):
           from_component_id = linkTag.parentNode.getAttribute('instanceId')
           from_component = componentInstanceMap[from_component_id]
-          from_property_name = linkTag.getAttribute('fromProperty').lower() 
+          from_property_name = linkTag.getAttribute('fromProperty').lower()
           from_property_id = WuObjectFactory.wuclassdefsbyname[from_component.type].properties[from_property_name].id
           to_component_id = linkTag.getAttribute('toInstanceId')
           to_component = componentInstanceMap[to_component_id]
-          to_property_name =  linkTag.getAttribute('toProperty').lower() 
+          to_property_name =  linkTag.getAttribute('toProperty').lower()
           to_property_id = WuObjectFactory.wuclassdefsbyname[to_component.type].properties[to_property_name].id
 
           hash_value = (int(from_component_id)*100+int(from_property_id))*100000+int(to_component_id)*100+int(to_property_id)
           if hash_value not in wuLinkMap.keys():
-            link = WuLink(from_component, from_property_name, 
+            link = WuLink(from_component, from_property_name,
                     to_component, to_property_name)
             wuLinkMap[hash_value] = link
           self.changesets.links.append(wuLinkMap[hash_value])
-      
+
       #add monitoring related links
       if(MONITORING == 'true'):
           for instanceId, properties in self.monitorProperties.items():
@@ -268,13 +277,13 @@ class WuApplication:
                       link = WuLink(componentInstanceMap[instanceId], name, componentInstanceMap[0], 'input')
                       wuLinkMap[hash_value] = link
                   self.changesets.links.append(wuLinkMap[hash_value])
-          
+
 
   def cleanAndCopyJava(self):
     # clean up the directory
     if os.path.exists(JAVA_OUTPUT_DIR):
       distutils.dir_util.remove_tree(JAVA_OUTPUT_DIR)
-    
+
     os.mkdir(JAVA_OUTPUT_DIR)
 
     # copy WKDeployCustomComponents.xml to wkdeploy/java
@@ -295,7 +304,7 @@ class WuApplication:
         if not os.path.exists(os.path.join(JAVA_OUTPUT_DIR, filename)):
           self.errorDeployStatus("An error has encountered while copying %s to java dir in wkdeploy!" % (filename))
 
-      
+
   def generateJava(self):
       Generator.generate(self.name, self.changesets)
 
@@ -303,7 +312,7 @@ class WuApplication:
       #input: nodes, WuObjects, WuLinks, WuClassDefs
       #output: assign node id to WuObjects
       # TODO: mapping results for generating the appropriate instiantiation for different nodes
-      
+
       return mapFunc(self, self.changesets, routingTable, locTree)
 
   def map(self, location_tree, routingTable):
@@ -324,7 +333,7 @@ class WuApplication:
     master_busy()
     app_path = self.dir
     self.clearDeployStatus()
-    
+
     for platform in platforms:
       platform_dir = os.path.join(app_path, platform)
 
