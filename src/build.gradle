@@ -35,6 +35,14 @@ def ensureEmptyDir(File destDir) {
     destDir.mkdirs()
 }
 
+def insertBase(String fileName, String node_id) {
+    if (fileName.contains("wkpf_")) {
+        return fileName+node_id
+    } else {
+        return fileName
+    }
+}
+
 //// Main build tasks
 task architectureSpecificAssemble {
     // Can be filled in by architectures
@@ -63,6 +71,7 @@ class CreateDjArchiveTask extends DefaultTask {
 
     @OutputDirectory
     File destDir
+    File nodeDir
 
     void addPart(String name, int type, dependsOnTask) {
         def part = new ArchivePart()
@@ -78,27 +87,37 @@ class CreateDjArchiveTask extends DefaultTask {
     @TaskAction
     void createArchive() {
         project.ensureEmptyDir(destDir)
-        boolean first = true
-        archiveParts.each { part ->
-            println "Adding ${part.filename} to ${archiveFile}"
-            ant.djarchive(dest: archiveFile,
-                                 src: part.filename,
-                                 filetype: part.filetype,
-                                 mode: first ? 'create' : 'append')
-            first = false
+        def nodes = []
+        new File("${destDir}/../generated-wkpf-tables/wkdeploy.component_list").eachLine { line ->
+	    nodes.add(line)
         }
+	nodes.each { node_id ->
+                println node_id
+        	boolean first = true
+		nodeDir = new File("${destDir}/node${node_id}")
+        	project.ensureEmptyDir(nodeDir)
+		archiveParts.each { part ->
+		    println "Adding ${part.filename} to ${archiveFile}"
+		    String fname = project.insertBase(part.filename, node_id)
+		    ant.djarchive(dest: "${nodeDir}/${archiveFile}",
+					 src: fname,
+					 filetype: part.filetype,
+					 mode: first ? 'create' : 'append')
+		    first = false
+		}
+	}
     }
 }
 
 // Basic tasks
 task createLibArchive (type: CreateDjArchiveTask) {
     destDir = new File("${buildDir}/lib_infusions")
-    archiveFile = "${destDir}/lib_infusions.dja"
+    archiveFile = "lib_infusions.dja"
 }
 
 task createAppArchive (type: CreateDjArchiveTask) {
     destDir = new File("${buildDir}/app_infusion")
-    archiveFile = "${destDir}/app_infusion.dja"
+    archiveFile = "app_infusion.dja"
 }
 
 // TODONR: make this, and other infuser tasks depend on the infuser project
