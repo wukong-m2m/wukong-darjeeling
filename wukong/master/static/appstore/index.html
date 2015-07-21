@@ -1,0 +1,139 @@
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body>
+<style>
+.appstore-app{
+  width: 200px;
+  height: 85px;
+  display: inline-block;
+  position: absolute;
+  z-index:50;
+  background-color:rgba(0,0,0,0);
+  padding-top:15px;
+}
+.appstore-app:hover{
+  border: dashed 1px #c0c0c0;
+}
+.appstore-app span{
+    float:left;
+    margin-left:90px;
+    clear:left;
+}
+.appstore-app span.by,.appstore-app span.desc{
+    color:#c0c0c0;
+}
+</style>
+<div style="width:100%;height:100%;background-image:url(/static/appstore/index.png);background-repeat:no-repeat"></div>
+<div id="application-buttons"></div>
+<script>
+var application_xmls = [
+	{name:'頂樓',url:'1.xml',by:'Henny King',desc:'The top floor'},
+	{name:'車庫',url:'2.xml',by:'Kenny & Joe',desc:'The garage'},
+	{name:'陽台',url:'3.xml',by:'Mary Wang',desc:'Try it'},
+	{name:'地下室',url:'4.xml',by:'Ken',desc:'^_^'},
+	{name:'頂樓',url:'1.xml',by:'Henny King',desc:'The top floor'},
+	{name:'車庫',url:'2.xml',by:'Kenny & Joe',desc:'The garage'},
+	{name:'陽台',url:'3.xml',by:'Mary Wang',desc:'Try it'},
+	{name:'地下室',url:'4.xml',by:'Ken',desc:'^_^'},
+	{name:'頂樓',url:'1.xml',by:'Henny King',desc:'The top floor'},
+	{name:'車庫',url:'2.xml',by:'Kenny & Joe',desc:'The garage'},
+	{name:'陽台',url:'3.xml',by:'Mary Wang',desc:'Try it'},
+	{name:'地下室',url:'4.xml',by:'Ken',desc:'^_^'},
+	{name:'頂樓',url:'1.xml',by:'Henny King',desc:'The top floor'},
+	{name:'車庫',url:'2.xml',by:'Kenny & Joe',desc:'The garage'},
+	{name:'陽台',url:'3.xml',by:'Mary Wang',desc:'Try it'},
+	{name:'地下室',url:'4.xml',by:'Ken',desc:'^_^'},
+	{name:'頂樓',url:'1.xml',by:'Henny King',desc:'The top floor'},
+	{name:'車庫',url:'2.xml',by:'Kenny & Joe',desc:'The garage'},
+	{name:'陽台',url:'3.xml',by:'Mary Wang',desc:'Try it'},
+	{name:'地下室',url:'4.xml',by:'Ken',desc:'^_^'},
+	{name:'頂樓',url:'1.xml',by:'Henny King',desc:'The top floor'},
+]
+function appStoreInit(closeStore) {
+    /*
+     * Create clickable applications
+     */
+    var tags = []
+    var left_start = 75
+    var left_delta = 235
+    var top_start = 70
+    var top_delta = 105
+    var max_col = 4
+    var max_index = 21
+    var url_prefix = '/static/appstore/'
+    for (var i=0,app;app=application_xmls[i];i++){
+        // Too many in this version
+        if (i >= max_index) break;
+        // recount the top and left
+        var row = Math.floor(i/max_col)
+        var col = i%max_col
+        app.url = url_prefix+app.url
+        app.top = row * top_delta + top_start
+        app.left = col * left_delta + left_start
+        tags.push('<div idx="'+i+'" class="appstore-app" name="'+app.name+'" style="top:'+app.top+'px;left:'+app.left+'px">')
+        tags.push('<div><span class="name">'+app.name+'</span><span class="by">By: '+app.by+'</span><span class="desc">'+app.desc+'</span></div>')
+        tags.push('</div>')
+    }
+    document.getElementById('application-buttons').innerHTML = tags.join('')
+
+    var clickHandler = function(evt){
+        var appDiv = evt.currentTarget;
+        var app = application_xmls[parseInt(appDiv.getAttribute('idx'))]
+        var app_name = app.name
+
+        loading('Downloading... '+app_name)
+        var loadingDiv = document.getElementById('loading')
+        var viewportSize = getViewportSize()
+        loadingDiv.style.width = '300px'
+        loadingDiv.style.height = '150px'
+        loadingDiv.style.left = (viewportSize.width - 300) * 0.5 + 'px';
+        loadingDiv.style.top = '200px';
+        loadingDiv.style.backgroundColor = '#fff'
+        loadingDiv.style.display = 'inline-block'
+        $.ajax({
+            url: app.url,
+            dataType:'text',
+            success: function(content) {
+                loading(false)
+                var xmlEle = document.createElement('xml')
+                xmlEle.innerHTML = content
+                var app_nameEle = xmlEle.querySelector('app_name')
+                if (app_nameEle) {
+                    /*
+                     * The <app_name></app_name> is added when this file is downloaded.
+                     * Now, we remove it before sendback to server.
+                     */
+                    app_nameEle.parentNode.removeChild(app_nameEle)
+                }
+                else{
+                    closeStore()
+                    alert('Failure: format error')
+                    return
+                }
+                content = xmlEle.innerHTML
+                loading('Installing... '+app_name);
+                $.post('/applications/new', {app_name: app_name,xml:content}, function(data) {
+                  loading(false)
+                  closeStore()
+                  if (data.status == '1') {
+                    alert(data.mesg);
+                  }
+                  else {
+                    alert(app_name+' Installed');
+                    application_fill();
+                  }
+                });
+            }
+        });
+    }
+    var appDivs = document.getElementById('application-buttons').querySelectorAll('div.appstore-app')
+    for (var i=0;i<appDivs.length;i++){
+        var appDiv = appDivs[i]
+        appDiv.onclick = clickHandler;
+    }
+}
+</script>
+</body>
+</html>

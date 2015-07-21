@@ -1,0 +1,41 @@
+<style>
+#fbp iframe{
+
+}
+#fbp{
+	overflow-x:auto;
+	background-color:rgba(255,255,255,0.7);
+}
+</style>
+<!-- optional, displays current wukong master status (e.g. mapping) -->
+<!-- could use polling to update in real time -->
+<div class="wukong-status">
+  <h1 id="msg"></h1>
+</div>
+
+<ul style="display:none">
+    <li><a id="nodes-btn" href="#nodes" data-toggle="tab">Current Nodes</a></li>
+    <li><a id="mapping_results-btn" href="#mapping_results" data-toggle="tab">Map</a></li>
+    <!-- deployment.js will reveal deploy-btn depending on mapping result -->
+    <li style="display: none;"><a id="deploy-btn" href="#deploy_results" data-toggle="tab">Deploy</a></li>
+</ul>
+
+<div id='wrapper'>
+    <div class=row-fluid>
+        <div class="span12">
+            <div class=tabbable>
+                <div class=tab-content>
+                    <div class="tab-pane active" id="fbp">
+                        <!--div class="img-rounded"-->
+                        <iframe width="100%" height="{{vh}}" frameborder="0" src="/applications/{{ app_id }}/fbp/load?vh={{ vh }}&vw={{ vw }}"></iframe>
+                        <!--/div-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var current_application = "{{ app.id }}";
+</script>
+<script type="text/javascript" src="/static/js/deployment2.js"></script>
