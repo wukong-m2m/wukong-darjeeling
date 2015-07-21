@@ -106,6 +106,16 @@ class CreateDjArchiveTask extends DefaultTask {
 		    first = false
 		}
 	}
+	boolean first = true
+	archiveParts.each { part ->
+	    println "Adding ${part.filename} to ${archiveFile}"
+	    String fname = project.insertBase(part.filename, node_id)
+	    ant.djarchive(dest: "${destDir}/${archiveFile}",
+				 src: part.filename,
+				 filetype: part.filetype,
+				 mode: first ? 'create' : 'append')
+	    first = false
+	}
     }
 }
 

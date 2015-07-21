@@ -98,6 +98,9 @@ public class WKPFTableTask extends Task
 				writeFile(dest + ".wkpf_componentmap" + node_id, makeComponentMap(doc, node_id));
 				writeFile(dest + ".wkpf_initvalues" + node_id, makeInitValues(doc));
 			}
+			writeFile(dest + ".wkpf_linktable", makeLinkTable(doc));
+			writeFile(dest + ".wkpf_componentmap", makeComponentMap(doc, -1));
+			writeFile(dest + ".wkpf_initvalues", makeInitValues(doc));
 			pw.close();
 		} catch (FileNotFoundException fnfex) {
 			throw new org.apache.tools.ant.BuildException("File not found: " + src);
@@ -191,7 +194,7 @@ public class WKPFTableTask extends Task
 				NodeList endpoints = component.getElementsByTagName("endpoint");
 				Element newendpoint = (Element)component.getElementsByTagName("endpoint").item(0);
 				Integer newNode = Integer.parseInt(newendpoint.getAttribute("node"));
-				if (newNode == node_id) {
+				if (node_id == -1 || newNode == node_id) {
 					component_map_bytes.add((byte)endpoints.getLength()); // Number of endpoints
 					component_map_bytes.add((byte)(Short.parseShort(component.getAttribute("wuclassId")) % 256));
 					component_map_bytes.add((byte)(Short.parseShort(component.getAttribute("wuclassId")) / 256));
