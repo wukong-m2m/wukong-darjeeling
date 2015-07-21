@@ -1,0 +1,16 @@
+<application name="f45b0e6aec165544faccaf2cad820542"><app_name>Living Room</app_name>
+<pan>145,143</pan><page title="_first_">
+    <component type="And_Gate" instanceId="34" x="118" y="144" w="120" h="118" name="block">
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+        <monitorProperty />
+    </component>
+    <component type="Annotation" instanceId="35" x="118" y="62" w="188" h="22" name="block">
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+        <monitorProperty />
+    </component>
+</page>
+</application>
