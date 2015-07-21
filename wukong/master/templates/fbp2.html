@@ -1,0 +1,728 @@
+<html>
+    <head>
+        <link type="text/css" href="/static/css/smoothness/jquery-ui-1.9.2.custom.min.css" rel="stylesheet" />
+        <link type="text/css" href="/static/css/jquery.contextMenu.css" rel="stylesheet" />
+        <link type="text/css" href="/static/css/jquery.treeview.css" rel="stylesheet"/>
+        <link type="text/css" href="/static/css/multiple-select.css" rel="stylesheet"/>
+        <script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
+        <script type="text/javascript" src="/static/js/jquery-ui-1.9.2.custom.min.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.contextMenu.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.treeview.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.multiple.select.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.blockUI.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.mousewheel.min.js"></script>
+        <script type="text/javascript" src="/static/js/jcanvas.js"></script>
+        <script type="text/javascript" src="/static/js/json2.js"></script>
+        <!-- HY -->
+        <link type="text/css" href="/static/css/add-ons.css" rel="stylesheet" />
+        <link type="text/css" href="/static/css/fbp2.css" rel="stylesheet" />
+        <script type="text/javascript" src="/static/js/line2.js"></script>
+        <script type="text/javascript" src="/static/js/hyutil.js"></script>
+        <script type="text/javascript" src="/static/js/block2.js"></script>
+        <script type="text/javascript" src="/static/js/datamodel.js"></script>
+        <script type="text/javascript" src="/static/js/locationpolicyeditor.js"></script>
+        <script type="text/javascript" src="/static/js/fbp2.js"></script>
+        <!-- End HY -->
+        <!--make_fbp.py-insert-start-->
+        <script type="text/javascript" src="/static/js/__comp__threshold.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__and_gate.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__or_gate.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__xor_gate.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__not_gate.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__if_short.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__if_boolean.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__condition_selector_boolean.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__condition_selector_short.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__math_op.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__virtual_slider.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__server.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__multiplexer.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__light_sensor.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__pir_sensor.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__binary_sensor.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__temperature_humidity_sensor.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__slider.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__magnetic_sensor.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__pressure_sensor_0.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__gh_sensor.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__ir_sensor.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__ultrasound_sensor.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__grove_button.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__grove_temperature_sensor.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__grove_sound_sensor.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__grove_touch_sensor.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__grove_rotary.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__grove_light_sensor.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__binary_testsensor.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__integer_testsensor.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__light_actuator.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__led.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__fan.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__buzzer.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__sound.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__rgbled.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__dimmer.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__plugin.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__relay.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__grove_lcd.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__grove_led.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__grove_buzzer.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__grove_relay.js"></script>
+<!--make_fbp.py-insert-end-->
+<style>
+#sidebar{
+    width:400px;
+    height:99%;
+    position:absolute;
+    top:0;
+    left:0;
+    min-height:500px;
+    z-index:99;
+    background-color:white;
+    border-right:solid 1px #d0d0d0;
+}
+.sidebar-tabbar {
+  border-bottom:solid 1px #c0c0c0;
+  margin-bottom:10px;
+  padding:5px 5px 0px 5px;
+}
+.sidebar-header{
+    background-color:#d0d0d0;
+    color:black;
+    min-height:32px;
+    line-height:32px;
+    padding-left:10px;
+}
+.sidebar-header .x{
+    display:inline-block;
+    float:right;
+    border:solid 1px #c0c0c0;
+    padding:4px;
+    margin-top:7px;
+    margin-right:5px;
+    font-size:10px;
+    line-height:10px;
+    cursor:pointer;
+}
+.sidebar-header .handle{
+    display:inline-block;
+    float:right;
+    padding:7px 0px 7px 7px;
+    margin-top:5px;
+    margin-right:-21px;
+    font-size:10px;
+    line-height:10px;
+    cursor:pointer;
+    background-color:#0c0c0c;
+    display:none;
+    color:white;
+}
+.sidebar-tabtitle{
+  border:solid 1px #c0c0c0;
+  display:inline-block;
+  position:relative;
+  padding:5px 5px;
+  border-bottom:none;
+  -webkit-border-top-left-radius: 2px;
+  -webkit-border-top-right-radius: 2px;
+  -moz-border-radius-topleft: 2px;
+  -moz-border-radius-topright: 2px;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+  cursor:pointer;
+  text-align:center;
+  margin-top:5px;
+  width:29%;
+  font-size:14px;
+  line-height:14px;
+}
+.sidebar-tabtitle.active,.sidebar-tabtitle.active:hover{
+  top:1px;
+  background-color:white;
+  -webkit-box-shadow: none;
+  -moz-box-shadow:    none;
+  box-shadow:         none;
+}
+.sidebar-tabtitle:hover{
+  background-color:#f0f0f0;
+  -webkit-box-shadow: 0px 0px 1px 0px rgba(50, 50, 50, 0.25);
+  -moz-box-shadow:    0px 0px 1px 0px rgba(50, 50, 50, 0.25);
+  box-shadow:         0px 0px 1px 0px rgba(50, 50, 50, 0.25);
+}
+.sidebar-tabcontent {
+  position:relative;
+  left:0;
+  top:0;
+  display:none;
+  padding:5px 2px 0px 10px;
+}
+.sidebar-tabcontent.active{
+  display:block;
+}
+.sidebar-tabbar {
+  border-bottom:solid 1px #c0c0c0;
+  margin-bottom:10px;
+  padding:5px 5px 0px 5px;
+}
+.sidebar-tabcontent .block{
+    margin-top:30px !important;
+    margin-left: 20px;
+}
+.sidebar-tabcontent  .block:first-child{
+    margin-top:12px  !important;
+}
+.sidebar-tabcontent  .block > label:first-child {
+  margin-bottom:5px;
+  display:block;
+}
+.sidebar-tabcontent .block .block{
+    margin-left:0px;
+}
+/*animation */
+.linear{
+  -webkit-transition: left 200ms linear;
+  -moz-transition: left 200ms linear;
+  transition:         left 200ms linear;
+}
+/* override add-ons.css */
+.sidebar-tabcontent table{
+    width:100%;
+    font-size:14px;
+    cursor:default;
+}
+.sidebar-tabcontent th{
+    padding:11px 5px 11px 0px;
+    text-align:right;
+    border-bottom:1px solid #ebebeb;
+}
+.sidebar-tabcontent td input{
+    width:95%;
+    border:none;
+    padding:5px 0px;
+}
+.sidebar-tabcontent select{
+    text-align:left;
+    width:80%;
+    margin-bottom:5px;
+}
+.sidebar-tabcontent select option{
+    padding:5px 10px;
+    border-bottom:solid 1px #c0c0c0;
+}
+.sidebar-tabcontent ul#toolbar_type{
+    height:250px;
+    overflow-y:auto;
+    overflow-x:hidden;
+    width:80%;
+}
+.sidebar-tabcontent #toolbar_type li{
+    list-style:none;
+    margin-left:-42px;
+    height:44px;
+    padding:10px 0;
+    border-bottom:solid 1px #f0f0f0;
+}
+.sidebar-tabcontent #toolbar_type li:hover{
+    background-color:#f0f0f0;
+    border-top:solid 1px #d0d0d0;
+    border-bottom:solid 1px #d0d0d0;
+}
+.sidebar-tabcontent #toolbar_type li input{
+    display:inline-block;
+    float:right;
+    margin-right:5px;
+    margin-top:14px;
+}
+.sidebar-tabcontent #toolbar_type li img{
+    display:inline-block;
+    float:left;
+}
+.sidebar-tabcontent #toolbar_type li label{
+    display:inline-block;
+    line-height:22px;
+    padding-left:5px;
+    float:left;
+    font-size:12px;
+    font-weight:bold;
+    width:200px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+.sidebar-tabcontent #toolbar_type li span{
+    display:inline-block;
+    line-height:22px;
+    padding-left:5px;
+    float:left;
+    font-size:12px;
+    width:200px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+.sidebar-tabcontent #toolbar_type li:hover span{
+    color:#505050;
+}
+.rounded{
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    border: 1px solid #F0F0F0;
+}
+#toolbar{
+    position: absolute;
+    top: 0;
+    left: 0;
+    text-align:center;
+    height:44px;
+    padding-top:1px;
+    background-color:#f0f0f0;
+    border-bottom:solid 1px #c0c0c0;
+    width:{{vw}}px;
+}
+#toolbar button{
+    margin-left:0;
+    border: none;
+    border-right:solid 1px #c0c0c0;
+    min-width:44px;
+    width:44px;
+    height:44px;
+    border-radius:0;
+    padding:0 2px;
+}
+#toolbar button:first-child{
+    border-left:solid 1px #c0c0c0;
+}
+#msg{
+    position:absolute;
+    background-color:#ffff00;
+    white-space:nowrap;
+    padding:5px;
+}
+#canvastop{
+    background-color:transparent;
+    position:absolute;
+    left:0;
+    top:0;
+}
+#canvasbox{
+    background-color:rgba(0,0,0,0.1);
+}
+#canvasandclient{
+    background-color:transparent;
+    background-image:url(/static/images/grid.png);
+}
+/*
+.zoom120 {
+    zoom: 1.2;
+    -moz-transform: scale(1.2);
+    -moz-transform-origin: 0 0;
+    -o-transform: scale(1.2);
+    -o-transform-origin: 0 0;
+    -webkit-transform: scale(1.2);
+    -webkit-transform-origin: 0 0;
+    transform: scale(1.2);
+    transform-origin: 0 0;
+}
+.zoom80 {
+    zoom: 0.8;
+    -moz-transform: scale(0.8);
+    -moz-transform-origin: 0 0;
+    -o-transform: scale(0.8);
+    -o-transform-origin: 0 0;
+    -webkit-transform: scale(0.8);
+    -webkit-transform-origin: 0 0;
+    transform: scale(0.8);
+    transform-origin: 0 0;
+}
+*/
+.zoomCtrl{
+    float:right;
+}
+.zoomCtrl button{
+  margin-top: 7px;
+  margin-right: 4px;
+  height: 21px;
+  width: 34px;
+  min-width: 34px;
+  background-image: none;
+  border: solid 1px #c0c0c0;
+  line-height: 22px;
+}
+</style>
+    </head>
+    <body style="overflow:hidden">
+        <div id="canvasbox" class="linear" style="top:0;left:351px;position:absolute;width:{{ int(vw) }}px;height:{{ int(vh) }}px;">
+            <div id="canvasandclient" style="position:absolute;left:-{{vw}};top:-{{vh}};width:{{int(vw)*3}};height:{{int(vh)*3}}">
+<!-- HY: debuging refreence
+                <div style="position:absolute;left:{{vw}};top:{{vh}};width:{{vw}};height:{{vh}};border:solid 1px black;display:inline-block"></div>
+                <div style="position:absolute;left:{{vw}};top:{{vh}};width:{{int(vw)/2}};height:{{int(vh)/2}};border:solid 1px black;display:inline-block"></div>
+-->
+                <canvas id="canvastop" width="{{int(vw)*3}}" height="{{int(vh)*3}}" style="left:0;top:0"></canvas>
+                <canvas id="canvas" style="background-color:rgba(255,255,255,0.1);left:0;top:0"  width="{{int(vw)*3}}" height="{{int(vh)*3}}"></canvas>
+                <div id="client" style="background-color:rgba(0,0,0,0.2);position:absolute;left:0;top:0"><div id="content"></div></div>
+            </div>
+<!-- HY: debuging refreence
+            <div style="left:{{int(vw)/2}};top:{{int(vh)/2}};width:10;height:10;position:absolute;display:inline-block;border:solid 1px black"></div>
+            <div style="left:200;top:100;width:2;height:2;position:absolute;display:inline-block;border:solid 1px black"></div>
+-->
+        </div>
+        <div id="sidebar" class="linear">
+            <div class="sidebar-header">
+                FBP Editor
+                <select id="zoomSelect" onchange="updateZoom()">
+                    <option value="50">50%</option>
+                    <option value="80">80%</option>
+                    <option value="100" selected>100%</option>
+                    <option value="110">110%</option>
+                    <option value="130">130%</option>
+                    <option value="150">150%</option>
+                </select>
+                <div class="handle">》</div>
+                <div class="x">x</div>
+                <div class="zoomCtrl" onclick="resetZoom()"><span>100%</span><button>1:1</button></div>
+            </div>
+            <div class="sidebar-tabbar">
+                <div href="#" class="sidebar-tabtitle active" tab="t1">Application</div>
+                <div href="#" class="sidebar-tabtitle" tab="t2">WuClasses</div>
+                <div href="#" class="sidebar-tabtitle" tab="t3">Component</div>
+            </div>
+            <div class="sidebar-tabcontent active" tab="t1">
+                <div class="block">
+                    <div id="applicationEditForm"></div>
+                    <button class="blue" onclick="FBP_save_meta_or_content()">Save</button>
+                    <button class="" onclick="FBP_download()">Download</button>
+                </div>
+                <div class="block">
+                    <label>Pages:</label>
+                    <select id="pagelist"></select>
+                    <button id="deletePageBtn" onclick="FBP_deletePage()">Delete</button>
+                    <button onclick="FBP_addPage()">New Page</button>
+                </div>
+                <div class="block">
+                    <label>Deployment:</label>
+                    <button onclick="FBP_currentNode()">Current Node</button>
+                    <button onclick="FBP_deploy()" id="deployBtn">Deploy</button>
+                    <button onclick="FBP_map()">Map</button>
+                </div>
+            </div>
+            <div class="sidebar-tabcontent" tab="t2">
+                <div class="block" id="wuclasses">
+                    <div class="block"><label>Select Category:</label><select id=toolbar_type_category0></select></div>
+                    <div class="block"><label>Select Sub-Category:</label><select id=toolbar_type_category1></select></div>
+                    <div class="block"><label>Select WuClass:(<span id="toolbar_type_count"></span>)</label><ul id="toolbar_type"></ul></div>
+                    <button class="blue" id="addBlockBtn">Add</button>
+                    <p style="padding:5px;overflow-y:auto;width:89%;height:50px" class="rounded fulldesc">
+                    </p>
+                </div>
+            </div>
+            <div class="sidebar-tabcontent" tab="t3">
+                <div class="block" id="blockPropEditForm">
+                </div>
+            </div>
+        </div>
+        <div id=connection>
+            <table>
+                <tr><td>From</td></tr>
+                <tr>
+                <td><select id=connection_src></select></td>
+                </tr>
+                <tr><td>To</td></tr>
+                <tr>
+                <td><select id=connection_act></select></td>
+                </tr>
+            </table>
+        </div>
+        <div id="msg">
+        </div>
+        <div id=fileloader>
+            <input type=text id=fileloader_file></input>
+        </div>
+        <!-- Disabled by HY
+        <div id=propertyeditor>
+            <div> Location Policy</div>
+                <input type=text id=propertyeditor_location></input>
+                <div id=propertyeditor_loc>
+                    Location: <input type=text id=propertyeditor_location_hierarchy size=35></input><button class="chooseLocNode" for="propertyeditor_location_hierarchy">Choose Tree Node</button>
+                <br>Function: <input type=text id=propertyeditor_location_function size=35></input><button class="chooseLocNode" for="propertyeditor_location_policy">Editor</button>
+            </div>
+        </div>
+        <div id="progress">
+            <div id="compile_status"></div>
+            <div id="normal"></div>
+            <div id="critical_error"></div>
+            <div id="urgent_error"></div>
+        </div>
+        -->
+        <div class="modal ui-widget-content" id="tree_dialog" role="dialog" style="display:none">
+            <div class="modal-header">
+                <h3>Choose a node</h3>
+            </div>
+            <div class="modal-body">
+                <div id="treeInDialogDiv">
+                    <ul id="treeInDialog" class="treeview">
+                    </ul>
+                </div>
+                Selected TreeNode: <input id = "selectedTreeNode" type=text size="20"/>
+            </div>
+            <div class="modal-footer">
+                <!-- HY: temporary disabled, seems useless, "close" is enough
+                <button id="confirm_tree_dialog" data-dismiss="modal" class="dialogCloseButton">Select</button>
+                -->
+                <button data-dismiss="modal" class="dialogCloseButton">Close</button>
+            </div>
+        </div>
+<div id="loading" class="modal-dialog">
+  <div>
+    <h1><label id="loading-text"></label></h1>
+  </div>
+</div>
+<div id="deployment" class="modal-dialog">
+    <div class="modal-dialog-content"></div>
+    <div class="modal-dialog-buttons"><button onclick="FBP_closeModalDialog()">Close</button></div>
+</div>
+<xml id="locationpolicyxml" style="display:none"></xml>
+<div id="locationpolicyeditor" class="modal-dialog" style="display:none">
+    <div class="modal-dialog-content"></div>
+    <div class="modal-dialog-buttons"><button onclick="FBP_closeModalDialog()">Close</button></div>
+</div>
+<script language="javascript">
+var _viewportSize = {
+    width:{{ vw }},
+    height:{{ vh }}
+    }
+var app_id = '{{ app_id }}'
+/*sidebar related */
+function sidebarShow(show){
+    var sidebar = document.getElementById('sidebar')
+    var canvasbox = document.getElementById('canvasbox')
+    var width = sidebar.offsetWidth;
+    show = typeof(show)=='undefined' ? true : show;
+    if (show){
+        sidebar.style.left = '0px'
+        canvasbox.style.left = (width+1)+'px';
+        document.querySelector('#sidebar .sidebar-header .handle').style.display = 'none';
+    }
+    else{
+        sidebar.style.left = -width + 'px'
+        canvasbox.style.left = '0px';
+        document.querySelector('#sidebar .sidebar-header .handle').style.display = 'inline-block';
+    }
+}
+function sidebarActiveTab(name){
+  var sidebar = document.querySelector('#sidebar')
+  var tabs = sidebar.querySelectorAll('.sidebar-tabcontent')
+  for (var i=0;i<tabs.length;i++){
+    if (tabs[i].getAttribute('tab')==name){tabs[i].className ='sidebar-tabcontent active'}
+    else tabs[i].className='sidebar-tabcontent';
+  }
+  var titles = sidebar.querySelectorAll('.sidebar-tabtitle')
+  for (var i=0;i<titles.length;i++){
+    if (titles[i].getAttribute('tab')==name){titles[i].className='sidebar-tabtitle active'}
+    else titles[i].className='sidebar-tabtitle';
+  }
+  return true;
+}
+function sidebarInit(){
+    /*hookup event handlers */
+    var sidebar = document.querySelector('#sidebar')
+    sidebar.querySelector('.sidebar-header .x').onclick = function(){
+        sidebarShow(false)
+    }
+    sidebar.querySelector('.sidebar-header .handle').onclick = function(){
+        sidebarShow(true)
+    }
+    var tabtitles = sidebar.querySelectorAll('.sidebar-tabtitle')
+    for (var i=0;i<tabtitles.length;i++){
+        tabtitles[i].onclick = function(){
+            sidebarActiveTab(this.getAttribute('tab'))
+        }
+    }
+    /* render content
+    */
+}
+
+var zoomRatio = 100;
+var zoomOriginOffset;
+var zoomOriginSize;
+var zoomOriginPanoffset;
+var panOffset = {left:0,top:0};
+function resetZoom(){
+    zoomRatio = 100
+    zoomOriginPanoffset = {left:0,top:0}
+    top.notifyApplicationContentTainted(true)
+    var target = $('#canvasandclient');
+    var pos = {
+        zoom:'100%',
+        left: zoomOriginOffset.left+'px',
+        top:  zoomOriginOffset.top+'px'
+    }
+    target.css(pos)
+    $('.zoomCtrl span').text(zoomRatio+'%')
+    FBP_refreshLines();
+    updatePanoffset()
+}
+function getPointDelta(pt,r){
+    return [(1-r)*pt[0]/r,(1-r)*pt[1]/r]
+}
+function setZoom(p,center){
+    var lastRatio = zoomRatio / 100
+    p = Math.ceil(p)
+    zoomRatio = p
+    var target = $('#canvasandclient');
+    //var vs = getViewportSize()
+    var ratio = p/100
+    //var dxy = [0,0];
+    var w = target.width()
+    var h =  target.height()
+    if (!center) {
+        center = {
+            left: w/3,
+            top:h/3
+        }
+    }
+    var left = parseFloat(target.css('left'))
+    var top = parseFloat(target.css('top'))
+
+    var lastDx = (left + w/3)
+    var lastDy = (top + h/3)
+
+    var x = (left-lastDx)+center.left
+    var y = (top-lastDy)+center.top
+
+    var dx = (x - x * ratio)/ratio
+    var dy = (y - y * ratio)/ratio
+
+    left = - w/3 + dx
+    top = - h/3 + dy
+
+    left += panOffset.left / ratio
+    top += panOffset.top / ratio
+
+    var pos = {
+        'zoom':zoomRatio+'%',
+        left:left+'px',
+        top:top+'px'
+    }
+    //console.log([left,top,ratio,dx,dy,center.left,center.top])
+    target.css(pos)
+    $('.zoomCtrl span').text(zoomRatio+'%')
+}
+function updateZoom(){
+    var p = $('#zoomSelect').val()
+    setZoom(p)
+    top.notifyApplicationContentTainted(true)
+    FBP_refreshLines()
+}
+function updatePanoffset(){
+    var target = $('#canvasandclient')
+    var vpsize = getViewportSize()
+    var ratio = zoomRatio/100
+    var left = parseFloat(target.css('left'))
+    var t  = parseFloat(target.css('top'))
+    panOffset = {
+        left:(left+vpsize.width),
+        top:(t+vpsize.height)
+    }
+    //console.log(['Panoffset',panOffset.left,panOffset.top,vpsize])
+}
+function enableZoom(){
+    //zoom
+    var target = $('#canvasandclient');
+    zoomOriginOffset = target.position()
+    //HY: make the target draggable
+    //    jquery draggable is not used, because it has bug
+    //    if the target has been zoomed.
+    var _dragging = false
+    var ratio
+    target.on('mousedown',function(evt){
+        if (FBP_linkIsActive) return
+        var className = evt.target.className
+        if (className.indexOf('block') >= 0 || className.indexOf('slot')>=0){
+             return
+        }
+        setTimeout(function(){
+            ratio = zoomRatio / 100
+            _dragging = [evt.pageX,evt.pageY]
+        },50)
+    })
+    target.on('mouseup mouseout blur mouseleave',function(e){
+        if (_dragging) {
+            top.notifyApplicationContentTainted(true)
+            updatePanoffset()
+        }
+        _dragging = false
+    })
+    var _dt;
+    target.on('mousemove',function(e){
+        if (!_dragging) return
+        if (_dt) clearTimeout(_dt)
+        _dt = setTimeout(function(){
+            var dx = e.pageX - _dragging[0]
+            var dy = e.pageY - _dragging[1]
+            var left = parseFloat(target.css('left'))
+            var top = parseFloat(target.css('top'))
+            target.css({left:left+dx/ratio,top:top+dy/ratio})
+            _dragging = [e.pageX,e.pageY]
+        },10)
+    })
+    // Zooming
+    var _t;
+    zoomOriginPanoffset = {left:panOffset.left,top: panOffset.top}
+    var zoom = function(dir,e){
+        if (_t) return
+        var target = $('#canvasandclient')
+
+        var delta = 5
+        var step = 1
+
+        var ratio = zoomRatio /100.0
+        var offset = target.offset()
+        var clientX = e.clientX/ratio
+        var clientY = e.clientY/ratio
+        var center = {
+            left: (clientX - offset.left),
+            top: (clientY - offset.top)
+        }
+
+        //center.left -= panOffset.left/ratio
+        //center.top -= panOffset.top/ratio
+
+        //console.log(['start',center.left,zoomRatio,offset.left,e.clientX])
+        //move
+        var endZoomRatio = dir > 0 ? zoomRatio+delta : zoomRatio-delta
+        //limit
+        endZoomRatio = Math.min(150,Math.max(50,endZoomRatio))
+
+        var  n = zoomRatio
+        var task = function(){
+            n += (dir > 0 ? step : -step)
+            if ((dir >0 && n<=endZoomRatio)||(dir<0 && n>=endZoomRatio)) {
+                setZoom(n,center)
+                _t = setTimeout(task,1)
+            }
+            else {
+                _t = 0
+                FBP_refreshLines();
+            }
+        }
+        task()
+    }
+    target.on('mousewheel', function(e){
+        if (FBP_linkIsActive) return
+        if(e.deltaY > 0) {
+            zoom(1,e)
+        }
+        else{
+            zoom(-1,e)
+        }
+    });
+}
+document.addEventListener('DOMContentLoaded', function () {
+    sidebarInit()
+    watchingSpecialKeys()
+    enableZoom()
+})
+</script>
+    </body>
+</html>
