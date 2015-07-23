@@ -1,7 +1,7 @@
 #include "config.h" // To get RADIO_USE_WIFI
 
 #ifdef RADIO_USE_WIFI
-#include "radio_wifi.h"
+#include "radio_wifi2.h"
 #include "djtimer.h"
 #include "uart.h"
 #include "debug.h"

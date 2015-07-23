@@ -55,14 +55,21 @@
 #define DARJEELING_PGMSPACE_MACRO
 
 // Routing: choose 1
-#define ROUTING_USE_NONE
+// #define ROUTING_USE_NONE
 // #define ROUTING_USE_DSDV
 // #define ROUTING_USE_WUKONG
+#define ROUTING_USE_GATEWAY
 
 // Radios: choose as many as the routing protocol allows (max 1 for routing_none)
 // #define RADIO_USE_ZWAVE
 // #define RADIO_USE_XBEE
-#define RADIO_USE_NETWORKSERVER
+// #define RADIO_USE_NETWORKSERVER
+#define RADIO_USE_WIFI
+
+// GPIO: choose 1
+// #define INTEL_GALILEO_GEN1
+#define INTEL_GALILEO_GEN2
+// #define INTEL_EDISON
 
 // GPIO: choose 1
 // #define INTEL_GALILEO_GEN1

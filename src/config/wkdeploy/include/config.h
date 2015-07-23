@@ -47,7 +47,7 @@
 // #define DBG_WKREPROG true
 // #define DBG_ZWAVETRACE true
 // #define DBG_WKPFGH true
-// #define DBG_WKROUTING true
+#define DBG_WKROUTING true
 // #define DBG_WIFI true
 
 void avr_serialPrintf(char * format, ...);

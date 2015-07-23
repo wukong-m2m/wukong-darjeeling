@@ -5,13 +5,14 @@ from model.models import *
 from globals import *
 from configuration import *
 import simulator
+import traceback
 if WKPFCOMM_AGENT == "GATEWAY":
-  from transportv2 import *
+  from transportv3 import *
 else:
   from transport import *
 
 # MUST MATCH THE SIZE DEFINED IN wkcomm.h
-WKCOMM_MESSAGE_PAYLOAD_SIZE=30
+WKCOMM_MESSAGE_PAYLOAD_SIZE=40
 
 WKPF_PROPERTY_TYPE_SHORT         = 0
 WKPF_PROPERTY_TYPE_BOOLEAN       = 1
@@ -43,6 +44,7 @@ class Communication:
       except Exception as e:
         print "Exception while creating agent"
         print e
+        print traceback.format_exc()
         is_not_connected()
         self.agent = getMockAgent()
         if SIMULATION == "true":

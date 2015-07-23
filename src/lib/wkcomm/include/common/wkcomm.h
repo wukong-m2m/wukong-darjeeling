@@ -4,12 +4,12 @@
 #include "types.h"
 #include "hooks.h"
 
-
+// MUST MATCH THE SIZE DEFINED IN wkpfcomm.py
 // Size of the frame that will be sent to the radio by wkcomm is WKCOMM_MESSAGE_PAYLOAD_SIZE+3
 // 1 byte: command
 // 2 bytes: seqnr
 // TODONR: higher payload sizes seem to cause problems in the uart.
-#define WKCOMM_MESSAGE_PAYLOAD_SIZE     30
+#define WKCOMM_MESSAGE_PAYLOAD_SIZE     40
 
 #define WKCOMM_SEND_OK					 0
 #define WKCOMM_SEND_ERR_TOO_LONG		 3

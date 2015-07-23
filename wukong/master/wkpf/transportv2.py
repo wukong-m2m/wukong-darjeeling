@@ -25,6 +25,7 @@ import ipaddress
 from gevent.lock import RLock
 import json
 import re
+import traceback
 
 try:
     import fcntl
@@ -416,8 +417,10 @@ class RPCAgent(TransportAgent):
             gateway = self._create_client_stub(did, ip, port)
             try:
                 p = gateway.poll()
+                print 'ret=',p
                 ret.append(p)
             except:
+                print traceback.format_exc()
                 print "[transport] RPC poll() to gateway(%d %s) fails" % (did, str((ip, port)))
         
         if len(ret):

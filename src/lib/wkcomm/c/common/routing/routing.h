@@ -7,15 +7,22 @@
 #include "config.h"
 #include "wkcomm.h"
 
-extern void routing_init();
+extern void routing_init(void);
 
 // This will be frequently called by Darjeeling to receive messages
 // Shoudl return quickly if there's nothing to do
-extern void routing_poll();
+extern void routing_poll(void);
 
 // This will be called from wkcomm when it needs to send a message
 extern uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length);
 extern uint8_t routing_send_raw(wkcomm_address_t dest, uint8_t *payload, uint8_t length);
+
+#ifdef ROUTING_USE_GATEWAY
+#define ROUTING_MPTN_OVERHEAD 9
+extern void routing_discover_gateway(void);
+#else
+#define ROUTING_MPTN_OVERHEAD 0
+#endif
 
 // This will be called from wkcomm to determine this node's wukong id
 wkcomm_address_t routing_get_node_id();
@@ -37,9 +44,9 @@ extern void routing_handle_local_message(radio_networkserver_address_t local_add
 #endif // RADIO_USE_NETWORKSERVER
 
 #ifdef RADIO_USE_WIFI
-#include "radios/radio_wifi.h"
-extern void routing_handle_wifi_message(uint8_t wifi_cid, uint8_t *payload, uint8_t length);
-extern void wifi_server_disconnect(uint8_t cid);
+#include "../radios/radio_wifi.h"
+extern void routing_handle_wifi_message(radio_wifi_address_t wifi_addr, uint8_t *payload, uint8_t length);
+// extern void wifi_server_disconnect(uint8_t cid);
 #endif // RADIO_USE_WIFI
 
 #endif // ROUTING_NONEH
