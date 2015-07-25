@@ -19,6 +19,7 @@ class RPCClient(object):
     def _send_and_handle_reply(self, req):
         # sends and waits for reply
         reply = self.transport.send_message(req.serialize(), expect_reply=True)
+        print reply
 
         response = self.protocol.parse_reply(reply)
 

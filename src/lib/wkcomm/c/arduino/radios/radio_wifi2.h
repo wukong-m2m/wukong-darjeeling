@@ -10,7 +10,7 @@
 
 #define WIFI_UART        3
 //#define WIFI_BAUDRATE 	 9600
- #define WIFI_BAUDRATE 	 115200
+#define WIFI_BAUDRATE 	 115200
 #define WIFI_LISTEN_PORT 80
 #define WIFI_SUCCESS	 0
 #define WIFI_FAILED	 255

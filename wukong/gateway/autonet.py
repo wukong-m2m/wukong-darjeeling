@@ -3,11 +3,11 @@ import time
 import gevent
 
 class AutoNet:
-    def __init__(self, transport_add, transport_delete, transport_stop):
+    def __init__(self, transport_learn_functions):
         self.port = serial.Serial(baudrate=38400, timeout=1.0, port="/dev/ttyUSB0")
-        self._add_device = transport_add
-        self._delete_device = transport_delete
-        self._stop_learning = transport_stop
+        self._add_device = transport_learn_functions['a']
+        self._delete_device = transport_learn_functions['d']
+        self._stop_learning = transport_learn_functions['s']
 
     def _read_number(self):
         c = port.read()

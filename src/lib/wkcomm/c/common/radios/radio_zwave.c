@@ -57,7 +57,7 @@
 // radio_zwave data
 radio_zwave_address_t radio_zwave_my_address = 0;
 bool radio_zwave_my_address_loaded = false;
-uint8_t radio_zwave_receive_buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+4+3+10]; // 4 for Zwave overhead, 3 for wkcomm overhead, 10 for MPTN overhead
+uint8_t radio_zwave_receive_buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+4+3+ROUTING_MPTN_OVERHEAD]; // 4 for Zwave overhead, 3 for wkcomm overhead
 
 // zwave protocol data
 uint8_t state;        // Current state
@@ -128,7 +128,7 @@ void radio_zwave_poll(void) {
     }
     else if(zwave_mode==2)//reset mode
     {
-	    DEBUG_LOG(true,"start zwave reset !!!!!!!!!");
+	    DEBUG_LOG(DBG_ZWAVETRACE,"start zwave reset !!!!!!!!!");
 	    //radio_zwave_reset();// comment for test, because the id of wudevice becomes 1 without no reason, we believe that the wudevice reset itself automatically.
 	    zwave_mode=0;
 
@@ -235,10 +235,6 @@ uint8_t radio_zwave_send(radio_zwave_address_t zwave_addr, uint8_t *payload, uin
     }
     DEBUG_LOG(DBG_WKCOMM, "\n");
 #endif // DBG_WKCOMM
-	DEBUG_LOG(DBG_WKCOMM, "send %d bytes to %d\n", length,zwave_addr);
-    for (int16_t i=0; i<length; ++i) {
-        DEBUG_LOG(DBG_WKCOMM, " %02x", payload[i]);
-    }
 
     return ZW_sendData(zwave_addr, payload, length, txoptions);
 }
@@ -254,10 +250,6 @@ uint8_t radio_zwave_send_raw(radio_zwave_address_t zwave_addr, uint8_t *payload,
     }
     DEBUG_LOG(DBG_WKCOMM, "\n");
 #endif // DBG_WKCOMM
-	DEBUG_LOG(DBG_WKCOMM, "send %d bytes to %d\n", length,zwave_addr);
-    for (int16_t i=0; i<length; ++i) {
-        DEBUG_LOG(DBG_WKCOMM, " %02x", payload[i]);
-    }
 
     return ZW_sendDataRaw(zwave_addr, payload, length, txoptions);
 }
@@ -380,7 +372,10 @@ void Zwave_receive(int processmessages) {
                         //Serial1.write(b[k]);
                         uart_write_byte(ZWAVE_UART, b[k]);
                     }
-                    zwave_learn_on=0;
+                    zwave_learn_on=false;
+#ifdef ROUTING_USE_GATEWAY
+                    routing_discover_gateway();
+#endif
                     zwave_learn_block=0;
                     zwave_mode=0;
                     // see issue 115                     PORTK |=_BV(1);
@@ -567,7 +562,7 @@ int SerialAPI_request(unsigned char *buf, int len)
 
 int ZW_sendData(uint8_t id, uint8_t *in, uint8_t len, uint8_t txoptions)
 {
-    unsigned char buf[WKCOMM_MESSAGE_PAYLOAD_SIZE+10+7+3]; // 10 for MPTN overhead, 7 for ZW overhead, 3 for wkcomm overhead
+    unsigned char buf[WKCOMM_MESSAGE_PAYLOAD_SIZE+ROUTING_MPTN_OVERHEAD+7+3]; // 7 for ZW overhead, 3 for wkcomm overhead
     int i;
     int timeout = 1000;
     zwsend_ack_got = -1;
@@ -596,7 +591,7 @@ int ZW_sendData(uint8_t id, uint8_t *in, uint8_t len, uint8_t txoptions)
 }
 int ZW_sendDataRaw(uint8_t id, uint8_t *in, uint8_t len, uint8_t txoptions)
 {
-    unsigned char buf[WKCOMM_MESSAGE_PAYLOAD_SIZE+10+7+3]; // 10 for MPTN overhead, 7 for ZW overhead, 3 for wkcomm overhead
+    unsigned char buf[WKCOMM_MESSAGE_PAYLOAD_SIZE+ROUTING_MPTN_OVERHEAD+7+3]; // 7 for ZW overhead, 3 for wkcomm overhead
     int i;
     int timeout = 1000;
     zwsend_ack_got = -1;
