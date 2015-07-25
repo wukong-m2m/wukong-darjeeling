@@ -4,3 +4,8 @@ djConfig {
 	app = 'wkemptyapp'
 	appArchiveSize = 4096
 }
+
+binaries.all {
+        linker.args "-Wl,-lmraa"
+}
+
