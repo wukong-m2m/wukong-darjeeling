@@ -211,7 +211,7 @@ def firstCandidate(logger, changesets, routingTable, locTree, flag = None):
     print "mapping_result: ",mapping_result
 
     if flag == None:
-        save_map("changesets.tmp",changesets)
+        save_map("changesets.pkl",changesets)
         #print changesets.links[0].from_component.location
         #print changesets.links[0].from_property_name, " ", changesets.links[0].from_property.name
         #print changesets.links[0].to_component.location, " " , changesets.links[0].to_property_name, " " , changesets.links[0].to_property 
@@ -221,7 +221,7 @@ def firstCandidate(logger, changesets, routingTable, locTree, flag = None):
 def Compare_changesets (new_changesets, old_changesets):
     diff = ChangeSets(components = [], links = [], heartbeatgroups = [])
     same = ChangeSets(components = [], links = [], heartbeatgroups = [])
-    tmp = [] #compoents will be used
+    tmp = [] #components will be used
     conflict = False
 
     for new_l in new_changesets.links:
@@ -231,24 +231,25 @@ def Compare_changesets (new_changesets, old_changesets):
                 same.links.append(new_l)
                 flag = 1
         if flag == 0:
-            if new_l.from_component.location not in tmp:
+            if (new_l.from_component.location,new_l.from_component.type) not in tmp:
                 tmp.append((new_l.from_component.location,new_l.from_component.type))
-            if new_l.to_component.location not in tmp:
+            if (new_l.to_component.location,new_l.to_component.type) not in tmp:
                 tmp.append((new_l.to_component.location,new_l.to_component.type))
             diff.links.append(new_l)
 
     print "objects will be used:", tmp
     for new_c in new_changesets.components:
         flag = 0
-        for values in tmp:
-            if new_c.location == values[0] and new_c.type == values[1]:
-                diff.components.append(new_c)
-                flag = 1
-                break
-            elif new_c.type == "Server":
-                diff.components.append(new_c)
-                flag = 1
-                break
+
+        if new_c.type == "Server":
+            diff.components.append(new_c)
+            flag = 1
+        else:
+            for values in tmp:
+                if new_c.location == values[0] and new_c.type == values[1]:
+                    diff.components.append(new_c)
+                    flag = 1
+                    break
         if flag == 0:
             for old_c in old_changesets.components:
                 if new_c.location == old_c.location and new_c.type == old_c.type:
@@ -261,7 +262,7 @@ def Compare_changesets (new_changesets, old_changesets):
     for old_l in old_changesets.links:
         if (old_l.from_component.location, old_l.from_component.type) in tmp or (old_l.to_component.location, old_l.to_component.type) in tmp:
             #share policy have bugs
-            if share_policy().pessimistic(old_l):
+            if share_policy().demo(old_l):
                 diff.links.append(old_l)
             else:
                 conflict = True
@@ -269,7 +270,7 @@ def Compare_changesets (new_changesets, old_changesets):
 
     extra_component = []
     extra_links = []
-    for values in tmp:	
+    for values in tmp:  
         for old_l in old_changesets.links:
             if old_l.from_component.location == values[0] or old_l.to_component.location == values[0]:
                 if old_l not in extra_links:
@@ -285,15 +286,16 @@ def Compare_changesets (new_changesets, old_changesets):
 
 def least_changed(logger, changesets, routingTable, locTree):
     try:
-        past_changesets = load_map("changesets.tmp")
+        past_changesets = load_map("changesets.pkl")
         past_changesets = unintstall(past_changesets, locTree)
     except:
         mapping_result = firstCandidate(logger, changesets, routingTable, locTree)
         return mapping_result
     same, diff, extra_component, extra_links,conflict = Compare_changesets(changesets, past_changesets) 
-    print "same: ", same, "\ndiff: ", diff
+    print "same: ", same, "\ndiff: ", diff, "\nextra link:", extra_links, "\nextra component:",extra_component
     if diff.components != []:
         if conflict:
+            print "wuobject conflict!"
             mapping_result = firstCandidate(logger, changesets, routingTable, locTree)
         else:
             mapping_result = firstCandidate(logger, diff, routingTable, locTree, 1)
@@ -312,16 +314,19 @@ def least_changed(logger, changesets, routingTable, locTree):
                     same.links.append(tmp)
             for tmp in diff.heartbeatgroups:
                 same.heartbeatgroups.append(tmp)
-            save_map("changesets.tmp",same)
+            save_map("changesets.pkl",same)
     else :
         mapping_result = False
-        print "no differentce"
+        print "no difference"
     return mapping_result
 
 #return True if object can be shared 
 class share_policy(object):
     def __init__(self):
-        pass
+        try:
+            self.shared_links = load_map("shared_link.pkl")
+        except:
+            self.shared_links = {}
 #        self._unused_wuobj = {}
 #        self._used_wuobj = {}
 #        i = 1
@@ -337,23 +342,47 @@ class share_policy(object):
 #                        self._unused_wuobj.update({j:wuobj})
 #                        j +=1
 
-    def pessimistic(self,link): #only readonly components can be shared
-        if link.from_property.access == "readonly":
+    def demo(self,link):
+        if link.to_component.type == "Server":
             return True
-        elif link.to_component.type == "Server":
+        elif link.from_property.access == "readonly" or link.from_property.access == "readwrite":
+            print "readonly and readwirte are sharable."
+            self.link_count()
             return True
         else:
             return False
 
+    def pessimistic(self,link): #only readonly components can be shared
+        if link.to_component.type == "Server":
+            return True
+        elif link.from_property.access == "readonly":
+            self.link_count()
+            return True
+        else:
+            return False
+
+    def link_count(self):
+        tmp = link.from_component.location + link.from_component.type + link.to_component.location + link.to_component.type
+        if tmp in self.shared_links:
+            self.shared_links[tmp] += 1
+        else:
+            self.shared_links.update({tmp:1})
+        save_map("shared_links.pkl", self.shared_links)
+
 def unintstall(changesets,locTree):
     #To do:change xml.state to unused
     node_id_list = []
+    rm_component = []
     for node_id in WuNode.node_dict:
         node_id_list.append(node_id)
     print "node id list:" ,node_id_list
     for component in changesets.components:
         if component.instances[0].wunode.id not in node_id_list:
+            rm_component.append(component.location)
             changesets.components.remove(component)
+    for link in changesets.links:
+        if link.to_component.location in rm_component or link.from_component.loction in rm_component:
+            changesets.links.remove(link)
     return changesets
 
 def save_map(name,msg):
@@ -370,17 +399,53 @@ def dump_changesets(changesets):
         print "from location:" , link.from_component.location, "to location:", link.to_component.location
         print "from type:", link.from_component.type, "to type:", link.to_component.type
 
+
 def delete_application(logger, changesets, routingTable, locTree):
     import os
     try:
-        changesets = load_map("changesets.tmp")
-        changesets = unintstall(changesets, locTree)
+        past_changesets = load_map("changesets.pkl")
+        past_changesets = unintstall(past_changesets, locTree)
     except:
         print "file does not exist"
+
+    try:
+        shared_links = load_map("shared_link.pkl")
+    except:
+        shared_links = {}
+
+    #delete dir & files    
     app_dir = changesets.component.application_hashed_name
     print "delete: " ,app_dir
-    os.shutil.retree("../apps/" + app_dir)
+    os.shutil.rmtree( os.getcwd() +"../apps/" + app_dir)
 
+    #compare changesets
+    delete = []
+    remap = ChangeSets(components = [], links = [], heartbeatgroups = [])
+    tmp = [] #components will be used
+    conflict = False
 
+    for del_l in changesets.links:
+        flag = 0
+        tmp_str = del_l.from_component.location + del_l.from_component.type + del_l.to_component.location + del_l.to_component.type
+        shared_links[tmp_str] -= 1
+        if shared_links[tmp_str] == 0:
+            shared_links.pop(tmp_str)
+            delete.append(tmp_str)
+        if del_l.from_component.location not in tmp:
+            tmp.append(del_l.from_component.location)
+        if del_l.to_component.location not in tmp:
+            tmp.append(del_l.to_component.location)
 
+    print "wudevices need redeployed:", tmp
+
+    for component in past_changesets.components:
+        if components.location in tmp:
+            remap.components.append(component)
+    for link in past_changesets.links:
+        if link.from_component.location in tmp or link.to_component.location in tmp:
+            tmp_str = link.from_component.location + link.from_component.type + link.to_component.location + link.to_component.type
+            if tmp_str not in delete:
+                remap.links.append(link)
+    changesets = remap
+    return True
 

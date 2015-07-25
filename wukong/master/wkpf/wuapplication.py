@@ -21,7 +21,7 @@ from threading import Thread
 from subprocess import Popen, PIPE, STDOUT
 from collections import namedtuple
 import distutils.dir_util
-
+import mapper.mapper
 from configuration import *
 from globals import *
 
@@ -308,7 +308,7 @@ class WuApplication:
   def generateJava(self):
       Generator.generate(self.name, self.changesets)
 
-  def mapping(self, locTree, routingTable, mapFunc=firstCandidate):
+  def mapping(self, locTree, routingTable, mapFunc=mapper.mapper.least_changed):
       #input: nodes, WuObjects, WuLinks, WuClassDefs
       #output: assign node id to WuObjects
       # TODO: mapping results for generating the appropriate instiantiation for different nodes
@@ -322,6 +322,16 @@ class WuApplication:
     logging.info("Mapping Results")
     logging.info(self.changesets)
     return result
+
+  def del_and_remap(self, location_tree, routingTable):
+    self.changesets = ChangeSets([], [], [])
+    self.parseApplication()
+    result = mapping.mapping.delete_application(self, self.changesets, routingTable, location_tree)
+    logging.info("Mapping Results")
+    logging.info(self.changesets)
+    return result
+
+
 
   def deploy_with_discovery(self,*args):
     #node_ids = [info.id for info in getComm().getActiveNodeInfos(force=False)]
