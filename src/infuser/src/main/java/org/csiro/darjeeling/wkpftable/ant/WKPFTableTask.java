@@ -86,12 +86,13 @@ public class WKPFTableTask extends Task
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(fXmlFile);
 			doc.getDocumentElement().normalize();
-			ArrayList<Integer> component_list = getComponentList(doc);
+			//ArrayList<Integer> component_list = getComponentList(doc);
+			ArrayList<Long> component_list = getComponentList(doc);
 			
-			//writeFile(dest + ".component_list", component_list);
 			PrintWriter pw = new PrintWriter(dest + ".component_list");
 			for (int i = 0; i < component_list.size(); i++) {
-				Integer node_id = component_list.get(i);
+				//Integer node_id = component_list.get(i);
+				Long node_id = component_list.get(i);
 				pw.println(node_id);
 				
 				writeFile(dest + ".wkpf_linktable" + node_id, makeLinkTable(doc));
@@ -99,7 +100,7 @@ public class WKPFTableTask extends Task
 				writeFile(dest + ".wkpf_initvalues" + node_id, makeInitValues(doc));
 			}
 			writeFile(dest + ".wkpf_linktable", makeLinkTable(doc));
-			writeFile(dest + ".wkpf_componentmap", makeComponentMap(doc, -1));
+			writeFile(dest + ".wkpf_componentmap", makeComponentMap(doc, -1L));
 			writeFile(dest + ".wkpf_initvalues", makeInitValues(doc));
 			pw.close();
 		} catch (FileNotFoundException fnfex) {
@@ -114,10 +115,12 @@ public class WKPFTableTask extends Task
 
 	}
 	
-	private ArrayList<Integer> getComponentList(Document doc) {
+	//private ArrayList<Integer> getComponentList(Document doc) {
+	private ArrayList<Long> getComponentList(Document doc) {
 		NodeList components = ((Element)doc.getElementsByTagName("components").item(0)).getElementsByTagName("component");
 		
-		ArrayList<Integer> component_list = new ArrayList<Integer>();
+		//ArrayList<Integer> component_list = new ArrayList<Integer>();
+		ArrayList<Long> component_list = new ArrayList<Long>();
 		for (int i=0; i<components.getLength(); i++) {
 			Node node = components.item(i);
 			if (node.getNodeType() == Node.ELEMENT_NODE) {
@@ -126,7 +129,8 @@ public class WKPFTableTask extends Task
 				// The XML should contain a continuous range starting at 0.
 
 				Element endpoint = (Element)component.getElementsByTagName("endpoint").item(0);
-				Integer node_id = Integer.parseInt(endpoint.getAttribute("node"));
+				//Integer node_id = Integer.parseInt(endpoint.getAttribute("node"));
+				Long node_id = Long.parseLong(endpoint.getAttribute("node"));
 				if (!component_list.contains(node_id))
 					component_list.add(node_id);
 			}
@@ -172,7 +176,8 @@ public class WKPFTableTask extends Task
 		return links_bytes;
 	}
 
-	private ArrayList<Byte> makeComponentMap(Document doc, Integer node_id) {
+	//private ArrayList<Byte> makeComponentMap(Document doc, Integer node_id) {
+	private ArrayList<Byte> makeComponentMap(Document doc, Long node_id) {
 		NodeList components = ((Element)doc.getElementsByTagName("components").item(0)).getElementsByTagName("component");
 
 		ArrayList<Integer> components_offsets = new ArrayList<Integer>();
@@ -193,8 +198,9 @@ public class WKPFTableTask extends Task
 
 				NodeList endpoints = component.getElementsByTagName("endpoint");
 				Element newendpoint = (Element)component.getElementsByTagName("endpoint").item(0);
-				Integer newNode = Integer.parseInt(newendpoint.getAttribute("node"));
-				if (node_id == -1 || newNode == node_id) {
+				//Integer newNode = Integer.parseInt(newendpoint.getAttribute("node"));
+				Long newNode = Long.parseLong(newendpoint.getAttribute("node"));
+				if (node_id == -1L || newNode == node_id) {
 					component_map_bytes.add((byte)endpoints.getLength()); // Number of endpoints
 					component_map_bytes.add((byte)(Short.parseShort(component.getAttribute("wuclassId")) % 256));
 					component_map_bytes.add((byte)(Short.parseShort(component.getAttribute("wuclassId")) / 256));
