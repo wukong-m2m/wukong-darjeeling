@@ -36,7 +36,7 @@ def ensureEmptyDir(File destDir) {
 }
 
 def insertBase(String fileName, String node_id) {
-    if (fileName.contains("wkpf_")) {
+    if (fileName.contains("-wkpf-tables")) {
         return fileName+node_id
     } else {
         return fileName
