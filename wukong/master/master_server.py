@@ -71,7 +71,7 @@ if(MONITORING == 'true'):
       sys.exit(-1)
 
 tornado.options.parse_command_line()
-# tornado.options.enable_pretty_logging()
+#tornado.options.enable_pretty_logging()
 
 IP = sys.argv[1] if len(sys.argv) >= 2 else '127.0.0.1'
 
@@ -348,13 +348,13 @@ class new_application(tornado.web.RequestHandler):
 
       app_id = hashlib.md5(app_name).hexdigest()
 
-      if getAppIndex(app_id):
+      if getAppIndex(app_id) is not None:
         ## assign a serial number to the application name
         count = 1
         while True:
             new_app_name = app_name +'(%s)' % count
             app_id = hashlib.md5(new_app_name).hexdigest()
-            if not getAppIndex(app_id):
+            if getAppIndex(app_id) is None:
                 app_name = new_app_name
                 break
             count += 1
@@ -365,8 +365,9 @@ class new_application(tornado.web.RequestHandler):
       # copy base for the new application
       logging.info('creating application... "%s"' % (app_name))
       copyAnything(BASE_DIR, os.path.join(APP_DIR, app_id))
-
-      app = WuApplication(id=app_id, app_name=app_name, dir=os.path.join(APP_DIR, app_id))
+      
+      # default to be disabled
+      app = WuApplication(id=app_id, app_name=app_name, dir=os.path.join(APP_DIR, app_id),disabled=True)
       logging.info('app constructor')
       logging.info(app.app_name)
 
@@ -406,10 +407,10 @@ class new_application(tornado.web.RequestHandler):
       self.write({'status':0, 'app': app.config()})
     except Exception as e:
       exc_type, exc_value, exc_traceback = sys.exc_info()
-      print traceback.print_exception(exc_type, exc_value, exc_traceback,
+      traceback.print_exception(exc_type, exc_value, exc_traceback,
                                   limit=2, file=sys.stdout)
       self.content_type = 'application/json'
-      self.write({'status':1, 'mesg':'Cannot create application'})
+      self.write({'status':1, 'mesg':'Cannot create application:%s,%s' % (exc_value,exc_traceback)})
 
 class rename_application(tornado.web.RequestHandler):
   def put(self, app_id):

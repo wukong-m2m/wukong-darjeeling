@@ -1233,7 +1233,27 @@ function FBP_currentNode(){
     }
     task()
 }
+
+/* HY: 2015-07-23
+ * Auto save before deploy
+ */
+function FBP_map(){
+    if (top.isAppBeenModified()){
+        FBP_save(function(){
+            FBP_map_do()
+        })
+    }
+    else FBP_map_do()
+} 
 function FBP_deploy(){
+    if (top.isAppBeenModified()){
+        FBP_save(function(){
+            FBP_deploy_do()
+        })
+    }
+    else FBP_deploy_do()
+}
+function FBP_deploy_do(){
     loading(true)
     $('#deployment .modal-dialog-content').html('Deploy Starts...')
     $.post('/applications/' + currentApplication.id + '/deploy', function(data) {
@@ -1268,7 +1288,7 @@ function FBP_deploy(){
         }
     });
 }
-function FBP_map(){
+function FBP_map_do(){
     loading(true)
     $.post('/applications/' + currentApplication.id + '/deploy/map', function(data) {
         loading(false)
