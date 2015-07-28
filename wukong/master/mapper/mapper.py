@@ -25,7 +25,7 @@ from configuration import *
 from wkpf.globals import *
 import pickle
 
-ChangeSets = namedtuple('ChangeSets', ['components', 'links', 'heartbeatgroups'])
+ChangeSets = namedtuple('ChangeSets', ['components', 'links', 'heartbeatgroups', "deployIDs"])
 
 # allcandidates are all node ids ([int])
 def constructHeartbeatGroups(heartbeatgroups, routingTable, allcandidates):
@@ -212,13 +212,12 @@ def firstCandidate(logger, changesets, routingTable, locTree, flag = None):
 
     if flag == None:
         save_map("changesets.pkl",changesets)
-	dump_changesets(changesets)
 
     return mapping_result
 
 def Compare_changesets (new_changesets, old_changesets):
-    diff = ChangeSets(components = [], links = [], heartbeatgroups = [])
-    same = ChangeSets(components = [], links = [], heartbeatgroups = [])
+    diff = ChangeSets(components = [], links = [], heartbeatgroups = [], deployIDs = [])
+    same = ChangeSets(components = [], links = [], heartbeatgroups = [], deployIDs = [])
     tmp = [] #components will be used
     conflict = False
 
@@ -251,36 +250,35 @@ def Compare_changesets (new_changesets, old_changesets):
         if flag == 0:
             for old_c in old_changesets.components:
                 if new_c.location == old_c.location and new_c.type == old_c.type:
-                    same.components.append(old_c)
+                    same.components.append(new_c)
+                    old_c = new_c
                     flag = 1
                     break
             if flag == 0:
                 diff.components.append(new_c)
-    
 
     #check conflict
     for old_l in old_changesets.links:
         if (old_l.from_component.location, old_l.from_component.type) in tmp or (old_l.to_component.location, old_l.to_component.type) in tmp:
-            #share policy have bugs
+            #share policy
             if share_policy().demo(old_l):
                 diff.links.append(old_l)
             else:
                 conflict = True
                 break
-
+    #component which be deployed need original link and component
     extra_component = []
     extra_links = []
-    location_tmp = {}
+    location_tmp = {} #dict sort by location
 
     for values in tmp:
         if values[0] not in location_tmp:
             location_tmp.update({values[0]:[values[1]]})
         else:
             location_tmp[values[0]].append(values[1])
-    print location_tmp
-
+    #find extra links and components
     for old_l in old_changesets.links:
-        if (old_l.from_component.location in location_tmp or old_l.to_component.location in location_tmp) and old_l not in same:
+        if (old_l.from_component.location in location_tmp or old_l.to_component.location in location_tmp) and old_l not in same.links:
             if old_l not in extra_links:
                 #change link component memory location
                 for component in diff.components:
@@ -290,7 +288,7 @@ def Compare_changesets (new_changesets, old_changesets):
                         old_l.to_component = component
                 extra_links.append(old_l)
     for old_c in old_changesets.components:
-        if old_c.location in location_tmp and old_c.type != "Server" and old_c.type not in location_tmp[old_c.location]:
+        if old_c.location in location_tmp and old_c.type != "Server" and old_c.type not in location_tmp[old_c.location] and old_c not in same.components:
             if old_c not in extra_component:
                 extra_component.append(old_c)
 
@@ -309,9 +307,12 @@ def least_changed(logger, changesets, routingTable, locTree):
         if conflict:
             print "wuobject conflict!"
             mapping_result = firstCandidate(logger, changesets, routingTable, locTree)
+            return mapping_result
         else:
             dump_changesets(diff)
             mapping_result = firstCandidate(logger, diff, routingTable, locTree, 1)
+            if mapping_result == False:
+                return mapping_result
             if extra_component != []:
                 for tmp in extra_component:
                     changesets.components.append(tmp)
@@ -319,9 +320,24 @@ def least_changed(logger, changesets, routingTable, locTree):
                 for tmp in extra_links:
                     changesets.links.append(tmp)
             #past_changesets = diff + past_changesets
+            location_tmp = {}
+            for tmp in past_changesets.components:
+                if tmp.location not in location_tmp:
+                    location_tmp.update({tmp.location:[tmp.type]})
+                else:
+                    location_tmp[tmp.location].append(tmp.type)
+
             for tmp in diff.components:
-                if tmp not in past_changesets.components:
+                if ((tmp.location in location_tmp and tmp.type not in location_tmp[tmp.location]) or tmp.location not in location_tmp) and tmp.type != "Server":
                     past_changesets.components.append(tmp)
+                elif (tmp.location in location_tmp and tmp.type in location_tmp[tmp.location]) and tmp.type != "Server":
+                    for tmp2 in past_changesets.components:
+                        if tmp2.location == tmp.location and tmp2.type == tmp.type:
+                            past_changesets.components.remove(tmp2)
+                            past_changesets.components.append(tmp)
+#                if tmp.instances[0].wunode.id not in changesets.deployIDs:
+#                   changesets.deployIDs.append(tmp.instances[0].wunode.id)
+
             for tmp in diff.links:
                 if tmp not in past_changesets.links:
                     past_changesets.links.append(tmp)
@@ -341,7 +357,7 @@ class share_policy(object):
             self.shared_links = load_map("shared_link.pkl")
         except:
             self.shared_links = {}
-	self.link = ""
+    	self.link = ""
 #        self._unused_wuobj = {}
 #        self._used_wuobj = {}
 #        i = 1
@@ -353,8 +369,6 @@ class share_policy(object):
 #                    if wuobj.mapped == True:
 #                        self._used_wuobj.update({i:wuobj})
 #                        i +=1
-#                    else:
-#                        self._unused_wuobj.update({j:wuobj})
 #                        j +=1
 
     def demo(self,link):
@@ -409,15 +423,15 @@ def load_map(name):
 
 def dump_changesets(changesets):
     for component in changesets.components:
-        print "location: ",component.location, "type:", component.type
-#	print "index:", component.index , "reaction-time", component.reaction_time, "group_size:" , component.group_size, "application_hashed_name" , component.application_hashed_name
+        print "location: ",component.location, "type:", component.type, "memory location:", component
+#   print "index:", component.index , "reaction-time", component.reaction_time, "group_size:" , component.group_size, "application_hashed_name" , component.application_hashed_name
  #       print "instances port number:",component.instances[0].port_number,"property cache", "vurtual",component.instances[0].virtual,"properties", component.instances[0].properties, "map",component.instances[0].mapped, "wunode", component.instances[0].wunode
     for link in changesets.links:
-        print "from location:" , link.from_component.location, "to location:", link.to_component.location
+        print "from location:" , link.from_component.location, "memory location", link.from_component, "to location:", link.to_component.location, "memory location", link.to_component
         print "from type:", link.from_component.type, "to type:", link.to_component.type
   #      component = link.to_component 
    #     print "location: ",component.location, "type:", component.type
-#	print "index:", component.index , "reaction-time", component.reaction_time, "group_size:" , component.group_size, "application_hashed_name" , component.application_hashed_name
+#   print "index:", component.index , "reaction-time", component.reaction_time, "group_size:" , component.group_size, "application_hashed_name" , component.application_hashed_name
         #########print "instances port number:",component.instances[0].port_number,"property cache", "vurtual",component.instances[0].virtual,"properties", component.instances[0].properties, "map",component.instances[0].mapped, "wunode", component.instances[0].wunode
 
 
