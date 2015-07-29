@@ -178,32 +178,13 @@ function application_fill()
             }
             r.onload = function(){
                 var content = r.result
-                var xmlEle = document.createElement('xml')
-                xmlEle.innerHTML = content
-                var app_nameEle = xmlEle.querySelector('app_name')
-                if (app_nameEle) {
-                    /*
-                     * The <app_name></app_name> is added when this file is downloaded.
-                     * Now, we remove it before sendback to server.
-                     */
-                    app_nameEle.parentNode.removeChild(app_nameEle)
-                }
-                else{
-                    return uploadError('Format Error')
-                }
-                // set default to be disabled application
-                var appEle = xmlEle.querySelector('application')
-                var disabledEle = document.createElement('disabled')
-                disabledEle.innerText = 1
-                appEle.insertBefore(disabledEle,appEle.firstChild)
-
-                content = xmlEle.innerHTML
-                //console.log('----update----')
-                //console.log(content)
-
-                var app_name = app_nameEle.innerText
-                if(app_name != '') {
-                  $.post('/applications/new', {app_name: app_name,xml:content}, function(data) {
+                var app_name = content.match(/<app_name>(.+)<\/app_name>/)[1]
+                /*
+                 * The <app_name></app_name> is added when this file is downloaded.
+                 * Now, we remove it before sendback to server.
+                 */
+                content = content.replace(/<app_name>.+<\/app_name>/,'<disabled>1</disabled>')
+                $.post('/applications/new', {app_name: app_name,xml:content}, function(data) {
                     if (data.status == '1') {
                         alert(data.mesg);
                     }
@@ -211,8 +192,7 @@ function application_fill()
                         application_fill();
                     }
                     dialog.parentNode.removeChild(dialog)
-                  });
-                }
+                });
             }
             r.readAsText(f)
             /*

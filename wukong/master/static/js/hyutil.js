@@ -144,6 +144,9 @@ var _AppMetaTainted_ = false;
 function notifyApplicationMetaTainted(yes){
     _AppMetaTainted_ = yes
 }
+function isAppBeenModified(){
+    return _AppMetaTainted_ || _AppContentTainted_
+}
 // Warning user to save if necessary
 function notifyApplicationContentChanged(){
     if (!(_AppContentTainted_||_AppMetaTainted_)) return true

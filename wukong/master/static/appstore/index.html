@@ -33,7 +33,7 @@ var application_xmls = [
 	{name:'車庫',url:'2.xml',by:'Kenny & Joe',desc:'The garage'},
 	{name:'陽台',url:'3.xml',by:'Mary Wang',desc:'Try it'},
 	{name:'地下室',url:'4.xml',by:'Ken',desc:'^_^'},
-	{name:'頂樓',url:'1.xml',by:'Henny King',desc:'The top floor'},
+	{name:'頂樓T',url:'TEST.xml',by:'Henny King',desc:'The top floor'},
 	{name:'車庫',url:'2.xml',by:'Kenny & Joe',desc:'The garage'},
 	{name:'陽台',url:'3.xml',by:'Mary Wang',desc:'Try it'},
 	{name:'地下室',url:'4.xml',by:'Ken',desc:'^_^'},
@@ -97,22 +97,13 @@ function appStoreInit(closeStore) {
             dataType:'text',
             success: function(content) {
                 loading(false)
-                var xmlEle = document.createElement('xml')
-                xmlEle.innerHTML = content
-                var app_nameEle = xmlEle.querySelector('app_name')
-                if (app_nameEle) {
-                    /*
-                     * The <app_name></app_name> is added when this file is downloaded.
-                     * Now, we remove it before sendback to server.
-                     */
-                    app_nameEle.parentNode.removeChild(app_nameEle)
-                }
-                else{
-                    closeStore()
-                    alert('Failure: format error')
-                    return
-                }
-                content = xmlEle.innerHTML
+                //var app_name = content.match(/<app_name>(.+)<\/app_name>/)[1]
+                /*
+                 * The <app_name></app_name> is added when this file is downloaded.
+                 * Now, we remove it before sendback to server.
+                 */
+                content = content.replace(/<app_name>.+<\/app_name>/,'<disabled>1</disabled>')
+
                 loading('Installing... '+app_name);
                 $.post('/applications/new', {app_name: app_name,xml:content}, function(data) {
                   loading(false)
