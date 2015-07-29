@@ -68,12 +68,7 @@
 
 // GPIO: choose 1
 // #define INTEL_GALILEO_GEN1
-#define INTEL_GALILEO_GEN2
-// #define INTEL_EDISON
-
-// GPIO: choose 1
-// #define INTEL_GALILEO_GEN1
-#define INTEL_GALILEO_GEN2
-// #define INTEL_EDISON
+//#define INTEL_GALILEO_GEN2
+#define INTEL_EDISON
 
 #endif

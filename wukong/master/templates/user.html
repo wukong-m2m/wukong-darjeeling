@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
+<title>User</title>
+</head>
+<style>
+.choosed {
+    border:5px solid red
+}
+</style>
+<body>
+    <img src="/static/images/wukong_logo.jpg" id="0" onclick="nowUser('0');">
+    <img src="/static/images/wukong_logo.jpg" id="1" onclick="nowUser('1');">
+    <img src="/static/images/wukong_logo.jpg" id="2" onclick="nowUser('2');">
+    <img src="/static/images/wukong_logo.jpg" id="3" onclick="nowUser('3');">
+</body>
+<script>
+function resize() {
+    var size = $(window).width();
+    $('img').width(size/5);
+}
+$(document).ready(resize);
+window.onresize = resize;
+
+function nowUser(x) {
+    $('img').removeClass('choosed');
+    $('#'+x).addClass('choosed');
+    $.get("/nowUser/"+x);
+}
+</script>
+</html>
