@@ -25,7 +25,7 @@ import mapper.mapper
 from configuration import *
 from globals import *
 
-ChangeSets = namedtuple('ChangeSets', ['components', 'links', 'heartbeatgroups'])
+ChangeSets = namedtuple('ChangeSets', ['components', 'links', 'heartbeatgroups', 'deployIDs'])
 
 class WuApplication:
   def __init__(self, id='', app_name='', desc='', file='', dir='', outputDir="", templateDir=TEMPLATE_DIR, componentXml=open(COMPONENTXML_PATH).read(),disabled=False):
@@ -59,7 +59,7 @@ class WuApplication:
     self.instanceIds = []
     self.monitorProperties = {}
 
-    self.changesets = ChangeSets([], [], [])
+    self.changesets = ChangeSets([], [], [], [])
 
     # a log of mapping results warning or errors
     # format: a list of dict of {'msg': '', 'level': 'warn|error'}
@@ -316,7 +316,7 @@ class WuApplication:
       return mapFunc(self, self.changesets, routingTable, locTree)
 
   def map(self, location_tree, routingTable):
-    self.changesets = ChangeSets([], [], [])
+    self.changesets = ChangeSets([], [], [], [])
     self.parseApplication()
     result = self.mapping(location_tree, routingTable)
     logging.info("Mapping Results")
@@ -335,7 +335,9 @@ class WuApplication:
 
   def deploy_with_discovery(self,*args):
     #node_ids = [info.id for info in getComm().getActiveNodeInfos(force=False)]
-    node_ids = set([x.wunode.id for component in self.changesets.components for x in component.instances])
+    #node_ids = set([x.wunode.id for component in self.changesets.components for x in component.instances])
+    node_ids = set([x for x in self.changesets.deployIDs])
+    print node_ids
     res = self.deploy(node_ids,*args)
     return res
 
