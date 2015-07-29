@@ -218,4 +218,7 @@
         <property name="track" access="readwrite" datatype="short" default="0" />
         <property name="__pin" access="readonly" datatype="Pin" />
     </WuClass>
+    <WuClass name="UserID" id="2012" virtual="false" type="hard">
+        <property name="userID" access="readonly" datatype="short" default="0" />
+    </WuClass>
 </WuKong>

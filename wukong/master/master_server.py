@@ -1371,6 +1371,20 @@ class GetRefresh(tornado.web.RequestHandler):
     value = comm.getProperty(int(node_id), int(port_id), int(wuclass_id), 2)
     self.render('templates/value.html', applications=value[0])
 
+import serial
+
+class NowUser(tornado.web.RequestHandler):
+  def get(self, user_id):
+    port = "/dev/ttyUSB0"
+    ser = serial.Serial(port, 115200, timeout=1.0)
+    x = ser.write(user_id)
+    print x
+
+class UserAware(tornado.web.RequestHandler):
+  def get(self):
+    self.content_type='text/html'
+    self.render('templates/user.html')
+
 settings = dict(
   static_path=os.path.join(os.path.dirname(__file__), "static"),
   debug=True
@@ -1426,7 +1440,9 @@ wukong = tornado.web.Application([
   (r"/getvalue_array",GetValue_array),
   (r"/refresh/([0-9]*)/([0-9]*)/([0-9]*)/([0-9]*)", SetRefresh),
   (r"/configuration", Progression),
-  (r"/getRefresh/([0-9]*)/([0-9]*)/([0-9]*)", GetRefresh)
+  (r"/getRefresh/([0-9]*)/([0-9]*)/([0-9]*)", GetRefresh),
+  (r"/nowUser/([0-9]*)", NowUser),
+  (r"/user", UserAware)
 ], IP, **settings)
 
 logging.info("Starting up...")
