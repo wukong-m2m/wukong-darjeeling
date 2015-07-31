@@ -126,6 +126,8 @@ def delete_application(i):
     mapping_result = wkpf.globals.applications[app_id].del_and_remap(wkpf.globals.location_tree, [])
     ret = []
     mapping_result = {}
+
+
     for component in wkpf.globals.applications[app_id].changesets.components:
       obj_hash = {
         'instanceId': component.index,
@@ -158,13 +160,10 @@ def delete_application(i):
       ret.append(obj_hash)
       WuSystem.addMappingResult(app_id, mapping_result)
 
+    wkpf.globals.set_wukong_status("Deploying")
+    wkpf.globals.applications[i].deploy_with_discovery(platforms)
+
     content_type = 'application/json'
-   # write({
-   #   'status':0,
-   #   'mapping_result': mapping_result, # True or False
-   #   'mapping_results': ret,
-   #   'version': wkpf.globals.applications[app_ind].version,
-   #   'mapping_status': wkpf.globals.applications[app_ind].mapping_status})
  
     shutil.rmtree(wkpf.globals.applications[i].dir)
     wkpf.globals.applications.pop(i)
@@ -621,7 +620,6 @@ class deploy_application(tornado.web.RequestHandler):
 
   def post(self, app_id):
     app_ind = getAppIndex(app_id)
-
     wkpf.globals.set_wukong_status("Deploying")
     if app_ind == None:
       self.content_type = 'application/json'
@@ -1376,9 +1374,10 @@ import serial
 class NowUser(tornado.web.RequestHandler):
   def get(self, user_id):
     port = "/dev/ttyUSB0"
-    ser = serial.Serial(port, 115200, timeout=1.0)
-    x = ser.write(user_id)
+    ser = serial.Serial(port, 9600, timeout=1.0)
+    x = ser.write(user_id+'\n')
     print x
+    ser.close()
 
 class UserAware(tornado.web.RequestHandler):
   def get(self):

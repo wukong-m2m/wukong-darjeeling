@@ -306,6 +306,8 @@ class WuApplication:
 
 
   def generateJava(self):
+      print "===================self.changesets========"
+      mapper.mapper.dump_changesets(self.changesets)
       Generator.generate(self.name, self.changesets)
 
   def mapping(self, locTree, routingTable, mapFunc=mapper.mapper.least_changed):
@@ -324,9 +326,9 @@ class WuApplication:
     return result
 
   def del_and_remap(self, location_tree, routingTable):
-    self.changesets = ChangeSets([], [], [])
+    self.changesets = ChangeSets([], [], [], [])
     self.parseApplication()
-    result = mapping.mapping.delete_application(self, self.changesets, routingTable, location_tree)
+    result = mapper.mapper.delete_application(self, self.changesets, routingTable, location_tree)
     logging.info("Mapping Results")
     logging.info(self.changesets)
     return result

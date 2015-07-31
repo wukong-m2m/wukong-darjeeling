@@ -293,7 +293,7 @@ def Compare_changesets (new_changesets, old_changesets):
             for component in new_changesets.components:
                 if old_l.from_component.type == component.type and old_l.from_component.location == component.location:
                     old_l.from_component = component
-                elif old_l.to_component.type == component.type and old_l.to_component.location == component.location:
+                if old_l.to_component.type == component.type and old_l.to_component.location == component.location:
                     old_l.to_component = component
             extra_links.append(old_l)
     
@@ -372,6 +372,11 @@ def least_changed(logger, changesets, routingTable, locTree):
                 past_changesets.heartbeatgroups.append(tmp)
             #dump_changesets(past_changesets)
             save_map("changesets.pkl",past_changesets)
+            
+            #link count
+            for link in same.links:
+                share_policy().link_count(link)
+
     else :
         mapping_result = False
         print "no difference"
@@ -381,7 +386,7 @@ def least_changed(logger, changesets, routingTable, locTree):
 class share_policy(object):
     def __init__(self):
         try:
-            self.shared_links = load_map("shared_link.pkl")
+            self.shared_links = load_map("shared_links.pkl")
         except:
             self.shared_links = {}
         self.link = ""
@@ -399,12 +404,10 @@ class share_policy(object):
 #                        j +=1
 
     def demo(self,link):
-        self.link = link.from_component.location + link.from_component.type + link.to_component.location + link.to_component.type
         if link.to_component.type == "Server":
             return True
         elif link.from_property.access == "readonly" or link.from_property.access == "readwrite":
             print "readonly and readwirte are sharable."
-            self.link_count()
             return True
         else:
             return False
@@ -413,12 +416,13 @@ class share_policy(object):
         if link.to_component.type == "Server":
             return True
         elif link.from_property.access == "readonly":
-            self.link_count()
             return True
         else:
             return False
 
-    def link_count(self):
+    def link_count(self,link):
+        self.link = link.from_component.location + link.from_component.type + link.to_component.location + link.to_component.type
+        print "[========]",self.shared_links,"======",self.link
         if self.link in self.shared_links:
             self.shared_links[self.link] += 1
         else:
@@ -463,52 +467,106 @@ def dump_changesets(changesets):
 
 
 def delete_application(logger, changesets, routingTable, locTree):
-    #change xml: add <disabled>1</disabled>
-    import os
-    try:
+    import os.path
+    if os.path.isfile("changesets.pkl"):
         past_changesets = load_map("changesets.pkl")
         past_changesets = uninstall(past_changesets, locTree)
-    except:
-        print "file does not exist"
-
-    try:
-        shared_links = load_map("shared_link.pkl")
-    except:
+    else:
+        print "application have not been installed"
+        return
+    if os.path.isfile("shared_links.pkl"):
+        shared_links = load_map("shared_links.pkl")
+    else:
         shared_links = {}
-
-    #delete dir & files    
-    app_dir = changesets.component.application_hashed_name
-    print "delete: " ,app_dir
-    #os.shutil.rmtree( os.getcwd() +"../apps/" + app_dir)
-
+    dump_changesets(changesets)
+    print "\n"
+    dump_changesets(past_changesets)
     #compare changesets
-    delete = []
-    remap = ChangeSets(components = [], links = [], heartbeatgroups = [])
+    remap = ChangeSets([], [], [], [])
     tmp = [] #components will be used
     conflict = False
 
     for del_l in changesets.links:
         flag = 0
         tmp_str = del_l.from_component.location + del_l.from_component.type + del_l.to_component.location + del_l.to_component.type
-        shared_links[tmp_str] -= 1
-        if shared_links[tmp_str] == 0:
-            shared_links.pop(tmp_str)
-            delete.append(tmp_str)
-        if del_l.from_component.location not in tmp:
-            tmp.append(del_l.from_component.location)
-        if del_l.to_component.location not in tmp:
-            tmp.append(del_l.to_component.location)
+        print shared_links
+        if tmp_str in shared_links:
+            shared_links[tmp_str] -= 1
+            if shared_links[tmp_str] == 0:
+                shared_links.remove(tmp_str)
+                changesets.links.remove(del_l)
+                for old_l in past_changesets.links:
+                    if (old_l.from_component.location + old_l.from_component.type + old_l.to_component.location + old_l.to_component.type) == tmp_str:
+                        past_changesets.links.remove(old_l)
+                if del_l.from_component.location not in tmp:
+                    tmp.append(del_l.from_component.location)
+                if del_l.to_component.location not in tmp:
+                    tmp.append(del_l.to_component.location)
+            else: #still used
+                remap.links.append(del_l)
+        else: #have not shared
+            changesets.links.remove(del_l) 
+            for old_l in past_changesets.links:
+                if (old_l.from_component.location + old_l.from_component.type + old_l.to_component.location + old_l.to_component.type) == tmp_str:
+                    past_changesets.links.remove(old_l)
+            if del_l.from_component.location not in tmp:
+                tmp.append((del_l.from_component.location, del_l.from_component.type, del_l.from_component))
+            if del_l.to_component.location not in tmp:
+                tmp.append((del_l.to_component.location, del_l.to_component.type, del_l.to_component))
 
     print "wudevices need redeployed:", tmp
+    #find deployIDs
+    changesets.deployIDs.append(1)
+    for old_c in past_changesets.components:
+        for location_tuple in tmp:
+            if old_c.location == location_tuple[0] and old_c.type == location_tuple[1] and old_c.instances[0].wunode.id not in changesets.deployIDs:
+                changesets.deployIDs.append(old_c.instances[0].wunode.id)
 
+    #update component
     for component in past_changesets.components:
-        if components.location in tmp:
-            remap.components.append(component)
+        for location_tuple in tmp:
+            if component.location == location_tuple[0] and component.type == location_tuple[1]:
+                location_tuple[2].instances.append(component.instances[0])
+                component == location_tuple[2]
+            elif component.type == "Server" and component not in remap.components:
+                remap.components.append(component)
+    #find out links & update links' component
     for link in past_changesets.links:
-        if link.from_component.location in tmp or link.to_component.location in tmp:
-            tmp_str = link.from_component.location + link.from_component.type + link.to_component.location + link.to_component.type
-            if tmp_str not in delete:
-                remap.links.append(link)
-    changesets = remap
+        for location_tuple in tmp:
+            if link.from_component.location == location_tuple[0]: 
+                if link not in remap.links:
+                    remap.links.append(link)
+		if link.from_component.type == location_tuple[1]:
+                    link.from_component = location_tuple[2]
+            if link.to_component.location == location_tuple[0]:
+                if link not in remap.links:
+                    remap.links.append(link)
+                if link.to_component.type == location_tuple[1]:
+                    link.to_component = location_tuple[2]
+
+    # add component used by links
+    for link in remap.links:
+        if link.from_component not in remap.components:
+            remap.components.append(link.from_component)
+        if link.to_component not in remap.components:
+            remap.components.append(link.to_component)
+                    
+    #clear
+    del changesets.components[:]
+    del changesets.links[:]
+    del changesets.heartbeatgroups[:]
+    #add 
+    for tmp in remap.components:
+        changesets.components.append(tmp)
+    for tmp in remap.links:
+        changesets.links.append(tmp)
+    for tmp in remap.heartbeatgroups:
+        changesets.heartbeatgroups.append(tmp)
+    
+    print "=======past.changesets=================="
+    dump_changesets(past_changesets)
+
+    save_map("changesets.pkl",past_changesets)
+    save_map("shared_links.pkl",shared_links)
     return True
 
