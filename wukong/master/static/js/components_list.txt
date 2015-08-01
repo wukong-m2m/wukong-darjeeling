@@ -11,6 +11,7 @@ __comp__math_op.js
 __comp__virtual_slider.js
 __comp__server.js
 __comp__multiplexer.js
+__comp__equal.js
 __comp__light_sensor.js
 __comp__pir_sensor.js
 __comp__binary_sensor.js
@@ -21,14 +22,14 @@ __comp__pressure_sensor_0.js
 __comp__gh_sensor.js
 __comp__ir_sensor.js
 __comp__ultrasound_sensor.js
-__comp__grove_button.js
-__comp__grove_temperature_sensor.js
-__comp__grove_sound_sensor.js
-__comp__grove_touch_sensor.js
-__comp__grove_rotary.js
-__comp__grove_light_sensor.js
+__comp__button.js
+__comp__temperature_sensor.js
+__comp__sound_sensor.js
+__comp__touch_sensor.js
 __comp__binary_testsensor.js
 __comp__integer_testsensor.js
+__comp__user.js
+__comp__controller.js
 __comp__light_actuator.js
 __comp__led.js
 __comp__fan.js
@@ -39,6 +40,5 @@ __comp__dimmer.js
 __comp__plugin.js
 __comp__relay.js
 __comp__grove_lcd.js
-__comp__grove_led.js
-__comp__grove_buzzer.js
-__comp__grove_relay.js
+__comp__grove_mp3.js
+__comp__mosfat_led.js

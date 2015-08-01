@@ -314,7 +314,7 @@ class WuApplication:
       #input: nodes, WuObjects, WuLinks, WuClassDefs
       #output: assign node id to WuObjects
       # TODO: mapping results for generating the appropriate instiantiation for different nodes
-
+      
       return mapFunc(self, self.changesets, routingTable, locTree)
 
   def map(self, location_tree, routingTable):
@@ -401,9 +401,11 @@ class WuApplication:
       gevent.sleep(0)
 
       # Remove Server node ID?
-      destination_ids.remove(WUKONG_GATEWAY)
-      remaining_ids.remove(WUKONG_GATEWAY)
-
+      try:
+          destination_ids.remove(WUKONG_GATEWAY)
+          remaining_ids.remove(WUKONG_GATEWAY)
+      except:
+          pass
       for node_id in destination_ids:
         node = WuNode.node_dict[node_id]
         print "Deploy to node %d type %s"% (node_id, node.type)
@@ -417,6 +419,16 @@ class WuApplication:
           return False
         self.logDeployStatus('...has completed')
     self.logDeployStatus('Application has been deployed!')
+
+    #save map result
+    if os.path.isfile("changesets.pkl"):
+      os.remove("changesets.pkl")
+    if os.path.isfile("shared_links.pkl"):
+      os.remove("shared_links.pkl")
+    os.rename("changesets.tmp", "changesets.pkl")
+    if os.path.isfile("shared_links.tmp"):
+      os.rename("shared_links.tmp", "shared_links.pkl")
+
     self.stopDeployStatus()
     master_available()
     return True

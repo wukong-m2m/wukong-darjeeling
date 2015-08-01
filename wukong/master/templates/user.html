@@ -8,17 +8,21 @@
 .choosed {
     border:5px solid red
 }
+body {
+    background-color: rgb(25,39,41);
+}
 </style>
 <body>
-    <img src="/static/images/wukong_logo.jpg" id="0" onclick="nowUser('0');">
-    <img src="/static/images/wukong_logo.jpg" id="1" onclick="nowUser('1');">
-    <img src="/static/images/wukong_logo.jpg" id="2" onclick="nowUser('2');">
-    <img src="/static/images/wukong_logo.jpg" id="3" onclick="nowUser('3');">
+    <img src="/static/images/user/mom.png" id="1" onclick="nowUser('1');">
+    <img src="/static/images/user/dad.png" id="2" onclick="nowUser('2');">
+    <img src="/static/images/user/nathan.png" id="3" onclick="nowUser('3');">
+    <img src="/static/images/user/chloe.png" id="4" onclick="nowUser('4');">
+    <img src="/static/images/user/sophia.png" id="5" onclick="nowUser('5');">
 </body>
 <script>
 function resize() {
     var size = $(window).width();
-    $('img').width(size/5);
+    $('img').width(size/6);
 }
 $(document).ready(resize);
 window.onresize = resize;

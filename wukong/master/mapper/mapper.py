@@ -211,10 +211,11 @@ def firstCandidate(logger, changesets, routingTable, locTree, flag = None):
     print "mapping_result: ",mapping_result
 
     if flag == None and mapping_result:
-        save_map("changesets.pkl",changesets)
+        save_map("changesets.tmp",changesets)
+        changesets.deployIDs.append(1)
         for component in changesets.components:
-            changesets.deployIDs.append(component.instances[0].wunode.id)
-
+            if component.instances[0].wunode.id not in changesets.deployIDs:
+                changesets.deployIDs.append(component.instances[0].wunode.id)
     return mapping_result
 
 def Compare_changesets (new_changesets, old_changesets):
@@ -305,10 +306,10 @@ def Compare_changesets (new_changesets, old_changesets):
     return (same,diff,extra_component,extra_links,conflict)
 
 def least_changed(logger, changesets, routingTable, locTree):
-    dump_changesets(changesets)
-    try:
+    if os.path.isfile("changesets.pkl"):
         past_changesets = load_map("changesets.pkl")
-    except:
+        past_changesets = uninstall(past_changesets, locTree)
+    else:
         mapping_result = firstCandidate(logger, changesets, routingTable, locTree)
         return mapping_result
  
@@ -338,12 +339,15 @@ def least_changed(logger, changesets, routingTable, locTree):
             for tmp in diff.heartbeatgroups:
                 changesets.heartbeatgroups.append(tmp)
 
+            changesets.deployIDs.append(1)
+            #add extra links & component in changesets 
             if extra_component != []:
                 for tmp in extra_component:
                     changesets.components.append(tmp)
             if extra_links != []:
                 for tmp in extra_links:
                     changesets.links.append(tmp)
+
             #past_changesets = diff + past_changesets
             location_tmp = {}
             for tmp in past_changesets.components:
@@ -360,18 +364,17 @@ def least_changed(logger, changesets, routingTable, locTree):
                         if tmp2.location == tmp.location and tmp2.type == tmp.type:
                             past_changesets.components.remove(tmp2)
                             past_changesets.components.append(tmp)
-
                 if tmp.instances[0].wunode.id not in changesets.deployIDs:
                    changesets.deployIDs.append(tmp.instances[0].wunode.id)
 
-            dump_changesets(changesets)
             for tmp in diff.links:
                 if tmp not in past_changesets.links:
                     past_changesets.links.append(tmp)
             for tmp in diff.heartbeatgroups:
                 past_changesets.heartbeatgroups.append(tmp)
+
             #dump_changesets(past_changesets)
-            save_map("changesets.pkl",past_changesets)
+            save_map("changesets.tmp",past_changesets)
             
             #link count
             for link in same.links:
@@ -422,12 +425,11 @@ class share_policy(object):
 
     def link_count(self,link):
         self.link = link.from_component.location + link.from_component.type + link.to_component.location + link.to_component.type
-        print "[========]",self.shared_links,"======",self.link
         if self.link in self.shared_links:
             self.shared_links[self.link] += 1
         else:
             self.shared_links.update({self.link:1})
-        save_map("shared_links.pkl", self.shared_links)
+        save_map("shared_links.tmp", self.shared_links)
 
 def uninstall(changesets,locTree):
     node_id_list = []
@@ -467,7 +469,6 @@ def dump_changesets(changesets):
 
 
 def delete_application(logger, changesets, routingTable, locTree):
-    import os.path
     if os.path.isfile("changesets.pkl"):
         past_changesets = load_map("changesets.pkl")
         past_changesets = uninstall(past_changesets, locTree)
@@ -478,9 +479,6 @@ def delete_application(logger, changesets, routingTable, locTree):
         shared_links = load_map("shared_links.pkl")
     else:
         shared_links = {}
-    dump_changesets(changesets)
-    print "\n"
-    dump_changesets(past_changesets)
     #compare changesets
     remap = ChangeSets([], [], [], [])
     tmp = [] #components will be used
@@ -563,10 +561,7 @@ def delete_application(logger, changesets, routingTable, locTree):
     for tmp in remap.heartbeatgroups:
         changesets.heartbeatgroups.append(tmp)
     
-    print "=======past.changesets=================="
-    dump_changesets(past_changesets)
-
-    save_map("changesets.pkl",past_changesets)
-    save_map("shared_links.pkl",shared_links)
+    save_map("changesets.tmp",past_changesets)
+    save_map("shared_links.tmp",shared_links)
     return True
 

@@ -22,7 +22,7 @@ bool wuclass_user_id_dataAvailable(unsigned int millis){
   struct timeval timeout;
   // no waiting
   timeout.tv_sec = 0;
-  timeout.tv_usec = millis * 1000;
+  timeout.tv_usec = 0;
   // int nfds; //unknown
   fd_set readfds;
   FD_ZERO(&readfds);
@@ -36,7 +36,7 @@ bool wuclass_user_id_dataAvailable(unsigned int millis){
 }
 
 
-void wuclass_user_id_setup(wuobject_t *wuobject) {
+void wuclass_user_setup(wuobject_t *wuobject) {
   user_ttyFd = -1;
   if ( !(user_uart = mraa_uart_init(0)) ){
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(userID): uart failure\n");                
@@ -49,11 +49,14 @@ void wuclass_user_id_setup(wuobject_t *wuobject) {
     return;
   }
   if ( (user_ttyFd = open(devPath, O_RDWR)) == -1){
+    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(userID): uart failure\n");                
     return;
   }
+  DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(userID): uart ready\n");                
+  
 }
 
-void wuclass_user_id_update(wuobject_t *wuobject) {
+void wuclass_user_update(wuobject_t *wuobject) {
     char buffer_rev[30]={};
     bool available = wuclass_user_id_dataAvailable(1000);
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(userID): available: %d\n", available);                
@@ -64,8 +67,14 @@ void wuclass_user_id_update(wuobject_t *wuobject) {
             return; 
         }
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(userID): size: %d buffer: %s\n",x , buffer_rev); 
+        if (x == 30) {
+		int i;
+		for (i = 0; i < 30; i++) 
+        		DEBUG_LOG(DBG_WKPFUPDATE, "%d ", buffer_rev[i]);
+        	DEBUG_LOG(DBG_WKPFUPDATE, "\n"); 
+	} 
         int16_t output = (int16_t)atoi(buffer_rev);
-        wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_USER_ID_USER_ID, output);
+        wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_USER_USER, output);
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(userID): output %d\n", output);
     }
 }

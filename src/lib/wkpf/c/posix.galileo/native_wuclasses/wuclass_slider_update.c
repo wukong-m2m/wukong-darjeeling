@@ -47,6 +47,7 @@ void wuclass_slider_setup(wuobject_t *wuobject) {
     system("echo in > /sys/class/gpio/gpio208/direction");
     system("echo high > /sys/class/gpio/gpio214/direction");
     #endif
+    DEBUG_LOG(true, "WKPFUPDATE(Slider): Slider\n");
 }
 
 void wuclass_slider_update(wuobject_t *wuobject) {
