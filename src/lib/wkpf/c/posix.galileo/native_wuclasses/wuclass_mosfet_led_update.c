@@ -109,7 +109,7 @@ void wuclass_mosfet_led_update(wuobject_t *wuobject) {
             fp = NULL;
             amplitude = 0;
         }
-        setDutyCycle(amplitude/32768.0);
+        setDutyCycle(amplitude/255.0);
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFET_LED): %d\n", amplitude);
     }
 }

@@ -15,7 +15,7 @@
 #define STOP        5
 #define RESTART     6
 
-uint16_t numf = 0;
+uint16_t numf = 9;
 
 void wuclass_gesture_mp3_setup(wuobject_t *wuobject) {
 
