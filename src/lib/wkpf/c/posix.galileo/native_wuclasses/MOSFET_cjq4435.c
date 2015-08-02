@@ -22,7 +22,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "MOSFAT_cjq4435.h"
+#include "MOSFET_cjq4435.h"
 
 bool m_enabled;
 mraa_pwm_context m_pwm;

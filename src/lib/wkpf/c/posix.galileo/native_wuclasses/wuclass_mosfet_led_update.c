@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include "config.h"
-#include "MOSFAT_cjq4435.h"
+#include "MOSFET_cjq4435.h"
 
 #define NONE        0
 #define START       1
@@ -16,14 +16,14 @@
 #define RESTART     6
 
 
-void wuclass_mosfat_led_setup(wuobject_t *wuobject) {
+void wuclass_mosfet_led_setup(wuobject_t *wuobject) {
     CJQ4435_Init(5);
     setPeriodMS(10);
     enable(true);
-    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFAT_LED): ready\n");
+    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFET_LED): ready\n");
 }
 
-void wuclass_mosfat_led_update(wuobject_t *wuobject) {
+void wuclass_mosfet_led_update(wuobject_t *wuobject) {
     static FILE *fp;
     static char filename[30] = {};
     static int track = 1;
@@ -31,9 +31,9 @@ void wuclass_mosfat_led_update(wuobject_t *wuobject) {
     static bool playing = false;
 
     int16_t comm, inst;
-    wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_MOSFAT_LED_COMMAND, &comm);
-    wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_MOSFAT_LED_INSTRUMENT, &inst);
-    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFAT_LED): start %d\n", comm);
+    wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_MOSFET_LED_COMMAND, &comm);
+    wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_MOSFET_LED_INSTRUMENT, &inst);
+    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFET_LED): start %d\n", comm);
     if (comm == START) {
         if (pause) {
             pause = false;
@@ -42,11 +42,11 @@ void wuclass_mosfat_led_update(wuobject_t *wuobject) {
             if (fp != NULL)
                 fclose(fp);
             snprintf(filename, sizeof(filename), "../csv/%d_%d.csv", inst, track);
-            DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFAT_LED): file name: %s\n", filename);
+            DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFET_LED): file name: %s\n", filename);
             fp = fopen(filename, "r");
             playing = true;
             if (fp == NULL) {
-                DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFAT_LED): play error\n");
+                DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFET_LED): play error\n");
                 playing = false;
             }
         }
@@ -59,7 +59,7 @@ void wuclass_mosfat_led_update(wuobject_t *wuobject) {
         snprintf(filename, sizeof(filename), "../csv/%d_%d.csv", inst, track);
         fp = fopen(filename, "r");
         if (fp == NULL) {
-            DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFAT_LED): next error\n");
+            DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFET_LED): next error\n");
             track--;
             playing = false;
         }
@@ -72,7 +72,7 @@ void wuclass_mosfat_led_update(wuobject_t *wuobject) {
         snprintf(filename, sizeof(filename), "../csv/%d_%d.csv", inst, track);
         fp = fopen(filename, "r");
         if (fp == NULL) {
-            DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFAT_LED): pervious error\n");
+            DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFET_LED): pervious error\n");
             track++;
             playing = false;
             return;
@@ -95,12 +95,12 @@ void wuclass_mosfat_led_update(wuobject_t *wuobject) {
         snprintf(filename, sizeof(filename), "../csv/%d_%d.csv", inst, track);
         fp = fopen(filename, "r");
         if (fp == NULL) {
-            DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFAT_LED): restart error\n");
+            DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFET_LED): restart error\n");
             playing = false;
         }
     }
     if (comm != NONE)
-        wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_MOSFAT_LED_COMMAND, NONE);
+        wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_MOSFET_LED_COMMAND, NONE);
     if (playing && fp != NULL) {
         int amplitude;
         if (fscanf(fp, "%d", &amplitude) != 1) {
@@ -110,6 +110,6 @@ void wuclass_mosfat_led_update(wuobject_t *wuobject) {
             amplitude = 0;
         }
         setDutyCycle(amplitude/32768.0);
-        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFAT_LED): %d\n", amplitude);
+        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFET_LED): %d\n", amplitude);
     }
 }

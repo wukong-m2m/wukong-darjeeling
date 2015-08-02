@@ -106,5 +106,5 @@ void wuclass_gesture_mp3_update(wuobject_t *wuobject) {
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Gesture_MP3): playing track: %d\n", track);
     }
     if (comm != NONE)
-        wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_MOSFAT_LED_COMMAND, NONE);
+        wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_GESTURE_MP3_COMMAND, NONE);
 }

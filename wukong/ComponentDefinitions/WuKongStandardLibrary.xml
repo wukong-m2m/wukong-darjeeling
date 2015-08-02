@@ -250,7 +250,7 @@
         <property name="track" access="readwrite" datatype="short" default="0" />
         <property name="__pin" access="readonly" datatype="Pin" />
     </WuClass>
-    <WuClass name="MOSFAT_LED" id="2012" virtual="false" type="hard">
+    <WuClass name="MOSFET_LED" id="2012" virtual="false" type="hard">
         <property name="command" access="readwrite" datatype="short" default="1" />
         <property name="instrument" access="readwrite" datatype="short" default="1" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="50"  />
