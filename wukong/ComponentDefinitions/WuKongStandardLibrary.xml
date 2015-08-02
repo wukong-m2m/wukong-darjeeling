@@ -186,6 +186,24 @@
         <property name="output" access="readonly" datatype="short" default="0" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="10"  />
     </WuClass>
+    <WuClass name="Gesture" id="1905" virtual="false" type="hard">
+        <property name="user" access="readonly" datatype="short" default="0" />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
+    </WuClass>
+    <WuClass name="User_Aware" id="1906" virtual="false" type="hard">
+        <property name="on_off" access="readwrite" datatype="boolean" default="0" />
+        <property name="user" access="readwrite" datatype="short" default="0" />
+        <property name="output_boolean_0" access="readonly" datatype="boolean" default="false"  />
+        <property name="output_boolean_1" access="readonly" datatype="boolean" default="false"  />
+        <property name="output_boolean_2" access="readonly" datatype="boolean" default="false"  />
+        <property name="output_boolean_3" access="readonly" datatype="boolean" default="false"  />
+        <property name="output_boolean_4" access="readonly" datatype="boolean" default="false"  />
+        <property name="output_boolean_5" access="readonly" datatype="boolean" default="false"  />
+        <property name="output_int_0" access="readonly" datatype="short" default="false"  />
+        <property name="output_int_1" access="readonly" datatype="short" default="false"  />
+        <property name="output_int_2" access="readonly" datatype="short" default="false"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
+    </WuClass>
 
     <!-- Actuators -->
     <WuClass name="Light_Actuator" id="2001" virtual="false" type="hard">
@@ -236,5 +254,9 @@
         <property name="command" access="readwrite" datatype="short" default="1" />
         <property name="instrument" access="readwrite" datatype="short" default="1" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="50"  />
+    </WuClass>
+    <WuClass name="Gesture_MP3" id="2013" virtual="false" type="hard">
+        <property name="command" access="readwrite" datatype="short" default="1" />
+        <property name="instrument" access="readwrite" datatype="short" default="1" />
     </WuClass>
 </WuKong>
