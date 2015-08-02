@@ -1,0 +1,35 @@
+<application name="26184cb2a52f0da243e36ae2599d6b11"><app_name>App2 Paino</app_name>
+<pan>73,123</pan><page title="_first_">
+    <component type="Gesture" instanceId="47" x="267" y="233" w="120" h="94" name="block">
+        <link fromProperty="user" toInstanceId="50" toProperty="input"/>
+        <location requirement="/WuKong/Conductor#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+        <monitorProperty />
+    </component>
+    <component type="Controller" instanceId="50" x="540" y="234" w="120" h="117" name="block">
+        <link fromProperty="output" toInstanceId="49" toProperty="command"/>
+        <link fromProperty="output" toInstanceId="52" toProperty="command"/>
+        <location requirement="/WuKong/Piano#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+        <monitorProperty />
+    </component>
+    <component type="Gesture_MP3" instanceId="49" x="821" y="155" w="120" h="93" name="block">
+        <location requirement="/WuKong/Piano#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+        <monitorProperty />
+    </component>
+    <component type="MOSFET_LED" instanceId="52" x="825" y="312" w="120" h="116" name="block">
+        <location requirement="/WuKong/Piano#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty instrument="2"  />
+        <monitorProperty />
+    </component>
+</page>
+</application>
