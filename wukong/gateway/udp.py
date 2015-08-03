@@ -81,9 +81,8 @@ class UDPTransport(object):
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind(('', self._port))
 
-        logger.info("transport interface %s initialized on %s IP=%s PORT=%d with Node ID %s/%s" % (self._name,
-            self._dev_addr, MPTN.ID_TO_STRING(self._ip), self._port,
-            MPTN.ID_TO_STRING(self._node_id[0]), str(self._node_id[1])
+        logger.info("Transport interface '%s' initialized on '%s' with IP=%s PORT=%d Netmask=%s" % (self._name,
+            self._dev_addr, self._node_id[0], self._port, self._node_id[1]
             )
         )
 
@@ -115,7 +114,7 @@ class UDPTransport(object):
                 logger.debug("recv type=%s, data=%s, ip=%s, port=%d, short_id=%d" % (t, map(ord, data), MPTN.ID_FROM_STRING(addr[0]), addr[1], host_id))
                 node_id = self._prefix | host_id
                 if data != "":
-                    logger.debug("recv message %s from address %s" % (data, str(addr)))
+                    # logger.debug("recv message %s from address %s" % (data, str(addr)))
                     if t == 1:
                         # data[10] is the size of the payload
                         # block unknown sender
@@ -295,14 +294,14 @@ class UDPTransport(object):
 
     def poll(self):
         ret = None
-        print "polled"
+        # print "polled"
         with _global_lock:
             if self._mode == MPTN.STOP_MODE:
                 ret = 'Node: %d' % self.last_host_id
             else:
                 ret = 'ready'
             pass
-        print 'ret=',ret
+        # logger.info('poll '+ret)
         return ret
 
     def add(self):

@@ -212,7 +212,7 @@ class IDService(object):
         packet = MPTN.socket_send(context, dest_id, message, expect_reply=True)
 
         if packet is None:
-            logger.error("_forward_to_next_hop cannot forward packet to %s due to network problem" % str(address))
+            logger.error("_forward_to_next_hop cannot forward packet to %s due to network problem" % str(dest_id))
             return False
 
         # log_msg = MPTN.formatted_print(MPTN.split_packet_to_list(packet))
@@ -223,7 +223,7 @@ class IDService(object):
             return False
 
         if msg_type == MPTN.MPTN_MSGTYPE_FWDNAK:
-            logger.error("_forward_to_next_hop forward via %s fails with error %s" % (str(address), payload))
+            logger.error("_forward_to_next_hop forward via %s fails with error %s" % (str(dest_id), payload))
             return False
 
         if msg_type != MPTN.MPTN_MSGTYPE_FWDACK:

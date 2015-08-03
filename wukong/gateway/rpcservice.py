@@ -22,7 +22,7 @@ class RPCService(object):
         logger.info("RPC service initialized")
 
     def handle_rpccmd_message(self, context, dest_id, src_id, msg_type, payload):
-        logger.debug("got RPCCMD message from src_id %s:\n%s" % (MPTN.ID_TO_STRING(src_id), MPTN.formatted_print([payload])))
+        # logger.debug("got RPCCMD message from src_id %s:\n%s" % (MPTN.ID_TO_STRING(src_id), MPTN.formatted_print([payload])))
         if not self._is_id_valid(dest_id):
             logger.error("invalid RPCCMD dest ID %X: not found in network" % dest_id)
             return None

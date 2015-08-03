@@ -68,7 +68,7 @@ class Gateway(object):
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_RPCCMD] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TCP_SERVER, self._rpc_service.handle_rpccmd_message)
 
         # Initialize Ping service
-        logger.info("All service initialized. ready to spawn greenlets")
+        # logger.info("All service initialized. ready to spawn greenlets")
 
     def start(self, tcp_port):
         try:
@@ -83,7 +83,7 @@ class Gateway(object):
         self._greenlets = [gevent.spawn(f) for f in self._spawn_handlers]
         gevent.sleep(0) # Make the greenlet start first and return
 
-        logger.info("greenlet spawn and TCP server listens on %s:%s" % self._tcp_server.getsockname()[:2])
+        logger.info("All greenlets are spawn and TCP server listens on %s:%s" % self._tcp_server.getsockname()[:2])
         return True
 
     def stop(self):
@@ -97,7 +97,7 @@ class Gateway(object):
         dest_id, src_id, msg_type, payload = MPTN.extract_packet_from_str(message)
 
         log_msg = MPTN.formatted_print(MPTN.split_packet_to_list(message))
-        logger.debug("receives and processes message:\n%s" % log_msg)
+        # logger.debug("receives and processes message:\n%s" % log_msg)
 
         if dest_id is None:
             logger.error("processing message with header shorter than required %s" % MPTN.formatted_print(str(message)))
@@ -125,7 +125,7 @@ class Gateway(object):
         '''
         This TCP server would only serve master and other gateways
         '''
-        logger.info("TCP server for Master and other Gateways is ready to accept")
+        # logger.info("TCP server for Master and other Gateways is ready to accept")
         while True:
             new_sock, address = self._tcp_server.accept()
             logger.info("TCP Server accepts from address %s" % str(address))
@@ -137,7 +137,7 @@ class Gateway(object):
             logger.debug("transport interface %s receives message from address %X" % (self._transport_if_name, src_addr))
             self._process_message(MPTN.new_if_context(src_addr), message)
 
-        logger.info("Transport interface for MPTN nodes is ready to receive")
+        # logger.info("Transport interface for MPTN nodes is ready to receive")
         while True:
             src_addr, message = self._transport_if.recv()
             if src_addr is not None and message is not None:

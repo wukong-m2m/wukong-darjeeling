@@ -52,10 +52,10 @@ class MonitorService(object):
         try:
             self._mongodb_client = MongoClient(url)
         except:
-            print "MongoDB instance " + url + " can't be connected."
-            print "Please install the mongDB, pymongo module."
+            logger.error("MongoDB instance " + url + " can't be connected.")
+            logger.error("Please install the mongDB, pymongo module.")
             sys.exit(-1)
-        print "MongoDB init"
+        logger.info("MongoDB init")
 
         self._pserver_client = ProgressionServerClient() if CONFIG.ENABLE_PROGRESSION else None
         self._task = Queue()

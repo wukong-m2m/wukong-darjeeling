@@ -139,7 +139,7 @@ void radio_wifi_platform_dependent_init(void) {
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_port= htons(radio_wifi_self_port);
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servaddr.sin_addr.s_addr = INADDR_ANY;
     if (bind(fd, (struct sockaddr *)&servaddr, sizeof(struct sockaddr)) == -1)
     {
         DEBUG_LOG(DBG_WIFI, "Unable to bind\n");

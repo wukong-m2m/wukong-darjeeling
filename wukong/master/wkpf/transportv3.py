@@ -76,19 +76,19 @@ class DeferredQueue:
         #print 'finding defer for message in queue', self.queue
         for defer_id, defer in self.queue.items():
             if defer.verify(deliver, defer):
-                print '[transport] found'
+                logger.debug('find_defer: found ' + str(defer_id))
                 return defer_id, defer
             else:
-                print "[transport] Either one of %s \
+                logger.debug("find_defer: Either one of %s \
                 expected from defer %s does not match or \
-                the sequence number got skewed: %s" % (str(defer.allowed_replies), str(defer), str(deliver))
+                the sequence number got skewed: %s" % (str(defer.allowed_replies), str(defer), str(deliver)))
 
-        print '[transport] defer not found'
+        logger.debug('find_defer: not found')
         return False, False
 
     def add_defer(self, defer):
         queue_id = str(len(self.queue)) + hashlib.md5(str(defer.message.destination) + str(defer.message.command)).hexdigest()
-        print "[transport] adding to queue: queue_id ", str(queue_id)
+        logger.debug("add_defer queue_id " + str(queue_id))
         self.queue[queue_id] = defer
         return queue_id
 
@@ -190,13 +190,13 @@ class RPCTCPClient(ClientTransport):
             logger.error("RPCREP drops RPCREP message since src_id %s 0x%X is not valid" % (MPTN.ID_TO_STRING(src_id), src_id))
             return None
 
-        logger.debug("got RPCREP message from src_id %s:\n%s" % (MPTN.ID_TO_STRING(src_id), MPTN.formatted_print([payload])))
+        # logger.debug("got RPCREP message from src_id %s:\n%s" % (MPTN.ID_TO_STRING(src_id), MPTN.formatted_print([payload])))
 
         return payload
 
     def send_message(self, message, expect_reply=True):
         message = MPTN.create_packet_to_str(self.server_id, MPTN.MASTER_ID, MPTN.MPTN_MSGTYPE_RPCCMD, message)
-        logger.debug("RPC sending message: \n%s" % (MPTN.formatted_print(MPTN.split_packet_to_list(message))))
+        # logger.debug("RPC sending message: \n%s" % (MPTN.formatted_print(MPTN.split_packet_to_list(message))))
 
         packet = MPTN.socket_send(None, self.server_id, message, expect_reply=True)
         if packet is None:
@@ -246,7 +246,7 @@ class RPCAgent(TransportAgent):
             gevent.sleep(2.5)
 
     def _get_client_rpc_stub(self, mptn_id, address):
-        logger.debug("get client RPC stub for ID %s %X addr %s" % (MPTN.ID_TO_STRING(mptn_id), mptn_id, str(address)))
+        # logger.debug("get client RPC stub for ID %s %X addr %s" % (MPTN.ID_TO_STRING(mptn_id), mptn_id, str(address)))
         stub = self._clients.get(mptn_id)
         if stub is None:
             assert isinstance(mptn_id, (int, long)), "mptn_id should be integer"
@@ -551,7 +551,7 @@ class RPCAgent(TransportAgent):
 
                     # prevent pyzwave send got preempted and defer is not in queue
                     if len(defer.allowed_replies) > 0:
-                        logger.info("RPC send adds defer %s to agent queue" % str(defer))
+                        # logger.info("RPC send adds defer %s to agent queue" % str(defer))
                         getAgent().append(defer)
 
                     while retries > 0:
@@ -699,7 +699,7 @@ class BrokerAgent:
     def __init__(self):
         #self.gid_server = GIDService()
         gevent.spawn(self.run)
-        print '[transport] BrokerAgent init'
+        logger.info('broker init')
 
     def append(self, defer):
         getDeferredQueue().add_defer(defer)
@@ -708,13 +708,11 @@ class BrokerAgent:
         while 1:
             # monitor pipes from receive
             deliver = broker_messages.get()
-            print '[transport] getting message from nodes'
-            print '[transport] ' + str(deliver)
+            logger.info('broker getting message from nodes %s' % str(deliver))
 
             # display logs from nodes if received
             if deliver.command == pynvc.LOGGING:
-                print '[transport] node %d : %s' % (deliver.destination,
-                            str(bytearray(deliver.payload)))
+                logger.info('broker node %d : %s' % (deliver.destination, str(bytearray(deliver.payload))))
 
             # find out which defer it is for
             defer_id, defer = getDeferredQueue().find_defer(deliver)
@@ -732,14 +730,13 @@ class BrokerAgent:
                 # if it is special message
                 if not is_master_busy():
                     if deliver.command == pynvc.GROUP_NOTIFY_NODE_FAILURE:
-                        print "[transport] reconfiguration message received"
+                        logger.info("broker reconfiguration message received")
                         wusignal.signal_reconfig()
                     else:
-                        print "[transport] Failure: Unknown message received"
+                        logger.info("broker Unknown message received")
                 else:
                     #log = "Incorrect reply received. Message type correct, but mptn_idnt pass verification: " + str(message)
-                    print "[transport] message discarded"
-                    print '[transport] ' + str(deliver)
+                    logger.info("broker message discarded" + str(deliver))
             gevent.sleep(0)
 
 Gateway = collections.namedtuple("Gateway", "id, tcp_address, if_address, if_address_len, prefix, prefix_len,\
@@ -1097,22 +1094,26 @@ class IDService:
             logger.info("IDREQ tocheck ID %s 0x%X is NAK-ed with details: gateway_id=%s" % (MPTN.ID_TO_STRING(to_check_id), to_check_id, MPTN.ID_TO_STRING(gateway_id)))
 
     def handle_fwdreq_message(self, context, dest_id, src_id, msg_type, payload):
+        ret = "OK"
         msg_type = MPTN.MPTN_MSGTYPE_FWDACK
 
         if not self.is_id_valid(src_id):
-            logger.error("invalid FWDREQ src ID %X %s: not found in network" % (src_id, MPTN.ID_TO_STRING(src_id)))
+            ret = "invalid FWDREQ src ID %X %s: not found in network" % (src_id, MPTN.ID_TO_STRING(src_id))
+            logger.error(ret)
             msg_type = MPTN.MPTN_MSGTYPE_FWDNAK
 
         if dest_id != MPTN.MASTER_ID:
-            logger.error("invalid FWDREQ dest_id %X %s: not Master" % (src_id, MPTN.ID_TO_STRING(dest_id)))
+            ret = "invalid FWDREQ dest_id %X %s: not Master" % (src_id, MPTN.ID_TO_STRING(dest_id))
+            logger.error(ret)
             msg_type = MPTN.MPTN_MSGTYPE_FWDNAK
 
         if payload is None:
-            logger.error("FWDREQ should have payload")
+            ret = "FWDREQ should have payload"
+            logger.error(ret)
             msg_type = MPTN.MPTN_MSGTYPE_FWDNAK
 
-        message = MPTN.create_packet_to_str(src_id, dest_id, msg_type, payload)
-        MPTN.socket_send(context, src_id, message)
+        message = MPTN.create_packet_to_str(src_id, dest_id, msg_type, ret)
+        MPTN.socket_send(context, context.id, message)
 
         if msg_type == MPTN.MPTN_MSGTYPE_FWDACK:
             payload = map(ord, payload)

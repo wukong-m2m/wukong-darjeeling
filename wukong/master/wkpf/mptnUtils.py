@@ -3,6 +3,7 @@ import struct
 import os
 import gevent
 import ipaddress
+import time
 from gevent.lock import RLock
 from gevent.event import AsyncResult
 from gevent import socket
@@ -138,6 +139,16 @@ class Context(object):
         self.direction = direction
         self.socket = sock
         self.nonce = nonce
+    def __repr__(self):
+        if self.direction == ONLY_FROM_TCP_SERVER:
+            str_dir = "ONLY_FROM_TCP_SERVER"
+        elif self.direction == ONLY_FROM_TRANSPORT_INTERFACE:
+            str_dir = "ONLY_FROM_TRANSPORT_INTERFACE"
+        elif self.direction == VALID_FROM_ALL:
+            str_dir = "VALID_FROM_ALL"
+        str_id = ID_TO_STRING(self.id) if self.id is not None else "None"
+        str_nonce = map(ord, self.nonce) if self.nonce is not None else "None"
+        return "%s id%s addr%s dir%s sock%s nonce%s" % (self.__class__, str_id, str(self.address), str_dir, str(self.socket), str_nonce)
 
 def new_if_context(addr):
     return Context(None, addr, ONLY_FROM_TRANSPORT_INTERFACE, None, None)
@@ -169,7 +180,7 @@ def get_all_addresses():
     global addr_to_bool_db
     if addr_to_bool_db is None: return None
     # remember that if addr_to_bool_db changes, return values won't reflect that
-    return addr_to_bool_db.keys()
+    return map(int, addr_to_bool_db.keys())
 
 class ConnectionManager(object):
     _manager = None
@@ -192,7 +203,7 @@ class ConnectionManager(object):
 
     def add_peer(self, address, peer):
         with self.mptn_lock:
-            logger.debug("add_peer add address %s peer %s" % (str(address), str(peer)))
+            # logger.debug("add_peer add address %s peer %s" % (str(address), str(peer)))
             self.remove_peer(address)
 
             self.mptn_conn_by_addr[address] = peer
@@ -226,12 +237,23 @@ class ConnectionManager(object):
                 logger.error("nonce collision occurs. nonce of ID %s's replaces that of old ID %s's" % (ID_TO_STRING(nncb.id), ID_TO_STRING(old_nncb.id)))
                 old_nncb.callback.set(None)
                 del old_nncb
-            self.nonce_cache[nonce] = nncb
+            self.nonce_cache[nonce] = (nncb, int(round(time.time()*1000))+10000)
+            self.remove_timeout_nonce()
 
     def pop_nonce(self, nonce):
         with self.nonce_lock:
             if nonce not in self.nonce_cache: return None
-            return self.nonce_cache.pop(nonce)
+            self.remove_timeout_nonce()
+            return self.nonce_cache.pop(nonce)[0]
+
+    def remove_timeout_nonce(self):
+        with self.nonce_lock:
+            for nonce, t in self.nonce_cache.items():
+                if t[1] < int(round(time.time() * 1000)):
+                    logger.error("nonce %s timeout" % map(ord, nonce))
+                    t[0].callback.set(None)
+                    self.nonce_cache.pop(nonce)
+
 
 def handle_reply_message(context, dest_id, src_id, msg_type, payload):
     nncb = ConnectionManager.init().pop_nonce(context.nonce)
@@ -244,12 +266,12 @@ def handle_reply_message(context, dest_id, src_id, msg_type, payload):
         logger.error("handle_reply_message ID %s 0x%X not match nonce %s callback ID %s 0x%X" % (ID_TO_STRING(src_id), src_id, str(map(ord, context.nonce)), ID_TO_STRING(nncb.id), nncb.id))
         return
     context.id = src_id
-
+    # logger.debug("handle_reply_message nonce found %s" % map(ord, context.nonce))
     nncb.callback.set((dest_id, src_id, msg_type, payload))
 
 
 def handle_socket(sock, addr):
-    logger.debug("handle_socket serve sock %s and addr %s" % (str(sock), str(addr)))
+    # logger.debug("handle_socket serve sock %s and addr %s" % (str(sock), str(addr)))
     peer_id_string = ""
     peer_id = MPTN_MAX_ID
     try:
@@ -272,43 +294,42 @@ def socket_recv(sock, addr, peer_id):
         try:
             nonce = sock.recv(MPTN_TCP_NONCE_SIZE)
             if nonce == "":
-                logger.error("handle_socket closed. nonce. addr=%s" % (str(addr)))
-                logger.debug("handle_socket closed. connections before %s" % str(ConnectionManager.init()))
+                logger.error("handle_socket closed due to nonce. addr=%s conns=%s" % (str(addr), str(ConnectionManager.init())))
                 ConnectionManager.init().remove_peer(addr)
-                logger.debug("handle_socket closed. connections after %s" % str(ConnectionManager.init()))
                 return
 
             size_string = sock.recv(MPTN_TCP_PACKET_SIZE)
             if size_string == "":
-                logger.error("handle_socket closed. size. addr=%s, nonce=%s" % (str(addr), str(map(ord, nonce))))
-                logger.debug("handle_socket closed. connections before %s" % str(ConnectionManager.init()))
+                logger.error("handle_socket closed due to size. addr=%s nonce=%s conns=%s" % (str(addr), str(map(ord, nonce)), str(ConnectionManager.init())
+                    )
+                )
                 ConnectionManager.init().remove_peer(addr)
-                logger.debug("handle_socket closed. connections after %s" % str(ConnectionManager.init()))
                 return
-            size = socket.ntohl(struct.unpack("!L", size_string)[0])
 
+            size = socket.ntohl(struct.unpack("!L", size_string)[0])
             while len(message) < size:
                 part_msg = sock.recv(size - len(message))
                 if part_msg == "":
-                    logger.error("handle_socket closed. message. addr=%s, nonce=%s, size_string=%s, size=%d, message=\n%s" % (
+                    logger.error("handle_socket closed due to message. addr=%s, nonce=%s, size_string=%s, size=%d, message=\n%s" % (
                         str(addr), str(map(ord, nonce)), str(map(ord, size_string)), size,
                         str(formatted_print(split_packet_to_list(message)))
                         )
                     )
-                    logger.debug("handle_socket closed. connections before %s" % str(ConnectionManager.init()))
+                    logger.debug("handle_socket closed due to message. conns=%s" % str(ConnectionManager.init()))
                     ConnectionManager.init().remove_peer(addr)
-                    logger.debug("handle_socket closed. connections after %s" % str(ConnectionManager.init()))
                     return
                 message += part_msg
 
-            logger.debug("handle_socket receive message from addr %s" % str(addr))
+            # logger.debug("handle_socket receive message from addr %s nonce %s size %d" % (str(addr), map(ord, nonce), size))
             context = Context(peer_id, addr, ONLY_FROM_TCP_SERVER, sock, nonce)
             process_message_handler(context, message)
             # process_message_handler modify context.id
             if peer_id == MPTN_MAX_ID and context.id != MPTN_MAX_ID:
                 ConnectionManager.init().add_peer(addr, Peer(socket=sock, id=context.id, address=addr))
                 peer_id = context.id
-                logger.debug("handle_socket update context id %s 0x%X from addr %s"%(ID_TO_STRING(context.id), context.id, str(addr)))
+                # logger.debug("handle_socket update context id %s 0x%X from addr %s"%(ID_TO_STRING(context.id), context.id, str(addr)))
+            
+            # logger.debug("socket_recv conns=%s" % str(ConnectionManager.init()))
 
         except Exception as e:
             logger.error("handle_socket addr=%s, nonce=%s, size_string=%s, size=%d, message is \n%s\nerror=%s\n%s" % (str(addr),
@@ -317,9 +338,8 @@ def socket_recv(sock, addr, peer_id):
                     traceback.format_exc()
                     )
                 )
-            logger.debug("handle_socket error before %s" % str(ConnectionManager.init()))
+            logger.debug("handle_socket unknown error conns=%s" % str(ConnectionManager.init()))
             ConnectionManager.init().remove_peer(addr)
-            logger.debug("handle_socket error after %s" % str(ConnectionManager.init()))
             return
 
         gevent.sleep(0)
@@ -343,7 +363,7 @@ def socket_send(context, dest_id, message, expect_reply=False):
         return None
 
     if context is not None and context.direction == ONLY_FROM_TCP_SERVER and context.id == dest_id:
-        # logger.debug("socket_send reuses socket since context ID is the same as dest_id %s" % str(dest_id))
+        # logger.debug("socket_send reuses socket since context ID is the same as dest_id %s (nonce %s)" % (str(dest_id), map(ord, context.nonce)))
         next_hop_id = dest_id
         address = context.address
         sock = context.socket
@@ -351,7 +371,7 @@ def socket_send(context, dest_id, message, expect_reply=False):
 
     else:
         next_hop = find_nexthop_for_id(dest_id)
-        # logger.debug("socket_send next_hop is %s" % str(next_hop))
+        # logger.debug("socket_send next_hop is %s beside context %s" % (str(next_hop), str(context)))
         if next_hop is None:
             logger.error("socket_send next hop for dest ID %s 0x%X cannot be found"%(ID_TO_STRING(dest_id), dest_id))
             return None
@@ -361,12 +381,13 @@ def socket_send(context, dest_id, message, expect_reply=False):
 
         sock = ConnectionManager.init().get_peer_by_id(next_hop_id)
         nonce = os.urandom(MPTN_TCP_NONCE_SIZE)
+        # logger.debug("socket_send nonce created %s" % map(ord, nonce))
 
     if sock is None:
         # logger.debug("socket_send no socket found for ID %s"%ID_TO_STRING(next_hop_id))
         sock = reconnect(address)
         if sock is None:
-            # logger.error("socket_send cannot re-setup socket for next_hop_id=%s addr=%s msg is\n%s" % (ID_TO_STRING(next_hop_id), str(address), formatted_print(split_packet_to_list(message))))
+            logger.error("socket_send cannot re-setup socket for next_hop_id=%s addr=%s msg is\n%s" % (ID_TO_STRING(next_hop_id), str(address), formatted_print(split_packet_to_list(message))))
             return
         try:
             sock.send(self_id_net_endian_string)
@@ -390,7 +411,7 @@ def socket_send(context, dest_id, message, expect_reply=False):
         sock.send(size)
         sock.sendall(message)
     except Exception as e:
-        logger.error("socket_send nonce addr=%s, self_id_net_endian_string=%s, nonce=%s, message is\n%s\nerror=%s\n%s" % (str(address),
+        logger.error("socket_send addr=%s, self_id_net_endian_string=%s, nonce=%s, message is\n%s\nerror=%s\n%s" % (str(address),
                 ID_TO_STRING(self_id_net_endian_string),
                 str(map(ord, nonce)),
                 str(formatted_print(split_packet_to_list(message))),
@@ -400,10 +421,13 @@ def socket_send(context, dest_id, message, expect_reply=False):
         ConnectionManager.init().remove_peer(address)
         return None
 
+    # logger.debug("send_socket conns=%s" % str(ConnectionManager.init()))
+
     if not expect_reply: return None
 
     callback = AsyncResult()
     ConnectionManager.init().add_nonce(nonce, NonceCallback(dest_id, callback))
+    # logger.debug("socket_send nonce added %s" % map(ord, nonce))
 
     if context is None:
         while not callback.ready():
