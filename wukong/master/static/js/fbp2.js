@@ -181,6 +181,7 @@ function FBP_fillBlockTypeInPage(pageTitle){
     for(i=0;i<nodes.length;i++) {
        var block = Block.classes[nodes[i].type]
        var iconClass = block.typename
+       if (iconClass=='Button') iconClass=''
        var icon = '<img src="'+block.icon44.src+'" class="wuClassIcon '+iconClass+'"/>'
        var location = nodes[i].location || 'No Location'
        var desc = '<span class="'+(nodes[i].location ? '' : 'warning-text')+'">'+location+'</span>'
@@ -288,6 +289,7 @@ function FBP_fillBlockType($div,blocks)
        //div.append('<option val='+blocks[i]+' ondblclick=FBP_addBlock()>'+blocks[i]+'</option>');
        var block = blocks[i]
        var iconClass = block.typename
+       if (iconClass=='Block') iconClass=''
        var icon = '<img src="'+(block.icon44 ? block.icon44.src : genericIcon.src)+'" class="wuClassIcon '+iconClass+'"/>'
        var desc = '<span>This is brief description of '+block.typename+'</span>'
        tags.push('<li><input type="radio" name="blocktype" value="'+block.typename+'">'+icon+'<label>'+block.typename+'</label>'+desc+'</li>');
