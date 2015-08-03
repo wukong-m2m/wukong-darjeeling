@@ -297,11 +297,11 @@ def Compare_changesets (new_changesets, old_changesets):
                 if old_l.to_component.type == component.type and old_l.to_component.location == component.location:
                     old_l.to_component = component
             extra_links.append(old_l)
-    
-    for old_c in old_changesets.components:
-        if old_c.location in location_tmp and old_c.type != "Server" and old_c.type not in location_tmp[old_c.location]:
-            if old_c not in extra_component:
-                extra_component.append(old_c)
+    for link in extra_links:
+        if link.from_component not in extra_component:
+            extra_component.append(link.from_component)
+        if link.to_component not in extra_component:
+            extra_component.append(link.to_component)
 
     return (same,diff,extra_component,extra_links,conflict)
 
@@ -343,7 +343,8 @@ def least_changed(logger, changesets, routingTable, locTree):
             #add extra links & component in changesets 
             if extra_component != []:
                 for tmp in extra_component:
-                    changesets.components.append(tmp)
+                    if tmp not in changesets.components:
+                        changesets.components.append(tmp)
             if extra_links != []:
                 for tmp in extra_links:
                     changesets.links.append(tmp)
@@ -383,6 +384,7 @@ def least_changed(logger, changesets, routingTable, locTree):
     else :
         mapping_result = False
         print "no difference"
+    dump_changesets(changesets)
     return mapping_result
 
 #return True if object can be shared 

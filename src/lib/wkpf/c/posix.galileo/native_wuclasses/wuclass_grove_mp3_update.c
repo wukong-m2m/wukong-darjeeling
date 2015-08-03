@@ -84,13 +84,7 @@ void wuclass_grove_mp3_update(wuobject_t *wuobject) {
   wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_GROVE_MP3_TRACK, &track);
   if(on_off){
     if(_getPlayState(&ps)){
-      if(ps == 1){
-	_queue(track);
-      }else if(ps == 2){
-	_play(SD, track);
-      }else if(ps == 3){
-	_insert(track);
-      }
+	  _play(SD, track);
       DEBUG_LOG(DBG_WKPFUPDATE,"WKPFUPDATE(Grove_MP3): playstate %d\n",ps);
     }else{
       DEBUG_LOG(DBG_WKPFUPDATE,"WKPFUPDATE(Grove_MP3): Failed to get playstate\n");

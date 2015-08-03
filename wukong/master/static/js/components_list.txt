@@ -30,6 +30,8 @@ __comp__binary_testsensor.js
 __comp__integer_testsensor.js
 __comp__user.js
 __comp__controller.js
+__comp__gesture.js
+__comp__user_aware.js
 __comp__light_actuator.js
 __comp__led.js
 __comp__fan.js
@@ -42,3 +44,4 @@ __comp__relay.js
 __comp__grove_lcd.js
 __comp__grove_mp3.js
 __comp__mosfat_led.js
+__comp__gesture_mp3.js

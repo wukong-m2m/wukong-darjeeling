@@ -27,6 +27,6 @@ void wuclass_grove_lcd_update(wuobject_t *wuobject) {
     wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_GROVE_LCD_VALUE, &value);
 
     char buffer[128];
-    snprintf(buffer, 128, "Valu:e%d", value);
+    snprintf(buffer, 128, "Value: %d", value);
     rgb_lcd_print(buffer);
 }

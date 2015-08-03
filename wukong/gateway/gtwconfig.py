@@ -20,7 +20,7 @@ SELF_TCP_SERVER_PORT = 9001
 TRANSPORT_INTERFACE_TYPE = 'udp'
 # TRANSPORT_INTERFACE_ADDR = '/dev/ttyACM0'
 # TRANSPORT_INTERFACE_ADDR = '/dev/cu.usbmodem1411' # for Zwave on MacOSX
-TRANSPORT_INTERFACE_ADDR = 'eth0' # for UDP interface
+TRANSPORT_INTERFACE_ADDR = 'wlan0' # for UDP interface
 # TRANSPORT_INTERFACE_ADDR = 'lo' # for UDP interface
 # TRANSPORT_INTERFACE_ADDR = 'lo0' # for UDP interface on MacOSX
 
