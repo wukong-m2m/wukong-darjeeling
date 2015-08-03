@@ -1373,7 +1373,7 @@ import serial
 
 class NowUser(tornado.web.RequestHandler):
   def get(self, user_id):
-    port = "/dev/ttyUSB2"
+    port = "/dev/ttyUSB0"
     ser = serial.Serial(port, 9600, timeout=1.0)
     x = ser.write(user_id+'\n')
     print x

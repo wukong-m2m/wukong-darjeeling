@@ -197,11 +197,7 @@
         <property name="output_boolean_1" access="readonly" datatype="boolean" default="false"  />
         <property name="output_boolean_2" access="readonly" datatype="boolean" default="false"  />
         <property name="output_boolean_3" access="readonly" datatype="boolean" default="false"  />
-        <property name="output_boolean_4" access="readonly" datatype="boolean" default="false"  />
-        <property name="output_boolean_5" access="readonly" datatype="boolean" default="false"  />
         <property name="output_int_0" access="readonly" datatype="short" default="false"  />
-        <property name="output_int_1" access="readonly" datatype="short" default="false"  />
-        <property name="output_int_2" access="readonly" datatype="short" default="false"  />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
     </WuClass>
 
