@@ -32,7 +32,7 @@
     <WuClass name="Grove_MP3" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
-    <WuClass name="UserID" appCanCreateInstances="false">
+    <WuClass name="User" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
 </WuKong>
