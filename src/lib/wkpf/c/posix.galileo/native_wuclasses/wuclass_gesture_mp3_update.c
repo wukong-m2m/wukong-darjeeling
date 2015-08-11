@@ -53,25 +53,23 @@ void wuclass_gesture_mp3_setup(wuobject_t *wuobject) {
 void wuclass_gesture_mp3_update(wuobject_t *wuobject) {
     static int track = 1;
     static bool pause = false;
-    static bool playing = false;
 
     int16_t comm;
     wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_GESTURE_MP3_COMMAND, &comm);
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Gesture_MP3): start %d\n", comm);
     if (comm == START) {
+        uint8_t ps;
+        _getPlayState(&ps);
         if (pause) {
             _pause();
             pause = true;
-            playing = true;
-        } else if(!playing){
+        } else if(ps == 2){
             _play(SD, track);
-            playing = true;
             DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Gesture_MP3): playing track: %d\n", track);
         }
     } else if (comm == NEXT) {
         if (track < numf) {
             track++;
-            playing = true;
             pause = false;
             _play(SD, track);
             DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Gesture_MP3): playing track: %d\n", track);
@@ -82,7 +80,6 @@ void wuclass_gesture_mp3_update(wuobject_t *wuobject) {
     } else if (comm == PREVIOUS) {
         if (track > 1) {
             track--;
-            playing = true;
             pause = false;
             _play(SD, track);
             DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Gesture_MP3): playing track: %d\n", track);
@@ -93,15 +90,13 @@ void wuclass_gesture_mp3_update(wuobject_t *wuobject) {
     } else if (comm == PAUSE) {
         _pause();
         pause = true;
-        playing = false;
     } else if (comm == STOP) {
         _stop();
-        playing = false;
         pause = false;
     } else if (comm == RESTART) {
         _stop();
-        playing = true;
         pause = false;
+        track=1;
         _play(SD, track);
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Gesture_MP3): playing track: %d\n", track);
     }
