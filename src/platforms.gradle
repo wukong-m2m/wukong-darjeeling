@@ -5,6 +5,11 @@ switch (djConfig.getAllPlatforms().last()) {
         ext.djMcu='atmega2560'
         ext.djReprogramFlashPageAddress='0x3F000'
     break
+    case 'arduino.wutiny':
+        ext.djArchitecture='avr'
+        ext.djMcu='atmega644p'
+        ext.djReprogramFlashPageAddress='0xFC00'
+    break
     case 'arduino.avrora':
         ext.djArchitecture='avr'
         ext.djMcu='atmega128'

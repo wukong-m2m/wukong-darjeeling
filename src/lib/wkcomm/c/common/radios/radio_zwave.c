@@ -18,7 +18,11 @@
 // (routing requires at least 1 radio_ library to be linked in)
 #include "../routing/routing.h"
 
+#ifdef WUTINY
+#define ZWAVE_UART                   1
+#else
 #define ZWAVE_UART                   2
+#endif
 #define ZWAVE_UART_BAUDRATE          115200
 
 #define ZWAVE_TRANSMIT_OPTION_ACK                                0x01   //request acknowledge from destination node
@@ -153,6 +157,7 @@ void radio_zwave_init(void) {
     // see issue 115     output_high(PORTK,0);
     uart_inituart(ZWAVE_UART, ZWAVE_UART_BAUDRATE);
     radio_zwave_platform_dependent_init();
+	//down
     // Clear existing queue on Zwave
     DEBUG_LOG(true, "Sending NAK\n");
     uart_write_byte(ZWAVE_UART, ZWAVE_NAK);
@@ -182,7 +187,7 @@ void radio_zwave_init(void) {
     radio_zwave_poll();
     uint8_t retries = 10;
     radio_zwave_address_t previous_received_address = 0;
-
+	//UP
     DEBUG_LOG(true, "Getting zwave address...\n");
     while(!radio_zwave_my_address_loaded) {
         while(!radio_zwave_my_address_loaded && retries-->0) {
@@ -438,6 +443,7 @@ void radio_zwave_learn() {
     int k;
     if(zwave_learn_on==false)
     {
+        DEBUG_LOG(true, "turn on\n");
         zwave_time_learn_start=dj_timer_getTimeMillis();
         zwave_learn_on=true;
         b[0] = 1;

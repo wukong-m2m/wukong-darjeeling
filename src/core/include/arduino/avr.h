@@ -27,10 +27,17 @@
 // #include <avr/delay.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include "config.h"
+
+#ifdef WUTINY
+#define F_CPU 11059200
+#define UART_BAUDRATE_DOUBLE_SPEED 2
+#else
 
 // 16 MHz clock speed
 #define F_CPU 16000000
-
+#define UART_BAUDRATE_DOUBLE_SPEED 1
+#endif
 // clear bit, set bit macros
 #ifndef cbi
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))

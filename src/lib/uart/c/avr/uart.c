@@ -4,7 +4,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "config.h"
-
+sdf
 #ifdef WUTINY
 #define CLOCK 11059200
 #define UART_BAUDRATE_DOUBLE_SPEED 1
@@ -103,7 +103,7 @@ void uart_inituart(uint8_t uart, uint32_t baudrate) {
 #ifdef WUTINY
   bool u2x_flag = true;//(baudrate != 57600)?TRUE:FALSE;  // speed up
 #else
-  bool u2x_flag = false;//(baudrate != 57600)?TRUE:FALSE;  // speed up
+  bool u2x_flag = true;//(baudrate != 57600)?TRUE:FALSE;  // speed up
 #endif
   uint8_t factor = (u2x_flag) ? 8 : 16;
 

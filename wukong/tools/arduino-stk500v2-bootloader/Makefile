@@ -610,7 +610,7 @@ upload_bootloader: mega2560 darjeeling_flash_page.hex
 
 
 upload_bootloader_644: mega644P
-	avr-gcc -std=gnu99 -Wall -Werror -Os -mmcu=atmega644 darjeeling_flash_page.c -o darjeeling_flash_page.o
+	avr-gcc -std=gnu99 -Wall -Werror -Os -mmcu=atmega644p darjeeling_flash_page.c -o darjeeling_flash_page.o
 	avr-objcopy -j .reprogram_flash_page --change-section-address .reprogram_flash_page=0xFC00 -O ihex darjeeling_flash_page.o darjeeling_flash_page.hex
 	$(AVRDUDE) -p atmega644P -P usb -c usbasp -e    -U lock:w:0x3F:m -U efuse:w:0xFD:m -U hfuse:w:0xDA:m -U lfuse:w:0xFF:m # Erase and set bits so we can write to NRWW section
 	$(AVRDUDE) -p atmega644P -P usb -c usbasp -D -V -U flash:w:stk500boot_v2_mega644.hex:i # Flash the Arduino bootloader. Don't erase. Don't verify until we figure out what's wrong with TINYusbISP reading flash memory, since it will fail anyway.

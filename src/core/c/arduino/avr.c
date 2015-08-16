@@ -20,6 +20,7 @@
  */
  
 #include "avr.h"
+#include "config.h"
 
 // the prescaler is set so that timer0 ticks every 64 clock cycles, and the
 // the overflow handler is called every 256 ticks.
@@ -117,6 +118,7 @@ void avr_serialInit(uint32_t baud)
 	UCSR0A = 0;
 
 	baud_setting = (F_CPU / 8 / baud - 1) / 2;
+	//baud_setting = (F_CPU / 8/ UART_BAUDRATE_DOUBLE_SPEED / baud - 1) / 2;
     // baud_setting = (CLOCKSPEED + (baud * 8L)) / (baud * 16L) - 1;
 
     // assign the baud_setting, a.k.a. ubbr (USART Baud Rate Register)

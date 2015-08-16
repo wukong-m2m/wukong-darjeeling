@@ -28,6 +28,7 @@
 
 #include "avr.h"
 #include "spi.h"
+#include "config.h"
 
 void avr_lcdSendData(uint8_t data)
 {
@@ -53,12 +54,16 @@ void avr_lcdSendCommand(uint8_t command)
 
 void avr_lcdBacklight(uint8_t on)
 {
+#ifndef WUTINY
 	PORTH = on ? (PORTH|(1<<PH5)) : (PORTH&~(1<<PH5));
+#endif
 };
 
 void avr_lcdReset(uint8_t value)
 {
+#ifndef WUTINY
 	PORTH = value ? (PORTH|(1<<PH6)) : (PORTH&~(1<<PH6));
+#endif
 };
 
 void LCD_Init(void)
@@ -67,8 +72,9 @@ void LCD_Init(void)
 	avr_sspiInit();
 
 	// set pins for backlight and reset to output
+#ifndef WUTINY
 	DDRH |= 0x30;
-
+#endif
 	// reset the LCD
 	avr_sspiSlaveSelectDisable();
 	avr_sspiClock(0);
