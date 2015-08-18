@@ -1,0 +1,355 @@
+/* wuclass-block related */
+.wuClassIcon{
+
+}
+
+.wublock{
+    font-family:"Trebuchet MS", Helvetica, sans-serif;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    overflow:hidden;
+    min-height:22px;
+    width:120px;
+    border:solid 1px #cacaca;
+    cursor:default;
+}
+.wublock:hover{
+    overflow:inherit;
+    z-index:99;
+    height:inherit;
+}
+.wublock.ui-resizable{
+    height:inherit;
+}
+.wublock .wuClassIcon22{
+    width:22px;
+    height:22px;
+    float:right;
+}
+.wublock .block-type{
+    padding:2px;
+    text-overflow:ellipsis;
+    overflow:hidden;
+    white-space:nowrap;
+    cursor:pointer;
+    cursor:-webkit-grabbing;
+}
+.wublock .block-type:hover{
+    padding:4px;
+    overflow:inherit;
+}
+.wublock .block-name{
+    padding:2px;
+    text-overflow:ellipsis;
+    overflow:hidden;
+    white-space:nowrap;
+}
+.wublock .block-name:hover{
+    padding:2px;
+    overflow:inherit;
+}
+.wublock .block-signals{
+    border-bottom: 1px dashed #c0c0c0;
+    cursor: e-resize;
+}
+.wublock .block-signals.shiftKey{
+    cursor: pointer;
+}
+.wublock .slot{
+}
+.wublock .readable.slot:hover .slottail{
+    opacity:1;
+    color:rgba(51,153,255,1);
+}
+.wublock.link-dest .readable.slot:hover{
+    /* suppress the changing */
+	background-color:inherit !important;
+	color:inherit;
+}
+.wublock.link-dest .readable.slot:hover .slotbody{
+    /* suppress the changing */
+	text-decoration: line-through;
+	cursor:not-allowed;
+}
+.wublock.link-dest .readable.slot:hover .slottail{
+    /* suppress the changing */
+	opacity:0.25;
+	color:inherit;
+}
+.wublock.link-dest .writable.slot:hover{
+	background-color: rgba(51,153,255,1) !important;
+	color:white;
+	cursor:pointer;
+}
+.wublock.link-dest .writable.slot:hover .slothead{
+    opacity:1;
+    color:rgba(51,153,255,1);
+}
+.wublock.link-dest .readable.writable.slot:hover{
+	background-color: rgba(51,153,255,1) !important;
+	color:white;
+}
+.wublock.link-dest .readable.writable.slot:hover .slotbody{
+	text-decoration: inherit;
+	cursor:pointer;
+}
+.wublock.link-dest .readable.writable.slot:hover .slottail{
+    color: black;
+}
+.wublock .slotbody{
+	border-top: 1px dashed #c0c0c0;
+    font-size: 10pt !important;
+    word-wrap: break-word !important;
+    text-overflow:ellipsis;
+    overflow:hidden;
+    white-space:nowrap;
+    padding:2px 0px 2px 4px;
+    width:90%;
+    display:inline-block;
+}
+.wublock .slothead{
+    width:14px;
+    opacity:0.5;
+    display:inline-block;
+    text-align:left;
+    margin-left:-14px;
+    clear:left;
+    float:left;
+    padding-top:5px;
+}
+.wublock .slottail{
+    width:14px;
+    opacity:0.25;
+    display:inline-block;
+    margin-right:-14px;
+    padding-top:5px;
+    float:right;
+}
+.wublock .slot.readable {
+	background-color:#f0f0f0;
+}
+.wublock .slot.writable {
+	background-color:#e0e0e0;
+}
+.wublock .slot.readable.writable {
+	background-color:#d0d0d0;
+}
+.wublock .slot:hover .slotbody{
+    overflow:inherit;
+}
+.wublock .slot:hover .slothead{
+    overflow:inherit;
+    color:black;
+}
+.wublock .slot:hover .slottail{
+    overflow:inherit;
+    color:black;
+}
+.wublock .slot.monitor_enable {
+	background-color: #ff0000 !important;
+	color:white;
+}
+.wublock .slot.link-source, .wublock .slot.monitor_enable.link-source {
+	background-color: rgba(51,153,255,1) !important;
+	color:white;
+}
+.wublock .slot.monitor_enable .slothead, .wublock .slot.monitor_enable .slottail {
+	color:black;
+}
+.wublock.annotation{
+	background-color:transparent;
+	border:none;
+	white-space:normal;
+}
+.wublock.annotation > div.content{
+	width:100%;
+	height:100%;
+}
+table.form th{
+    max-width:75px;
+}
+table.form th, table.form td{
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align:left;
+  border-bottom:none;
+}
+table.form th:hover, table.form td:hover{
+  overflow:inherit;
+}
+table.form td input{
+  width:100%;
+  /*border-bottom:solid 1px #d0d0d0;*/
+}
+button.foldHandler{
+  margin-left:-20px;
+  width: 20px;
+  min-width: 20px;
+  padding: 0;
+  background: none;
+  border: none;
+  float:left;
+  margin-top:8px;
+  -webkit-transition: transform 200ms linear;
+  -moz-transition: transform 200ms linear;
+  transition:  transform 200ms linear;
+}
+.rotate90{
+  -ms-transform: rotate(90deg);
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+#connection select {
+	font-size:10px;
+}
+.warning-text{
+    color:red;
+}
+/* end of  wuclass-block related */
+.shadow {
+	-moz-box-shadow:    1px 1px 1px 1px #3399FF;
+	-webkit-box-shadow: 1px 1px 1px 1px #3399FF;
+	box-shadow:         1px 1px 1px 1px #3399FF;
+}
+#deployment{
+    display:none;
+    width:90%;
+    height:90%;
+    background-color:#f0f0f0;
+    margin-left:0;
+}
+/* loading */
+#loading{
+  display:none;
+  position:absolute;
+  height:100px;
+  text-align:center;
+  top:50px;
+  left:0px;
+  background-color:rgba(255,255,255,0.85);
+  z-index:199;
+}
+#loading div{
+  padding: 0px 0px 30px 0px;
+  background-image: url('data:image/gif;base64,R0lGODlhEAALAPQAAP///wAAANra2tDQ0Orq6gYGBgAAAC4uLoKCgmBgYLq6uiIiIkpKSoqKimRkZL6+viYmJgQEBE5OTubm5tjY2PT09Dg4ONzc3PLy8ra2tqCgoMrKyu7u7gAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCwAAACwAAAAAEAALAAAFLSAgjmRpnqSgCuLKAq5AEIM4zDVw03ve27ifDgfkEYe04kDIDC5zrtYKRa2WQgAh+QQJCwAAACwAAAAAEAALAAAFJGBhGAVgnqhpHIeRvsDawqns0qeN5+y967tYLyicBYE7EYkYAgAh+QQJCwAAACwAAAAAEAALAAAFNiAgjothLOOIJAkiGgxjpGKiKMkbz7SN6zIawJcDwIK9W/HISxGBzdHTuBNOmcJVCyoUlk7CEAAh+QQJCwAAACwAAAAAEAALAAAFNSAgjqQIRRFUAo3jNGIkSdHqPI8Tz3V55zuaDacDyIQ+YrBH+hWPzJFzOQQaeavWi7oqnVIhACH5BAkLAAAALAAAAAAQAAsAAAUyICCOZGme1rJY5kRRk7hI0mJSVUXJtF3iOl7tltsBZsNfUegjAY3I5sgFY55KqdX1GgIAIfkECQsAAAAsAAAAABAACwAABTcgII5kaZ4kcV2EqLJipmnZhWGXaOOitm2aXQ4g7P2Ct2ER4AMul00kj5g0Al8tADY2y6C+4FIIACH5BAkLAAAALAAAAAAQAAsAAAUvICCOZGme5ERRk6iy7qpyHCVStA3gNa/7txxwlwv2isSacYUc+l4tADQGQ1mvpBAAIfkECQsAAAAsAAAAABAACwAABS8gII5kaZ7kRFGTqLLuqnIcJVK0DeA1r/u3HHCXC/aKxJpxhRz6Xi0ANAZDWa+kEAA7AAAAAAAAAAAA');
+  background-repeat:no-repeat;
+  background-position:center;
+}
+.modal-dialog{
+  display:none;
+  width:400px;
+  z-index:99;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+  background: #fff;
+  background-clip: padding-box;
+  border: 1px solid #acacac;
+  border: 1px solid rgba(0,0,0,.333);
+  outline: 0;
+  position: absolute;
+  color: #000;
+  padding: 15px 21px;
+}
+
+.modal-dialog-content{
+    width:100%;
+    height:100%;
+    overflow-y:auto;
+}
+.modal-dialog-buttons{
+    position:absolute;
+    top:90%;
+    text-align:center;
+    width:100%;
+}
+#mapping-progress{
+    overflow-y:auto;
+    height:100px;
+    width:100%;
+    border-bottom:dashed 1px #c0c0c0;
+    padding:10px;
+    margin-bottom:10px;
+}
+#mapping_results{
+    overflow-y:auto;
+    width:100%;
+    padding:10px;
+}
+/* location policy editor */
+.LocationPolicyGroup{
+    display:inline-block;
+    width:400px;
+    height:30px;
+    padding:2px;
+    float: left;
+    clear: left;
+    margin-top: 10px;    
+}
+.LocationPolicyEditorPolicy{
+  height: 30px;
+  font-size: 1.2em;
+  padding-top: 10px;
+  padding-left: 10px;
+  border-bottom: dashed 1px #c0c0c0;   
+}
+.LocationPolicyGroupFuncname{
+    display:inline-block;
+    width:75px;
+    min-width:75px;
+    float:left;
+}
+.LocationPolicyGroupFuncnameSel{
+}
+.LocationPolicyGroupParam{
+    width:115px;
+    min-width:115px;    
+    display:inline-block;
+    float:left;
+    height:30px;
+    background-color:rgba(0,255,0,0.5);
+}
+.LocationPolicyGroupButtons{
+    height:30px;    
+    display:inline-block;
+    float:left;
+    overflow:hidden;
+    margin-right:5px;
+    margin-left:5px;
+}
+.LocationPolicyGroupButtons button{
+    min-width:30px;
+    width:30px;
+    padding:0px;
+    left:10px;
+    margin-left:0px;
+}
+.LocationPolicyGroupDelete{
+    display: inline-block;
+    height: 30px;
+    vertical-align: middle;
+    line-height: 30px;
+    float: right;
+    font-size: 1.5em;
+    color: #999;
+    padding-right: 3px; 
+    cursor:pointer;
+}
+.LocationPolicyGroupDelete:hover{
+    color:#000;
+}
+.LocationPolicyEditorAdd{
+  float: left;
+  clear: left;
+  margin-top: 10px;
+}
+button.not{
+    top:24px;
+}
+button.and{
+    top:-4px;
+}
+button.or{
+    top:54px;    
+}
+

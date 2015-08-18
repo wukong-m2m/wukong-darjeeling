@@ -1,4 +1,8 @@
 # vim:ts=2 sw=2 expandtab
+#
+# 2015 July 10, HY modified
+#   Add .disable property to WuApplication
+#
 import sys, os, traceback, time, re, copy
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from model.models import WuClassDef, WuComponent, WuLink
@@ -17,14 +21,14 @@ from threading import Thread
 from subprocess import Popen, PIPE, STDOUT
 from collections import namedtuple
 import distutils.dir_util
-
+import mapper.mapper
 from configuration import *
 from globals import *
 
-ChangeSets = namedtuple('ChangeSets', ['components', 'links', 'heartbeatgroups'])
+ChangeSets = namedtuple('ChangeSets', ['components', 'links', 'heartbeatgroups', 'deployIDs'])
 
 class WuApplication:
-  def __init__(self, id='', app_name='', desc='', file='', dir='', outputDir="", templateDir=TEMPLATE_DIR, componentXml=open(COMPONENTXML_PATH).read()):
+  def __init__(self, id='', app_name='', desc='', file='', dir='', outputDir="", templateDir=TEMPLATE_DIR, componentXml=open(COMPONENTXML_PATH).read(),disabled=False):
     self.id = id
     self.app_name = app_name
     self.desc = desc
@@ -38,6 +42,7 @@ class WuApplication:
     self.deployed = False
     self.mapper = None
     self.inspector = None
+    self.disabled = disabled
     # 5 levels: self.logger.debug, self.logger.info, self.logger.warn, self.logger.error, self.logger.critical
     self.logger = logging.getLogger(self.id[:5])
     self.logger.setLevel(logging.DEBUG) # to see all levels
@@ -54,7 +59,7 @@ class WuApplication:
     self.instanceIds = []
     self.monitorProperties = {}
 
-    self.changesets = ChangeSets([], [], [])
+    self.changesets = ChangeSets([], [], [], [])
 
     # a log of mapping results warning or errors
     # format: a list of dict of {'msg': '', 'level': 'warn|error'}
@@ -97,7 +102,9 @@ class WuApplication:
 
   def setFlowDom(self, flowDom):
     self.applicationDom = flowDom
-    self.name = flowDom.getElementsByTagName('application')[0].getAttribute('name')
+    applicationEle = flowDom.getElementsByTagName('application')[0]
+    self.name = applicationEle.getAttribute('name')
+    self.disabled = len(applicationEle.getElementsByTagName('disabled')) > 0
 
   def setOutputDir(self, outputDir):
     self.destinationDir = outputDir
@@ -162,7 +169,7 @@ class WuApplication:
     return self.status
 
   def config(self):
-    return {'id': self.id, 'app_name': self.app_name, 'desc': self.desc, 'dir': self.dir, 'xml': self.xml, 'version': self.version}
+    return {'id': self.id, 'app_name': self.app_name, 'desc': self.desc, 'dir': self.dir, 'xml': self.xml, 'version': self.version,'disabled':self.disabled}
 
   def __repr__(self):
     return json.dumps(self.config())
@@ -170,7 +177,9 @@ class WuApplication:
   def parseApplication(self):
       componentInstanceMap = {}
       wuLinkMap = {}
-      application_hashed_name = self.applicationDom.getElementsByTagName('application')[0].getAttribute('name')
+      applicationEle = self.applicationDom.getElementsByTagName('application')[0]
+      application_hashed_name = applicationEle.getAttribute('name')
+      self.disabled = len(applicationEle.getElementsByTagName('disabled')) > 0
 
       components = self.applicationDom.getElementsByTagName('component')
       self.instanceIds = []
@@ -240,25 +249,25 @@ class WuApplication:
       self.instanceIds.append(0)
       #assumption: at most 99 properties for each instance, at most 999 instances
       #store hashed result of links to avoid duplicated links: (fromInstanceId*100+fromProperty)*100000+toInstanceId*100+toProperty
-      linkSet = []  
+      linkSet = []
       # links
       for linkTag in self.applicationDom.getElementsByTagName('link'):
           from_component_id = linkTag.parentNode.getAttribute('instanceId')
           from_component = componentInstanceMap[from_component_id]
-          from_property_name = linkTag.getAttribute('fromProperty').lower() 
+          from_property_name = linkTag.getAttribute('fromProperty').lower()
           from_property_id = WuObjectFactory.wuclassdefsbyname[from_component.type].properties[from_property_name].id
           to_component_id = linkTag.getAttribute('toInstanceId')
           to_component = componentInstanceMap[to_component_id]
-          to_property_name =  linkTag.getAttribute('toProperty').lower() 
+          to_property_name =  linkTag.getAttribute('toProperty').lower()
           to_property_id = WuObjectFactory.wuclassdefsbyname[to_component.type].properties[to_property_name].id
 
           hash_value = (int(from_component_id)*100+int(from_property_id))*100000+int(to_component_id)*100+int(to_property_id)
           if hash_value not in wuLinkMap.keys():
-            link = WuLink(from_component, from_property_name, 
+            link = WuLink(from_component, from_property_name,
                     to_component, to_property_name)
             wuLinkMap[hash_value] = link
           self.changesets.links.append(wuLinkMap[hash_value])
-      
+
       #add monitoring related links
       if(MONITORING == 'true'):
           for instanceId, properties in self.monitorProperties.items():
@@ -268,13 +277,13 @@ class WuApplication:
                       link = WuLink(componentInstanceMap[instanceId], name, componentInstanceMap[0], 'input')
                       wuLinkMap[hash_value] = link
                   self.changesets.links.append(wuLinkMap[hash_value])
-          
+
 
   def cleanAndCopyJava(self):
     # clean up the directory
     if os.path.exists(JAVA_OUTPUT_DIR):
       distutils.dir_util.remove_tree(JAVA_OUTPUT_DIR)
-    
+
     os.mkdir(JAVA_OUTPUT_DIR)
 
     # copy WKDeployCustomComponents.xml to wkdeploy/java
@@ -295,11 +304,13 @@ class WuApplication:
         if not os.path.exists(os.path.join(JAVA_OUTPUT_DIR, filename)):
           self.errorDeployStatus("An error has encountered while copying %s to java dir in wkdeploy!" % (filename))
 
-      
+
   def generateJava(self):
+      print "===================self.changesets========"
+      mapper.mapper.dump_changesets(self.changesets)
       Generator.generate(self.name, self.changesets)
 
-  def mapping(self, locTree, routingTable, mapFunc=firstCandidate):
+  def mapping(self, locTree, routingTable, mapFunc=mapper.mapper.least_changed):
       #input: nodes, WuObjects, WuLinks, WuClassDefs
       #output: assign node id to WuObjects
       # TODO: mapping results for generating the appropriate instiantiation for different nodes
@@ -307,16 +318,28 @@ class WuApplication:
       return mapFunc(self, self.changesets, routingTable, locTree)
 
   def map(self, location_tree, routingTable):
-    self.changesets = ChangeSets([], [], [])
+    self.changesets = ChangeSets([], [], [], [])
     self.parseApplication()
     result = self.mapping(location_tree, routingTable)
     logging.info("Mapping Results")
     logging.info(self.changesets)
     return result
 
+  def del_and_remap(self, location_tree, routingTable):
+    self.changesets = ChangeSets([], [], [], [])
+    self.parseApplication()
+    result = mapper.mapper.delete_application(self, self.changesets, routingTable, location_tree)
+    logging.info("Mapping Results")
+    logging.info(self.changesets)
+    return result
+
+
+
   def deploy_with_discovery(self,*args):
     #node_ids = [info.id for info in getComm().getActiveNodeInfos(force=False)]
-    node_ids = set([x.wunode.id for component in self.changesets.components for x in component.instances])
+    #node_ids = set([x.wunode.id for component in self.changesets.components for x in component.instances])
+    node_ids = set([x for x in self.changesets.deployIDs])
+    print node_ids
     res = self.deploy(node_ids,*args)
     return res
 
@@ -324,7 +347,7 @@ class WuApplication:
     master_busy()
     app_path = self.dir
     self.clearDeployStatus()
-    
+
     for platform in platforms:
       platform_dir = os.path.join(app_path, platform)
 
@@ -378,9 +401,11 @@ class WuApplication:
       gevent.sleep(0)
 
       # Remove Server node ID?
-      destination_ids.remove(WUKONG_GATEWAY)
-      remaining_ids.remove(WUKONG_GATEWAY)
-
+      try:
+          destination_ids.remove(WUKONG_GATEWAY)
+          remaining_ids.remove(WUKONG_GATEWAY)
+      except:
+          pass
       for node_id in destination_ids:
         node = WuNode.node_dict[node_id]
         print "Deploy to node %d type %s"% (node_id, node.type)
@@ -394,6 +419,16 @@ class WuApplication:
           return False
         self.logDeployStatus('...has completed')
     self.logDeployStatus('Application has been deployed!')
+
+    #save map result
+    if os.path.isfile("changesets.pkl"):
+      os.remove("changesets.pkl")
+    if os.path.isfile("shared_links.pkl"):
+      os.remove("shared_links.pkl")
+    os.rename("changesets.tmp", "changesets.pkl")
+    if os.path.isfile("shared_links.tmp"):
+      os.rename("shared_links.tmp", "shared_links.pkl")
+
     self.stopDeployStatus()
     master_available()
     return True

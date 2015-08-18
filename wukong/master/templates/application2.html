@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link type="text/css" href="/static/css/smoothness/jquery-ui-1.8.21.custom.css" rel="stylesheet" />
+        <link type="text/css" href="/static/css/jquery.contextMenu.css" rel="stylesheet" />
+        <link type="text/css" href="/static/css/application.css" rel="stylesheet" />
+        <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+        <link type="text/css" href="/static/css/jquery.treeview.css" rel="stylesheet"/>
+        <link type="text/css" href="/static/css/bootstrap-editable.css" rel="stylesheet"/>
+
+        <script type="text/javascript" src="/static/js/jquery-1.7.2.min.js"></script>
+        <script type="text/javascript" src="/static/js/jquery-ui-1.8.21.custom.min.js"></script>
+        <script type="text/javascript" src="/static/js/jquery-ui-disabler-1.0.0.min.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.contextMenu.js"></script>
+        <script type="text/javascript" src="/static/js/underscore-min.js"></script>
+        <script type="text/javascript" src="/static/js/json2.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.blockUI.js"></script>
+        <script type="text/javascript" src="/static/bootstrap/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="/static/js/bootstrap-editable.min.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.treeview.js"></script>
+        <script type="text/javascript" src="/static/js/display_locationTree2.js"></script>
+
+        <link rel="icon" type="image/png" sizes="24x24" href="/static/images/favicon-24x24.png">
+        <script type="text/javascript" src="/static/js/hyutil.js"></script>
+        <script type="text/javascript" src="/static/js/application2.js"></script>
+<style>
+/*override the original settings*/
+.navbar{
+    margin-bottom:0;
+}
+    /* adjust the applist */
+    .contentBox p, #applist{
+        margin:10px;
+    }
+/*end of override the original settings*/
+.contentBox{
+    position:fixed;
+    width:100%;
+}
+.content{
+}
+.modal-backdrop{
+    background-color:transparent;
+}
+.my-button{
+  background: -moz-linear-gradient(top, #f5f5f5, #f1f1f1);
+  background: -ms-linear-gradient(top, #f5f5f5, #f1f1f1);
+  background: -o-linear-gradient(top, #f5f5f5, #f1f1f1);
+  background: -webkit-linear-gradient(top, #f5f5f5, #f1f1f1);
+  background: linear-gradient(top, #f5f5f5, #f1f1f1);
+  border: 1px solid #dcdcdc;
+  -moz-border-radius: 2px;
+  -webkit-border-radius: 2px;
+  border-radius: 2px;
+  -moz-box-shadow: none;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  color: #333;
+  cursor: default;
+  font-family: arial, sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  height: 29px;
+  line-height: 27px;
+  margin: 0;
+  min-width: 72px;
+  outline: 0;
+  padding: 0 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+.my-button-blue{
+  background: -moz-linear-gradient(top, #4d90fe, #4787ed);
+  background: -ms-linear-gradient(top, #4d90fe, #4787ed);
+  background: -o-linear-gradient(top, #4d90fe, #4787ed);
+  background: -webkit-linear-gradient(top, #4d90fe, #4787ed);
+  background: linear-gradient(top, #4d90fe, #4787ed);
+  border: 1px solid #3079ed;
+  color: #fff;
+}
+/* app store related */
+.modal-dialog{
+  display:none;
+  width:400px;
+  z-index:99;
+  box-shadow: 0 4px 16px rgba(0,0,0,.2);
+  background: #fff;
+  background-clip: padding-box;
+  border: 1px solid #acacac;
+  border: 1px solid rgba(0,0,0,.333);
+  outline: 0;
+  position: absolute;
+  color: #000;
+  padding: 15px 21px;
+}
+
+.modal-dialog-content{
+    width:100%;
+    height:100%;
+    overflow-y:auto;
+}
+.modal-dialog-buttons{
+    position:absolute;
+    top:90%;
+    text-align:center;
+    width:100%;
+}
+#loading{
+  display:none;
+  position:absolute;
+  height:100px;
+  text-align:center;
+  top:50px;
+  left:0px;
+  background-color:rgba(255,255,255,0.85);
+  z-index:199;
+}
+#loading div{
+  padding: 0px 0px 30px 0px;
+  background-image: url('data:image/gif;base64,R0lGODlhEAALAPQAAP///wAAANra2tDQ0Orq6gYGBgAAAC4uLoKCgmBgYLq6uiIiIkpKSoqKimRkZL6+viYmJgQEBE5OTubm5tjY2PT09Dg4ONzc3PLy8ra2tqCgoMrKyu7u7gAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCwAAACwAAAAAEAALAAAFLSAgjmRpnqSgCuLKAq5AEIM4zDVw03ve27ifDgfkEYe04kDIDC5zrtYKRa2WQgAh+QQJCwAAACwAAAAAEAALAAAFJGBhGAVgnqhpHIeRvsDawqns0qeN5+y967tYLyicBYE7EYkYAgAh+QQJCwAAACwAAAAAEAALAAAFNiAgjothLOOIJAkiGgxjpGKiKMkbz7SN6zIawJcDwIK9W/HISxGBzdHTuBNOmcJVCyoUlk7CEAAh+QQJCwAAACwAAAAAEAALAAAFNSAgjqQIRRFUAo3jNGIkSdHqPI8Tz3V55zuaDacDyIQ+YrBH+hWPzJFzOQQaeavWi7oqnVIhACH5BAkLAAAALAAAAAAQAAsAAAUyICCOZGme1rJY5kRRk7hI0mJSVUXJtF3iOl7tltsBZsNfUegjAY3I5sgFY55KqdX1GgIAIfkECQsAAAAsAAAAABAACwAABTcgII5kaZ4kcV2EqLJipmnZhWGXaOOitm2aXQ4g7P2Ct2ER4AMul00kj5g0Al8tADY2y6C+4FIIACH5BAkLAAAALAAAAAAQAAsAAAUvICCOZGme5ERRk6iy7qpyHCVStA3gNa/7txxwlwv2isSacYUc+l4tADQGQ1mvpBAAIfkECQsAAAAsAAAAABAACwAABS8gII5kaZ7kRFGTqLLuqnIcJVK0DeA1r/u3HHCXC/aKxJpxhRz6Xi0ANAZDWa+kEAA7AAAAAAAAAAAA');
+  background-repeat:no-repeat;
+  background-position:center;
+}
+</style>
+<script language="javascript" author="HY">
+document.addEventListener('DOMContentLoaded', function () {
+    updateCanvasHeight()
+})
+</script>
+    </head>
+    <body>
+	    <!--textarea cols=5 rows=5 id="debug"></textarea-->
+        <div class="navbar">
+          <div class="navbar-inner">
+              <a id="logoButton" class="brand" href="/"><small><img src="/static/images/wukong_logo.jpg" width=25 height=20 /></small> Wukong </a>
+            <ul class="nav">
+                <li class="active"><a id="application" href="#">Application Management</a></li>
+                <li><a id="node-editor" href="#">Device Management</a></li>
+                <li><a id="open-app-store" href="#">Application Store</a></li>
+                <!--
+                <li class=""><a id="locationTree" href="#">Landmark Editor</a></li>
+                <li class=""><a id="designer" href="#">WuClass Designer</a></li>
+                -->
+            </ul>
+          </div>
+        </div>
+        {% if not connected %}
+        <div class="alert">
+          <h4>It appears that you have not connected to a zwave gateway</h4>
+          <p>Please connect a zwave gateway to the master and restart.</p>
+        </div>
+        {% end %}
+        <div class="contentBox">
+            <div id="content" class="content"></div>
+        </div>
+        <div id="loading" class="modal-dialog">
+          <div>
+            <h1><label id="loading-text"></label></h1>
+          </div>
+        </div>
+    </body>
+</html>

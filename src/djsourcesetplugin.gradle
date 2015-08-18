@@ -242,7 +242,7 @@ class DjAppSourceSet extends DjSourceSet {
         }
     }
     void addToInfusionArchiveTask(Task createInfusionTask) {
-        project.tasks.createAppArchive.addPart(this.getInfusionFileName(), project.ant.djarchive_type_app_infusion, createInfusionTask)
+        project.tasks.createAppArchive.addPart(this.getInfusionFileName(), project.ant.djarchive_type_app_infusion,  createInfusionTask)
     }
 
     void addGenerateVirtualWuClassesTask() {

@@ -35,7 +35,7 @@
 // #define ALIGN_16
 
 /* Please see common/debug.h */
-// #define DARJEELING_DEBUG
+ #define DARJEELING_DEBUG
 // #define DARJEELING_DEBUG_FRAME
 // #define DARJEELING_DEBUG_MEM_TRACE
 // #define DARJEELING_DEBUG_TRACE
@@ -45,7 +45,7 @@
 // #define DBG_DARJEELING_GC true
 // #define DBG_WKPF true
 // #define DBG_WKPFGC true
-// #define DBG_WKPFUPDATE true
+ #define DBG_WKPFUPDATE true
 // #define DBG_WKCOMM true
 // #define DBG_WKREPROG true
 // #define DBG_ZWAVETRACE true
@@ -55,18 +55,20 @@
 #define DARJEELING_PGMSPACE_MACRO
 
 // Routing: choose 1
-#define ROUTING_USE_NONE
+ #define ROUTING_USE_NONE
 // #define ROUTING_USE_DSDV
 // #define ROUTING_USE_WUKONG
+//#define ROUTING_USE_GATEWAY
 
 // Radios: choose as many as the routing protocol allows (max 1 for routing_none)
 // #define RADIO_USE_ZWAVE
 // #define RADIO_USE_XBEE
-#define RADIO_USE_NETWORKSERVER
+ #define RADIO_USE_NETWORKSERVER
+//#define RADIO_USE_WIFI
 
 // GPIO: choose 1
 // #define INTEL_GALILEO_GEN1
-#define INTEL_GALILEO_GEN2
-// #define INTEL_EDISON
+//#define INTEL_GALILEO_GEN2
+#define INTEL_EDISON
 
 #endif

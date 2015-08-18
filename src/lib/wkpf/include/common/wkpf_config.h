@@ -5,6 +5,7 @@
 #include "types.h"
 
 #define LOCATION_MAX_LENGTH 128
+#define UUID_LENGTH 16
 
 // Keep this list in sync with pynvc.py
 #define WPKF_FEATURE_LIGHT_SENSOR         			0
@@ -24,10 +25,13 @@ extern uint8_t wkpf_config_get_part_of_location_string(char* dest, uint8_t offse
 extern uint8_t wkpf_config_set_feature_enabled(uint8_t feature, bool enabled); // Needs reboot
 extern bool wkpf_config_get_feature_enabled(uint8_t feature);
 
-extern wkcomm_address_t wkpf_config_get_mydid();
-extern void wkpf_config_set_mydid(wkcomm_address_t did);
+extern wkcomm_address_t wkpf_config_get_myid();
+extern void wkpf_config_set_myid(wkcomm_address_t id);
 
-extern wkcomm_address_t wkpf_config_get_gwdid();
-extern void wkpf_config_set_gwdid(wkcomm_address_t did);
+extern wkcomm_address_t wkpf_config_get_gwid();
+extern void wkpf_config_set_gwid(wkcomm_address_t id);
+
+extern void wkpf_config_set_uuid(uint8_t* src);
+extern void wkpf_config_get_uuid(uint8_t* dest);
 
 #endif // WKPF_CONFIG_H

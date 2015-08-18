@@ -1,0 +1,19 @@
+<application name="a6fbf2bbbc9e77f2b8006dcc987916cc"><app_name>App1 Button to Buzzer</app_name>
+<page title="_first_">
+    <component type="Button" instanceId="44" x="235" y="201" w="120" h="95" name="block">
+        <link fromProperty="current_value" toInstanceId="45" toProperty="on_off"/>
+        <location requirement="/WuKong/edison/sensor#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+        <monitorProperty />
+    </component>
+    <component type="Buzzer" instanceId="45" x="588" y="204" w="120" h="118" name="block">
+        <location requirement="/WuKong/edison/buzzer#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+        <monitorProperty />
+    </component>
+</page>
+</application>

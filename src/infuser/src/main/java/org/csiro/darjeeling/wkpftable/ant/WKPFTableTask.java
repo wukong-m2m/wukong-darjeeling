@@ -86,10 +86,23 @@ public class WKPFTableTask extends Task
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(fXmlFile);
 			doc.getDocumentElement().normalize();
-
+			//ArrayList<Integer> component_list = getComponentList(doc);
+			ArrayList<Long> component_list = getComponentList(doc);
+			
+			PrintWriter pw = new PrintWriter(dest + ".component_list");
+			for (int i = 0; i < component_list.size(); i++) {
+				//Integer node_id = component_list.get(i);
+				Long node_id = component_list.get(i);
+				pw.println(node_id);
+				
+				writeFile(dest + ".wkpf_linktable" + node_id, makeLinkTable(doc));
+				writeFile(dest + ".wkpf_componentmap" + node_id, makeComponentMap(doc, node_id));
+				writeFile(dest + ".wkpf_initvalues" + node_id, makeInitValues(doc));
+			}
 			writeFile(dest + ".wkpf_linktable", makeLinkTable(doc));
-			writeFile(dest + ".wkpf_componentmap", makeComponentMap(doc));
+			writeFile(dest + ".wkpf_componentmap", makeComponentMap(doc, -1L));
 			writeFile(dest + ".wkpf_initvalues", makeInitValues(doc));
+			pw.close();
 		} catch (FileNotFoundException fnfex) {
 			throw new org.apache.tools.ant.BuildException("File not found: " + src);
 		} catch (IOException ioex) {
@@ -100,6 +113,30 @@ public class WKPFTableTask extends Task
 
 
 
+	}
+	
+	//private ArrayList<Integer> getComponentList(Document doc) {
+	private ArrayList<Long> getComponentList(Document doc) {
+		NodeList components = ((Element)doc.getElementsByTagName("components").item(0)).getElementsByTagName("component");
+		
+		//ArrayList<Integer> component_list = new ArrayList<Integer>();
+		ArrayList<Long> component_list = new ArrayList<Long>();
+		for (int i=0; i<components.getLength(); i++) {
+			Node node = components.item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				Element component = (Element)node;
+				// Check if this is the component we're expecting.
+				// The XML should contain a continuous range starting at 0.
+
+				Element endpoint = (Element)component.getElementsByTagName("endpoint").item(0);
+				//Integer node_id = Integer.parseInt(endpoint.getAttribute("node"));
+				Long node_id = Long.parseLong(endpoint.getAttribute("node"));
+				if (!component_list.contains(node_id))
+					component_list.add(node_id);
+			}
+		}
+		return component_list;
+		
 	}
 
 	private void writeFile(String filename, ArrayList<Byte> data) {
@@ -139,7 +176,8 @@ public class WKPFTableTask extends Task
 		return links_bytes;
 	}
 
-	private ArrayList<Byte> makeComponentMap(Document doc) {
+	//private ArrayList<Byte> makeComponentMap(Document doc, Integer node_id) {
+	private ArrayList<Byte> makeComponentMap(Document doc, Long node_id) {
 		NodeList components = ((Element)doc.getElementsByTagName("components").item(0)).getElementsByTagName("component");
 
 		ArrayList<Integer> components_offsets = new ArrayList<Integer>();
@@ -159,18 +197,23 @@ public class WKPFTableTask extends Task
 				components_offsets.add(component_map_bytes.size()); // Offset of this component
 
 				NodeList endpoints = component.getElementsByTagName("endpoint");
-				component_map_bytes.add((byte)endpoints.getLength()); // Number of endpoints
-				component_map_bytes.add((byte)(Short.parseShort(component.getAttribute("wuclassId")) % 256));
-				component_map_bytes.add((byte)(Short.parseShort(component.getAttribute("wuclassId")) / 256));
-				for (int j=0; j<endpoints.getLength(); j++) {
-					Node node2 = endpoints.item(j);
-					if (node2.getNodeType() == Node.ELEMENT_NODE) {
-						Element endpoint = (Element)node2;
-						component_map_bytes.add((byte)((Long.parseLong(endpoint.getAttribute("node"))) & 0xFF));
-						component_map_bytes.add((byte)((Long.parseLong((endpoint.getAttribute("node"))) >> 8) & 0xFF));
-						component_map_bytes.add((byte)((Long.parseLong((endpoint.getAttribute("node"))) >> 16) & 0xFF));
-						component_map_bytes.add((byte)((Long.parseLong((endpoint.getAttribute("node"))) >> 24) & 0xFF));
-						component_map_bytes.add(Byte.parseByte(endpoint.getAttribute("port")));
+				Element newendpoint = (Element)component.getElementsByTagName("endpoint").item(0);
+				//Integer newNode = Integer.parseInt(newendpoint.getAttribute("node"));
+				Long newNode = Long.parseLong(newendpoint.getAttribute("node"));
+				if (node_id == -1L || newNode == node_id) {
+					component_map_bytes.add((byte)endpoints.getLength()); // Number of endpoints
+					component_map_bytes.add((byte)(Short.parseShort(component.getAttribute("wuclassId")) % 256));
+					component_map_bytes.add((byte)(Short.parseShort(component.getAttribute("wuclassId")) / 256));
+					for (int j=0; j<endpoints.getLength(); j++) {
+						Node node2 = endpoints.item(j);
+						if (node2.getNodeType() == Node.ELEMENT_NODE) {
+							Element endpoint = (Element)node2;
+							component_map_bytes.add((byte)((Long.parseLong(endpoint.getAttribute("node"))) & 0xFF));
+							component_map_bytes.add((byte)((Long.parseLong((endpoint.getAttribute("node"))) >> 8) & 0xFF));
+							component_map_bytes.add((byte)((Long.parseLong((endpoint.getAttribute("node"))) >> 16) & 0xFF));
+							component_map_bytes.add((byte)((Long.parseLong((endpoint.getAttribute("node"))) >> 24) & 0xFF));
+							component_map_bytes.add(Byte.parseByte(endpoint.getAttribute("port")));
+						}
 					}
 				}
 				expected_component_id++;

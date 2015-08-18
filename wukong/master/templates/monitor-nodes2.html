@@ -1,0 +1,172 @@
+<!--<button id="refresh">Refresh</button>-->
+<button id="refresh">Discover Nodes</button>
+<button id="include">Add Node</button>
+<button id="exclude">Remove Node</button>
+<button id="stop" style="display:none">Stop to complete operation</button>
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Location</th>
+            <th align="center">WuClass</th>
+            <th align="center">WuObject</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for node_info in node_infos %}
+        <tr class={{ 'success' if node_info.isResponding() else 'error' }}>
+            <td id="nodeId">
+                {{ node_info.id }}
+            </td>
+            <td style="width:550px">
+                {% if set_location %}
+                <div class="input-append">
+                    <input id="set-location-input{{node_info.id}}" class="span2" type="text" style="width:300px" value="{{ node_info.location }}"> 
+                    <button type="button" class="btn chooseLocNodeFromAll" for="set-location-input{{node_info.id}}">Find Location</button>
+                    <button type="button" class="btn set-location">Set Location</button>
+                </div>
+                {% else %}
+                {{ node_info.location }}
+                {% end %}
+            </td>
+            <td style="width:100px" align="center">
+                {{ len(node_info.wuclasses) }}
+            </td>
+            <td style="width:100px" align="center">
+                {{ len(node_info.wuobjects) }} 
+            </td>
+            <td>
+              <a role=button id=node{{ node_info.id }} data-toggle=modal href='#myModal' class='btn more'>Details</button>
+            </td>
+        </tr>
+        {% end %}
+    </tbody>
+</table>
+
+<div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+    </div>
+    <div class="modal-body">
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    </div>
+</div>
+
+<script>
+
+    $(function() {
+        $('#myModal').hide();
+
+        /*
+        $('#refresh').click(function() {
+            console.log('refresh nodes');
+            $('#nodes').block({
+                message: '<h1>Processing</h1>',
+                css: { border: '3px solid #a00' }
+            });
+
+            $.post('/nodes/refresh', {% if set_location %}{set_location: true},{% end %} function(data) {
+                $('#nodes').html(data.nodes);
+                $('#nodes').unblock();
+            });
+        });
+        */
+
+        $('.set-location').click(function() {
+            var nodeId = $.trim($(this).closest('tr').find('#nodeId').text());
+            console.log(nodeId);
+            console.log($(this).prev().prev().val());
+            var tmp_loc = $(this).prev().prev().val();
+            
+            if(tmp_loc==""){
+              tmp_loc = '/'+'{{ default_location }}'+'#(0,0,0)'
+              $(this).prev().val(tmp_loc);
+              console.log(tmp_loc)
+            }
+                    
+            $.ajax('/nodes/' + nodeId, {
+                type: 'PUT',
+                dataType: 'json',
+                data: {location: tmp_loc},
+                success: function(data) {
+                    //data = JSON.parse(data);
+                    if (data.status == 1) {
+                        alert(data.mesg);
+                    }
+                }
+            });
+        });
+        $('#refresh').click(function() {
+              console.log('rediscover nodes');
+
+            $('#nodes').block({
+                message: '<h1>Discovering Nodes</h1>',
+                css: { border: '3px solid #a00' }
+            });
+            $.ajax('/nodes/refresh/1', {
+                type: 'POST',
+                dataType: 'json',
+                data:{set_location:'{{ set_location }}'},
+                success: function(data) {
+                  $('#nodes').html(data.nodes);
+                  $('#nodes').unblock();
+                }
+            });
+            console.log('-----set {{ set_location }}')
+        });
+
+        {% for node_info in node_infos %}
+
+        $('#node{{ node_info.id }}').click(function(e) {
+            e.preventDefault();
+            $('#myModal .modal-header').html('<h1>Node Info</h1>');
+            $('#myModal .modal-body').html("{% include 'node-more.html' %}");
+        });
+
+        {% end %}
+        
+        // testrtt
+        $('#stop').hide();
+        $('#include, #exclude').click(function() {
+            $('#include').hide();
+            $('#exclude').hide();
+            $('#stop').show();
+        });
+
+        $('#stop').click(function() {
+            $('#include').show();
+            $('#exclude').show();
+            $('#stop').hide();
+        });
+
+
+        $('#include').click(function() {
+            console.log('include');
+            $('#log').html('<h4>The basestation is ready to include devices.</h4>');
+            $.post('/testrtt/include', function(data) {
+                console.log(data)
+                $('#log').html('<pre>' + data.logs.join("\n") + '</pre>');
+            });
+        });
+
+        $('#exclude').click(function() {
+            console.log('exclude');
+            $('#log').html('<h4>The basestation is ready to exclude devices.</h4>');
+            $.post('/testrtt/exclude', function(data) {
+                $('#log').append('<pre>' + data.logs.join("\n") + '</pre>');
+            });
+        });
+
+        $('#stop').click(function() {
+            console.log('stop');
+            $('#log').html('<h4>Refreshing the node information</h4>');
+            $.post('/testrtt/stop', function(data) {
+                $('#log').html('<pre>' + data.logs.join("\n") + '</pre>');
+            });
+        });
+        
+    });
+</script>
+

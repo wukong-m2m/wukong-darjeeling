@@ -1,0 +1,35 @@
+<application name="471c825f37cac2ae2e92700d4e02e34d"><app_name>App4 Light3</app_name>
+<pan>53,19</pan><page title="_first_">
+    <component type="User" instanceId="47" x="110" y="226" w="120" h="95" name="block">
+        <link fromProperty="user" toInstanceId="48" toProperty="user"/>
+        <location requirement="/WuKong/edison/user#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+        <monitorProperty />
+    </component>
+    <component type="User_Aware" instanceId="48" x="386" y="94" w="120" h="325" name="block">
+        <link fromProperty="output_boolean_2" toInstanceId="50" toProperty="on_off"/>
+        <location requirement="/WuKong/edison/sensor#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+        <monitorProperty />
+    </component>
+    <component type="Magnetic_Sensor" instanceId="49" x="108" y="57" w="120" h="118" name="block">
+        <link fromProperty="output" toInstanceId="48" toProperty="on_off"/>
+        <location requirement="/WuKong/edison/sensor#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+        <monitorProperty />
+    </component>
+    <component type="Light_Actuator" instanceId="50" x="645" y="257" w="120" h="72" name="block">
+        <location requirement="/WuKong/edison/sensor#" />
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+        <monitorProperty />
+    </component>
+</page>
+</application>
