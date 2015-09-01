@@ -7,8 +7,8 @@
 #include "debug.h"
 #include <string.h>
 #include "../../../../wkpf/include/common/wkpf_config.h"
-#include "../wkcomm.h"
 #include "djtimer.h"
+#include "../wkcomm.h"
 
 
 #define NETWORK_MAX_SIZE                 10
