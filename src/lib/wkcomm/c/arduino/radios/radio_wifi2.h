@@ -1,3 +1,5 @@
+#ifdef RADIO_USE_WIFI2
+
 #ifndef WKCOMM_WIFIH
 #define WKCOMM_WIFIH
 
@@ -109,4 +111,4 @@ uint8_t wifi_available();
 
 #endif // WKCOMM_WIFIH
 
-
+#endif

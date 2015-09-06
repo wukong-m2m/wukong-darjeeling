@@ -23,7 +23,7 @@
 #define __config_h
 #include <avr/wdt.h>
 // Allocate 4k heap for the VM
-#define HEAPSIZE 4096
+#define HEAPSIZE 1024
 
 // 'Time slices' are 128 instructions
 #define RUNSIZE 128
@@ -42,13 +42,15 @@
 // #define DBG_DARJEELING_GC true
 // #define DBG_WKPF true
 // #define DBG_WKPFGC true
-#define DBG_WKPFUPDATE true
+//#define DBG_WKPFUPDATE true
 // #define DBG_WKCOMM true
 // #define DBG_WKREPROG true
 // #define DBG_ZWAVETRACE true
 // #define DBG_WKPFGH true
 // #define DBG_WKROUTING true
 // #define DBG_WIFI true
+// #define DBG_WIFI_ARDUINO true
+// #define DBG_WUKONG_META_ROUTING true
 
 void avr_serialPrintf(char * format, ...);
 #define DARJEELING_PRINTF avr_serialPrintf
@@ -56,15 +58,18 @@ void avr_serialPrintf(char * format, ...);
 #define DARJEELING_PGMSPACE_MACRO
 
 // Routing: choose 1
-#define ROUTING_USE_GATEWAY
+//#define ROUTING_USE_GATEWAY
 //#define ROUTING_USE_NONE
 //#define ROUTING_USE_DSDV
 //#define ROUTING_USE_WUKONG
+#define ROUTING_USE_WUKONG_META
 
 // Radios: choose as many as the routing protocol allows (max 1 for routing_none)
 #define RADIO_USE_ZWAVE
 // #define RADIO_USE_XBEE
-// #define RADIO_USE_WIFI
+//#define RADIO_USE_WIFI
+#define RADIO_USE_WIFI_ARDUINO
+
 #define HAS_WDT
 #define platform_wdt_init() wdt_enable(WDTO_2S)
 #define platform_wdt_reset() wdt_reset()

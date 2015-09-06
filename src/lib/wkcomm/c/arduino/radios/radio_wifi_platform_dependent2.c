@@ -1,6 +1,6 @@
 #include "config.h" // To get RADIO_USE_WIFI
 
-#ifdef RADIO_USE_WIFI
+#ifdef RADIO_USE_WIFI2
 
 #include "radio_wifi1.h"
 #include <stdlib.h>

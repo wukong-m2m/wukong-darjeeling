@@ -378,7 +378,7 @@ void Zwave_receive(int processmessages) {
                         uart_write_byte(ZWAVE_UART, b[k]);
                     }
                     zwave_learn_on=false;
-#ifdef ROUTING_USE_GATEWAY
+#if defined(ROUTING_USE_GATEWAY) || defined(ROUTING_USE_WUKONG_META)
                     routing_discover_gateway();
 #endif
                     zwave_learn_block=0;

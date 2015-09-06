@@ -17,7 +17,7 @@ extern void routing_poll(void);
 extern uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length);
 extern uint8_t routing_send_raw(wkcomm_address_t dest, uint8_t *payload, uint8_t length);
 
-#ifdef ROUTING_USE_GATEWAY
+#if defined(ROUTING_USE_GATEWAY) || defined(ROUTING_USE_WUKONG_META)
 #define ROUTING_MPTN_OVERHEAD 9
 extern void routing_discover_gateway(void);
 #else

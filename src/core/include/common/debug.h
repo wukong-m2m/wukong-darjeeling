@@ -106,6 +106,12 @@
 #ifndef DBG_RELINK
 #define DBG_RELINK 0
 #endif
+#ifndef DBG_WIFI_ARDUINO
+#define DBG_WIFI_ARDUINO 0
+#endif
+#ifndef DBG_WUKONG_META_ROUTING
+#define DBG_WUKONG_META_ROUTING 0
+#endif
 
 #ifndef DARJEELING_DEBUG
 
