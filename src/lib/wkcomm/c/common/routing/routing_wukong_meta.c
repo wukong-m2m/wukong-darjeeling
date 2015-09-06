@@ -1979,6 +1979,6 @@ void routing_id_req()    //send ID request
 #endif
 }
 
-#endif // ROUTING_USE_GATEWAY
+#endif // ROUTING_USE_WUKONG_META
 
 
