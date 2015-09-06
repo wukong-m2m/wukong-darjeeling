@@ -130,21 +130,25 @@ uint8_t last_time_insert_index_in_recent_dest_wog = RECENT_DEST_WOG_NUM - 1;
 
 
 
-uint8_t routing_send_tmp1(uint32_t dest, uint32_t time, uint8_t reli, uint8_t* payload, uint8_t length){
+uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
+	//default values of QoS are loose
+	routing_wukong_meta_send(dest, 10000, 0, payload, length);
+	return 0;
+}
+
+void routing_wukong_meta_send(uint32_t dest, uint32_t time, uint8_t reli, uint8_t* payload, uint8_t length){
 	uint8_t i;
 	unsigned char used_nets[4] = {0};
 	used_nets[0] = 'n';
 	used_nets[2] = 'n';
 	if(find_dest_index_in_recent_dest(dest, &i)){
-		routing_send_tmp2(dest, 0, used_nets, time, reli, recentDest[i].time, payload, length);
+		routing_wukong_meta_send_2(dest, 0, used_nets, time, reli, recentDest[i].time, payload, length);
 	}else{
-		routing_send_tmp2(dest, 0, used_nets, time, reli, 0, payload, length);
+		routing_wukong_meta_send_2(dest, 0, used_nets, time, reli, 0, payload, length);
 	}
-
-	return 0;
 }
 
-uint8_t routing_send_tmp2(uint32_t dest, uint32_t pre_addr, unsigned char* used_nets, uint32_t time, uint8_t reli, 
+void routing_wukong_meta_send_2(uint32_t dest, uint32_t pre_addr, unsigned char* used_nets, uint32_t time, uint8_t reli, 
 uint32_t time_to_dest, uint8_t* payload, uint8_t length){
 	bool send_directly = check_i_have_same_radio_as_dest(dest);
 	if(send_directly){
@@ -276,7 +280,6 @@ uint32_t time_to_dest, uint8_t* payload, uint8_t length){
 			}
 		}
 	}
-	return 0;
 }	
 
 bool check_i_have_same_radio_as_dest(uint32_t dest){
@@ -912,7 +915,7 @@ void routing_handle_message_normal_node(uint8_t *payload, uint8_t length){
 		free(buf);
 	}
 	else if(payload[0] == 'd'){
-		uint32_t dest;
+		uint32_t dest, pre_addr;
 		uint8_t used_nets_index, used_nets_len, data_index, data_len;
 		bool i_am_dest = false;
 		unsigned char data[50] = {0};
@@ -922,6 +925,7 @@ void routing_handle_message_normal_node(uint8_t *payload, uint8_t length){
 		data_index = used_nets_index + used_nets_len + 5/*time and reli*/ + 4/*time_to_dest*/;
 		data_len = length - data_index;
 		retrieve_in_big_endian(payload + 1, &dest);
+		retrieve_in_big_endian(payload + 1 + LEN_OF_DID, &pre_addr);
 		memcpy(data, payload + data_index, data_len);
 
 		if(type_of_radio(dest) == 'z'){
@@ -938,19 +942,19 @@ void routing_handle_message_normal_node(uint8_t *payload, uint8_t length){
 			//pass to upper layer
 			//wkcomm_handle_message();
 			//wkcomm_handle_message(addr_zwave_to_wkcomm(zwave_addr), payload, length);
-			DEBUG_LOG(/*DBG_WUKONG_META_ROUTING*/true, "\nI am Dest. Payload = %s\n", data);
+			DEBUG_LOG(true/*DBG_WUKONG_META_ROUTING*/, "\nI am Dest. Payload = %s\n", data);
+            		wkcomm_handle_message(pre_addr, payload, length);    //send to application
 		}else{
 			unsigned char used_nets[20] = {0};
-			uint32_t pre_addr, time, time_to_dest;
+			uint32_t time, time_to_dest;
 			uint8_t reli;	
 
-			retrieve_in_big_endian(payload + 1 + LEN_OF_DID, &pre_addr);
 			memcpy(used_nets, payload + used_nets_index, used_nets_len);
 			memcpy(&time, payload + used_nets_index + used_nets_len, 4);
 			memcpy(&reli, payload + used_nets_index + used_nets_len + 4, 1);
 			memcpy(&time_to_dest, payload + used_nets_index + used_nets_len + 4 + 1, 4);
-			DEBUG_LOG(/*DBG_WUKONG_META_ROUTING*/true, "\nForwarding, data = %s, time = %lu\n", data, time);
-			routing_send_tmp2(dest, pre_addr, used_nets, time, reli, time_to_dest, data, data_len);
+			DEBUG_LOG(true/*DBG_WUKONG_META_ROUTING*/, "\nForwarding, data = %s, time = %lu\n", data, time);
+			routing_wukong_meta_send_2(dest, pre_addr, used_nets, time, reli, time_to_dest, data, data_len);
 		}
 	}else if(payload[0] == 'c'){
 		uint8_t i, j;
@@ -1885,10 +1889,6 @@ wkcomm_address_t routing_get_node_id() {
 }
 
 // SENDING
-uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
-    return 0;
-}
-
 uint8_t routing_send_raw(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
     #ifdef RADIO_USE_ZWAVE
         return radio_zwave_send_raw(addr_wkcomm_to_zwave(dest), payload, length);

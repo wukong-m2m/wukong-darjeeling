@@ -57,19 +57,19 @@ typedef struct SORT_GATE SG;
 #endif
 #define LEFTEST_BYTE(x)                 ((x >> 24) & 0xFF) 
 
-uint8_t routing_send_tmp1(uint32_t dest, uint32_t time, uint8_t reli, uint8_t* payload, uint8_t length);
-uint8_t routing_send_tmp2(uint32_t dest, uint32_t pre_addr, unsigned char* used_nets, uint32_t time, uint8_t reli,
-uint32_t time_to_dest, uint8_t* payload, uint8_t length);
+void routing_wukong_meta_send(uint32_t dest, uint32_t time, uint8_t reli, uint8_t* payload, uint8_t length);
+void routing_wukong_meta_send_2(uint32_t dest, uint32_t pre_addr, unsigned char* used_nets, uint32_t time, uint8_t reli, 
+				uint32_t time_to_dest, uint8_t* payload, uint8_t length);
 bool check_i_have_same_radio_as_dest(uint32_t dest);
 void send(uint32_t addr, uint32_t dest, unsigned char* used_nets, uint32_t time, uint8_t reli, uint32_t time_to_dest,
-uint8_t* payload, uint8_t length);
+          uint8_t* payload, uint8_t length);
 bool check_gate_same_radio_as_dest(uint32_t dest);
 bool check_gate_ready(bool gate_same_radio_as_dest, uint32_t dest, unsigned char* used_nets);
 bool ckeck_i_have_same_radio_as_dest(uint32_t dest);
 void check_time_to_dest(uint32_t dest, uint32_t pre_addr, uint32_t time_to_dest);
 void get_ready_gate_indexs_by_check_used_nets(uint32_t dest, bool gate_same_radio_as_dest, uint8_t* ready_gate_indexs, unsigned char* used_nets);
 void calculate_and_sort_ready_gates_from_max_reli_to_min_reli(uint32_t dest, uint8_t* ready_gate_indexs, uint32_t time,
-bool gate_same_radio_as_dest, SG* sortGate);
+								bool gate_same_radio_as_dest, SG* sortGate);
 void select_forwarding_gates(bool* succ, uint8_t* succ_pct, uint8_t* fail_pct, SG* sortGate, uint8_t reli, uint8_t* last_index_in_sort_gate);
 void send_reli_with_time_restrict_msg(uint32_t dest, uint32_t pre_addr, uint32_t time, uint8_t succ_pct);
 uint32_t qos_time_test(uint32_t addr);
