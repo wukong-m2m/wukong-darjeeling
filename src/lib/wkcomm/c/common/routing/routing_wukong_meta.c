@@ -19,6 +19,10 @@
 #include "../../arduino/radios/radio_wifi1.h"
 #endif
 
+/////////////////////////////////////////////////////////////////
+bool source = true;
+/////////////////////////////////////////////////////////////////
+
 struct Routing_Table
 {
     wkcomm_address_t my_id;
@@ -33,37 +37,30 @@ dj_time_t routing_search_time = 0;
 #define BROADCAST_ADDRESS 0xFF
 radio_zwave_address_t scan_id = BROADCAST_ADDRESS;
 #endif
-#ifdef RADIO_USE_XBEE
-#define BROADCAST_ADDRESS 0xFFFF
-radio_xbee_address_t scan_id = BROADCAST_ADDRESS;
-#endif
 
-
-
-uint32_t ip_net_mask = 0xFFFFFF00;
+//uint32_t ip_net_mask = 0xFFFFFF00;
 #ifdef RADIO_USE_ZWAVE
 uint8_t my_zwave_net_id = 1;
 uint32_t my_zwave_addr = 0;
 bool radio_zwave_init_succ = false;
 #endif
 #ifdef RADIO_USE_WIFI_ARDUINO
-uint32_t my_ip = 0;
 uint32_t get_net_mask_and_ip_time = 0;
-extern char self_ip[16];
-extern char self_net_mask[16];
+extern uint32_t my_ip;
+extern uint32_t my_net_mask;
 bool radio_wifi_init_succ = false;
 #endif
 bool I_AM_GATE = false;
+bool radio_init_succ = false;
 uint32_t broadcast_time = 0;
 uint32_t retrieve_qos_measure_time = 0;
 uint32_t qos_remeasure_time = 0;
 uint32_t check_node_failure_time = 0;
-bool radio_init_succ = false;
 uint8_t qos_remeasure_period = 0;
 
 #ifdef RADIO_USE_WIFI_ARDUINO
 struct RELI_TESTER_LIST{
-        char ip[16];
+        uint32_t ip;
         uint8_t recv_num;
         bool test_done;
 }reliTesterList[RELI_TESTER_NUM];
@@ -84,7 +81,9 @@ struct GATE_LIST{
         uint32_t time_test_start_time;
         #ifdef RADIO_USE_WIFI_ARDUINO
         uint32_t reli_test_time;
-        unsigned char reli_test_time_type; //type:s, e, c
+        unsigned char reli_test_time_type; //type:s, r, e, c
+	uint8_t reli_test_send_times;
+	uint8_t reli_test_index;
         #endif
         bool recv_broadcast;
         struct ANOTHER_RADIO another_radio;
@@ -123,11 +122,34 @@ struct RECENT_DEST_WOG{
         uint32_t time_test_start_time;
         #ifdef RADIO_USE_WIFI_ARDUINO
         uint32_t reli_test_time;
-        unsigned char reli_test_time_type;
+        unsigned char reli_test_time_type; //type:s, r, e, c
+	uint8_t reli_test_send_times;
+	uint8_t reli_test_index;
         #endif
 }recentDestWOG[RECENT_DEST_WOG_NUM];
 uint8_t last_time_insert_index_in_recent_dest_wog = RECENT_DEST_WOG_NUM - 1;
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void start_send(){
+	if(source){
+		uint32_t dest = 0;
+///*
+		uint8_t dest_net = 2;
+		uint8_t dest_addr = 5;
+		dest = dest_net;
+		dest <<= 8;
+		dest |= dest_addr;
+//*/
+	//	dest = inet_pton("192.168.4.154");
+		if(dest != 0){
+			char payload[] = "Hi!";
+			DEBUG_LOG(true, "\nsend to dest!!!\n");
+			routing_wukong_meta_send(dest, 10000, 0, (unsigned char*)payload, strlen(payload));
+		}
+	}
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
@@ -182,7 +204,7 @@ uint32_t time_to_dest, uint8_t* payload, uint8_t length){
                                         if(type_of_radio(dest) == 'z'){
                                                 #ifdef RADIO_USE_ZWAVE
 						DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nReli test start to ZWave Dest WOG[%u]\n", dest_index);
-                                                recentDestWOG[dest_index].reli = qos_reli_test_zwave(dest);
+                                                recentDestWOG[dest_index].reli = qos_reli_test_zwave(dest) * 4;
 						DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nReli test end to ZWave Dest WOG[%u]\n", dest_index);
                                                 #endif
                                         }else if(type_of_radio(dest) == 'w'){
@@ -616,7 +638,7 @@ uint32_t qos_time_test(uint32_t addr){
 
 #ifdef RADIO_USE_ZWAVE
 uint8_t qos_reli_test_zwave(uint32_t addr){
-	uint8_t i = 100, cnt = 0;
+	uint8_t i = 25, cnt = 0;
 	unsigned char buf[1] = {0};
 	buf[0] = 'r';
 	while(i > 0){
@@ -634,7 +656,7 @@ uint32_t qos_reli_test_start_wifi(uint32_t addr){
 	unsigned char buf[2] = {0};
 	buf[0] = 'r';
 	buf[1] = 's';
-	send_by_diff_radios_depend_on_addr(addr, buf, sizeof(buf));
+	radio_wifi_send(addr, buf, sizeof(buf));
 	return dj_timer_getTimeMillis();
 }
 
@@ -642,22 +664,15 @@ uint32_t qos_reli_test_end_wifi(uint32_t addr){
 	unsigned char buf[2] = {0};
 	buf[0] = 'r';
 	buf[1] = 'e';
-	send_by_diff_radios_depend_on_addr(addr, buf, sizeof(buf));
+	radio_wifi_send(addr, buf, sizeof(buf));
 	return dj_timer_getTimeMillis();
 }
 
-void qos_reli_test_wifi(char* addr, uint8_t gate_reli_tester_index){
-	uint8_t i;
+void qos_reli_test_wifi(uint32_t addr, uint8_t gate_reli_tester_index){
 	unsigned char buf[2] = {0};
 	buf[0] = 'r';
 	buf[1] = gate_reli_tester_index;
-
-		radio_wifi_send(addr, buf, sizeof(buf));
-	for(i = 0; i < 49/*num of wifi reli test sending, remain uncertain, 100 times takes too much time, while 10 times is imprecise*/; i++){
-		dj_timer_delay(100);
-		radio_wifi_send_without_ip(buf, sizeof(buf));
-	}
-	DEBUG_LOG(DBG_WUKONG_META_ROUTING, "Finish sending 50 msgs to %s\n", addr);
+	radio_wifi_send(addr, buf, sizeof(buf));
 }
 #endif	
 
@@ -673,7 +688,7 @@ void routing_handle_zwave_message(radio_zwave_address_t zwave_addr, uint8_t *pay
 #endif
 
 #ifdef RADIO_USE_WIFI_ARDUINO
-void routing_handle_wifi_message(char* wifi_addr, uint8_t *payload, uint8_t length){
+void routing_handle_wifi_message(uint32_t wifi_addr, uint8_t *payload, uint8_t length){
 	if(routing_mode == NORMAL_MODE && payload[0] == 'r'){
 		switch(payload[1]){
 			case 's':
@@ -688,7 +703,7 @@ void routing_handle_wifi_message(char* wifi_addr, uint8_t *payload, uint8_t leng
 						buf[3] = i;
 						radio_wifi_send(wifi_addr, buf, sizeof(buf));
 					}else if(find_avail_in_reli_tester_list(wifi_addr, &i)){
-						memcpy(reliTesterList[i].ip, wifi_addr, 16);
+						reliTesterList[i].ip = wifi_addr;
 						unsigned char buf[4] = {0};
 						buf[0] = 'a';
 						buf[1] = 'r';
@@ -696,7 +711,9 @@ void routing_handle_wifi_message(char* wifi_addr, uint8_t *payload, uint8_t leng
 						buf[3] = i;
 						radio_wifi_send(wifi_addr, buf, sizeof(buf));
 					}
-					DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nRecv reli start from ip %s, and send ack back\n", wifi_addr);
+					DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nRecv reli start from ip %u.%u.%u.%u, and send ack back\n", 
+					(uint8_t)(wifi_addr >> 24 & 0xFF), (uint8_t)(wifi_addr >> 16 & 0xFF),
+					(uint8_t)(wifi_addr >> 8 & 0xFF), (uint8_t)(wifi_addr & 0xFF));
 					break;
 				}
 			case 'e':
@@ -711,7 +728,9 @@ void routing_handle_wifi_message(char* wifi_addr, uint8_t *payload, uint8_t leng
 						radio_wifi_send(wifi_addr, buf, sizeof(buf));
 						reliTesterList[i].test_done = true;
 					}
-					DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nRecv reli end from ip %s, and send ack back\n", wifi_addr);
+					DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nRecv reli end from ip %u.%u.%u.%u, and send ack back\n", 
+					(uint8_t)(wifi_addr >> 24 & 0xFF), (uint8_t)(wifi_addr >> 16 & 0xFF),
+					(uint8_t)(wifi_addr >> 8 & 0xFF), (uint8_t)(wifi_addr & 0xFF));
 					break;
 				}
 			case 'c':
@@ -731,10 +750,14 @@ void routing_handle_wifi_message(char* wifi_addr, uint8_t *payload, uint8_t leng
 			default:
 				if(!reliTesterList[payload[1]].test_done){
 					reliTesterList[payload[1]].recv_num++;
-					DEBUG_LOG(DBG_WUKONG_META_ROUTING, "recv_num[%u] = %u, from ip %s\n", 
-					payload[1], reliTesterList[payload[1]].recv_num, wifi_addr);
+					DEBUG_LOG(DBG_WUKONG_META_ROUTING, "recv_num[%u] = %u, from ip %u.%u.%u.%u\n", 
+					payload[1], reliTesterList[payload[1]].recv_num, 
+					(uint8_t)(wifi_addr >> 24 & 0xFF), (uint8_t)(wifi_addr >> 16 & 0xFF),
+					(uint8_t)(wifi_addr >> 8 & 0xFF), (uint8_t)(wifi_addr & 0xFF));
 				}else{
-					DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nRecv R from ip %s, but test is done.\n", wifi_addr);
+					DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nRecv R from ip %u.%u.%u.%u, but test is done.\n", 
+					(uint8_t)(wifi_addr >> 24 & 0xFF), (uint8_t)(wifi_addr >> 16 & 0xFF),
+					(uint8_t)(wifi_addr >> 8 & 0xFF), (uint8_t)(wifi_addr & 0xFF));
 				}
 				break;
 		}
@@ -743,33 +766,27 @@ void routing_handle_wifi_message(char* wifi_addr, uint8_t *payload, uint8_t leng
 			case 's':
 				{
 					uint8_t i;
-					uint32_t addr = inet_pton(wifi_addr);
-
-					if(find_gate_index_in_gate_list(addr, &i) 
+					if(find_gate_index_in_gate_list(wifi_addr, &i) 
 					&& gateList[i].reli_test_time_type == 's'){
 						DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nRecv reli start ack from WIFI gate[%u]\n", i);
-						qos_reli_test_wifi(wifi_addr, payload[3]);
-						DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nReli test end to WIFI gate[%u]\n", i);
-						gateList[i].reli_test_time = qos_reli_test_end_wifi(addr); 
-						gateList[i].reli_test_time_type = 'e';
-					}else if(find_dest_index_in_recent_dest_wog(addr, &i)
+						gateList[i].reli_test_time_type = 'r';
+						gateList[i].reli_test_time = 0; 
+						gateList[i].reli_test_index = payload[3];
+					}else if(find_dest_index_in_recent_dest_wog(wifi_addr, &i)
 					&& recentDestWOG[i].reli_test_time_type == 's'){
 						DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nRecv reli start ack from WIFI Dest WOG[%u]\n", i);
-						qos_reli_test_wifi(wifi_addr, payload[3]);
-						DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nReli test end to WIFI Dest WOG[%u]\n", i);
-						recentDestWOG[i].reli_test_time = qos_reli_test_end_wifi(addr);
-						recentDestWOG[i].reli_test_time_type = 'e';
+						recentDestWOG[i].reli_test_time_type = 'r';
+						recentDestWOG[i].reli_test_time = 0; 
+						recentDestWOG[i].reli_test_index = payload[3];
 					}
 					break;
 				}
 			case 'e':
 				{
 					uint8_t i;
-					uint32_t addr = inet_pton(wifi_addr);
-
-					if(find_gate_index_in_gate_list(addr, &i) 
+					if(find_gate_index_in_gate_list(wifi_addr, &i) 
 					&& gateList[i].reli_test_time_type == 'e'){
-						gateList[i].reli = payload[3] * 2;
+						gateList[i].reli = payload[3] * 4;
 						DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nRecv reli end ack from WIFI gate[%u], reli = %u\n", 
 						i, gateList[i].reli);
 						unsigned char buf[2] = {0};
@@ -778,9 +795,9 @@ void routing_handle_wifi_message(char* wifi_addr, uint8_t *payload, uint8_t leng
 						radio_wifi_send(wifi_addr, buf, sizeof(buf));
 						gateList[i].reli_test_time = dj_timer_getTimeMillis();
 						gateList[i].reli_test_time_type = 'c';
-					}else if(find_dest_index_in_recent_dest_wog(addr, &i)
+					}else if(find_dest_index_in_recent_dest_wog(wifi_addr, &i)
 					&& recentDestWOG[i].reli_test_time_type == 'e'){
-						recentDestWOG[i].reli = payload[3] * 2;
+						recentDestWOG[i].reli = payload[3] * 4;
 						DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nRecv reli end ack from WIFI Dest WOG[%u], reli = %u\n", 
 						i, recentDestWOG[i].reli);
 						unsigned char buf[2] = {0};
@@ -795,14 +812,12 @@ void routing_handle_wifi_message(char* wifi_addr, uint8_t *payload, uint8_t leng
 			case 'c':
 				{
 					uint8_t i;
-					uint32_t addr = inet_pton(wifi_addr);
-
-					if(find_gate_index_in_gate_list(addr, &i) 
+					if(find_gate_index_in_gate_list(wifi_addr, &i) 
 					&& gateList[i].reli_test_time_type == 'c'){
 						DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nClear reli tester list in WIFI gate[%u]\n", i);
 						gateList[i].reli_test_time = 0;
 						gateList[i].reli_test_time_type = 0;
-					}else if(find_dest_index_in_recent_dest_wog(addr, &i)
+					}else if(find_dest_index_in_recent_dest_wog(wifi_addr, &i)
 					&& recentDestWOG[i].reli_test_time_type == 'c'){
 						DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nClear reli tester list in WIFI Dest WOG[%u]\n", i);
 						recentDestWOG[i].reli_test_time = 0;
@@ -875,7 +890,7 @@ void routing_handle_message_normal_node(uint8_t *payload, uint8_t length){
 					if(type_of_radio(gateList[i].addr) == 'z'){
 						#ifdef RADIO_USE_ZWAVE
 						DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nReli test start to ZWave gate[%u]\n", i);
-						gateList[i].reli = qos_reli_test_zwave(gateList[i].addr);
+						gateList[i].reli = qos_reli_test_zwave(gateList[i].addr) * 4;
 						DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nReli test end to ZWave gate[%u]\n", i);
 						#endif	
 					}else if(type_of_radio(gateList[i].addr) == 'w'){
@@ -918,12 +933,15 @@ void routing_handle_message_normal_node(uint8_t *payload, uint8_t length){
 		uint32_t dest, pre_addr;
 		uint8_t used_nets_index, used_nets_len, data_index, data_len;
 		bool i_am_dest = false;
-		unsigned char data[50] = {0};
+		unsigned char* data = NULL;
 
 		used_nets_index = 1 + LEN_OF_DID + LEN_OF_DID;
 		used_nets_len = 4/*'w/n' + net num + 'z/n' + net num*/ + payload[used_nets_index + 1] * 4 + payload[used_nets_index + 3] * 1;
 		data_index = used_nets_index + used_nets_len + 5/*time and reli*/ + 4/*time_to_dest*/;
 		data_len = length - data_index;
+		data = (unsigned char*)malloc(data_len);
+		memset(data, 0, data_len);
+
 		retrieve_in_big_endian(payload + 1, &dest);
 		retrieve_in_big_endian(payload + 1 + LEN_OF_DID, &pre_addr);
 		memcpy(data, payload + data_index, data_len);
@@ -942,10 +960,12 @@ void routing_handle_message_normal_node(uint8_t *payload, uint8_t length){
 			//pass to upper layer
 			//wkcomm_handle_message();
 			//wkcomm_handle_message(addr_zwave_to_wkcomm(zwave_addr), payload, length);
-			DEBUG_LOG(true/*DBG_WUKONG_META_ROUTING*/, "\nI am Dest. Payload = %s\n", data);
-            		wkcomm_handle_message(pre_addr, payload, length);    //send to application
+			DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nI am Dest. Payload = %s\n", data);
+            		wkcomm_handle_message(pre_addr, data, data_len);    //send to application
+			free(data);
 		}else{
-			unsigned char used_nets[20] = {0};
+			unsigned char* used_nets = (unsigned char*)malloc(used_nets_len);
+			memset(used_nets, 0, used_nets_len);
 			uint32_t time, time_to_dest;
 			uint8_t reli;	
 
@@ -953,8 +973,10 @@ void routing_handle_message_normal_node(uint8_t *payload, uint8_t length){
 			memcpy(&time, payload + used_nets_index + used_nets_len, 4);
 			memcpy(&reli, payload + used_nets_index + used_nets_len + 4, 1);
 			memcpy(&time_to_dest, payload + used_nets_index + used_nets_len + 4 + 1, 4);
-			DEBUG_LOG(true/*DBG_WUKONG_META_ROUTING*/, "\nForwarding, data = %s, time = %lu\n", data, time);
+			DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nForwarding, data = %s, time = %lu\n", data, time);
 			routing_wukong_meta_send_2(dest, pre_addr, used_nets, time, reli, time_to_dest, data, data_len);
+			free(used_nets);
+			free(data);
 		}
 	}else if(payload[0] == 'c'){
 		uint8_t i, j;
@@ -1181,18 +1203,23 @@ void routing_init() {
 	#ifdef RADIO_USE_WIFI_ARDUINO
 		radio_wifi_init();
 		get_net_mask_and_ip_time = dj_timer_getTimeMillis();//
-		if(self_ip[0] != '0' && self_ip[0] != 0){
-			my_ip = inet_pton(self_ip);
-			ip_net_mask = inet_pton(self_net_mask);
+		if(my_ip != 0 && (char)(my_ip >> 24 & 0xFF) != '0'){
+			//ip_net_mask = my_net_mask;
 			if(I_AM_GATE){
 				radio_wifi_init_succ = true;
 			}else{
 				radio_init_succ = true;	
 			}
-			DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nWIFI init succeed !!! self_ip = %s, self_net_mask = %s\n", self_ip, self_net_mask);
+			DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nWIFI init succeed !!! my_ip = %u.%u.%u.%u, my_net_mask = %u.%u.%u.%u\n", 
+			(uint8_t)(my_ip >> 24 & 0xFF), (uint8_t)(my_ip >> 16 & 0xFF), (uint8_t)(my_ip >> 8 & 0xFF), (uint8_t)(my_ip & 0xFF),
+			(uint8_t)(my_net_mask >> 24 & 0xFF), (uint8_t)(my_net_mask >> 16 & 0xFF), 
+			(uint8_t)(my_net_mask >> 8 & 0xFF), (uint8_t)(my_net_mask & 0xFF));
 		}else{
 			get_net_mask_and_ip_time = dj_timer_getTimeMillis();
-			DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nWIFI init failed !!! self_ip = %s, self_net_mask = %s\n", self_ip, self_net_mask);
+			DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nWIFI init failed !!! my_ip = %u.%u.%u.%u, my_net_mask = %u.%u.%u.%u\n", 
+			(uint8_t)(my_ip >> 24 & 0xFF), (uint8_t)(my_ip >> 16 & 0xFF), (uint8_t)(my_ip >> 8 & 0xFF), (uint8_t)(my_ip & 0xFF),
+			(uint8_t)(my_net_mask >> 24 & 0xFF), (uint8_t)(my_net_mask >> 16 & 0xFF), 
+			(uint8_t)(my_net_mask >> 8 & 0xFF), (uint8_t)(my_net_mask & 0xFF));
 		}
 	#endif
 
@@ -1200,11 +1227,11 @@ void routing_init() {
 	variable_init();
 
 	#ifdef RADIO_USE_ZWAVE
-		my_zwave_addr = id_table.my_id;
+		//1.my_zwave_addr = id_table.my_id;
  		//2.my_zwave_addr = ((my_zwave_net_id<<8) | id_table.my_id);
-		//3.my_zwave_addr |= my_zwave_net_id;
-		//  my_zwave_addr <<= 8;
-		//  my_zwave_addr |= radio_zwave_get_node_id();
+		my_zwave_addr |= my_zwave_net_id;
+		my_zwave_addr <<= 8;
+		my_zwave_addr |= radio_zwave_get_node_id();
 		DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nZWave init succeed !!! ");
 		DEBUG_LOG(DBG_WUKONG_META_ROUTING, "my ZWave net id = %u, my ZWave addr = %u\n", 
 		zwave_subnet(my_zwave_addr), addr_wkcomm_to_zwave(my_zwave_addr)); 
@@ -1227,6 +1254,8 @@ void routing_init() {
 			broadcast_gate_addr();
 		}
 	}
+DEBUG_LOG(true, "my zwave_addr=%u:%u:%u:%u\n", (uint8_t)(my_zwave_addr>>24 & 0x000000FF), (uint8_t)(my_zwave_addr>>16 & 0x000000FF),
+(uint8_t)(my_zwave_addr>>8 & 0x000000FF),(uint8_t)(my_zwave_addr & 0x000000FF));
 }
 
 void variable_init(){
@@ -1261,7 +1290,7 @@ void routing_poweron_init()
     id_table.gateway_id = wkpf_config_get_gwid();
     wkpf_config_get_uuid(id_table.uuid);
     // routing_get_mac_address();
-    routing_id_req();
+    //routing_id_req();
     // dj_timer_delay(10);
 }
 
@@ -1271,6 +1300,7 @@ void routing_poweron_init()
 void broadcast_gate_addr(){
 	if(I_AM_GATE){
 		#if defined(RADIO_USE_ZWAVE) && defined(RADIO_USE_WIFI_ARDUINO)
+		{
 			//broadcast by zwave
 			uint8_t payload1_len = 1 + LEN_OF_DID + 1 + LEN_OF_WIFI_SUBNET;
 			unsigned char* payload1 = (unsigned char*)malloc(payload1_len);
@@ -1287,7 +1317,8 @@ void broadcast_gate_addr(){
 			payload1[1 + LEN_OF_DID], payload1[1+LEN_OF_DID+1], payload1[1+LEN_OF_DID+2], 
 			payload1[1+LEN_OF_DID+3], payload1[1+LEN_OF_DID+4]);
 			free(payload1);
-
+		}
+		{
 			//broadcast by wifi
 			uint8_t payload2_len = 1 + LEN_OF_DID + 1 + LEN_OF_ZWAVE_SUBNET;
 			unsigned char* payload2 = (unsigned char*)malloc(payload2_len);
@@ -1299,13 +1330,12 @@ void broadcast_gate_addr(){
 			payload2[1 + LEN_OF_DID + 1] = zwave_subnet(my_zwave_addr);
 
 			uint32_t broadcast_ip = ip_subnet(my_ip) | 0xFF;
-			char broadcast_ip_str[16] = {0};
-			inet_ntop(broadcast_ip_str, broadcast_ip);
 			
-			radio_wifi_send(broadcast_ip_str, payload2, payload2_len);
+			radio_wifi_send(broadcast_ip, payload2, payload2_len);
 			DEBUG_LOG(DBG_WUKONG_META_ROUTING, "broadcast: %c, %u.%u.%u.%u, %c, %u\n", 
 			payload2[0], payload2[1], payload2[2], payload2[3], payload2[4], payload2[1 + LEN_OF_DID], payload2[1 + LEN_OF_DID + 1]);
 			free(payload2);
+		}
 		#endif
 	}
 }
@@ -1316,23 +1346,30 @@ void routing_poll() {
 	#endif
 	#ifdef RADIO_USE_WIFI_ARDUINO
 		radio_wifi_poll();
-		if(self_ip[0] == '0' || self_ip[0] == 0){
+		if(my_ip == 0 || (char)(my_ip >> 24 & 0xFF) == '0'){
 			if(dj_timer_getTimeMillis() - get_net_mask_and_ip_time > 5000){
 				get_net_mask_and_ip_time = dj_timer_getTimeMillis();
-				radio_wifi_get_net_mask_and_ip(self_ip, self_net_mask);
-				if(self_ip[0] != '0' && self_ip[0] != 0){
-					my_ip = inet_pton(self_ip);
-					ip_net_mask = inet_pton(self_net_mask);
+				radio_wifi_get_net_mask_and_ip();
+				if(my_ip != 0 && (char)(my_ip >> 24 & 0xFF) != '0'){
+					//ip_net_mask = my_net_mask;
 					if(I_AM_GATE){
 						radio_wifi_init_succ = true;
 					}else{
 						radio_init_succ = true;	
 					}
-					DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nWIFI init succeed !!! self_ip = %s, self_net_mask = %s\n", 
-					self_ip, self_net_mask);
+					DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nWIFI init succeed !!! my_ip = %u.%u.%u.%u, my_net_mask = %u.%u.%u.%u\n", 
+					(uint8_t)(my_ip >> 24 & 0xFF), (uint8_t)(my_ip >> 16 & 0xFF), 
+					(uint8_t)(my_ip >> 8 & 0xFF), (uint8_t)(my_ip & 0xFF),
+					(uint8_t)(my_net_mask >> 24 & 0xFF), (uint8_t)(my_net_mask >> 16 & 0xFF), 
+					(uint8_t)(my_net_mask >> 8 & 0xFF), (uint8_t)(my_net_mask & 0xFF));
+				}else{
+					get_net_mask_and_ip_time = dj_timer_getTimeMillis();
+					DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nWIFI init failed !!! my_ip = %u.%u.%u.%u, my_net_mask = %u.%u.%u.%u\n", 
+					(uint8_t)(my_ip >> 24 & 0xFF), (uint8_t)(my_ip >> 16 & 0xFF), 
+					(uint8_t)(my_ip >> 8 & 0xFF), (uint8_t)(my_ip & 0xFF),
+					(uint8_t)(my_net_mask >> 24 & 0xFF), (uint8_t)(my_net_mask >> 16 & 0xFF), 
+					(uint8_t)(my_net_mask >> 8 & 0xFF), (uint8_t)(my_net_mask & 0xFF));
 				}
-				DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nWIFI init failed !!! self_ip = %s, self_net_mask = %s\n", 
-				self_ip, self_net_mask);
 			}
 		}
 	#endif
@@ -1397,6 +1434,21 @@ void periodic_check_for_qos_measure(){
 							DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nGate[%u] reli test start failed, restart\n", i);
 							gateList[i].reli_test_time = qos_reli_test_start_wifi(gateList[i].addr);
 							break;
+						case 'r':
+							if(gateList[i].reli_test_send_times < 25){
+								qos_reli_test_wifi(gateList[i].addr, gateList[i].reli_test_index);
+								gateList[i].reli_test_send_times++;
+								DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nGate[%u] reli test send %uth times\n", 
+								i, gateList[i].reli_test_send_times);
+							}else{
+								DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nReli test end to WIFI gate[%u]\n", i);
+								gateList[i].reli_test_send_times = 0;
+								gateList[i].reli_test_index = 0;
+
+								gateList[i].reli_test_time = qos_reli_test_start_wifi(gateList[i].addr);
+								gateList[i].reli_test_time_type = 'e';
+							}
+							break;
 						case 'e':
 							DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nGate[%u] reli test end failed, restart\n", i);
 							gateList[i].reli_test_time = qos_reli_test_end_wifi(gateList[i].addr);
@@ -1408,7 +1460,7 @@ void periodic_check_for_qos_measure(){
 								unsigned char buf[2] = {0};
 								buf[0] = 'r';
 								buf[1] = 'c';
-								send_by_diff_radios_depend_on_addr(gateList[i].addr, buf, sizeof(buf));
+								radio_wifi_send(gateList[i].addr, buf, sizeof(buf));
 								gateList[i].reli_test_time = dj_timer_getTimeMillis();
 								break;
 							}
@@ -1441,6 +1493,22 @@ void periodic_check_for_qos_measure(){
 							DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nDest WOG[%u], reli test start failed, restart\n", i);
 							recentDestWOG[i].reli_test_time = qos_reli_test_start_wifi(recentDestWOG[i].dest);
 							break;
+						case 'r':
+							if(recentDestWOG[i].reli_test_send_times < 25){
+								qos_reli_test_wifi(recentDestWOG[i].dest, recentDestWOG[i].reli_test_index);
+								recentDestWOG[i].reli_test_send_times++;
+								DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nDestWOG[%u]reli test send %uth times\n", 
+								i, recentDestWOG[i].reli_test_send_times);
+							}else{
+								DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nReli test end to WIFI DestWOG[%u]\n", i);
+								recentDestWOG[i].reli_test_send_times = 0;
+								recentDestWOG[i].reli_test_index = 0;
+
+								recentDestWOG[i].reli_test_time = 
+								qos_reli_test_start_wifi(recentDestWOG[i].dest);
+								recentDestWOG[i].reli_test_time_type = 'e';
+							}
+							break;
 						case 'e':
 							DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nDest WOG[%u], reli test end failed, restart\n", i);
 							recentDestWOG[i].reli_test_time = qos_reli_test_end_wifi(recentDestWOG[i].dest);
@@ -1452,7 +1520,7 @@ void periodic_check_for_qos_measure(){
 								unsigned char buf[2] = {0};
 								buf[0] = 'r';
 								buf[1] = 'c';
-								send_by_diff_radios_depend_on_addr(recentDestWOG[i].dest, buf, sizeof(buf));
+								radio_wifi_send(recentDestWOG[i].dest, buf, sizeof(buf));
 								recentDestWOG[i].reli_test_time = dj_timer_getTimeMillis();
 								break;
 							}
@@ -1495,7 +1563,8 @@ void periodic_check_recent_dest_to_retrieve_qos_measure(){
 				}
 			}
 		}
-		//debug_msg();	
+		debug_msg();
+start_send();
 	}
 }
 
@@ -1511,7 +1580,7 @@ void periodic_qos_remeasure(){
 				if(type_of_radio(gateList[i].addr) == 'z'){
 					#ifdef RADIO_USE_ZWAVE
 					DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nReli test start to ZWave gate[%u]\n", i);
-					gateList[i].reli = qos_reli_test_zwave(gateList[i].addr);
+					gateList[i].reli = qos_reli_test_zwave(gateList[i].addr) * 4;
 					DEBUG_LOG(DBG_WUKONG_META_ROUTING, "\nReli test end to ZWave gate[%u]\n", i);
 					#endif	
 				}else if(type_of_radio(gateList[i].addr) == 'w'){
@@ -1563,54 +1632,24 @@ wkcomm_address_t  addr_zwave_to_wkcomm(radio_zwave_address_t zwave_addr) {
 #endif
 
 #ifdef RADIO_USE_WIFI_ARDUINO
-bool find_match_in_reli_tester_list(char* ip, uint8_t* i){
+bool find_match_in_reli_tester_list(uint32_t ip, uint8_t* i){
 	for(*i = 0; *i < RELI_TESTER_NUM; (*i)++){
-		if(strcmp(ip, reliTesterList[*i].ip) == 0){
+		if(ip == reliTesterList[*i].ip){
 			return true;
 		}
 	}
 	return false;
 }
 
-bool find_avail_in_reli_tester_list(char* ip, uint8_t* i){
+bool find_avail_in_reli_tester_list(uint32_t ip, uint8_t* i){
 	for(*i = 0; *i < RELI_TESTER_NUM; (*i)++){
-		if(strcmp("", reliTesterList[*i].ip) == 0){
-			memcpy(reliTesterList[*i].ip, ip, strlen(ip));
+		if(reliTesterList[*i].ip == 0){
 			return true;
 		}
 	}
 	return false;
 }
 #endif
-
-uint32_t inet_pton(char* ip_str){
-	uint8_t i, num_of_bits = 0;
-	unsigned char byte_c[3] = {0};
-	uint32_t ip_num = 0;
-
-	for(i = 0; i <= strlen(ip_str); i++){
-		if(ip_str[i] == '.' || ip_str[i] == 0){
-			ip_num *= 256;
-			switch(num_of_bits){
-				case 1:
-					ip_num += (byte_c[0] - 48);
-					break;
-				case 2:
-					ip_num += (byte_c[0] - 48) * 10 + (byte_c[1] - 48);
-					break;
-				case 3:
-					ip_num += (byte_c[0] - 48) * 100 + (byte_c[1] - 48) * 10 + (byte_c[2] - 48);
-					break;
-			}
-			memset(byte_c, 0, sizeof(byte_c));
-			num_of_bits = 0;
-		}else{
-			byte_c[num_of_bits++] = (unsigned char)ip_str[i];
-		}
-
-	}
-	return ip_num;
-}
 
 void inet_ntop(char* ip_str, uint32_t ip)
 {
@@ -1627,7 +1666,10 @@ uint8_t zwave_subnet(uint32_t wkcomm_addr){
 }
 
 uint32_t ip_subnet(uint32_t wkcomm_addr){
-	return (uint32_t)(wkcomm_addr & ip_net_mask);
+	#ifdef RADIO_USE_WIFI_ARDUINO
+	return (uint32_t)(wkcomm_addr & my_net_mask);
+	#endif
+	return (uint32_t)(wkcomm_addr & 0xFFFFFF00);
 }
 
 bool same_as_used_zwave_nets(uint8_t zwave_net_id, unsigned char* used_nets){
@@ -1771,9 +1813,7 @@ void send_by_diff_radios_depend_on_addr(uint32_t addr, uint8_t* payload, uint8_t
 		#endif
 	}else if(type_of_radio(addr) == 'w'){
 		#ifdef RADIO_USE_WIFI_ARDUINO
-		char ip_str[16] = {0};
-		inet_ntop(ip_str, addr);
-		radio_wifi_send(ip_str, payload, length);
+		radio_wifi_send(addr, payload, length);
 		#endif
 	}
 }

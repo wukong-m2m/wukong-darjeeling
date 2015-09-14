@@ -18,14 +18,14 @@
 #define WIFI_UART 		3
 #define SHOW_RESULT		false
 //typedef char* radio_wifi_address_t;
-//extern char self_ip[16];
-//extern char self_net_mask[16];
+//extern uint32_t my_ip;
+//extern uint32_t my_net_mask;
 
 void radio_wifi_init();
-void radio_wifi_send(char* ip, unsigned char* data, uint8_t length);
+void radio_wifi_send(uint32_t ip, unsigned char* data, uint8_t length);
 void radio_wifi_send_without_ip(unsigned char* data, uint8_t length);
 void radio_wifi_poll();
-void radio_wifi_get_net_mask_and_ip(char* self_ip, char* self_net_mask);
-extern void routing_handle_wifi_message(char* wifi_addr, uint8_t *payload, uint8_t length);
+void radio_wifi_get_net_mask_and_ip();
+extern void routing_handle_wifi_message(uint32_t wifi_addr, uint8_t *payload, uint8_t length);
 
 #endif // WKCOMM_WIFIH

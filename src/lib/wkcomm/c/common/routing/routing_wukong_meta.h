@@ -39,15 +39,15 @@ typedef struct SORT_GATE SG;
 
 #define LEN_OF_DID              4
 #define BROADCAST_PERIOD        20000
-#define GATE_NUM                2//5
+#define GATE_NUM                5
 #define RECENT_DEST_NUM         1
 #define RECENT_DEST_WOG_NUM     1
-#define RWT_NUM                 1//3
+#define RWT_NUM                 3
 #ifdef RADIO_USE_ZWAVE
 #define LEN_OF_ZWAVE_SUBNET     1
 #endif
 #ifdef RADIO_USE_WIFI_ARDUINO
-#define RELI_TESTER_NUM         2//
+#define RELI_TESTER_NUM         3
 #define LEN_OF_WIFI_SUBNET      4
 #endif
 
@@ -79,13 +79,13 @@ uint8_t qos_reli_test_zwave(uint32_t addr);
 #ifdef RADIO_USE_WIFI_ARDUINO
 uint32_t qos_reli_test_start_wifi(uint32_t addr);
 uint32_t qos_reli_test_end_wifi(uint32_t addr);
-void qos_reli_test_wifi(char* addr, uint8_t gate_reli_tester_index);
+void qos_reli_test_wifi(uint32_t addr, uint8_t gate_reli_tester_index);
 #endif
 #ifdef RADIO_USE_ZWAVE
 void routing_handle_zwave_message(radio_zwave_address_t zwave_addr, uint8_t *payload, uint8_t length);
 #endif
 #ifdef RADIO_USE_WIFI_ARDUINO
-void routing_handle_wifi_message(char* wifi_addr, uint8_t *payload, uint8_t length);
+void routing_handle_wifi_message(uint32_t wifi_addr, uint8_t *payload, uint8_t length);
 #endif
 void routing_handle_message_normal_node(uint8_t *payload, uint8_t length);
 //void routing_handle_message(uint8_t *payload, uint8_t length);
@@ -102,10 +102,9 @@ radio_zwave_address_t addr_wkcomm_to_zwave(uint32_t wkcomm_addr);
 uint32_t addr_zwave_to_wkcomm(radio_zwave_address_t zwave_addr);
 #endif
 #ifdef RADIO_USE_WIFI_ARDUINO
-bool find_match_in_reli_tester_list(char* ip, uint8_t* i);
-bool find_avail_in_reli_tester_list(char* ip, uint8_t* i);
+bool find_match_in_reli_tester_list(uint32_t ip, uint8_t* i);
+bool find_avail_in_reli_tester_list(uint32_t ip, uint8_t* i);
 #endif
-uint32_t inet_pton(char* ip_str);
 void inet_ntop(char* ip_str, uint32_t ip);
 uint8_t zwave_subnet(uint32_t wkcomm_addr);
 uint32_t ip_subnet(uint32_t wkcomm_addr);
