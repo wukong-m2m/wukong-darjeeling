@@ -20,9 +20,9 @@ SELF_TCP_SERVER_PORT = 9001
 TRANSPORT_INTERFACE_TYPE = 'udp'
 # TRANSPORT_INTERFACE_ADDR = '/dev/ttyACM0'
 # TRANSPORT_INTERFACE_ADDR = '/dev/cu.usbmodem1411' # for Zwave on MacOSX
-TRANSPORT_INTERFACE_ADDR = 'wlan0' # for UDP interface
+# TRANSPORT_INTERFACE_ADDR = 'wlan0' # for UDP interface
 # TRANSPORT_INTERFACE_ADDR = 'lo' # for UDP interface
-# TRANSPORT_INTERFACE_ADDR = 'lo0' # for UDP interface on MacOSX
+TRANSPORT_INTERFACE_ADDR = 'lo0' # for UDP interface on MacOSX
 
 UNITTEST_MODE = False
 UNITTEST_WAIT_SEC = 5
@@ -38,3 +38,12 @@ MONGODB_URL= "mongodb://140.112.170.32:27017/Wukong"
 ENABLE_PROGRESSION = False
 PSERVER_IP = 'localhost'
 PSERVER_UDP_PORT = 8000
+
+# System represent the instance of a wukong system which is the data source
+# of a set of sensor data in graphite
+SYSTEM_NAME = 'Wukong1'
+
+# Graphite Access info
+ENABLE_GRAPHITE = False
+GRAPHITE_IP = 'localhost'
+GRAPHITE_HOSt = 2004

@@ -43,5 +43,5 @@ __comp__plugin.js
 __comp__relay.js
 __comp__grove_lcd.js
 __comp__grove_mp3.js
-__comp__mosfat_led.js
+__comp__mosfet_led.js
 __comp__gesture_mp3.js

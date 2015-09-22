@@ -46,7 +46,7 @@ class Gateway(object):
         # Initialize Monitor Service
         if CONFIG.ENABLE_MONITOR:
             from monitorservice import MonitorService
-            self._monitor_service = MonitorService(CONFIG.MONGODB_URL)
+            self._monitor_service = MonitorService(CONFIG)
             self._spawn_handlers.append(self._monitor_service.serve_monitor)
             gateway_application_handlers[MPTN.WKPF_COMMAND_MONITOR] = self._monitor_service.handle_monitor_message
 

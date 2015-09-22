@@ -8,11 +8,11 @@ except:
 
 import gevent
 from gevent.queue import Queue
+from txCarbonClient import CarbonClientService
 import json
 import ast
 import datetime
 import time
-import gtwconfig as CONFIG
 from pserverclient import ProgressionServerClient
 import color_logging, logging
 logger = logging
@@ -47,17 +47,27 @@ class SensorData:
         return json.dumps({'node_id': self.node_id, 'wuclass_id': self.wuclass_id, 'port':
                            self.port, 'value': self.value, 'timestamp': self.timestamp })
 
+    def graphite_key(self):
+        return 'Wudevice' + self.node_id + '.Wuclass' + wuclass_id + '.Port' + port
+
 class MonitorService(object):
-    def __init__(self, url):
+    def __init__(self, config):
         try:
-            self._mongodb_client = MongoClient(url)
+            self._mongodb_client = MongoClient(config.MONGODB_URL)
         except:
             print "MongoDB instance " + url + " can't be connected."
             print "Please install the mongDB, pymongo module."
             sys.exit(-1)
         print "MongoDB init"
 
-        self._pserver_client = ProgressionServerClient() if CONFIG.ENABLE_PROGRESSION else None
+        try:
+            self._graphite_client = CarbonClientService(config.GRAPHITE_IP, config.GRAPHITE_PORT)
+        except:
+            print "Graphite instance on " + config.GRAPHITE_IP + ":" + config.GRAPHITE_PORT + " can't be connected";
+            print "Please install the txCarbonClient module."
+        print "Graphite Client init"
+
+        self._pserver_client = ProgressionServerClient() if config.ENABLE_PROGRESSION else None
         self._task = Queue()
 
     def handle_monitor_message(self, context, message):
@@ -70,7 +80,9 @@ class MonitorService(object):
             logging.debug(data_collection.toDocument())
             if (data_collection != None):
                 self._mongodb_client.wukong.readings.insert(ast.literal_eval(data_collection.toDocument()))
-                if CONFIG.ENABLE_PROGRESSION:
+                if config.ENABLE_PROGRESSION:
                     self._pserver_client.send(data_collection.node_id, data_collection_port, data_collection_value)
-            gevent.sleep(0.001)
+                if config.ENABLE_GRAPHITE:
+                    self._graphite_client.publish_metric(config.SYSTEM_NAME + "." + data_collection.graphite_key(), data_collection.value)
 
+            gevent.sleep(0.001)
