@@ -196,7 +196,7 @@ class RPCTCPClient(ClientTransport):
 
     def send_message(self, message, expect_reply=True):
         message = MPTN.create_packet_to_str(self.server_id, MPTN.MASTER_ID, MPTN.MPTN_MSGTYPE_RPCCMD, message)
-        logger.debug("RPC sending message: \n%s" % (MPTN.formatted_print(MPTN.split_packet_to_list(message))))
+        # logger.debug("RPC sending message: \n%s" % (MPTN.formatted_print(MPTN.split_packet_to_list(message))))
 
         packet = MPTN.socket_send(None, self.server_id, message, expect_reply=True)
         if packet is None:
@@ -1112,7 +1112,8 @@ class IDService:
             msg_type = MPTN.MPTN_MSGTYPE_FWDNAK
 
         message = MPTN.create_packet_to_str(src_id, dest_id, msg_type, payload)
-        MPTN.socket_send(context, src_id, message)
+        # MPTN.socket_send(context, src_id, message)
+        MPTN.socket_send(context, context.id, message)
 
         if msg_type == MPTN.MPTN_MSGTYPE_FWDACK:
             payload = map(ord, payload)

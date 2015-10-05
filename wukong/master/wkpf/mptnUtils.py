@@ -3,6 +3,7 @@ import struct
 import os
 import gevent
 import ipaddress
+import time
 from gevent.lock import RLock
 from gevent.event import AsyncResult
 from gevent import socket
@@ -169,7 +170,7 @@ def get_all_addresses():
     global addr_to_bool_db
     if addr_to_bool_db is None: return None
     # remember that if addr_to_bool_db changes, return values won't reflect that
-    return addr_to_bool_db.keys()
+    return map(int, addr_to_bool_db.keys())
 
 class ConnectionManager(object):
     _manager = None
@@ -226,12 +227,22 @@ class ConnectionManager(object):
                 logger.error("nonce collision occurs. nonce of ID %s's replaces that of old ID %s's" % (ID_TO_STRING(nncb.id), ID_TO_STRING(old_nncb.id)))
                 old_nncb.callback.set(None)
                 del old_nncb
-            self.nonce_cache[nonce] = nncb
+            self.nonce_cache[nonce] = (nncb, int(round(time.time()*1000))+10000)
+            self.remove_timeout_nonce()
 
     def pop_nonce(self, nonce):
         with self.nonce_lock:
             if nonce not in self.nonce_cache: return None
-            return self.nonce_cache.pop(nonce)
+            self.remove_timeout_nonce()
+            return self.nonce_cache.pop(nonce)[0]
+
+    def remove_timeout_nonce(self):
+        with self.nonce_lock:
+            for nonce, t in self.nonce_cache.items():
+                if t[1] < int(round(time.time() * 1000)):
+                    t[0].callback.set(None)
+                    self.nonce_cache.pop(nonce)
+
 
 def handle_reply_message(context, dest_id, src_id, msg_type, payload):
     nncb = ConnectionManager.init().pop_nonce(context.nonce)
@@ -249,7 +260,7 @@ def handle_reply_message(context, dest_id, src_id, msg_type, payload):
 
 
 def handle_socket(sock, addr):
-    logger.debug("handle_socket serve sock %s and addr %s" % (str(sock), str(addr)))
+    # logger.debug("handle_socket serve sock %s and addr %s" % (str(sock), str(addr)))
     peer_id_string = ""
     peer_id = MPTN_MAX_ID
     try:
@@ -301,7 +312,7 @@ def socket_recv(sock, addr, peer_id):
                     return
                 message += part_msg
 
-            logger.debug("handle_socket receive message from addr %s" % str(addr))
+            # logger.debug("handle_socket receive message from addr %s" % str(addr))
             context = Context(peer_id, addr, ONLY_FROM_TCP_SERVER, sock, nonce)
             process_message_handler(context, message)
             # process_message_handler modify context.id
@@ -343,7 +354,7 @@ def socket_send(context, dest_id, message, expect_reply=False):
         return None
 
     if context is not None and context.direction == ONLY_FROM_TCP_SERVER and context.id == dest_id:
-        # logger.debug("socket_send reuses socket since context ID is the same as dest_id %s" % str(dest_id))
+        logger.debug("socket_send reuses socket since context ID is the same as dest_id %s" % str(dest_id))
         next_hop_id = dest_id
         address = context.address
         sock = context.socket
@@ -351,7 +362,7 @@ def socket_send(context, dest_id, message, expect_reply=False):
 
     else:
         next_hop = find_nexthop_for_id(dest_id)
-        # logger.debug("socket_send next_hop is %s" % str(next_hop))
+        logger.debug("socket_send next_hop is %s" % str(next_hop))
         if next_hop is None:
             logger.error("socket_send next hop for dest ID %s 0x%X cannot be found"%(ID_TO_STRING(dest_id), dest_id))
             return None
@@ -363,7 +374,7 @@ def socket_send(context, dest_id, message, expect_reply=False):
         nonce = os.urandom(MPTN_TCP_NONCE_SIZE)
 
     if sock is None:
-        # logger.debug("socket_send no socket found for ID %s"%ID_TO_STRING(next_hop_id))
+        logger.debug("socket_send no socket found for ID %s"%ID_TO_STRING(next_hop_id))
         sock = reconnect(address)
         if sock is None:
             # logger.error("socket_send cannot re-setup socket for next_hop_id=%s addr=%s msg is\n%s" % (ID_TO_STRING(next_hop_id), str(address), formatted_print(split_packet_to_list(message))))
@@ -382,7 +393,7 @@ def socket_send(context, dest_id, message, expect_reply=False):
         ConnectionManager.init().add_peer(address, Peer(socket=sock, id=next_hop_id, address=address))
         gevent.sleep(0)
 
-    # logger.debug("socket_send message %s to ID %s" % (str(message), ID_TO_STRING(next_hop_id)))
+    logger.debug("socket_send message %s to ID %s" % (str(message), ID_TO_STRING(next_hop_id)))
     size = 0
     try:
         sock.send(nonce)

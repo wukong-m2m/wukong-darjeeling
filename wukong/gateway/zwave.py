@@ -91,7 +91,7 @@ class ZWTransport(object):
         ret = self.send_raw(address, [0x88]+payload)
         if ret is None: return (True, None)
 
-        msg = "%s fails to send to address %d with error %s\n\tmsg: %s" % (self._transport.get_name(), address, ret, payload)
+        msg = "%s fails to send to address %d with error %s\n\tmsg: %s" % (self._name, address, ret, payload)
         logger.error(msg)
         return (False, msg)
 

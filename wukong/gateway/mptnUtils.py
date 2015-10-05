@@ -260,7 +260,7 @@ def handle_reply_message(context, dest_id, src_id, msg_type, payload):
 
 
 def handle_socket(sock, addr):
-    logger.debug("handle_socket serve sock %s and addr %s" % (str(sock), str(addr)))
+    # logger.debug("handle_socket serve sock %s and addr %s" % (str(sock), str(addr)))
     peer_id_string = ""
     peer_id = MPTN_MAX_ID
     try:
@@ -312,7 +312,7 @@ def socket_recv(sock, addr, peer_id):
                     return
                 message += part_msg
 
-            logger.debug("handle_socket receive message from addr %s" % str(addr))
+            # logger.debug("handle_socket receive message from addr %s" % str(addr))
             context = Context(peer_id, addr, ONLY_FROM_TCP_SERVER, sock, nonce)
             process_message_handler(context, message)
             # process_message_handler modify context.id

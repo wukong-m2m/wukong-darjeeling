@@ -34,7 +34,7 @@ public class WKPF {
                                   short orig_dest_component_id, byte orig_dest_property_id, short new_src_component_id, 
                                   byte new_src_property_id, short new_dest_component_id, byte new_dest_property_id);
   // Who am I?
-  public static native short getMyNodeId();
+  public static native int getMyNodeId();
 
   // Note: need to match definitions in wkpf.h
   public static final byte PROPERTY_TYPE_SHORT                         = 0;

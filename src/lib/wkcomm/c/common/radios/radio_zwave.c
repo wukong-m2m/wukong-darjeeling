@@ -132,8 +132,8 @@ void radio_zwave_poll(void) {
     }
     else if(zwave_mode==2)//reset mode
     {
-	    DEBUG_LOG(DBG_ZWAVETRACE,"start zwave reset !!!!!!!!!");
-	    //radio_zwave_reset();// comment for test, because the id of wudevice becomes 1 without no reason, we believe that the wudevice reset itself automatically.
+	    DEBUG_LOG(true,"start zwave reset !!!!!!!!!");
+	    radio_zwave_reset();// comment for test, because the id of wudevice becomes 1 without no reason, we believe that the wudevice reset itself automatically.
 	    zwave_mode=0;
 
     }
@@ -145,6 +145,47 @@ void radio_zwave_poll(void) {
         DEBUG_LOG(DBG_ZWAVETRACE, "data_available\n");
         Zwave_receive(1);
     }
+}
+
+void radio_zwave_update_node_id(){
+    unsigned char buf[] = {ZWAVE_TYPE_REQ, FUNC_ID_MEMORY_GET_ID};
+    radio_zwave_poll();
+    uint8_t retries = 10;
+    radio_zwave_address_t previous_received_address = 0;
+    //UP
+    DEBUG_LOG(DBG_ZWAVETRACE, "Getting zwave address...\n");
+    while(!radio_zwave_my_address_loaded) {
+        while(!radio_zwave_my_address_loaded && retries-->0) {
+            DEBUG_LOG(DBG_ZWAVETRACE, "send\n");
+            SerialAPI_request(buf, 2);
+            if (uart_available(ZWAVE_UART, 150))
+            while(uart_available(ZWAVE_UART,1))// to ensure all the zwave info will be polled back within one loop.
+            {
+                radio_zwave_poll();
+            }
+        }
+// see issue 115        output_high(PORTK,2);
+        if(!radio_zwave_my_address_loaded) { // Can't read address -> panic 
+            unsigned char softreset[] = {ZWAVE_TYPE_REQ, FUNC_ID_SERIAL_API_SOFT_RESET};
+            DEBUG_LOG(DBG_ZWAVETRACE, "softreset\n");
+            SerialAPI_request(softreset, 2);
+            while (uart_available(ZWAVE_UART, 150)) {
+                uart_read_byte(ZWAVE_UART);
+            }
+            //dj_panic(WKCOMM_PANIC_INIT_FAILED);
+            retries=10;
+            // see issue 115         output_low(PORTK,1);
+            // see issue 115         output_low(PORTK,2);
+        }
+        if (radio_zwave_my_address != previous_received_address) { // Sometimes I get the wrong address. Only accept if we get the same address twice in a row. No idea if this helps though, since I don't know what's going on exactly.
+            radio_zwave_my_address_loaded = false;
+            previous_received_address = radio_zwave_my_address;
+        }
+    }
+    // see issue 115     output_high(PORTK,3);
+    //    if(!radio_zwave_my_address_loaded) // Can't read address -> panic
+    DEBUG_LOG(true, "My Zwave node_id: %d\n", radio_zwave_my_address);
+    //radio_zwave_platform_dependent_init();
 }
 
 extern void radio_zwave_platform_dependent_init(void); // from radio_zwave_platform_dependent.c
@@ -159,15 +200,16 @@ void radio_zwave_init(void) {
     radio_zwave_platform_dependent_init();
 	//down
     // Clear existing queue on Zwave
-    DEBUG_LOG(true, "Sending NAK\n");
+    DEBUG_LOG(DBG_ZWAVETRACE, "Sending NAK\n");
     uart_write_byte(ZWAVE_UART, ZWAVE_NAK);
     DEBUG_LOG(true, "Clearing leftovers\n");
     while (uart_available(ZWAVE_UART, 150)) {
-        unsigned char ctest;
-	ctest = uart_read_byte(ZWAVE_UART);
-	DEBUG_LOG(true,"%02x, ",ctest);
+       unsigned char ctest;
+	   ctest = uart_read_byte(ZWAVE_UART);
+	   DEBUG_LOG(true,"%02x, ",ctest);
     }
-    DEBUG_LOG(true, "After Clearing leftovers\n");
+    DEBUG_LOG(true, "\n");
+    DEBUG_LOG(DBG_ZWAVETRACE, "After Clearing leftovers\n");
 
     // see issue 115     output_high(PORTK,1);
 
@@ -183,48 +225,12 @@ void radio_zwave_init(void) {
     // TODO
     // expire = 0;
 
-    unsigned char buf[] = {ZWAVE_TYPE_REQ, FUNC_ID_MEMORY_GET_ID};
-    radio_zwave_poll();
-    uint8_t retries = 10;
-    radio_zwave_address_t previous_received_address = 0;
-	//UP
-    DEBUG_LOG(true, "Getting zwave address...\n");
-    while(!radio_zwave_my_address_loaded) {
-        while(!radio_zwave_my_address_loaded && retries-->0) {
-            DEBUG_LOG(true, "send\n");
-            SerialAPI_request(buf, 2);
-            if (uart_available(ZWAVE_UART, 150))
-    		while(uart_available(ZWAVE_UART,1))// to ensure all the zwave info will be polled back within one loop.
-    		{
-                radio_zwave_poll();
-                }
-        }
-// see issue 115     	output_high(PORTK,2);
-        if(!radio_zwave_my_address_loaded) { // Can't read address -> panic 
-	        unsigned char softreset[] = {ZWAVE_TYPE_REQ, FUNC_ID_SERIAL_API_SOFT_RESET};
-    	    DEBUG_LOG(true, "softreset\n");
-	        SerialAPI_request(softreset, 2);
-	        while (uart_available(ZWAVE_UART, 150)) {
-	        	uart_read_byte(ZWAVE_UART);
-    	    }
-            //dj_panic(WKCOMM_PANIC_INIT_FAILED);
-            retries=10;
-            // see issue 115         output_low(PORTK,1);
-            // see issue 115         output_low(PORTK,2);
-        }
-        if (radio_zwave_my_address != previous_received_address) { // Sometimes I get the wrong address. Only accept if we get the same address twice in a row. No idea if this helps though, since I don't know what's going on exactly.
-            radio_zwave_my_address_loaded = false;
-            previous_received_address = radio_zwave_my_address;
-        }
-    }
-    // see issue 115     output_high(PORTK,3);
-    //    if(!radio_zwave_my_address_loaded) // Can't read address -> panic
-    DEBUG_LOG(true, "My Zwave node_id: %d\n", radio_zwave_my_address);
-    //radio_zwave_platform_dependent_init();
+    radio_zwave_update_node_id();
 
     dj_timer_delay(wait_RF_ready);
     radio_zwave_set_node_info(0,0xff, 0);
 }
+
 
 radio_zwave_address_t radio_zwave_get_node_id() {
     return radio_zwave_my_address;
@@ -378,11 +384,13 @@ void Zwave_receive(int processmessages) {
                         uart_write_byte(ZWAVE_UART, b[k]);
                     }
                     zwave_learn_on=false;
+                    zwave_learn_block=0;
+                    zwave_mode=0;
+                    DEBUG_LOG(true, "turn off\n");
+                    radio_zwave_my_address_loaded = false; radio_zwave_update_node_id(); // get id again
 #ifdef ROUTING_USE_GATEWAY
                     routing_discover_gateway();
 #endif
-                    zwave_learn_block=0;
-                    zwave_mode=0;
                     // see issue 115                     PORTK |=_BV(1);
                 }
             }
@@ -405,7 +413,7 @@ void radio_zwave_reset() {
         uart_write_byte(ZWAVE_UART, b[k]);
     }
     zwave_mode=0;
-    DEBUG_LOG(DBG_ZWAVETRACE,"reset complete!!!!!!!!!!");
+    DEBUG_LOG(true,"reset complete!!!!!!!!!!\n");
 
 }
 void radio_zwave_set_node_info(uint8_t devmask,uint8_t generic, uint8_t specific) {
@@ -428,7 +436,7 @@ void radio_zwave_set_node_info(uint8_t devmask,uint8_t generic, uint8_t specific
         uart_write_byte(ZWAVE_UART, b[k]);
     }
     zwave_mode=0;
-    DEBUG_LOG(true,"set node info!!!!!!!!!! %d %d %d",devmask,generic,specific);
+    DEBUG_LOG(DBG_ZWAVETRACE,"set node info!!!!!!!!!! %d %d %d",devmask,generic,specific);
 
 }
 

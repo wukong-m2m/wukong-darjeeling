@@ -135,8 +135,8 @@ void javax_wukong_wkpf_WKPF_boolean_isLocalComponent_short() {
 	dj_exec_stackPushShort(wkpf_error_code == WKPF_OK && node_id == wkcomm_get_node_id());
 }
 
-void javax_wukong_wkpf_WKPF_short_getMyNodeId() {
-	dj_exec_stackPushShort(wkcomm_get_node_id());
+void javax_wukong_wkpf_WKPF_int_getMyNodeId() {
+	dj_exec_stackPushInt(wkcomm_get_node_id());
 }
 
 void javax_wukong_wkpf_WKPF_boolean_updateMapping_short_short_byte_short_byte () {

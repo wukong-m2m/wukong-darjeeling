@@ -204,7 +204,7 @@ static PyObject* pyzwave_poll(PyObject *self, PyObject *args) {
       return Py_BuildValue("");
     }
     else if (n == 0) {  // timeout
-      printf("INFO:pyzwave.c poll: select timeout\n");
+      // printf("INFO:pyzwave.c poll: select timeout\n");
       /*return Py_BuildValue("");*/
       break;
     }
