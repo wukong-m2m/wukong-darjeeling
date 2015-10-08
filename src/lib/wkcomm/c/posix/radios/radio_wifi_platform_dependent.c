@@ -38,7 +38,7 @@ dj_time_t wifi_time_init = 0;
 
 radio_wifi_address_t radio_udp_gw_ip = 1;
 uint16_t radio_udp_gw_port = 5775;
-uint16_t radio_wifi_self_port = 5775;
+uint16_t radio_wifi_self_port = 5776;
 
 radio_wifi_address_t radio_wifi_ip_big_endian, radio_wifi_virtual_ip_big_endian;
 radio_wifi_address_t radio_wifi_prefix_mask_big_endian;
