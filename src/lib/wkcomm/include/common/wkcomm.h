@@ -41,6 +41,7 @@ extern void wkcomm_handle_message(wkcomm_address_t addr, uint8_t *payload, uint8
 
 // Get my own node id, directly from routing
 wkcomm_address_t wkcomm_get_node_id();
+wkcomm_address_t wkcomm_get_gateway_id();
 
 // Call this periodically to receive data
 extern void wkcomm_poll(void *);

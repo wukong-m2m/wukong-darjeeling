@@ -411,6 +411,9 @@ wkcomm_address_t routing_get_node_id() {
     return wkpf_config_get_gid();
 }
 
+wkcomm_address_t routing_get_gateway_id() {
+    return 1;
+}
 
 // INIT
 void routing_init() {

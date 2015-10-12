@@ -142,6 +142,10 @@ wkcomm_address_t routing_get_node_id() {
     #endif
 }
 
+wkcomm_address_t routing_get_gateway_id() {
+    return id_table.gateway_id;
+}
+
 // SENDING
 uint8_t routing_send(wkcomm_address_t dest, uint8_t *payload, uint8_t length) {
     uint8_t rt_payload[MPTN_PAYLOAD_BYTE_OFFSET+WKCOMM_MESSAGE_PAYLOAD_SIZE+3]; // 3 bytes for wkcomm

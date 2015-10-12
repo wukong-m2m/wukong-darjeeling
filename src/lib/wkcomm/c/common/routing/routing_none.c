@@ -111,6 +111,9 @@ wkcomm_address_t routing_get_node_id() {
 	return 2; // Just return 1 if we have no radios at all.
 }
 
+wkcomm_address_t routing_get_gateway_id() {
+	return 1;
+}
 
 // INIT
 void routing_init() {

@@ -125,3 +125,6 @@ wkcomm_address_t wkcomm_get_node_id() {
 	return routing_get_node_id();
 }
 
+wkcomm_address_t wkcomm_get_gateway_id() {
+	return routing_get_gateway_id();
+}

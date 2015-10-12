@@ -25,7 +25,8 @@ extern void routing_discover_gateway(void);
 #endif
 
 // This will be called from wkcomm to determine this node's wukong id
-wkcomm_address_t routing_get_node_id();
+wkcomm_address_t routing_get_node_id(void);
+wkcomm_address_t routing_get_gateway_id(void);
 
 // These will be called by the radios when it receives a message
 #ifdef RADIO_USE_ZWAVE
