@@ -250,7 +250,7 @@ uint8_t wkpf_send_set_linktable_no_token(wkcomm_address_t dest_node_id, uint16_t
 
 uint8_t wkpf_send_monitor_property_int16(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, int16_t value) {
     uint8_t message_buffer[6];
-    if (progression_server_id >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
+    if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
         return WKPF_COMM_CMD_ERROR_R;
     } else {
         message_buffer[0] = (uint8_t)(wuclass_id >> 8);
@@ -267,7 +267,7 @@ uint8_t wkpf_send_monitor_property_int16(wkcomm_address_t progression_server_id,
 uint8_t wkpf_send_monitor_property_boolean(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, bool value) {
 
     uint8_t message_buffer[5];
-    if (progression_server_id >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
+    if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
         return WKPF_COMM_CMD_ERROR_R;
     } else {
         message_buffer[0] = (uint8_t)(wuclass_id >> 8);
@@ -283,7 +283,7 @@ uint8_t wkpf_send_monitor_property_boolean(wkcomm_address_t progression_server_i
 uint8_t wkpf_send_monitor_property_refresh_rate(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, wkpf_refresh_rate_t value) {
 
     uint8_t message_buffer[6];
-    if (progression_server_id >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
+    if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
         return WKPF_COMM_CMD_ERROR_R;
     } else {
         message_buffer[0] = (uint8_t)(wuclass_id >> 8);
