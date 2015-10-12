@@ -40,8 +40,8 @@ radio_wifi_address_t radio_udp_gw_ip = 1;
 uint16_t radio_udp_gw_port = 5775;
 uint16_t radio_wifi_self_port = 5776;
 
-radio_wifi_address_t radio_wifi_ip_big_endian, radio_wifi_virtual_ip_big_endian;
-radio_wifi_address_t radio_wifi_prefix_mask_big_endian;
+radio_wifi_address_t radio_wifi_if_ip, radio_wifi_virtual_ip;
+radio_wifi_address_t radio_wifi_prefix_mask;
 // !!! host address should not be only 8 bit, this is temporary usage
 uint8_t radio_wifi_virtual_host_address;
 
@@ -65,10 +65,10 @@ void radio_wifi_platform_dependent_gateway_discovery(void){
         send_buffer[0] = 0xAA;
         send_buffer[1] = 0x55;
         send_buffer[2] = radio_wifi_virtual_host_address;
-        send_buffer[3] = radio_wifi_ip_big_endian & 0xFF;
-        send_buffer[4] = (radio_wifi_ip_big_endian >> 8) & 0xFF;
-        send_buffer[5] = (radio_wifi_ip_big_endian >> 16) & 0xFF;
-        send_buffer[6] = (radio_wifi_ip_big_endian >> 24) & 0xFF;
+        send_buffer[3] = radio_wifi_if_ip & 0xFF;
+        send_buffer[4] = (radio_wifi_if_ip >> 8) & 0xFF;
+        send_buffer[5] = (radio_wifi_if_ip >> 16) & 0xFF;
+        send_buffer[6] = (radio_wifi_if_ip >> 24) & 0xFF;
         send_buffer[7] = radio_wifi_self_port & 0xFF;
         send_buffer[8] = (radio_wifi_self_port >> 8) & 0xFF;
         send_buffer[9] = UDP_GW_CMD;
@@ -87,14 +87,14 @@ void radio_wifi_platform_dependent_gateway_discovery(void){
             DEBUG_LOG(DBG_WIFI, "r_wifi discovery send fail: %d\n", retval);
         // alternatively broadcast
         if ((radio_udp_gw_ip & 1) == 0){
-            cliaddr.sin_addr.s_addr = htonl(radio_wifi_ip_big_endian | ~radio_wifi_prefix_mask_big_endian);
+            cliaddr.sin_addr.s_addr = htonl(radio_wifi_if_ip | ~radio_wifi_prefix_mask);
             retval = sendto(radio_wifi_sockfd, send_buffer, UDP_OVERHEAD, 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr));
             inet_ntop(AF_INET, &(cliaddr.sin_addr), ipstr, INET_ADDRSTRLEN);
             DEBUG_LOG(DBG_WIFI, "r_wifi discovery sent to %s, length %d, retval %d\n", ipstr, UDP_OVERHEAD, retval);
             if (retval == -1)
                 DEBUG_LOG(DBG_WIFI, "r_wifi discovery send fail: %d\n", retval);
         }
-        radio_udp_gw_ip = (radio_wifi_ip_big_endian & radio_wifi_prefix_mask_big_endian) | ((radio_udp_gw_ip+1) & (~radio_wifi_prefix_mask_big_endian));
+        radio_udp_gw_ip = (radio_wifi_if_ip & radio_wifi_prefix_mask) | ((radio_udp_gw_ip+1) & (~radio_wifi_prefix_mask));
     }
 }
 
@@ -118,7 +118,7 @@ void radio_wifi_platform_dependent_init(void) {
     }
     inet_ntop(AF_INET, &(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), ipstr, INET_ADDRSTRLEN);
     DEBUG_LOG(DBG_WIFI, "ip: %s /", ipstr);
-    radio_wifi_ip_big_endian = ntohl((((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr).s_addr);
+    radio_wifi_if_ip = ntohl((((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr).s_addr);
     // get netmask
     if (ioctl(fd, SIOCGIFNETMASK, &ifr) < 0) {
         DEBUG_LOG(DBG_WIFI, "Unable to get interface: %d\n", errno);
@@ -127,12 +127,12 @@ void radio_wifi_platform_dependent_init(void) {
     }
     inet_ntop(AF_INET, &(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), ipstr, INET_ADDRSTRLEN);
     DEBUG_LOG(DBG_WIFI, "netmask: %s\n", ipstr);
-    radio_wifi_prefix_mask_big_endian = ntohl((((struct sockaddr_in *)&ifr.ifr_netmask)->sin_addr).s_addr);
+    radio_wifi_prefix_mask = ntohl((((struct sockaddr_in *)&ifr.ifr_netmask)->sin_addr).s_addr);
 
 
-    radio_wifi_virtual_ip_big_endian = wkpf_config_get_myid();
+    radio_wifi_virtual_ip = wkpf_config_get_myid();
     radio_udp_gw_ip = wkpf_config_get_gwid();
-    radio_wifi_virtual_host_address = (radio_wifi_virtual_ip_big_endian & ~radio_wifi_prefix_mask_big_endian);
+    radio_wifi_virtual_host_address = (radio_wifi_virtual_ip & ~radio_wifi_prefix_mask);
 
 
     struct sockaddr_in servaddr;
@@ -161,11 +161,11 @@ void radio_wifi_platform_dependent_init(void) {
 }
 
 radio_wifi_address_t radio_wifi_platform_dependent_get_node_id() {
-    return radio_wifi_virtual_ip_big_endian;
+    return radio_wifi_virtual_ip;
 }
 
 radio_wifi_address_t radio_wifi_platform_dependent_get_prefix_mask(){
-    return radio_wifi_prefix_mask_big_endian;
+    return radio_wifi_prefix_mask;
 }
 
 void radio_wifi_platform_dependent_poll(void) {
@@ -202,7 +202,7 @@ void radio_wifi_platform_dependent_poll(void) {
             posix_arg_addnode = false;
             radio_udp_gw_ip = src;
             wkpf_config_set_gwid(radio_udp_gw_ip);
-            radio_wifi_virtual_ip_big_endian = (radio_wifi_prefix_mask_big_endian & radio_udp_gw_ip) | radio_wifi_virtual_host_address;
+            radio_wifi_virtual_ip = (radio_wifi_prefix_mask & radio_udp_gw_ip) | radio_wifi_virtual_host_address;
 #ifdef ROUTING_USE_GATEWAY
             routing_discover_gateway();
 #endif
@@ -223,10 +223,10 @@ uint8_t radio_wifi_platform_dependent_send_raw(radio_wifi_address_t dest, uint8_
     send_buffer[0] = 0xAA;
     send_buffer[1] = 0x55;
     send_buffer[2] = radio_wifi_virtual_host_address;
-    send_buffer[3] = radio_wifi_ip_big_endian & 0xFF;
-    send_buffer[4] = (radio_wifi_ip_big_endian >> 8) & 0xFF;
-    send_buffer[5] = (radio_wifi_ip_big_endian >> 16) & 0xFF;
-    send_buffer[6] = (radio_wifi_ip_big_endian >> 24) & 0xFF;
+    send_buffer[3] = radio_wifi_if_ip & 0xFF;
+    send_buffer[4] = (radio_wifi_if_ip >> 8) & 0xFF;
+    send_buffer[5] = (radio_wifi_if_ip >> 16) & 0xFF;
+    send_buffer[6] = (radio_wifi_if_ip >> 24) & 0xFF;
     send_buffer[7] = radio_wifi_self_port & 0xFF;
     send_buffer[8] = (radio_wifi_self_port >> 8) & 0xFF;
     send_buffer[9] = UDP_GW_FWD;
