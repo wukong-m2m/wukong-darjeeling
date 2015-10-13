@@ -310,11 +310,11 @@ class WuApplication:
       mapper.mapper.dump_changesets(self.changesets)
       Generator.generate(self.name, self.changesets)
 
-  def mapping(self, locTree, routingTable, mapFunc=mapper.mapper.least_changed):
+  def mapping(self, locTree, routingTable, mapFunc=mapper.mapper.firstCandidate):
       #input: nodes, WuObjects, WuLinks, WuClassDefs
       #output: assign node id to WuObjects
       # TODO: mapping results for generating the appropriate instiantiation for different nodes
-      
+
       return mapFunc(self, self.changesets, routingTable, locTree)
 
   def map(self, location_tree, routingTable):
@@ -445,4 +445,3 @@ class WuApplication:
     if self.map(location_tree, routingTable):
       self.deploy([info.id for info in node_infos], DEPLOY_PLATFORMS)
     master_available()
-

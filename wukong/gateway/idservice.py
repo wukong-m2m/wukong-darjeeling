@@ -223,7 +223,7 @@ class IDService(object):
             return False
 
         if msg_type == MPTN.MPTN_MSGTYPE_FWDNAK:
-            logger.error("_forward_to_next_hop forward via %s fails with error %s" % (str(address), payload))
+            logger.error("_forward_to_next_hop forward via %s fails with error %s" % (str(dest_id), payload))
             return False
 
         if msg_type != MPTN.MPTN_MSGTYPE_FWDACK:
