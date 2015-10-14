@@ -210,7 +210,7 @@ static PyObject* pyzwave_poll(PyObject *self, PyObject *args) {
     }
 
     if (FD_ISSET(zwavefd,&rs)) {
-      int len=read(zwavefd,&c,1);
+      long len=read(zwavefd,&c,1);
       if (len > 0) {
         zwave_check_state(c);
       }

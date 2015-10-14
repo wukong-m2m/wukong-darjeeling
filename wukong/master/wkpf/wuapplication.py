@@ -251,6 +251,7 @@ class WuApplication:
       #store hashed result of links to avoid duplicated links: (fromInstanceId*100+fromProperty)*100000+toInstanceId*100+toProperty
       linkSet = []
       # links
+      '''
       for linkTag in self.applicationDom.getElementsByTagName('link'):
           from_component_id = linkTag.parentNode.getAttribute('instanceId')
           from_component = componentInstanceMap[from_component_id]
@@ -267,7 +268,7 @@ class WuApplication:
                     to_component, to_property_name)
             wuLinkMap[hash_value] = link
           self.changesets.links.append(wuLinkMap[hash_value])
-
+      '''
       #add monitoring related links
       if(MONITORING == 'true'):
           for instanceId, properties in self.monitorProperties.items():
@@ -310,11 +311,11 @@ class WuApplication:
       mapper.mapper.dump_changesets(self.changesets)
       Generator.generate(self.name, self.changesets)
 
-  def mapping(self, locTree, routingTable, mapFunc=mapper.mapper.least_changed):
+  def mapping(self, locTree, routingTable, mapFunc=mapper.mapper.firstCandidate):
       #input: nodes, WuObjects, WuLinks, WuClassDefs
       #output: assign node id to WuObjects
       # TODO: mapping results for generating the appropriate instiantiation for different nodes
-      
+
       return mapFunc(self, self.changesets, routingTable, locTree)
 
   def map(self, location_tree, routingTable):
@@ -445,4 +446,3 @@ class WuApplication:
     if self.map(location_tree, routingTable):
       self.deploy([info.id for info in node_infos], DEPLOY_PLATFORMS)
     master_available()
-

@@ -45,3 +45,5 @@ __comp__grove_lcd.js
 __comp__grove_mp3.js
 __comp__mosfet_led.js
 __comp__gesture_mp3.js
+__comp__swithprclass.js
+__comp__timerprclass.js

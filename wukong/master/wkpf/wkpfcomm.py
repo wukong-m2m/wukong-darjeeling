@@ -68,7 +68,8 @@ class Communication:
 
     def getActiveNodeInfos(self, force=False):
       #set_wukong_status("Discovery: Requesting node info")
-      return filter(lambda item: item.isResponding(), self.getAllNodeInfos(force=force))
+      return self.getAllNodeInfos(force=force)
+      # return filter(lambda item: item.isResponding(), self.getAllNodeInfos(force=force))
 
     def getNodeInfos(self, node_ids):
       return filter(lambda info: info.id in node_ids, self.getAllNodeInfos())
@@ -147,14 +148,14 @@ class Communication:
         else:
           return wunode
 
-          
+
         print '[wkpfcomm] get %d wuclasses' % (len(wuClasses))
         wunode.wuclasses = wuClasses
         gevent.sleep(0)
         retries=3
         while retries > 0 :
           wuObjects = self.getWuObjectList(destination)
-          print '[wkpfcomm] get %d wuobjects' % (len(wuObjects))
+          # print '[wkpfcomm] get %d wuobjects' % (len(wuObjects))
           if wuObjects == None:
             retries=retries-1
           else:
@@ -358,7 +359,9 @@ class Communication:
 
           #virtual wuclass, non-publish wuclass will not be shown upon discovery, because we cannot create new wuobjs using them
           #to create new virtual wuobjs, we need to re-download virtual wuclass...
-          if publish and (not virtual):
+          #before integrating progression server we need to use "publish and (not virtual)"
+          #but in current stage, progression server will have virtual PrClass installed in advance
+          if publish:
             node = WuNode.findById(destination)
 
             if not node:
@@ -518,18 +521,18 @@ class Communication:
 
       if datatype == WKPF_PROPERTY_TYPE_BOOLEAN:
         payload=[port, wuclassid/256,
-        wuclassid%256, property_number, datatype, 1 if value else 0, 
-        0, 0, 0, 0, 0]    
+        wuclassid%256, property_number, datatype, 1 if value else 0,
+        0, 0, 0, 0, 0]
         # the last 5 0s are sender and receiver component id. set them to 0 to bypass property locking check.
         #Property locking check checks if the desired id and property is still the desired component in case of link change.
-        #see wkpf_generate_piggyback_token() in wkpf_links.c 
+        #see wkpf_generate_piggyback_token() in wkpf_links.c
 
 
       elif datatype == WKPF_PROPERTY_TYPE_SHORT or datatype == WKPF_PROPERTY_TYPE_REFRESH_RATE:
         payload=[port, wuclassid/256,
         wuclassid%256, property_number, datatype, value/256, value%256,
-        0, 0, 0, 0, 0]    
-        # the last 5 0s are sender and receiver component id. see wkpf_generate_piggyback_token() in wkpf_links.c 
+        0, 0, 0, 0, 0]
+        # the last 5 0s are sender and receiver component id. see wkpf_generate_piggyback_token() in wkpf_links.c
 
 
       reply = self.agent.send(id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])
