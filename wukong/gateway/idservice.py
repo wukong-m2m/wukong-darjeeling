@@ -188,7 +188,7 @@ class IDService(object):
         return mptn_id == MPTN.MASTER_ID
 
     def _is_id_gwself(self, mptn_id):
-        return mptn_id == self._id
+        return (mptn_id == self._id) or (mptn_id == 1)
 
     def _is_id_in_gwself_network(self, mptn_id):
         if MPTN.IS_ID_IN_NETWORK(mptn_id, self._network):
