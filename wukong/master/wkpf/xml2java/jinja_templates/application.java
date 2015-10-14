@@ -54,7 +54,7 @@ public class {{ applicationName }} {
 
     public static void main (String[] args) {
         System.out.println("{{ applicationName }}");
-        System.out.println(WKPF.getMyNodeId());
+        int node_id = WKPF.getMyNodeId(); System.out.println("Java get node id: "(node_id >> 24 & 0xff) + "." + (node_id >> 16 & 0xff) + "." + (node_id >> 8 & 0xff) + "." + (node_id & 0xff));
         WKPF.loadHeartbeatToNodeAddrMap(heartbeatToNodeAddrMap);
         WKPF.loadHeartbeatPeriods(heartbeatGroupPeriods);
         WKPF.loadComponentToWuObjectAddrMap(componentInstanceToWuObjectAddrMap);
