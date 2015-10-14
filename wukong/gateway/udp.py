@@ -51,28 +51,34 @@ class UDPDevice(object):
 
 class UDPTransport(object):
     def __init__(self, dev_address, name):
-        self._name = name
-        self._dev_addr = dev_address
-        self._mode = MPTN.STOP_MODE
         global _global_lock
         _global_lock = RLock()
+
+        self._name = name
+        self._dev_addr = dev_address
+
+        self._mode = MPTN.STOP_MODE
+        self.enterLearnMode = False
+        self.last_host_id = 0
+
+        self._device_filename = "devices.pkl"
+        self.devices=[]
+        self.loadDevice()
 
         try:
             nc_if = netifaces.ifaddresses(dev_address)[netifaces.AF_INET][0]
             self._node_id = (nc_if['addr'], nc_if['netmask'])
+            self._ip = MPTN.ID_FROM_STRING(self._node_id[0])
+            self._netmask = MPTN.ID_FROM_STRING(self._node_id[1])
+
         except (IndexError, KeyError, ValueError):
             logger.error("cannot find any IP address from the IP network interface %s" % CONFIG.TRANSPORT_INTERFACE_ADDR)
             self._clear_settings_db()
             exit(-1)
-        self._ip = MPTN.ID_FROM_STRING(self._node_id[0])
-        self._netmask = MPTN.ID_FROM_STRING(self._node_id[1])
+
         self._prefix = self._ip & self._netmask
         self._hostmask = ((1 << (MPTN.IP_ADDRESS_LEN * 8)) - 1) ^ self._prefix
         self._port = MPTN.MPTN_UDP_PORT
-        self.enterLearnMode = False
-        self.last_host_id = 0
-        self.devices=[]
-        self.loadDevice()
         self._init_socket()
 
     def _init_socket(self):
@@ -124,11 +130,14 @@ class UDPTransport(object):
                             continue
                         data = data[11:]
                         return (node_id, data)
+
                     elif t == 2:
                         self.refreshDeviceData(data)
                         continue
+
                     else:
                         continue
+
             except Exception as e:
                 ret = traceback.format_exc()
                 logger.error("receives exception %s\n%s" % (str(e), ret))
@@ -192,7 +201,8 @@ class UDPTransport(object):
             # try:
             #     ret.remove(gateway_id)
             # except ValueError:
-                pass
+            pass
+
         return ret
 
     def routing(self):
@@ -228,27 +238,31 @@ class UDPTransport(object):
                 break
 
         if not found and self.enterLearnMode and self._mode == MPTN.ADD_MODE: # and t == 2
-            newid = 2
+            newid = 1
             while True:
                 found = False
                 for d in self.devices:
                     if d.host_id == newid:
                         newid = newid + 1
-                        if newid == (self._ip & self._hostmask):
-                            newid += 1
                         if newid & self._hostmask == 0:
                             logger.error("ID is exhausted")
                             return
                         found = True
                         break
+                else:
+                    if newid == (self._ip & self._hostmask):
+                        newid += 1
+                        found = True
+
                 if not found:
                     newd = UDPDevice(newid,ip,port)
                     self.devices.append(newd)
                     self.saveDevice()
                     break
-                pass
+
             self.last_host_id = newid
             self._mode = MPTN.STOP_MODE
+
         elif found and self.enterLearnMode and self._mode == MPTN.DEL_MODE: # and t == 2
             for i in range(len(self.devices)):
                 d = self.devices[i]
@@ -260,37 +274,34 @@ class UDPTransport(object):
             pass
             self.last_host_id = 0
             self._mode = MPTN.STOP_MODE
+
         self.send_raw(self.last_host_id,[self.last_host_id],raw_type=2)
 
     def saveDevice(self):
-        f = open('devices.pk','w')
+        f = open(self._device_filename,'w')
         pickle.dump(self.devices,f)
         f.close()
 
     def loadDevice(self):
         try:
-            f = open('devices.pk')
+            f = open(self._device_filename)
             self.devices = pickle.load(f)
             f.close()
         except:
             pass
+
     def discover(self):
         # a list = MPTN.get_all_addresses()
         ret = []
+
+        if not self.stop():
+            logger.error("cannot discover without STOP mode")
+            return ret
+
         with _global_lock:
-            ret=[]
             for i in range(len(self.devices)):
                 ret.append(self.devices[i].host_id)
-            # nodes = pyzwave.discover()
-            # zwave_controller = nodes[0]
-            # total_nodes = nodes[1]
-            # # remaining are the discovered nodes
-            # ret = nodes[2:]
-            # logger.debug("---------------------%s, %s, %s" % (str(zwave_controller), str(total_nodes), str(ret)))
-            # try:
-            #     ret.remove(zwave_controller)
-            # except ValueError:
-                pass # sometimes zwave_controller is not in the list
+
         return ret
 
     def poll(self):
@@ -298,11 +309,10 @@ class UDPTransport(object):
         print "polled"
         with _global_lock:
             if self._mode == MPTN.STOP_MODE:
-                ret = 'Node: %d' % self.last_host_id
+                ret = 'found Node: %d' % self.last_host_id
             else:
-                ret = 'ready'
-            pass
-        print 'ret=',ret
+                ret = 'ready to ' + self._mode[1]
+        logger.info(ret)
         return ret
 
     def add(self):
@@ -337,7 +347,7 @@ class UDPTransport(object):
                 self._mode = MPTN.STOP_MODE
                 ret = True
             except Exception as e:
-                logger.error("fails to be DEL mode, now in %s mode error: %s\n%s" % (self._mode[1],
+                logger.error("fails to be STOP mode, now in %s mode error: %s\n%s" % (self._mode[1],
                     str(e), traceback.format_exc()))
         return ret
 

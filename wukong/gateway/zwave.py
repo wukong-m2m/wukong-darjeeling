@@ -122,13 +122,18 @@ class ZWTransport(object):
 
     def discover(self):
         ret = []
+
+        if not self.stop():
+            logger.error("cannot discover without STOP mode")
+            return ret
+
         with _global_lock:
             nodes = pyzwave.discover()
             zwave_controller = nodes[0]
             total_nodes = nodes[1]
             # remaining are the discovered nodes
             ret = nodes[2:]
-            logger.debug("---------------------%s, %s, %s" % (str(zwave_controller), str(total_nodes), str(ret)))
+            logger.debug("zwave_controller: %s, total_nodes: %s, ret: %s" % (str(zwave_controller), str(total_nodes), str(ret)))
             try:
                 ret.remove(zwave_controller)
             except ValueError:
