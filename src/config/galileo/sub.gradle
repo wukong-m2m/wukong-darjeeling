@@ -6,6 +6,8 @@ djConfig {
 }
 
 binaries.all {
+        cCompiler.args "-m32"
+        linker.args "-m32"
         linker.args "-Wl,-lmraa"
 }
 
