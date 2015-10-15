@@ -266,7 +266,7 @@ uint8_t wkpf_propagate_property(wuobject_t *wuobject, uint8_t property_number, v
 
     wkpf_get_wuobject_by_port(port_number, &src_wuobject);
 	uint16_t source_wuclass_id = src_wuobject->wuclass->wuclass_id;
-    wkcomm_address_t my_id = wkcomm_get_node_id(), gw_id = wkcomm_get_gateway_id();
+    wkcomm_address_t my_id = wkcomm_get_node_id();
     for(int i=0; i<wkpf_number_of_links; i++) {
         if(WKPF_LINK_SRC_PROPERTY(i) == property_number
                 && WKPF_LINK_SRC_COMPONENT_ID(i) == component_id) {
@@ -289,14 +289,14 @@ uint8_t wkpf_propagate_property(wuobject_t *wuobject, uint8_t property_number, v
                     else
                         wkpf_error_code |= wkpf_external_write_property_refresh_rate(dest_wuobject, dest_property_number, *((uint16_t *)value));
                 }
-            } else if(dest_node_id == gw_id) {
+            } else if(dest_node_id == WUKONG_MONITOR_SERVER_ID) {
                 DEBUG_LOG(DBG_WKPF, "WKPF: Monitoring property (remote). (%x, %x)->(%x, %x, %x), value %x\n", port_number, property_number, dest_node_id, dest_port_number, dest_property_number, *((uint16_t *)value)); // TODONR: values other than 16 bit values
 			    if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_BOOLEAN)
-                    wkpf_error_code |= wkpf_send_monitor_property_boolean(gw_id, source_wuclass_id, port_number, *((bool *)value));
+                    wkpf_error_code |= wkpf_send_monitor_property_boolean(WUKONG_MONITOR_SERVER_ID, source_wuclass_id, port_number, *((bool *)value));
 			    else if(WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_SHORT)
-                    wkpf_error_code |= wkpf_send_monitor_property_int16(gw_id, source_wuclass_id, port_number, *((uint16_t *)value));
+                    wkpf_error_code |= wkpf_send_monitor_property_int16(WUKONG_MONITOR_SERVER_ID, source_wuclass_id, port_number, *((uint16_t *)value));
 			    else
-			        wkpf_error_code |= wkpf_send_monitor_property_refresh_rate(gw_id, source_wuclass_id, port_number, *((uint16_t *)value));
+			        wkpf_error_code |= wkpf_send_monitor_property_refresh_rate(WUKONG_MONITOR_SERVER_ID, source_wuclass_id, port_number, *((uint16_t *)value));
 			} else {
                 // Remote
                 DEBUG_LOG(DBG_WKPF, "WKPF: propagate_property (remote). (%x, %x)->(%x, %x, %x), value %x\n", port_number, property_number, dest_node_id, dest_port_number, dest_property_number, *((uint16_t *)value)); // TODONR: values other than 16 bit values
