@@ -138,7 +138,7 @@ class Communication:
         gevent.sleep(0) # give other greenlets some air to breath
         if not wunode:
           wunode = WuNode(destination, location)
-        retries=3
+        retries=1
         while retries > 0:
           wuClasses = self.getWuClassList(destination)
           if wuClasses == None:

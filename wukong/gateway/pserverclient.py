@@ -12,7 +12,7 @@ class ProgressionServerClient:
 
     def send(self, deviceId,  portId, value):
         try:
-            data = bytearray([deviceId / 256, deviceId % 256, portId / 256, portId % 256, value / 256, value % 256])
+            data = bytearray([(deviceId >> 24) & 0xff, (deviceId >> 16) & 0xff, (deviceId >> 8) & 0xff, deviceId & 0xff, portId / 256, portId % 256, value / 256, value % 256])
             self.sock.sendto(data, (Config.PSERVER_IP, Config.PSERVER_UDP_PORT))
         except socket.error, msg:
             print 'Error Code : ' + str(msg[0]) + ' Message ' + msg[1]

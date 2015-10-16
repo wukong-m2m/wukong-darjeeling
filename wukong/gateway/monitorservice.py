@@ -16,6 +16,7 @@ import time
 from pserverclient import ProgressionServerClient
 import color_logging, logging
 logger = logging
+import gtwconfig as config
 
 class SensorData:
     def __init__(self, node_id, wuclass_id, port, value, timestamp):
@@ -51,7 +52,7 @@ class SensorData:
         return 'Wudevice' + self.node_id + '.Wuclass' + wuclass_id + '.Port' + port
 
 class MonitorService(object):
-    def __init__(self, config):
+    def __init__(self):
         try:
             self._mongodb_client = MongoClient(config.MONGODB_URL)
         except:
@@ -81,7 +82,7 @@ class MonitorService(object):
             if (data_collection != None):
                 self._mongodb_client.wukong.readings.insert(ast.literal_eval(data_collection.toDocument()))
                 if config.ENABLE_PROGRESSION:
-                    self._pserver_client.send(data_collection.node_id, data_collection_port, data_collection_value)
+                    self._pserver_client.send(data_collection.node_id, data_collection.port, data_collection.value)
                 if config.ENABLE_GRAPHITE:
                     self._graphite_client.publish_metric(config.SYSTEM_NAME + "." + data_collection.graphite_key(), data_collection.value)
 
