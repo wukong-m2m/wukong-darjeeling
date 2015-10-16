@@ -251,7 +251,7 @@ class WuApplication:
       #store hashed result of links to avoid duplicated links: (fromInstanceId*100+fromProperty)*100000+toInstanceId*100+toProperty
       linkSet = []
       # links
-      '''
+      
       for linkTag in self.applicationDom.getElementsByTagName('link'):
           from_component_id = linkTag.parentNode.getAttribute('instanceId')
           from_component = componentInstanceMap[from_component_id]
@@ -268,7 +268,7 @@ class WuApplication:
                     to_component, to_property_name)
             wuLinkMap[hash_value] = link
           self.changesets.links.append(wuLinkMap[hash_value])
-      '''
+      
       #add monitoring related links
       if(MONITORING == 'true'):
           for instanceId, properties in self.monitorProperties.items():
