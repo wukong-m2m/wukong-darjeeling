@@ -5,10 +5,11 @@ master = os.path.join(wukong, "master")
 sys.path.append(os.path.abspath(master))
 wkpf = os.path.join(master, "wkpf")
 sys.path.append(os.path.abspath(wkpf))
-print sys.path
+# print sys.path
 import mptnUtils as MPTN
 
-print "Gateway DB"
+print "========================\nMaster DB info:"
+print "\n1.Gateway DB"
 db = MPTN.DBDict("../../master/master_gateway_info.sqlite")
 if len(db) == 0: print "None"
 # Gateway(id=167772166, tcp_address=('127.0.0.1', 9001), if_address=167772166, if_address_len=4, prefix=167772160, prefix_len=24,
@@ -17,7 +18,7 @@ if len(db) == 0: print "None"
 for (gateway_id, gateway) in db.iteritems():
     print "Gateway ID:", MPTN.ID_TO_STRING(int(gateway_id)), "IF_ADDR:", MPTN.ID_TO_STRING(gateway.if_address), "IF_ADDR_LEN:", gateway.if_address_len, "PREFIX:", MPTN.ID_TO_STRING(gateway.prefix), "PREFIX_LEN:", gateway.prefix_len, "NETWORK:", str(gateway.network), "NETWORK_SIZE:", gateway.network_size, "NETMASK:", MPTN.ID_TO_STRING(gateway.netmask), "HOSTMASK:", MPTN.ID_TO_STRING(gateway.hostmask), "UUID:", map(ord, gateway.uuid)
 
-print "\nNode DB"
+print "\n2.Node DB"
 db = MPTN.DBDict("../../master/master_node_info.sqlite")
 if len(db) == 0: print "None"
 for (node_id, node) in db.iteritems():
