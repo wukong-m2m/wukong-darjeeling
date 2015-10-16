@@ -3,6 +3,7 @@ It will be installed to /usr/local/darjeeling, and a service script will be crea
 
 
 To install mraa library on a 32-bit platform
+sudo apt-get install cmake
 git clone https://github.com/intel-iot-devkit/mraa.git
 cd mraa
 mkdir build
@@ -13,7 +14,7 @@ sudo make install
 
 
 In order to compile darjeeling for 32-bit Galileo or Edison on a 64-bit platform
-sudo apt-get install g++-4.8-multilib g++-multilib gcc-4.8-multilib gcc-multilib lib32gcc-4.8-dev
+sudo apt-get install g++-4.8-multilib g++-multilib gcc-4.8-multilib gcc-multilib lib32gcc-4.8-dev cmake
 git clone https://github.com/intel-iot-devkit/mraa.git
 cd mraa
 mkdir build
