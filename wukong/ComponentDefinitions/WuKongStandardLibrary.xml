@@ -105,7 +105,7 @@
         <property name="input2" access="readwrite" datatype="short" default="1"/>
         <property name="output" access="readonly" datatype="boolean" default="false"/>
     </WuClass>
-
+    
     <!-- Sensors -->
     <WuClass name="Light_Sensor" id="1001" virtual="false" type="hard">
         <property name="current_value" access="readonly" datatype="short"  />
@@ -198,6 +198,13 @@
         <property name="output_boolean_2" access="readonly" datatype="boolean" default="false"  />
         <property name="output_boolean_3" access="readonly" datatype="boolean" default="false"  />
         <property name="output_int_0" access="readonly" datatype="short" default="false"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
+    </WuClass>
+    <WuClass name="ICS_User" id="1907" virtual="false" type="hard">
+        <property name="holder" access="readonly" datatype="short" default="0" />
+        <property name="slipper0" access="readonly" datatype="short" default="0" />
+        <property name="slipper1" access="readonly" datatype="short" default="0" />
+        <property name="slipper2" access="readonly" datatype="short" default="0" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
     </WuClass>
 
