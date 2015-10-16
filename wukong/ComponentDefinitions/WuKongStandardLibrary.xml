@@ -200,6 +200,13 @@
         <property name="output_int_0" access="readonly" datatype="short" default="false"  />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
     </WuClass>
+    <WuClass name="ICS_User" id="1907" virtual="false" type="hard">
+        <property name="holder" access="readonly" datatype="short" default="0" />
+        <property name="slipper0" access="readonly" datatype="short" default="0" />
+        <property name="slipper1" access="readonly" datatype="short" default="0" />
+        <property name="slipper2" access="readonly" datatype="short" default="0" />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
+    </WuClass>
 
     <!-- Actuators -->
     <WuClass name="Light_Actuator" id="2001" virtual="false" type="hard">
@@ -254,5 +261,8 @@
     <WuClass name="Gesture_MP3" id="2013" virtual="false" type="hard">
         <property name="command" access="readwrite" datatype="short" default="1" />
         <property name="instrument" access="readwrite" datatype="short" default="1" />
+    </WuClass>
+    <WuClass name="Number" id="2014" virtual="false" type="hard">
+        <property name="input" access="readwrite" datatype="short" default="1" />
     </WuClass>
 </WuKong>
