@@ -6,6 +6,21 @@ binaries.all {
     cCompiler.args "-std=gnu99"
 }
 
+model {
+    toolChains {
+        gcc(Gcc) {
+            eachPlatform { 
+                cCompiler.withArguments { args ->
+                    args.remove "-m64"
+                }
+                linker.withArguments { args ->
+                    args.remove "-m64"
+                }
+            }
+        }
+    }
+}
+
 tasks.architectureSpecificAssemble { 
     dependsOn tasks['createLibArchive']
     dependsOn tasks['createAppArchive']

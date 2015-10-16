@@ -10,7 +10,7 @@ public class WKDeploy {
 
     public static void main (String[] args) {
         // Application: {{ name }}
-        System.out.println("My node id: " + WKPF.getMyNodeId());
+        int node_id = WKPF.getMyNodeId(); System.out.println("Java get node id: "+(node_id >> 24 & 0xff) + "." + (node_id >> 16 & 0xff) + "." + (node_id >> 8 & 0xff) + "." + (node_id & 0xff));
 
         // Register virtual WuClasses (just register all for now, maybe change this per node later)
         {%- for component in changesets.components %}

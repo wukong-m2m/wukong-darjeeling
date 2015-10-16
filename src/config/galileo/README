@@ -1,3 +1,31 @@
 Use "sudo ./install_service" to install the compiled VM as a linux server.
 It will be installed to /usr/local/darjeeling, and a service script will be created in /etc/init.d/darjeeling.sh.
 
+
+To install mraa library on a 32-bit platform
+sudo apt-get install cmake
+git clone https://github.com/intel-iot-devkit/mraa.git
+cd mraa
+mkdir build
+cd build
+cmake .. -DBUILDSWIGNODE=OFF -DBUILDSWIGPYTHON=OFF
+make
+sudo make install
+
+
+In order to compile darjeeling for 32-bit Galileo or Edison on a 64-bit platform
+sudo apt-get install g++-4.8-multilib g++-multilib gcc-4.8-multilib gcc-multilib lib32gcc-4.8-dev cmake
+git clone https://github.com/intel-iot-devkit/mraa.git
+cd mraa
+mkdir build
+cd build
+export CFLAGS=-m32
+export CXXFLAGS=-m32
+cmake .. -DBUILDSWIGNODE=OFF -DBUILDSWIGPYTHON=OFF -DBUILDARCH=i386
+make
+sudo make install
+
+
+To remove mraa library:
+cd mraa
+sudo xargs rm < install_manifest.txt
