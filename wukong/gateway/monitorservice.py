@@ -208,6 +208,8 @@ class MonitorService(object):
                         self.client.send(iq)
                         print 'user state'
                     elif 'State' in input_data:
+                        mess.setData('{"topicId": "nooneknow", "Command_Mode": 2, "Context": '+input_data['State']+'}')
+                        self.client.send(iq)
                         print 'state'
                     elif 'Preview' in input_data:
                         mess.setData('{"topicId": "nooneknow", "Command_Mode": 3'+
