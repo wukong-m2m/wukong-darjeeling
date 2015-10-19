@@ -207,6 +207,11 @@
         <property name="slipper2" access="readonly" datatype="short" default="0" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
     </WuClass>
+    <WuClass name="Smart_Mug" id="1908" virtual="false" type="hard">
+        <property name="volume" access="readonly" datatype="short" default="0" />
+        <property name="color" access="readonly" datatype="short" default="0" />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="1000"  />
+    </WuClass>
 
     <!-- Actuators -->
     <WuClass name="Light_Actuator" id="2001" virtual="false" type="hard">
@@ -264,5 +269,21 @@
     </WuClass>
     <WuClass name="Number" id="2014" virtual="false" type="hard">
         <property name="input" access="readwrite" datatype="short" default="1" />
+    </WuClass>
+
+    <!-- PrClasses -->
+    <WuClass name="SwithPrClass" id="10001" virtual="false" type="hard">
+      <property name="switchinput" access="readwrite" datatype="short" default="1" />
+      <property name="temparature" access="readwrite" datatype="short" default="50" />
+      <property name="threshold" access="readwrite" datatype="short" default="1" />
+    </WuClass>
+    <WuClass name="TimerPrClass" id="10002" virtual="false" type="hard">
+      <property name="output" access="readwrite" datatype="short" default="1" />
+    </WuClass>
+    <WuClass name="ICSDemoPrClass" id="10003" virtual="false" type="hard">
+      <property name="uid" access="readwrite" datatype="short" default="1" />
+      <property name="music" access="readwrite" datatype="short" default="1" />
+      <property name="fan" access="readwrite" datatype="short" default="1" />
+      <property name="light" access="readwrite" datatype="short" default="1" />
     </WuClass>
 </WuKong>

@@ -568,7 +568,7 @@ class RPCAgent(TransportAgent):
 
                             if success: break
                             else: logger.error("RPC send got error replies: %s (retries %d-th time)" % (message, retries))
-                        except:
+                        except Exception as e:
                             logger.error("RPC send to ID=%s via gateway ID=%d addr=%s fails; error=%s\n%s" % (node_id,
                                 gateway.id, str(gateway.tcp_address), str(e), traceback.format_exc()))
                         retries -= 1
