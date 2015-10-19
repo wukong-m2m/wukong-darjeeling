@@ -207,6 +207,11 @@
         <property name="slipper2" access="readonly" datatype="short" default="0" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
     </WuClass>
+    <WuClass name="Smart_Mug" id="1908" virtual="false" type="hard">
+        <property name="volume" access="readonly" datatype="short" default="0" />
+        <property name="color" access="readonly" datatype="short" default="0" />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="1000"  />
+    </WuClass>
 
     <!-- Actuators -->
     <WuClass name="Light_Actuator" id="2001" virtual="false" type="hard">
