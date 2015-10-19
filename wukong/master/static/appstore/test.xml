@@ -1,0 +1,17 @@
+<application name="098f6bcd4621d373cade4e832627b4f6"><app_name>test</app_name>
+<page title="_first_">
+    <component type="Button" instanceId="49" x="335" y="147" w="120" h="94" name="block">
+        <link fromProperty="current_value" toInstanceId="50" toProperty="on_off"/>
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+        <monitorProperty />
+    </component>
+    <component type="Buzzer" instanceId="50" x="576" y="140" w="120" h="116" name="block">
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+        <monitorProperty />
+    </component>
+</page>
+</application>

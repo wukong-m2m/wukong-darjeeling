@@ -232,7 +232,7 @@ Block.prototype.draw=function() {
     var tags = []
     var iconClass = this.type
     var icon44 = this.icon44;
-    var icon = '<img src="'+icon44.src+'" class="wuClassIcon22 '+iconClass+'"/>'
+    var icon = '<img src="'+icon44.src+'" class="wuClassIcon22"/>'
     var type = this.type
     tags.push('<div class="block-type">'+icon + type + '</div>');
     var name = (this.name|| type.replace('_',' '))

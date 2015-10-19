@@ -54,7 +54,7 @@ function registerWuClassCategory(block){
 	var c = WuClassCategory.lookupTable[block.typename]
 	if (!c) {
 	    c = WuClassCategory.lookupTable['Generic']
-	    console.log('Can not category of "'+block.typename+'"')
+	    console.log('Can not find category of "'+block.typename+'"')
 	}
 	c.members.push(block);
 	block.category = c;
@@ -62,7 +62,8 @@ function registerWuClassCategory(block){
 }
 /* construct the category tree */
 //HY:"wuClassCategoaryTableRaw" is created by generate_categorytable_4_js.py
-var wuClassCategoaryTableRaw = {"Actuator": {"Digital Output": ["Light_Actuator", "LED", "Fan"], "Analog Output": ["RGBLED"], "PWM": ["Buzzer", "Sound"]}, "Sensor": {"Digital Input": ["PIR_Sensor", "Binary_Sensor", "Magnetic_Sensor"], "Others": ["Gh_Sensor"], "Fast Digital I/O": ["Ultrasound_Sensor"], "Unit Test": ["Binary_TestSensor", "Integer_TestSensor"], "Analog Input": ["Light_Sensor", "Slider", "Ir_Sensor", "Microphone_Sensor", "Pressure_Sensor_0"], "I2C": ["Temperature_Humidity_Sensor"]}, "Software": {"Calculation": ["Math_Op"], "Special Usage": ["Server", "Multiplexer", "Virtual_Slider"], "Condition": ["If_Short", "If_Boolean", "Condition_Selector_Boolean", "Condition_Selector_Short"], "Logic": ["Threshold", "And_Gate", "Or_Gate", "Xor_Gate", "Not_Gate"]}}
+var wuClassCategoaryTableRaw = {"Actuator": {"UART": ["Grove_MP3", "Gesture_MP3"], "Digital Output": ["Light_Actuator", "LED", "Fan", "Relay"], "Analog Output": ["RGBLED", "Dimmer", "Mist"], "PWM": ["Buzzer", "Sound", "MOSFET_LED"], "I2C": ["Grove_LCD"]}, "Sensor": {"Digital Input": ["PIR_Sensor", "Binary_Sensor", "Magnetic_Sensor", "Button", "Touch_Sensor"], "UART": ["User", "Gesture"], "Others": ["Gh_Sensor"], "Fast Digital I/O": ["Ultrasound_Sensor"], "Unit Test": ["Binary_TestSensor", "Integer_TestSensor"], "Analog Input": ["Light_Sensor", "Slider", "Ir_Sensor", "Microphone_Sensor", "Pressure_Sensor_0", "Temperature_Sensor", "Sound_Sensor"], "I2C": ["Temperature_Humidity_Sensor"]}, "Software": {"Calculation": ["Math_Op"], "Special Usage": ["Server", "Multiplexer", "Virtual_Slider", "Controller", "User_Aware", "Plugin"], "Condition": ["If_Short", "If_Boolean", "Condition_Selector_Boolean", "Condition_Selector_Short"], "Logic": ["Threshold", "And_Gate", "Or_Gate", "Xor_Gate", "Not_Gate", "Equal"]}}
+
 function WuClassCategory(title,parentCategory){
     this.title = title
     this.parent = parentCategory;

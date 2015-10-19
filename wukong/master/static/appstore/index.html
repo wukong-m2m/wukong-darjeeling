@@ -12,33 +12,77 @@
   z-index:50;
   background-color:rgba(0,0,0,0);
   padding-top:15px;
+  border: dashed 1px #ffffff;
 }
 .appstore-app:hover{
   border: dashed 1px #c0c0c0;
 }
-.appstore-app span{
+.appstore-app img{
+    width:80px;
+    height:80px;
     float:left;
-    margin-left:90px;
-    clear:left;
+}
+.appstore-app > div{
+    margin-left:5px;
+    float:left;
+}
+.appstore-app span{
+    display:block;    
 }
 .appstore-app span.by,.appstore-app span.desc{
     color:#c0c0c0;
 }
+.app-default-icon{
+    /* should sync with .app-default-icon in fbp2.html */
+    width:80px;
+    height:80px;
+    background-color:#4B8DF9;
+    border-radius: 40px 40px 40px 40px;
+    -moz-border-radius: 40px 40px 40px 40px;
+    -webkit-border-radius: 40px 40px 40px 40px;
+    color:white;
+    font-size:3em;
+    line-height:80px;
+    text-align:center;
+}
+
 </style>
 <div style="width:100%;height:100%;background-image:url(/static/appstore/index.png);background-repeat:no-repeat"></div>
 <div id="application-buttons"></div>
+<script src=""></script>
 <script>
-var application_xmls = [
-	{name:'Buzzer',url:'Button to Buzzer.xml',by:'JyunJhe',desc:'for guest'},
-	{name:'Door Light',url:'Light1.xml',by:'JyunJhe',desc:'door light'},
-	{name:'Main Light',url:'Light2.xml',by:'JyunJhe',desc:'living room light'},
-	{name:'Kitchen Light',url:'Light3.xml',by:'JyunJhe',desc:'kitchen light'},
-	{name:'Welcome Sound',url:'MP3.xml',by:'JyunJhe',desc:'welcome'},
-	{name:'Drum',url:'Drum.xml',by:'',desc:'drum'},
-	{name:'Piano',url:'Piano.xml',by:'Mary',desc:'piano'},
-	{name:'Trumpet',url:'Trumpet.xml',by:'Mary',desc:'trumpet'},
-]
-function appStoreInit(closeStore) {
+
+function appStoreInit(closeStore){
+    //application_xmls.js is actually a csv file
+    $.ajaxSetup({ cache: false });
+    $.ajax({
+        url:'/static/appstore/application_xmls.js',
+        dataType:'text',
+        cache:false,
+        success:function(text){
+            loadAppStore(closeStore,text)
+        }
+    })
+}
+function loadAppStore(closeStore,text) {
+    /* parse text from csv string to array */
+    var lines = text.split('\n')
+    var applications = []
+    for (var i=0,line;typeof(line=lines[i]) != 'undefined';i++){    
+        if (line=='' || line.substr(0,1)=='#') continue;
+        var cols = line.split('\t')
+        if (cols.length==4){
+            var app = {
+                name:cols[0],
+                nameprefix:cols[1],
+                url:cols[1]+'.xml',
+                icon:cols[1]+'.png',
+                by:cols[2],
+                desc:cols[3]
+            }
+            applications.push(app)
+        }
+    }
     /*
      * Create clickable applications
      */
@@ -50,7 +94,7 @@ function appStoreInit(closeStore) {
     var max_col = 4
     var max_index = 21
     var url_prefix = '/static/appstore/'
-    for (var i=0,app;app=application_xmls[i];i++){
+    for (var i=0,app;app=applications[i];i++){
         // Too many in this version
         if (i >= max_index) break;
         // recount the top and left
@@ -60,16 +104,35 @@ function appStoreInit(closeStore) {
         app.top = row * top_delta + top_start
         app.left = col * left_delta + left_start
         tags.push('<div idx="'+i+'" class="appstore-app" name="'+app.name+'" style="top:'+app.top+'px;left:'+app.left+'px">')
+        tags.push('<div class="app-icon" src="'+url_prefix+'/'+app.icon+'" name="'+app.name.substr(0,1)+'"></div>')
         tags.push('<div><span class="name">'+app.name+'</span><span class="by">By: '+app.by+'</span><span class="desc">'+app.desc+'</span></div>')
         tags.push('</div>')
     }
     document.getElementById('application-buttons').innerHTML = tags.join('')
-
     var clickHandler = function(evt){
         var appDiv = evt.currentTarget;
-        var app = application_xmls[parseInt(appDiv.getAttribute('idx'))]
+        var app = applications[parseInt(appDiv.getAttribute('idx'))]
         var app_name = app.name
 
+        var removeAppAction = evt.ctrlKey || evt.metaKey
+        var text = (removeAppAction ? 'Remove from App Store - ' : 'Install') + ' '+app_name+'?'
+        if (!confirm(text)) return;
+        
+        if (removeAppAction){
+            loading('Removing '+app_name)
+            $.post('/appstore/remove', {nameprefix: app.nameprefix}, function(data) {
+              loading(false)
+              closeStore()
+              if (data.status == '1') {
+                alert(data.msg);
+              }
+              else {
+                alert(app_name+' Removed');
+              }
+            });        
+            return;
+        }
+        
         loading('Downloading... '+app_name)
         var loadingDiv = document.getElementById('loading')
         var viewportSize = getViewportSize()
@@ -96,7 +159,7 @@ function appStoreInit(closeStore) {
                   loading(false)
                   closeStore()
                   if (data.status == '1') {
-                    alert(data.mesg);
+                    alert(data.msg);
                   }
                   else {
                     alert(app_name+' Installed');
@@ -111,6 +174,21 @@ function appStoreInit(closeStore) {
         var appDiv = appDivs[i]
         appDiv.onclick = clickHandler;
     }
+    //load app-icon
+    var appIcons = document.querySelectorAll('.app-icon')
+    var loadIcon = function(i){
+        var img = new Image()
+        var src = appIcons[i].getAttribute('src')
+        img.onload = function(){
+            appIcons[i].innerHTML = '<img src="'+src+'"/>'
+        }
+        img.onerror = function(){
+            appIcons[i].innerHTML = '<div class="app-default-icon">'+appIcons[i].getAttribute('name')+'</div>'
+        }
+        img.src = src
+        if (i+1 < appIcons.length) loadIcon(i+1)
+    }
+    loadIcon(0)
 }
 </script>
 </body>
