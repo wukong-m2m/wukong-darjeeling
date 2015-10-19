@@ -22,7 +22,7 @@ TRANSPORT_INTERFACE_TYPE = 'udp'
 # TRANSPORT_INTERFACE_ADDR = '/dev/cu.usbmodem1421' # for Zwave on MacOSX
 # TRANSPORT_INTERFACE_ADDR = 'wlan0' # for UDP interface
 # TRANSPORT_INTERFACE_ADDR = 'lo' # for UDP interface
-TRANSPORT_INTERFACE_ADDR = 'lo0' # for UDP interface on MacOSX
+TRANSPORT_INTERFACE_ADDR = 'eth0' # for UDP interface on MacOSX
 
 UNITTEST_MODE = False
 UNITTEST_WAIT_SEC = 5
@@ -32,10 +32,10 @@ ENABLE_AUTONET = False
 AUTONET_MAC_ADDR_LEN = 8
 
 
-ENABLE_MONITOR = False
+ENABLE_MONITOR = True
 MONGODB_URL= "mongodb://140.112.170.32:27017/Wukong"
 
-ENABLE_PROGRESSION = False
+ENABLE_PROGRESSION = True
 PSERVER_IP = 'localhost'
 PSERVER_UDP_PORT = 8000
 
@@ -46,4 +46,23 @@ SYSTEM_NAME = 'Wukong1'
 # Graphite Access info
 ENABLE_GRAPHITE = False
 GRAPHITE_IP = 'localhost'
-GRAPHITE_HOSt = 2004
+GRAPHITE_PORT = '2004'
+
+ENABLE_CONTEXT = True
+
+XMPP_IP = '140.112.28.107'
+XMPP_PORT = 10303
+XMPP_SERVER = 'localhost'
+XMPP_USER = 'user1'
+XMPP_PASS = 'wukong'
+XMPP_ROOM = 'pubsub@conference.'+XMPP_SERVER
+XMPP_NICK = XMPP_ROOM+'/gateway0'
+'''
+XMPP_IP = '140.112.170.26'
+XMPP_PORT = 5222
+XMPP_SERVER = 'wukongdemac-mini.local'
+XMPP_USER = 'admin'
+XMPP_PASS = 'admin'
+XMPP_ROOM = 'monitor@conference.'+XMPP_SERVER
+XMPP_NICK = XMPP_ROOM+'/gateway0'
+'''
