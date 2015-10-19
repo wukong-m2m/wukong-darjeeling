@@ -24,9 +24,9 @@ extern uint8_t wkpf_send_set_linktable_no_token(wkcomm_address_t dest_node_id, u
                                 uint8_t new_link_src_property_id, uint16_t new_link_dest_component_id, uint8_t new_link_dest_property_id);
 
 
-extern uint8_t wkpf_send_monitor_property_int16(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t property_number, int16_t value);
-extern uint8_t wkpf_send_monitor_property_boolean(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t property_number, bool value);
-extern uint8_t wkpf_send_monitor_property_refresh_rate(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t property_number, wkpf_refresh_rate_t value);
+extern uint8_t wkpf_send_monitor_property_int16(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, uint8_t property_number, int16_t value);
+extern uint8_t wkpf_send_monitor_property_boolean(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, uint8_t property_number, bool value);
+extern uint8_t wkpf_send_monitor_property_refresh_rate(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, uint8_t property_number, wkpf_refresh_rate_t value);
 extern uint8_t wkpf_propagate_link_change(uint16_t orig_link_src_component_id, uint8_t orig_link_src_property_id, 
                                 uint16_t orig_link_dest_component_id, uint8_t orig_link_dest_property_id, uint16_t new_link_src_component_id, 
                                 uint8_t new_link_src_property_id, uint16_t new_link_dest_component_id, uint8_t new_link_dest_property_id);
