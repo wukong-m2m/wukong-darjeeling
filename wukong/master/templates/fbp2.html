@@ -77,7 +77,7 @@
 <style>
 #sidebar{
     width:400px;
-    height:99%;
+    height:100%;
     position:absolute;
     top:0;
     left:0;
@@ -245,6 +245,7 @@
 .sidebar-tabcontent #toolbar_type li label{
     display:inline-block;
     line-height:22px;
+    padding-top:12px;/* make this to be in the middle of item*/
     padding-left:5px;
     float:left;
     font-size:12px;
@@ -354,6 +355,26 @@
   border: solid 1px #c0c0c0;
   line-height: 22px;
 }
+#submitform{
+    height:400px;
+}
+#submitform label{
+  display:block;
+  margin-top:10px;
+}
+.app-default-icon{
+    /* should sync with .app-default-icon in appstore/index.html */
+    width:80px;
+    height:80px;
+    background-color:#4B8DF9;
+    border-radius: 40px 40px 40px 40px;
+    -moz-border-radius: 40px 40px 40px 40px;
+    -webkit-border-radius: 40px 40px 40px 40px;
+    color:white;
+    font-size:3em;
+    line-height:80px;
+    text-align:center;
+}
 </style>
     </head>
     <body style="overflow:hidden">
@@ -410,15 +431,31 @@
                     <button onclick="FBP_deploy()" id="deployBtn">Deploy</button>
                     <button onclick="FBP_map()">Map</button>
                 </div>
+                <div class="block">
+                    <label>App Store:</label>
+                    <button onclick="FBP_submit2AppstoreDialog()">Submit to App Store</button>
+                </div>
             </div>
             <div class="sidebar-tabcontent" tab="t2">
                 <div class="block" id="wuclasses">
                     <div class="block"><label>Select Category:</label><select id=toolbar_type_category0></select></div>
                     <div class="block"><label>Select Sub-Category:</label><select id=toolbar_type_category1></select></div>
                     <div class="block"><label>Select WuClass:(<span id="toolbar_type_count"></span>)</label><ul id="toolbar_type"></ul></div>
-                    <button class="blue" id="addBlockBtn">Add</button>
-                    <p style="padding:5px;overflow-y:auto;width:89%;height:50px" class="rounded fulldesc">
-                    </p>
+                    <div>
+                        <div class="buttons">
+                            <button class="blue" id="addBlockBtn">Add</button>
+                            <button id="downloadBlockBtn">Download</button>
+                            <button id="uploadBlockBtn">Upload</button>
+                        </div>
+                        <form>
+                            <input type="file" style="width:50%">
+                            <button id="submitUploadBlock" class="blue">Submit</button>
+                            <button id="cancelUploadBlock">Cancel</button>
+                        </form>
+                    </div>
+                    <div id="wuClassFullDesc">
+                    <p style="display:block;padding:5px;overflow-y:auto;width:89%;height:50px" class="rounded fulldesc"></p>
+                    </div>
                 </div>
             </div>
             <div class="sidebar-tabcontent" tab="t3">
@@ -486,6 +523,31 @@
     <div class="modal-dialog-content"></div>
     <div class="modal-dialog-buttons"><button onclick="FBP_closeModalDialog()">Close</button></div>
 </div>
+<div id="submitform" class="modal-dialog">
+    <div class="modal-dialog-content">
+        <h1>Submit to App Store</h1>
+        <form>
+            <label>Name:</label>
+            <input name="name" value="" class="submit-app-name">
+            <label>Author:</label>
+            <input name="author" value="" class="submit-app-author">
+            <label>Description:</label>
+            <textarea name="desc" class="submit-app-desc" style="width:100%;height:100px"></textarea>
+            <div>
+                <div class="app-default-icon-box" style="display:inline-block;width:100px;padding-top:10px;">
+                    <div class="app-default-icon"></div>
+                </div>
+                <div style="display:inline-block;position:absolute;">
+                    <label>Icon (80x80 PNG):</label>
+                    <input type="file" name="icon" class="submit-app-icon">
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-dialog-buttons">
+        <button class="blue submit-app-submit">Submit</button><button onclick="FBP_closeModalDialog()">Cancel</button>
+    </div>
+</div>
 <xml id="locationpolicyxml" style="display:none"></xml>
 <div id="locationpolicyeditor" class="modal-dialog" style="display:none">
     <div class="modal-dialog-content"></div>
@@ -541,6 +603,19 @@ function sidebarInit(){
     for (var i=0;i<tabtitles.length;i++){
         tabtitles[i].onclick = function(){
             sidebarActiveTab(this.getAttribute('tab'))
+            if (this.getAttribute('tab')=='t2'){
+                //special treat for Tab2
+                // extends the length of wuclass selection block
+                var buttonRect = $('#addBlockBtn')[0].getBoundingClientRect()
+                console.log(buttonRect)
+                var sidebarRect = $('#sidebar')[0].getBoundingClientRect()
+                var residureHeight = sidebarRect.bottom - buttonRect.bottom;
+                console.log('residureHeight='+sidebarRect.bottom +'-'+ buttonRect.bottom+'='+residureHeight)    
+                if (residureHeight > 30){
+                    var newHeight = $('#toolbar_type').height()+residureHeight
+                    $('#toolbar_type').height(newHeight)
+                }
+            }
         }
     }
     /* render content
@@ -639,6 +714,7 @@ function enableZoom(){
     //    jquery draggable is not used, because it has bug
     //    if the target has been zoomed.
     var _dragging = false
+    var _draggingTimer = 0;
     var ratio
     target.on('mousedown',function(evt){
         if (FBP_linkIsActive) return
@@ -646,12 +722,16 @@ function enableZoom(){
         if (className.indexOf('block') >= 0 || className.indexOf('slot')>=0){
              return
         }
-        setTimeout(function(){
+        _draggingTimer = setTimeout(function(){
             ratio = zoomRatio / 100
-            _dragging = [evt.pageX,evt.pageY]
-        },50)
+           _dragging = [evt.pageX,evt.pageY]
+        },500)
     })
     target.on('mouseup mouseout blur mouseleave',function(e){
+        if (_draggingTimer) {
+            clearTimeout(_draggingTimer)
+            _draggingTimer = 0
+        }
         if (_dragging) {
             top.notifyApplicationContentTainted(true)
             updatePanoffset()

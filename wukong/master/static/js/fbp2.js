@@ -182,7 +182,7 @@ function FBP_fillBlockTypeInPage(pageTitle){
        var block = Block.classes[nodes[i].type]
        var iconClass = block.typename
        if (iconClass=='Button') iconClass=''
-       var icon = '<img src="'+block.icon44.src+'" class="wuClassIcon '+iconClass+'"/>'
+       var icon = '<img src="'+block.icon44.src+'" class="wuClassIcon"/>'
        var location = nodes[i].location || 'No Location'
        var desc = '<span class="'+(nodes[i].location ? '' : 'warning-text')+'">'+location+'</span>'
        tags.push('<li><input type="radio" name="pagenode" value="'+(pageTitle+'\t'+nodes[i].id)+'">'+icon+'<label>'+nodes[i].type+'</label>'+desc+'</li>');
@@ -196,6 +196,12 @@ function FBP_fillBlockTypeInPage(pageTitle){
     })
     $('#addBlockBtn')[0].onclick = function(evt){
         FBP_importBlock()
+    }
+    $('#downloadBlockBtn')[0].onclick = function(evt){
+        FBP_downloadBlock()
+    }
+    $('#uploadBlockBtn')[0].onclick = function(evt){
+        FBP_uploadBlock()
     }
 }
 function FBP_fillBlockTypeCategory($div,subcategory)
@@ -285,13 +291,11 @@ function FBP_fillBlockType($div,blocks)
     var i;
     var tags = []
     for(i=0;i<blocks.length;i++) {
-//       div.append('<option val='+blocks[i]+'>'+blocks[i]+'</option>');
-       //div.append('<option val='+blocks[i]+' ondblclick=FBP_addBlock()>'+blocks[i]+'</option>');
-       var block = blocks[i]
+      var block = blocks[i]
        var iconClass = block.typename
        if (iconClass=='Block') iconClass=''
-       var icon = '<img src="'+(block.icon44 ? block.icon44.src : genericIcon.src)+'" class="wuClassIcon '+iconClass+'"/>'
-       var desc = '<span>This is brief description of '+block.typename+'</span>'
+       var icon = '<img src="'+(block.icon44 ? block.icon44.src : genericIcon.src)+'" class="wuClassIcon"/>'
+       var desc = '<span>'+(block.desc || '')+'</span>'
        tags.push('<li><input type="radio" name="blocktype" value="'+block.typename+'">'+icon+'<label>'+block.typename+'</label>'+desc+'</li>');
     }
     $div.html(tags.join(''))
@@ -300,31 +304,31 @@ function FBP_fillBlockType($div,blocks)
         li.querySelector('input').checked = true;
         //show desc
         var typename = li.querySelector('input').value
-        var fulldesc = 'this is full description of '+typename
-        fulldesc += fulldesc
-        fulldesc += fulldesc
-        $('#wuclasses .fulldesc')[0].innerHTML = fulldesc.length+';'+fulldesc;
+        var fulldesc = '';
+        //'this is full description of '+typename
+        //fulldesc += fulldesc
+        //fulldesc += fulldesc
+        $('#wuclasses .fulldesc')[0].innerHTML = fulldesc;
     })
     $('#addBlockBtn')[0].onclick = function(evt){
         FBP_addBlock()
     }
     $('#addBlockBtn')[0].removeAttribute('disabled')
+    
+    $('#downloadBlockBtn')[0].onclick = function(evt){
+        FBP_downloadBlock()
+    }
+    $('#uploadBlockBtn')[0].onclick = function(evt){
+        FBP_uploadBlock()
+    }    
+
 }
-/* HY: this is the original FBP_addBlock
-function FBP_addBlock()
-{
-    var type = $('#toolbar_type').val();
-    var block = Block.factory(type);
-    // This should be replaced with the node type system latter
-    block.attach($('#content'));
-    g_nodes.push(block);
-}
-*/
-function FBP_addBlock()
-{
-    var selected = document.querySelector('#toolbar_type li input[type="radio"]:checked')
-    if (!selected) return;
-    var type = selected.value
+function FBP_addBlock(type){
+    if (!type){
+        var selected = document.querySelector('#toolbar_type li input[type="radio"]:checked')
+        if (!selected) return;
+        type = selected.value
+    }
     var block = Block.factory(type);
     // This should be replaced with the node type system latter
     block.attach($('#content'));
@@ -571,13 +575,15 @@ function FBP_link(evt)
         FBP_link_cleanup($target,_lastHit)
     })
 }
-function FBP_save_meta_or_content(){
+function FBP_save_meta_or_content(callback){
     if (!(top._AppContentTainted_ || top._AppMetaTainted_)){
+        if (callback) setTimeout(function(){callback()},1)
         return;
     }
     if (top._AppContentTainted_) FBP_save(function(success){
         if (success && !top._AppMetaTainted_){
-            alert('Saving Succeed')
+            if (callback) setTimeout(function(){callback()},1)
+            else alert('Saving Succeed')
         }
     })
     if (top._AppMetaTainted_){
@@ -590,11 +596,13 @@ function FBP_save_meta_or_content(){
             success:function(data){
                 //console.log(data)
                 if (data.status==1){
-                    alert('Failure:'+data.mesg)
+                    if (callback) setTimeout(function(){callback()},1)
+                    else alert('Fail to save:'+data.mesg)
                 }
                 else{
                     top.notifyApplicationMetaTainted(false)
-                    alert('Saving Succeed')
+                    if (callback) setTimeout(function(){callback()},1)
+                    else alert('Succeed')
                 }
             }
         })
@@ -1203,7 +1211,50 @@ function FBP_importBlock(){
     block.attach($('#content'));
     g_nodes.push(block);
 }
-
+function FBP_downloadBlock(){
+    var selected = document.querySelector('#toolbar_type li input[type="radio"]:checked')
+    if (!selected) return;
+    var type = selected.value
+    var block = Block.factory(type);
+    // generate block's json metadata
+    var object = {}
+    block.serialize(object)
+    downloadLocalFile(block.name+'.wcj',JSON.stringify(object))
+}
+function FBP_uploadBlock(){
+    var parentNode = document.getElementById('uploadBlockBtn').parentNode
+    //show the form
+    parentNode.style.display = 'none'
+    var formEle = parentNode.parentNode.querySelector('form')
+    var object = null
+    formEle.querySelector('input[type="file"]').onchange=function(){
+        if (this.files && this.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                try{
+                    object = JSON.parse(e.target.result)
+                }
+                catch(e){
+                    alert('Format Error')
+                }
+            }
+            reader.readAsText(this.files[0]);
+        }
+    }
+    formEle.querySelector('#submitUploadBlock').onclick = function(evt){
+        evt.preventDefault();
+        if (!object){
+            //same as cancel
+            parentNode.style.display = ''
+            return;
+        }
+        FBP_addBlock(object.type)
+    }
+    formEle.querySelector('#cancelUploadBlock').onclick = function(evt){
+        evt.preventDefault();    
+        parentNode.style.display = ''
+    }
+}
 /*deployment*/
 var _DepolymentDialogCloseHandler;
 function FBP_openDepolymentDialog(callback){
@@ -1332,4 +1383,72 @@ function FBP_map_do(){
         }
     });
 }
-
+function FBP_submit2AppstoreDialog(){
+    //confirm to save
+    /*
+    var yes = confirm('Sumbit to app store?')
+    if (!yes) return;
+    */
+    // save the project 
+    FBP_save_meta_or_content(function(){
+        // show the submit form
+        var $dialog=$('#submitform')
+        var size = getViewportSize()
+        $dialog.css({
+            'display':'block',
+            'left':size.width*0.035,
+            'top':size.height *0.035
+        })
+        $dialog.find('form .submit-app-name').val(currentApplication.app_name)
+        $dialog.find('form .submit-app-desc').val(currentApplication.desc)
+        $dialog.find('form .app-default-icon').html(currentApplication.app_name.substr(0,1))
+        $dialog.find('form .submit-app-name').on('change',function(){
+            // if there is no cumtom icon, we generate it
+            var $img=$dialog.find('form img')
+            if ($img.length==0){
+                var c = $dialog.find('form .submit-app-name').val().substr(0,1)
+                $dialog.find('form .app-default-icon').html(c)
+            }
+        })
+        $dialog.find('form .submit-app-icon').on('change',function(){
+            if (this.files && this.files[0]) {
+                $('form .app-default-icon-box').css('display','none')
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var $img=$dialog.find('form img')
+                    if ($img.length==0){
+                        $img = $('<img style="display:block;width:80px;height:80px" src="">')
+                        $dialog.find('form .submit-app-icon').after($img)
+                    }
+                    $img.attr('src', e.target.result);
+                }
+                reader.readAsDataURL(this.files[0]);
+            }
+            else{
+                $('form .app-default-icon-box').css('display','inline-block')
+                $dialog.find('form img').remove()
+            }
+        })
+        $dialog.find('.submit-app-submit').off('click')
+        $dialog.find('.submit-app-submit').on('click',function(e){
+            e.preventDefault();
+            //check necessary field values
+            var name = $dialog.find('form .submit-app-name').val()
+            var author = $dialog.find('form .submit-app-author').val()
+            //var desc = $dialog.find('form .submit-app-desc').val()
+            //var iconInput = $dialog.find('form .submit-app-icon')[0]
+            if (name=='' || author=='') {alert('App name and author are required');return}
+            var url = '/applications/'+currentApplication.id+'/fbp/submit2appstore'
+            $.ajax({
+                url:url,
+                type:'POST',
+                data: new FormData($dialog.find('form')[0]),
+                processData: false,
+                contentType: false
+            }).done(function(){                
+                $dialog.css({'display':'none'})
+                alert('Submit ok')
+            })
+        })
+    })
+}

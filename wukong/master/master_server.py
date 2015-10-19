@@ -4,7 +4,7 @@
 # author: Penn Su
 # Modified:
 #   Hsin Yuan Yeh (iapyeh@gmail.com)
-#   April 18, May 13, 2015
+#   Sep 18, April 18, May 13, 2015
 #
 import sys
 reload(sys)  # Reload does the trick!
@@ -1384,6 +1384,118 @@ class UserAware(tornado.web.RequestHandler):
     self.content_type='text/html'
     self.render('templates/user.html')
 
+class Submit2AppStore(tornado.web.RequestHandler):
+  def post(self,app_id):
+    app_ind = getAppIndex(app_id)
+    if app_ind == None:
+      self.content_type = 'application/json'
+      self.write({'status':1, 'mesg': 'Cannot find the application'})
+    else:
+      app = wkpf.globals.applications[app_ind]
+      name = self.get_argument('name', default=None, strip=False)
+      static_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "static"))
+      appstore_path = os.path.join(static_path,'appstore')
+      ## save application to xml
+      illegal_chars = list(' "\'\/\\,.;$&=*:|[]')
+      xmlname = name
+      for char in illegal_chars:
+          xmlname = xmlname.replace(char,'')
+
+      count = 0
+      xmlpath = os.path.join(appstore_path,xmlname+'.xml')
+      while os.path.exists(xmlpath):
+        count += 1
+        xmlpath = os.path.join(appstore_path,'%s(%s).xml' % (xmlname,count))
+      if count > 0:
+        xmlname = '%s(%s)' % (xmlname,count)
+
+      #
+      # Add the app_name into the xml
+      #
+      xml = app.xml
+      xmlfd = open(xmlpath,'wb')
+      insert_pos = xml.find('>')+1
+      xml = xml[:insert_pos]+'<app_name>'+name+'</app_name>'+xml[insert_pos:]
+      xmlfd.write(xml)
+      xmlfd.close()
+      
+      #
+      # save icon to the same name
+      #
+      try:
+          fileinfo = self.request.files['icon'][0]
+          iconpath = os.path.join(appstore_path,xmlname+'.png')
+          iconfd = open(iconpath,'wb')
+          iconfd.write(fileinfo['body'])
+          iconfd.close()
+      except KeyError:
+          pass
+
+      self.content_type = 'application/json'
+      try:
+          desc = self.get_argument('desc', default='No description', strip=False)
+          author = self.get_argument('author', default='Guest', strip=False)
+          csv_path = os.path.join(appstore_path,'application_xmls.js')
+          if os.path.exists(csv_path):
+             fd = open(csv_path,'ab')
+          else:
+             fd = open(csv_path,'wb')
+          line = '\t'.join([name,xmlname,author,desc])
+          fd.write('\n'+line)
+          fd.close()
+          self.write({'status':0})
+      except e:
+          ## delete the created xml file of this app
+          print 'Error !',e
+          os.unlink(xmlpath)
+          os.unlink(iconpath)
+          self.write({'status':1,'mesg':'%s' % e})
+      self.finish()
+
+class RemoveAppFromStore(tornado.web.RequestHandler):
+  def post(self):
+      nameprefix = self.get_argument('nameprefix', default=None, strip=False)
+      static_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "static"))
+      appstore_path = os.path.join(static_path,'appstore')
+      
+      self.content_type = 'application/json'
+      try:
+          csv_path = os.path.join(appstore_path,'application_xmls.js')
+          if os.path.exists(csv_path):
+             fd = open(csv_path,'rb')
+             lines = fd.readlines()
+             fd.close()
+             
+             appname = xmlname = author = desc = None
+             for i in range(len(lines)):
+                if lines[i].find('\t'+nameprefix+'\t') > 0:
+                    appname,xmlname,author,desc = lines[i].split('\t')
+                    del lines[i]
+                    break
+
+             if appname:
+                 ## the last line should not end with new-line
+                 ## because the new-line will be added when new app submitted
+                 lines[-1] = lines[-1].rstrip()
+                 fd = open(csv_path,'wb')
+                 fd.write(''.join(lines))
+                 fd.close()
+
+                 xmlpath = os.path.join(appstore_path,xmlname+'.xml')
+                 if os.path.exists(xmlpath):
+                     os.unlink(xmlpath)
+      
+                 iconpath = os.path.join(appstore_path,xmlname+'.png')
+                 if os.path.exists(iconpath):
+                     os.unlink(iconpath)
+                 self.write({'status':'0','msg':'ok'})
+             else:
+                 self.write({'status':'1','msg':name+' Not Found'})
+          else:
+              self.write({'status':'1','msg':'App List Not Found'})
+      except:
+          self.write({'status':'1','msg':sys.exc_info()})
+      self.finish()
 settings = dict(
   static_path=os.path.join(os.path.dirname(__file__), "static"),
   debug=True
@@ -1415,6 +1527,8 @@ wukong = tornado.web.Application([
   (r"/applications/([a-fA-F\d]{32})/fbp/save", save_fbp),
   (r"/applications/([a-fA-F\d]{32})/fbp/load", load_fbp),
   (r"/applications/([a-fA-F\d]{32})/fbp/download", download_fbp),
+  (r"/applications/([a-fA-F\d]{32})/fbp/submit2appstore", Submit2AppStore),
+  (r"/appstore/remove", RemoveAppFromStore),
   (r"/loc_tree/nodes/([0-9]*)", loc_tree),
   (r"/loc_tree/edit", edit_loc_tree),
   (r"/loc_tree/parse", loc_tree_parse_policy),
@@ -1441,7 +1555,7 @@ wukong = tornado.web.Application([
   (r"/configuration", Progression),
   (r"/getRefresh/([0-9]*)/([0-9]*)/([0-9]*)", GetRefresh),
   (r"/nowUser/([0-9]*)", NowUser),
-  (r"/user", UserAware)
+  (r"/user", UserAware),
 ], IP, **settings)
 
 logging.info("Starting up...")
