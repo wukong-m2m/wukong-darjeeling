@@ -385,7 +385,7 @@ class IDService(object):
 
             if not self._is_id_in_gwself_network(src_id):
                 message = MPTN.create_packet_to_str(src_id, dest_id, msg_type, None)
-                MPTN.socket_send(context, src_id, message)
+                MPTN.socket_send(context, context.id, message)
 
             return
 

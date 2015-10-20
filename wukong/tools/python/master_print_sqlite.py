@@ -16,7 +16,7 @@ if len(db) == 0: print "None"
 #         network=IPv4Network('10.0.0.0/24'), network_size=256, netmask=4294967040, hostmask=255,
 #         uuid='\xe5\xa8\xc3\xc6\xa8\xcdB;\x86\xfb\xc5O\\x\xad\xd4')
 for (gateway_id, gateway) in db.iteritems():
-    print "Gateway ID:", MPTN.ID_TO_STRING(int(gateway_id)), "IF_ADDR:", MPTN.ID_TO_STRING(gateway.if_address), "IF_ADDR_LEN:", gateway.if_address_len, "PREFIX:", MPTN.ID_TO_STRING(gateway.prefix), "PREFIX_LEN:", gateway.prefix_len, "NETWORK:", str(gateway.network), "NETWORK_SIZE:", gateway.network_size, "NETMASK:", MPTN.ID_TO_STRING(gateway.netmask), "HOSTMASK:", MPTN.ID_TO_STRING(gateway.hostmask), "UUID:", map(ord, gateway.uuid)
+    print "Gateway ID:", MPTN.ID_TO_STRING(int(gateway_id)), "IF_ADDR:", MPTN.ID_TO_STRING(gateway.if_address), "IF_ADDR_LEN:", gateway.if_address_len, "PREFIX:", MPTN.ID_TO_STRING(gateway.prefix), "PREFIX_LEN:", gateway.prefix_len, "NETWORK:", str(gateway.network), "NETWORK_SIZE:", gateway.network_size, "NETMASK:", MPTN.ID_TO_STRING(gateway.netmask), "HOSTMASK:", MPTN.ID_TO_STRING(gateway.hostmask), "UUID:", map(ord, gateway.uuid), "TCP_ADDRESS", str(gateway.tcp_address)
 
 print "\n2.Node DB"
 db = MPTN.DBDict("../../master/master_node_info.sqlite")
