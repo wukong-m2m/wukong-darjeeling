@@ -385,11 +385,4 @@
     <WuClass name="ICSDemoQPrClass" id="9009" virtual="false" type="hard">
       <property name="question" access="readonly" datatype="boolean" default="0" />
     </WuClass>
-    <WuClass name="ICSDemoHuePrClass" id="9010" virtual="false" type="hard">
-      <property name="hue" access="readonly" datatype="short" default="0" />
-      <property name="saturation" access="readonly" datatype="short" default="0" />
-      <property name="brightness" access="readonly" datatype="short" default="0" />
-      <property name="x" access="readonly" datatype="short" default="0" />
-      <property name="y" access="readonly" datatype="short" default="0" />
-    </WuClass>
 </WuKong>
