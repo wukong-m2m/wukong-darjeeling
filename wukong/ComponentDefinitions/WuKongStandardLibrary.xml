@@ -343,6 +343,7 @@
       <property name="brightness" access="readonly" datatype="short" default="0" />
       <property name="x" access="readonly" datatype="short" default="0" />
       <property name="y" access="readonly" datatype="short" default="0" />
+      <property name="on_off" access="readonly" datatype="boolean" default="0" />
     </WuClass>
     <WuClass name="ICSDemoBloomPrClass" id="9001" virtual="false" type="hard">
       <property name="hue" access="readonly" datatype="short" default="0" />
@@ -350,6 +351,7 @@
       <property name="brightness" access="readonly" datatype="short" default="0" />
       <property name="x" access="readonly" datatype="short" default="0" />
       <property name="y" access="readonly" datatype="short" default="0" />
+      <property name="on_off" access="readonly" datatype="boolean" default="0" />
     </WuClass>
     <WuClass name="ICSDemoGoPrClass" id="9002" virtual="false" type="hard">
       <property name="hue" access="readonly" datatype="short" default="0" />
@@ -357,6 +359,7 @@
       <property name="brightness" access="readonly" datatype="short" default="0" />
       <property name="x" access="readonly" datatype="short" default="0" />
       <property name="y" access="readonly" datatype="short" default="0" />
+      <property name="on_off" access="readonly" datatype="boolean" default="0" />
     </WuClass>
     <WuClass name="ICSDemoStripPrClass" id="9003" virtual="false" type="hard">
       <property name="hue" access="readonly" datatype="short" default="0" />
@@ -364,6 +367,7 @@
       <property name="brightness" access="readonly" datatype="short" default="0" />
       <property name="x" access="readonly" datatype="short" default="0" />
       <property name="y" access="readonly" datatype="short" default="0" />
+      <property name="on_off" access="readonly" datatype="boolean" default="0" />
     </WuClass>
     <WuClass name="ICSDemoFanPrClass" id="9004" virtual="false" type="hard">
       <property name="fan_onoff" access="readonly" datatype="short" default="0" />
