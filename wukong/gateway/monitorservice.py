@@ -33,7 +33,7 @@ class UserData:
         if value == 65535:
             value = -1
         table = [[1907, 'CabinetDoor', 'Slipper1', 'Slipper2', 'Slipper3'],
-                 [9999, 'CabinetSpace1', 'CabinetSpace2', 'CabinetSpace3']]
+                 [1909, 'CabinetSpace1', 'CabinetSpace2', 'CabinetSpace3']]
         for wuclass in table:
             if wuclass_id == wuclass[0]:
                 if wuclass[property_num+1]:

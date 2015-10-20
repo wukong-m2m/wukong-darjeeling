@@ -212,6 +212,13 @@
         <property name="color" access="readonly" datatype="short" default="0" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="1000"  />
     </WuClass>
+    <WuClass name="Cabinet" id="1909" virtual="false" type="hard">
+        <property name="space1" access="readonly" datatype="boolean" default="0" />
+        <property name="space2" access="readonly" datatype="boolean" default="0" />
+        <property name="space3" access="readonly" datatype="boolean" default="0" />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="10"  />
+    </WuClass>
+
 
     <!-- Actuators -->
     <WuClass name="Light_Actuator" id="2001" virtual="false" type="hard">
