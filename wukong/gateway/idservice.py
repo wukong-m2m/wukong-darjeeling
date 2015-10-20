@@ -220,7 +220,7 @@ class IDService(object):
         dest_id, src_id, msg_type, payload = packet
 
         if payload is None:
-            logger.error("_forward_to_next_hop FWDACK/NAK from master might not have the payload")
+            logger.error("_forward_to_next_hop FWDACK/NAK from master might have the payload")
             return False
 
         if msg_type == MPTN.MPTN_MSGTYPE_FWDNAK:
@@ -380,11 +380,11 @@ class IDService(object):
 
             msg_type = MPTN.MPTN_MSGTYPE_FWDACK
             if not ret[0]:
-                msg_type = MPTN.MPTN_MSGTYPE_FWDACK
+                msg_type = MPTN.MPTN_MSGTYPE_FWDNAK
                 logger.error("FWDREQ to transport address %X fail" % self._get_address_from_id(dest_id))
 
             if not self._is_id_in_gwself_network(src_id):
-                message = MPTN.create_packet_to_str(src_id, dest_id, msg_type, None)
+                message = MPTN.create_packet_to_str(src_id, dest_id, msg_type, payload)
                 MPTN.socket_send(context, context.id, message)
 
             return
