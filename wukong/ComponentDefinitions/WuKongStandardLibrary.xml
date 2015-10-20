@@ -212,6 +212,13 @@
         <property name="color" access="readonly" datatype="short" default="0" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="1000"  />
     </WuClass>
+    <WuClass name="Cabinet" id="1909" virtual="false" type="hard">
+        <property name="space1" access="readonly" datatype="boolean" default="0" />
+        <property name="space2" access="readonly" datatype="boolean" default="0" />
+        <property name="space3" access="readonly" datatype="boolean" default="0" />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="10"  />
+    </WuClass>
+
 
     <!-- Actuators -->
     <WuClass name="Light_Actuator" id="2001" virtual="false" type="hard">
@@ -330,10 +337,7 @@
       <property name="light" access="readwrite" datatype="short" default="1" />
     </WuClass>
 
-    <WuClass name="ICSDemoAromaPrClass" id="9005" virtual="false" type="hard">
-      <property name="aroma_onoff" access="readonly" datatype="short" default="0" />
-    </WuClass>
-    <WuClass name="ICSDemoBloomPrClass" id="9001" virtual="false" type="hard">
+    <WuClass name="ICSDemoFloorlampPrClass" id="9000" virtual="false" type="hard">
       <property name="hue" access="readonly" datatype="short" default="0" />
       <property name="saturation" access="readonly" datatype="short" default="0" />
       <property name="brightness" access="readonly" datatype="short" default="0" />
@@ -341,12 +345,7 @@
       <property name="y" access="readonly" datatype="short" default="0" />
       <property name="on_off" access="readonly" datatype="boolean" default="0" />
     </WuClass>
-    <WuClass name="ICSDemoFanPrClass" id="9004" virtual="false" type="hard">
-      <property name="fan_onoff" access="readonly" datatype="short" default="0" />
-      <property name="fan_speed" access="readonly" datatype="short" default="0" />
-      <property name="fan_rotation" access="readonly" datatype="short" default="0" />
-    </WuClass>
-    <WuClass name="ICSDemoFloorlampPrClass" id="9000" virtual="false" type="hard">
+    <WuClass name="ICSDemoBloomPrClass" id="9001" virtual="false" type="hard">
       <property name="hue" access="readonly" datatype="short" default="0" />
       <property name="saturation" access="readonly" datatype="short" default="0" />
       <property name="brightness" access="readonly" datatype="short" default="0" />
@@ -362,22 +361,6 @@
       <property name="y" access="readonly" datatype="short" default="0" />
       <property name="on_off" access="readonly" datatype="boolean" default="0" />
     </WuClass>
-    <WuClass name="ICSDemoHuePrClass" id="9010" virtual="false" type="hard">
-      <property name="hue" access="readonly" datatype="short" default="0" />
-      <property name="saturation" access="readonly" datatype="short" default="0" />
-      <property name="brightness" access="readonly" datatype="short" default="0" />
-      <property name="x" access="readonly" datatype="short" default="0" />
-      <property name="y" access="readonly" datatype="short" default="0" />
-      <property name="on_off" access="readonly" datatype="boolean" default="0" />
-    </WuClass>
-    <WuClass name="ICSDemoMusicPrClass" id="9006" virtual="false" type="hard">
-      <property name="speaker_onoff" access="readonly" datatype="short" default="0" />
-      <property name="music_genre" access="readonly" datatype="short" default="0" />
-      <property name="speaker_volume" access="readonly" datatype="short" default="0" />
-    </WuClass>
-    <WuClass name="ICSDemoQPrClass" id="9009" virtual="false" type="hard">
-      <property name="question" access="readonly" datatype="boolean" default="0" />
-    </WuClass>
     <WuClass name="ICSDemoStripPrClass" id="9003" virtual="false" type="hard">
       <property name="hue" access="readonly" datatype="short" default="0" />
       <property name="saturation" access="readonly" datatype="short" default="0" />
@@ -386,8 +369,32 @@
       <property name="y" access="readonly" datatype="short" default="0" />
       <property name="on_off" access="readonly" datatype="boolean" default="0" />
     </WuClass>
+    <WuClass name="ICSDemoFanPrClass" id="9004" virtual="false" type="hard">
+      <property name="fan_onoff" access="readonly" datatype="short" default="0" />
+      <property name="fan_speed" access="readonly" datatype="short" default="0" />
+      <property name="fan_rotation" access="readonly" datatype="short" default="0" />
+    </WuClass>
+    <WuClass name="ICSDemoAromaPrClass" id="9005" virtual="false" type="hard">
+      <property name="aroma_onoff" access="readonly" datatype="short" default="0" />
+    </WuClass>
+    <WuClass name="ICSDemoMusicPrClass" id="9006" virtual="false" type="hard">
+      <property name="speaker_onoff" access="readonly" datatype="short" default="0" />
+      <property name="music_genre" access="readonly" datatype="short" default="0" />
+      <property name="speaker_volume" access="readonly" datatype="short" default="0" />
+    </WuClass>
     <WuClass name="ICSDemoTVPrClass" id="9007" virtual="false" type="hard">
       <property name="tv_onoff" access="readonly" datatype="short" default="0" />
       <property name="tv_mute" access="readonly" datatype="short" default="0" />
+    </WuClass>
+    <WuClass name="ICSDemoQPrClass" id="9009" virtual="false" type="hard">
+      <property name="question" access="readonly" datatype="boolean" default="0" />
+    </WuClass>
+    <WuClass name="ICSDemoHuePrClass" id="9010" virtual="false" type="hard">
+      <property name="hue" access="readonly" datatype="short" default="0" />
+      <property name="saturation" access="readonly" datatype="short" default="0" />
+      <property name="brightness" access="readonly" datatype="short" default="0" />
+      <property name="x" access="readonly" datatype="short" default="0" />
+      <property name="y" access="readonly" datatype="short" default="0" />
+      <property name="on_off" access="readonly" datatype="boolean" default="0" />
     </WuClass>
 </WuKong>

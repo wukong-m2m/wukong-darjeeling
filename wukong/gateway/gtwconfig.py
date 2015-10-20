@@ -49,7 +49,7 @@ GRAPHITE_IP = 'localhost'
 GRAPHITE_PORT = '2004'
 
 ENABLE_CONTEXT = True
-
+'''
 XMPP_IP = '140.112.28.107'
 XMPP_PORT = 10303
 XMPP_SERVER = 'localhost'
@@ -65,4 +65,4 @@ XMPP_USER = 'admin'
 XMPP_PASS = 'admin'
 XMPP_ROOM = 'monitor@conference.'+XMPP_SERVER
 XMPP_NICK = XMPP_ROOM+'/gateway0'
-'''
+#'''

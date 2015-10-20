@@ -173,6 +173,7 @@ uint8_t wkpf_update_token_table_with_piggyback (uint8_t* piggyback_message) {
     dest_component_id = (int16_t)(dest_component_id<<8) + (int16_t)(piggyback_message[3]);
     token_count = piggyback_message[4];
     uint8_t ret_val = wkpf_update_token_table ((uint16_t*)(piggyback_message+5), token_count, src_component_id, dest_component_id);
+    ret_val = WKPF_OK;
     return ret_val;
 }
 int wkpf_find_token(uint16_t dest_component_id) {
@@ -292,11 +293,11 @@ uint8_t wkpf_propagate_property(wuobject_t *wuobject, uint8_t property_number, v
             } else if(dest_node_id == WUKONG_MONITOR_SERVER_ID) {
                 DEBUG_LOG(DBG_WKPF, "WKPF: Monitoring property (remote). (%x, %x)->(%x, %x, %x), value %x\n", port_number, property_number, dest_node_id, dest_port_number, dest_property_number, *((uint16_t *)value)); // TODONR: values other than 16 bit values
 			    if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_BOOLEAN)
-                    wkpf_error_code |= wkpf_send_monitor_property_boolean(WUKONG_MONITOR_SERVER_ID, source_wuclass_id, port_number, *((bool *)value));
+                    wkpf_error_code |= wkpf_send_monitor_property_boolean(WUKONG_MONITOR_SERVER_ID, source_wuclass_id, port_number, property_number, *((bool *)value));
 			    else if(WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_SHORT)
-                    wkpf_error_code |= wkpf_send_monitor_property_int16(WUKONG_MONITOR_SERVER_ID, source_wuclass_id, port_number, *((uint16_t *)value));
+                    wkpf_error_code |= wkpf_send_monitor_property_int16(WUKONG_MONITOR_SERVER_ID, source_wuclass_id, port_number, property_number, *((uint16_t *)value));
 			    else
-			        wkpf_error_code |= wkpf_send_monitor_property_refresh_rate(WUKONG_MONITOR_SERVER_ID, source_wuclass_id, port_number, *((uint16_t *)value));
+			        wkpf_error_code |= wkpf_send_monitor_property_refresh_rate(WUKONG_MONITOR_SERVER_ID, source_wuclass_id, port_number, property_number, *((uint16_t *)value));
 			} else {
                 // Remote
                 DEBUG_LOG(DBG_WKPF, "WKPF: propagate_property (remote). (%x, %x)->(%x, %x, %x), value %x\n", port_number, property_number, dest_node_id, dest_port_number, dest_property_number, *((uint16_t *)value)); // TODONR: values other than 16 bit values

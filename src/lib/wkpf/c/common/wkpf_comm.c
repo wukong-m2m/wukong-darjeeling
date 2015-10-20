@@ -248,39 +248,24 @@ uint8_t wkpf_send_set_linktable_no_token(wkcomm_address_t dest_node_id, uint16_t
 	return send_message(dest_node_id, WKPF_COMM_CMD_CHANGE_LINK, message_buffer, 12 + 5);
 }
 
-uint8_t wkpf_send_monitor_property_int16(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, int16_t value) {
-    uint8_t message_buffer[6];
+uint8_t wkpf_send_monitor_property_int16(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, uint8_t property_number, int16_t value) {
+    uint8_t message_buffer[7];
     if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
         return WKPF_COMM_CMD_ERROR_R;
     } else {
         message_buffer[0] = (uint8_t)(wuclass_id >> 8);
         message_buffer[1] = (uint8_t)(wuclass_id);
         message_buffer[2] = port_number;
-        message_buffer[3] = WKPF_PROPERTY_TYPE_SHORT;
-        message_buffer[4] = (uint8_t)(value >> 8);
-        message_buffer[5] = (uint8_t)(value);
-        send_message_withou_reply(progression_server_id, WUKONG_MONITOR_PROPERTY, message_buffer, 6);
+        message_buffer[3] = property_number;
+        message_buffer[4] = WKPF_PROPERTY_TYPE_SHORT;
+        message_buffer[5] = (uint8_t)(value >> 8);
+        message_buffer[6] = (uint8_t)(value);
+        send_message_withou_reply(progression_server_id, WUKONG_MONITOR_PROPERTY, message_buffer, 7);
         return WKPF_OK;
     }
 }
 
-uint8_t wkpf_send_monitor_property_boolean(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, bool value) {
-
-    uint8_t message_buffer[5];
-    if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
-        return WKPF_COMM_CMD_ERROR_R;
-    } else {
-        message_buffer[0] = (uint8_t)(wuclass_id >> 8);
-        message_buffer[1] = (uint8_t)(wuclass_id);
-        message_buffer[2] = port_number;
-        message_buffer[3] = WKPF_PROPERTY_TYPE_BOOLEAN;
-        message_buffer[4] = (uint8_t)(value);
-        send_message_withou_reply(progression_server_id, WUKONG_MONITOR_PROPERTY, message_buffer, 5);
-        return WKPF_OK;
-    }
-}
-
-uint8_t wkpf_send_monitor_property_refresh_rate(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, wkpf_refresh_rate_t value) {
+uint8_t wkpf_send_monitor_property_boolean(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, uint8_t property_number, bool value) {
 
     uint8_t message_buffer[6];
     if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
@@ -289,10 +274,28 @@ uint8_t wkpf_send_monitor_property_refresh_rate(wkcomm_address_t progression_ser
         message_buffer[0] = (uint8_t)(wuclass_id >> 8);
         message_buffer[1] = (uint8_t)(wuclass_id);
         message_buffer[2] = port_number;
-        message_buffer[3] = WKPF_PROPERTY_TYPE_REFRESH_RATE;
-        message_buffer[4] = (uint8_t)(value >> 8);
+        message_buffer[3] = property_number;
+        message_buffer[4] = WKPF_PROPERTY_TYPE_BOOLEAN;
         message_buffer[5] = (uint8_t)(value);
         send_message_withou_reply(progression_server_id, WUKONG_MONITOR_PROPERTY, message_buffer, 6);
+        return WKPF_OK;
+    }
+}
+
+uint8_t wkpf_send_monitor_property_refresh_rate(wkcomm_address_t progression_server_id, uint16_t wuclass_id, uint8_t port_number, uint8_t property_number, wkpf_refresh_rate_t value) {
+
+    uint8_t message_buffer[7];
+    if (port_number >= DEVICE_NATIVE_ZWAVE_SWITCH1) {
+        return WKPF_COMM_CMD_ERROR_R;
+    } else {
+        message_buffer[0] = (uint8_t)(wuclass_id >> 8);
+        message_buffer[1] = (uint8_t)(wuclass_id);
+        message_buffer[2] = port_number;
+        message_buffer[3] = property_number;
+        message_buffer[4] = WKPF_PROPERTY_TYPE_REFRESH_RATE;
+        message_buffer[5] = (uint8_t)(value >> 8);
+        message_buffer[6] = (uint8_t)(value);
+        send_message_withou_reply(progression_server_id, WUKONG_MONITOR_PROPERTY, message_buffer, 7);
         return WKPF_OK;
     }
 }

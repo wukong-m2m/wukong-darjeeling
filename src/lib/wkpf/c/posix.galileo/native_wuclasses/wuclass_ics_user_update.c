@@ -91,6 +91,8 @@ void wuclass_ics_user_update(wuobject_t *wuobject) {
                 wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_ICS_USER_SLIPPER1, slipper[1]);
                 wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_ICS_USER_SLIPPER2, slipper[2]);
                 DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(ICS): output %d, %d, %d, %d\n", holder, slipper[0], slipper[1], slipper[2]);
+                ics_buffer[0] = 0;
+                len = 0;
             }
         }
     }
