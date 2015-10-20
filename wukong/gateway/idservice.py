@@ -410,8 +410,8 @@ class IDService(object):
             logger.error("GWDISCOVER dest_id should be 0xFFFFFFFF")
             return
 
-        if self.is_id_valid(src_id):
-            logger.error("GWDISCOVER src ID %X %s should not be found in network" % (src_id, MPTN.ID_TO_STRING(src_id)))
+        if not MPTN.IS_ID_IN_NETWORK(src_id, self._network):
+            logger.error("GWDISCOVER src ID %X %s does not belong to the network" % (src_id, MPTN.ID_TO_STRING(src_id)))
             return
 
         msg_type = MPTN.MPTN_MSGTYPE_GWOFFER

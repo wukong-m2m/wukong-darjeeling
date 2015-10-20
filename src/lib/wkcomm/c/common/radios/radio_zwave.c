@@ -388,6 +388,7 @@ void Zwave_receive(int processmessages) {
                     zwave_mode=0;
                     DEBUG_LOG(true, "turn off\n");
                     radio_zwave_my_address_loaded = false; radio_zwave_update_node_id(); // get id again
+                    dj_timer_delay(1000);
 #ifdef ROUTING_USE_GATEWAY
                     routing_discover_gateway();
 #endif
