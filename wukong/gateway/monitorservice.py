@@ -197,7 +197,7 @@ class MonitorService(object):
             try:
                 input_data = json.loads(text)
                 if input_data['From'] == 'CE': 
-                    iq = xmpp.Iq(typ='set', to='pubsub'+config.XMPP_SERVER, xmlns=xmpp.NS_CLIENT)
+                    iq = xmpp.Iq(typ='set', to='pubsub.'+config.XMPP_SERVER, xmlns=xmpp.NS_CLIENT)
                     iq.pubsub = iq.addChild(name='pubsub', namespace=xmpp.NS_PUBSUB)
                     iq.pubsub.publish = iq.pubsub.addChild(name='publish', attrs={'node': 'nooneknow'})
                     iq.pubsub.publish.item = iq.pubsub.publish.addChild(name='item', attrs={'id': '5'})
