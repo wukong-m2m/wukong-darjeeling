@@ -314,6 +314,7 @@
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="50"  />
     </WuClass>
     <WuClass name="Sonos" id="2020" virtual="false" type="hard">
+        <property name="on_off" access="readwrite" datatype="boolean" default="false" />
         <property name="playlist" access="readwrite" datatype="short" default="1" />
         <property name="volume" access="readwrite" datatype="short" default="1" />
     </WuClass>

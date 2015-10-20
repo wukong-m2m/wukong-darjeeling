@@ -115,14 +115,16 @@ def getAppIndex(app_id):
   return None
 
 def delete_application(i):
+    shutil.rmtree(wkpf.globals.applications[i].dir)
+    wkpf.globals.applications.pop(i)
+    return True
+
+def delete_and_remap_application(i):
+#def delete_application(i):
   try:
     app_id = i
     platforms = ['avr_mega2560']
-    # TODO: need platforms from fbp
-    #node_infos = getComm().getActiveNodeInfos()
     rebuildTree(node_infos)
-    # Map with location tree info (discovery), this will produce mapping_results
-    #mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, getComm().getRoutingInformation())
     mapping_result = wkpf.globals.applications[app_id].del_and_remap(wkpf.globals.location_tree, [])
     ret = []
     mapping_result = {}
@@ -157,13 +159,13 @@ def delete_application(i):
         obj_hash['instances'].append(wuobj_hash)
         mapping_result[component.index] = component_result
 
-      ret.append(obj_hash)
-      WuSystem.addMappingResult(app_id, mapping_result)
+        ret.append(obj_hash)
+        WuSystem.addMappingResult(app_id, mapping_result)
 
-    wkpf.globals.set_wukong_status("Deploying")
-    wkpf.globals.applications[i].deploy_with_discovery(platforms)
+        wkpf.globals.set_wukong_status("Deploying")
+        wkpf.globals.applications[i].deploy_with_discovery(platforms)
 
-    content_type = 'application/json'
+        content_type = 'application/json'
  
     shutil.rmtree(wkpf.globals.applications[i].dir)
     wkpf.globals.applications.pop(i)
