@@ -2,7 +2,7 @@ import pyzwave
 import gevent
 import sys
 
-if len(sys.arg) < 1:
+if len(sys.argv) < 2:
 	print "Usagae: python testpyzwave.py port command..."
 	print "\tcommand:"
 	print "\t\treset\t: Factory reset controller"
