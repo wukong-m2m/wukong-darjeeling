@@ -201,15 +201,47 @@ class MonitorService(object):
                     iq.pubsub = iq.addChild(name='pubsub', namespace=xmpp.NS_PUBSUB)
                     iq.pubsub.publish = iq.pubsub.addChild(name='publish', attrs={'node': 'nooneknow'})
                     iq.pubsub.publish.item = iq.pubsub.publish.addChild(name='item', attrs={'id': '5'})
+                    mess = iq.pubsub.publish.item.addChild(name='message')
                     if 'User1' in input_data:
-                        mess = iq.pubsub.publish.item.addChild(name='message')
-                        mess.setData('{"topicId": "nooneknow", "UserA": '+str(input_data['User1'])+
+                        mess.setData('{"topicId": "nooneknow", "Command_Mode": 1, "UserA": '+str(input_data['User1'])+
                                      ', "UserB": '+str(input_data['User2'])+',"UserG": '+str(input_data['User3'])+'}')
                         self.client.send(iq)
                         print 'user state'
                     elif 'State' in input_data:
                         print 'state'
                     elif 'Preview' in input_data:
+                        mess.setData('{"topicId": "nooneknow", "Command_Mode": 3'+
+                                     ', "Floorlamp": '+str(input_data['Preview'][0])+
+                                     ', "Floorlamp_R": '+str(input_data['Preview'][1])+
+                                     ', "Floorlamp_G": '+str(input_data['Preview'][2])+
+                                     ', "Floorlamp_B": '+str(input_data['Preview'][3])+
+                                     ', "Floorlamp_Lux": '+str(input_data['Preview'][4])+
+                                     ', "Bloom": '+str(input_data['Preview'][5])+
+                                     ', "Bloom_R": '+str(input_data['Preview'][6])+
+                                     ', "Bloom_G": '+str(input_data['Preview'][7])+
+                                     ', "Bloom_B": '+str(input_data['Preview'][8])+
+                                     ', "Bloom_Lux": '+str(input_data['Preview'][9])+
+                                     ', "Go": '+str(input_data['Preview'][10])+
+                                     ', "Go_R": '+str(input_data['Preview'][11])+
+                                     ', "Go_G": '+str(input_data['Preview'][12])+
+                                     ', "Go_B": '+str(input_data['Preview'][13])+
+                                     ', "Go_Lux": '+str(input_data['Preview'][14])+
+                                     ', "Strip": '+str(input_data['Preview'][15])+
+                                     ', "Strip_R": '+str(input_data['Preview'][16])+
+                                     ', "Strip_G": '+str(input_data['Preview'][17])+
+                                     ', "Strip_B": '+str(input_data['Preview'][18])+
+                                     ', "Strip_Lux": '+str(input_data['Preview'][19])+
+                                     ', "Fan": '+str(input_data['Preview'][20])+
+                                     ', "Fan_Speed": '+str(input_data['Preview'][21])+
+                                     ', "Fan_Rotate": '+str(input_data['Preview'][22])+
+                                     ', "Mist": '+str(input_data['Preview'][23])+
+                                     ', "Music": '+str(input_data['Preview'][24])+
+                                     ', "Music_Type": '+str(input_data['Preview'][25])+
+                                     ', "Music_Vol": '+str(input_data['Preview'][26])+
+                                     ', "TV": '+str(input_data['Preview'][27])+
+                                     ', "TV_Mute": '+str(input_data['Preview'][28])+
+                                     '}')
+                        self.client.send(iq)
                         print 'preview'
             except Exception, e:
                 print str(e)
