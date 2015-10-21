@@ -371,21 +371,21 @@
       <property name="on_off" access="readonly" datatype="boolean" default="0" />
     </WuClass>
     <WuClass name="ICSDemoFanPrClass" id="9004" virtual="false" type="hard">
-      <property name="fan_onoff" access="readonly" datatype="short" default="0" />
+      <property name="fan_onoff" access="readonly" datatype="boolean" default="0" />
       <property name="fan_speed" access="readonly" datatype="short" default="0" />
       <property name="fan_rotation" access="readonly" datatype="short" default="0" />
     </WuClass>
     <WuClass name="ICSDemoAromaPrClass" id="9005" virtual="false" type="hard">
-      <property name="aroma_onoff" access="readonly" datatype="short" default="0" />
+      <property name="aroma_onoff" access="readonly" datatype="boolean" default="0" />
     </WuClass>
     <WuClass name="ICSDemoMusicPrClass" id="9006" virtual="false" type="hard">
-      <property name="speaker_onoff" access="readonly" datatype="short" default="0" />
+      <property name="speaker_onoff" access="readonly" datatype="boolean" default="0" />
       <property name="music_genre" access="readonly" datatype="short" default="0" />
       <property name="speaker_volume" access="readonly" datatype="short" default="0" />
     </WuClass>
     <WuClass name="ICSDemoTVPrClass" id="9007" virtual="false" type="hard">
-      <property name="tv_onoff" access="readonly" datatype="short" default="0" />
-      <property name="tv_mute" access="readonly" datatype="short" default="0" />
+      <property name="tv_onoff" access="readonly" datatype="boolean" default="0" />
+      <property name="tv_mute" access="readonly" datatype="boolean" default="0" />
     </WuClass>
     <WuClass name="ICSDemoQPrClass" id="9009" virtual="false" type="hard">
       <property name="question" access="readonly" datatype="boolean" default="0" />
