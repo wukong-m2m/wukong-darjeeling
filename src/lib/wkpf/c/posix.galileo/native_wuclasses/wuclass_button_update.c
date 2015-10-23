@@ -9,7 +9,7 @@
 mraa_gpio_context button_gpio;
 
 void wuclass_button_setup(wuobject_t *wuobject) {
-    button_gpio = mraa_gpio_init(3);
+    button_gpio = mraa_gpio_init(5);
     mraa_gpio_dir(button_gpio, MRAA_GPIO_IN);
 }
 

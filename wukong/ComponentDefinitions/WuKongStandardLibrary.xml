@@ -325,6 +325,7 @@
         <property name="on_off" access="readwrite" datatype="boolean" default="false" />
         <property name="mute" access="readwrite" datatype="boolean" default="false" />
         <property name="on_off_state" access="readwrite" datatype="boolean" default="false" />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="500"  />
     </WuClass>
 
     <!-- PrClasses -->
