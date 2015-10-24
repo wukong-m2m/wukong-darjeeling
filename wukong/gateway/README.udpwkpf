@@ -1,0 +1,43 @@
+The udpwkpf.py is a python framework which is sued to create UDP device in python. The purpose is to simplify the
+programming of the UDP device in python. We can use the following code to create a device.
+
+from twisted.internet import reactor
+from udpwkpf import Device,WuClass
+    class Magnetic(WuClass):
+        def __init__(self):
+            self.ID = 1007
+        def update(self):
+            pass
+    class Threshold(WuClass):
+        def __init__(self):
+            self.ID = 1
+        def update(self):
+            pass
+    class MyDevice(Device):
+        def __init__(self,addr,localaddr):
+            Device.__init__(self,addr,localaddr)
+        def init(self):
+            m = Magnetic()
+            self.addClass(m)
+            self.addObject(m.ID)
+            m = Threshold()
+            self.addClass(m)
+            self.addObject(m.ID)
+        if len(sys.argv) == 0:
+            print 'python udpwkpf.py <ip> <port>'
+            print '      <ip>: IP of the interface'
+            print '      <port>: The unique port number in the interface'
+            print ' ex. python udpwkpf.py 127.0.0.1 3000'
+
+    d = MyDevice(sys.argv[1],sys.argv[1]+':'+sys.argv[2])
+    reactor.run()
+
+Thenm we can use the following command to start the device.
+
+python testudpwkpf.py 127.0.0.1 3000
+
+This code create one device with two wuobjects. For now, this framework can support a single device only in a python file. If we do need 
+two devices, please use two processes and use different port for it. In addition, you need to execute the code in different directory since
+the framework will create a file called udpwkpf.json in the current directory. Two devices may conflict with each if they are in the same 
+directory. I will fix it latter.
+
