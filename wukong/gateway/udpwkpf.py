@@ -68,6 +68,7 @@ class WKPF(DatagramProtocol):
         self.location = 'Default'
         self.load()
         self.init()
+        self.properties={}
         self.tablebin=[]
         for i in range(0,4096):
             self.tablebin.append(0)
@@ -77,7 +78,7 @@ class WKPF(DatagramProtocol):
         reactor.callWhenRunning(self.doInit)
     def load(self):
         try:
-            f=open('udpwkpf.json')
+            f=open('udpwkpf-%d.json' % self.port)
             o = cjson.decode(f.read())
             self.location = o['location']
             self.uuid = o['uuid']
@@ -94,7 +95,7 @@ class WKPF(DatagramProtocol):
     def save(self):
         try:
             o = {'location': self.location,'uuid':self.uuid,'nodeid':self.nodeid}
-            f = open('udpwkpf.json','w')
+            f = open('udpwkpf-%d.json' % self.port,'w')
             f.write(cjson.encode(o))
             f.close()
         except:
@@ -170,7 +171,7 @@ class WKPF(DatagramProtocol):
             if offset == 0:
                 self.location = payload[3:]
             else:
-                self.location = self.location + s[2:]
+                self.location = self.location + payload[2:]
             self.save()
             p = struct.pack('3B',WKPF.SET_LOCATION_R,seq&255, (seq>>8)&255)+chr(0)
             self.send(src_id,p)
@@ -193,8 +194,9 @@ class WKPF(DatagramProtocol):
             for i in range(0,len(self.device.objects)):
                 obj = self.device.objects[i]
                 CID = obj.getID()
-                p = p + struct.pack('4B', i, (CID>>8)&0xff, CID&0xff, i)
+                p = p + struct.pack('4B', i, (CID>>8)&0xff, CID&0xff, 0)
 
+            print map(ord,p)
             self.send(src_id,p)
         elif msgid == WKPF.REPROG_OPEN:
             fielid = ord(payload[0])
@@ -250,15 +252,49 @@ class WKPF(DatagramProtocol):
         for i in range(0,links):
             p = 2 + 6 * i
             src_id = data[p]+data[p+1]*256
-            s_port = data[p+2]
+            s_pID = data[p+2]
             dest_id = data[p+3]+data[p+4]*256
-            d_port = data[p+5]
-            print '    %d.%d ---> %d.%d' % (src_id,s_port,dest_id,d_port)
-            if self.links.has_key('%d.%d' % (src_id,s_port)):
-                self.links['%d.%d'].append([dest_id,d_port])
+            d_pID = data[p+5]
+            print '    %d.%d ---> %d.%d' % (src_id,s_pID,dest_id,d_pID)
+            if self.links.has_key('%d.%d' % (src_id,s_pID)):
+                self.links['%d.%d'].append([dest_id,d_pID])
             else:
-                self.links['%d.%d']= [[dest_id,d_port]]
+                self.links['%d.%d']= [[dest_id,d_pID]]
     
+    def getProperty(self,addr,port,pID,cb):
+        if addr == self.mptnaddr:
+            cb(self.properties[port][pID])
+        else:
+            self.remoteGetProperty(addr,port,pID,cb)
+
+    def setproperty(self,addr,port,pID,val):
+        if addr == self.mptnaddr:
+            try:
+                if self.properties[port][pID] != val:
+                    self.properties[port][pID] = val
+                    self.propagateProperty(port,pID)
+            except:
+                self.properties[port][pID] = val
+                self.propogateProperty(port,pID,val)
+        else:
+            self.remoteSetProperty(self,addr,pID,val)
+    def remoteSetProperty(self,addr,pId,val):
+        pass
+    def remoteGetProperty(self,addr,port,pID,cb):
+        pass
+
+    def propagateProperty(self,port,pID,val):
+        dirty_id = self.device.findComponentIDByPort(port)
+        for l in self.links:
+            src_id,src_prpertyID = l.split('.')
+            if src_id == dirty_id and pID == src_propertyID:
+                for target in self.link[l]:
+                    try:
+                        component = self.device.findComponent(target[0])[0]
+                        self.setProperty(component[0],component[1],target[1],val)
+                    except:
+                        pass
+
     def parseInitTable(slef,data):
         pass
     def parseComponentMap(self,data):
@@ -291,19 +327,26 @@ class WKPF(DatagramProtocol):
 class WuObject:
     def __init__(self,cls):
         self.cls = cls
+        self.port = 0
     def getID(self):
         return self.cls.ID
+    def setProperty(self,pID,val):
+        self.cls.setProperty(self.port+':'+pID,val)
+    def getProperty(self,pID,val,cb):
+        return self.cls.getProperty(self.port+':'+pID,cb)
 
 class WuClass:
     def __init__(self):
         self.ID = 0
+        self.wkpf = None
     def update(self):
         pass
     def newObject(self):
         return WuObject(self)
-
-
-
+    def setProperty(self,pID,val):
+        self.wkpf.setProperty(pID,val)
+    def getProperty(self,pID,val,cb):
+        return self.wkpf.getProperty(pID,cb)
 
 class Device:
     def __init__(self,addr,localaddr):
@@ -317,15 +360,18 @@ class Device:
         pass
     def addClass(self,cls):
         self.classes[cls.ID] = cls
+        cls.wkpf = self.wkpf
     def addObject(self,ID):
         cls = self.classes[ID]
         if cls:
-            return self.objects.append(cls.newObject())
+            obj = cls.newObject()
+            obj.port = len(self.objects)
+            return self.objects.append(obj)
         return None
-
-
-
-
+    def setProperty(self,pID, val):
+        self.wkpf.setProperty(pID,val)
+    def getProperty(self,pID):
+        return self.wkpf.setProperty(pID,val)
 
 if __name__ == "__main__":
     class Magnetic(WuClass):
@@ -348,11 +394,12 @@ if __name__ == "__main__":
             m = Threshold()
             self.addClass(m)
             self.addObject(m.ID)
-        if len(sys.argv) == 0:
+    if len(sys.argv) <= 2:
             print 'python udpwkpf.py <ip> <port>'
             print '      <ip>: IP of the interface'
             print '      <port>: The unique port number in the interface'
             print ' ex. python udpwkpf.py 127.0.0.1 3000'
+            sys.exit(-1)
 
     d = MyDevice(sys.argv[1],sys.argv[1]+':'+sys.argv[2])
     reactor.run()
