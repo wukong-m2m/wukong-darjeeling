@@ -253,7 +253,7 @@ class WKPF(DatagramProtocol):
 
             p=struct.pack('7B',WKPF.WRITE_PROPERTY_R,seq&255, (seq>>8)&255, port, (clsID>>8)&0xff, clsID&0xff, pID)
             self.send(src_id,p)
-            self.setProperty(0xffffffff, port,pID, val)
+            self.setProperty(port,pID, val)
         pass
     def parseTables(self):
         i = 0
@@ -293,24 +293,18 @@ class WKPF(DatagramProtocol):
         props = []
         for i in range(0,n): props.append(0)
         self.properties.append(props)
-    def getProperty(self,addr,port,pID,cb):
-        if addr == self.mptnaddr or addr == 0xffffffff:
-            cb(self.properties[port][pID])
-        else:
-            self.remoteGetProperty(addr,port,pID,cb)
+    def getProperty(self,port,pID):
+        return self.properties[port][pID]
 
-    def setProperty(self,addr,port,pID,val):
-        print 'setProperty',addr,port,pID,val
-        if addr == self.mptnaddr or addr == 0xffffffff:
-            try:
-                if self.properties[port][pID] != val:
-                    self.properties[port][pID] = val
-                    self.propagateProperty(port,pID)
-            except:
+    def setProperty(self,port,pID,val):
+        print 'setProperty',port,pID,val
+        try:
+            if self.properties[port][pID] != val:
                 self.properties[port][pID] = val
-                self.propagateProperty(port,pID,val)
-        else:
-            self.remoteSetProperty(port,pID,val)
+                self.propagateProperty(port,pID)
+        except:
+            self.properties[port][pID] = val
+            self.propagateProperty(port,pID,val)
     def remoteSetProperty(self,port,pID,val):
         cid = self.findComponentByPort(port)
         cls = self.device.getPortClassID(port)
@@ -352,7 +346,10 @@ class WKPF(DatagramProtocol):
                 for target in target_links:
                     try:
                         comp = self.getComponent(target[0])
-                        self.setProperty(comp['ports'][0][0],comp['ports'][0][1],target[1],val)
+			if comp['ports'][0][0] == self.mptnaddr:
+                        	self.setProperty(comp['ports'][0][1],target[1],val)
+			else:
+                        	self.remoteSetProperty(comp['ports'][0][0],comp['ports'][0][1],target[1],val)
                     except:
                         traceback.print_exc()
                         pass
@@ -394,8 +391,8 @@ class WuObject:
         return self.cls.ID
     def setProperty(self,pID,val):
         self.cls.setProperty(self.port,pID,val)
-    def getProperty(self,pID,val,cb):
-        return self.cls.getProperty(self.port,pID,cb)
+    def getProperty(self,pID):
+        return self.cls.getProperty(self.port,pID)
 
 class WuClass:
     def __init__(self):
@@ -406,9 +403,9 @@ class WuClass:
     def newObject(self):
         return WuObject(self)
     def setProperty(self,port,pID,val):
-        self.wkpf.setProperty(0xffffffff,port,pID,val)
-    def getProperty(self,port,pID,cb):
-        return self.wkpf.getProperty(0xffffffff,port,pID,cb)
+        self.wkpf.setProperty(port,pID,val)
+    def getProperty(self,port,pID):
+        return self.wkpf.getProperty(port,pID)
 
 class Device:
     def __init__(self,addr,localaddr):
