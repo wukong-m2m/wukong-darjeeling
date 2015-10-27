@@ -105,11 +105,12 @@ class WKPF(DatagramProtocol):
 
     def save(self):
         try:
-            o = {'location': self.location,'uuid':self.uuid,'nodeid':self.nodeid,'components':self.components, 'links':self.links,'mptnaddr':self.mpthaddr}
+            o = {'location': self.location,'uuid':self.uuid,'nodeid':self.nodeid,'components':self.components, 'links':self.links,'mptnaddr':self.mptnaddr}
             f = open('udpwkpf-%d.json' % self.port,'w')
             f.write(cjson.encode(o))
             f.close()
         except:
+            traceback.print_exc()
             pass
     def doInit(self):
         payload_length = 0
@@ -406,7 +407,7 @@ class WuClass:
         return WuObject(self)
     def setProperty(self,port,pID,val):
         self.wkpf.setProperty(0xffffffff,port,pID,val)
-    def getProperty(self,port,pID,val,cb):
+    def getProperty(self,port,pID,cb):
         return self.wkpf.getProperty(0xffffffff,port,pID,cb)
 
 class Device:
