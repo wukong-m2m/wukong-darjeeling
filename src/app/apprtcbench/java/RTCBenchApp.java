@@ -32,20 +32,36 @@ public class RTCBenchApp
 	}
 
 	public static void perftestBubbleSort() {
-		// System.out.println("java:");
-		// RTC.useRTC(false);
-		// RTCTestBubbleSort.test_bubblesort();
-		RTC.useRTC(true);
-		// Stopwatch.resetAndStart();
-		// Stopwatch.measure();
+		System.out.println("Java stopwatch overhead");
+		Stopwatch.resetAndStart();
+		Stopwatch.measure();
+
 		System.out.println("native sort:");
 		RTCTestBubbleSort.test_bubblesort_native();
 		System.out.println("rtc sort:");
+		RTC.useRTC(true);
 		RTCTestBubbleSort.test_bubblesort();
+		System.out.println("java sort:");
+		RTC.useRTC(false);
+		RTCTestBubbleSort.test_bubblesort();
+
 		System.out.println("native fft:");
 		RTCTestFixFFT.test_fixfft_native();
 		System.out.println("rtc fft:");
+		RTC.useRTC(true);
+		RTCTestFixFFT.test_fixfft();
+		System.out.println("java fft:");
+		RTC.useRTC(false);
 		RTCTestFixFFT.test_fixfft();
 		System.out.println("done.");
-	}
+
+		System.out.println("native xxtea:");
+		RTCTestXXTEA.test_xxtea_native();
+		System.out.println("rtc xxtea:");
+		RTC.useRTC(true);
+		RTCTestXXTEA.test_xxtea();
+		System.out.println("java xxtea:");
+		RTC.useRTC(false);
+		RTCTestXXTEA.test_xxtea();
+		System.out.println("done.");	}
 }

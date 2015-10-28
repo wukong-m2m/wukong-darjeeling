@@ -23,7 +23,7 @@ void javax_rtcbench_RTCTestBubbleSort_void_test_bubblesort_native2(uint16_t NUMN
 
 void javax_rtcbench_RTCTestBubbleSort_void_test_bubblesort_native() {
 	uint16_t NUMNUMBERS = 256;
-	int16_t numbers[256];
+	int16_t numbers[NUMNUMBERS];
 
 	// Fill the array
 	for (uint16_t i=0; i<NUMNUMBERS; i++)

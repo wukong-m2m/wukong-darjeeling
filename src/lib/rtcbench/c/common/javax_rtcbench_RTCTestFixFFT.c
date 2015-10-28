@@ -6,7 +6,6 @@
 #define RTCTEST_FFT_ARRAYSIZE 3
 
 // Split into separate function to avoid the compiler just optimising away the whole test.
-
 void javax_rtcbench_RTCTestFixFFT_void_test_fixfft_native2(char data[], char im[], int m) {
 	javax_darjeeling_Stopwatch_void_resetAndStart();
 
