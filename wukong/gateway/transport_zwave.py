@@ -8,25 +8,20 @@ except:
 import gevent
 from gevent.lock import RLock
 import sys
-import pprint
 import gtwconfig as CONFIG
 import mptnUtils as MPTN
-
+from transport_abstract import Transport
 import traceback
 import color_logging, logging
 logger = logging
 
-TIMEOUT = 100
+import pprint
 
-_global_lock = None
+ZWAVE_RECV_TIMEOUT = 100
 
-class ZWTransport(object):
+class ZWTransport(Transport):
     def __init__(self, dev_address, name):
-        self._name = name
-        self._mode = MPTN.STOP_MODE
-        global _global_lock
-        _global_lock = RLock()
-
+        super(ZWTransport, self).__init__(dev_address, name)
         try:
             pyzwave.setVerbose(0)
             pyzwave.setdebug(0)
@@ -50,22 +45,13 @@ class ZWTransport(object):
 
         logger.info("transport interface %s initialized on %s with Network ID %s and Node ID %s" % (name, dev_address, hex(self._network_id), hex(self._node_id)))
 
-    def get_name(self):
-        return self._name
-
-    def get_address(self):
-        return self._node_id
-
     def get_addr_len(self):
         return MPTN.ZW_ADDRESS_LEN
 
-    def get_learning_mode(self):
-        return self._mode
-
     def recv(self):
-        with _global_lock:
+        with self._global_lock:
             try:
-                src, reply = pyzwave.receive(TIMEOUT)
+                src, reply = pyzwave.receive(ZWAVE_RECV_TIMEOUT)
 
                 if src and reply:
                     logger.debug("receives message %s from address %X" % (reply, src))
@@ -78,7 +64,7 @@ class ZWTransport(object):
 
     def send_raw(self, address, payload):
         ret = None
-        with _global_lock:
+        with self._global_lock:
             try:
                 logger.info("sending %d bytes %s to %X" % (len(payload), payload, address))
                 pyzwave.send(address, payload)
@@ -97,7 +83,7 @@ class ZWTransport(object):
 
     def getDeviceType(self, address):
         ret = None
-        with _global_lock:
+        with self._global_lock:
             try:
                 ret = pyzwave.getDeviceType(address)
             except Exception as e:
@@ -106,7 +92,7 @@ class ZWTransport(object):
 
     def getNodeRoutingInfo(self, address):
         ret = []
-        with _global_lock:
+        with self._global_lock:
             ret = pyzwave.routing(address)
             try:
                 ret.remove(gateway_id)
@@ -120,14 +106,14 @@ class ZWTransport(object):
             ret[node_raddr] = self.getNodeRoutingInfo(node_raddr)
         return ret
 
-    def discover(self):
+    def _discover(self):
         ret = []
 
         if not self.stop():
             logger.error("cannot discover without STOP mode")
             return ret
 
-        with _global_lock:
+        with self._global_lock:
             nodes = pyzwave.discover()
             zwave_controller = nodes[0]
             total_nodes = nodes[1]
@@ -142,16 +128,17 @@ class ZWTransport(object):
 
     def poll(self):
         ret = None
-        with _global_lock:
+        with self._global_lock:
             try:
                 ret = pyzwave.poll()
+                ret.replace("\n", " ")
             except:
                 pass
         return ret
 
     def add(self):
         ret = False
-        with _global_lock:
+        with self._global_lock:
             try:
                 pyzwave.add()
                 self._mode = MPTN.ADD_MODE
@@ -163,7 +150,7 @@ class ZWTransport(object):
 
     def delete(self):
         ret = False
-        with _global_lock:
+        with self._global_lock:
             try:
                 pyzwave.delete()
                 self._mode = MPTN.DEL_MODE
@@ -175,7 +162,7 @@ class ZWTransport(object):
 
     def stop(self):
         ret = False
-        with _global_lock:
+        with self._global_lock:
             try:
                 pyzwave.stop()
                 self._mode = MPTN.STOP_MODE
@@ -184,9 +171,3 @@ class ZWTransport(object):
                 logger.error("fails to be STOP mode, now in %s mode error: %s\n%s" % (self._mode[1],
                     str(e), traceback.format_exc()))
         return ret
-
-    def get_learn_handlers(self):
-        return {'a':self.add, 'd':self.delete, 's':self.stop}
-
-    def get_rpc_function_lists(self):
-        return (self.send, self.getDeviceType, self.routing, self.discover, self.add, self.delete, self.stop, self.poll)

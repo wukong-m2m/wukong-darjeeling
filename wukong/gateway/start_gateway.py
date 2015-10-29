@@ -10,8 +10,8 @@ import signal
 
 import gtwconfig as CONFIG
 from gtwclass import Gateway
-import zwave
-import udp
+from transport_zwave import ZWTransport
+from transport_udp import UDPTransport
 
 import color_logging, logging
 logger = logging
@@ -21,9 +21,9 @@ def main():
 
 
     if CONFIG.TRANSPORT_INTERFACE_TYPE.lower() == 'zwave':
-        transport_interface = zwave.ZWTransport(CONFIG.TRANSPORT_INTERFACE_ADDR, "zwave")
+        transport_interface = ZWTransport(CONFIG.TRANSPORT_INTERFACE_ADDR, "zwave")
     elif CONFIG.TRANSPORT_INTERFACE_TYPE.lower() == 'udp':
-        transport_interface = udp.UDPTransport(CONFIG.TRANSPORT_INTERFACE_ADDR, "udp")
+        transport_interface = UDPTransport(CONFIG.TRANSPORT_INTERFACE_ADDR, "udp")
     elif CONFIG.TRANSPORT_INTERFACE_TYPE.lower() == 'zigbee':
         raise NotImplementedError
         # transport_interface = zigbee.ZBTransport(CONFIG.TRANSPORT_DEV_ADDR, "zigbee")
