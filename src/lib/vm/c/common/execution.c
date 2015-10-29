@@ -1512,11 +1512,13 @@ int dj_exec_run(int nrOpcodes)
 
 			// reserve space on the stack for the duplicated data
 			intStack -= m;
-			// 20140603 I wonder if this is correct, but for now just keep the code equivalent and change it to the reversed direction of the integer stack
+			
+			// m: how many integer slots to duplicate
+			// n: how deep to bury them in the stack. (see getIDupInstructions in the infuser)
 			if (n == 0) {
 				// perform normal dup
 				for (i = 0; i < m; i++)
-					intStack[+i + m + 1] = intStack[+i + 1];
+					intStack[+i + 1] = intStack[+i + m + 1];
 
 			} else {
 				// move existing stuff forwards
