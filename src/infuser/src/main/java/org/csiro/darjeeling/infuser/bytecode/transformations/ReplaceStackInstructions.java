@@ -58,10 +58,24 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 
 	private Collection<InstructionHandle> getIDupInstructions(int m, int n)
 	{
+		// m: how many slots to duplicate
+		// n: how deep to bury them in the stack, excluding the copied slots
+		// nn: how deep to bury them in the stack, including the copied slots. nn set to 0 for n==0, because it doesn't matter if nn is set to n or 0, but 0 is faster during execution
+		// example: ..., short1 -> ..., short1, short1 (normal IDUP): m=1, n=0
+		// example: ..., int1 -> ..., int1, int1 (normal IDUP): m=2, n=0
+		// example: ..., short2, short1 -> ..., short2, short1, short2, short1 (normal IDUP2): m=2, n=0
+		// example: ..., int2, int1 -> ..., int2, int1, int2, int1 (normal IDUP2): m=4, n=0
+
+		// example: ..., int1, short1 -> ..., short1, int1, short1 (IDUP_X1): m=1, n=2 (nn=3)
+		// example: ..., short1, int1 -> ..., int1, short1, int1 (IDUP_X1): m=2, n=1 (nn=3)
+		// example: ..., int1, short1, int2 -> ..., int2, int1, short1, int2 (IDUP_X2): m=2, n=3 (nn=5)
+		// example: ..., int1, int2, short1 -> ..., short1, int1, int2, short1 (IDUP_X2): m=1, n=4 (nn=5)
+
+		// Note how the I in IDUP means the Integer stack, not Integer datatype. IDUP instructions are used for bytes and shorts as well, with a different number of slots
 		ArrayList<InstructionHandle> ret = new ArrayList<InstructionHandle>();
 		
 		int nn = (n==0)?0:(n+m);
-		
+		System.err.println("getIDupInstructions m=" + m + " n=" + n);
 		switch (n)
 		{
 			case 0:
@@ -195,8 +209,10 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 				// generate the proper replacement for the IDUP instruction depending on the type inference information
 				// ..., v1 -> ..., v1, v1
 				case IDUP:
+		System.err.println("IDUP");
 
 					type1 = preState.getStack().peek().getType();
+		System.err.println("type: " + type1);
 					
 					instructions.insertBefore(handle, getIDupInstructions(getNrIntegerSlots(type1), 0));
 					instructions.insertBefore(handle, getADupInstructions(getNrReferenceSlots(type1), 0));
@@ -209,9 +225,14 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 				// or one of both depending on the operands
 				// ..., v2, v1 -> ..., v2, v1, v2, v1
 				case IDUP2:
+		System.err.println("IDUP2");
+
 					type1 = preState.getStack().peek(0).getType();
 					type2 = preState.getStack().peek(1).getType();
 					
+		System.err.println("type: " + type1);
+		System.err.println("type: " + type2);
+
 					instructions.insertBefore(handle, getIDupInstructions(getNrIntegerSlots(type1, type2), 0));
 					instructions.insertBefore(handle, getADupInstructions(getNrReferenceSlots(type1, type2), 0));
 					instructions.remove(handle);
@@ -258,9 +279,14 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 					
 				// generate the proper replacement for the IDUP_X1 instruction depending on the type inference information
 				case IDUP_X1:
+		System.err.println("IDUP_X1");
+
 					type1 = preState.getStack().peek(0).getType();
 					type2 = preState.getStack().peek(1).getType();
 					
+		System.err.println("type: " + type1);
+		System.err.println("type: " + type2);
+
 					instructions.insertBefore(handle, getIDupInstructions(getNrIntegerSlots(type1), getNrIntegerSlots(type2)));
 					instructions.insertBefore(handle, getADupInstructions(getNrReferenceSlots(type1), getNrReferenceSlots(type2)));
 					instructions.remove(handle);
@@ -268,11 +294,16 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 					break;
 					
 				case IDUP_X2:
+		System.err.println("IDUP_X2");
 					
 					type1 = preState.getStack().peek(0).getType();
 					type2 = preState.getStack().peek(1).getType();
 					type3 = preState.getStack().peek(2).getType();
 					
+		System.err.println("type: " + type1);
+		System.err.println("type: " + type2);
+		System.err.println("type: " + type3);
+
 					instructions.insertBefore(handle, getIDupInstructions(getNrIntegerSlots(type1), getNrIntegerSlots(type2, type3)));
 					instructions.insertBefore(handle, getADupInstructions(getNrReferenceSlots(type1), getNrReferenceSlots(type2, type3)));
 					instructions.remove(handle);
