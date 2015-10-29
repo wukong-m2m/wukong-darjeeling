@@ -395,4 +395,25 @@
     <WuClass name="ICSDemoQPrClass" id="9009" virtual="false" type="hard">
       <property name="question" access="readonly" datatype="boolean" default="0" />
     </WuClass>
+    <WuClass name="RFID" id="10001" virtual="fasle" type="hard">
+      <property name="card" access="readonly" datatype="short" default="0" />
+    </WuClass>
+
+    <WuClass name="picture" id="10002" virtual="fasle" type="hard">
+      <property name="ID" access="writeonly" datatype="short" default="0" />
+      <property name="picture" access="readonly" datatype="short" default="0" />
+    </WuClass>
+
+    <WuClass name="UIImage" id="11001" virtual="fasle" type="soft">
+      <property name="picture" access="writeonly" datatype="short" default="0" />
+    </WuClass>
+
+    <WuClass name="UIButton" id="11002" virtual="fasle" type="soft">
+      <property name="click" access="writeonly" datatype="short" default="0" />
+    </WuClass>
+
+    <WuClass name="UINumber" id="11003" virtual="fasle" type="soft">
+      <property name="number" access="writeonly" datatype="short" default="0" />
+    </WuClass>
+
 </WuKong>
