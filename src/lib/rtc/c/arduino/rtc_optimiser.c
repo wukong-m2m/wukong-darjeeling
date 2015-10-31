@@ -2,12 +2,21 @@
 #include "panic.h"
 #include "asm.h"
 
-// ST_XINC and LD_DECX are basically single operand opcodes just like PUSH/POP,
-// so the same optimisation code will work for both stacks as long as we respect
-// the proper sequence of POPs for instructions that get operands from both stacks.
-#define IS_PUSH(x)          ((((x) & 0xFE0F) == OPCODE_PUSH) || (((x) & 0xFE0F) == OPCODE_ST_XINC))
-#define IS_POP(x)           ((((x) & 0xFE0F) == OPCODE_POP) || (((x) & 0xFE0F) == OPCODE_LD_DECX))
-#define IS_MOV(x)           (((x) & 0xFC00) == OPCODE_MOV)
+// LEAVING THE OLD COMMENT HERE JUST AS ILLUSTRATION OF WHAT WENT WRONG:
+    // ST_XINC and LD_DECX are basically single operand opcodes just like PUSH/POP,
+    // so the same optimisation code will work for both stacks as long as we respect
+    // the proper sequence of POPs for instructions that get operands from both stacks.
+// IT TURNS OUT THAT AROUND DUP INSTRUCTIONS, IT'S NOT GUARANTEED THAT A JVM PUSH TO
+// ONE STACK (INT OR REF), IS ALWAYS FOLLOWED BY A POP FROM THE SAME STACK!! FOR EXAMPLE,
+// ONE BENCHMARK GENERATED A IDUP2, ADUP SEQUENCE. IF IT'S NOT CERTAIN THE NEXT POP WILL
+// ACCESS THE SAME STACK AS THE LAST PUSH, THEN TREATING BOTH OPERATIONS AS THE SAME WILL
+// GENERATE BROKEN CODE BECAUSE THE OPTIMISER MAY ELIMINATE A PUSH/POP WHERE BOTH INSTRUCTIONS
+// ACCESS DIFFERENT STACKS
+#define IS_INT_PUSH(x)          (((x) & 0xFE0F) == OPCODE_PUSH)
+#define IS_INT_POP(x)           (((x) & 0xFE0F) == OPCODE_POP)
+#define IS_REF_PUSH(x)          (((x) & 0xFE0F) == OPCODE_ST_XINC)
+#define IS_REF_POP(x)           (((x) & 0xFE0F) == OPCODE_LD_DECX)
+#define IS_MOV(x)               (((x) & 0xFC00) == OPCODE_MOV)
 
 // 0000 000d dddd 0000
 #define GET_1REG_OPERAND(x)		(((x) & 0x01F0) >> 4)
@@ -162,8 +171,8 @@ bool instruction_uses_target_reg(uint16_t instruction, uint16_t target_reg) {
 // 		for (uint16_t *p = buffer; p < *code_end-1; p++) {
 // 			uint16_t inst1 = *(p);
 // 			uint16_t inst2 = *(p+1);
-// 			if (IS_PUSH(inst1)
-// 					&& IS_POP(inst2)
+// 			if (IS_INT_PUSH(inst1)
+// 					&& IS_INT_POP(inst2)
 // 					&& GET_1REG_OPERAND(inst1) == GET_1REG_OPERAND(inst2)) {
 // 				// PUSH rX, POP rX -> remove
 // 				rtc_optimise_drop_2_instructions(p, code_end);
@@ -216,11 +225,11 @@ void rtc_optimise(uint16_t *buffer, uint16_t **code_end) {
         found = false;
         uint16_t *finger = buffer;
 
-        // Go look for a PUSH
         while (finger < *code_end) {
             uint16_t finger_instr = *finger;
 
-            if (IS_PUSH(finger_instr)) {
+            // Go look for a INT PUSH
+            if (IS_INT_PUSH(finger_instr)) {
                 // We found a push, now look for the corresponding POP
                 uint8_t extra_stack_depth = 0;
                 uint16_t *pop_finger = finger+1;
@@ -229,12 +238,43 @@ void rtc_optimise(uint16_t *buffer, uint16_t **code_end) {
                 while (pop_finger < *code_end) {
                     uint16_t pop_finger_instr = *pop_finger;
 
-                    if (IS_PUSH(pop_finger_instr)) {
+                    if (IS_INT_PUSH(pop_finger_instr)) {
                         // Going one level deeper
                         extra_stack_depth++;
                     }
 
-                    if (IS_POP(pop_finger_instr)) {
+                    if (IS_INT_POP(pop_finger_instr)) {
+                        if (extra_stack_depth > 0) {
+                            // One level up again.
+                            extra_stack_depth--;
+                        } else {
+                            // Corresponding POP found!
+                            if (rtc_maybe_optimise_push_pop(finger, pop_finger, code_end)) {
+                                found = true;
+                            }
+                            break; // No point to search further, since we found the corresponding POP already.
+                        }
+                    }
+
+                    pop_finger += rtc_is_double_word_instruction(pop_finger_instr) ? 2 : 1;
+                }
+            }
+            // Go look for a REF PUSH
+            if (IS_REF_PUSH(finger_instr)) {
+                // We found a push, now look for the corresponding POP
+                uint8_t extra_stack_depth = 0;
+                uint16_t *pop_finger = finger+1;
+
+                // Go look for a PUSH
+                while (pop_finger < *code_end) {
+                    uint16_t pop_finger_instr = *pop_finger;
+
+                    if (IS_REF_PUSH(pop_finger_instr)) {
+                        // Going one level deeper
+                        extra_stack_depth++;
+                    }
+
+                    if (IS_REF_POP(pop_finger_instr)) {
                         if (extra_stack_depth > 0) {
                             // One level up again.
                             extra_stack_depth--;
