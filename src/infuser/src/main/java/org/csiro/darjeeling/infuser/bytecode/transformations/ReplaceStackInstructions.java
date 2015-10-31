@@ -75,7 +75,7 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 		ArrayList<InstructionHandle> ret = new ArrayList<InstructionHandle>();
 		
 		int nn = (n==0)?0:(n+m);
-		System.err.println("getIDupInstructions m=" + m + " n=" + n);
+
 		switch (n)
 		{
 			case 0:
@@ -209,11 +209,7 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 				// generate the proper replacement for the IDUP instruction depending on the type inference information
 				// ..., v1 -> ..., v1, v1
 				case IDUP:
-		System.err.println("IDUP");
-
 					type1 = preState.getStack().peek().getType();
-		System.err.println("type: " + type1);
-					
 					instructions.insertBefore(handle, getIDupInstructions(getNrIntegerSlots(type1), 0));
 					instructions.insertBefore(handle, getADupInstructions(getNrReferenceSlots(type1), 0));
 					instructions.remove(handle);
@@ -225,19 +221,14 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 				// or one of both depending on the operands
 				// ..., v2, v1 -> ..., v2, v1, v2, v1
 				case IDUP2:
-		System.err.println("IDUP2");
-
 					type1 = preState.getStack().peek(0).getType();
 					type2 = preState.getStack().peek(1).getType();
 					
-		System.err.println("type: " + type1);
-		System.err.println("type: " + type2);
-
 					instructions.insertBefore(handle, getIDupInstructions(getNrIntegerSlots(type1, type2), 0));
 					instructions.insertBefore(handle, getADupInstructions(getNrReferenceSlots(type1, type2), 0));
 					instructions.remove(handle);
 					
-					break;					
+					break;
 
 				// generate the proper replacement for the IPOP instruction depending on the type inference information
 				case IPOP:
@@ -279,31 +270,20 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 					
 				// generate the proper replacement for the IDUP_X1 instruction depending on the type inference information
 				case IDUP_X1:
-		System.err.println("IDUP_X1");
-
 					type1 = preState.getStack().peek(0).getType();
 					type2 = preState.getStack().peek(1).getType();
 					
-		System.err.println("type: " + type1);
-		System.err.println("type: " + type2);
-
 					instructions.insertBefore(handle, getIDupInstructions(getNrIntegerSlots(type1), getNrIntegerSlots(type2)));
 					instructions.insertBefore(handle, getADupInstructions(getNrReferenceSlots(type1), getNrReferenceSlots(type2)));
 					instructions.remove(handle);
 					
 					break;
 					
-				case IDUP_X2:
-		System.err.println("IDUP_X2");
-					
+				case IDUP_X2:					
 					type1 = preState.getStack().peek(0).getType();
 					type2 = preState.getStack().peek(1).getType();
 					type3 = preState.getStack().peek(2).getType();
 					
-		System.err.println("type: " + type1);
-		System.err.println("type: " + type2);
-		System.err.println("type: " + type3);
-
 					instructions.insertBefore(handle, getIDupInstructions(getNrIntegerSlots(type1), getNrIntegerSlots(type2, type3)));
 					instructions.insertBefore(handle, getADupInstructions(getNrReferenceSlots(type1), getNrReferenceSlots(type2, type3)));
 					instructions.remove(handle);

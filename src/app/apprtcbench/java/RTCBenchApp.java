@@ -36,24 +36,24 @@ public class RTCBenchApp
 		Stopwatch.resetAndStart();
 		Stopwatch.measure();
 
-		System.out.println("native sort:");
-		RTCTestBubbleSort.test_bubblesort_native();
-		System.out.println("rtc sort:");
-		RTC.useRTC(true);
-		RTCTestBubbleSort.test_bubblesort();
-		System.out.println("java sort:");
-		RTC.useRTC(false);
-		RTCTestBubbleSort.test_bubblesort();
+		// System.out.println("native sort:");
+		// RTCTestBubbleSort.test_bubblesort_native();
+		// System.out.println("rtc sort:");
+		// RTC.useRTC(true);
+		// RTCTestBubbleSort.test_bubblesort();
+		// System.out.println("java sort:");
+		// RTC.useRTC(false);
+		// RTCTestBubbleSort.test_bubblesort();
 
-		System.out.println("native fft:");
-		RTCTestFixFFT.test_fixfft_native();
-		System.out.println("rtc fft:");
-		RTC.useRTC(true);
-		RTCTestFixFFT.test_fixfft();
-		System.out.println("java fft:");
-		RTC.useRTC(false);
-		RTCTestFixFFT.test_fixfft();
-		System.out.println("done.");
+		// System.out.println("native fft:");
+		// RTCTestFixFFT.test_fixfft_native();
+		// System.out.println("rtc fft:");
+		// RTC.useRTC(true);
+		// RTCTestFixFFT.test_fixfft();
+		// System.out.println("java fft:");
+		// RTC.useRTC(false);
+		// RTCTestFixFFT.test_fixfft();
+		// System.out.println("done.");
 
 		System.out.println("native xxtea:");
 		RTCTestXXTEA.test_xxtea_native();

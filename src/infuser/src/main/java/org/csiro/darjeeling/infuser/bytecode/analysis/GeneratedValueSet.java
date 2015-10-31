@@ -107,12 +107,20 @@ public class GeneratedValueSet extends TreeSet<GeneratedValue> implements Compar
 	public String toString()
 	{
 		String ret = "";
-		for (GeneratedValue handleIndexPair : this)
+		// for (GeneratedValue handleIndexPair : this)
+		// 	ret += ":" + handleIndexPair.getHandle().getPc() + 
+		// 	"[" + handleIndexPair.getIndex() + "]" + 
+		// 	handleIndexPair.getOutputType() + 
+		// 	"(" + handleIndexPair.getLogicalOutputType() + ")" +
+		// 	"<" + handleIndexPair.getOptimizationHint() + ">";
+
+		for (GeneratedValue handleIndexPair : this) {
 			ret += ":" + handleIndexPair.getHandle().getPc() + 
-			"[" + handleIndexPair.getIndex() + "]" + 
-			handleIndexPair.getOutputType() + 
-			"(" + handleIndexPair.getLogicalOutputType() + ")" +
-			"<" + handleIndexPair.getOptimizationHint() + ">";
+			handleIndexPair.getOutputType();
+			if (handleIndexPair.getOutputType() != handleIndexPair.getLogicalOutputType()) {
+				ret += "(" + handleIndexPair.getLogicalOutputType() + ")";
+			}
+		}
 		
 		return ret.replaceFirst(":", "");
 	}

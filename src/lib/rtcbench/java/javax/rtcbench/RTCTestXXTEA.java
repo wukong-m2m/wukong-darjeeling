@@ -3,9 +3,10 @@ package javax.rtcbench;
 import javax.darjeeling.Stopwatch;
 
 public class RTCTestXXTEA {
-	private final static int NUMNUMBERS = 256;
+	private final static int NUMNUMBERS = 32;
 
 	public static native void test_xxtea_native();
+
 	public static void test_xxtea() {
 		int numbers[] = new int[NUMNUMBERS]; // Not including this in the timing since we can't do it in C
 		final int key[] = new int[] {0, 1, 2, 3};
@@ -15,8 +16,13 @@ public class RTCTestXXTEA {
 			numbers[i] = (NUMNUMBERS - 1 - i);
 
 		do_btea(numbers, key);
-	}
 
+		for (int i=0; i<NUMNUMBERS; i++) {
+			System.out.print(" " + numbers[i]);
+		}
+		System.out.println(" done.");
+	}
+	
 	public static void do_btea(int[] v, final int[] key) {
 		Stopwatch.resetAndStart();
 
@@ -55,7 +61,8 @@ public class RTCTestXXTEA {
 				sum -= DELTA;
 			} while (--rounds != 0);
 		}
-
+		Stopwatch.measure();
+	}
 
 // #include <stdint.h>
 // #define DELTA 0x9e3779b9
@@ -95,13 +102,6 @@ public class RTCTestXXTEA {
 // 		} while (--rounds);
 // 	}
 // }
-
-
-
-
-
-		Stopwatch.measure();
-	}
 }
 
 

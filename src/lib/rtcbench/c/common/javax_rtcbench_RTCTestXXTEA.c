@@ -1,6 +1,7 @@
 #include <stdint.h>
-#include "xxtea.h"
 #include "darjeeling3.h"
+#include "debug.h"
+#include "xxtea.h"
 
 // Split into separate function to avoid the compiler just optimising away the whole test.
 void javax_rtcbench_RTCTestXXTEA_void_test_xxtea_native2(uint32_t *v, int n, uint32_t const key[4]) {
@@ -12,7 +13,7 @@ void javax_rtcbench_RTCTestXXTEA_void_test_xxtea_native2(uint32_t *v, int n, uin
 }
 
 void javax_rtcbench_RTCTestXXTEA_void_test_xxtea_native() {
-	uint8_t NUMNUMBERS = 16;
+	uint8_t NUMNUMBERS = 32;
 	uint32_t numbers[NUMNUMBERS];
 	uint32_t const key[4] = {0, 1, 2, 3};
 
@@ -21,5 +22,9 @@ void javax_rtcbench_RTCTestXXTEA_void_test_xxtea_native() {
 		numbers[i] = (NUMNUMBERS - 1 - i);
 
 	javax_rtcbench_RTCTestXXTEA_void_test_xxtea_native2(numbers, NUMNUMBERS, key);
+
+	for (uint16_t i=0; i<NUMNUMBERS; i++)
+		DEBUG_LOG(1, "%lu ", numbers[i]);
+	DEBUG_LOG(1, "done.");
 }
 
