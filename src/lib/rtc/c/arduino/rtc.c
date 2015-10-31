@@ -186,6 +186,8 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     uint8_t jvm_operand_byte1;
     uint8_t jvm_operand_byte2;
     uint8_t jvm_operand_byte3;
+    uint8_t m, n;
+    int8_t i;
     uint16_t jvm_operand_word;
     int16_t jvm_operand_signed_word;
     dj_infusion *target_infusion;
@@ -625,6 +627,36 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_PUSH(R24);
                 emit_PUSH(R23);
                 emit_PUSH(R22);
+            break;
+            case JVM_IDUP_X:
+                m = dj_di_getU8(code + ++pc); // 
+                n = m & 15;
+                m >>= 4;
+                // m: how many integer slots to duplicate
+                // n: how deep to bury them in the stack. (see getIDupInstructions in the infuser)
+                // not that the infuser always generated code with n>=m
+                // Example for m=1, n=2:
+                // ..., v1, v2 -> ..., v2, v1, v2
+                if (n == 0 || n > 4) {
+                    // n == 0 not supported, n>4 also not supported. Could be expanded using more registers, but for now it's not necessary
+                    dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
+                } else {
+                    for (i = 0; i < n; i++) {
+                        // First pop n values
+                        emit_POP(R18+(2*i));
+                        emit_POP(R18+(2*i)+1);
+                    }
+                    for (i = m-1; i >= 0; i--) { // loop from m-1 back to 0
+                        // Then push the m values that need to be duplicated
+                        emit_PUSH(R18+(2*i)+1);
+                        emit_PUSH(R18+(2*i));
+                    }
+                    for (i = n-1; i >= 0; i--) { // loop from n-1 back to 0
+                        // Finally push the original n values back on the stack
+                        emit_PUSH(R18+(2*i)+1);
+                        emit_PUSH(R18+(2*i));
+                    }
+                }
             break;
             case JVM_APOP:
                 emit_x_POPREF(R25);
