@@ -8,7 +8,7 @@ public class RTCTestBubbleSort {
 	// private final static short NUMNUMBERS = 256;
 
 	// public static native void test_bubblesort_native();
-	// public static void test_bubblesort() {
+	// public static void test_bubblesort(boolean optimised) {
 	// 	short numbers[] = new short[NUMNUMBERS]; // Not including this in the timing since we can't do it in C
 
 	// 	// Fill the array
@@ -16,27 +16,31 @@ public class RTCTestBubbleSort {
 	// 		numbers[i] = (short)(NUMNUMBERS - 1 - i);
 
 	// 	// Then sort it
-	// 	do_bubblesort(numbers);
+	// 	if (optimised) {
+	// 		do_bubblesort_optimised(numbers);
+	// 	} else {
+	// 		do_bubblesort_original(numbers);
+	// 	}
 	// }
 
-	// // public static void do_bubblesort(short[] numbers) {
-	// // 	Stopwatch.resetAndStart();
+	// public static void do_bubblesort_original(short[] numbers) {
+	// 	Stopwatch.resetAndStart();
 
-	// // 	for (int i=0; i<NUMNUMBERS; i++) {
-	// // 		for (int j=0; j<NUMNUMBERS-i-1; j++) {
-	// // 			if (numbers[j]>numbers[j+1]) {
-	// // 				short temp = numbers[j];
-	// // 				numbers[j] = numbers[j+1];
-	// // 				numbers[j+1] = temp;
-	// // 			}
-	// // 		}
-	// // 	}
+	// 	for (int i=0; i<NUMNUMBERS; i++) {
+	// 		for (int j=0; j<NUMNUMBERS-i-1; j++) {
+	// 			if (numbers[j]>numbers[j+1]) {
+	// 				short temp = numbers[j];
+	// 				numbers[j] = numbers[j+1];
+	// 				numbers[j+1] = temp;
+	// 			}
+	// 		}
+	// 	}
 
-	// // 	Stopwatch.measure();
-	// // }
+	// 	Stopwatch.measure();
+	// }
 
 
-	// public static void do_bubblesort(short[] numbers) {
+	// public static void do_bubblesort_optimised(short[] numbers) {
 	// 	Stopwatch.resetAndStart();
 
 	// 	for (int i=0; i<NUMNUMBERS; i++) {

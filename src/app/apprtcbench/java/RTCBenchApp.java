@@ -38,12 +38,18 @@ public class RTCBenchApp
 
 		// System.out.println("native sort:");
 		// RTCTestBubbleSort.test_bubblesort_native();
-		// System.out.println("rtc sort:");
+		// System.out.println("rtc sort (not optimised):");
 		// RTC.useRTC(true);
-		// RTCTestBubbleSort.test_bubblesort();
-		// System.out.println("java sort:");
+		// RTCTestBubbleSort.test_bubblesort(false);
+		// System.out.println("java sort (not optimised):");
 		// RTC.useRTC(false);
-		// RTCTestBubbleSort.test_bubblesort();
+		// RTCTestBubbleSort.test_bubblesort(false);
+		// System.out.println("rtc sort (optimised):");
+		// RTC.useRTC(true);
+		// RTCTestBubbleSort.test_bubblesort(true);
+		// System.out.println("java sort (optimised):");
+		// RTC.useRTC(false);
+		// RTCTestBubbleSort.test_bubblesort(true);
 
 		// System.out.println("native fft:");
 		// RTCTestFixFFT.test_fixfft_native();
@@ -63,5 +69,16 @@ public class RTCBenchApp
 		System.out.println("java xxtea:");
 		RTC.useRTC(false);
 		RTCTestXXTEA.test_xxtea();
-		System.out.println("done.");	}
+		System.out.println("done.");
+
+		System.out.println("native rc5:");
+		RTCTestRC5.test_rc5_native();
+		System.out.println("rtc rc5:");
+		RTC.useRTC(true);
+		RTCTestRC5.test_rc5();
+		System.out.println("java rc5:");
+		RTC.useRTC(false);
+		RTCTestRC5.test_rc5();
+		System.out.println("done.");
+	}
 }

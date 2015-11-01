@@ -31,9 +31,9 @@ public class RTCTestFixFFT {
 	// 	// }
 	// }
 
-	// private final static short N_WAVE = 256;    /* full length of Sinewave[] */
+	// private final static short N_WAVE = 256;    // full length of Sinewave[]
 	// private final static short N_WAVE_HALF = 128;
-	// private final static short LOG2_N_WAVE = 8; /* log2(N_WAVE) */
+	// private final static short LOG2_N_WAVE = 8; // log2(N_WAVE)
 
 	// // Pseudo-cosine function for 2pi equalling N_WAVE = 256.
 	// // Shifting by "pi/2", e.g. N_WAVE/4, gives sine.
@@ -78,56 +78,50 @@ public class RTCTestFixFFT {
 	// -24, -21, -18, -15, -12, -9, -6, -3, 
 	// };
 
-	// /*
-	// 	SIN8 and COS8 - 8-bit pseudo sine and cosine for better handling. 
-	// 	Normalized to y * N_WAVE_HALF and x * N_WAVE / 2pi .
-	// 	Returns char value which can be used for integer arithmetic
-	// private static final byte SIN8(short n)
-	// {
-	//   n = (short)(n % N_WAVE);
-	//   return Sinewave[n];
-	// }
+	// // // SIN8 and COS8 - 8-bit pseudo sine and cosine for better handling. 
+	// // // Normalized to y * N_WAVE_HALF and x * N_WAVE / 2pi .
+	// // // Returns char value which can be used for integer arithmetic
+	// // private static final byte SIN8(short n)
+	// // {
+	// //   n = (short)(n % N_WAVE);
+	// //   return Sinewave[n];
+	// // }
 
-	// private static final byte COS8(short n)
-	// {
-	//   n = (short)((n + N_WAVE/4) % N_WAVE);
-	//   return Sinewave[n];
-	// }
-	// */
+	// // private static final byte COS8(short n)
+	// // {
+	// //   n = (short)((n + N_WAVE/4) % N_WAVE);
+	// //   return Sinewave[n];
+	// // }
 
 
+	// // // FIX_MPY() - fixed-point multiplication & scaling.
+	// // // Substitute inline assembly for hardware-specific
+	// // // optimization suited to a particluar DSP processor.
+	// // // Scaling ensures that result remains 16-bit.
+	// // private static byte FIX_MPY(byte a, byte b)
+	// // { 
+	// // 	// Multiply, then scale back to one signed 8-bit value
 
-	
-	//   FIX_MPY() - fixed-point multiplication & scaling.
-	//   Substitute inline assembly for hardware-specific
-	//   optimization suited to a particluar DSP processor.
-	//   Scaling ensures that result remains 16-bit.
-	// private static byte FIX_MPY(byte a, byte b)
-	// { 
-	// 	// Multiply, then scale back to one signed 8-bit value
+	// // 	// Original
+	// //     // // shift right one less bit (i.e. 7-1)
+	// //     // short c = (short)(((short)a * (short)b) >> 6);
+	// //     // // last bit shifted out = rounding-bit
+	// //     // b = (byte)(c & 0x01);
+	// //     // // last shift + rounding bit
+	// //     // a = (byte)((c >> 1) + b);
+	// //     // return a;
 
-	// 	// Original
-	//     // // shift right one less bit (i.e. 7-1)
-	//     // short c = (short)(((short)a * (short)b) >> 6);
-	//     // // last bit shifted out = rounding-bit
-	//     // b = (byte)(c & 0x01);
-	//     // // last shift + rounding bit
-	//     // a = (byte)((c >> 1) + b);
-	//     // return a;
-
-	// 	// Reformatted to make it easier to inline
-	//     short c = (short)(((short)a * (short)b) >> 6);
-	//     return (byte)((c >> 1) + ((byte)(c & 0x01)));
-	// }
+	// // 	// Reformatted to make it easier to inline
+	// //     short c = (short)(((short)a * (short)b) >> 6);
+	// //     return (byte)((c >> 1) + ((byte)(c & 0x01)));
+	// // }
 	
 
 
-	// /*
-	//   fix_fft() - perform forward/inverse fast Fourier transform.
-	//   fr[n],fi[n] are real and imaginary arrays, both INPUT AND
-	//   RESULT (in-place FFT), with 0 <= n < 2**m; set inverse to
-	//   0 for forward transform (FFT), or 1 for iFFT.
-	// */
+	// // fix_fft() - perform forward/inverse fast Fourier transform.
+	// // fr[n],fi[n] are real and imaginary arrays, both INPUT AND
+	// // RESULT (in-place FFT), with 0 <= n < 2**m; set inverse to
+	// // 0 for forward transform (FFT), or 1 for iFFT.
 	// public static short do_fixfft(byte[] fr, byte[] fi, short m, boolean inverse) {
 	// 	Stopwatch.resetAndStart();
 
@@ -137,7 +131,7 @@ public class RTCTestFixFFT {
 
 	// 	n = (short)(1 << m);
 
-	// 	/* max FFT size = N_WAVE */
+	// 	// max FFT size = N_WAVE
 	// 	if (n > N_WAVE)
 	// 		return -1;
 
@@ -145,7 +139,7 @@ public class RTCTestFixFFT {
 	// 	nn = (short)(n - 1);
 	// 	scale = 0;
 
-	// 	/* decimation in time - re-order data */
+	// 	// decimation in time - re-order data
 	// 	for (m=1; m<=nn; ++m) {
 	// 		l = n;
 	// 		do {
@@ -167,7 +161,7 @@ public class RTCTestFixFFT {
 
 	// 	while (l < n) {
 	// 		if (inverse) {
-	// 			/* variable scaling, depending upon data */
+	// 			// variable scaling, depending upon data
 	// 			shift = false;
 	// 			for (i=0; i<n; ++i) {
 	// 				j = fr[i];
@@ -184,24 +178,20 @@ public class RTCTestFixFFT {
 	// 			if (shift)
 	// 				++scale;
 	// 		} else {
-	// 			/*
-	// 			  fixed scaling, for proper normalization --
-	// 			  there will be log2(n) passes, so this results
-	// 			  in an overall factor of 1/n, distributed to
-	// 			  maximize arithmetic accuracy.
-	// 			*/
+	// 			// fixed scaling, for proper normalization --
+	// 			// there will be log2(n) passes, so this results
+	// 			// in an overall factor of 1/n, distributed to
+	// 			// maximize arithmetic accuracy.
 	// 			shift = true;
 	// 		}
 
-	// 		/*
-	// 		  it may not be obvious, but the shift will be
-	// 		  performed on each data point exactly once,
-	// 		  during this pass.
-	// 		*/
+	// 		// it may not be obvious, but the shift will be
+	// 		// performed on each data point exactly once,
+	// 		// during this pass.
 	// 		istep = (short)(l << 1);
 	// 		for (m=0; m<l; ++m) {
 	// 			j = (short)(m << k);
-	// 			/* 0 <= j < N_WAVE/2 */
+	// 			// 0 <= j < N_WAVE/2
 	// 			// wr =  COS8(j);
 	// 			// wi = (byte)-SIN8(j);
 	// 			wr =  Sinewave[((j + N_WAVE/4) % N_WAVE)]; // COS8(j)
