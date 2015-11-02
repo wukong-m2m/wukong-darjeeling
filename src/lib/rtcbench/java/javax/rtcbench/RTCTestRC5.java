@@ -29,7 +29,7 @@ public class RTCTestRC5 {
     // @param num_rounds The number of rounds desired (0 for default)
     // @param skey The key in as scheduled by this function.
     // @return CRYPT_OK if successful
-    int rc5_setup(final byte[] key, int keylen, int num_rounds, int[] skey_K)
+    private static int rc5_setup(final byte[] key, int keylen, int num_rounds, int[] skey_K)
     {
         int[] L = new int[64];
         int[] S;
@@ -95,7 +95,7 @@ public class RTCTestRC5 {
     // @param ct The output ciphertext (8 bytes)
     // @param skey The key as scheduled
     // @return CRYPT_OK if successful
-    int rc5_ecb_encrypt(final byte[] pt, byte[] ct, int skey_rounds, int[] skey_K)
+    private static int rc5_ecb_encrypt(final byte[] pt, byte[] ct, int skey_rounds, int[] skey_K)
     {
         // uint32_t A, B, *K;
         // K used to be a pointer to somewhere in skey->K.
@@ -154,7 +154,7 @@ public class RTCTestRC5 {
     // @param pt The output plaintext (8 bytes)
     // @param skey The key as scheduled
     // @return CRYPT_OK if successful
-    int rc5_ecb_decrypt(final byte[] ct, byte[] pt, int skey_rounds, int[] skey_K)
+    private static int rc5_ecb_decrypt(final byte[] ct, byte[] pt, int skey_rounds, int[] skey_K)
     {
         int A, B;
         int r, K;
@@ -199,121 +199,161 @@ public class RTCTestRC5 {
        return CRYPT_OK;
     }
 
-    // Performs a self-test of the LTC_RC5 block cipher
-    // @return CRYPT_OK if functional, CRYPT_NOP if self-test has been disabled
-    int rc5_test()
+    public static void test_rc5_short_version()
     {
-        final byte[] test_key_set1 = { (byte)0x91, (byte)0x5f, (byte)0x46, (byte)0x19, (byte)0xbe, (byte)0x41, (byte)0xb2, (byte)0x51,
-                                   (byte)0x63, (byte)0x55, (byte)0xa5, (byte)0x01, (byte)0x10, (byte)0xa9, (byte)0xce, (byte)0x91 };
-        final byte[] test_key_set2 = { (byte)0x78, (byte)0x33, (byte)0x48, (byte)0xe7, (byte)0x5a, (byte)0xeb, (byte)0x0f, (byte)0x2f,
-                                   (byte)0xd7, (byte)0xb1, (byte)0x69, (byte)0xbb, (byte)0x8d, (byte)0xc1, (byte)0x67, (byte)0x87 };
-        final byte[] test_key_set3 = { (byte)0xDC, (byte)0x49, (byte)0xdb, (byte)0x13, (byte)0x75, (byte)0xa5, (byte)0x58, (byte)0x4f,
-                                   (byte)0x64, (byte)0x85, (byte)0xb4, (byte)0x13, (byte)0xb5, (byte)0xf1, (byte)0x2b, (byte)0xaf };            
-        final byte[] test_pt_set1  = { (byte)0x21, (byte)0xa5, (byte)0xdb, (byte)0xee, (byte)0x15, (byte)0x4b, (byte)0x8f, (byte)0x6d };
-        final byte[] test_pt_set2  = { (byte)0xF7, (byte)0xC0, (byte)0x13, (byte)0xAC, (byte)0x5B, (byte)0x2B, (byte)0x89, (byte)0x52 };
-        final byte[] test_pt_set3  = { (byte)0x2F, (byte)0x42, (byte)0xB3, (byte)0xB7, (byte)0x03, (byte)0x69, (byte)0xFC, (byte)0x92 };
-        final byte[] test_ct_set1  = { (byte)0xf7, (byte)0xc0, (byte)0x13, (byte)0xac, (byte)0x5b, (byte)0x2b, (byte)0x89, (byte)0x52 };
-        final byte[] test_ct_set2  = { (byte)0x2F, (byte)0x42, (byte)0xB3, (byte)0xB7, (byte)0x03, (byte)0x69, (byte)0xFC, (byte)0x92 };
-        final byte[] test_ct_set3  = { (byte)0x65, (byte)0xc1, (byte)0x78, (byte)0xb2, (byte)0x84, (byte)0xd1, (byte)0x97, (byte)0xcc };
+        byte NUMNUMBERS = 8;
+        final byte[] test_key = { (byte)0x91, (byte)0x5f, (byte)0x46, (byte)0x19, (byte)0xbe, (byte)0x41, (byte)0xb2, (byte)0x51, (byte)0x63, (byte)0x55, (byte)0xa5, (byte)0x01, (byte)0x10, (byte)0xa9, (byte)0xce, (byte)0x91 };
+        final byte[] test_pt  = { (byte)0x21, (byte)0xa5, (byte)0xdb, (byte)0xee, (byte)0x15, (byte)0x4b, (byte)0x8f, (byte)0x6d };
+        final byte[] test_ct  = { (byte)0xf7, (byte)0xc0, (byte)0x13, (byte)0xac, (byte)0x5b, (byte)0x2b, (byte)0x89, (byte)0x52 };
 
-        byte[] tmp0 = new byte[8];
-        byte[] tmp1 = new byte[8];
+        byte[] tmp0 = new byte[NUMNUMBERS];
+        byte[] tmp1 = new byte[NUMNUMBERS];
         int x, y, err;
         // rc5_key key;
         int skey_rounds = 12;
         int[] skey_K = new int[50];
 
-        // test set 1
-            /* setup key */
-            if ((err = rc5_setup(test_key_set1, 16, skey_rounds, skey_K)) != CRYPT_OK) {
-                return err;
-            }
+        /* setup key */
+        if ((err = rc5_setup(test_key, 16, skey_rounds, skey_K)) != CRYPT_OK) {
+            System.out.println("TEST SETUP FAILED");
+            return;
+        }
 
-            /* encrypt and decrypt */
-            rc5_ecb_encrypt(test_pt_set1, tmp0, skey_rounds, skey_K);
-            rc5_ecb_decrypt(tmp0, tmp1, skey_rounds, skey_K);
-
-            /* compare */
-            // if (XMEMCMP(tmp[0], tests[x].ct, 8) != 0 || XMEMCMP(tmp[1], tests[x].pt, 8) != 0) {
-            //    return CRYPT_FAIL_TESTVECTOR;
-            // }
-            for (byte k=0; k<8; k++) {
-              if ((tmp0[k] != test_ct_set1[k]) || (tmp1[k] != test_pt_set1[k])) {
-                return CRYPT_FAIL_TESTVECTOR;
-              }
-            }
-
-            /* now see if we can encrypt all zero bytes 1000 times, decrypt and come back where we started */
-            for (y = 0; y < 8; y++) tmp0[y] = 0;
-            for (y = 0; y < 1000; y++) rc5_ecb_encrypt(tmp0, tmp0, skey_rounds, skey_K);
-            for (y = 0; y < 1000; y++) rc5_ecb_decrypt(tmp0, tmp0, skey_rounds, skey_K);
-            for (y = 0; y < 8; y++) if (tmp0[y] != 0) return CRYPT_FAIL_TESTVECTOR;
-
-        // test set 2
-            /* setup key */
-            if ((err = rc5_setup(test_key_set2, 16, skey_rounds, skey_K)) != CRYPT_OK) {
-                return err;
-            }
-
-            /* encrypt and decrypt */
-            rc5_ecb_encrypt(test_pt_set2, tmp0, skey_rounds, skey_K);
-            rc5_ecb_decrypt(tmp0, tmp1, skey_rounds, skey_K);
-
-            /* compare */
-            // if (XMEMCMP(tmp[0], tests[x].ct, 8) != 0 || XMEMCMP(tmp[1], tests[x].pt, 8) != 0) {
-            //    return CRYPT_FAIL_TESTVECTOR;
-            // }
-            for (byte k=0; k<8; k++) {
-              if ((tmp0[k] != test_ct_set2[k]) || (tmp1[k] != test_pt_set2[k])) {
-                return CRYPT_FAIL_TESTVECTOR;
-              }
-            }
-
-            /* now see if we can encrypt all zero bytes 1000 times, decrypt and come back where we started */
-            for (y = 0; y < 8; y++) tmp0[y] = 0;
-            for (y = 0; y < 1000; y++) rc5_ecb_encrypt(tmp0, tmp0, skey_rounds, skey_K);
-            for (y = 0; y < 1000; y++) rc5_ecb_decrypt(tmp0, tmp0, skey_rounds, skey_K);
-            for (y = 0; y < 8; y++) if (tmp0[y] != 0) return CRYPT_FAIL_TESTVECTOR;
-
-        // test set 3
-            /* setup key */
-            if ((err = rc5_setup(test_key_set3, 16, skey_rounds, skey_K)) != CRYPT_OK) {
-                return err;
-            }
-
-            /* encrypt and decrypt */
-            rc5_ecb_encrypt(test_pt_set3, tmp0, skey_rounds, skey_K);
-            rc5_ecb_decrypt(tmp0, tmp1, skey_rounds, skey_K);
-
-            /* compare */
-            // if (XMEMCMP(tmp[0], tests[x].ct, 8) != 0 || XMEMCMP(tmp[1], tests[x].pt, 8) != 0) {
-            //    return CRYPT_FAIL_TESTVECTOR;
-            // }
-            for (byte k=0; k<8; k++) {
-              if ((tmp0[k] != test_ct_set3[k]) || (tmp1[k] != test_pt_set3[k])) {
-                return CRYPT_FAIL_TESTVECTOR;
-              }
-            }
-
-            /* now see if we can encrypt all zero bytes 1000 times, decrypt and come back where we started */
-            for (y = 0; y < 8; y++) tmp0[y] = 0;
-            for (y = 0; y < 1000; y++) rc5_ecb_encrypt(tmp0, tmp0, skey_rounds, skey_K);
-            for (y = 0; y < 1000; y++) rc5_ecb_decrypt(tmp0, tmp0, skey_rounds, skey_K);
-            for (y = 0; y < 8; y++) if (tmp0[y] != 0) return CRYPT_FAIL_TESTVECTOR;
-
-        return CRYPT_OK;
-    }
-
-    public static void test_rc5() {
-        do_rc5();
-    }
-    
-    public static void do_rc5() {
         Stopwatch.resetAndStart();
-
-
+        /* encrypt and decrypt */
+        rc5_ecb_encrypt(test_pt, tmp0, skey_rounds, skey_K);
+        rc5_ecb_decrypt(tmp0, tmp1, skey_rounds, skey_K);
         Stopwatch.measure();
+
+        System.out.print("Original:");
+        for (byte k=0; k<NUMNUMBERS; k++) {
+            System.out.print(" " + test_pt[k]);
+        }
+        System.out.println("done.");
+        System.out.print("Encrypted:");
+        for (byte k=0; k<NUMNUMBERS; k++) {
+            System.out.print(" " + tmp0[k]);
+        }
+        System.out.println("done.");
+        System.out.print("Decrypted:");
+        for (byte k=0; k<NUMNUMBERS; k++) {
+            System.out.print(" " + tmp1[k]);
+        }
+        System.out.println("done.");
+
+        for (byte k=0; k<NUMNUMBERS; k++) {
+          if ((tmp0[k] != test_ct[k]) || (tmp1[k] != test_pt[k])) {
+            System.out.println("TEST FAILED");
+            return;
+          }
+        }
+        System.out.println("TEST OK");
     }
+
+    // Performs a self-test of the LTC_RC5 block cipher
+    // @return CRYPT_OK if functional, CRYPT_NOP if self-test has been disabled
+    // private static int rc5_test()
+    // {
+    //     final byte[] test_key_set1 = { (byte)0x91, (byte)0x5f, (byte)0x46, (byte)0x19, (byte)0xbe, (byte)0x41, (byte)0xb2, (byte)0x51,
+    //                                (byte)0x63, (byte)0x55, (byte)0xa5, (byte)0x01, (byte)0x10, (byte)0xa9, (byte)0xce, (byte)0x91 };
+    //     final byte[] test_key_set2 = { (byte)0x78, (byte)0x33, (byte)0x48, (byte)0xe7, (byte)0x5a, (byte)0xeb, (byte)0x0f, (byte)0x2f,
+    //                                (byte)0xd7, (byte)0xb1, (byte)0x69, (byte)0xbb, (byte)0x8d, (byte)0xc1, (byte)0x67, (byte)0x87 };
+    //     final byte[] test_key_set3 = { (byte)0xDC, (byte)0x49, (byte)0xdb, (byte)0x13, (byte)0x75, (byte)0xa5, (byte)0x58, (byte)0x4f,
+    //                                (byte)0x64, (byte)0x85, (byte)0xb4, (byte)0x13, (byte)0xb5, (byte)0xf1, (byte)0x2b, (byte)0xaf };            
+    //     final byte[] test_pt_set1  = { (byte)0x21, (byte)0xa5, (byte)0xdb, (byte)0xee, (byte)0x15, (byte)0x4b, (byte)0x8f, (byte)0x6d };
+    //     final byte[] test_pt_set2  = { (byte)0xF7, (byte)0xC0, (byte)0x13, (byte)0xAC, (byte)0x5B, (byte)0x2B, (byte)0x89, (byte)0x52 };
+    //     final byte[] test_pt_set3  = { (byte)0x2F, (byte)0x42, (byte)0xB3, (byte)0xB7, (byte)0x03, (byte)0x69, (byte)0xFC, (byte)0x92 };
+    //     final byte[] test_ct_set1  = { (byte)0xf7, (byte)0xc0, (byte)0x13, (byte)0xac, (byte)0x5b, (byte)0x2b, (byte)0x89, (byte)0x52 };
+    //     final byte[] test_ct_set2  = { (byte)0x2F, (byte)0x42, (byte)0xB3, (byte)0xB7, (byte)0x03, (byte)0x69, (byte)0xFC, (byte)0x92 };
+    //     final byte[] test_ct_set3  = { (byte)0x65, (byte)0xc1, (byte)0x78, (byte)0xb2, (byte)0x84, (byte)0xd1, (byte)0x97, (byte)0xcc };
+
+    //     byte[] tmp0 = new byte[8];
+    //     byte[] tmp1 = new byte[8];
+    //     int x, y, err;
+    //     // rc5_key key;
+    //     int skey_rounds = 12;
+    //     int[] skey_K = new int[50];
+
+    //     // test set 1
+    //         /* setup key */
+    //         if ((err = rc5_setup(test_key_set1, 16, skey_rounds, skey_K)) != CRYPT_OK) {
+    //             return err;
+    //         }
+
+    //         /* encrypt and decrypt */
+    //         rc5_ecb_encrypt(test_pt_set1, tmp0, skey_rounds, skey_K);
+    //         rc5_ecb_decrypt(tmp0, tmp1, skey_rounds, skey_K);
+
+    //         /* compare */
+    //         // if (XMEMCMP(tmp[0], tests[x].ct, 8) != 0 || XMEMCMP(tmp[1], tests[x].pt, 8) != 0) {
+    //         //    return CRYPT_FAIL_TESTVECTOR;
+    //         // }
+    //         for (byte k=0; k<8; k++) {
+    //           if ((tmp0[k] != test_ct_set1[k]) || (tmp1[k] != test_pt_set1[k])) {
+    //             return CRYPT_FAIL_TESTVECTOR;
+    //           }
+    //         }
+
+    //          now see if we can encrypt all zero bytes 1000 times, decrypt and come back where we started 
+    //         for (y = 0; y < 8; y++) tmp0[y] = 0;
+    //         for (y = 0; y < 1000; y++) rc5_ecb_encrypt(tmp0, tmp0, skey_rounds, skey_K);
+    //         for (y = 0; y < 1000; y++) rc5_ecb_decrypt(tmp0, tmp0, skey_rounds, skey_K);
+    //         for (y = 0; y < 8; y++) if (tmp0[y] != 0) return CRYPT_FAIL_TESTVECTOR;
+
+    //     // test set 2
+    //         /* setup key */
+    //         if ((err = rc5_setup(test_key_set2, 16, skey_rounds, skey_K)) != CRYPT_OK) {
+    //             return err;
+    //         }
+
+    //         /* encrypt and decrypt */
+    //         rc5_ecb_encrypt(test_pt_set2, tmp0, skey_rounds, skey_K);
+    //         rc5_ecb_decrypt(tmp0, tmp1, skey_rounds, skey_K);
+
+    //         /* compare */
+    //         // if (XMEMCMP(tmp[0], tests[x].ct, 8) != 0 || XMEMCMP(tmp[1], tests[x].pt, 8) != 0) {
+    //         //    return CRYPT_FAIL_TESTVECTOR;
+    //         // }
+    //         for (byte k=0; k<8; k++) {
+    //           if ((tmp0[k] != test_ct_set2[k]) || (tmp1[k] != test_pt_set2[k])) {
+    //             return CRYPT_FAIL_TESTVECTOR;
+    //           }
+    //         }
+
+    //         /* now see if we can encrypt all zero bytes 1000 times, decrypt and come back where we started */
+    //         for (y = 0; y < 8; y++) tmp0[y] = 0;
+    //         for (y = 0; y < 1000; y++) rc5_ecb_encrypt(tmp0, tmp0, skey_rounds, skey_K);
+    //         for (y = 0; y < 1000; y++) rc5_ecb_decrypt(tmp0, tmp0, skey_rounds, skey_K);
+    //         for (y = 0; y < 8; y++) if (tmp0[y] != 0) return CRYPT_FAIL_TESTVECTOR;
+
+    //     // test set 3
+    //         /* setup key */
+    //         if ((err = rc5_setup(test_key_set3, 16, skey_rounds, skey_K)) != CRYPT_OK) {
+    //             return err;
+    //         }
+
+    //         /* encrypt and decrypt */
+    //         rc5_ecb_encrypt(test_pt_set3, tmp0, skey_rounds, skey_K);
+    //         rc5_ecb_decrypt(tmp0, tmp1, skey_rounds, skey_K);
+
+    //         /* compare */
+    //         // if (XMEMCMP(tmp[0], tests[x].ct, 8) != 0 || XMEMCMP(tmp[1], tests[x].pt, 8) != 0) {
+    //         //    return CRYPT_FAIL_TESTVECTOR;
+    //         // }
+    //         for (byte k=0; k<8; k++) {
+    //           if ((tmp0[k] != test_ct_set3[k]) || (tmp1[k] != test_pt_set3[k])) {
+    //             return CRYPT_FAIL_TESTVECTOR;
+    //           }
+    //         }
+
+    //         /* now see if we can encrypt all zero bytes 1000 times, decrypt and come back where we started */
+    //         for (y = 0; y < 8; y++) tmp0[y] = 0;
+    //         for (y = 0; y < 1000; y++) rc5_ecb_encrypt(tmp0, tmp0, skey_rounds, skey_K);
+    //         for (y = 0; y < 1000; y++) rc5_ecb_decrypt(tmp0, tmp0, skey_rounds, skey_K);
+    //         for (y = 0; y < 8; y++) if (tmp0[y] != 0) return CRYPT_FAIL_TESTVECTOR;
+
+    //     return CRYPT_OK;
+    // }
 }
 
 

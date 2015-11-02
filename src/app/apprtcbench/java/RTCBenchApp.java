@@ -61,24 +61,24 @@ public class RTCBenchApp
 		// RTCTestFixFFT.test_fixfft();
 		// System.out.println("done.");
 
-		System.out.println("native xxtea:");
-		RTCTestXXTEA.test_xxtea_native();
-		System.out.println("rtc xxtea:");
-		RTC.useRTC(true);
-		RTCTestXXTEA.test_xxtea();
-		System.out.println("java xxtea:");
-		RTC.useRTC(false);
-		RTCTestXXTEA.test_xxtea();
-		System.out.println("done.");
+		// System.out.println("native xxtea:");
+		// RTCTestXXTEA.test_xxtea_native();
+		// System.out.println("rtc xxtea:");
+		// RTC.useRTC(true);
+		// RTCTestXXTEA.test_xxtea();
+		// System.out.println("java xxtea:");
+		// RTC.useRTC(false);
+		// RTCTestXXTEA.test_xxtea();
+		// System.out.println("done.");
 
 		System.out.println("native rc5:");
 		RTCTestRC5.test_rc5_native();
 		System.out.println("rtc rc5:");
 		RTC.useRTC(true);
-		RTCTestRC5.test_rc5();
+		RTCTestRC5.test_rc5_short_version();
 		System.out.println("java rc5:");
 		RTC.useRTC(false);
-		RTCTestRC5.test_rc5();
+		RTCTestRC5.test_rc5_short_version();
 		System.out.println("done.");
 	}
 }

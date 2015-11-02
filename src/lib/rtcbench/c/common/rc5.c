@@ -15,6 +15,8 @@
 */
 
 #include <stdint.h>
+#include "config.h"
+#include "darjeeling3.h"
 #include "rc5.h"
 // #include "tomcrypt.h"
 
@@ -237,6 +239,58 @@ int rc5_test(void)
    }
    return CRYPT_OK;
 }
+
+
+void rc5_test_short_version(void)
+{
+    uint8_t NUMNUMBERS = 8;
+    unsigned char test_key[] = { 0x91, 0x5f, 0x46, 0x19, 0xbe, 0x41, 0xb2, 0x51, 0x63, 0x55, 0xa5, 0x01, 0x10, 0xa9, 0xce, 0x91 };
+    unsigned char test_pt[]  = { 0x21, 0xa5, 0xdb, 0xee, 0x15, 0x4b, 0x8f, 0x6d };
+    unsigned char test_ct[]  = { 0xf7, 0xc0, 0x13, 0xac, 0x5b, 0x2b, 0x89, 0x52 };
+
+    unsigned char tmp0[NUMNUMBERS];
+    unsigned char tmp1[NUMNUMBERS];
+
+    int err;
+    rc5_key key;
+    
+    /* setup key */
+    if ((err = rc5_setup(test_key, 16, 12, &key)) != CRYPT_OK) {
+        avroraPrintStr("TEST SETUP FAILED");
+        return;
+    }
+
+    javax_darjeeling_Stopwatch_void_resetAndStart();
+    /* encrypt and decrypt */
+    rc5_ecb_encrypt(test_pt, tmp0, &key);
+    rc5_ecb_decrypt(tmp0, tmp1, &key);
+    javax_darjeeling_Stopwatch_void_measure();
+
+    avroraPrintStr("Original:");
+    for (uint8_t k=0; k<NUMNUMBERS; k++) {
+        avroraPrintInt8(test_pt[k]);
+    }
+    avroraPrintStr("done.");
+    avroraPrintStr("Encrypted:");
+    for (uint8_t k=0; k<NUMNUMBERS; k++) {
+        avroraPrintInt8(tmp0[k]);
+    }
+    avroraPrintStr("done.");
+    avroraPrintStr("Decrypted:");
+    for (uint8_t k=0; k<NUMNUMBERS; k++) {
+        avroraPrintInt8(tmp1[k]);
+    }
+    avroraPrintStr("done.");
+
+    for (uint8_t k=0; k<NUMNUMBERS; k++) {
+      if ((tmp0[k] != test_ct[k]) || (tmp1[k] != test_pt[k])) {
+        avroraPrintStr("TEST FAILED");
+        return;
+      }
+    }
+    avroraPrintStr("TEST OK");
+}
+
 
 /** Terminate the context
    @param skey    The scheduled key

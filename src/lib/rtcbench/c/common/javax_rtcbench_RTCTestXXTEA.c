@@ -24,7 +24,7 @@ void javax_rtcbench_RTCTestXXTEA_void_test_xxtea_native() {
 	javax_rtcbench_RTCTestXXTEA_void_test_xxtea_native2(numbers, NUMNUMBERS, key);
 
 	for (uint16_t i=0; i<NUMNUMBERS; i++)
-		DEBUG_LOG(1, "%ld ", (int32_t)numbers[i]);
-	DEBUG_LOG(1, "done.");
+	    avroraPrintInt32((int32_t)numbers[i]);
+	avroraPrintStr("done.");
 }
 

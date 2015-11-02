@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 int rc5_test(void);
+void rc5_test_short_version(void);
 
 typedef struct {
    int rounds;
