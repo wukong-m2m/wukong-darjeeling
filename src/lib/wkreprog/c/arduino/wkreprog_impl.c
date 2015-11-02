@@ -1,6 +1,7 @@
 #include <string.h>
 #include "types.h"
 #include "debug.h"
+#include "panic.h"
 #include "wkreprog_impl.h"
 #include <avr/boot.h>
 #include <avr/interrupt.h>
@@ -20,6 +21,7 @@ extern unsigned char di_app_infusion_archive_data[];
 // since it can only reboot once we've started the reprogramming phase.
 uint8_t avr_flash_pagebuffer[SPM_PAGESIZE];
 uint32_t avr_flash_pageaddress = 0;
+uint16_t avr_flash_end_of_safe_region = 0;
 uint16_t avr_flash_buf_len = 0;
 
 uint16_t wkreprog_impl_get_page_size() {
@@ -35,11 +37,12 @@ dj_di_pointer wkreprog_impl_get_raw_position() {
 // Open reprogramming at a position within the app archive
 bool wkreprog_impl_open_app_archive(uint16_t start_write_position) {
 	void *x = (void *)di_app_infusion_archive_data;
-	return wkreprog_impl_open_raw((uint16_t)x + start_write_position);
+	return wkreprog_impl_open_raw((uint16_t)x + start_write_position, 0); // TODONR: proper end of safe region (restrict writing to the app infusion)
 }
 
 // Open reprogramming at any position in flash
-bool wkreprog_impl_open_raw(uint16_t start_write_position) {
+// If end_of_safe_region is set, the VM will panic when writing outside of this region.
+bool wkreprog_impl_open_raw(uint16_t start_write_position, uint16_t end_of_safe_region) {
 	DEBUG_LOG(DBG_WKREPROG, "AVR: Start writing to flash at address %p.\n", start_write_position);
 
 	// Set the position to start writing at start_write_position
@@ -50,6 +53,7 @@ bool wkreprog_impl_open_raw(uint16_t start_write_position) {
 	// Fill the buffer with the data currently in the file
 	for (int i=0; i<SPM_PAGESIZE; i++)
 		avr_flash_pagebuffer[i] = dj_di_getU8(avr_flash_pageaddress+i);
+	avr_flash_end_of_safe_region = end_of_safe_region;
 
 	return true;
 }
@@ -72,6 +76,11 @@ void wkreprog_impl_write(uint8_t size, uint8_t* data, bool skip) {
 		return;
 	DEBUG_LOG(DBG_WKREPROG, "AVR: Received %d bytes to flash to page 0x%x.\n", size, avr_flash_pageaddress);
 	DEBUG_LOG(DBG_WKREPROG, "AVR: Buffer already contains %d bytes.\n", avr_flash_buf_len);
+
+	if ((avr_flash_pageaddress + avr_flash_buf_len + size) > avr_flash_end_of_safe_region) {
+		dj_panic(DJ_PANIC_REPROGRAM_OUTSIDE_REGION);
+	}
+
 	while(size!=0) {
 		uint8_t bytes_on_this_page = size;
 		if (avr_flash_buf_len + size > SPM_PAGESIZE) {

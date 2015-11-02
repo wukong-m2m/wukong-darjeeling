@@ -78,6 +78,7 @@ extern ref_t *localReferenceVariables;
 
 // USED AT COMPILE TIME:
 const unsigned char PROGMEM __attribute__ ((aligned (SPM_PAGESIZE))) rtc_compiled_code_buffer[RTC_COMPILED_CODE_BUFFER_SIZE] = {};
+#define END_OF_SAFE_REGION ((dj_di_pointer)rtc_compiled_code_buffer + RTC_COMPILED_CODE_BUFFER_SIZE)
 // Buffer for emitting code.
 #define RTC_CODEBUFFER_SIZE 64
 uint16_t *rtc_codebuffer;
@@ -132,7 +133,7 @@ static void emit2(uint16_t opcode1, uint16_t opcode2) {
 void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t *rtc_method_start_addresses) {
     DEBUG_LOG(DBG_RTC, "[rtc] handler list is at %p\n", infusion->native_handlers);
     uint16_t native_handlers_address = (uint16_t)infusion->native_handlers;
-    wkreprog_open_raw(native_handlers_address);
+    wkreprog_open_raw(native_handlers_address, END_OF_SAFE_REGION);
 
     uint16_t number_of_methodimpls = dj_di_parentElement_getListSize(infusion->methodImplementationList);
 
@@ -2037,11 +2038,11 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 rtc_flush(); // Finish writing, and also make sure we won't optimise across basic block boundaries.
                 tmp_current_position = wkreprog_get_raw_position();
                 wkreprog_close();
-                wkreprog_open_raw(rtc_branch_target_table_address(branch_target_count));
+                wkreprog_open_raw(rtc_branch_target_table_address(branch_target_count), END_OF_SAFE_REGION);
                 emit_raw_word(tmp_current_position/2 - branch_target_table_start_ptr/2);
                 rtc_flush();
                 wkreprog_close();
-                wkreprog_open_raw(tmp_current_position);
+                wkreprog_open_raw(tmp_current_position, END_OF_SAFE_REGION);
                 branch_target_count++;
             break;
 
@@ -2060,7 +2061,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     // Second pass:
     // All branchtarget addresses should be known now.
     // Scan for branch tags, and replace them with the proper instructions.
-    wkreprog_open_raw(branch_target_table_start_ptr);
+    wkreprog_open_raw(branch_target_table_start_ptr, END_OF_SAFE_REGION);
     wkreprog_skip(branchTableSize);
 
     for (uint16_t avr_pc=branch_target_table_start_ptr+branchTableSize; avr_pc<tmp_current_position; avr_pc+=2) {
@@ -2148,7 +2149,7 @@ void rtc_compile_lib(dj_infusion *infusion) {
     for (uint16_t i=0; i<256; i++)
         rtc_method_start_addresses[i] = 0;
 
-    wkreprog_open_raw((dj_di_pointer)rtc_compiled_code_buffer);
+    wkreprog_open_raw((dj_di_pointer)rtc_compiled_code_buffer, END_OF_SAFE_REGION);
 
     uint16_t number_of_methodimpls = dj_di_parentElement_getListSize(infusion->methodImplementationList);
     DEBUG_LOG(DBG_RTC, "[rtc] infusion contains %d methods\n", number_of_methodimpls);
@@ -2194,7 +2195,7 @@ void rtc_compile_lib(dj_infusion *infusion) {
     rtc_flush();
     dj_di_pointer tmp_address = wkreprog_get_raw_position();
     wkreprog_close();
-    wkreprog_open_raw(tmp_address);
+    wkreprog_open_raw(tmp_address, END_OF_SAFE_REGION);
     avroraRTCTraceEndMethod(wkreprog_get_raw_position(), dj_di_methodImplementation_getLength(methodimpl), rtc_branch_table_size(methodimpl)/2);
 #endif
     }
