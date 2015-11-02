@@ -79,8 +79,9 @@ int rc5_setup(const unsigned char *key, int keylen, int num_rounds, rc5_key *ske
     /* setup the S array */
     t = (uint32_t)(2 * (num_rounds + 1));
     // XMEMCPY(S, stab, t * sizeof(*S));
-    for (uint8_t k=0; k<t; k++)
+    for (uint8_t k=0; k<t; k++) {
        S[k] = stab[k];
+    }
 
     /* mix buffer */
     s = 3 * MAX(t, j);

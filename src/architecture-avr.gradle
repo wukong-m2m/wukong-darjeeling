@@ -139,6 +139,13 @@ task avrora(dependsOn: darjeeling) << {
     }
 }
 
+task avrora_nortc(dependsOn: darjeeling) << {
+    javaexec {
+        main '-jar'
+        args '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,c-print', '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
+    }
+}
+
 task avrora_tracertc(dependsOn: darjeeling) << {
     javaexec {
         main '-jar'

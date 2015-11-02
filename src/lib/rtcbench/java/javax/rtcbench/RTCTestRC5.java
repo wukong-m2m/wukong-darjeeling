@@ -61,18 +61,18 @@ public class RTCTestRC5 {
         if ((keylen & 3) != 0) {
             A <<= ((8 * (4 - (keylen&3))));
             // L[j++] = BSWAP(A);
-               L[j++] = ( ((A>>>24)&0x000000FF) | ((A<<24)&0xFF000000) | ((A>>>8)&0x0000FF00)  | ((A<<8)&0x00FF0000) );
+            L[j++] = ( ((A>>>24)&0x000000FF) | ((A<<24)&0xFF000000) | ((A>>>8)&0x0000FF00)  | ((A<<8)&0x00FF0000) );
         }
 
         /* setup the S array */
         t = (2 * (num_rounds + 1));
         // XMEMCPY(S, stab, t * sizeof(*S));
-        for (byte k=0; k<t; k++)
-           S[k] = stab[k];
+        for (byte k=0; k<t; k++) {
+            S[k] = stab[k];
+        }
 
         /* mix buffer */
         s = 3 * ( ((t)>(j))?(t):(j) );
-
         l = j;
         for (A = B = i = j = v = 0; v < s; v++) {
             // #define ROL(x, y)  ( (((uint32_t)(x)<<(uint32_t)((y)&31)) | (((uint32_t)(x)&0xFFFFFFFFUL)>>(uint32_t)(32-((y)&31)))) & 0xFFFFFFFFUL)
@@ -80,9 +80,9 @@ public class RTCTestRC5 {
             // A = S[i] = ROLc(S[i] + A + B, 3);
             // B = L[j] = ROL(L[j] + A + B, (A+B));
             int tmp = S[i] + A + B;
-            S[i] = ( (tmp<<3) | (tmp>>>29) );
+            A = S[i] = ( (tmp<<3) | (tmp>>>29) );
             tmp = L[j] + A + B;
-            L[i] = ( (tmp<<((A+B)&31)) | (tmp>>>(32-((A+B)&31))) );
+            B = L[j] = ( (tmp<<((A+B)&31)) | (tmp>>>(32-((A+B)&31))) );
 
             if (++i == t) { i = 0; }
             if (++j == l) { j = 0; }
@@ -175,16 +175,16 @@ public class RTCTestRC5 {
             K -= 2;
             for (r = skey_rounds - 1; r >= 0; r -= 2) {
                 // #define ROR(x, y)  ( (x>>(y&31)) | (x<<(32-(y&31))) )
-                B = ( ((B - skey_K[K+3])>>(A&31)) | ((B - skey_K[K+3])<<(32-(A&31))) ) ^ A;
-                A = ( ((A - skey_K[K+2])>>(B&31)) | ((A - skey_K[K+2])<<(32-(B&31))) ) ^ B;
-                B = ( ((B - skey_K[K+1])>>(A&31)) | ((B - skey_K[K+1])<<(32-(A&31))) ) ^ A;
-                A = ( ((A - skey_K[K+0])>>(B&31)) | ((A - skey_K[K+0])<<(32-(B&31))) ) ^ B;
+                B = ( ((B - skey_K[K+3])>>>(A&31)) | ((B - skey_K[K+3])<<(32-(A&31))) ) ^ A;
+                A = ( ((A - skey_K[K+2])>>>(B&31)) | ((A - skey_K[K+2])<<(32-(B&31))) ) ^ B;
+                B = ( ((B - skey_K[K+1])>>>(A&31)) | ((B - skey_K[K+1])<<(32-(A&31))) ) ^ A;
+                A = ( ((A - skey_K[K+0])>>>(B&31)) | ((A - skey_K[K+0])<<(32-(B&31))) ) ^ B;
                 K -= 4;
             }
         } else {
             for (r = skey_rounds - 1; r >= 0; r--) {
-                B = ( ((B - skey_K[K+1])>>(A&31)) | ((B - skey_K[K+1])<<(32-(A&31))) ) ^ A;
-                A = ( ((A - skey_K[K+0])>>(B&31)) | ((A - skey_K[K+0])<<(32-(B&31))) ) ^ B;
+                B = ( ((B - skey_K[K+1])>>>(A&31)) | ((B - skey_K[K+1])<<(32-(A&31))) ) ^ A;
+                A = ( ((A - skey_K[K+0])>>>(B&31)) | ((A - skey_K[K+0])<<(32-(B&31))) ) ^ B;
                 K -= 2;
             }
         }
@@ -229,17 +229,17 @@ public class RTCTestRC5 {
         for (byte k=0; k<NUMNUMBERS; k++) {
             System.out.print(" " + test_pt[k]);
         }
-        System.out.println("done.");
+        System.out.println(" done.");
         System.out.print("Encrypted:");
         for (byte k=0; k<NUMNUMBERS; k++) {
             System.out.print(" " + tmp0[k]);
         }
-        System.out.println("done.");
+        System.out.println(" done.");
         System.out.print("Decrypted:");
         for (byte k=0; k<NUMNUMBERS; k++) {
             System.out.print(" " + tmp1[k]);
         }
-        System.out.println("done.");
+        System.out.println(" done.");
 
         for (byte k=0; k<NUMNUMBERS; k++) {
           if ((tmp0[k] != test_ct[k]) || (tmp1[k] != test_pt[k])) {
