@@ -25,6 +25,7 @@ class UserData:
         self.message = {}
         self.message['From']='Wukong'
         self.send = False
+        self.cnt = 0
     
     def addData(self, sensorData):
         wuclass_id = sensorData.wuclass_id
@@ -33,7 +34,9 @@ class UserData:
         if value == 65535:
             value = -1
         table = [[1907, 'CabinetDoor', 'Slipper1', 'Slipper2', 'Slipper3'],
-                 [1909, 'CabinetSpace1', 'CabinetSpace2', 'CabinetSpace3']]
+                 [1909, 'CabinetSpace1', 'CabinetSpace2', 'CabinetSpace3'],
+                 [1910, 'PHONE'],
+                 [2022, 'No','No','TV']]
         for wuclass in table:
             if wuclass_id == wuclass[0]:
                 if wuclass[property_num+1]:
@@ -42,6 +45,8 @@ class UserData:
                 break
 
     def toDocument(self):
+        self.message['id'] = self.cnt
+        self.cnt += 1
         return json.dumps(self.message)
 
     def reset(self):
@@ -143,7 +148,7 @@ class MonitorService(object):
         if config.ENABLE_CONTEXT:
             self.xmpp_wait = False
             self.xmpp_user = UserData()
-            self.xmpp_context = ContextData()
+            #self.xmpp_context = ContextData()
             self.client = xmpp.Client(config.XMPP_SERVER)
             self.client.connect(server=(config.XMPP_IP, config.XMPP_PORT))
             self.client.auth(config.XMPP_USER, config.XMPP_PASS)
@@ -151,7 +156,8 @@ class MonitorService(object):
             mes = xmpp.Presence(to=config.XMPP_NICK)
             self.client.send(mes)
             self.client.Process(1)
-            self.client.RegisterHandler('message', self.message_handler)
+            if config.ENABLE_PUB:
+                self.client.RegisterHandler('message', self.message_handler)
 
     def handle_monitor_message(self, context, message):
         self._task.put_nowait((context, message))
@@ -168,11 +174,11 @@ class MonitorService(object):
                         message.setAttr('type', 'groupchat')
                         self.client.send(message)
                         self.xmpp_user.reset()
-                    if self.xmpp_context.send:
+                    '''if self.xmpp_context.send:
                         message =  xmpp.Message(config.XMPP_ROOM, self.xmpp_context.toDocument())
                         message.setAttr('type', 'groupchat')
                         self.client.send(message)
-                        self.xmpp_context.reset()
+                        self.xmpp_context.reset()'''
                 self.client.Process(1)
                 continue
             data_collection = SensorData.createByPayload(context, message)
@@ -186,7 +192,7 @@ class MonitorService(object):
                 if config.ENABLE_CONTEXT:
                     self.xmpp_wait = True
                     self.xmpp_user.addData(data_collection)
-                    self.xmpp_context.addData(data_collection)
+                    #self.xmpp_context.addData(data_collection)
             if config.ENABLE_CONTEXT:
                 self.client.Process(1)
             gevent.sleep(0.001)
@@ -202,9 +208,13 @@ class MonitorService(object):
                     iq.pubsub.publish = iq.pubsub.addChild(name='publish', attrs={'node': 'nooneknow'})
                     iq.pubsub.publish.item = iq.pubsub.publish.addChild(name='item', attrs={'id': '5'})
                     mess = iq.pubsub.publish.item.addChild(name='message')
-                    if 'User1' in input_data:
-                        mess.setData('{"topicId": "nooneknow", "Command_Mode": 1, "UserA": '+str(input_data['User1'])+
-                                     ', "UserB": '+str(input_data['User2'])+',"UserG": '+str(input_data['User3'])+'}')
+                    if 'UserState1' in input_data:
+                        mess.setData('{"topicId": "nooneknow", "Command_Mode": 1'+
+                                     ', "UserA": '+str(input_data['UserState1'])+
+                                     ', "UserB": '+str(input_data['UserState2'])+
+                                     ', "UserC": '+str(input_data['UserState3'])+
+                                     ', "UserD": '+str(input_data['UserState4'])+
+                                     ', "UserG": '+str(input_data['UserState5'])+'}')
                         self.client.send(iq)
                         print 'user state'
                     elif 'State' in input_data:
