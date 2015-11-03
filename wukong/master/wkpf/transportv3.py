@@ -15,6 +15,7 @@ from configuration import *
 from globals import *
 import pynvc
 import time
+from sets import Set
 
 import struct
 from gevent import socket
@@ -364,7 +365,7 @@ class RPCAgent(TransportAgent):
 
     def _learn(self, to_mode):
         if to_mode not in ['stop','add','delete']:
-            print "[transport] RPC calls do not have a member named %s" % to_mode
+            logger.error("[transport] RPC calls do not have a member named %s" % to_mode)
             return False
 
         if self._mode != 'stop' and to_mode != 'stop':
@@ -417,19 +418,23 @@ class RPCAgent(TransportAgent):
         for gateway in getIDService().get_all_gateways():
             gateway_stub = self._get_client_rpc_stub(gateway.id, gateway.tcp_address)
             try:
-                ret.append(gateway_stub.poll())
+                ret_str = gateway_stub.poll()
+                ret_str = ("Gateway %s tcp_addr=%s " % (MPTN.ID_TO_STRING(gateway.id), str(gateway.tcp_address))) + ret_str
+                ret.append(ret_str)
             except Exception as e:
                 logger.error("RPC poll fails with gateway ID=%s 0x%X addr=%s; error=%s\n%s" % (MPTN.ID_TO_STRING(gateway.id), gateway.id,
                     str(gateway.tcp_address), str(e), traceback.format_exc()))
 
         if len(ret):
-            return "; ".join(ret)
+            return "\n".join(ret)
         else:
             logger.error("RPC poll fails with all gateways or no gateway")
-            return "Not available"
+            return "No available gateway"
 
     def _process_message(self, context, message):
         dest_id, src_id, msg_type, payload = MPTN.extract_packet_from_str(message)
+
+        logger.debug("RPC processing received message: %s" % MPTN.formatted_print(MPTN.split_packet_to_list(message)))
 
         if dest_id is None:
             log_msg = MPTN.formatted_print(MPTN.split_packet_to_list(message))
@@ -439,7 +444,7 @@ class RPCAgent(TransportAgent):
         protocol_handler = self._protocol_handlers.get(msg_type)
         if protocol_handler is None:
             log_msg = MPTN.formatted_print(MPTN.split_packet_to_list(message))
-            print "RPC processing unknown message type 0x%X, message:\n%s" % (msg_type, log_msg)
+            logger.error("RPC processing unknown message type 0x%X, message:\n%s" % (msg_type, log_msg))
             return
 
         protocol_handler.handler(context, dest_id, src_id, msg_type, payload)
@@ -468,10 +473,8 @@ class RPCAgent(TransportAgent):
     def handler(self):
         while True:
             defer = transport_agent_out_tasks.get()
-            #print 'handler: getting defer from task queue'
 
             if defer.message.command == "discovery":
-                #print 'handler: processing discovery request'
                 discovered_nodes = []
                 for gateway in getIDService().get_all_gateways():
                     # logger.debug("discover get gateway ID %s %X addr=%s" % (MPTN.ID_TO_STRING(gateway.id), gateway.id, str(gateway.tcp_address)))
@@ -480,6 +483,7 @@ class RPCAgent(TransportAgent):
                         gateway_discovered_nodes = gateway_stub.discover()
                         network_size = gateway.network_size
                         prefix = gateway.prefix
+                        to_check_discovered_nodes = []
                         for node_address in gateway_discovered_nodes:
                             if node_address >= network_size:
                                 logger.error("RPC discover fails with gateway ID=%s addr=%s: discovered nodes %d" % (
@@ -487,14 +491,17 @@ class RPCAgent(TransportAgent):
                                     str(gateway.tcp_address), gateway_discovered_nodes[i])
                                 )
                                 continue
-                            discovered_nodes.append(prefix | node_address)
+                            node_id = prefix | node_address
+                            to_check_discovered_nodes.append(node_id)
+                            discovered_nodes.append(node_id)
+
+                        getIDService().remove_deleted_nodes(to_check_discovered_nodes, gateway.id)
                     except Exception as e:
                         logger.error("RPC discover fails with gateway ID=%s addr=%s; error=%s\n%s" % (MPTN.ID_TO_STRING(gateway.id),
                             str(gateway.tcp_address), str(e), traceback.format_exc()))
                 defer.callback(discovered_nodes)
 
             elif defer.message.command == "routing":
-                #print 'handler: processing routing request'
                 routing = {}
                 for gateway in getIDService().get_all_gateways():
                     gateway_stub = self._get_client_rpc_stub(gateway.id, gateway.tcp_address)
@@ -556,7 +563,6 @@ class RPCAgent(TransportAgent):
 
                     while retries > 0:
                         try:
-                            #print "handler: sending message from defer"
                             header = MPTN.create_packet_to_str(
                                 node_id,
                                 MPTN.MASTER_ID,
@@ -800,7 +806,7 @@ class IDService:
 
     def get_gateway(self, mptn_id):
         if not self.is_id_valid(mptn_id):
-            print "cannot find ID %d" % mptn_id
+            logger.error("cannot find ID %d" % mptn_id)
             return None
 
         if not self.is_id_gateway(mptn_id):
@@ -1019,6 +1025,16 @@ class IDService:
                 self._add_new_node(node)
                 return new_id
 
+    def remove_deleted_nodes(self, discovered_nodes, gateway_id):
+        non_gtw_nodes_set = Set([nid for nid, ninfo in self._nodes_lookup.iteritems() if not ninfo.is_gateway and ninfo.gateway_id == gateway_id])
+        discovered_nodes_set = Set(discovered_nodes)
+        to_remove_nodes = list(non_gtw_nodes_set - discovered_nodes_set)
+        if len(to_remove_nodes) == 0: return
+        
+        for to_remove_node_id in to_remove_nodes:
+            logger.debug("=============Remove not found existed node %X %s" % (to_remove_node_id, MPTN.ID_TO_STRING(to_remove_node_id)))
+            self._del_old_node(to_remove_node_id, self._nodes_lookup[to_remove_node_id].uuid)
+
     def handle_gwidreq_message(self, context, dest_id, src_id, msg_type, payload):
         message = MPTN.create_packet_to_str(src_id, dest_id, MPTN.MPTN_MSGTYPE_GWIDNAK, None)
         if dest_id != MPTN.MASTER_ID:
@@ -1073,7 +1089,7 @@ class IDService:
     def handle_idreq_message(self, context, dest_id, src_id, msg_type, payload):
         gateway_id = dest_id
         to_check_id = src_id
-
+        logger.debug("IDREQ " + str((dest_id, src_id, msg_type, payload)))
         message = MPTN.create_packet_to_str(src_id, dest_id, MPTN.MPTN_MSGTYPE_IDNAK, None)
         if not self.is_id_gateway(gateway_id):
             logger.error("IDREQ with unknown gateway ID 0x%X" % gateway_id)
