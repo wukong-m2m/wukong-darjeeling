@@ -21,7 +21,7 @@
 #include <netinet/in.h>
 
 #define SERVER_PORT "2345" // the port client will be connecting to 
-#define SERVER_IP "172.16.0.94"
+#define SERVER_IP "192.168.40.129"
 
 #define MAXDATASIZE 100 // max number of bytes we can get at once 
 
@@ -83,6 +83,7 @@ void wuclass_smart_mug_update(wuobject_t *wuobject) {
     FD_ZERO(&rs);
     FD_SET(smart_mug_sockfd, &rs);
     int numbytes;
+    static int prev_value[2] = {-999,-999};
     if (select(smart_mug_sockfd+1, &rs, NULL, NULL, &to) > 0) {
         if ((numbytes = recv(smart_mug_sockfd, buffer, MAXDATASIZE-1, 0)) == -1) {
             DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Smart_Mug): rev error\n");
@@ -109,10 +110,16 @@ void wuclass_smart_mug_update(wuobject_t *wuobject) {
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Smart_Mug): angle %d\n", id_angle_info[1]);
 
     if(id_angle_info[0] == TV){
-        wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_SMART_MUG_VOLUME, id_angle_info[0]);
-        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Smart_Mug): TV_volume %d\n", id_angle_info[0]);
-    }else if(id_angle_info[1] == LIGHT){
-        wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_SMART_MUG_COLOR, id_angle_info[1]);
-        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Smart_Mug): LIGHT_color %d\n", id_angle_info[1]);
+        if (prev_value[0] - id_angle_info[1] > 30 || id_angle_info[1] - prev_value[0] > 30) {
+            wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_SMART_MUG_VOLUME, id_angle_info[1]);
+            DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Smart_Mug): TV_volume %d\n", (id_angle_info[1]/30)*40);
+            prev_value[0] = id_angle_info[1];
+        }
+    }else if(id_angle_info[0] == LIGHT){
+        if (prev_value[1] - id_angle_info[1] > 30 || id_angle_info[1] - prev_value[1] > 30) {
+            wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_SMART_MUG_COLOR, id_angle_info[1]);
+            DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Smart_Mug): LIGHT_color %d\n", (id_angle_info[1]/30*40));
+            prev_value[1] = id_angle_info[1];
+        }
     }
 }

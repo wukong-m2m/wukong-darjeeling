@@ -24,6 +24,7 @@ from datetime import datetime
 import uuid
 import json
 import hashlib
+from sets import Set
 import traceback
 import color_logging, logging
 logger = logging
@@ -31,21 +32,18 @@ logger = logging
 RANDOM_BYTES = map(ord, uuid.uuid4().bytes)
 
 class IDService(object):
-    def __init__(self, transport_if_addr, transport_if_len, autonet_mac_addr=[], gateway_application_handlers={}):
+    def __init__(self, transport_if_addr, transport_if_len, transport_if_send, autonet_mac_addr=[], gateway_application_handlers={}):
         self._app_handler = gateway_application_handlers
         self._transport_if_addr = transport_if_addr
         self._transport_if_addr_len = transport_if_len
+        self._transport_if_send = transport_if_send
 
         # _nexthop_db: key = "MPTN ID/NETMASK" STRING, value = next hop's tcp_address tuple ("IP" STRING, PORT INT)
         self._nexthop_db = DBDict("gtw_nexthop_table.sqlite")
         self._init_nexthop_lookup()
 
-        # _addr_db: key = address, value = True or False
-        self._addr_db = DBDict("gtw_addr_table.sqlite")
-        MPTN.set_address_allocation_table(self._addr_db)
-
-        # _uuid_db: key = MPTN ID, value = UUID (such as MAC address)
-        self._uuid_db = DBDict("gtw_uuid_table.sqlite")
+        # _addr_db: key = address, value = UUID (such as MAC address)
+        self._addr_db = DBDict("gtw_addr_uuid_table.sqlite")
 
         self._settings_db = DBDict("gtw_settings_db.sqlite")
         self._init_settings_db(autonet_mac_addr)
@@ -172,10 +170,10 @@ class IDService(object):
         h.update(j)
         self._nexthop_hash = h.digest()
 
-    def _alloc_address(self, address):
+    def _alloc_address(self, address, uuid):
         assert isinstance(address, (int, long)), "_alloc_address %s must be integer instead of %s" % (str(address), type(address))
         assert MPTN.IS_ID_IN_NETWORK(address, self._network), "_alloc_address %s cannot excede network %s" % (MPTN.ID_TO_STRING(address), str(self._network))
-        self._addr_db[address] = True
+        self._addr_db[address] = uuid
 
     def _dealloc_address(self, address):
         if self.is_address_valid(address):
@@ -237,6 +235,16 @@ class IDService(object):
     '''
     Public functions
     '''
+    def update_addr_db(self, discovered_nodes):
+        addr_db_set = Set(map(int, self._addr_db.keys()))
+        discovered_nodes_set = Set(map(lambda x: self._id_prefix | x, discovered_nodes))
+        to_remove_nodes = list(addr_db_set - discovered_nodes_set)
+        if len(to_remove_nodes) == 0: return
+        
+        for to_remove_node_addr in to_remove_nodes:
+            logger.debug("=============Remove not found existed node 0x%X" % (to_remove_node_addr))
+            del self._addr_db[to_remove_node_addr]
+
     def is_addr_valid(self, addr):
         return addr in self._addr_db
 
@@ -314,7 +322,7 @@ class IDService(object):
                 src_id = MPTN.MASTER_ID
                 msg_type = MPTN.MPTN_MSGTYPE_IDACK
                 message = MPTN.create_packet_to_str(dest_id, src_id, msg_type, uuid)
-                MPTN.transport_if_send(temp_addr, message)
+                self._transport_if_send(temp_addr, message)
                 return
 
             else:
@@ -324,24 +332,28 @@ class IDService(object):
                     logger.error("IDREQ cannot be confirmed ID=%d (%s) Addr=%d" % (temp_id, MPTN.ID_TO_STRING(temp_id), temp_addr))
                     return
                 dest_id, src_id, msg_type, payload = packet
-                if dest_id != temp_id or src_id != MPTN.MASTER_ID or msg_type != MPTN.MPTN_MSGTYPE_IDACK:
-                    logger.error("IDREQ invalid response for dest ID=%X (%s), src ID=%X (%s)" % (dest_id, MPTN.ID_TO_STRING(dest_id), src_id, MPTN.ID_TO_STRING(src_id)) )
+                if dest_id != temp_id or src_id != MPTN.MASTER_ID or (msg_type not in [MPTN.MPTN_MSGTYPE_IDACK, MPTN.MPTN_MSGTYPE_IDNAK]):
+                    logger.error("IDREQ invalid response for dest ID=%X (%s), src ID=%X (%s), msg_type=%X" % (dest_id, MPTN.ID_TO_STRING(dest_id), src_id, MPTN.ID_TO_STRING(src_id), msg_type) )
                     return
-                self._alloc_address(temp_addr)
-                self._uuid_db[temp_id] = uuid
+
+                if msg_type == MPTN.MPTN_MSGTYPE_IDNAK:
+                    logger.error("IDREQ for %X (%s) is refused by Master" % (temp_id, MPTN.ID_TO_STRING(temp_id)))
+                    return
+
+                self._alloc_address(temp_addr, uuid)
                 message = MPTN.create_packet_to_str(dest_id, src_id, MPTN.MPTN_MSGTYPE_IDACK, None)
-                MPTN.transport_if_send(temp_addr, message)
+                self._transport_if_send(temp_addr, message)
                 return
 
         # Known address to check uuid
-        elif self._uuid_db[temp_id] == payload:
+        elif self._addr_db[temp_addr] == payload:
             dest_id = temp_id
             message = MPTN.create_packet_to_str(dest_id, MPTN.MASTER_ID, MPTN.MPTN_MSGTYPE_IDACK, None)
-            MPTN.transport_if_send(temp_addr, message)
+            self._transport_if_send(temp_addr, message)
             return
 
         else:
-            logger.error("IDREQ comes with a valid ID %d %s and an unknown uuid %s" % (temp_id, MPTN.ID_TO_STRING(temp_id), str(map(ord, uuid))))
+            logger.error("IDREQ comes with a valid addr=%d, ID=%d or %s, but an unknown uuid %s" % (temp_addr, temp_id, MPTN.ID_TO_STRING(temp_id), str(map(ord, uuid))))
 
     def handle_fwdreq_message(self, context, dest_id, src_id, msg_type, payload):
         if payload is None:
@@ -376,7 +388,7 @@ class IDService(object):
         if self._is_id_in_gwself_network(dest_id):
             logger.debug("FWDREQ to transport interface directly")
             message = MPTN.create_packet_to_str(dest_id, src_id, msg_type, payload)
-            ret = MPTN.transport_if_send(self._get_address_from_id(dest_id), message)
+            ret = self._transport_if_send(self._get_address_from_id(dest_id), message)
 
             msg_type = MPTN.MPTN_MSGTYPE_FWDACK
             if not ret[0]:
@@ -416,7 +428,7 @@ class IDService(object):
 
         msg_type = MPTN.MPTN_MSGTYPE_GWOFFER
         message = MPTN.create_packet_to_str(dest_id, self._id, msg_type, uuid.uuid4().bytes)
-        MPTN.transport_if_send(self._get_address_from_id(src_id), message)
+        self._transport_if_send(self._get_address_from_id(src_id), message)
 
     def handle_rtping_message(self, context, dest_id, src_id, msg_type, payload):
         if payload is None:
@@ -427,8 +439,8 @@ class IDService(object):
             logger.error("RTPING dest_id should be me")
             return
 
-        if not self.is_id_valid(src_id):
-            logger.error("RTPING src ID %X %s should be found in network" % (src_id, MPTN.ID_TO_STRING(src_id)))
+        if not self._is_id_master(src_id):
+            logger.error("RTPING src ID %X %s should be Master 0" % (src_id, MPTN.ID_TO_STRING(src_id)))
             return
 
         if payload != self._nexthop_hash:
@@ -448,8 +460,8 @@ class IDService(object):
             logger.error("RTREP dest_id should be me")
             return
 
-        if not self.is_id_valid(src_id):
-            logger.error("RTREP src ID %X %s should be found in network" % (src_id, MPTN.ID_TO_STRING(src_id)))
+        if not self._is_id_master(src_id):
+            logger.error("RTPING src ID %X %s should be Master 0" % (src_id, MPTN.ID_TO_STRING(src_id)))
             return
 
         if payload is None:

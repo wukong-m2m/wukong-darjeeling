@@ -161,17 +161,6 @@ def set_self_id(mptn_id):
     except Exception as e:
         logger.error("set_self_id unknown error: %s\n%s" % (str(e), traceback.format_exc()))
 
-addr_to_bool_db = None
-def set_address_allocation_table(db):
-    global addr_to_bool_db
-    addr_to_bool_db = db
-
-def get_all_addresses():
-    global addr_to_bool_db
-    if addr_to_bool_db is None: return None
-    # remember that if addr_to_bool_db changes, return values won't reflect that
-    return map(int, addr_to_bool_db.keys())
-
 class ConnectionManager(object):
     _manager = None
     @classmethod
@@ -421,15 +410,6 @@ def socket_send(context, dest_id, message, expect_reply=False):
             gevent.sleep(0)
 
     return callback.get()
-
-transport_if_send_handler = None
-def set_transport_if_send(handler):
-    global transport_if_send_handler
-    transport_if_send_handler = handler
-
-def transport_if_send(address, message):
-    if transport_if_send == None: return (False, None)
-    else: return transport_if_send_handler(address, message)
 
 '''
 DBDict class: a DB on disk with a dictionary interface

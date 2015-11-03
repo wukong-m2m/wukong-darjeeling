@@ -19,7 +19,6 @@ class Gateway(object):
         assert transport_interface is not None, "Gateway's transport interface is required"
         self._transport_if = transport_interface
         self._transport_if_name = transport_interface.get_name()
-        MPTN.set_transport_if_send(self._transport_if_retried_send)
 
         # map from MSGTYPE to a tuple (permission, handler)
         self._protocol_handlers = {}
@@ -51,13 +50,15 @@ class Gateway(object):
             gateway_application_handlers[MPTN.WKPF_COMMAND_MONITOR] = self._monitor_service.handle_monitor_message
 
         # Initialize ID service
-        self._id_service = IDService(self._transport_if.get_address(), self._transport_if.get_addr_len(), autonet_mac_address, gateway_application_handlers)
+        self._id_service = IDService(self._transport_if.get_address(), self._transport_if.get_addr_len(), self._transport_if_retried_send, autonet_mac_address, gateway_application_handlers)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_IDREQ] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TRANSPORT_INTERFACE, self._id_service.handle_idreq_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_RTPING] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TCP_SERVER, self._id_service.handle_rtping_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_RTREQ] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TCP_SERVER, self._id_service.handle_rtreq_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_RTREP] = MPTN.ProtocolHandler(MPTN.ONLY_FROM_TCP_SERVER, self._id_service.handle_rtrep_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_FWDREQ] = MPTN.ProtocolHandler(MPTN.VALID_FROM_ALL, self._id_service.handle_fwdreq_message)
         self._protocol_handlers[MPTN.MPTN_MSGTYPE_GWDISCOVER] = MPTN.ProtocolHandler(MPTN.VALID_FROM_ALL, self._id_service.handle_gwdiscover_message)
+
+        self._transport_if.set_update_addr_db(self._id_service.update_addr_db)
 
         self._spawn_handlers.append(self._id_service.rtping_forever)
         if CONFIG.UNITTEST_MODE:
@@ -142,7 +143,7 @@ class Gateway(object):
             src_addr, message = self._transport_if.recv()
             if src_addr is not None and message is not None:
                 gevent.spawn(handle_transport_if, src_addr, message)
-            gevent.sleep(0.01)
+            gevent.sleep(0.001)
 
     def _transport_if_retried_send(self, dest_addr, message):
         retries = MPTN.CONNECTION_RETRIES
@@ -150,4 +151,4 @@ class Gateway(object):
         for i in xrange(retries):
             ret = self._transport_if.send(dest_addr, message)
             if ret[0]: return ret
-            gevent.sleep(0.01)
+            gevent.sleep(0.001)

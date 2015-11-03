@@ -18,6 +18,8 @@ WKPF_PROPERTY_TYPE_SHORT         = 0
 WKPF_PROPERTY_TYPE_BOOLEAN       = 1
 WKPF_PROPERTY_TYPE_REFRESH_RATE  = 2
 OBJECTS_IN_MESSAGE               = (WKCOMM_MESSAGE_PAYLOAD_SIZE-3)/4
+RETRY_TIMES                      = 1
+
 # routing services here
 class Communication:
     _communication = None
@@ -138,7 +140,7 @@ class Communication:
         gevent.sleep(0) # give other greenlets some air to breath
         if not wunode:
           wunode = WuNode(destination, location)
-        retries=1
+        retries=RETRY_TIMES
         while retries > 0:
           wuClasses = self.getWuClassList(destination)
           if wuClasses == None:
@@ -152,7 +154,7 @@ class Communication:
         print '[wkpfcomm] get %d wuclasses' % (len(wuClasses))
         wunode.wuclasses = wuClasses
         gevent.sleep(0)
-        retries=3
+        retries=RETRY_TIMES
         while retries > 0 :
           wuObjects = self.getWuObjectList(destination)
           # print '[wkpfcomm] get %d wuobjects' % (len(wuObjects))
@@ -240,7 +242,7 @@ class Communication:
 
       length = 0
       location = ''
-      retries=3
+      retries=RETRY_TIMES
       if SIMULATION == "true":
           location = self.simulator.mockLocation(destination)
           return location
