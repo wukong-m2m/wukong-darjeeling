@@ -27,7 +27,8 @@ void wuclass_philip_hue_bulb_update(wuobject_t *wuobject) {
     static uint32_t currenttime, lasttime, command_delay = 50, loop_rate = 500;
     currenttime = dj_timer_getTimeMillis();
 	static char str[150];
-    char command[3][126] = {"curl -X PUT --data '{\"on\":true, \"sat\":254, \"bri\":%d, \"hue\":%d}' http://192.168.4.124/api/newdeveloper/lights/%d/state", "curl -X PUT --data '{\"on\":false}' http://192.168.4.124/api/newdeveloper/lights/%d/state", "curl -X PUT --data '{\"sat\":254, \"bri\":%d, \"hue\":%d}' http://192.168.4.124/api/newdeveloper/lights/%d/state"};
+    char ip[20] = "192.168.0.101";
+    char command[3][126] = {"curl -X PUT --data '{\"on\":true, \"sat\":254, \"bri\":%d, \"hue\":%d}' http://%s/api/newdeveloper/lights/%d/state", "curl -X PUT --data '{\"on\":false}' http://%s/api/newdeveloper/lights/%d/state", "curl -X PUT --data '{\"sat\":254, \"bri\":%d, \"hue\":%d}' http://%s/api/newdeveloper/lights/%d/state"};
 	
     if (currenttime - lasttime > loop_rate){
         int i, start_index = 7, end_index = 9;
@@ -35,7 +36,7 @@ void wuclass_philip_hue_bulb_update(wuobject_t *wuobject) {
     	if(on)
     	{
             for (i = start_index; i <= end_index; ++i){
-                sprintf(str, command[0], bri, colorvalue, i);
+                sprintf(str, command[0], bri, colorvalue, ip, i);
                 DEBUG_LOG(DBG_WKPFUPDATE, "\n^^^^^^^^^^^^^^^^^%s\n", str);
                 system(str);
                 dj_timer_delay(command_delay);
@@ -43,7 +44,7 @@ void wuclass_philip_hue_bulb_update(wuobject_t *wuobject) {
             }
     	}else{
             for (i = start_index; i <= end_index; ++i){
-                sprintf(str, command[1], i);
+                sprintf(str, command[1], ip, i);
                 DEBUG_LOG(DBG_WKPFUPDATE, "\n!!!!!!!!!!!!!!!!!%s\n", str);
                 system(str);
                 dj_timer_delay(command_delay);
