@@ -114,7 +114,6 @@
                   $('#nodes').unblock();
                 }
             });
-            console.log('-----set {{ set_location }}')
         });
 
         {% for node_info in node_infos %}
@@ -123,6 +122,10 @@
             e.preventDefault();
             $('#myModal .modal-header').html('<h1>Node Info</h1>');
             $('#myModal .modal-body').html("{% include 'node-more.html' %}");
+            setTimeout(function(){
+                var cover = document.querySelector('.modal-backdrop.in')
+                cover.parentNode.removeChild(cover)
+            },10)
         });
 
         {% end %}
