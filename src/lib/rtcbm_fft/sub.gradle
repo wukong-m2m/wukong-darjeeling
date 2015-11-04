@@ -1,0 +1,6 @@
+djlibsource {
+    rtcbm_fft {
+        cDependencies = [ 'darjeeling3' ]
+        javaDependencies = [ 'base', 'darjeeling3', 'rtc' ]
+    }
+}

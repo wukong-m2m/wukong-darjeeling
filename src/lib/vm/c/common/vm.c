@@ -82,10 +82,7 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 					&& dj_di_getU8(name+1)=='t'
 					&& dj_di_getU8(name+2)=='c'
 					&& dj_di_getU8(name+3)=='b'
-					&& dj_di_getU8(name+4)=='e'
-					&& dj_di_getU8(name+5)=='n'
-					&& dj_di_getU8(name+6)=='c'
-					&& dj_di_getU8(name+7)=='h'
+					&& dj_di_getU8(name+4)=='m'
 				) || (
 				       dj_di_getU8(name+0)=='r'
 					&& dj_di_getU8(name+1)=='t'

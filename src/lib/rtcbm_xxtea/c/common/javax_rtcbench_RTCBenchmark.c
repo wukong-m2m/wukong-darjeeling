@@ -4,7 +4,7 @@
 #include "xxtea.h"
 
 // Split into separate function to avoid the compiler just optimising away the whole test.
-void javax_rtcbench_RTCTestXXTEA_void_test_xxtea_native2(uint32_t *v, int n, uint32_t const key[4]) {
+void rtcbenchmark_measure_native_performance(uint32_t *v, int n, uint32_t const key[4]) {
 	javax_darjeeling_Stopwatch_void_resetAndStart();
 
 	btea(v, n, key);
@@ -12,7 +12,7 @@ void javax_rtcbench_RTCTestXXTEA_void_test_xxtea_native2(uint32_t *v, int n, uin
 	javax_darjeeling_Stopwatch_void_measure();
 }
 
-void javax_rtcbench_RTCTestXXTEA_void_test_xxtea_native() {
+void javax_rtcbench_RTCBenchmark_void_test_native() {
 	uint8_t NUMNUMBERS = 32;
 	uint32_t numbers[NUMNUMBERS];
 	uint32_t const key[4] = {0, 1, 2, 3};
@@ -21,7 +21,7 @@ void javax_rtcbench_RTCTestXXTEA_void_test_xxtea_native() {
 	for (uint16_t i=0; i<NUMNUMBERS; i++)
 		numbers[i] = (NUMNUMBERS - 1 - i);
 
-	javax_rtcbench_RTCTestXXTEA_void_test_xxtea_native2(numbers, NUMNUMBERS, key);
+	rtcbenchmark_measure_native_performance(numbers, NUMNUMBERS, key);
 
 	for (uint16_t i=0; i<NUMNUMBERS; i++)
 	    avroraPrintInt32((int32_t)numbers[i]);

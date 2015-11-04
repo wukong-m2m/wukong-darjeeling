@@ -3,7 +3,7 @@
 
 // Split into separate function to avoid the compiler just optimising away the whole test.
 
-void javax_rtcbench_RTCTestBubbleSort_void_test_bubblesort_native2(uint16_t NUMNUMBERS, int16_t numbers[]) {
+void rtcbenchmark_measure_native_performance(uint16_t NUMNUMBERS, int16_t numbers[]) {
 	javax_darjeeling_Stopwatch_void_resetAndStart();
 
 	// Then sort it
@@ -21,7 +21,7 @@ void javax_rtcbench_RTCTestBubbleSort_void_test_bubblesort_native2(uint16_t NUMN
 	javax_darjeeling_Stopwatch_void_measure();
 }
 
-void javax_rtcbench_RTCTestBubbleSort_void_test_bubblesort_native() {
+void javax_rtcbench_RTCBenchmark_void_test_native() {
 	uint16_t NUMNUMBERS = 256;
 	int16_t numbers[NUMNUMBERS];
 
@@ -29,5 +29,5 @@ void javax_rtcbench_RTCTestBubbleSort_void_test_bubblesort_native() {
 	for (uint16_t i=0; i<NUMNUMBERS; i++)
 		numbers[i] = (NUMNUMBERS - 1 - i);
 
-	javax_rtcbench_RTCTestBubbleSort_void_test_bubblesort_native2(NUMNUMBERS, numbers);
+	rtcbenchmark_measure_native_performance(NUMNUMBERS, numbers);
 }

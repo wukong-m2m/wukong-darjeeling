@@ -3,8 +3,7 @@
 
 #include <stdint.h>
 
-int rc5_test(void);
-void rc5_test_short_version(void);
+void rc5_test_native(void);
 
 typedef struct {
    int rounds;

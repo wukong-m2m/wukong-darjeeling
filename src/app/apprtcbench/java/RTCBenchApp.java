@@ -31,54 +31,30 @@ public class RTCBenchApp
 		RTC.avroraBreak();
 	}
 
+	public static void nop() {}
+
 	public static void perftestBubbleSort() {
+		System.out.println("START BENCHMARK: " + RTCBenchmark.name);
+
 		System.out.println("Java stopwatch overhead");
 		Stopwatch.resetAndStart();
 		Stopwatch.measure();
 
-		// System.out.println("native sort:");
-		// RTCTestBubbleSort.test_bubblesort_native();
-		// System.out.println("rtc sort (not optimised):");
-		// RTC.useRTC(true);
-		// RTCTestBubbleSort.test_bubblesort(false);
-		// System.out.println("java sort (not optimised):");
-		// RTC.useRTC(false);
-		// RTCTestBubbleSort.test_bubblesort(false);
-		// System.out.println("rtc sort (optimised):");
-		// RTC.useRTC(true);
-		// RTCTestBubbleSort.test_bubblesort(true);
-		// System.out.println("java sort (optimised):");
-		// RTC.useRTC(false);
-		// RTCTestBubbleSort.test_bubblesort(true);
+		System.out.println("Java function call overhead");
+		Stopwatch.resetAndStart();
+		nop();
+		Stopwatch.measure();
 
-		// System.out.println("native fft:");
-		// RTCTestFixFFT.test_fixfft_native();
-		// System.out.println("rtc fft:");
-		// RTC.useRTC(true);
-		// RTCTestFixFFT.test_fixfft();
-		// System.out.println("java fft:");
-		// RTC.useRTC(false);
-		// RTCTestFixFFT.test_fixfft();
-		// System.out.println("done.");
-
-		// System.out.println("native xxtea:");
-		// RTCTestXXTEA.test_xxtea_native();
-		// System.out.println("rtc xxtea:");
-		// RTC.useRTC(true);
-		// RTCTestXXTEA.test_xxtea();
-		// System.out.println("java xxtea:");
-		// RTC.useRTC(false);
-		// RTCTestXXTEA.test_xxtea();
-		// System.out.println("done.");
-
-		System.out.println("native rc5:");
-		RTCTestRC5.test_rc5_native();
-		System.out.println("rtc rc5:");
+		System.out.println("native:");
+		RTCBenchmark.test_native();
+		System.out.println("rtc:");
 		RTC.useRTC(true);
-		RTCTestRC5.test_rc5_short_version();
-		System.out.println("java rc5:");
+		RTCBenchmark.test_java();
+		System.out.println("java:");
 		RTC.useRTC(false);
-		RTCTestRC5.test_rc5_short_version();
+		RTCBenchmark.test_java();
 		System.out.println("done.");
+
+		System.out.println("FINISHED BENCHMARK: " + RTCBenchmark.name);
 	}
 }
