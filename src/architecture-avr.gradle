@@ -132,10 +132,52 @@ task avarice << {
     }
 }
 
-task avrora(dependsOn: darjeeling) << {
+task avrora(dependsOn: darjeeling) {
+    ext.rtcdataFile = "${buildDir}/rtcdata.py"
+    ext.profiledataFile = "${buildDir}/profilerdata.py"
+    def avroraJar = '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar'
+
+    doLast {
+        javaexec {
+            main '-jar'
+            args avroraJar, '-monitors=c-timer,c-print,rtc,profile', "-rtc-data-filename=${rtcdataFile}", "-profile-data-filename=${profiledataFile}", '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
+        }
+    }
+}
+
+task avrora_if_necessary(dependsOn: darjeeling) {
+    ext.rtcdataFile = "${buildDir}/rtcdata.py"
+    ext.profiledataFile = "${buildDir}/profilerdata.py"
+    def avroraJar = '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar'
+
+    outputs.file rtcdataFile
+    outputs.file profiledataFile
+    inputs.file architectureSpecificAssemble.djTargetElfFile
+    inputs.file avroraJar
+
+    doLast {
+        javaexec {
+            main '-jar'
+            args avroraJar, '-monitors=c-timer,c-print,rtc,profile', "-rtc-data-filename=${rtcdataFile}", "-profile-data-filename=${profiledataFile}", '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
+        }
+    }
+}
+
+task avrora_analyse_trace(type:Exec, dependsOn: avrora_if_necessary) {
+    def pythonScript = file("${project.rootDir}/config/${djConfigname}/process_trace.py")
+
+    inputs.file pythonScript
+    inputs.file avrora.rtcdataFile
+    inputs.file avrora.profiledataFile
+
+    executable pythonScript
+    args buildDir
+}
+
+task avrora_rtcdata_toscreen(dependsOn: darjeeling) << {
     javaexec {
         main '-jar'
-        args '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,rtc,c-print', '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
+        args '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,rtc,profile,c-print', "-profile-data-filename=${buildDir}/profilerdata.py", '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
     }
 }
 
