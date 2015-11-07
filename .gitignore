@@ -35,3 +35,5 @@ gid.db
 fbp.html
 wukong/tools/testrtt/testrtt
 .gradle
+bin
+obj
