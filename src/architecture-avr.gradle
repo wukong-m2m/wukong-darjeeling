@@ -133,8 +133,8 @@ task avarice << {
 }
 
 task avrora(dependsOn: darjeeling) {
-    ext.rtcdataFile = "${buildDir}/rtcdata.py"
-    ext.profiledataFile = "${buildDir}/profilerdata.py"
+    ext.rtcdataFile = "${buildDir}/rtcdata"
+    ext.profiledataFile = "${buildDir}/profilerdata"
     def avroraJar = '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar'
 
     doLast {

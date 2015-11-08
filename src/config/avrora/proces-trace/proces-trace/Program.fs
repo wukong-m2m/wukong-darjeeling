@@ -10,10 +10,21 @@ open FSharp.Data
 //    printfn "%A" argv
 //    0 // return an integer exit code
 
-type RtcdataXml = XmlProvider<"/Users/niels/git/rtc/src/build/avrora/rtcdata.py.xml", Global=true>
+type RtcdataXml = XmlProvider<"rtcdata-example.xml", Global=true>
 type JavaInstruction = RtcdataXml.JavaInstruction
 type AvrInstruction = RtcdataXml.AvrInstruction
 type MethodImpl = RtcdataXml.MethodImpl
+type ProfilerdataXml = XmlProvider<"profilerdata-example.xml", Global=true>
+type ProfiledInstruction = ProfilerdataXml.Instruction
+type DarjeelingInfusionHeaderXml = XmlProvider<"infusionheader-example.dih", Global=true>
+type Dih = DarjeelingInfusionHeaderXml.Dih
+
+type ResultAvrInstructions = { unopt : AvrInstruction;
+                               opt : AvrInstruction option;
+                               cycles : int;
+                               executions : int; }
+type Result = { jvm : JavaInstruction;
+                avr : ResultAvrInstructions list; }
 
 [<Literal>]
 let OPCODE_PUSH                    = 0x920F
@@ -63,91 +74,133 @@ let isBRNE x = x |> opcodeFromAvrInstr |> fun x -> (x &&& 0xFC07) = OPCODE_BRNE
 let isBRANCH x = isBREQ x || isBRGE x || isBRLT x || isBRNE x
 let isRJMP x = x |> opcodeFromAvrInstr |> fun x -> (x &&& 0xF000) = OPCODE_RJMP
 
-// Extracts the avr instructions from each jvm and returns a list of (avr, jvmindex) tuples
-let jvmInstructionsToAvrAndJvmIndex (jvmInstructions : JavaInstruction seq) =
-    jvmInstructions |> Seq.map (fun jvm -> jvm.UnoptimisedAvr.AvrInstructions |> Seq.map (fun avr -> (avr, jvm.Index)))
-                    |> Seq.concat
-                    |> Seq.toList
 
 // Returns: a list of tuples (optimised avr instruction, jvm avr instruction, corresponding jvm index)
 // The list ignores all PUSH/POP/MOVs. All remaining instructions should match exactly
 // (todo: branches will break this)
-let rec match1 (optimisedAvr : AvrInstruction list) (unoptimisedAvr : (AvrInstruction*int) list) =
+let rec matchOptUnopt (optimisedAvr : AvrInstruction list) (unoptimisedAvr : (AvrInstruction*JavaInstruction) list) =
     match optimisedAvr, unoptimisedAvr with
     // Identical instructions: match and consume both
-    | optimisedHead :: optimisedTail, (unoptimisedHead, jvmIdxHead) :: unoptTail when optimisedHead.Text = unoptimisedHead.Text
-        -> (Some optimisedHead, Some unoptimisedHead, Some jvmIdxHead) :: match1 optimisedTail unoptTail
+    | optimisedHead :: optimisedTail, (unoptimisedHead, jvmHead) :: unoptTail when optimisedHead.Text = unoptimisedHead.Text
+        -> (Some optimisedHead, unoptimisedHead, jvmHead) :: matchOptUnopt optimisedTail unoptTail
     // Match a MOVW to two PUSH instructions (bit arbitrary whether to count the cycle for the PUSH or POP that was optimised)
-    | optMOVW :: optTail, (unoptPUSH1, jvmIdxHead1) :: (unoptPUSH2, jvmIdxHead2) :: unoptTail when isMOVW(optMOVW) && isPUSH(unoptPUSH1) && isPUSH(unoptPUSH2)
-        -> (Some optMOVW, Some unoptPUSH1, Some jvmIdxHead1)
-            :: (None, Some unoptPUSH2, Some jvmIdxHead2)
-            :: match1 optTail unoptTail
+    | optMOVW :: optTail, (unoptPUSH1, jvmHead1) :: (unoptPUSH2, jvmHead2) :: unoptTail when isMOVW(optMOVW) && isPUSH(unoptPUSH1) && isPUSH(unoptPUSH2)
+        -> (Some optMOVW, unoptPUSH1, jvmHead1)
+            :: (None, unoptPUSH2, jvmHead2)
+            :: matchOptUnopt optTail unoptTail
     // If the unoptimised head is a MOV PUSH or POP, skip it
-    | _, (unoptimisedHead, jvmIdxHead) :: unoptTail when isMOV_MOVW_PUSH_POP(unoptimisedHead)
-        -> (None, Some unoptimisedHead, Some jvmIdxHead) :: match1 optimisedAvr unoptTail
-    // If the optimised head is a MOV PUSH or POP, skip it
-    | optimisedHead :: optimisedTail, _ when isMOV_MOVW_PUSH_POP(optimisedHead)
-        -> (Some optimisedHead, None, None) :: match1 optimisedTail unoptimisedAvr
+    | _, (unoptimisedHead, jvmHead) :: unoptTail when isMOV_MOVW_PUSH_POP(unoptimisedHead)
+        -> (None, unoptimisedHead, jvmHead) :: matchOptUnopt optimisedAvr unoptTail
+//    // If the optimised head is a MOV PUSH or POP, skip it
+//    | optimisedHead :: optimisedTail, _ when isMOV_MOVW_PUSH_POP(optimisedHead)
+//        -> (Some optimisedHead, None, None) :: matchOptUnopt optimisedTail unoptimisedAvr
     // BREAK signals a branchtag that would have been replaced in the optimised code by a
     // branch to the real address, possibly followed by one or two NOPs
-    | _, (unoptBranchtag, unoptBranchtagJvmIdx) :: (unoptBranchtag2, unoptBranchtagJvmIdx2) :: unoptTail when isBREAK(unoptBranchtag)
+    | _, (unoptBranchtag, jvmBranchtag) :: (unoptBranchtag2, jvmBranchtag2) :: unoptTail when isBREAK(unoptBranchtag)
         -> match optimisedAvr with
             // Short conditional jump
             | optBR :: optNOP :: optNOP2 :: optTail when isBRANCH(optBR) && isNOP(optNOP) && isNOP(optNOP2)
-                -> (Some optBR, Some unoptBranchtag, Some unoptBranchtagJvmIdx)
-                    :: (Some optNOP, Some unoptBranchtag, Some unoptBranchtagJvmIdx)
-                    :: (Some optNOP2, Some unoptBranchtag, Some unoptBranchtagJvmIdx)
-                    :: match1 optTail unoptTail
+                -> (Some optBR, unoptBranchtag, jvmBranchtag)
+                    :: (Some optNOP, unoptBranchtag, jvmBranchtag)
+                    :: (Some optNOP2, unoptBranchtag, jvmBranchtag)
+                    :: matchOptUnopt optTail unoptTail
             // Mid range conditional jump
             | optBR :: optRJMP :: optNOP :: optTail when isBRANCH(optBR) && isRJMP(optRJMP) && isNOP(optNOP)
-                -> (Some optBR, Some unoptBranchtag, Some unoptBranchtagJvmIdx)
-                    :: (Some optRJMP, Some unoptBranchtag, Some unoptBranchtagJvmIdx)
-                    :: (Some optNOP, Some unoptBranchtag, Some unoptBranchtagJvmIdx)
-                    :: match1 optTail unoptTail
+                -> (Some optBR, unoptBranchtag, jvmBranchtag)
+                    :: (Some optRJMP, unoptBranchtag, jvmBranchtag)
+                    :: (Some optNOP, unoptBranchtag, jvmBranchtag)
+                    :: matchOptUnopt optTail unoptTail
             // Long conditional jump
             | optBR :: optJMP :: optTail when isBRANCH(optBR) && isJMP(optJMP)
-                -> (Some optBR, Some unoptBranchtag, Some unoptBranchtagJvmIdx)
-                    :: (Some optJMP, Some unoptBranchtag, Some unoptBranchtagJvmIdx)
-                    :: match1 optTail unoptTail
+                -> (Some optBR, unoptBranchtag, jvmBranchtag)
+                    :: (Some optJMP, unoptBranchtag, jvmBranchtag)
+                    :: matchOptUnopt optTail unoptTail
             // Uncondtional mid range jump
             | optRJMP :: optNOP :: optNOP2 :: optTail when isRJMP(optRJMP) && isNOP(optNOP) && isNOP(optNOP2)
-                -> (Some optRJMP, Some unoptBranchtag, Some unoptBranchtagJvmIdx)
-                    :: (Some optNOP, Some unoptBranchtag, Some unoptBranchtagJvmIdx)
-                    :: (Some optNOP2, Some unoptBranchtag, Some unoptBranchtagJvmIdx)
-                    :: match1 optTail unoptTail
+                -> (Some optRJMP, unoptBranchtag, jvmBranchtag)
+                    :: (Some optNOP, unoptBranchtag, jvmBranchtag)
+                    :: (Some optNOP2, unoptBranchtag, jvmBranchtag)
+                    :: matchOptUnopt optTail unoptTail
             // Uncondtional long jump
             | optJMP :: optNOP :: optTail when isJMP(optJMP) && isNOP(optNOP)
-                -> (Some optJMP, Some unoptBranchtag, Some unoptBranchtagJvmIdx)
-                    :: (Some optNOP, Some unoptBranchtag, Some unoptBranchtagJvmIdx)
-                    :: match1 optTail unoptTail
+                -> (Some optJMP, unoptBranchtag, jvmBranchtag)
+                    :: (Some optNOP, unoptBranchtag, jvmBranchtag)
+                    :: matchOptUnopt optTail unoptTail
             | _ -> failwith "Incorrect branctag"
-    | _, _
-        -> []
+    | [], [] -> [] // All done.
+    | _, _ -> failwith "Some instructions couldn't be matched"
 
-let rtcdata = RtcdataXml.Load("/Users/niels/git/rtc/src/build/avrora/rtcdata.py.xml")
-let optimisedAvr = rtcdata.MethodImpls.First().AvrInstructions |> Seq.toList
-let unoptimisedAvrWithJvmIndex = jvmInstructionsToAvrAndJvmIndex (rtcdata.MethodImpls.First().JavaInstructions)
-let matched = match1 optimisedAvr unoptimisedAvrWithJvmIndex
+let rec addCycles (jvmInstructions : JavaInstruction list)
+                  (profilerdata : ProfiledInstruction list)
+                  (matchedResults : (AvrInstruction option*AvrInstruction*JavaInstruction) list) =
+    jvmInstructions |> List.map
+        (fun jvm ->
+            let resultsForThisJvm = matchedResults |> List.filter (fun b -> let (_, _, jvm2) = b in jvm.Index = jvm2.Index) in
+            let resultsWithCycles = resultsForThisJvm |> List.map (fun (opt, unopt, _) ->
+                  let (executions, cycles) = match opt with
+                                             | None -> (0, 0)
+                                             | Some(optValue) ->
+                                                 let address = Convert.ToInt32(optValue.Address.Trim(), 16) in
+                                                 let profiledInstruction = profilerdata |> List.find (fun x -> Convert.ToInt32(x.Address.Trim(), 16) = address) in
+                                                     (profiledInstruction.Executions, profiledInstruction.Cycles)
+                  { unopt = unopt; opt = opt; executions = executions; cycles = cycles }) in
+            { jvm = jvm; avr = resultsWithCycles })
 
-let rec printResult (avrInstructions : (AvrInstruction option*AvrInstruction option*int option) list) =
-    let instOption2Text = function
-        | Some (x : AvrInstruction) -> x.Text
+let resultToString (results : Result list) =
+    let cyclesForJavaInstruction (result : Result) =
+        result.avr |> List.map (fun r -> r.cycles) |> List.fold (+) 0
+    let executionsForJavaInstruction (result : Result) =
+        if result.avr.Count() = 0
+        then 0
+        else result.avr |> List.map (fun x -> x.executions) |> List.fold (max) 0
+    let avrInstOption2Text = function
+        | Some (x : AvrInstruction)
+            -> String.Format("{0:10}: {1,-15}", x.Address, x.Text)
         | None -> ""
-    let instOption2Address = function
-        | Some (x : AvrInstruction) -> x.Address
-        | None -> ""
-    match avrInstructions with
-        | (optimisedAvr, unoptimisedAvr, jvmIndex) :: tail ->
-                String.Format("{0,10} {1,20} {2,20} {3,4}\n",
-                              instOption2Address optimisedAvr,
-                              instOption2Text optimisedAvr,
-                              instOption2Text unoptimisedAvr,
-                              jvmIndex) + (printResult tail)
-        | [] -> ""
+    let printAvrResults (avrResults : ResultAvrInstructions list) =
+        avrResults |> List.map (
+                        fun r -> String.Format("        {0,-15} -> {1,-36} {2,8} {3,14}\n\r",
+                                               r.unopt.Text,
+                                               avrInstOption2Text r.opt,
+                                               r.executions,
+                                               r.cycles))
+                   |> List.fold (+) ""
+    results |> List.map (fun r -> let executions = executionsForJavaInstruction r in
+                                  let cycles = cyclesForJavaInstruction r in
+                                  let average = if executions > 0
+                                                then float cycles/float executions
+                                                else 0.0 in
+                                  String.Format("{0,-60}exe:{1,8} cyc:{2,10} ({3:##.##} c/e)\n\r{4}\n\r",
+                                                r.jvm.Text,
+                                                executions,
+                                                cycles,
+                                                average,
+                                                (printAvrResults r.avr)))
+            |> List.reduce (+)
 
-Console.WriteLine (printResult matched)
-Console.WriteLine (matched.Count())
+let processMethodImpl profilerData (methodImpl : MethodImpl) =
+    let optimisedAvr = methodImpl.AvrInstructions |> Seq.toList
+    let unoptimisedAvrWithJvmIndex =
+        methodImpl.JavaInstructions |> Seq.map (fun jvm -> jvm.UnoptimisedAvr.AvrInstructions |> Seq.map (fun avr -> (avr, jvm)))
+                                    |> Seq.concat
+                                    |> Seq.toList
+    let matchedResult = matchOptUnopt optimisedAvr unoptimisedAvrWithJvmIndex
+    let matchedResultWithCycles = addCycles (methodImpl.JavaInstructions |> Seq.toList) profilerData matchedResult
+    resultToString matchedResultWithCycles
 
-//let testPrintMethodImpl (methodImpl : MethodImpl) =
-//    printfn "implId %d" methodImpl.MethodImplId
-//    methodImpl.AvrInstructions.First().Opcode
+let findRtcbenchmarkMethodImplId (dih : Dih) =
+    let infusionName = dih.Infusion.Header.Name
+    let methodDef = dih.Infusion.Methoddeflists |> Seq.find (fun def -> def.Name = "rtcbenchmark_measure_java_performance")
+    let methodImpl = dih.Infusion.Methodimpllists |> Seq.find (fun impl -> impl.MethoddefEntityId = methodDef.EntityId && impl.MethoddefInfusion = infusionName)
+    methodImpl.EntityId
+
+
+let rtcdata = RtcdataXml.Load("/Users/niels/git/rtc/src/build/avrora/rtcdata.xml")
+let profilerdata = ProfilerdataXml.Load("/Users/niels/git/rtc/src/build/avrora/profilerdata.xml")
+let dih = DarjeelingInfusionHeaderXml.Load("/Users/niels/git/rtc/src/build/avrora/infusion-rtcbm_sort/rtcbm_sort.dih")
+let methodImplId = findRtcbenchmarkMethodImplId dih
+
+let profiledInstructions = profilerdata.Instructions |> Seq.toList
+let methodImpl = rtcdata.MethodImpls |> Seq.find (fun impl -> impl.MethodImplId = methodImplId)
+Console.WriteLine (processMethodImpl profiledInstructions methodImpl)
+

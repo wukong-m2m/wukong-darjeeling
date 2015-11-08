@@ -2064,6 +2064,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     wkreprog_open_raw(branch_target_table_start_ptr, END_OF_SAFE_REGION);
     wkreprog_skip(branchTableSize);
 
+// Let RTC trace know the next emitted code won't belong to the last JVM opcode anymore. Otherwise the branch patches would be assigned to the last instruction in the method (probably RET)
+#ifdef AVRORA
+    avroraRTCTracePatchingBranchesOn();
+#endif
     for (uint16_t avr_pc=branch_target_table_start_ptr+branchTableSize; avr_pc<tmp_current_position; avr_pc+=2) {
         uint16_t avr_instruction = dj_di_getU16(avr_pc);
 
@@ -2141,6 +2145,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             }
         }
     }
+// Let RTC trace know we're done patching branches
+#ifdef AVRORA
+    avroraRTCTracePatchingBranchesOff();
+#endif
 }
 
 void rtc_compile_lib(dj_infusion *infusion) {

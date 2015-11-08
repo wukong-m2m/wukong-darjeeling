@@ -1,0 +1,21 @@
+<ExecutionCountPerInstruction>
+    <Instruction address="0x0000" executions="1" cycles="3" />
+    <Instruction address="0x0004" executions="0" cycles="0" />
+    <Instruction address="0x0008" executions="0" cycles="0" />
+    <Instruction address="0x000C" executions="0" cycles="0" />
+    <Instruction address="0x0010" executions="0" cycles="0" />
+    <Instruction address="0x0014" executions="0" cycles="0" />
+    <Instruction address="0x0018" executions="0" cycles="0" />
+    <Instruction address="0x001C" executions="0" cycles="0" />
+    <Instruction address="0x0020" executions="0" cycles="0" />
+    <Instruction address="0x0024" executions="0" cycles="0" />
+    <Instruction address="0x0028" executions="0" cycles="0" />
+    <Instruction address="0x002C" executions="0" cycles="0" />
+    <Instruction address="0x0030" executions="0" cycles="0" />
+    <Instruction address="0x0034" executions="0" cycles="0" />
+    <Instruction address="0x0038" executions="0" cycles="0" />
+    <Instruction address="0x003C" executions="0" cycles="0" />
+    <Instruction address="0x0040" executions="26563" cycles="79689" />
+    <Instruction address="0x0044" executions="0" cycles="0" />
+</ExecutionCountPerInstruction>
+

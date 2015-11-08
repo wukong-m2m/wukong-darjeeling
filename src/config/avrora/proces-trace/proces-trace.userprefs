@@ -1,1 +1,12 @@
-﻿<Properties StartupItem="proces-trace/proces-trace.fsproj" />
+﻿<Properties StartupItem="proces-trace/proces-trace.fsproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="proces-trace/Program.fs">
+    <Files>
+      <File FileName="proces-trace/Program.fs" Line="198" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

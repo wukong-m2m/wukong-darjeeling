@@ -44,4 +44,9 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.1\Framework\v4.0\Microsoft.FSharp.Targets" />
+  <ItemGroup>
+    <None Include="profilerdata-example.xml" />
+    <None Include="infusionheader-example.dih" />
+    <None Include="rtcdata-example.xml" />
+  </ItemGroup>
 </Project>
