@@ -55,7 +55,7 @@ XMPP_IP = '140.112.28.107'
 XMPP_PORT = 10303
 XMPP_SERVER = 'localhost'
 XMPP_USER = 'user1'
-XMPP_PASS = 'wukong'
+XMPP_PASS = ''
 XMPP_ROOM = 'pubsub@conference.'+XMPP_SERVER
 XMPP_NICK = XMPP_ROOM+'/gateway0'
 '''
@@ -63,7 +63,7 @@ XMPP_IP = '140.112.170.26'
 XMPP_PORT = 5222
 XMPP_SERVER = 'wukongdemac-mini.local'
 XMPP_USER = 'admin'
-XMPP_PASS = 'admin'
+XMPP_PASS = ''
 XMPP_ROOM = 'monitor@conference.'+XMPP_SERVER
 XMPP_NICK = XMPP_ROOM+'/gateway0'
 #'''

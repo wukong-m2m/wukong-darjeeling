@@ -8,6 +8,8 @@ except:
 
 import gevent
 from gevent.queue import Queue
+from gevent import monkey
+monkey.patch_all()
 from txCarbonClient import CarbonClientService
 import json
 import ast
