@@ -415,5 +415,11 @@
     <WuClass name="UINumber" id="11003" virtual="fasle" type="soft">
       <property name="number" access="writeonly" datatype="short" default="0" />
     </WuClass>
+    <WuClass name="Email" id="11004" virtual="fasle" type="soft">
+      <property name="send" access="writeonly" datatype="short" default="0" />
+    </WuClass>
+    <WuClass name="URL" id="11005" virtual="fasle" type="soft">
+      <property name="input" access="readonly" datatype="short" default="0" />
+    </WuClass>
 
 </WuKong>
