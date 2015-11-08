@@ -244,7 +244,11 @@ class WKPF(DatagramProtocol):
         elif msgid == WKPF.WRITE_PROPERTY:
             print map(ord,payload)
             port = ord(payload[0])
-            clsID = ord(payload[1])*256 + ord(payload[2])
+            cID = ord(payload[1])*256 + ord(payload[2])
+            if cID == 0:
+                # The request from the Master will not have componentID in it. It will
+                # use the port directly.
+                cID = self.findComponentByPort(pport)
             pID = ord(payload[3])
             dtype = ord(payload[4])
             if dtype == WKPF.DATATYPE_SHORT or dtype == WKPF.DATATYPE_REFRESH:
