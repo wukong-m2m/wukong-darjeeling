@@ -242,14 +242,15 @@ class WKPF(DatagramProtocol):
             p=struct.pack('3B',WKPF.REPROG_REBOOT_R,seq&255, (seq>>8)&255)+msg
             self.send(src_id,p)
         elif msgid == WKPF.WRITE_PROPERTY:
+            print map(ord,payload)
             port = ord(payload[0])
-            clsID = ord(payload[0])*256 + ord(payload[1])
-            pID = ord(payload[2])
-            dtype = ord(payload[3])
+            clsID = ord(payload[1])*256 + ord(payload[2])
+            pID = ord(payload[3])
+            dtype = ord(payload[4])
             if dtype == WKPF.DATATYPE_SHORT or dtype == WKPF.DATATYPE_REFRESH:
-                val = ord(payload[4])*256 + ord(payload[5])
+                val = ord(payload[5])*256 + ord(payload[6])
             else:
-                val  = ord(payload[4])
+                val  = ord(payload[5])
 
             p=struct.pack('7B',WKPF.WRITE_PROPERTY_R,seq&255, (seq>>8)&255, port, (clsID>>8)&0xff, clsID&0xff, pID)
             self.send(src_id,p)
@@ -305,17 +306,15 @@ class WKPF(DatagramProtocol):
         except:
             self.properties[port][pID] = val
             self.propagateProperty(port,pID,val)
-    def remoteSetProperty(self,port,pID,val):
-        cid = self.findComponentByPort(port)
-        cls = self.device.getPortClassID(port)
-        comp = self.getComponent(cid)
-        print 'propagate to ' , comp['ports']
-        dest_id = comp['ports'][0][0]
+    def remoteSetProperty(self,dest_id,cls,port,pID,val):
+        print "cls=",cls
+        print "dest_id=",dest_id
+        print "port=",port
         src_id = self.mptnaddr
-        p = struct.pack('10B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) % 0xff, port, (cls >> 8) & 0xff, cls & 0xff, WKPF.DATATYPE_SHORT, pID, (val >> 8)&0xff, val & 0xff)
+        p = struct.pack('10B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) % 0xff, port, (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_SHORT, (val >> 8)&0xff, val & 0xff)
         msg_type = MPTN.MPTN_MSGTYPE_FWDREQ
 
-        self.send(comp['ports'][0][0],p)
+        self.send(dest_id,p)
         self.seq = self.seq + 1
         pass
     def remoteGetProperty(self,addr,port,pID,cb):
@@ -345,11 +344,13 @@ class WKPF(DatagramProtocol):
                 print 'match link',target_links
                 for target in target_links:
                     try:
+                        print target
                         comp = self.getComponent(target[0])
+                        print comp
 			if comp['ports'][0][0] == self.mptnaddr:
                         	self.setProperty(comp['ports'][0][1],target[1],val)
 			else:
-                        	self.remoteSetProperty(comp['ports'][0][0],comp['ports'][0][1],target[1],val)
+                        	self.remoteSetProperty(comp['ports'][0][0],comp['ID'],comp['ports'][0][1], target[1],val)
                     except:
                         traceback.print_exc()
                         pass
