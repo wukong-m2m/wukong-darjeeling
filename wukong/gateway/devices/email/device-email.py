@@ -5,14 +5,34 @@ from autobahn.twisted.websocket import WebSocketServerFactory,WebSocketServerPro
 from autobahn.twisted.resource import WebSocketResource,HTTPChannelHixie76Aware
 import __builtin__
 import cjson
+import smtplib
+from email.mime.text import MIMEText
 global site
 
 class EMail(WuClass):
     PICTURE=0
     def __init__(self):
         self.ID = 11004
-    def udpate(self):
+    def update(self,port,pID,value):
         print "send email" 
+        f = open('email.txt')
+        fields = f.readline().split(',')
+        msg = MIMEText(f.read())
+        f.close()
+        msg['Subject'] = fields[0]
+        msg['From'] = fields[1]
+        msg['To'] = fields[2]
+
+        s = smtplib.SMTP(fields[3])
+        s.set_debuglevel(True)
+        print fields
+        s.login(fields[1], fields[4])
+        try:
+            s.sendmail(fields[1], [fields[2]], msg.as_string())
+        except:
+            traceback.print_exc()
+        finally:
+            s.close()
         pass
     def init(self):
         pass
@@ -23,8 +43,6 @@ class EMailDevice(Device):
         cls = EMail()
         self.addClass(cls)
         self.obj = self.addObject(cls.ID)
-    def update(self):
-        print "update"
 
 d = EMailDevice()
 root=static.File("./www")
