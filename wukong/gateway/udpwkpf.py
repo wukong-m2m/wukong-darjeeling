@@ -256,7 +256,7 @@ class WKPF(DatagramProtocol):
             else:
                 val  = ord(payload[5])
 
-            p=struct.pack('7B',WKPF.WRITE_PROPERTY_R,seq&255, (seq>>8)&255, port, (clsID>>8)&0xff, clsID&0xff, pID)
+            p=struct.pack('7B',WKPF.WRITE_PROPERTY_R,seq&255, (seq>>8)&255, port, (cID>>8)&0xff, cID&0xff, pID)
             self.send(src_id,p)
             self.setProperty(port,pID, val)
         pass
@@ -296,19 +296,27 @@ class WKPF(DatagramProtocol):
                 self.links['%d.%d'%(src_id,s_pID)]= [[dest_id,d_pID]]
     def addProperties(self,n):
         props = []
-        for i in range(0,n): props.append(0)
+        for i in range(0,n): props.append({'value':0,'dirty':False})
         self.properties.append(props)
+    def checkDirty(self,port,pID):
+        for i in range(self.last_dirty_ptr,len(self.properties)):
+            if self.properties[self.last_dirty_ptr]['dirty']:
+                self.last_dirty_ptr = i + 1
+                return self.properties[port][pID]
+        self.last_dirty_ptr = 0
+        return None
     def getProperty(self,port,pID):
-        return self.properties[port][pID]
+        return self.properties[port][pID]['value']
 
     def setProperty(self,port,pID,val):
         print 'setProperty',port,pID,val
         try:
-            if self.properties[port][pID] != val:
-                self.properties[port][pID] = val
+            if self.properties[port][pID]['value'] != val:
+                self.properties[port][pID]['value'] = val
+                self.properties[port][pID]['dirty'] = True
                 self.propagateProperty(port,pID)
         except:
-            self.properties[port][pID] = val
+            self.properties[port][pID]['value'] = val
             self.propagateProperty(port,pID,val)
     def remoteSetProperty(self,dest_id,cls,port,pID,val):
         print "cls=",cls
@@ -403,7 +411,7 @@ class WuClass:
     def __init__(self):
         self.ID = 0
         self.wkpf = None
-    def update(self):
+    def update(self,port=-1,pID=-1,value=0):
         pass
     def newObject(self):
         return WuObject(self)
@@ -421,7 +429,21 @@ class Device:
         self.classes={}
         self.objects=[]
         self.init()
+        reactor.callLater(1,self.updateTheNextDirtyObject)
         pass
+    def updateTheNextDirtyObject(self):
+        for obj in self.objects:
+            for i in range(0,len(self.wkpf.properties[obj.port])):
+                p = self.wkpf.properties[obj.port][i]
+                if p['dirty'] == True:
+                    p['dirty'] = False
+                    try:
+                        obj.cls.update(obj.port,i,p['value'])
+                    except:
+                        traceback.print_exc()
+                        pass
+        reactor.callLater(0.3, self.updateTheNextDirtyObject)
+
     def getPortClassID(self,port):
         return self.objects[port].cls.ID
 
