@@ -1,24 +1,17 @@
-﻿// Learn more about F# at http://fsharp.net
-// See the 'F# Tutorial' project for more help.
-
-open System
+﻿open System
 open System.Linq
 open FSharp.Data
 
-//[<EntryPoint>]
-//let main argv = 
-//    printfn "%A" argv
-//    0 // return an integer exit code
-
 type RtcdataXml = XmlProvider<"rtcdata-example.xml", Global=true>
+type Rtcdata = RtcdataXml.Methods
 type JavaInstruction = RtcdataXml.JavaInstruction
 type AvrInstruction = RtcdataXml.AvrInstruction
 type MethodImpl = RtcdataXml.MethodImpl
 type ProfilerdataXml = XmlProvider<"profilerdata-example.xml", Global=true>
+type Profilerdata = ProfilerdataXml.ExecutionCountPerInstruction
 type ProfiledInstruction = ProfilerdataXml.Instruction
 type DarjeelingInfusionHeaderXml = XmlProvider<"infusionheader-example.dih", Global=true>
 type Dih = DarjeelingInfusionHeaderXml.Dih
-
 type ResultAvrInstructions = { unopt : AvrInstruction;
                                opt : AvrInstruction option;
                                cycles : int;
@@ -74,10 +67,9 @@ let isBRNE x = x |> opcodeFromAvrInstr |> fun x -> (x &&& 0xFC07) = OPCODE_BRNE
 let isBRANCH x = isBREQ x || isBRGE x || isBRLT x || isBRNE x
 let isRJMP x = x |> opcodeFromAvrInstr |> fun x -> (x &&& 0xF000) = OPCODE_RJMP
 
-
-// Returns: a list of tuples (optimised avr instruction, jvm avr instruction, corresponding jvm index)
-// The list ignores all PUSH/POP/MOVs. All remaining instructions should match exactly
-// (todo: branches will break this)
+// Input: the optimised avr code, and a list of tuples of unoptimised avr instructions and the jvm instruction that generated them
+// Returns: a list of tuples (optimised avr instruction, unoptimised avr instruction, corresponding jvm index)
+//          the optimised avr instruction may be None for instructions that were removed completely by the optimiser
 let rec matchOptUnopt (optimisedAvr : AvrInstruction list) (unoptimisedAvr : (AvrInstruction*JavaInstruction) list) =
     match optimisedAvr, unoptimisedAvr with
     // Identical instructions: match and consume both
@@ -91,9 +83,6 @@ let rec matchOptUnopt (optimisedAvr : AvrInstruction list) (unoptimisedAvr : (Av
     // If the unoptimised head is a MOV PUSH or POP, skip it
     | _, (unoptimisedHead, jvmHead) :: unoptTail when isMOV_MOVW_PUSH_POP(unoptimisedHead)
         -> (None, unoptimisedHead, jvmHead) :: matchOptUnopt optimisedAvr unoptTail
-//    // If the optimised head is a MOV PUSH or POP, skip it
-//    | optimisedHead :: optimisedTail, _ when isMOV_MOVW_PUSH_POP(optimisedHead)
-//        -> (Some optimisedHead, None, None) :: matchOptUnopt optimisedTail unoptimisedAvr
     // BREAK signals a branchtag that would have been replaced in the optimised code by a
     // branch to the real address, possibly followed by one or two NOPs
     | _, (unoptBranchtag, jvmBranchtag) :: (unoptBranchtag2, jvmBranchtag2) :: unoptTail when isBREAK(unoptBranchtag)
@@ -130,6 +119,8 @@ let rec matchOptUnopt (optimisedAvr : AvrInstruction list) (unoptimisedAvr : (Av
     | [], [] -> [] // All done.
     | _, _ -> failwith "Some instructions couldn't be matched"
 
+// Input: the original Java instructions, trace data from avrora profiler, and the output from matchOptUnopt
+// Returns: a list of Result records, showing the optimised code per original JVM instructions, and amount of cycles spent per optimised instruction
 let rec addCycles (jvmInstructions : JavaInstruction list)
                   (profilerdata : ProfiledInstruction list)
                   (matchedResults : (AvrInstruction option*AvrInstruction*JavaInstruction) list) =
@@ -178,29 +169,33 @@ let resultToString (results : Result list) =
                                                 (printAvrResults r.avr)))
             |> List.reduce (+)
 
-let processMethodImpl profilerData (methodImpl : MethodImpl) =
+
+// Find the methodImplId for a certain method in a Darjeeling infusion header
+let findRtcbenchmarkMethodImplId (dih : Dih) methodName =
+    let infusionName = dih.Infusion.Header.Name
+    let methodDef = dih.Infusion.Methoddeflists |> Seq.find (fun def -> def.Name = methodName)
+    let methodImpl = dih.Infusion.Methodimpllists |> Seq.find (fun impl -> impl.MethoddefEntityId = methodDef.EntityId && impl.MethoddefInfusion = infusionName)
+    methodImpl.EntityId
+
+
+// Pro
+let processTrace (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profilerdata) =
+    let methodImplId = findRtcbenchmarkMethodImplId dih "rtcbenchmark_measure_java_performance"
+    let methodImpl = rtcdata.MethodImpls |> Seq.find (fun impl -> impl.MethodImplId = methodImplId)
+
     let optimisedAvr = methodImpl.AvrInstructions |> Seq.toList
     let unoptimisedAvrWithJvmIndex =
         methodImpl.JavaInstructions |> Seq.map (fun jvm -> jvm.UnoptimisedAvr.AvrInstructions |> Seq.map (fun avr -> (avr, jvm)))
                                     |> Seq.concat
                                     |> Seq.toList
+
     let matchedResult = matchOptUnopt optimisedAvr unoptimisedAvrWithJvmIndex
-    let matchedResultWithCycles = addCycles (methodImpl.JavaInstructions |> Seq.toList) profilerData matchedResult
+    let matchedResultWithCycles = addCycles (methodImpl.JavaInstructions |> Seq.toList) (profilerdata.Instructions |> Seq.toList) matchedResult
     resultToString matchedResultWithCycles
 
-let findRtcbenchmarkMethodImplId (dih : Dih) =
-    let infusionName = dih.Infusion.Header.Name
-    let methodDef = dih.Infusion.Methoddeflists |> Seq.find (fun def -> def.Name = "rtcbenchmark_measure_java_performance")
-    let methodImpl = dih.Infusion.Methodimpllists |> Seq.find (fun impl -> impl.MethoddefEntityId = methodDef.EntityId && impl.MethoddefInfusion = infusionName)
-    methodImpl.EntityId
-
-
+let dih = DarjeelingInfusionHeaderXml.Load("/Users/niels/git/rtc/src/build/avrora/infusion-rtcbm_sort/rtcbm_sort.dih")
 let rtcdata = RtcdataXml.Load("/Users/niels/git/rtc/src/build/avrora/rtcdata.xml")
 let profilerdata = ProfilerdataXml.Load("/Users/niels/git/rtc/src/build/avrora/profilerdata.xml")
-let dih = DarjeelingInfusionHeaderXml.Load("/Users/niels/git/rtc/src/build/avrora/infusion-rtcbm_sort/rtcbm_sort.dih")
-let methodImplId = findRtcbenchmarkMethodImplId dih
 
-let profiledInstructions = profilerdata.Instructions |> Seq.toList
-let methodImpl = rtcdata.MethodImpls |> Seq.find (fun impl -> impl.MethodImplId = methodImplId)
-Console.WriteLine (processMethodImpl profiledInstructions methodImpl)
+Console.WriteLine (processTrace dih rtcdata profilerdata)
 
