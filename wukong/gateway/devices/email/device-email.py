@@ -13,7 +13,7 @@ class EMail(WuClass):
     PICTURE=0
     def __init__(self):
         self.ID = 11004
-    def update(self,port,pID,value):
+    def update(self,obj,pID,value):
         print "send email" 
         f = open('email.txt')
         fields = f.readline().split(',')

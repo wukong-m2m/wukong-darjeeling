@@ -411,7 +411,7 @@ class WuClass:
     def __init__(self):
         self.ID = 0
         self.wkpf = None
-    def update(self,port=-1,pID=-1,value=0):
+    def update(self,obj,pID,value):
         pass
     def newObject(self):
         return WuObject(self)
@@ -438,7 +438,7 @@ class Device:
                 if p['dirty'] == True:
                     p['dirty'] = False
                     try:
-                        obj.cls.update(obj.port,i,p['value'])
+                        obj.cls.update(obj,i,p['value'])
                     except:
                         traceback.print_exc()
                         pass
@@ -468,12 +468,12 @@ if __name__ == "__main__":
     class Magnetic(WuClass):
         def __init__(self):
             self.ID = 1007
-        def update(self):
+        def update(self,obj,pID,val):
             pass
     class Threshold(WuClass):
         def __init__(self):
             self.ID = 1
-        def update(self):
+        def update(self,obj,pID,val):
             pass
     class MyDevice(Device):
         def __init__(self,addr,localaddr):

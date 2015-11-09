@@ -16,14 +16,14 @@ class UIImage(WuClass):
 class RFID(WuClass):
     def __init__(self):
         self.ID=10001
-    def update(self):
+    def update(self,obj,pID,val):
         pass
 class picture(WuClass):
     ID=0
     PICTURE=1
     def __init__(self):
         self.ID=10002
-    def update(self):
+    def update(self,obj,pID,val):
         pass
     def NextPicture(self,obj):
         print 'next picture'
@@ -32,7 +32,7 @@ class picture(WuClass):
 class EMAP(Device):
     def __init__(self):
         Device.__init__(self,'127.0.0.1','127.0.0.1:4000')
-    def update(self):
+    def update(self,obj,pID,val):
         msg = cjson.encode({'ID':self.page_ID,'src':self.obj_image.cls.getPicture(self.obj_image)})
         self.page_protocol.sendMessage(cjson.encode(msg))
     def init(self):
@@ -69,7 +69,7 @@ class EMAPServerProtocol(WebSocketServerProtocol):
             if o['type'] == 'image':
                 site.device.addImageUI(self,o['id'])
                 reactor.callLater(1,self.update)
-    def update(self):
+    def update(self,obj,pID,val):
         self.sendMessage('%d' % site.device.getPicture(),False)
         reactor.callLater(1,self.update)
 
@@ -79,7 +79,7 @@ factory = WebSocketServerFactory("ws://localhost:8888",debug = True,debugCodePat
 factory.protocol = EMAPServerProtocol
 factory.setProtocolOptions(allowHixie76 = True)
 resource = WebSocketResource(factory)
-root=static.File("./")
+root=static.File("./emap")
 root.putChild("ws", resource)
 site=server.Site(root)
 site.protocol = HTTPChannelHixie76Aware

@@ -7,7 +7,11 @@ function Jump(line)
 var g_cont = '';
 $(document).ready(function() {
 		var ws;
-        ws = new WebSocket("ws://127.0.0.1:8888/ws");
+		var f = window.location.href.split('//');
+		f = f[1];
+		f = f.split('/')
+	    f = f[0]
+        ws = new WebSocket("ws://"+f+"/ws");
         $(ws).bind('open', function () {
 			ws.send(JSON.stringify({'cmd':'get','objects':[{'type':'image','id':'mypic'}]}));
         });

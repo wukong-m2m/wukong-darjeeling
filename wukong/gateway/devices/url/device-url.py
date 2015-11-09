@@ -26,7 +26,7 @@ class URLDevice(Device):
         self.addClass(cls)
         self.obj_url = self.addObject(cls.ID)
         pass
-    def update(self):
+    def update(self,obj,pID,val):
         pass
 class Click(resource.Resource):
     isLeaf = True
