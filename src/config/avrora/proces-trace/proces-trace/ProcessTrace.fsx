@@ -88,6 +88,10 @@ let rec matchOptUnopt (optimisedAvr : AvrInstruction list) (unoptimisedAvr : (Av
     // Identical instructions: match and consume both
     | optimisedHead :: optimisedTail, (unoptimisedHead, jvmHead) :: unoptTail when optimisedHead.Text = unoptimisedHead.Text
         -> (Some optimisedHead, unoptimisedHead, jvmHead) :: matchOptUnopt optimisedTail unoptTail
+    // Match a MOV to a single PUSH instruction (bit arbitrary whether to count the cycle for the PUSH or POP that was optimised)
+    | optMOV :: optTail, (unoptPUSH, jvmHead) :: unoptTail when isMOV(optMOV) && isPUSH(unoptPUSH)
+        -> (Some optMOV, unoptPUSH, jvmHead)
+            :: matchOptUnopt optTail unoptTail
     // Match a MOVW to two PUSH instructions (bit arbitrary whether to count the cycle for the PUSH or POP that was optimised)
     | optMOVW :: optTail, (unoptPUSH1, jvmHead1) :: (unoptPUSH2, jvmHead2) :: unoptTail when isMOVW(optMOVW) && isPUSH(unoptPUSH1) && isPUSH(unoptPUSH2)
         -> (Some optMOVW, unoptPUSH1, jvmHead1)
@@ -194,21 +198,25 @@ let resultToString (results : Result list) =
                         |> List.fold (+) "")
     let jvmCategory opcode =
         let categories = 
-                [("1) Ref stack ld/st", ["JVM_ALOAD_0"]);
-                 ("2) Int stack ld/st", ["JVM_ILOAD"; "JVM_ILOAD_0"; "JVM_ILOAD_2"; "JVM_ISTORE"; "JVM_ISTORE_0"; "JVM_ISTORE_2"; "JVM_SLOAD"; "JVM_SSTORE"]);
-                 ("3) Constant load", ["JVM_ICONST_0"; "JVM_ICONST_1"; "JVM_SIPUSH"]);
-                 ("4) Array ld/st", ["JVM_SALOAD"; "JVM_SASTORE"]);
-                 ("5) Branches", ["JVM_BRTARGET"; "JVM_GOTO"; "JVM_IF_ICMPGE"; "JVM_IF_SCMPLE"]);
-                 ("6) Math", ["JVM_IINC"; "JVM_ISUB"])] in
+                [("1) Ref stack ld/st", ["JVM_ALOAD"; "JVM_ALOAD_0"; "JVM_ALOAD_1"; "JVM_ALOAD_2"; "JVM_ALOAD_3"; "JVM_ASTORE"; "JVM_ASTORE_0"; "JVM_ASTORE_1"; "JVM_ASTORE_2"; "JVM_ASTORE_3"; "JVM_GETFIELD_A"; "JVM_PUTFIELD_A"; "JVM_GETSTATIC_A"; "JVM_PUTSTATIC_A"]);
+                 ("2) Int stack ld/st", ["JVM_SLOAD"; "JVM_SLOAD_0"; "JVM_SLOAD_1"; "JVM_SLOAD_2"; "JVM_SLOAD_3"; "JVM_ILOAD"; "JVM_ILOAD_0"; "JVM_ILOAD_1"; "JVM_ILOAD_2"; "JVM_ILOAD_3"; "JVM_SSTORE"; "JVM_SSTORE_0"; "JVM_SSTORE_1"; "JVM_SSTORE_2"; "JVM_SSTORE_3"; "JVM_ISTORE"; "JVM_ISTORE_0"; "JVM_ISTORE_1"; "JVM_ISTORE_2"; "JVM_ISTORE_3"; "JVM_IPOP"; "JVM_IPOP2"; "JVM_IDUP2"; "JVM_IDUP_X"; "JVM_APOP"; "JVM_ADUP"; "JVM_GETFIELD_B"; "JVM_GETFIELD_C"; "JVM_GETFIELD_S"; "JVM_GETFIELD_I"; "JVM_PUTFIELD_B"; "JVM_PUTFIELD_C"; "JVM_PUTFIELD_S"; "JVM_PUTFIELD_I"; "JVM_GETSTATIC_B"; "JVM_GETSTATIC_C"; "JVM_GETSTATIC_S"; "JVM_GETSTATIC_I"; "JVM_PUTSTATIC_B"; "JVM_PUTSTATIC_C"; "JVM_PUTSTATIC_S"; "JVM_PUTSTATIC_I"]);
+                 ("3) Constant load", ["JVM_SCONST_M1"; "JVM_SCONST_0"; "JVM_SCONST_1"; "JVM_SCONST_2"; "JVM_SCONST_3"; "JVM_SCONST_4"; "JVM_SCONST_5"; "JVM_ICONST_M1"; "JVM_ICONST_0"; "JVM_ICONST_1"; "JVM_ICONST_2"; "JVM_ICONST_3"; "JVM_ICONST_4"; "JVM_ICONST_5"; "JVM_ACONST_NULL"; "JVM_BSPUSH"; "JVM_BIPUSH"; "JVM_SSPUSH"; "JVM_SIPUSH"; "JVM_IIPUSH"; "JVM_LDS"]);
+                 ("4) Array ld/st", ["JVM_BALOAD"; "JVM_CALOAD"; "JVM_SALOAD"; "JVM_IALOAD"; "JVM_AALOAD"; "JVM_BASTORE"; "JVM_CASTORE"; "JVM_SASTORE"; "JVM_IASTORE"; "JVM_AASTORE"]);
+                 ("5) Branches", ["JVM_SIFEQ"; "JVM_SIFNE"; "JVM_SIFLT"; "JVM_SIFGE"; "JVM_SIFGT"; "JVM_SIFLE"; "JVM_IIFEQ"; "JVM_IIFNE"; "JVM_IIFLT"; "JVM_IIFGE"; "JVM_IIFGT"; "JVM_IIFLE"; "JVM_IFNULL"; "JVM_IFNONNULL"; "JVM_IF_SCMPEQ"; "JVM_IF_SCMPNE"; "JVM_IF_SCMPLT"; "JVM_IF_SCMPGE"; "JVM_IF_SCMPGT"; "JVM_IF_SCMPLE"; "JVM_IF_ICMPEQ"; "JVM_IF_ICMPNE"; "JVM_IF_ICMPLT"; "JVM_IF_ICMPGE"; "JVM_IF_ICMPGT"; "JVM_IF_ICMPLE"; "JVM_IF_ACMPEQ"; "JVM_IF_ACMPNE"; "JVM_GOTO"; "JVM_TABLESWITCH"; "JVM_LOOKUPSWITCH"; "JVM_BRTARGET" ]);
+                 ("6) Math", ["JVM_SADD"; "JVM_SSUB"; "JVM_SMUL"; "JVM_SDIV"; "JVM_SREM"; "JVM_SNEG"; "JVM_IADD"; "JVM_ISUB"; "JVM_IMUL"; "JVM_IDIV"; "JVM_IREM"; "JVM_INEG"; "JVM_IINC"; "JVM_IINC_W"]);
+                 ("7) Bitwise ops", ["JVM_SSHL"; "JVM_SSHR"; "JVM_SUSHR"; "JVM_SAND"; "JVM_SOR"; "JVM_SXOR"; "JVM_ISHL"; "JVM_ISHR"; "JVM_IUSHR"; "JVM_IAND"; "JVM_IOR"; "JVM_IXOR"]);
+                 ("8) Conversions", ["JVM_S2B"; "JVM_S2C"; "JVM_S2I"; "JVM_I2S"]);
+                 ("9) Others", ["JVM_NOP"; "JVM_SRETURN"; "JVM_IRETURN"; "JVM_ARETURN"; "JVM_RETURN"; "JVM_INVOKEVIRTUAL"; "JVM_INVOKESPECIAL"; "JVM_INVOKESTATIC"; "JVM_INVOKEINTERFACE"; "JVM_NEW"; "JVM_NEWARRAY"; "JVM_ANEWARRAY"; "JVM_ARRAYLENGTH"; "JVM_CHECKCAST"; "JVM_INSTANCEOF"])] in
         if categories.Any(fun (cat, opcodes) -> opcodes.Contains(opcode))
         then categories.First(fun (cat, opcodes) -> opcodes.Contains(opcode)) |> fst
-        else "7) Others"
+        else "10) ????"
     let groupFold keyFunc valueFunc foldFunc foldInitAcc results =
         results |> List.toSeq
                 |> Seq.groupBy keyFunc
                 |> Seq.map (fun (key, groupedResults) -> (key, groupedResults |> Seq.map valueFunc |> Seq.fold foldFunc foldInitAcc))
                 |> Seq.toList
-    let summedPerJvmOpcode = results |> groupFold (fun r -> r.jvm.Text.Split().First()) (fun r -> r.counters) (+) { executions=0; cycles=0 }
+    let summedPerJvmOpcode = results |> List.filter (fun r -> r.jvm.Text <> "Method preamble")
+                                     |> groupFold (fun r -> r.jvm.Text.Split().First()) (fun r -> r.counters) (+) { executions=0; cycles=0 }
                                      |> List.map (fun (opcode, counters) -> ((jvmCategory opcode), opcode, counters))
                                      |> List.sortBy (fun (category, opcode, _) -> category+opcode)
     let r4 = "--- SUMMED PER JVM OPCODE\r\n"
@@ -263,11 +271,12 @@ let main(args : string[]) =
         Console.Error.WriteLine ("Wrote output to " + (Array.get args 4))
         1
     else
-        let dih = DarjeelingInfusionHeaderXml.Load("/Users/niels/git/rtc/src/build/avrora/infusion-rtcbm_sort/rtcbm_sort.dih")
+        let dih = DarjeelingInfusionHeaderXml.Load("/Users/niels/git/rtc/src/build/avrora/infusion-rtcbm_rc5/rtcbm_rc5.dih")
         let rtcdata = RtcdataXml.Load("/Users/niels/git/rtc/src/build/avrora/rtcdata.xml")
         let profilerdata = ProfilerdataXml.Load("/Users/niels/git/rtc/src/build/avrora/profilerdata.xml")
         let results = processTrace dih rtcdata profilerdata
         Console.WriteLine (results)
         0
 
+//main([||])
 main(fsi.CommandLineArgs)
