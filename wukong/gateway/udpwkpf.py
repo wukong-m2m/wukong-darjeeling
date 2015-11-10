@@ -432,6 +432,24 @@ class WuClass:
                 return int(cls.attributes['id'].nodeValue)
         print "Can not find class ID for ", name
         return -1
+    def loadClass(self,name):
+        for p in sys.path:
+            path = p+"/../ComponentDefinitions/WuKongStandardLibrary.xml"
+            if os.path.isfile(path):
+                break
+        dom = xml.dom.minidom.parse(path)
+        obj = self.__class__
+        for cls in dom.getElementsByTagName("WuClass"):
+            if cls.attributes['name'].nodeValue == name:
+                self.ID = cls.attributes['id']
+                ID = 0
+                for p in cls.getElementsByTagName('property'):
+                    obj.__dict__[p.attributes['name'].nodeValue] = ID
+                    ID = ID + 1
+                return 
+        print "Can not find class ID for ", name
+        return
+
 
 
 class Device:
