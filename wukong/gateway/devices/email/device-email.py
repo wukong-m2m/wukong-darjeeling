@@ -12,7 +12,7 @@ global site
 class EMail(WuClass):
     PICTURE=0
     def __init__(self):
-        self.ID = 11004
+        self.ID = self.getWuClassID('Email')
     def update(self,obj,pID,value):
         print "send email" 
         f = open('email.txt')

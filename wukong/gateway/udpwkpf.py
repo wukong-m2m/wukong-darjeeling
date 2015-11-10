@@ -8,6 +8,8 @@ from twisted.internet import reactor
 from twisted.internet.protocol import DatagramProtocol, ClientCreator, ReconnectingClientFactory
 import cjson
 import traceback
+import xml.dom.minidom 
+
 class WKPF(DatagramProtocol):
     GET_WUCLASS_LIST        = 0x90
     GET_WUCLASS_LIST_R      = 0x91
@@ -419,6 +421,14 @@ class WuClass:
         self.wkpf.setProperty(port,pID,val)
     def getProperty(self,port,pID):
         return self.wkpf.getProperty(port,pID)
+    def getWuClassID(self,name):
+        dom = xml.dom.minidom.parse("/home/wycc/devel/wukong-darjeeling/wukong/ComponentDefinitions/WuKongStandardLibrary.xml")
+        for cls in dom.getElementsByTagName("WuClass"):
+            if cls.attributes['name'].nodeValue == name:
+                return int(cls.attributes['id'].nodeValue)
+        print "Can not find class ID for ", name
+        return -1
+
 
 class Device:
     def __init__(self,addr,localaddr):

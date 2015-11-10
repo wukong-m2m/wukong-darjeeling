@@ -10,7 +10,7 @@ global site
 class URL(WuClass):
     PICTURE=0
     def __init__(self):
-        self.ID = 11005
+        self.ID = self.getWuClassID('URL')
     def udpate(self):
         print "receive URL"
         pass
