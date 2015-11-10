@@ -1,3 +1,7 @@
+import gevent
+from gevent.queue import Queue
+from gevent import monkey
+monkey.patch_all()
 import sys
 try:
     from pymongo import MongoClient
@@ -6,10 +10,6 @@ except:
     print "easy_install pymongo"
     sys.exit(-1)
 
-import gevent
-from gevent.queue import Queue
-from gevent import monkey
-monkey.patch_all()
 from txCarbonClient import CarbonClientService
 import json
 import ast
