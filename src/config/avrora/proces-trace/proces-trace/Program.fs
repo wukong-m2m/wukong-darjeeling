@@ -12,12 +12,22 @@ type Profilerdata = ProfilerdataXml.ExecutionCountPerInstruction
 type ProfiledInstruction = ProfilerdataXml.Instruction
 type DarjeelingInfusionHeaderXml = XmlProvider<"infusionheader-example.dih", Global=true>
 type Dih = DarjeelingInfusionHeaderXml.Dih
-type ResultAvrInstructions = { unopt : AvrInstruction;
+type ExecCounters = {
+        executions : int;
+        cycles : int; } with
+     static member (+) (x, y) = {
+        executions = x.executions + y.executions
+        cycles = x.cycles + y.cycles }
+     member x.average = if x.executions > 0
+                        then float x.cycles / float x.executions
+                        else 0.0
+
+type ResultAvrInstruction = { unopt : AvrInstruction;
                                opt : AvrInstruction option;
-                               cycles : int;
-                               executions : int; }
+                               counters : ExecCounters }
 type Result = { jvm : JavaInstruction;
-                avr : ResultAvrInstructions list; }
+                avr : ResultAvrInstruction list;
+                counters : ExecCounters }
 
 [<Literal>]
 let OPCODE_PUSH                    = 0x920F
@@ -134,41 +144,64 @@ let rec addCycles (jvmInstructions : JavaInstruction list)
                                                  let address = Convert.ToInt32(optValue.Address.Trim(), 16) in
                                                  let profiledInstruction = profilerdata |> List.find (fun x -> Convert.ToInt32(x.Address.Trim(), 16) = address) in
                                                      (profiledInstruction.Executions, profiledInstruction.Cycles)
-                  { unopt = unopt; opt = opt; executions = executions; cycles = cycles }) in
-            { jvm = jvm; avr = resultsWithCycles })
+                  { unopt = unopt; opt = opt; counters = { executions = executions; cycles = cycles } }) in
+            let avrCountersToJvmCounters a b =
+                if a.executions > 0 // When adding avr counters to form the jvm counters, sum the cycles, and take the first execution count we encounter
+                then { cycles = a.cycles+b.cycles; executions = a.executions }
+                else { cycles = a.cycles+b.cycles; executions = b.executions }
+            { jvm = jvm
+              avr = resultsWithCycles
+              counters = resultsWithCycles |> List.map (fun r -> r.counters) |> List.fold (avrCountersToJvmCounters) { executions=0; cycles=0 } })
 
 let resultToString (results : Result list) =
-    let cyclesForJavaInstruction (result : Result) =
-        result.avr |> List.map (fun r -> r.cycles) |> List.fold (+) 0
-    let executionsForJavaInstruction (result : Result) =
-        if result.avr.Count() = 0
-        then 0
-        else result.avr |> List.map (fun x -> x.executions) |> List.fold (max) 0
-    let avrInstOption2Text = function
-        | Some (x : AvrInstruction)
-            -> String.Format("{0:10}: {1,-15}", x.Address, x.Text)
-        | None -> ""
-    let printAvrResults (avrResults : ResultAvrInstructions list) =
-        avrResults |> List.map (
-                        fun r -> String.Format("        {0,-15} -> {1,-36} {2,8} {3,14}\n\r",
-                                               r.unopt.Text,
-                                               avrInstOption2Text r.opt,
-                                               r.executions,
-                                               r.cycles))
+    let jvmResultToString (result : Result) =
+        String.Format("{0,-60}exe:{1,8} cyc:{2,10} ({3:##.##} c/e)\n\r",
+                      result.jvm.Text,
+                      result.counters.executions,
+                      result.counters.cycles,
+                      result.counters.average)
+    let avrResultsToString (avrResults : ResultAvrInstruction list) =
+        let avrInstOption2Text = function
+            | Some (x : AvrInstruction)
+                -> String.Format("{0:10}: {1,-15}", x.Address, x.Text)
+            | None -> "" in
+        avrResults |> List.map (fun r -> String.Format("        {0,-15} -> {1,-36} {2,8} {3,14}\n\r",
+                                                      r.unopt.Text,
+                                                      avrInstOption2Text r.opt,
+                                                      r.counters.executions,
+                                                      r.counters.cycles))
                    |> List.fold (+) ""
-    results |> List.map (fun r -> let executions = executionsForJavaInstruction r in
-                                  let cycles = cyclesForJavaInstruction r in
-                                  let average = if executions > 0
-                                                then float cycles/float executions
-                                                else 0.0 in
-                                  String.Format("{0,-60}exe:{1,8} cyc:{2,10} ({3:##.##} c/e)\n\r{4}\n\r",
-                                                r.jvm.Text,
-                                                executions,
-                                                cycles,
-                                                average,
-                                                (printAvrResults r.avr)))
-            |> List.reduce (+)
-
+    let r1 = "--- COMPLETE LISTING\n\r"
+             + (results |> List.map (fun r -> (r |> jvmResultToString)
+                                              + (r.avr |> avrResultsToString))
+                        |> List.fold (+) "")
+    let r2 = "--- ONLY OPTIMISED AVR\n\r"
+             + (results |> List.map (fun r -> 
+                                     (r |> jvmResultToString)
+                                     + (r.avr |> List.filter (fun avr -> avr.opt.IsSome) |> avrResultsToString))
+                        |> List.fold (+) "")
+    let r3 = "--- ONLY JVM\n\r"
+             + (results |> List.map (fun r -> 
+                                     (r |> jvmResultToString))
+                        |> List.fold (+) "")
+    
+    let summedPerJvmOpcode = results |> List.map (fun r ->
+                                                     let opcode = (r.jvm.Text.Split().First()) in
+                                                     (opcode, r.counters))
+                                     |> List.toSeq
+                                     |> Seq.groupBy (fun (opcode, _) -> opcode)
+                                     |> Seq.map (fun (opcode, groupedResults) -> (opcode, (groupedResults |> Seq.fold (fun acc (_, counter) -> acc + counter) { executions=0; cycles=0 })))
+                                     |> Seq.toList
+                                     |> List.sortBy (fun (opcode, _) -> opcode)
+    let r4 = "--- SUMMED PER JVM OPCODE JVM\n\r"
+             + (summedPerJvmOpcode |> List.map (fun (opcode, counters) -> 
+                                                   String.Format("{0,-20} total exe:{1,8}   total cyc:{2,10}   avg:{3:##.##}\n\r",
+                                                                 opcode,
+                                                                 counters.executions,
+                                                                 counters.cycles,
+                                                                 counters.average))
+                                  |> List.fold (+) "")
+    r1 + "\n\r\n\r" + r2 + "\n\r\n\r" + r3 + "\n\r\n\r" + r4
 
 // Find the methodImplId for a certain method in a Darjeeling infusion header
 let findRtcbenchmarkMethodImplId (dih : Dih) methodName =
@@ -192,6 +225,7 @@ let processTrace (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profilerdata) =
     let matchedResult = matchOptUnopt optimisedAvr unoptimisedAvrWithJvmIndex
     let matchedResultWithCycles = addCycles (methodImpl.JavaInstructions |> Seq.toList) (profilerdata.Instructions |> Seq.toList) matchedResult
     resultToString matchedResultWithCycles
+
 
 let dih = DarjeelingInfusionHeaderXml.Load("/Users/niels/git/rtc/src/build/avrora/infusion-rtcbm_sort/rtcbm_sort.dih")
 let rtcdata = RtcdataXml.Load("/Users/niels/git/rtc/src/build/avrora/rtcdata.xml")
