@@ -4,3 +4,6 @@ djConfig {
 	app = 'apprtcbench'
 	appArchiveSize = 4096
 }
+if (!project.hasProperty('rtcbenchmark')) {
+	project.ext.rtcbenchmark = 'rtcbm_sort'
+}

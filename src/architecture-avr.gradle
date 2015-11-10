@@ -133,8 +133,8 @@ task avarice << {
 }
 
 task avrora(dependsOn: darjeeling) {
-    ext.rtcdataFile = "${buildDir}/rtcdata"
-    ext.profiledataFile = "${buildDir}/profilerdata"
+    ext.rtcdataFile = "${buildDir}/rtcdata.xml"
+    ext.profiledataFile = "${buildDir}/profilerdata.xml"
     def avroraJar = '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar'
 
     doLast {
@@ -146,8 +146,8 @@ task avrora(dependsOn: darjeeling) {
 }
 
 task avrora_if_necessary(dependsOn: darjeeling) {
-    ext.rtcdataFile = "${buildDir}/rtcdata.py"
-    ext.profiledataFile = "${buildDir}/profilerdata.py"
+    ext.rtcdataFile = "${buildDir}/rtcdata.xml"
+    ext.profiledataFile = "${buildDir}/profilerdata.xml"
     def avroraJar = '/Users/niels/git/avrora/jars/avrora-beta-1.7.117.jar'
 
     outputs.file rtcdataFile
@@ -162,23 +162,19 @@ task avrora_if_necessary(dependsOn: darjeeling) {
         }
     }
 }
-
 task avrora_analyse_trace(type:Exec, dependsOn: avrora_if_necessary) {
-    def pythonScript = file("${project.rootDir}/config/${djConfigname}/process_trace.py")
+    def fsxScript = "${project.rootDir}/config/${djConfigname}/proces-trace/proces-trace/ProcessTrace.fsx"
+    def dihFile = "${buildDir}/infusion-${rtcbenchmark}/${rtcbenchmark}.dih"
+    def analysedTraceOutput = "${project.rootDir}/config/${djConfigname}/${rtcbenchmark}.txt"
 
-    inputs.file pythonScript
-    inputs.file avrora.rtcdataFile
-    inputs.file avrora.profiledataFile
+    inputs.file fsxScript
+    inputs.file dihFile
+    inputs.file avrora_if_necessary.rtcdataFile
+    inputs.file avrora_if_necessary.profiledataFile
+    outputs.file analysedTraceOutput
 
-    executable pythonScript
-    args buildDir
-}
-
-task analyse_trace(type:Exec) {
-    def pythonScript = file("${project.rootDir}/config/${djConfigname}/process_trace.py")
-
-    executable pythonScript
-    args buildDir
+    executable "fsharpi"
+    args '--exec', fsxScript, dihFile, avrora_if_necessary.rtcdataFile, avrora_if_necessary.profiledataFile, analysedTraceOutput
 }
 
 task avrora_rtcdata_toscreen(dependsOn: darjeeling) << {

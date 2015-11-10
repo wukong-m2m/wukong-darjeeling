@@ -1,8 +1,8 @@
 ﻿<Properties StartupItem="proces-trace/proces-trace.fsproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="proces-trace/Program.fs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="proces-trace/ProcessTrace.fsx">
     <Files>
-      <File FileName="proces-trace/Program.fs" Line="198" Column="1" />
+      <File FileName="proces-trace/ProcessTrace.fsx" Line="2" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

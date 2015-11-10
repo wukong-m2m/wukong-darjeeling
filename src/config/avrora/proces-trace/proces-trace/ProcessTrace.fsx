@@ -1,4 +1,7 @@
-﻿open System
+﻿#r "binaries/FSharp.Data/FSharp.Data.dll"
+
+open System
+open System.IO
 open System.Linq
 open FSharp.Data
 
@@ -162,7 +165,7 @@ let resultToString (results : Result list) =
                       100.0 * float (counters.cycles) / float totalCycles,
                       counters.average)
     let jvmResultToString (result : Result) =
-        String.Format("{0,-60}{1}\n\r",
+        String.Format("{0,-60}{1}\r\n",
                       result.jvm.Text,
                       countersToString result.counters)
     let avrResultsToString (avrResults : ResultAvrInstruction list) =
@@ -170,22 +173,22 @@ let resultToString (results : Result list) =
             | Some (x : AvrInstruction)
                 -> String.Format("{0:10}: {1,-15}", x.Address, x.Text)
             | None -> "" in
-        avrResults |> List.map (fun r -> String.Format("        {0,-15} -> {1,-36} {2,8} {3,14}\n\r",
+        avrResults |> List.map (fun r -> String.Format("        {0,-15} -> {1,-36} {2,8} {3,14}\r\n",
                                                       r.unopt.Text,
                                                       avrInstOption2Text r.opt,
                                                       r.counters.executions,
                                                       r.counters.cycles))
                    |> List.fold (+) ""
-    let r1 = "--- COMPLETE LISTING\n\r"
+    let r1 = "--- COMPLETE LISTING\r\n"
              + (results |> List.map (fun r -> (r |> jvmResultToString)
                                               + (r.avr |> avrResultsToString))
                         |> List.fold (+) "")
-    let r2 = "--- ONLY OPTIMISED AVR\n\r"
+    let r2 = "--- ONLY OPTIMISED AVR\r\n"
              + (results |> List.map (fun r -> 
                                      (r |> jvmResultToString)
                                      + (r.avr |> List.filter (fun avr -> avr.opt.IsSome) |> avrResultsToString))
                         |> List.fold (+) "")
-    let r3 = "--- ONLY JVM\n\r"
+    let r3 = "--- ONLY JVM\r\n"
              + (results |> List.map (fun r -> 
                                      (r |> jvmResultToString))
                         |> List.fold (+) "")
@@ -208,23 +211,23 @@ let resultToString (results : Result list) =
     let summedPerJvmOpcode = results |> groupFold (fun r -> r.jvm.Text.Split().First()) (fun r -> r.counters) (+) { executions=0; cycles=0 }
                                      |> List.map (fun (opcode, counters) -> ((jvmCategory opcode), opcode, counters))
                                      |> List.sortBy (fun (category, opcode, _) -> category+opcode)
-    let r4 = "--- SUMMED PER JVM OPCODE\n\r"
+    let r4 = "--- SUMMED PER JVM OPCODE\r\n"
              + (summedPerJvmOpcode |> List.map (fun (category, opcode, counters) -> 
-                                                    String.Format("{0,-20}{1,-20} total {2}\n\r",
+                                                    String.Format("{0,-20}{1,-20} total {2}\r\n",
                                                                   category,
                                                                   opcode,
                                                                   countersToString(counters)))
                                   |> List.fold (+) "")
     let summedPerJvmCategory = summedPerJvmOpcode |> groupFold (fun (cat,op,cnt) -> cat) (fun (cat,op,cnt) -> cnt) (+) { executions=0; cycles=0 }
                                                   |> List.sortBy (fun (category, _) -> category)
-    let r5 = "--- SUMMED PER JVM CATEGORY\n\r"
+    let r5 = "--- SUMMED PER JVM CATEGORY\r\n"
              + (summedPerJvmCategory |> List.map (fun (category, counters) -> 
-                                                      String.Format("{0,-40} total {1}\n\r",
+                                                      String.Format("{0,-40} total {1}\r\n",
                                                                     category,
                                                                     countersToString(counters)))
                                      |> List.fold (+) "")
     let r6 = "--- TOTAL CYCLES: " + totalCycles.ToString()
-    r1 + "\n\r\n\r" + r2 + "\n\r\n\r" + r3 + "\n\r\n\r" + r4 + "\n\r\n\r" + r5 + "\n\r\n\r" + r6
+    r6 + "\r\n\r\n" + r5 + "\r\n\r\n" + r4 + "\r\n\r\n" + r3 + "\r\n\r\n" + r2 + "\r\n\r\n" + r1
 
 // Find the methodImplId for a certain method in a Darjeeling infusion header
 let findRtcbenchmarkMethodImplId (dih : Dih) methodName =
@@ -234,7 +237,7 @@ let findRtcbenchmarkMethodImplId (dih : Dih) methodName =
     methodImpl.EntityId
 
 
-// Pro
+// Process trace main function
 let processTrace (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profilerdata) =
     let methodImplId = findRtcbenchmarkMethodImplId dih "rtcbenchmark_measure_java_performance"
     let methodImpl = rtcdata.MethodImpls |> Seq.find (fun impl -> impl.MethodImplId = methodImplId)
@@ -249,10 +252,22 @@ let processTrace (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profilerdata) =
     let matchedResultWithCycles = addCycles (methodImpl.JavaInstructions |> Seq.toList) (profilerdata.Instructions |> Seq.toList) matchedResult
     resultToString matchedResultWithCycles
 
+let main(args : string[]) =
+    if (args.Count() >= 5)
+    then
+        let dih = DarjeelingInfusionHeaderXml.Load(Array.get args 1)
+        let rtcdata = RtcdataXml.Load(Array.get args 2)
+        let profilerdata = ProfilerdataXml.Load(Array.get args 3)
+        let results = processTrace dih rtcdata profilerdata
+        File.WriteAllText ((Array.get args 4), results)
+        Console.Error.WriteLine ("Wrote output to " + (Array.get args 4))
+        1
+    else
+        let dih = DarjeelingInfusionHeaderXml.Load("/Users/niels/git/rtc/src/build/avrora/infusion-rtcbm_sort/rtcbm_sort.dih")
+        let rtcdata = RtcdataXml.Load("/Users/niels/git/rtc/src/build/avrora/rtcdata.xml")
+        let profilerdata = ProfilerdataXml.Load("/Users/niels/git/rtc/src/build/avrora/profilerdata.xml")
+        let results = processTrace dih rtcdata profilerdata
+        Console.WriteLine (results)
+        0
 
-let dih = DarjeelingInfusionHeaderXml.Load("/Users/niels/git/rtc/src/build/avrora/infusion-rtcbm_sort/rtcbm_sort.dih")
-let rtcdata = RtcdataXml.Load("/Users/niels/git/rtc/src/build/avrora/rtcdata.xml")
-let profilerdata = ProfilerdataXml.Load("/Users/niels/git/rtc/src/build/avrora/profilerdata.xml")
-
-Console.WriteLine (processTrace dih rtcdata profilerdata)
-
+main(fsi.CommandLineArgs)
