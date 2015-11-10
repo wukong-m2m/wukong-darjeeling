@@ -154,12 +154,17 @@ let rec addCycles (jvmInstructions : JavaInstruction list)
               counters = resultsWithCycles |> List.map (fun r -> r.counters) |> List.fold (avrCountersToJvmCounters) { executions=0; cycles=0 } })
 
 let resultToString (results : Result list) =
+    let totalCycles = results |> List.sumBy (fun r -> (r.counters.cycles))
+    let countersToString (counters : ExecCounters) =
+        String.Format("exe:{0,8} cyc:{1,10} {2:00.000}% avg: {3:00.00}",
+                      counters.executions,
+                      counters.cycles,
+                      100.0 * float (counters.cycles) / float totalCycles,
+                      counters.average)
     let jvmResultToString (result : Result) =
-        String.Format("{0,-60}exe:{1,8} cyc:{2,10} ({3:##.##} c/e)\n\r",
+        String.Format("{0,-60}{1}\n\r",
                       result.jvm.Text,
-                      result.counters.executions,
-                      result.counters.cycles,
-                      result.counters.average)
+                      countersToString result.counters)
     let avrResultsToString (avrResults : ResultAvrInstruction list) =
         let avrInstOption2Text = function
             | Some (x : AvrInstruction)
@@ -184,24 +189,42 @@ let resultToString (results : Result list) =
              + (results |> List.map (fun r -> 
                                      (r |> jvmResultToString))
                         |> List.fold (+) "")
-    
-    let summedPerJvmOpcode = results |> List.map (fun r ->
-                                                     let opcode = (r.jvm.Text.Split().First()) in
-                                                     (opcode, r.counters))
-                                     |> List.toSeq
-                                     |> Seq.groupBy (fun (opcode, _) -> opcode)
-                                     |> Seq.map (fun (opcode, groupedResults) -> (opcode, (groupedResults |> Seq.fold (fun acc (_, counter) -> acc + counter) { executions=0; cycles=0 })))
-                                     |> Seq.toList
-                                     |> List.sortBy (fun (opcode, _) -> opcode)
-    let r4 = "--- SUMMED PER JVM OPCODE JVM\n\r"
-             + (summedPerJvmOpcode |> List.map (fun (opcode, counters) -> 
-                                                   String.Format("{0,-20} total exe:{1,8}   total cyc:{2,10}   avg:{3:##.##}\n\r",
-                                                                 opcode,
-                                                                 counters.executions,
-                                                                 counters.cycles,
-                                                                 counters.average))
+    let jvmCategory opcode =
+        let categories = 
+                [("1) Ref stack ld/st", ["JVM_ALOAD_0"]);
+                 ("2) Int stack ld/st", ["JVM_ILOAD"; "JVM_ILOAD_0"; "JVM_ILOAD_2"; "JVM_ISTORE"; "JVM_ISTORE_0"; "JVM_ISTORE_2"; "JVM_SLOAD"; "JVM_SSTORE"]);
+                 ("3) Constant load", ["JVM_ICONST_0"; "JVM_ICONST_1"; "JVM_SIPUSH"]);
+                 ("4) Array ld/st", ["JVM_SALOAD"; "JVM_SASTORE"]);
+                 ("5) Branches", ["JVM_BRTARGET"; "JVM_GOTO"; "JVM_IF_ICMPGE"; "JVM_IF_SCMPLE"]);
+                 ("6) Math", ["JVM_IINC"; "JVM_ISUB"])] in
+        if categories.Any(fun (cat, opcodes) -> opcodes.Contains(opcode))
+        then categories.First(fun (cat, opcodes) -> opcodes.Contains(opcode)) |> fst
+        else "7) Others"
+    let groupFold keyFunc valueFunc foldFunc foldInitAcc results =
+        results |> List.toSeq
+                |> Seq.groupBy keyFunc
+                |> Seq.map (fun (key, groupedResults) -> (key, groupedResults |> Seq.map valueFunc |> Seq.fold foldFunc foldInitAcc))
+                |> Seq.toList
+    let summedPerJvmOpcode = results |> groupFold (fun r -> r.jvm.Text.Split().First()) (fun r -> r.counters) (+) { executions=0; cycles=0 }
+                                     |> List.map (fun (opcode, counters) -> ((jvmCategory opcode), opcode, counters))
+                                     |> List.sortBy (fun (category, opcode, _) -> category+opcode)
+    let r4 = "--- SUMMED PER JVM OPCODE\n\r"
+             + (summedPerJvmOpcode |> List.map (fun (category, opcode, counters) -> 
+                                                    String.Format("{0,-20}{1,-20} total {2}\n\r",
+                                                                  category,
+                                                                  opcode,
+                                                                  countersToString(counters)))
                                   |> List.fold (+) "")
-    r1 + "\n\r\n\r" + r2 + "\n\r\n\r" + r3 + "\n\r\n\r" + r4
+    let summedPerJvmCategory = summedPerJvmOpcode |> groupFold (fun (cat,op,cnt) -> cat) (fun (cat,op,cnt) -> cnt) (+) { executions=0; cycles=0 }
+                                                  |> List.sortBy (fun (category, _) -> category)
+    let r5 = "--- SUMMED PER JVM CATEGORY\n\r"
+             + (summedPerJvmCategory |> List.map (fun (category, counters) -> 
+                                                      String.Format("{0,-40} total {1}\n\r",
+                                                                    category,
+                                                                    countersToString(counters)))
+                                     |> List.fold (+) "")
+    let r6 = "--- TOTAL CYCLES: " + totalCycles.ToString()
+    r1 + "\n\r\n\r" + r2 + "\n\r\n\r" + r3 + "\n\r\n\r" + r4 + "\n\r\n\r" + r5 + "\n\r\n\r" + r6
 
 // Find the methodImplId for a certain method in a Darjeeling infusion header
 let findRtcbenchmarkMethodImplId (dih : Dih) methodName =
