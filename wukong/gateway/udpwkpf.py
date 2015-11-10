@@ -1,6 +1,6 @@
 import socket
 import struct
-import sys
+import sys,os
 import mptnUtils as MPTN
 import uuid
 import ipaddress
@@ -422,7 +422,11 @@ class WuClass:
     def getProperty(self,port,pID):
         return self.wkpf.getProperty(port,pID)
     def getWuClassID(self,name):
-        dom = xml.dom.minidom.parse("/home/wycc/devel/wukong-darjeeling/wukong/ComponentDefinitions/WuKongStandardLibrary.xml")
+        for p in sys.path:
+            path = p+"/../ComponentDefinitions/WuKongStandardLibrary.xml"
+            if os.path.isfile(path):
+                break
+        dom = xml.dom.minidom.parse(path)
         for cls in dom.getElementsByTagName("WuClass"):
             if cls.attributes['name'].nodeValue == name:
                 return int(cls.attributes['id'].nodeValue)
