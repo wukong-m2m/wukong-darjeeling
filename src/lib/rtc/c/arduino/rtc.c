@@ -1805,34 +1805,34 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 // followed by a branch target index used when compiling to native code.
                 jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
                 pc += 4;
-                emit_POP(R22);
-                emit_POP(R23);
                 emit_POP(R24);
                 emit_POP(R25);
+                emit_POP(R22);
+                emit_POP(R23);
                 // Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
                 if (opcode == JVM_IF_SCMPEQ) {
-                    emit_CP(R24, R22);
-                    emit_CPC(R25, R23);
+                    emit_CP(R22, R24);
+                    emit_CPC(R23, R25);
                     emit_x_branchtag(OPCODE_BREQ, jvm_operand_word);
                 } else if (opcode == JVM_IF_SCMPNE) {
-                    emit_CP(R24, R22);
-                    emit_CPC(R25, R23);
+                    emit_CP(R22, R24);
+                    emit_CPC(R23, R25);
                     emit_x_branchtag(OPCODE_BRNE, jvm_operand_word);
                 } else if (opcode == JVM_IF_SCMPLT) {
-                    emit_CP(R24, R22);
-                    emit_CPC(R25, R23);
+                    emit_CP(R22, R24);
+                    emit_CPC(R23, R25);
                     emit_x_branchtag(OPCODE_BRLT, jvm_operand_word);
                 } else if (opcode == JVM_IF_SCMPGE) {
-                    emit_CP(R24, R22);
-                    emit_CPC(R25, R23);
+                    emit_CP(R22, R24);
+                    emit_CPC(R23, R25);
                     emit_x_branchtag(OPCODE_BRGE, jvm_operand_word);
                 } else if (opcode == JVM_IF_SCMPGT) {
-                    emit_CP(R22, R24);
-                    emit_CPC(R23, R25);
+                    emit_CP(R24, R22);
+                    emit_CPC(R25, R23);
                     emit_x_branchtag(OPCODE_BRLT, jvm_operand_word);
                 } else if (opcode == JVM_IF_SCMPLE) {
-                    emit_CP(R22, R24);
-                    emit_CPC(R23, R25);
+                    emit_CP(R24, R22);
+                    emit_CPC(R25, R23);
                     emit_x_branchtag(OPCODE_BRGE, jvm_operand_word);
                 }
             break;
@@ -1846,49 +1846,49 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 // followed by a branch target index used when compiling to native code.
                 jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
                 pc += 4;
-                emit_POP(R18);
-                emit_POP(R19);
-                emit_POP(R20);
-                emit_POP(R21);
                 emit_POP(R22);
                 emit_POP(R23);
                 emit_POP(R24);
                 emit_POP(R25);
+                emit_POP(R18);
+                emit_POP(R19);
+                emit_POP(R20);
+                emit_POP(R21);
                 if (opcode == JVM_IF_ICMPEQ) {
-                    emit_CP(R22, R18);
-                    emit_CPC(R23, R19);
-                    emit_CPC(R24, R20);
-                    emit_CPC(R25, R21);
+                    emit_CP(R18, R22);
+                    emit_CPC(R19, R23);
+                    emit_CPC(R20, R24);
+                    emit_CPC(R21, R25);
                     emit_x_branchtag(OPCODE_BREQ, jvm_operand_word);
                 } else if (opcode == JVM_IF_ICMPNE) {
-                    emit_CP(R22, R18);
-                    emit_CPC(R23, R19);
-                    emit_CPC(R24, R20);
-                    emit_CPC(R25, R21);
+                    emit_CP(R18, R22);
+                    emit_CPC(R19, R23);
+                    emit_CPC(R20, R24);
+                    emit_CPC(R21, R25);
                     emit_x_branchtag(OPCODE_BRNE, jvm_operand_word);
                 } else if (opcode == JVM_IF_ICMPLT) {
-                    emit_CP(R22, R18);
-                    emit_CPC(R23, R19);
-                    emit_CPC(R24, R20);
-                    emit_CPC(R25, R21);
+                    emit_CP(R18, R22);
+                    emit_CPC(R19, R23);
+                    emit_CPC(R20, R24);
+                    emit_CPC(R21, R25);
                     emit_x_branchtag(OPCODE_BRLT, jvm_operand_word);
                 } else if (opcode == JVM_IF_ICMPGE) {
+                    emit_CP(R18, R22);
+                    emit_CPC(R19, R23);
+                    emit_CPC(R20, R24);
+                    emit_CPC(R21, R25);
+                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word);
+                } else if (opcode == JVM_IF_ICMPGT) {
                     emit_CP(R22, R18);
                     emit_CPC(R23, R19);
                     emit_CPC(R24, R20);
                     emit_CPC(R25, R21);
-                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word);
-                } else if (opcode == JVM_IF_ICMPGT) {
-                    emit_CP(R18, R22);
-                    emit_CPC(R19, R23);
-                    emit_CPC(R20, R24);
-                    emit_CPC(R21, R25);
                     emit_x_branchtag(OPCODE_BRLT, jvm_operand_word);
                 } else if (opcode == JVM_IF_ICMPLE) {
-                    emit_CP(R18, R22);
-                    emit_CPC(R19, R23);
-                    emit_CPC(R20, R24);
-                    emit_CPC(R21, R25);
+                    emit_CP(R22, R18);
+                    emit_CPC(R23, R19);
+                    emit_CPC(R24, R20);
+                    emit_CPC(R25, R21);
                     emit_x_branchtag(OPCODE_BRGE, jvm_operand_word);
                 }
             break;
