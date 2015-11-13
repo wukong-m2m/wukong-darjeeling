@@ -614,6 +614,15 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_POP(R24);
                 emit_POP(R25);
             break;
+            case JVM_IDUP:
+                // IDUP duplicates the top one SLOTS on the integer stack, not the top int. So IDUP2 is actually IDUP, and IDUP is actually SDUP.
+                emit_POP(R24);
+                emit_POP(R25);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+                emit_PUSH(R25);
+                emit_PUSH(R24);
+            break;
             case JVM_IDUP2:
                 // IDUP2 duplicates the top two SLOTS on the integer stack, not the top two ints. So IDUP2 is actually IDUP, and IDUP is actually SDUP.
                 emit_POP(R22);
