@@ -14,5 +14,9 @@ gdj clean
 gdj avrora_analyse_trace -Prtcbenchmark=bm_xxtea
 gdj clean
 gdj avrora_analyse_trace -Prtcbenchmark=bm_rc5
+gdj clean
+gdj avrora_analyse_trace -Prtcbenchmark=bm_binsrch
+gdj clean
+gdj avrora_analyse_trace -Prtcbenchmark=bm_binsrcho
 
 

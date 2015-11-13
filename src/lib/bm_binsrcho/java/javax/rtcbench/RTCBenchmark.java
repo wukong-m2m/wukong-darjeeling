@@ -34,14 +34,28 @@ public class RTCBenchmark {
             int high = numbers.length - 1;
             int mid;
             while (low <= high) {
-                mid = (low + high) / 2;
-                if (numbers[mid] < toFind) {
+                // mid = (low + high) / 2;
+                mid = (low + high) >>> 1; // This is usually much faster than / 2. Any optimising compiler should know this.
+
+                // short number_mid;
+                // if ((number_mid=numbers[mid]) < toFind) {
+                short number_mid;
+                if ((number_mid=numbers[mid]) < toFind) {
                     low = mid + 1;
-                } else if (numbers[mid] > toFind) {
+                } else if (number_mid > toFind) {
                     high = mid - 1;
                 } else {
                     break; // Found. Would return from here in a normal search, but for this benchmark we just want to try many numbers.
                 }
+
+                // The number_mid optimisation helps AOT, but hurts the interpreter. Apparently array access is cheap compared to accessing locals in the interpreter?
+                // if (numbers[mid] < toFind) {
+                //     low = mid + 1;
+                // } else if (numbers[mid] > toFind) {
+                //     high = mid - 1;
+                // } else {
+                //     break; // Found. Would return from here in a normal search, but for this benchmark we just want to try many numbers.
+                // }
             }
         }
 
