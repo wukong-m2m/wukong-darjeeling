@@ -1,5 +1,5 @@
 djlibsource {
-    rtcbm_rc5 {
+    bm_xxtea {
         cDependencies = [ 'darjeeling3' ]
         javaDependencies = [ 'base', 'darjeeling3', 'rtc' ]
     }

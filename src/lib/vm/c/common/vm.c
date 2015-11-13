@@ -78,11 +78,9 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 		{
 			// Look for any rtcbench or rtctest1
 			dj_di_pointer name = dj_di_header_getInfusionName(finger->header);
-			if ((      dj_di_getU8(name+0)=='r'
-					&& dj_di_getU8(name+1)=='t'
-					&& dj_di_getU8(name+2)=='c'
-					&& dj_di_getU8(name+3)=='b'
-					&& dj_di_getU8(name+4)=='m'
+			if ((      dj_di_getU8(name+0)=='b'
+					&& dj_di_getU8(name+1)=='m'
+					&& dj_di_getU8(name+2)=='_' // A AOT benchmark library
 				) || (
 				       dj_di_getU8(name+0)=='r'
 					&& dj_di_getU8(name+1)=='t'

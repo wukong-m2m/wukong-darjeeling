@@ -1,5 +1,5 @@
 djlibsource {
-    rtcbm_xxtea {
+    bm_sort {
         cDependencies = [ 'darjeeling3' ]
         javaDependencies = [ 'base', 'darjeeling3', 'rtc' ]
     }

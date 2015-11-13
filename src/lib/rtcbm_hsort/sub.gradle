@@ -1,5 +1,5 @@
 djlibsource {
-    rtcbm_hsort {
+    bm_hsort {
         cDependencies = [ 'darjeeling3' ]
         javaDependencies = [ 'base', 'darjeeling3', 'rtc' ]
     }

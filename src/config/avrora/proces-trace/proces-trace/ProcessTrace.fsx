@@ -271,7 +271,7 @@ let main(args : string[]) =
         Console.Error.WriteLine ("Wrote output to " + (Array.get args 4))
         1
     else
-        let dih = DarjeelingInfusionHeaderXml.Load("/Users/niels/git/rtc/src/build/avrora/infusion-rtcbm_rc5/rtcbm_rc5.dih")
+        let dih = DarjeelingInfusionHeaderXml.Load("/Users/niels/git/rtc/src/build/avrora/infusion-bm_rc5/bm_rc5.dih")
         let rtcdata = RtcdataXml.Load("/Users/niels/git/rtc/src/build/avrora/rtcdata.xml")
         let profilerdata = ProfilerdataXml.Load("/Users/niels/git/rtc/src/build/avrora/profilerdata.xml")
         let results = processTrace dih rtcdata profilerdata

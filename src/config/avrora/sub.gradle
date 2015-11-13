@@ -5,5 +5,5 @@ djConfig {
 	appArchiveSize = 4096
 }
 if (!project.hasProperty('rtcbenchmark')) {
-	project.ext.rtcbenchmark = 'rtcbm_sort'
+	project.ext.rtcbenchmark = 'bm_sort'
 }

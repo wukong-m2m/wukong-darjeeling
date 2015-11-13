@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <dih>
   <infusion>
-    <header entrypoint="255" infusionformatversion="2" infusionversion="0" name="rtcbm_sort"/>
+    <header entrypoint="255" infusionformatversion="2" infusionversion="0" name="bm_sort"/>
     <classlist>
       <classdef entity_id="0" name="javax.rtcbench.RTCBenchmark" superclass.entity_id="25" superclass.infusion="base" superclass.name="java.lang.Object">
-        <method methoddef.entity_id="0" methoddef.infusion="base" methodimpl.entity_id="0" methodimpl.infusion="rtcbm_sort"/>
+        <method methoddef.entity_id="0" methoddef.infusion="base" methodimpl.entity_id="0" methodimpl.infusion="bm_sort"/>
       </classdef>
     </classlist>
     <methoddeflist>
@@ -14,16 +14,16 @@
       <methoddef entity_id="3" name="rtcbenchmark_measure_java_performance" signature="([S)V"/>
     </methoddeflist>
     <methodimpllist>
-      <methodimpl entity_id="0" integer_argument_count="0" methoddef.entity_id="0" methoddef.infusion="base" parentclass.entity_id="0" parentclass.infusion="rtcbm_sort" reference_argument_count="0"/>
-      <methodimpl entity_id="1" integer_argument_count="0" methoddef.entity_id="0" methoddef.infusion="rtcbm_sort" parentclass.entity_id="0" parentclass.infusion="rtcbm_sort" reference_argument_count="0"/>
-      <methodimpl entity_id="2" integer_argument_count="0" methoddef.entity_id="1" methoddef.infusion="rtcbm_sort" parentclass.entity_id="0" parentclass.infusion="rtcbm_sort" reference_argument_count="0"/>
-      <methodimpl entity_id="3" integer_argument_count="0" methoddef.entity_id="2" methoddef.infusion="rtcbm_sort" parentclass.entity_id="0" parentclass.infusion="rtcbm_sort" reference_argument_count="1"/>
-      <methodimpl entity_id="4" integer_argument_count="0" methoddef.entity_id="3" methoddef.infusion="rtcbm_sort" parentclass.entity_id="0" parentclass.infusion="rtcbm_sort" reference_argument_count="1"/>
-      <methodimpl entity_id="5" integer_argument_count="0" methoddef.entity_id="25" methoddef.infusion="base" parentclass.entity_id="0" parentclass.infusion="rtcbm_sort" reference_argument_count="0"/>
+      <methodimpl entity_id="0" integer_argument_count="0" methoddef.entity_id="0" methoddef.infusion="base" parentclass.entity_id="0" parentclass.infusion="bm_sort" reference_argument_count="0"/>
+      <methodimpl entity_id="1" integer_argument_count="0" methoddef.entity_id="0" methoddef.infusion="bm_sort" parentclass.entity_id="0" parentclass.infusion="bm_sort" reference_argument_count="0"/>
+      <methodimpl entity_id="2" integer_argument_count="0" methoddef.entity_id="1" methoddef.infusion="bm_sort" parentclass.entity_id="0" parentclass.infusion="bm_sort" reference_argument_count="0"/>
+      <methodimpl entity_id="3" integer_argument_count="0" methoddef.entity_id="2" methoddef.infusion="bm_sort" parentclass.entity_id="0" parentclass.infusion="bm_sort" reference_argument_count="1"/>
+      <methodimpl entity_id="4" integer_argument_count="0" methoddef.entity_id="3" methoddef.infusion="bm_sort" parentclass.entity_id="0" parentclass.infusion="bm_sort" reference_argument_count="1"/>
+      <methodimpl entity_id="5" integer_argument_count="0" methoddef.entity_id="25" methoddef.infusion="base" parentclass.entity_id="0" parentclass.infusion="bm_sort" reference_argument_count="0"/>
     </methodimpllist>
     <staticfieldlist>
-      <fielddef entity_id="0" name="NUMNUMBERS" parentclass.entity_id="0" parentclass.infusion="rtcbm_sort" signature="S" type="Short"/>
-      <fielddef entity_id="0" name="name" parentclass.entity_id="0" parentclass.infusion="rtcbm_sort" signature="Ljava/lang/String;" type="Ref"/>
+      <fielddef entity_id="0" name="NUMNUMBERS" parentclass.entity_id="0" parentclass.infusion="bm_sort" signature="S" type="Short"/>
+      <fielddef entity_id="0" name="name" parentclass.entity_id="0" parentclass.infusion="bm_sort" signature="Ljava/lang/String;" type="Ref"/>
     </staticfieldlist>
     <stringtable>
       <string entity_id="0" value="OBJECT"/>

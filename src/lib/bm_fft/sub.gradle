@@ -1,5 +1,5 @@
 djlibsource {
-    rtcbm_sorto {
+    bm_fft {
         cDependencies = [ 'darjeeling3' ]
         javaDependencies = [ 'base', 'darjeeling3', 'rtc' ]
     }

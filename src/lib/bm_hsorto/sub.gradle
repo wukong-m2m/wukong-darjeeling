@@ -1,5 +1,5 @@
 djlibsource {
-    rtcbm_hsorto {
+    bm_hsorto {
         cDependencies = [ 'darjeeling3' ]
         javaDependencies = [ 'base', 'darjeeling3', 'rtc' ]
     }

@@ -2,11 +2,13 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
   <MonoDevelop.Ide.Workbench ActiveDocument="proces-trace/ProcessTrace.fsx">
     <Files>
-      <File FileName="proces-trace/ProcessTrace.fsx" Line="2" Column="1" />
+      <File FileName="proces-trace/ProcessTrace.fsx" Line="198" Column="45" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint file="/Users/niels/git/rtc/src/config/avrora/proces-trace/proces-trace/ProcessTrace.fsx" line="137" column="1" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>
