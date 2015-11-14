@@ -1,1 +1,1 @@
-void bm_binsrcho_init(void) {}
+void bm_binsrchO_init(void) {}

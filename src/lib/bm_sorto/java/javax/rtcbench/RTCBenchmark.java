@@ -5,7 +5,7 @@ import javax.darjeeling.Stopwatch;
 public class RTCBenchmark {
 	private final static short NUMNUMBERS = 256;
 
-    public static String name = "BUBBLESORT";
+    public static String name = "BUBBLESORT OPTIMISED";
     public static native void test_native();
     public static void test_java(){
 		short numbers[] = new short[NUMNUMBERS]; // Not including this in the timing since we can't do it in C

@@ -11,7 +11,7 @@ import javax.darjeeling.Stopwatch;
 public class RTCBenchmark {
     private final static short NUMNUMBERS = 100;
 
-    public static String name = "BINARY SEARCH";
+    public static String name = "BINARY SEARCH NOT OPTIMISED";
     public static native void test_native();
     public static void test_java(){
         short numbers[] = new short[NUMNUMBERS]; // Not including this in the timing since we can't do it in C

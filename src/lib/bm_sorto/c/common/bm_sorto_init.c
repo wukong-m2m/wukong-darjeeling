@@ -1,1 +1,1 @@
-void bm_sorto_init(void) {}
+void bm_sortO_init(void) {}

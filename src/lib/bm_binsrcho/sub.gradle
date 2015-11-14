@@ -1,5 +1,5 @@
 djlibsource {
-    bm_binsrcho {
+    bm_binsrchO {
         cDependencies = [ 'darjeeling3' ]
         javaDependencies = [ 'base', 'darjeeling3', 'rtc' ]
     }
