@@ -45,15 +45,23 @@ public class RTCBenchApp
 		nop();
 		Stopwatch.measure();
 
+		Stopwatch.setTimerNumber((byte)101);
 		System.out.println("native:");
 		RTCBenchmark.test_native();
-		System.out.println("rtc:");
+		System.out.println("native done.\r\n");
+
+		Stopwatch.setTimerNumber((byte)102);
+		System.out.println("rtc");
 		RTC.useRTC(true);
 		RTCBenchmark.test_java();
+		System.out.println("rtc done.\r\n");
+
+
+		Stopwatch.setTimerNumber((byte)103);
 		System.out.println("java:");
 		RTC.useRTC(false);
 		RTCBenchmark.test_java();
-		System.out.println("done.");
+		System.out.println("java done.\r\n");
 
 		System.out.println("FINISHED BENCHMARK: " + RTCBenchmark.name);
 	}

@@ -148,20 +148,34 @@ task avrora(dependsOn: darjeeling) {
 task avrora_if_necessary(dependsOn: darjeeling) {
     ext.rtcdataFile = "${buildDir}/rtcdata.xml"
     ext.profiledataFile = "${buildDir}/profilerdata.xml"
+    ext.stdoutLogFile = "${buildDir}/stdout.txt"
     def avroraJar = '/Users/niels/src/avrora/jars/avrora-beta-1.7.117.jar'
 
     outputs.file rtcdataFile
     outputs.file profiledataFile
+    outputs.file stdoutLogFile
     inputs.file architectureSpecificAssemble.djTargetElfFile
     inputs.file avroraJar
+
+    project.ext.stdoutLog = ""
+    logging.addStandardOutputListener(
+        new StandardOutputListener() {
+            @Override
+            void onOutput(CharSequence charSequence) {
+                project.ext.stdoutLog += charSequence.toString()
+            }
+        }
+    )
 
     doLast {
         javaexec {
             main '-jar'
             args avroraJar, '-monitors=c-timer,c-print,rtc,profile', "-rtc-data-filename=${rtcdataFile}", "-profile-data-filename=${profiledataFile}", '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
         }
+        new File("${buildDir}/stdoutLog.txt").write(project.ext.stdoutLog)
     }
 }
+
 task avrora_analyse_trace(type:Exec, dependsOn: avrora_if_necessary) {
     def fsxScript = "${project.rootDir}/config/${djConfigname}/proces-trace/proces-trace/ProcessTrace.fsx"
     def dihFile = "${buildDir}/infusion-${rtcbenchmark}/${rtcbenchmark}.dih"
