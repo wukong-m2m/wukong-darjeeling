@@ -44,6 +44,7 @@ class WKPF(DatagramProtocol):
     REPROG_REBOOT           = 0x16
     REPROG_REBOOT_R         = 0x17
 
+
     WKREPROG_OK             = 0
     WKREPROG_REQUEST_RETRANSMIT = 1
     WKREPROG_TOOLARGE       = 2
@@ -72,7 +73,9 @@ class WKPF(DatagramProtocol):
         self.mptnaddr = 0
         self.nodeid=0
         self.location = 'Default'
-        self.properties=[]
+        self.properties= []
+        for i in range(0,100):
+            self.properties.append([])
         self.tablebin=[]
         self.components=[]
         self.links=[]
@@ -196,12 +199,12 @@ class WKPF(DatagramProtocol):
             n_pack = ord(payload[0])
             total = 1
             n_item = len(self.device.classes.keys())
-            msg = struct.pack('2B',total,n_item)
+            msg = struct.pack('3B',0,total,n_item)
             p=struct.pack('3B',WKPF.GET_WUCLASS_LIST_R,seq&255, (seq>>8)&255)+msg
-            end
 
             for CID in self.device.classes.keys():
-                p = p + struct.pack('3B', (CID>>8)&0xff, CID&0xff, 0)
+                CID = int(CID)
+                p = p + struct.pack('3B', (CID>>8)&0xff, CID&0xff, self.device.classtypes[CID])
             self.send(src_id,p)
         elif msgid == WKPF.GET_WUOBJECT_LIST:
             n_pack = ord(payload[0])
@@ -212,9 +215,8 @@ class WKPF(DatagramProtocol):
             for i in range(0,len(self.device.objects)):
                 obj = self.device.objects[i]
                 CID = obj.getID()
-                p = p + struct.pack('4B', i, (CID>>8)&0xff, CID&0xff, 0)
+                p = p + struct.pack('4B', obj.port, (CID>>8)&0xff, CID&0xff, 0)
 
-            print map(ord,p)
             self.send(src_id,p)
         elif msgid == WKPF.REPROG_OPEN:
             fielid = ord(payload[0])
@@ -296,10 +298,10 @@ class WKPF(DatagramProtocol):
                 self.links['%d.%d'%(src_id,s_pID)].append([dest_id,d_pID])
             else:
                 self.links['%d.%d'%(src_id,s_pID)]= [[dest_id,d_pID]]
-    def addProperties(self,n):
+    def addProperties(self,port,n):
         props = []
         for i in range(0,n): props.append({'value':0,'dirty':False})
-        self.properties.append(props)
+        self.properties[port] = props
     def checkDirty(self,port,pID):
         for i in range(self.last_dirty_ptr,len(self.properties)):
             if self.properties[self.last_dirty_ptr]['dirty']:
@@ -386,7 +388,18 @@ class WKPF(DatagramProtocol):
                 port = data[addr+3+j*5+4]
                 print '    addr %x at port %d' % (mptnaddr,port)
                 com['ports'].append([mptnaddr,port])
+                self.device.checkObject(clsid, port)
+
             self.components.append(com)
+    def initObjects(self):
+        for i in range(0,len(self.components)):
+            com = self.components[i]
+            for j in range(0,len(com['ports'])):
+                p = com['ports'][j]
+                addr = p[0]
+                port = p[1]
+                self.device.checkObject(int(com['ID']), port)
+
 
     def send(self,dest_id,payload):
         src_id = self.mptnaddr
@@ -441,7 +454,7 @@ class WuClass:
         obj = self.__class__
         for cls in dom.getElementsByTagName("WuClass"):
             if cls.attributes['name'].nodeValue == name:
-                self.ID = cls.attributes['id']
+                self.ID = int(cls.attributes['id'].nodeValue)
                 ID = 0
                 for p in cls.getElementsByTagName('property'):
                     obj.__dict__[p.attributes['name'].nodeValue] = ID
@@ -453,18 +466,44 @@ class WuClass:
 
 
 class Device:
+    FLAG_APP_CAN_CREATE_INSTANCE = 2
+    FLAG_VIRTUAL = 1
     def __init__(self,addr,localaddr):
         tcp_address = localaddr.split(":")
         address = MPTN.ID_FROM_STRING(tcp_address[0])
         port = int(tcp_address[1])
         self.wkpf = WKPF(self,address,port,addr)
         self.classes={}
-        self.objects=[]
+        self.classtypes = {}
+        self.objects= []
         self.init()
+        self.wkpf.initObjects()
         reactor.callLater(1,self.updateTheNextDirtyObject)
         pass
+    def checkObject(self,clsid,port):
+        i = 0
+        while i < len(self.objects):
+            obj = self.objects[i]
+            if obj.port == port:
+                break;
+            i = i + 1
+        if i == len(self.objects):
+            print 'add object class %d at port %d' % (clsid,port)
+            try:
+                cls = self.classes[clsid] 
+                if cls:
+                    obj = cls.newObject()
+                    obj.port = port
+                    self.wkpf.addProperties(obj.port,5)
+                    self.objects.append(obj)
+            except:
+                traceback.print_exc()
+                print "Can not find class %d" % clsid
+            
     def updateTheNextDirtyObject(self):
         for obj in self.objects:
+            print obj.port
+            print self.wkpf.properties
             for i in range(0,len(self.wkpf.properties[obj.port])):
                 p = self.wkpf.properties[obj.port][i]
                 if p['dirty'] == True:
@@ -479,16 +518,17 @@ class Device:
     def getPortClassID(self,port):
         return self.objects[port].cls.ID
 
-    def addClass(self,cls):
+    def addClass(self,cls,flags):
         self.classes[cls.ID] = cls
+        self.classtypes[cls.ID] =  flags
         cls.wkpf = self.wkpf
     def addObject(self,ID):
         cls = self.classes[ID]
-        self.wkpf.addProperties(3)
         if cls:
             obj = cls.newObject()
-            obj.port = len(self.objects)
-            self.objects.append(obj)
+            obj.port = len(self.objects)+1
+            self.wkpf.addProperties(obj.port,5)
+            self.objects[obj.port] = obj
             return obj
         return None
     def setProperty(self,pID, val):
