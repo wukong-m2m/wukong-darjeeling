@@ -418,6 +418,7 @@ class WuObject:
     def getID(self):
         return self.cls.ID
     def setProperty(self,pID,val):
+        print 'wuobject'
         self.cls.setProperty(self.port,pID,val)
     def getProperty(self,pID):
         return self.cls.getProperty(self.port,pID)
@@ -445,6 +446,7 @@ class WuClass:
                 return int(cls.attributes['id'].nodeValue)
         print "Can not find class ID for ", name
         return -1
+
     def loadClass(self,name):
         for p in sys.path:
             path = p+"/../ComponentDefinitions/WuKongStandardLibrary.xml"
@@ -456,13 +458,23 @@ class WuClass:
             if cls.attributes['name'].nodeValue == name:
                 self.ID = int(cls.attributes['id'].nodeValue)
                 ID = 0
+                self.names=[]
                 for p in cls.getElementsByTagName('property'):
                     obj.__dict__[p.attributes['name'].nodeValue] = ID
+                    self.names.append(p.attributes['name'].nodeValue)
                     ID = ID + 1
+                self.propertyNumber = ID
                 return 
         print "Can not find class ID for ", name
+        self.propertyNumber = 0
         return
-
+    def getPropertyNumber(self):
+        return self.propertyNumber
+    def getPropertyName(self,ID):
+        try:
+            return self.names[ID]
+        except:
+            return '%d' % ID
 
 
 class Device:
