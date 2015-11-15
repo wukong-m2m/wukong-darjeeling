@@ -333,8 +333,7 @@ class Communication:
       message_number = 0
       if SIMULATION == "true":
         return self.simulator.mockWuClassList(destination)
-
-      while (message_number != total_number_of_messages):
+      while ( total_number_of_messages == None or message_number < total_number_of_messages):
         reply = self.agent.send(destination, pynvc.WKPF_GET_WUCLASS_LIST, [message_number], [pynvc.WKPF_GET_WUCLASS_LIST_R, pynvc.WKPF_ERROR_R])
 
         message_number += 1
