@@ -41,7 +41,7 @@ class EMailDevice(Device):
         Device.__init__(self,'127.0.0.1','127.0.0.1:4002')
     def init(self):
         cls = EMail()
-        self.addClass(cls)
+        self.addClass(cls,0)
         self.obj = self.addObject(cls.ID)
 
 d = EMailDevice()

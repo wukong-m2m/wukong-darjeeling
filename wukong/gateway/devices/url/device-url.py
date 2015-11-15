@@ -23,7 +23,7 @@ class URLDevice(Device):
     def init(self):
         print "xxxxxx"
         cls = URL()
-        self.addClass(cls)
+        self.addClass(cls,0)
         self.obj_url = self.addObject(cls.ID)
         pass
     def update(self,obj,pID,val):
