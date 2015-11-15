@@ -384,7 +384,7 @@ class LocationParser:
                 str = "/"+ LOCATION_ROOT + str
             if len(str)>1 and str[0]!='/':
                 str = '/'+str
-            if str.index(LOCATION_ROOT) != 1:
+            if str.find(LOCATION_ROOT) != 1:
                 str = '/' + LOCATION_ROOT + str
             result =  specification.parseString(str, True)
             ret =  self.evaluate(None, result[0])
