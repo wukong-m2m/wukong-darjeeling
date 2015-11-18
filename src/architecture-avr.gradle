@@ -148,12 +148,12 @@ task avrora(dependsOn: darjeeling) {
 task avrora_if_necessary(dependsOn: darjeeling) {
     ext.rtcdataFile = "${buildDir}/rtcdata.xml"
     ext.profiledataFile = "${buildDir}/profilerdata.xml"
-    ext.stdoutLogFile = "${buildDir}/stdout.txt"
+    ext.stdoutlogFile = "${buildDir}/stdoutlog.txt"
     def avroraJar = '/Users/niels/src/avrora/jars/avrora-beta-1.7.117.jar'
 
     outputs.file rtcdataFile
     outputs.file profiledataFile
-    outputs.file stdoutLogFile
+    outputs.file stdoutlogFile
     inputs.file architectureSpecificAssemble.djTargetElfFile
     inputs.file avroraJar
 
@@ -172,7 +172,7 @@ task avrora_if_necessary(dependsOn: darjeeling) {
             main '-jar'
             args avroraJar, '-monitors=c-timer,c-print,rtc,profile', "-rtc-data-filename=${rtcdataFile}", "-profile-data-filename=${profiledataFile}", '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
         }
-        new File("${buildDir}/stdoutLog.txt").write(project.ext.stdoutLog)
+        new File(stdoutlogFile).write(project.ext.stdoutLog)
     }
 }
 
@@ -185,10 +185,11 @@ task avrora_analyse_trace(type:Exec, dependsOn: avrora_if_necessary) {
     inputs.file dihFile
     inputs.file avrora_if_necessary.rtcdataFile
     inputs.file avrora_if_necessary.profiledataFile
+    inputs.file avrora_if_necessary.stdoutlogFile
     outputs.file analysedTraceOutput
 
     executable "fsharpi"
-    args '--exec', fsxScript, dihFile, avrora_if_necessary.rtcdataFile, avrora_if_necessary.profiledataFile, analysedTraceOutput
+    args '--exec', fsxScript, dihFile, avrora_if_necessary.rtcdataFile, avrora_if_necessary.profiledataFile, avrora_if_necessary.stdoutlogFile, analysedTraceOutput
 }
 
 task avrora_rtcdata_toscreen(dependsOn: darjeeling) << {

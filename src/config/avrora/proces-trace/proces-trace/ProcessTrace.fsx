@@ -3,6 +3,7 @@
 open System
 open System.IO
 open System.Linq
+open System.Text.RegularExpressions
 open FSharp.Data
 
 type RtcdataXml = XmlProvider<"rtcdata-example.xml", Global=true>
@@ -160,6 +161,18 @@ let rec addCycles (jvmInstructions : JavaInstruction list)
               avr = resultsWithCycles
               counters = resultsWithCycles |> List.map (fun r -> r.counters) |> List.fold (avrCountersToJvmCounters) { executions=0; cycles=0 } })
 
+let countPushPopMovw (results : Result list) =
+    let sumForOpcode predicate =
+        results |> List.map (fun r -> r.avr)
+                |> List.concat
+                |> List.map (fun avr -> match avr.opt with
+                                        | Some(avropt) when predicate avropt
+                                          -> avr.counters
+                                        | _
+                                          -> { executions=0; cycles=0 })
+                |> List.fold (+) { executions=0; cycles=0 }
+    (sumForOpcode isPUSH, sumForOpcode isPOP, sumForOpcode isMOVW)
+
 let resultToString (results : Result list) =
     let totalCycles = results |> List.sumBy (fun r -> (r.counters.cycles))
     let countersToString (counters : ExecCounters) =
@@ -196,21 +209,21 @@ let resultToString (results : Result list) =
              + (results |> List.map (fun r -> 
                                      (r |> jvmResultToString))
                         |> List.fold (+) "")
+    let categories = 
+            [("01) Ref stack ld/st", ["JVM_ALOAD"; "JVM_ALOAD_0"; "JVM_ALOAD_1"; "JVM_ALOAD_2"; "JVM_ALOAD_3"; "JVM_ASTORE"; "JVM_ASTORE_0"; "JVM_ASTORE_1"; "JVM_ASTORE_2"; "JVM_ASTORE_3"; "JVM_GETFIELD_A"; "JVM_PUTFIELD_A"; "JVM_GETSTATIC_A"; "JVM_PUTSTATIC_A"]);
+             ("02) Int stack ld/st", ["JVM_SLOAD"; "JVM_SLOAD_0"; "JVM_SLOAD_1"; "JVM_SLOAD_2"; "JVM_SLOAD_3"; "JVM_ILOAD"; "JVM_ILOAD_0"; "JVM_ILOAD_1"; "JVM_ILOAD_2"; "JVM_ILOAD_3"; "JVM_SSTORE"; "JVM_SSTORE_0"; "JVM_SSTORE_1"; "JVM_SSTORE_2"; "JVM_SSTORE_3"; "JVM_ISTORE"; "JVM_ISTORE_0"; "JVM_ISTORE_1"; "JVM_ISTORE_2"; "JVM_ISTORE_3"; "JVM_IPOP"; "JVM_IPOP2"; "JVM_IDUP"; "JVM_IDUP2"; "JVM_IDUP_X"; "JVM_APOP"; "JVM_ADUP"; "JVM_GETFIELD_B"; "JVM_GETFIELD_C"; "JVM_GETFIELD_S"; "JVM_GETFIELD_I"; "JVM_PUTFIELD_B"; "JVM_PUTFIELD_C"; "JVM_PUTFIELD_S"; "JVM_PUTFIELD_I"; "JVM_GETSTATIC_B"; "JVM_GETSTATIC_C"; "JVM_GETSTATIC_S"; "JVM_GETSTATIC_I"; "JVM_PUTSTATIC_B"; "JVM_PUTSTATIC_C"; "JVM_PUTSTATIC_S"; "JVM_PUTSTATIC_I"]);
+             ("03) Constant load", ["JVM_SCONST_M1"; "JVM_SCONST_0"; "JVM_SCONST_1"; "JVM_SCONST_2"; "JVM_SCONST_3"; "JVM_SCONST_4"; "JVM_SCONST_5"; "JVM_ICONST_M1"; "JVM_ICONST_0"; "JVM_ICONST_1"; "JVM_ICONST_2"; "JVM_ICONST_3"; "JVM_ICONST_4"; "JVM_ICONST_5"; "JVM_ACONST_NULL"; "JVM_BSPUSH"; "JVM_BIPUSH"; "JVM_SSPUSH"; "JVM_SIPUSH"; "JVM_IIPUSH"; "JVM_LDS"]);
+             ("04) Array ld/st", ["JVM_BALOAD"; "JVM_CALOAD"; "JVM_SALOAD"; "JVM_IALOAD"; "JVM_AALOAD"; "JVM_BASTORE"; "JVM_CASTORE"; "JVM_SASTORE"; "JVM_IASTORE"; "JVM_AASTORE"]);
+             ("05) Branches", ["JVM_SIFEQ"; "JVM_SIFNE"; "JVM_SIFLT"; "JVM_SIFGE"; "JVM_SIFGT"; "JVM_SIFLE"; "JVM_IIFEQ"; "JVM_IIFNE"; "JVM_IIFLT"; "JVM_IIFGE"; "JVM_IIFGT"; "JVM_IIFLE"; "JVM_IFNULL"; "JVM_IFNONNULL"; "JVM_IF_SCMPEQ"; "JVM_IF_SCMPNE"; "JVM_IF_SCMPLT"; "JVM_IF_SCMPGE"; "JVM_IF_SCMPGT"; "JVM_IF_SCMPLE"; "JVM_IF_ICMPEQ"; "JVM_IF_ICMPNE"; "JVM_IF_ICMPLT"; "JVM_IF_ICMPGE"; "JVM_IF_ICMPGT"; "JVM_IF_ICMPLE"; "JVM_IF_ACMPEQ"; "JVM_IF_ACMPNE"; "JVM_GOTO"; "JVM_TABLESWITCH"; "JVM_LOOKUPSWITCH"; "JVM_BRTARGET" ]);
+             ("06) Math", ["JVM_SADD"; "JVM_SSUB"; "JVM_SMUL"; "JVM_SDIV"; "JVM_SREM"; "JVM_SNEG"; "JVM_IADD"; "JVM_ISUB"; "JVM_IMUL"; "JVM_IDIV"; "JVM_IREM"; "JVM_INEG"; "JVM_IINC"; "JVM_IINC_W"]);
+             ("07) Bit shifts", ["JVM_SSHL"; "JVM_SSHR"; "JVM_SUSHR"; "JVM_ISHL"; "JVM_ISHR"; "JVM_IUSHR"]);
+             ("08) Bit logic", ["JVM_SAND"; "JVM_SOR"; "JVM_SXOR"; "JVM_IAND"; "JVM_IOR"; "JVM_IXOR"]);
+             ("09) Conversions", ["JVM_S2B"; "JVM_S2C"; "JVM_S2I"; "JVM_I2S"]);
+             ("10) Others", ["JVM_NOP"; "JVM_SRETURN"; "JVM_IRETURN"; "JVM_ARETURN"; "JVM_RETURN"; "JVM_INVOKEVIRTUAL"; "JVM_INVOKESPECIAL"; "JVM_INVOKESTATIC"; "JVM_INVOKEINTERFACE"; "JVM_NEW"; "JVM_NEWARRAY"; "JVM_ANEWARRAY"; "JVM_ARRAYLENGTH"; "JVM_CHECKCAST"; "JVM_INSTANCEOF"])] in
     let jvmCategory opcode =
-        let categories = 
-                [("01) Ref stack ld/st", ["JVM_ALOAD"; "JVM_ALOAD_0"; "JVM_ALOAD_1"; "JVM_ALOAD_2"; "JVM_ALOAD_3"; "JVM_ASTORE"; "JVM_ASTORE_0"; "JVM_ASTORE_1"; "JVM_ASTORE_2"; "JVM_ASTORE_3"; "JVM_GETFIELD_A"; "JVM_PUTFIELD_A"; "JVM_GETSTATIC_A"; "JVM_PUTSTATIC_A"]);
-                 ("02) Int stack ld/st", ["JVM_SLOAD"; "JVM_SLOAD_0"; "JVM_SLOAD_1"; "JVM_SLOAD_2"; "JVM_SLOAD_3"; "JVM_ILOAD"; "JVM_ILOAD_0"; "JVM_ILOAD_1"; "JVM_ILOAD_2"; "JVM_ILOAD_3"; "JVM_SSTORE"; "JVM_SSTORE_0"; "JVM_SSTORE_1"; "JVM_SSTORE_2"; "JVM_SSTORE_3"; "JVM_ISTORE"; "JVM_ISTORE_0"; "JVM_ISTORE_1"; "JVM_ISTORE_2"; "JVM_ISTORE_3"; "JVM_IPOP"; "JVM_IPOP2"; "JVM_IDUP1"; "JVM_IDUP2"; "JVM_IDUP_X"; "JVM_APOP"; "JVM_ADUP"; "JVM_GETFIELD_B"; "JVM_GETFIELD_C"; "JVM_GETFIELD_S"; "JVM_GETFIELD_I"; "JVM_PUTFIELD_B"; "JVM_PUTFIELD_C"; "JVM_PUTFIELD_S"; "JVM_PUTFIELD_I"; "JVM_GETSTATIC_B"; "JVM_GETSTATIC_C"; "JVM_GETSTATIC_S"; "JVM_GETSTATIC_I"; "JVM_PUTSTATIC_B"; "JVM_PUTSTATIC_C"; "JVM_PUTSTATIC_S"; "JVM_PUTSTATIC_I"]);
-                 ("03) Constant load", ["JVM_SCONST_M1"; "JVM_SCONST_0"; "JVM_SCONST_1"; "JVM_SCONST_2"; "JVM_SCONST_3"; "JVM_SCONST_4"; "JVM_SCONST_5"; "JVM_ICONST_M1"; "JVM_ICONST_0"; "JVM_ICONST_1"; "JVM_ICONST_2"; "JVM_ICONST_3"; "JVM_ICONST_4"; "JVM_ICONST_5"; "JVM_ACONST_NULL"; "JVM_BSPUSH"; "JVM_BIPUSH"; "JVM_SSPUSH"; "JVM_SIPUSH"; "JVM_IIPUSH"; "JVM_LDS"]);
-                 ("04) Array ld/st", ["JVM_BALOAD"; "JVM_CALOAD"; "JVM_SALOAD"; "JVM_IALOAD"; "JVM_AALOAD"; "JVM_BASTORE"; "JVM_CASTORE"; "JVM_SASTORE"; "JVM_IASTORE"; "JVM_AASTORE"]);
-                 ("05) Branches", ["JVM_SIFEQ"; "JVM_SIFNE"; "JVM_SIFLT"; "JVM_SIFGE"; "JVM_SIFGT"; "JVM_SIFLE"; "JVM_IIFEQ"; "JVM_IIFNE"; "JVM_IIFLT"; "JVM_IIFGE"; "JVM_IIFGT"; "JVM_IIFLE"; "JVM_IFNULL"; "JVM_IFNONNULL"; "JVM_IF_SCMPEQ"; "JVM_IF_SCMPNE"; "JVM_IF_SCMPLT"; "JVM_IF_SCMPGE"; "JVM_IF_SCMPGT"; "JVM_IF_SCMPLE"; "JVM_IF_ICMPEQ"; "JVM_IF_ICMPNE"; "JVM_IF_ICMPLT"; "JVM_IF_ICMPGE"; "JVM_IF_ICMPGT"; "JVM_IF_ICMPLE"; "JVM_IF_ACMPEQ"; "JVM_IF_ACMPNE"; "JVM_GOTO"; "JVM_TABLESWITCH"; "JVM_LOOKUPSWITCH"; "JVM_BRTARGET" ]);
-                 ("06) Math", ["JVM_SADD"; "JVM_SSUB"; "JVM_SMUL"; "JVM_SDIV"; "JVM_SREM"; "JVM_SNEG"; "JVM_IADD"; "JVM_ISUB"; "JVM_IMUL"; "JVM_IDIV"; "JVM_IREM"; "JVM_INEG"; "JVM_IINC"; "JVM_IINC_W"]);
-                 ("07) Bit shifts", ["JVM_SSHL"; "JVM_SSHR"; "JVM_SUSHR"; "JVM_ISHL"; "JVM_ISHR"; "JVM_IUSHR"]);
-                 ("08) Bit logic", ["JVM_SAND"; "JVM_SOR"; "JVM_SXOR"; "JVM_IAND"; "JVM_IOR"; "JVM_IXOR"]);
-                 ("09) Conversions", ["JVM_S2B"; "JVM_S2C"; "JVM_S2I"; "JVM_I2S"]);
-                 ("10) Others", ["JVM_NOP"; "JVM_SRETURN"; "JVM_IRETURN"; "JVM_ARETURN"; "JVM_RETURN"; "JVM_INVOKEVIRTUAL"; "JVM_INVOKESPECIAL"; "JVM_INVOKESTATIC"; "JVM_INVOKEINTERFACE"; "JVM_NEW"; "JVM_NEWARRAY"; "JVM_ANEWARRAY"; "JVM_ARRAYLENGTH"; "JVM_CHECKCAST"; "JVM_INSTANCEOF"])] in
         if categories.Any(fun (cat, opcodes) -> opcodes.Contains(opcode))
         then categories.First(fun (cat, opcodes) -> opcodes.Contains(opcode)) |> fst
-        else "10) ????"
+        else "11) ????"
     let groupFold keyFunc valueFunc foldFunc foldInitAcc results =
         results |> List.toSeq
                 |> Seq.groupBy keyFunc
@@ -226,17 +239,30 @@ let resultToString (results : Result list) =
                                                                   category,
                                                                   opcode,
                                                                   countersToString(counters)))
-                                  |> List.fold (+) "")
-    let summedPerJvmCategory = summedPerJvmOpcode |> groupFold (fun (cat,op,cnt) -> cat) (fun (cat,op,cnt) -> cnt) (+) { executions=0; cycles=0 }
-                                                  |> List.sortBy (fun (category, _) -> category)
+                                   |> List.fold (+) "")
+    let summedPerJvmCategory = categories |> List.map (fun (cat1, opcodes) -> 
+                                                           (cat1, summedPerJvmOpcode |> List.filter (fun (cat2, _, _) -> cat1=cat2)
+                                                                                    |> List.map (fun (_, _, cnt) -> cnt)
+                                                                                    |> List.fold (+) { executions=0; cycles=0 }))
     let r5 = "--- SUMMED PER JVM CATEGORY\r\n"
              + (summedPerJvmCategory |> List.map (fun (category, counters) -> 
                                                       String.Format("{0,-40} total {1}\r\n",
                                                                     category,
                                                                     countersToString(counters)))
                                      |> List.fold (+) "")
-    let r6 = "--- TOTAL CYCLES: " + totalCycles.ToString()
-    r6 + "\r\n\r\n" + r5 + "\r\n\r\n" + r4 + "\r\n\r\n" + r3 + "\r\n\r\n" + r2 + "\r\n\r\n" + r1
+    let r6 = "--- TOTAL CYCLES SPENT IN COMPILED JVM CODE: " + totalCycles.ToString() + "\r\n    (doesn't include called functions)"
+
+    let (counterPUSH, counterPOP, counterMOVW) = countPushPopMovw results
+    let r7 = (String.Format ("--- TOTAL SPENT ON PUSH: {0}\r\n\
+                              --- TOTAL SPENT ON POP:  {1}\r\n\
+                              --- TOTAL SPENT ON MOVW: {2}\r\n\
+                              --- COMBINED:            {3}",
+                              (countersToString counterPUSH),
+                              (countersToString counterPOP),
+                              (countersToString counterMOVW),
+                              (countersToString (counterPUSH + counterPOP + counterMOVW))))
+
+    r7 + "\r\n\r\n" + r6 + "\r\n\r\n" + r5 + "\r\n\r\n" + r4 + "\r\n\r\n" + r3 + "\r\n\r\n" + r2 + "\r\n\r\n" + r1
 
 // Find the methodImplId for a certain method in a Darjeeling infusion header
 let findRtcbenchmarkMethodImplId (dih : Dih) methodName =
@@ -246,8 +272,21 @@ let findRtcbenchmarkMethodImplId (dih : Dih) methodName =
     methodImpl.EntityId
 
 
+let getTimersFromStdout (stdoutlog : string list) =
+    let pattern = "timer number (10\d): (\d+) cycles"
+    stdoutlog |> List.map (fun line -> Regex.Match(line, pattern))
+              |> List.filter (fun regexmatch -> regexmatch.Success)
+              |> List.map (fun regexmatch -> (regexmatch.Groups.[1].Value, regexmatch.Groups.[2].Value))
+              |> List.map (fun (timer, cycles) ->
+                                match timer with
+                                | "101" -> String.Format("--- C   : {0,10} cycles\r\n", cycles)
+                                | "102" -> String.Format("--- AOT : {0,10} cycles\r\n", cycles)
+                                | "103" -> String.Format("--- Java: {0,10} cycles\r\n", cycles)
+                                | _ -> "")
+              |> List.fold (+) "--- STOPWATCH TIMERS (includes some stopwatch overhead and interrupts)\r\n"
+
 // Process trace main function
-let processTrace (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profilerdata) =
+let processTrace (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profilerdata) (stdoutlog : string seq) =
     let methodImplId = findRtcbenchmarkMethodImplId dih "rtcbenchmark_measure_java_performance"
     let methodImpl = rtcdata.MethodImpls |> Seq.find (fun impl -> impl.MethodImplId = methodImplId)
 
@@ -259,7 +298,11 @@ let processTrace (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profilerdata) =
 
     let matchedResult = matchOptUnopt optimisedAvr unoptimisedAvrWithJvmIndex
     let matchedResultWithCycles = addCycles (methodImpl.JavaInstructions |> Seq.toList) (profilerdata.Instructions |> Seq.toList) matchedResult
-    resultToString matchedResultWithCycles
+    let traceResultsString = resultToString matchedResultWithCycles
+
+    let stdoutResultsString = getTimersFromStdout (stdoutlog |> Seq.toList)
+
+    stdoutResultsString + "\r\n\r\n" + traceResultsString
 
 let main(args : string[]) =
     if (args.Count() >= 5)
@@ -267,15 +310,17 @@ let main(args : string[]) =
         let dih = DarjeelingInfusionHeaderXml.Load(Array.get args 1)
         let rtcdata = RtcdataXml.Load(Array.get args 2)
         let profilerdata = ProfilerdataXml.Load(Array.get args 3)
-        let results = processTrace dih rtcdata profilerdata
-        File.WriteAllText ((Array.get args 4), results)
-        Console.Error.WriteLine ("Wrote output to " + (Array.get args 4))
+        let stdoutlog = System.IO.File.ReadLines(Array.get args 4)
+        let results = processTrace dih rtcdata profilerdata stdoutlog
+        File.WriteAllText ((Array.get args 5), results)
+        Console.Error.WriteLine ("Wrote output to " + (Array.get args 5))
         1
     else
-        let dih = DarjeelingInfusionHeaderXml.Load("/Users/niels/git/rtc/src/build/avrora/infusion-bm_rc5/bm_rc5.dih")
-        let rtcdata = RtcdataXml.Load("/Users/niels/git/rtc/src/build/avrora/rtcdata.xml")
-        let profilerdata = ProfilerdataXml.Load("/Users/niels/git/rtc/src/build/avrora/profilerdata.xml")
-        let results = processTrace dih rtcdata profilerdata
+        let dih = DarjeelingInfusionHeaderXml.Load("/Users/niels/src/rtc/src/build/avrora/infusion-bm_sortO/bm_sortO.dih")
+        let rtcdata = RtcdataXml.Load("/Users/niels/src/rtc/src/build/avrora/rtcdata.xml")
+        let profilerdata = ProfilerdataXml.Load("/Users/niels/src/rtc/src/build/avrora/profilerdata.xml")
+        let stdoutlog = System.IO.File.ReadLines("/Users/niels/src/rtc/src/build/avrora/stdoutlog.txt")
+        let results = processTrace dih rtcdata profilerdata stdoutlog
         Console.WriteLine (results)
         0
 

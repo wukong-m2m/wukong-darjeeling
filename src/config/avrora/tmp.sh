@@ -5,7 +5,7 @@ gdj clean
 gdj avrora_analyse_trace -Prtcbenchmark=bm_sortX
 gdj avrora_analyse_trace -Prtcbenchmark=bm_sortO
 gdj avrora_analyse_trace -Prtcbenchmark=bm_hsortX
-gdj avrora_analyse_trace -Prtcbenchmark=bm_hsorto
+gdj avrora_analyse_trace -Prtcbenchmark=bm_hsortO
 gdj avrora_analyse_trace -Prtcbenchmark=bm_fft
 gdj avrora_analyse_trace -Prtcbenchmark=bm_xxtea
 gdj avrora_analyse_trace -Prtcbenchmark=bm_rc5
