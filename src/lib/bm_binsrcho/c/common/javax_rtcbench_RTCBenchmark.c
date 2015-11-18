@@ -22,8 +22,9 @@ void rtcbenchmark_measure_native_performance(uint16_t NUMNUMBERS, int16_t number
         uint16_t high = NUMNUMBERS - 1;
         uint16_t mid;
         while (low <= high) {
-            mid = (low + high) / 2;
-            if (numbers[mid] < toFind) {
+            mid = (low + high) >> 1;
+            int16_t number_mid;
+            if ((number_mid=numbers[mid]) < toFind) {
                 low = mid + 1;
             } else if (numbers[mid] > toFind) {
                 high = mid - 1;

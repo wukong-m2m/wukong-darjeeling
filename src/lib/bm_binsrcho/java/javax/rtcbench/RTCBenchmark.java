@@ -37,8 +37,6 @@ public class RTCBenchmark {
                 // mid = (low + high) / 2;
                 mid = (low + high) >>> 1; // This is usually much faster than / 2. Any optimising compiler should know this.
 
-                // short number_mid;
-                // if ((number_mid=numbers[mid]) < toFind) {
                 short number_mid;
                 if ((number_mid=numbers[mid]) < toFind) {
                     low = mid + 1;
