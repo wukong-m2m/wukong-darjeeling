@@ -179,7 +179,7 @@ task avrora_if_necessary(dependsOn: darjeeling) {
 task avrora_analyse_trace(type:Exec, dependsOn: avrora_if_necessary) {
     def fsxScript = "${project.rootDir}/config/${djConfigname}/proces-trace/proces-trace/ProcessTrace.fsx"
     def dihFile = "${buildDir}/infusion-${rtcbenchmark}/${rtcbenchmark}.dih"
-    def analysedTraceOutput = "${project.rootDir}/config/${djConfigname}/${rtcbenchmark}.txt"
+    def analysedTraceOutput = "${project.rootDir}/config/${djConfigname}/results/${rtcbenchmark}"
 
     inputs.file fsxScript
     inputs.file dihFile

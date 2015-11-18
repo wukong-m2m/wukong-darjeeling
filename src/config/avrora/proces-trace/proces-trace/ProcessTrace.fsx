@@ -1,4 +1,5 @@
 ﻿#r "binaries/FSharp.Data/FSharp.Data.dll"
+#r "binaries/fspickler.1.5.2/lib/net45/FsPickler.dll"
 
 open System
 open System.IO
@@ -6,6 +7,7 @@ open System.Linq
 open System.Text.RegularExpressions
 open System.Runtime.Serialization
 open FSharp.Data
+open Nessos.FsPickler
 
 type RtcdataXml = XmlProvider<"rtcdata-example.xml", Global=true>
 type Rtcdata = RtcdataXml.Methods
@@ -362,8 +364,15 @@ let main(args : string[]) =
         let profilerdata = ProfilerdataXml.Load(Array.get args 3)
         let stdoutlog = System.IO.File.ReadLines(Array.get args 4)
         let results = processTrace dih rtcdata profilerdata stdoutlog
-        File.WriteAllText ((Array.get args 5), (resultsToString results))
-        Console.Error.WriteLine ("Wrote output to " + (Array.get args 5))
+
+        let txtFilename = (Array.get args 5) + ".txt"
+        let xmlFilename = (Array.get args 5) + ".xml"
+        File.WriteAllText (txtFilename, (resultsToString results))
+        Console.Error.WriteLine ("Wrote output to " + txtFilename)
+
+        let xmlSerializer = FsPickler.CreateXmlSerializer(indent = true)
+        File.WriteAllText (xmlFilename, (xmlSerializer.PickleToString results))
+        Console.Error.WriteLine ("Wrote output to " + xmlFilename)
         1
     else
         let dih = DarjeelingInfusionHeaderXml.Load("/Users/niels/src/rtc/src/build/avrora/infusion-bm_sortO/bm_sortO.dih")

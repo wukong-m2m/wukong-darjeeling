@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>FsPickler</id>
+    <version>1.5.2</version>
+    <authors>Eirik Tsarpalis</authors>
+    <licenseUrl>https://github.com/nessos/FsPickler/blob/master/License.md</licenseUrl>
+    <projectUrl>https://github.com/nessos/FsPickler</projectUrl>
+    <iconUrl>https://avatars1.githubusercontent.com/u/5538081</iconUrl>
+    <description>FsPickler is a serialization library that facilitates the distribution of .NET objects.
+The implementation focuses on performance and completeness in supported types, including F# types.
+It supports multiple, pluggable serialization formats including Binary, Xml, JSON and BSON.
+The library is based on the functional programming concept of pickler combinators which
+has been adapted to accommodate the object oriented nature of the .NET framework.</description>
+    <summary>A fast serialization framework and pickler combinator library for .NET</summary>
+    <releaseNotes>Fix ReflectionCache binding redirect issue.</releaseNotes>
+    <copyright>Copyright 2015</copyright>
+    <tags>F# fsharp serializer pickler binary json xml</tags>
+    <references>
+      <reference file="FsPickler.dll" />
+    </references>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Runtime.Serialization" />
+      <frameworkAssembly assemblyName="System.Xml" />
+    </frameworkAssemblies>
+  </metadata>
+</package>
