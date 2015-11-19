@@ -1,6 +1,8 @@
 ﻿#r "binaries/FSharp.Data/FSharp.Data.dll"
 #r "binaries/fspickler.1.5.2/lib/net45/FsPickler.dll"
 
+#load "Datatypes.fsx"
+
 open System
 open System.IO
 open System.Linq
@@ -8,6 +10,7 @@ open System.Text.RegularExpressions
 open System.Runtime.Serialization
 open FSharp.Data
 open Nessos.FsPickler
+open Datatypes
 
 type RtcdataXml = XmlProvider<"rtcdata-example.xml", Global=true>
 type Rtcdata = RtcdataXml.Methods
@@ -18,60 +21,18 @@ type ProfiledInstruction = ProfilerdataXml.Instruction
 type DarjeelingInfusionHeaderXml = XmlProvider<"infusionheader-example.dih", Global=true>
 type Dih = DarjeelingInfusionHeaderXml.Dih
 
+let JvmInstructionFromXml (xml : RtcdataXml.JavaInstruction) =
+    {
+        JvmInstruction.index = xml.Index;
+        text = xml.Text;
+    }
+let AvrInstructionFromXml (xml : RtcdataXml.AvrInstruction) =
+    {
+        AvrInstruction.address = Convert.ToInt32(xml.Address.Trim(), 16);
+        opcode = Convert.ToInt32((xml.Opcode.Trim()), 16);
+        text = xml.Text;
+    }
 
-type AvrInstruction = {
-    address : int;
-    opcode : int;
-    text : string; }
-    with
-    static member fromXml (xml : RtcdataXml.AvrInstruction) =
-        {
-            address = Convert.ToInt32(xml.Address.Trim(), 16);
-            opcode = Convert.ToInt32((xml.Opcode.Trim()), 16);
-            text = xml.Text;
-        }
-
-type JvmInstruction = {
-    index : int
-    text : string }
-    with
-    static member fromXml (xml : RtcdataXml.JavaInstruction) =
-        {
-            index = xml.Index;
-            text = xml.Text;
-        }
-
-type ExecCounters = {
-    executions : int;
-    cycles : int; }
-    with
-    static member (+) (x, y) = { executions = x.executions + y.executions ; cycles = x.cycles + y.cycles }
-    member x.average = if x.executions > 0
-                       then float x.cycles / float x.executions
-                       else 0.0
-
-type ResultAvr = {
-    unopt : AvrInstruction;
-    opt : AvrInstruction option;
-    counters : ExecCounters }
-
-type ResultJava = {
-    jvm : JvmInstruction;
-    avr : ResultAvr list;
-    counters : ExecCounters }
-
-type Results = {
-    jvmInstructions : ResultJava list;
-    executedCyclesAOT : int;
-    stopwatchCyclesC : int;
-    stopwatchCyclesAOT : int;
-    stopwatchCyclesJava : int;
-    cyclesPush : ExecCounters;
-    cyclesPop : ExecCounters;
-    cyclesMovw : ExecCounters;
-    cyclesPerJvmOpcode : list<string * ExecCounters>;
-    cyclesPerJvmOpcodeCategory : list<string * ExecCounters>;
-}
 
 let jvmOpcodeCategories = 
         [("01) Ref stack ld/st", ["JVM_ALOAD"; "JVM_ALOAD_0"; "JVM_ALOAD_1"; "JVM_ALOAD_2"; "JVM_ALOAD_3"; "JVM_ASTORE"; "JVM_ASTORE_0"; "JVM_ASTORE_1"; "JVM_ASTORE_2"; "JVM_ASTORE_3"; "JVM_GETFIELD_A"; "JVM_PUTFIELD_A"; "JVM_GETSTATIC_A"; "JVM_PUTSTATIC_A"]);
@@ -88,7 +49,8 @@ let getCategoryForJvmOpcode opcode =
     if jvmOpcodeCategories.Any(fun (cat, opcodes) -> opcodes.Contains(opcode))
     then jvmOpcodeCategories.First(fun (cat, opcodes) -> opcodes.Contains(opcode)) |> fst
     else "11) ????"
-
+let getAllCategories =
+    jvmOpcodeCategories |> List.map (fun (cat, opcodes) -> cat)
 
 [<Literal>]
 let OPCODE_PUSH                    = 0x920F
@@ -238,7 +200,7 @@ let getTimersFromStdout (stdoutlog : string list) =
               |> List.sortBy (fun (timer, cycles) -> match timer with "C" -> 1 | "AOT" -> 2 | "Java" -> 3 | _ -> 4)
 
 // Process trace main function
-let processTrace (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profilerdata) (stdoutlog : string seq) =
+let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profilerdata) (stdoutlog : string seq) =
     // Find the methodImplId for a certain method in a Darjeeling infusion header
     let findRtcbenchmarkMethodImplId (dih : Dih) methodName =
         let infusionName = dih.Infusion.Header.Name
@@ -249,14 +211,14 @@ let processTrace (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profilerdata) (
     let methodImplId = findRtcbenchmarkMethodImplId dih "rtcbenchmark_measure_java_performance"
     let methodImpl = rtcdata.MethodImpls |> Seq.find (fun impl -> impl.MethodImplId = methodImplId)
 
-    let optimisedAvr = methodImpl.AvrInstructions |> Seq.map AvrInstruction.fromXml |> Seq.toList
+    let optimisedAvr = methodImpl.AvrInstructions |> Seq.map AvrInstructionFromXml |> Seq.toList
     let unoptimisedAvrWithJvmIndex =
-        methodImpl.JavaInstructions |> Seq.map (fun jvm -> jvm.UnoptimisedAvr.AvrInstructions |> Seq.map (fun avr -> (AvrInstruction.fromXml avr, JvmInstruction.fromXml jvm)))
+        methodImpl.JavaInstructions |> Seq.map (fun jvm -> jvm.UnoptimisedAvr.AvrInstructions |> Seq.map (fun avr -> (AvrInstructionFromXml avr, JvmInstructionFromXml jvm)))
                                     |> Seq.concat
                                     |> Seq.toList
 
     let matchedResult = matchOptUnopt optimisedAvr unoptimisedAvrWithJvmIndex
-    let matchedResultWithCycles = addCycles (methodImpl.JavaInstructions |> Seq.map JvmInstruction.fromXml |> Seq.toList) (profilerdata.Instructions |> Seq.toList) matchedResult
+    let matchedResultWithCycles = addCycles (methodImpl.JavaInstructions |> Seq.map JvmInstructionFromXml |> Seq.toList) (profilerdata.Instructions |> Seq.toList) matchedResult
     let stopwatchTimers = getTimersFromStdout (stdoutlog |> Seq.toList)
     let (cyclesPush, cyclesPop , cyclesMovw) = (countPushPopMovw matchedResultWithCycles)
 
@@ -273,13 +235,22 @@ let processTrace (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profilerdata) (
             |> List.sortBy (fun (opcode, _) -> (getCategoryForJvmOpcode opcode)+opcode)
 
     let cyclesPerJvmOpcodeCategory =
-        matchedResultWithCycles
+        let categoriesInBenchmark =
+            matchedResultWithCycles
             |> List.filter (fun r -> r.jvm.text <> "Method preamble")
             |> groupFold (fun r -> (getCategoryForJvmOpcode (r.jvm.text.Split().First()))) (fun r -> r.counters) (+) { executions=0; cycles=0 }
-            |> List.sortBy (fun (category, _) -> category)
+        // Not all categories may be present
+        let catToResult cat =
+                match categoriesInBenchmark |> List.tryFind (fun (cat2, cnt) -> cat = cat2) with
+                | Some(cat, cnt) -> (cat, cnt)
+                | None -> (cat, { executions=0; cycles=0 })
+        getAllCategories
+            |> List.sort
+            |> List.map catToResult
 
 
     {
+        benchmark = benchmark;
         jvmInstructions = matchedResultWithCycles;
         executedCyclesAOT = matchedResultWithCycles |> List.sumBy (fun r -> (r.counters.cycles));
         stopwatchCyclesC = stopwatchTimers |> List.find (fun (t,c) -> t="C") |> snd;
@@ -354,19 +325,20 @@ let resultsToString (results : Results) =
                               (countersToString results.cyclesMovw),
                               (countersToString (results.cyclesPush + results.cyclesPop + results.cyclesMovw))))
 
-    r7 + "\r\n\r\n" + r6 + "\r\n\r\n" + r5 + "\r\n\r\n" + r4 + "\r\n\r\n" + r3 + "\r\n\r\n" + r2 + "\r\n\r\n" + r1
+    "------------------ " + results.benchmark + " ------------------\r\n\r\n" + r7 + "\r\n\r\n" + r6 + "\r\n\r\n" + r5 + "\r\n\r\n" + r4 + "\r\n\r\n" + r3 + "\r\n\r\n" + r2 + "\r\n\r\n" + r1
 
 let main(args : string[]) =
     if (args.Count() >= 5)
     then
-        let dih = DarjeelingInfusionHeaderXml.Load(Array.get args 1)
-        let rtcdata = RtcdataXml.Load(Array.get args 2)
-        let profilerdata = ProfilerdataXml.Load(Array.get args 3)
-        let stdoutlog = System.IO.File.ReadLines(Array.get args 4)
-        let results = processTrace dih rtcdata profilerdata stdoutlog
+        let benchmark = (Array.get args 1).[3..]
+        let dih = DarjeelingInfusionHeaderXml.Load(Array.get args 2)
+        let rtcdata = RtcdataXml.Load(Array.get args 3)
+        let profilerdata = ProfilerdataXml.Load(Array.get args 4)
+        let stdoutlog = System.IO.File.ReadLines(Array.get args 5)
+        let results = processTrace benchmark dih rtcdata profilerdata stdoutlog
 
-        let txtFilename = (Array.get args 5) + ".txt"
-        let xmlFilename = (Array.get args 5) + ".xml"
+        let txtFilename = (Array.get args 6) + ".txt"
+        let xmlFilename = (Array.get args 6) + ".xml"
         File.WriteAllText (txtFilename, (resultsToString results))
         Console.Error.WriteLine ("Wrote output to " + txtFilename)
 
@@ -375,15 +347,15 @@ let main(args : string[]) =
         Console.Error.WriteLine ("Wrote output to " + xmlFilename)
         1
     else
+        let benchmark = "sortO"
         let dih = DarjeelingInfusionHeaderXml.Load("/Users/niels/src/rtc/src/build/avrora/infusion-bm_sortO/bm_sortO.dih")
         let rtcdata = RtcdataXml.Load("/Users/niels/src/rtc/src/build/avrora/rtcdata.xml")
         let profilerdata = ProfilerdataXml.Load("/Users/niels/src/rtc/src/build/avrora/profilerdata.xml")
         let stdoutlog = System.IO.File.ReadLines("/Users/niels/src/rtc/src/build/avrora/stdoutlog.txt")
-        let results = processTrace dih rtcdata profilerdata stdoutlog
+        let results = processTrace benchmark dih rtcdata profilerdata stdoutlog
         Console.WriteLine (resultsToString results)
         0
 
-//main([||])
 main(fsi.CommandLineArgs)
 
 

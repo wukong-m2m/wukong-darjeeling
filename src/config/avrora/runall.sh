@@ -11,5 +11,6 @@ gdj avrora_analyse_trace -Prtcbenchmark=bm_xxtea
 gdj avrora_analyse_trace -Prtcbenchmark=bm_rc5
 gdj avrora_analyse_trace -Prtcbenchmark=bm_binsrchX
 gdj avrora_analyse_trace -Prtcbenchmark=bm_binsrchO
+fsharpi --exec proces-trace/proces-trace/CombineResults.fsx ./results
 
 
