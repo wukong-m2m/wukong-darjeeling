@@ -99,6 +99,10 @@ class WKPF(DatagramProtocol):
             self.components=o['components']
             self.links=o['links']
             self.mptnaddr = o['mptnaddr']
+            try:
+                self.properties = o['properties']
+            except:
+                pass
             f.close()
         except:
             self.uuid = map(ord,str(uuid.uuid4().bytes))
@@ -110,7 +114,7 @@ class WKPF(DatagramProtocol):
 
     def save(self):
         try:
-            o = {'location': self.location,'uuid':self.uuid,'nodeid':self.nodeid,'components':self.components, 'links':self.links,'mptnaddr':self.mptnaddr}
+            o = {'location': self.location,'uuid':self.uuid,'nodeid':self.nodeid,'components':self.components, 'links':self.links,'mptnaddr':self.mptnaddr,'props':self.properties}
             f = open('udpwkpf-%d.json' % self.port,'w')
             f.write(cjson.encode(o))
             f.close()
@@ -371,7 +375,31 @@ class WKPF(DatagramProtocol):
                         traceback.print_exc()
                         pass
 
-    def parseInitTable(slef,data):
+    def parseInitTable(self,data):
+        number = data[0]+data[1]*256
+        i = 2
+        print data
+        while i < len(data):
+            print data[i:]
+            cid = data[i]+data[i+1]*256
+            pID = data[i+2]
+            size = data[i+3]
+            comp = self.getComponent(cid)
+            print comp,pID,size
+            for p in comp['ports']:
+                print p,self.mptnaddr
+                if p[0] == self.mptnaddr:
+                    if size == 1:
+                        v = data[i+4]
+                        print 'init prop %d of component %d to be %d' % (pID, cid, v)
+                        self.setProperty(p[1], pID, v)
+                    elif size == 2:
+                        v = data[i+4]+256*data[i+5]
+                        self.setProperty(p[1], pID, v)
+                        print 'init prop %d of component %d to be %d' % (pID, cid, v)
+                    else:
+                        print 'Unknown value size %d' % size
+            i += 4 + size
         pass
     def parseComponentMap(self,data):
         n_item = data[0] + data[1]*256
@@ -492,6 +520,8 @@ class Device:
         self.wkpf.initObjects()
         reactor.callLater(1,self.updateTheNextDirtyObject)
         pass
+    def getLocation(self):
+        return self.wkpf.location
     def checkObject(self,clsid,port):
         i = 0
         while i < len(self.objects):
@@ -514,8 +544,8 @@ class Device:
             
     def updateTheNextDirtyObject(self):
         for obj in self.objects:
-            print obj.port
-            print self.wkpf.properties
+            #print obj.port
+            #print self.wkpf.properties
             for i in range(0,len(self.wkpf.properties[obj.port])):
                 p = self.wkpf.properties[obj.port][i]
                 if p['dirty'] == True:
@@ -540,7 +570,7 @@ class Device:
             obj = cls.newObject()
             obj.port = len(self.objects)+1
             self.wkpf.addProperties(obj.port,5)
-            self.objects[obj.port] = obj
+            self.objects.append(obj)
             return obj
         return None
     def setProperty(self,pID, val):
