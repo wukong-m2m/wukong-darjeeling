@@ -180,9 +180,9 @@ function FBP_fillBlockTypeInPage(pageTitle){
     var tags = [];
     for(i=0;i<nodes.length;i++) {
        var block = Block.classes[nodes[i].type]
-       var iconClass = block.typename
-       if (iconClass=='Button') iconClass=''
-       var icon = '<img src="'+block.icon44.src+'" class="wuClassIcon"/>'
+       //var iconClass = block.typename
+       //if (iconClass=='Button') iconClass=''
+       var icon = '<img src="'+block.icon44.src+'" class="wuClassIcon wuClass'+block.typename+'Type"/>'
        var location = nodes[i].location || 'No Location'
        var desc = '<span class="'+(nodes[i].location ? '' : 'warning-text')+'">'+location+'</span>'
        tags.push('<li><input type="radio" name="pagenode" value="'+(pageTitle+'\t'+nodes[i].id)+'">'+icon+'<label>'+nodes[i].type+'</label>'+desc+'</li>');
@@ -291,10 +291,14 @@ function FBP_fillBlockType($div,blocks)
     var i;
     var tags = []
     for(i=0;i<blocks.length;i++) {
-      var block = blocks[i]
-       var iconClass = block.typename
-       if (iconClass=='Block') iconClass=''
-       var icon = '<img src="'+(block.icon44 ? block.icon44.src : genericIcon.src)+'" class="wuClassIcon"/>'
+       var block = blocks[i]
+       var icon
+       if (block.icon44){
+        icon = '<img src="'+(block.icon44 ? block.icon44.src : genericIcon.src)+'" class="wuClassIcon wuClass'+block.typename+'Type"/>'
+       }
+       else{
+        icon = '<div class="default-icon44">'+block.typename.substr(0,1)+'</div>'
+       }
        var desc = '<span>'+(block.desc || '')+'</span>'
        tags.push('<li><input type="radio" name="blocktype" value="'+block.typename+'">'+icon+'<label>'+block.typename+'</label>'+desc+'</li>');
     }
@@ -314,13 +318,13 @@ function FBP_fillBlockType($div,blocks)
         FBP_addBlock()
     }
     $('#addBlockBtn')[0].removeAttribute('disabled')
-    
+
     $('#downloadBlockBtn')[0].onclick = function(evt){
         FBP_downloadBlock()
     }
     $('#uploadBlockBtn')[0].onclick = function(evt){
         FBP_uploadBlock()
-    }    
+    }
 
 }
 function FBP_addBlock(type){
@@ -1226,6 +1230,7 @@ function FBP_uploadBlock(){
     //show the form
     parentNode.style.display = 'none'
     var formEle = parentNode.parentNode.querySelector('form')
+    formEle.style.display = ''
     var object = null
     formEle.querySelector('input[type="file"]').onchange=function(){
         if (this.files && this.files[0]) {
@@ -1246,13 +1251,15 @@ function FBP_uploadBlock(){
         if (!object){
             //same as cancel
             parentNode.style.display = ''
+            formEle.style.display = 'none'
             return;
         }
         FBP_addBlock(object.type)
     }
     formEle.querySelector('#cancelUploadBlock').onclick = function(evt){
-        evt.preventDefault();    
+        evt.preventDefault();
         parentNode.style.display = ''
+        formEle.style.display = 'none'
     }
 }
 /*deployment*/
@@ -1297,7 +1304,7 @@ function FBP_map(){
         })
     }
     else FBP_map_do()
-} 
+}
 function FBP_deploy(){
     if (top.isAppBeenModified()){
         FBP_save(function(){
@@ -1389,7 +1396,7 @@ function FBP_submit2AppstoreDialog(){
     var yes = confirm('Sumbit to app store?')
     if (!yes) return;
     */
-    // save the project 
+    // save the project
     FBP_save_meta_or_content(function(){
         // show the submit form
         var $dialog=$('#submitform')
@@ -1445,7 +1452,7 @@ function FBP_submit2AppstoreDialog(){
                 data: new FormData($dialog.find('form')[0]),
                 processData: false,
                 contentType: false
-            }).done(function(){                
+            }).done(function(){
                 $dialog.css({'display':'none'})
                 alert('Submit ok')
             })

@@ -1,0 +1,14 @@
+package javax.wukong.userwuclasses;
+
+import javax.wukong.wkpf.WKPF;
+import javax.wukong.wkpf.GenericWuObject;
+
+public class MyWuObject extends GenericWuObject {
+    public void update() {
+        boolean input1 = WKPF.getPropertyBoolean(this, INPUT1);
+        boolean input2 = WKPF.getPropertyBoolean(this, INPUT2);
+        int input3 = WKPF.getPropertyInteger(this, INPUT3);
+        int input4 = WKPF.getPropertyInteger(this, INPUT4);
+        int refresh_rate = WKPF.getPropertyInteger(this, REFRESH_RATE);
+    }
+}

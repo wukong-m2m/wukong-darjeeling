@@ -38,6 +38,9 @@
         <script type="text/javascript" src="/static/js/__comp__server.js"></script>
         <script type="text/javascript" src="/static/js/__comp__multiplexer.js"></script>
         <script type="text/javascript" src="/static/js/__comp__equal.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__noderedagent.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__virtual_button.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__virtual_switch.js"></script>
         <script type="text/javascript" src="/static/js/__comp__light_sensor.js"></script>
         <script type="text/javascript" src="/static/js/__comp__pir_sensor.js"></script>
         <script type="text/javascript" src="/static/js/__comp__binary_sensor.js"></script>
@@ -58,6 +61,10 @@
         <script type="text/javascript" src="/static/js/__comp__controller.js"></script>
         <script type="text/javascript" src="/static/js/__comp__gesture.js"></script>
         <script type="text/javascript" src="/static/js/__comp__user_aware.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__ics_user.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__smart_mug.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__cabinet.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__phone.js"></script>
         <script type="text/javascript" src="/static/js/__comp__light_actuator.js"></script>
         <script type="text/javascript" src="/static/js/__comp__led.js"></script>
         <script type="text/javascript" src="/static/js/__comp__fan.js"></script>
@@ -71,8 +78,27 @@
         <script type="text/javascript" src="/static/js/__comp__grove_mp3.js"></script>
         <script type="text/javascript" src="/static/js/__comp__mosfet_led.js"></script>
         <script type="text/javascript" src="/static/js/__comp__gesture_mp3.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__number.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__philip_hue_bulb.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__philip_hue_bloom.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__philip_hue_go.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__philip_hue_strip.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__mosfet_fan.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__sonos.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__aroma.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__irremote_tv.js"></script>
         <script type="text/javascript" src="/static/js/__comp__swithprclass.js"></script>
         <script type="text/javascript" src="/static/js/__comp__timerprclass.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__icsdemoprclass.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__icsdemofloorlampprclass.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__icsdemobloomprclass.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__icsdemogoprclass.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__icsdemostripprclass.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__icsdemofanprclass.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__icsdemoaromaprclass.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__icsdemomusicprclass.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__icsdemotvprclass.js"></script>
+        <script type="text/javascript" src="/static/js/__comp__icsdemoqprclass.js"></script>
 <!--make_fbp.py-insert-end-->
 <style>
 #sidebar{
@@ -241,6 +267,7 @@
 .sidebar-tabcontent #toolbar_type li img{
     display:inline-block;
     float:left;
+    margin-left:2px;
 }
 .sidebar-tabcontent #toolbar_type li label{
     display:inline-block;
@@ -375,6 +402,36 @@
     line-height:80px;
     text-align:center;
 }
+.default-icon22{
+    /* should sync with .app-default-icon in appstore/index.html */
+    width:22px;
+    height:22px;
+    background-color:#4B8DF9;
+    border-radius: 11px 11px 11px 11px;
+    -moz-border-radius: 11px 11px 11px 11px;
+    -webkit-border-radius: 11px 11px 11px 11px;
+    color:white;
+    font-size:1em;
+    line-height:22px;
+    text-align:center;
+    float:right;
+}
+.default-icon44{
+    /* should sync with .app-default-icon in appstore/index.html */
+    width:44px;
+    height:44px;
+    background-color:#4B8DF9;
+    border-radius: 22px 22px 22px 22px;
+    -moz-border-radius: 22px 22px 22px 22px;
+    -webkit-border-radius: 22px 22px 22px 22px;
+    color:white;
+    font-size:2em;
+    line-height:44px;
+    text-align:center;
+    margin-left:2px;
+    float:left;
+}
+
 </style>
     </head>
     <body style="overflow:hidden">
@@ -447,7 +504,7 @@
                             <button id="downloadBlockBtn">Download</button>
                             <button id="uploadBlockBtn">Upload</button>
                         </div>
-                        <form>
+                        <form style="display:none">
                             <input type="file" style="width:50%">
                             <button id="submitUploadBlock" class="blue">Submit</button>
                             <button id="cancelUploadBlock">Cancel</button>
@@ -553,6 +610,7 @@
     <div class="modal-dialog-content"></div>
     <div class="modal-dialog-buttons"><button onclick="FBP_closeModalDialog()">Close</button></div>
 </div>
+
 <script language="javascript">
 var _viewportSize = {
     width:{{ vw }},
@@ -610,7 +668,7 @@ function sidebarInit(){
                 console.log(buttonRect)
                 var sidebarRect = $('#sidebar')[0].getBoundingClientRect()
                 var residureHeight = sidebarRect.bottom - buttonRect.bottom;
-                console.log('residureHeight='+sidebarRect.bottom +'-'+ buttonRect.bottom+'='+residureHeight)    
+                console.log('residureHeight='+sidebarRect.bottom +'-'+ buttonRect.bottom+'='+residureHeight)
                 if (residureHeight > 30){
                     var newHeight = $('#toolbar_type').height()+residureHeight
                     $('#toolbar_type').height(newHeight)
@@ -725,9 +783,11 @@ function enableZoom(){
         _draggingTimer = setTimeout(function(){
             ratio = zoomRatio / 100
            _dragging = [evt.pageX,evt.pageY]
+           FBP_canvas.css('cursor','move')
         },500)
     })
     target.on('mouseup mouseout blur mouseleave',function(e){
+        FBP_canvas.css('cursor','')
         if (_draggingTimer) {
             clearTimeout(_draggingTimer)
             _draggingTimer = 0

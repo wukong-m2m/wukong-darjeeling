@@ -137,6 +137,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 <li class="active"><a id="application" href="#">Application Management</a></li>
                 <li><a id="node-editor" href="#">Device Management</a></li>
                 <li><a id="open-app-store" href="#">Application Store</a></li>
+                <li><a id="open-javaeditor" href="#">WuClass Script Editor</a></li>
+                <li><a id="open-gateway" href="#">MPTN Gateway <span id="mptn-gateway"></span></a></li>
                 <!--
                 <li class=""><a id="locationTree" href="#">Landmark Editor</a></li>
                 <li class=""><a id="designer" href="#">WuClass Designer</a></li>
@@ -158,5 +160,14 @@ document.addEventListener('DOMContentLoaded', function () {
             <h1><label id="loading-text"></label></h1>
           </div>
         </div>
+    <div id="node-red-frame" style="display:none;overflow:hidden;width:0px;height:0px;position:absolute;left:0;top:0">
+        <div id="" style="padding-top:0px;position:absolute;height:42px;top:0;left:175px">
+            <a href="#" onclick="showNodeRedFrame(false)">
+                <img src="/static/images/wukong_logo50.png" style="width:42px;height:42px;"/>
+                <span style="margin-left:10px;color:#c7c7c7;font-size:16px;vertical-align:middle;line-height:42px;">WuKong</span>
+            </a>
+        </div>
+        <iframe style="width:100%;height:100%"></iframe>
+    </div>
     </body>
 </html>

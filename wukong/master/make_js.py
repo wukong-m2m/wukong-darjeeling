@@ -20,7 +20,12 @@ def make_main(path=COMPONENTXML_PATH):
     properties = wuClass.getElementsByTagName('property')
     path = prefix + name.lower() + postfix
     paths.append('__comp__'+name.lower()+postfix)
-    if (not os.path.exists(path)):
+    # 
+    # 2015/11/19, modified by Iap, Sin YGuan
+    #     The __comp__wuclass__.js is re-created if it's definition tag has  an attribute "re-create"
+    #
+    forceToRecreate = wuClass.getAttribute('re-create')
+    if 1 or forceToRecreate or (not os.path.exists(path)):
         output = open(path, 'w')
         output.write(jinja2_env.get_template('component.js.tmpl').render(func_name=name, properties=properties))
         output.close()
