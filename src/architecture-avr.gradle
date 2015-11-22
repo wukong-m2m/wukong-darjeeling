@@ -176,7 +176,18 @@ task avrora_if_necessary(dependsOn: darjeeling) {
     }
 }
 
-task avrora_analyse_trace(type:Exec, dependsOn: avrora_if_necessary) {
+task disassemble(type:Exec, dependsOn: darjeeling) {
+    def disasmFile = "${buildDir}/darjeeling.S"
+
+    inputs.file architectureSpecificAssemble.djTargetElfFile
+    outputs.file disasmFile
+
+    executable "avr-objdump"
+    args '-D', architectureSpecificAssemble.djTargetElfFile
+    standardOutput = new FileOutputStream(disasmFile)
+}
+
+task avrora_analyse_trace(type:Exec, dependsOn: [avrora_if_necessary, disassemble]) {
     def fsxScript = "${project.rootDir}/config/${djConfigname}/proces-trace/proces-trace/ProcessTrace.fsx"
     def dihFile = "${buildDir}/infusion-${rtcbenchmark}/${rtcbenchmark}.dih"
     def analysedTraceOutput = "${project.rootDir}/config/${djConfigname}/results/${rtcbenchmark}"

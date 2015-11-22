@@ -15,6 +15,7 @@ type ExecCounters = {
     member x.average = if x.executions > 0
                        then float x.cycles / float x.executions
                        else 0.0
+    static member empty = { executions = 0; cycles = 0 }
 
 type ResultAvr = {
     unopt : AvrInstruction;
@@ -29,6 +30,7 @@ type ResultJava = {
 type Results = {
     benchmark : string;
     jvmInstructions : ResultJava list;
+    nativeCInstructions : (AvrInstruction*ExecCounters) list
     executedCyclesAOT : int;
     stopwatchCyclesC : int;
     stopwatchCyclesAOT : int;
