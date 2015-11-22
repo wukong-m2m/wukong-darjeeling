@@ -189,7 +189,7 @@ task avrora_analyse_trace(type:Exec, dependsOn: avrora_if_necessary) {
     outputs.file analysedTraceOutput
 
     executable "fsharpi"
-    args '--exec', fsxScript, rtcbenchmark, dihFile, avrora_if_necessary.rtcdataFile, avrora_if_necessary.profiledataFile, avrora_if_necessary.stdoutlogFile, analysedTraceOutput
+    args '--exec', fsxScript, rtcbenchmark, buildDir, analysedTraceOutput
 }
 
 task avrora_rtcdata_toscreen(dependsOn: darjeeling) << {

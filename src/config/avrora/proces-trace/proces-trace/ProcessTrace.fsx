@@ -164,12 +164,10 @@ let rec addCycles (jvmInstructions : JvmInstruction list) (profilerdata : Profil
                                              | Some(optValue) ->
                                                  let address = optValue.address in
                                                  let profiledInstruction = profilerdata |> List.find (fun x -> Convert.ToInt32(x.Address.Trim(), 16) = address) in
-                                                     (profiledInstruction.Executions, profiledInstruction.Cycles)
+                                                     (profiledInstruction.Executions, (profiledInstruction.Cycles+profiledInstruction.CyclesSubroutine))
                   { unopt = unopt; opt = opt; counters = { executions = executions; cycles = cycles } }) in
             let avrCountersToJvmCounters a b =
-                if a.executions > 0 // When adding avr counters to form the jvm counters, sum the cycles, and take the first execution count we encounter
-                then { cycles = a.cycles+b.cycles; executions = a.executions }
-                else { cycles = a.cycles+b.cycles; executions = b.executions }
+                {   cycles = a.cycles+b.cycles; executions = (if a.executions > 0 then a.executions else b.executions) }
             { jvm = jvm
               avr = resultsWithCycles
               counters = resultsWithCycles |> List.map (fun r -> r.counters) |> List.fold (avrCountersToJvmCounters) { executions=0; cycles=0 } })
@@ -328,37 +326,33 @@ let resultsToString (results : Results) =
     "------------------ " + results.benchmark + " ------------------\r\n\r\n" + r7 + "\r\n\r\n" + r6 + "\r\n\r\n" + r5 + "\r\n\r\n" + r4 + "\r\n\r\n" + r3 + "\r\n\r\n" + r2 + "\r\n\r\n" + r1
 
 let main(args : string[]) =
-    if (args.Count() >= 5)
-    then
-        let benchmark = (Array.get args 1).[3..]
-        let dih = DarjeelingInfusionHeaderXml.Load(Array.get args 2)
-        let rtcdata = RtcdataXml.Load(Array.get args 3)
-        let profilerdata = ProfilerdataXml.Load(Array.get args 4)
-        let stdoutlog = System.IO.File.ReadLines(Array.get args 5)
-        let results = processTrace benchmark dih rtcdata profilerdata stdoutlog
+    let benchmark = (Array.get args 1).[3..]
+    let builddir = (Array.get args 2)
+    let outputfilename = (Array.get args 3)
 
-        let txtFilename = (Array.get args 6) + ".txt"
-        let xmlFilename = (Array.get args 6) + ".xml"
-        File.WriteAllText (txtFilename, (resultsToString results))
-        Console.Error.WriteLine ("Wrote output to " + txtFilename)
+    let dih = DarjeelingInfusionHeaderXml.Load(String.Format("{0}/infusion-bm_{1}/bm_{1}.dih", builddir, benchmark))
+    let rtcdata = RtcdataXml.Load(String.Format("{0}/rtcdata.xml", builddir))
+    let profilerdata = ProfilerdataXml.Load(String.Format("{0}/profilerdata.xml", builddir))
+    let stdoutlog = System.IO.File.ReadLines(String.Format("{0}/stdoutlog.txt", builddir))
+    let results = processTrace benchmark dih rtcdata profilerdata stdoutlog
 
-        let xmlSerializer = FsPickler.CreateXmlSerializer(indent = true)
-        File.WriteAllText (xmlFilename, (xmlSerializer.PickleToString results))
-        Console.Error.WriteLine ("Wrote output to " + xmlFilename)
-        1
-    else
-        let benchmark = "sortO"
-        let dih = DarjeelingInfusionHeaderXml.Load("/Users/niels/src/rtc/src/build/avrora/infusion-bm_sortO/bm_sortO.dih")
-        let rtcdata = RtcdataXml.Load("/Users/niels/src/rtc/src/build/avrora/rtcdata.xml")
-        let profilerdata = ProfilerdataXml.Load("/Users/niels/src/rtc/src/build/avrora/profilerdata.xml")
-        let stdoutlog = System.IO.File.ReadLines("/Users/niels/src/rtc/src/build/avrora/stdoutlog.txt")
-        let results = processTrace benchmark dih rtcdata profilerdata stdoutlog
-        Console.WriteLine (resultsToString results)
-        0
+    let txtFilename = outputfilename + ".txt"
+    let xmlFilename = outputfilename + ".xml"
+
+    File.WriteAllText (txtFilename, (resultsToString results))
+    Console.Error.WriteLine ("Wrote output to " + txtFilename)
+
+    let xmlSerializer = FsPickler.CreateXmlSerializer(indent = true)
+    File.WriteAllText (xmlFilename, (xmlSerializer.PickleToString results))
+    Console.Error.WriteLine ("Wrote output to " + xmlFilename)
+    1
 
 main(fsi.CommandLineArgs)
-
-
+//main([|
+//        "sortO"
+//        "/Users/niels/src/rtc/src/build/avrora"
+//        "/Users/niels/src/rtc/src/config/avrora/tmpoutput"
+//     |])
 
 
 
