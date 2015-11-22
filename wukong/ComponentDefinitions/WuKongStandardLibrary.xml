@@ -410,16 +410,30 @@
 
     <WuClass name="UIButton" id="11002" virtual="fasle" type="soft">
       <property name="click" access="writeonly" datatype="short" default="0" />
+      <property name="device" access="readwrite" datatype="short" default="0" />
+      <property name="port" access="readwrite" datatype="short" default="0" />
     </WuClass>
 
     <WuClass name="UINumber" id="11003" virtual="fasle" type="soft">
       <property name="number" access="writeonly" datatype="short" default="0" />
+      <property name="device" access="readwrite" datatype="short" default="0" />
+      <property name="port" access="readwrite" datatype="short" default="0" />
     </WuClass>
     <WuClass name="Email" id="11004" virtual="fasle" type="soft">
       <property name="send" access="writeonly" datatype="short" default="0" />
     </WuClass>
     <WuClass name="URL" id="11005" virtual="fasle" type="soft">
       <property name="input" access="readonly" datatype="short" default="0" />
+    </WuClass>
+    <WuClass name="UISlider" id="11006" virtual="false" type="soft">
+      <property name="number" access="readwrite" datatype="short" default="0" />
+      <property name="device" access="readwrite" datatype="short" default="0" />
+      <property name="port" access="readwrite" datatype="short" default="0" />
+    </WuClass>
+    <WuClass name="UIScene" id="11007" virtual="false" type="soft">
+      <property name="number" access="readwrite" datatype="short" default="0" />
+      <property name="device" access="readwrite" datatype="short" default="0" />
+      <property name="port" access="readwrite" datatype="short" default="0" />
     </WuClass>
 
 </WuKong>
