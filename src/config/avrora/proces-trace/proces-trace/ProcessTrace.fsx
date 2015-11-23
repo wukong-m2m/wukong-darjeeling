@@ -1,7 +1,8 @@
-﻿#r "binaries/FSharp.Data/FSharp.Data.dll"
+#r "binaries/FSharp.Data/FSharp.Data.dll"
 #r "binaries/fspickler.1.5.2/lib/net45/FsPickler.dll"
 
 #load "Datatypes.fsx"
+#load "AVR.fsx"
 
 open System
 open System.IO
@@ -51,64 +52,32 @@ let getCategoryForJvmOpcode opcode =
 let getAllCategories =
     jvmOpcodeCategories |> List.map (fun (cat, opcodes) -> cat)
 
-[<Literal>]
-let OPCODE_PUSH                    = 0x920F
-[<Literal>]
-let OPCODE_POP                     = 0x900F
-[<Literal>]
-let OPCODE_ST_XINC                 = 0x920D
-[<Literal>]
-let OPCODE_LD_DECX                 = 0x900E
-[<Literal>]
-let OPCODE_MOV                     = 0x2C00
-[<Literal>]
-let OPCODE_MOVW                    = 0x0100
-[<Literal>]
-let OPCODE_BREAK                   = 0x9598
-[<Literal>]
-let OPCODE_NOP                     = 0x0000
-[<Literal>]
-let OPCODE_JMP                     = 0x940C0000
-[<Literal>]
-let OPCODE_BREQ                    = 0xF001
-[<Literal>]
-let OPCODE_BRGE                    = 0xF404
-[<Literal>]
-let OPCODE_BRLT                    = 0xF004
-[<Literal>]
-let OPCODE_BRNE                    = 0xF401
-[<Literal>]
-let OPCODE_RJMP                    = 0xC000
 
-let isPUSH x = (x.opcode &&& 0xFE0F) = OPCODE_PUSH || (x.opcode &&& 0xFE0F) = OPCODE_ST_XINC
-let isPOP x = (x.opcode &&& 0xFE0F) = OPCODE_POP || (x.opcode &&& 0xFE0F) = OPCODE_LD_DECX
-let isMOV x = (x.opcode &&& 0xFC00) = OPCODE_MOV
-let isMOVW x = (x.opcode &&& 0xFF00) = OPCODE_MOVW
-let isMOV_MOVW_PUSH_POP x = isMOV x || isMOVW x || isPUSH x || isPOP x
-let isBREAK x = x.opcode = OPCODE_BREAK
-let isNOP x = x.opcode = OPCODE_NOP
-let isJMP x = (x.opcode &&& 0xFE0E0000) = OPCODE_MOVW
-let isBREQ x = (x.opcode &&& 0xFC07) = OPCODE_BREQ
-let isBRGE x = (x.opcode &&& 0xFC07) = OPCODE_BRGE
-let isBRLT x = (x.opcode &&& 0xFC07) = OPCODE_BRLT
-let isBRNE x = (x.opcode &&& 0xFC07) = OPCODE_BRNE
-let isBRANCH x = isBREQ x || isBRGE x || isBRLT x || isBRNE x
-let isRJMP x = (x.opcode &&& 0xF000) = OPCODE_RJMP
 
 // Input: the optimised avr code, and a list of tuples of unoptimised avr instructions and the jvm instruction that generated them
 // Returns: a list of tuples (optimised avr instruction, unoptimised avr instruction, corresponding jvm index)
 //          the optimised avr instruction may be None for instructions that were removed completely by the optimiser
 let rec matchOptUnopt (optimisedAvr : AvrInstruction list) (unoptimisedAvr : (AvrInstruction*JvmInstruction) list) =
+    let isAOT_PUSH x = AVR.isPUSH(x.opcode) || AVR.isST_XINC(x.opcode) // AOT uses 2 stacks
+    let isAOT_POP x = AVR.isPOP(x.opcode) || AVR.isLD_DECX(x.opcode)
+    let isMOV x = AVR.isMOV (x.opcode)
+    let isMOVW x = AVR.isMOVW (x.opcode)
+    let isBREAK x = AVR.isBREAK (x.opcode)
+    let isNOP x = AVR.isNOP (x.opcode)
+    let isJMP x = AVR.isJMP (x.opcode)
+    let isRJMP x = AVR.isRJMP (x.opcode)
+    let isBRANCH x = AVR.isBREQ (x.opcode)|| AVR.isBRGE (x.opcode)|| AVR.isBRLT (x.opcode)|| AVR.isBRNE (x.opcode)
+    let isMOV_MOVW_PUSH_POP x = isMOV x || isMOVW x || isAOT_PUSH x || isAOT_POP x
     match optimisedAvr, unoptimisedAvr with
     // Identical instructions: match and consume both
     | optimisedHead :: optimisedTail, (unoptimisedHead, jvmHead) :: unoptTail when optimisedHead.text = unoptimisedHead.text
         -> (Some optimisedHead, unoptimisedHead, jvmHead) :: matchOptUnopt optimisedTail unoptTail
     // Match a MOV to a single PUSH instruction (bit arbitrary whether to count the cycle for the PUSH or POP that was optimised)
-    | optMOV :: optTail, (unoptPUSH, jvmHead) :: unoptTail when isMOV(optMOV) && isPUSH(unoptPUSH)
+    | optMOV :: optTail, (unoptPUSH, jvmHead) :: unoptTail when isMOV(optMOV) && isAOT_PUSH(unoptPUSH)
         -> (Some optMOV, unoptPUSH, jvmHead)
             :: matchOptUnopt optTail unoptTail
     // Match a MOVW to two PUSH instructions (bit arbitrary whether to count the cycle for the PUSH or POP that was optimised)
-    | optMOVW :: optTail, (unoptPUSH1, jvmHead1) :: (unoptPUSH2, jvmHead2) :: unoptTail when isMOVW(optMOVW) && isPUSH(unoptPUSH1) && isPUSH(unoptPUSH2)
+    | optMOVW :: optTail, (unoptPUSH1, jvmHead1) :: (unoptPUSH2, jvmHead2) :: unoptTail when isMOVW(optMOVW) && isAOT_PUSH(unoptPUSH1) && isAOT_PUSH(unoptPUSH2)
         -> (Some optMOVW, unoptPUSH1, jvmHead1)
             :: (None, unoptPUSH2, jvmHead2)
             :: matchOptUnopt optTail unoptTail
@@ -173,6 +142,9 @@ let addCycles (jvmInstructions : JvmInstruction list) (profilerdata : ProfiledIn
               counters = resultsWithCycles |> List.map (fun r -> r.counters) |> List.fold (avrCountersToJvmCounters) ExecCounters.empty })
 
 let countPushPopMovw (results : ResultJava list) =
+    let isAOT_PUSH x = AVR.isPUSH(x.opcode) || AVR.isST_XINC(x.opcode) // AOT uses 2 stacks
+    let isAOT_POP x = AVR.isPOP(x.opcode) || AVR.isLD_DECX(x.opcode)
+    let isMOVW x = AVR.isMOVW (x.opcode)
     let sumForOpcode predicate =
         results |> List.map (fun r -> r.avr)
                 |> List.concat
@@ -182,7 +154,7 @@ let countPushPopMovw (results : ResultJava list) =
                                         | _
                                           -> ExecCounters.empty)
                 |> List.fold (+) ExecCounters.empty
-    (sumForOpcode isPUSH, sumForOpcode isPOP, sumForOpcode isMOVW)
+    (sumForOpcode isAOT_PUSH, sumForOpcode isAOT_POP, sumForOpcode isMOVW)
 
 let getTimersFromStdout (stdoutlog : string list) =
     let pattern = "timer number (10\d): (\d+) cycles"
