@@ -32,12 +32,17 @@ type Results = {
     jvmInstructions : ResultJava list;
     nativeCInstructions : (AvrInstruction*ExecCounters) list
     executedCyclesAOT : int;
-    stopwatchCyclesC : int;
-    stopwatchCyclesAOT : int;
+    executedCyclesC : int;
     stopwatchCyclesJava : int;
+    stopwatchCyclesAOT : int;
+    stopwatchCyclesC : int;
     cyclesPush : ExecCounters;
     cyclesPop : ExecCounters;
     cyclesMovw : ExecCounters;
-    cyclesPerJvmOpcode : list<string * ExecCounters>;
-    cyclesPerJvmOpcodeCategory : list<string * ExecCounters>;
+    cyclesPerJvmOpcode : (string * string * ExecCounters) list;
+    cyclesPerAvrOpcodeAOTJava : (string * string * ExecCounters) list;
+    cyclesPerAvrOpcodeNativeC : (string * string * ExecCounters) list;
+    cyclesPerJvmOpcodeCategory : (string * ExecCounters) list;
+    cyclesPerAvrOpcodeCategoryAOTJava : (string * ExecCounters) list
+    cyclesPerAvrOpcodeCategoryNativeC : (string * ExecCounters) list;
 }

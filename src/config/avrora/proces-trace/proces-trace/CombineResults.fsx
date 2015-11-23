@@ -8,33 +8,44 @@ open Nessos.FsPickler
 open Datatypes
 
 let resultToStringList (result : Results) =
-    let cyclesToPercentage cycles =
-        String.Format ("{0:00.000}", 100.0 * float cycles / float result.executedCyclesAOT)
+    let cyclesToPercentage totalCycles cycles =
+        String.Format ("{0:00.000}", 100.0 * float cycles / float totalCycles)
+    let cyclesToAOTPercentage = cyclesToPercentage result.executedCyclesAOT
+    let cyclesToCPercentage = cyclesToPercentage result.executedCyclesC
     let cyclesToSlowdown cycles1 cycles2 =
         String.Format ("{0:0.00}", float cycles1 / float cycles2)
     let r1 =
         [
-        ("BENCHMARK"         , result.benchmark);
-        (""                  , "");
-        ("STOPWATCHES"       , "");
-        ("Native C"          , result.stopwatchCyclesC.ToString());
-        ("AOT"               , result.stopwatchCyclesAOT.ToString());
-        ("Java"              , result.stopwatchCyclesJava.ToString());
-        ("AOT/C"             , (cyclesToSlowdown result.stopwatchCyclesAOT result.stopwatchCyclesC));
-        ("Java/C"            , (cyclesToSlowdown result.stopwatchCyclesJava result.stopwatchCyclesC));
-        ("Java/AOT"          , (cyclesToSlowdown result.stopwatchCyclesJava result.stopwatchCyclesAOT));
-        (""                  , "");
-        ("CYCLE COUNTS"      , "");
-        ("AOT method total"  , result.executedCyclesAOT.ToString());
-        ("AOT stopw/count"   , (cyclesToSlowdown result.stopwatchCyclesAOT result.executedCyclesAOT));
-        ("PUSH"              , (cyclesToPercentage result.cyclesPush.cycles));
-        ("POP"               , (cyclesToPercentage result.cyclesPop.cycles));
-        ("MOVW"              , (cyclesToPercentage result.cyclesMovw.cycles));
-        ("PUSH+POP+MOVW"     , (cyclesToPercentage (result.cyclesPush.cycles+result.cyclesPop.cycles+result.cyclesMovw.cycles)));
-        (""                  , "");
-        ("OPCODE CATEGORIES" , "")
+        ("BENCHMARK"            , result.benchmark);
+        (""                     , "");
+        ("STOPWATCHES"          , "");
+        ("Native C"             , result.stopwatchCyclesC.ToString());
+        ("AOT"                  , result.stopwatchCyclesAOT.ToString());
+        ("Java"                 , result.stopwatchCyclesJava.ToString());
+        ("AOT/C"                , (cyclesToSlowdown result.stopwatchCyclesAOT result.stopwatchCyclesC));
+        ("Java/C"               , (cyclesToSlowdown result.stopwatchCyclesJava result.stopwatchCyclesC));
+        ("Java/AOT"             , (cyclesToSlowdown result.stopwatchCyclesJava result.stopwatchCyclesAOT));
+        (""                     , "");
+        ("CYCLE COUNTS"         , "");
+        ("AOT method total"     , result.executedCyclesAOT.ToString());
+        ("AOT stopw/count"      , (cyclesToSlowdown result.stopwatchCyclesAOT result.executedCyclesAOT));
+        ("PUSH"                 , (cyclesToAOTPercentage result.cyclesPush.cycles));
+        ("POP"                  , (cyclesToAOTPercentage result.cyclesPop.cycles));
+        ("MOVW"                 , (cyclesToAOTPercentage result.cyclesMovw.cycles));
+        ("PUSH+POP+MOVW"        , (cyclesToAOTPercentage (result.cyclesPush.cycles+result.cyclesPop.cycles+result.cyclesMovw.cycles)));
         ]
-    let r2 = result.cyclesPerJvmOpcodeCategory |> List.map (fun (cat, cnt) -> (cat, (cyclesToPercentage cnt.cycles)))
+    let r2 = 
+        (""                           , "")
+        :: ("JVM CATEGORIES"          , "")
+        :: (result.cyclesPerJvmOpcodeCategory |> List.map (fun (cat, cnt) -> (cat, (cyclesToAOTPercentage cnt.cycles))))
+    let r2 = 
+        (""                           , "")
+        :: ("AVR Java AOT CATEGORIES" , "")
+        :: (result.cyclesPerAvrOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (cyclesToAOTPercentage cnt.cycles))))
+    let r2 = 
+        (""                     , "")
+        :: ("AVR Native C CATEGORIES" , "")
+        :: (result.cyclesPerAvrOpcodeCategoryNativeC |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
     List.concat [ r1 ; r2 ]
 
 let flipTupleListsToStringList (benchmarks : (string * string) list list) =

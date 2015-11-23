@@ -184,7 +184,10 @@ task disassemble(type:Exec, dependsOn: darjeeling) {
 
     executable "avr-objdump"
     args '-D', architectureSpecificAssemble.djTargetElfFile
-    standardOutput = new FileOutputStream(disasmFile)
+
+    doFirst {
+        standardOutput = new FileOutputStream(disasmFile)
+    }
 }
 
 task avrora_analyse_trace(type:Exec, dependsOn: [avrora_if_necessary, disassemble]) {
