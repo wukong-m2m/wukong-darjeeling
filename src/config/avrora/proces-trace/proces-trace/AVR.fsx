@@ -247,7 +247,7 @@ let opcodeCategories =
      ("04) Stack push/pop", [ POP; PUSH ]);
      ("05) Register moves", [ MOV; MOVW ]);         
      ("06) Constant load", [ LDI ]);
-     ("07) Compares and branches", [ BRCC; BRCS; BREQ; BRGE; BRLT; BRNE; BRPL; CP; CPC; CPI; SBRC; SBRS ]);
+     ("07) Comp./branches", [ BRCC; BRCS; BREQ; BRGE; BRLT; BRNE; BRPL; CP; CPC; CPI; SBRC; SBRS ]);
      ("08) Math", [ ADC; ADD; ADIW; DEC; MUL; INC; SBC; SBCI; SBIW; SUB; SUBI ]);
      ("09) Bit shifts", [ ASR; ROR; LSR ]);
      ("10) Bit logic", [ AND; ANDI; EOR; OR; ORI ]);

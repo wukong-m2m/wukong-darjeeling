@@ -9,7 +9,7 @@ open Datatypes
 
 let resultToStringList (result : Results) =
     let cyclesToPercentage totalCycles cycles =
-        String.Format ("{0:00.000}", 100.0 * float cycles / float totalCycles)
+        String.Format ("{0:00.0}", 100.0 * float cycles / float totalCycles)
     let cyclesToAOTPercentage = cyclesToPercentage result.executedCyclesAOT
     let cyclesToCPercentage = cyclesToPercentage result.executedCyclesC
     let cyclesToSlowdown cycles1 cycles2 =
@@ -35,18 +35,18 @@ let resultToStringList (result : Results) =
         ("PUSH+POP+MOVW"        , (cyclesToAOTPercentage (result.cyclesPush.cycles+result.cyclesPop.cycles+result.cyclesMovw.cycles)));
         ]
     let r2 = 
-        (""                           , "")
-        :: ("JVM CATEGORIES"          , "")
-        :: (result.cyclesPerJvmOpcodeCategory |> List.map (fun (cat, cnt) -> (cat, (cyclesToAOTPercentage cnt.cycles))))
-    let r2 = 
-        (""                           , "")
-        :: ("AVR Java AOT CATEGORIES" , "")
-        :: (result.cyclesPerAvrOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (cyclesToAOTPercentage cnt.cycles))))
-    let r2 = 
         (""                     , "")
-        :: ("AVR Native C CATEGORIES" , "")
+        :: ("JVM"               , "")
+        :: (result.cyclesPerJvmOpcodeCategory |> List.map (fun (cat, cnt) -> (cat, (cyclesToAOTPercentage cnt.cycles))))
+    let r3 = 
+        (""                     , "")
+        :: ("AVR Java AOT"      , "")
+        :: (result.cyclesPerAvrOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (cyclesToAOTPercentage cnt.cycles))))
+    let r4 = 
+        (""                     , "")
+        :: ("AVR Native C"      , "")
         :: (result.cyclesPerAvrOpcodeCategoryNativeC |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
-    List.concat [ r1 ; r2 ]
+    List.concat [ r1; r2; r3; r4 ]
 
 let flipTupleListsToStringList (benchmarks : (string * string) list list) =
     // Initialise the accumulator as a list of lists containing only the key names
@@ -66,9 +66,9 @@ let flipTupleListsToStringList (benchmarks : (string * string) list list) =
 let stringListToString (list : string list) =
     match list with
     | head :: tail
-        -> String.Format ("{0,20},{1}",
-            head,
-            String.Join(",", tail |> List.map (fun x -> String.Format("{0,10}", x))))
+        -> String.Format ("{0,-20},{1}",
+                            head,
+                            String.Join(",", tail |> List.map (fun x -> String.Format("{0,10}", x))))
     | [] -> ""
 
 let summariseResults resultsDirectory =
