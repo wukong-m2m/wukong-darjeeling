@@ -1,0 +1,94 @@
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body>
+<style>
+.javaeditor-box {
+    position:absolute;
+    left:80px;
+    top:75px;
+    width:1150px;
+    height:543px;
+}
+.javaeditor-compiling {
+    position:absolute;
+    left:80px;
+    top:630px;
+    width:1150px;
+    height:85px;
+}
+.javaeditor-box textarea{
+    font-family: monospace;
+    font-size: 16px;
+}
+.javaeditor-compiling textarea{
+    font-family: monospace;
+    padding:10px;
+    font-size: 18px;
+}
+</style>
+<div style="width:100%;height:100%;background-image:url(/static/javaeditor/index.png);background-repeat:no-repeat"></div>
+<div class="javaeditor-box">
+    <textarea style="width:100%;height:100%;background-color:#f0f0f0;"></textarea>
+</div>
+<div class="javaeditor-compiling">
+    <textarea disabled style="width:100%;height:100%;background-color:#c9c9c9;"></textarea>
+</div>
+<script>
+function JavaEditorInit(closeStore){
+    //application_xmls.js is actually a csv file
+    $.ajaxSetup({ cache: false });
+    $.ajax({
+        url:'/static/javaeditor/java.txt',
+        dataType:'text',
+        cache:false,
+        success:function(text){
+            document.querySelector('.javaeditor-box textarea').value = text;
+        }
+    })
+}
+function compileJavaWuClassScript(){
+    var code = document.querySelector('.javaeditor-box textarea').value
+    //finding the class name
+    var p = code.indexOf('public class')
+    var q = code.indexOf('extend',p)
+    var classname = code.substring(p+12,q).trim()
+    var textarea = document.querySelector('.javaeditor-compiling textarea')
+    var stage = [
+        [1,'compiling WuClass:'+classname+' code of length:'+code.length+' bytes'],
+        [1,'uploading to server ...'],
+        [3,'server acknowledged for receving code of length:'+code.length+' bytes'],
+        [2,'server is doing syntax checking...'],
+        [2,'server is preparing for compiling'],
+        [0.5,'server is doing compiling %%'],
+        [2,'compiling is completed'],
+        [1,'WuClass:'+classname+' will be available after restarting the server'],
+    ]
+    var stage_count = 0
+    var progress = 0
+    var run_stage = function(){
+        var data = stage[stage_count]
+        var delay = data[0]
+        var text = data[1]
+        if (text.indexOf('%%')==-1){
+            stage_count += 1
+        }
+        else{
+            var delta = Math.floor(Math.random()*15)
+            progress = Math.min(100,progress+delta)
+            if (progress >= 100) {progress=100;stage_count += 1}
+            text = text.replace('%%',progress+'%')
+            delay = delay+ delta * 0.01
+        }
+        textarea.value = text
+        if (stage_count == stage.length) return; //stop
+        setTimeout(function(){
+            run_stage()
+        },delay * 1000)
+    }
+    run_stage()
+}
+</script>
+</body>
+</html>

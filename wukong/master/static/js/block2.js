@@ -9,7 +9,7 @@ function Block()
 }
 var genericIcon = new Image()
 genericIcon.onload = function(){
-    var icons = document.querySelectorAll('.wuClassIcon.GenericIcon,.wuClassIcon22.GenericIcon')
+    var icons = document.querySelectorAll('.wuClassIcon.GenericIcon, .wuClassIcon22.GenericIcon')
     for (var i in icons){
         icons[i].src = genericIcon.src;
     }
@@ -21,10 +21,13 @@ function loadIcon(){
     var _icon44 = new Image()
     _icon44.onload = function(){
         block.icon44 = this;
-        var icons = document.querySelectorAll('.wuClassIcon.'+typename+', .wuClassIcon22.'+typename)
+        var icons = document.querySelectorAll('.wuClassIcon.wuClass'+typename+'Type, .wuClassIcon22.wuClass'+typename+'Type')
         for (var i in icons){
             icons[i].src = this.src;
         }
+    }
+    _icon44.onerror = function(){
+        block.icon44 = false
     }
     _icon44.src = '/static/images/wuclass/'+typename+'.png'
 }
@@ -224,6 +227,7 @@ Block.prototype.setSlotRWProperty = function(){
 Block.prototype.draw=function() {
     // Annotation type is special wuclass
     if (this.type=='Annotation') return this.drawAnnotation()
+
     var i;
     var pos = this.getPosition();
 
@@ -231,12 +235,23 @@ Block.prototype.draw=function() {
     this.div.empty();
     var tags = []
     var iconClass = this.type
-    var icon44 = this.icon44;
-    var icon = '<img src="'+icon44.src+'" class="wuClassIcon22"/>'
     var type = this.type
+    //var name = (this.name || type.replace('_',' '))
+    var name = (this.name==this.type ? '&nbsp;' : this.name)
+    var icon;
+    if (this.icon44){
+        icon = '<img src="'+this.icon44.src+'" class="wuClassIcon22 wuClass'+type+'Type"/>'
+    }
+    else{
+        icon = '<block class="default-icon22">'+type.substr(0,1)+'</block>'
+    }
     tags.push('<div class="block-type">'+icon + type + '</div>');
-    var name = (this.name|| type.replace('_',' '))
-    tags.push('<div class="block-name" blockid="'+this.id+'">'+name+'</div>')
+    if (type=='NodeREDAgent'){
+        tags.push('<div class="block-name" blockid="'+this.id+'"><a class=" NodeREDAgent">Edit Node-RED Subgraph</a></div>')
+    }
+    else{
+        tags.push('<div class="block-name" blockid="'+this.id+'">'+name+'</div>')
+    }
     tags.push('<div class="block-signals">');
 
     this.setSlotRWProperty()
@@ -297,6 +312,15 @@ Block.prototype.draw=function() {
         }
         $signal.on('click', clickHandler);
     }
+    // implement "Edit in Node-RED"
+    if (type=='NodeREDAgent'){
+        var a= document.querySelector('div.block-name[blockid="'+this.id+'"] a.NodeREDAgent');
+        a.onclick = function(evt){
+            evt.preventDefault;
+            evt.stopPropagation();
+            window.top.showNodeRedFrame()
+        }
+    }
 
 }
 Block.prototype.drawAnnotation = function(){
@@ -321,6 +345,7 @@ Block.prototype.addSignal=function(con) {
     }
     this.signals.push(con);
 //  this.signals[con]=type;
+    return con;
 }
 Block.prototype.getSignals=function() {
     return this.signals;
@@ -342,6 +367,7 @@ Block.prototype.addAction=function(con) {
         con.index = this.slots.length-1;
     }
     this.actions.push(con);
+    return con;
 //  this.actions[con]=type;
 }
 Block.prototype.setProperty=function(property,value) {
@@ -685,7 +711,6 @@ Block.prototype.renderPropertyEditForm = function(){
         // default to open
         //var style = i==0 ? '' : ' style="display:none"'
         var style = ''
-
         var value = this.sigProper[slot.name]
         var placeholder = null
         if (typeof(value)=='undefined') value = null;
@@ -821,7 +846,7 @@ Block.prototype.renderPropertyEditForm = function(){
             editForm.querySelector('input#location_func').value = policy
             top.notifyApplicationContentTainted(true)
         }
-    })    
+    })
 }
 
 Block.prototype.renderAnnotationPropertyEditForm = function(){

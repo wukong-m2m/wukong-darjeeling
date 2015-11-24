@@ -83,6 +83,70 @@ function init()
             closeBtnDiv.querySelector('button').onclick = closeStore
         })
     })
+    $('#mptn-gateway').html('&lt;'+location.hostname+'&gt;:1')
+    $('#open-gateway').click(function(){
+        var viewportSize = getViewportSize()
+        var dialog = document.createElement('div')
+        dialog.className = 'modal-dialog appstore'
+        var style = dialog.style
+        style.display = 'inline-block'
+        style.position = 'absolute';
+        style.left = viewportSize.width * 0.035 + 'px'
+        style.top = viewportSize.height * 0.02 + 'px'
+        style.width = viewportSize.width * 0.90 + 'px'
+        style.height = viewportSize.height * 0.80 + 'px'
+        document.body.insertBefore(dialog,document.querySelector('.navbar'))
+
+        var closeStore = function(){
+            dialog.parentNode.removeChild(dialog)
+        }
+        // load content
+        var appStoreUrl = '/static/gateway/index.html'
+        $(dialog).load(appStoreUrl,function(){
+            MPTNGatewayInit(closeStore)
+            var closeBtnDiv = document.createElement('div')
+            closeBtnDiv.style.position = 'absolute'
+            closeBtnDiv.style.textAlign = 'center'
+            closeBtnDiv.style.width = '100%'
+            closeBtnDiv.style.top = (parseInt(style.height)-20) + 'px'
+            closeBtnDiv.innerHTML = '<button class="blue">Cancel</button>'
+            dialog.appendChild(closeBtnDiv)
+            closeBtnDiv.querySelector('button').onclick = closeStore
+        })
+    })
+    $('#open-javaeditor').click(function(){
+        var viewportSize = getViewportSize()
+        var dialog = document.createElement('div')
+        dialog.className = 'modal-dialog appstore'
+        var style = dialog.style
+        style.display = 'inline-block'
+        style.position = 'absolute';
+        style.left = viewportSize.width * 0.035 + 'px'
+        style.top = viewportSize.height * 0.02 + 'px'
+        style.width = viewportSize.width * 0.90 + 'px'
+        style.height = viewportSize.height * 0.80 + 'px'
+        document.body.insertBefore(dialog,document.querySelector('.navbar'))
+
+        var closeStore = function(){
+            dialog.parentNode.removeChild(dialog)
+        }
+        // load content
+        var appStoreUrl = '/static/javaeditor/index.html'
+        $(dialog).load(appStoreUrl,function(){
+            JavaEditorInit(closeStore)
+            var closeBtnDiv = document.createElement('div')
+            closeBtnDiv.style.position = 'absolute'
+            closeBtnDiv.style.textAlign = 'center'
+            closeBtnDiv.style.width = '100%'
+            closeBtnDiv.style.top = (parseInt(style.height)-20) + 'px'
+            closeBtnDiv.innerHTML = '<button class="blue compile-javaeditor">Compile</button><button style="margin-left:20px" class="close-javaeditor">Close</button>'
+            dialog.appendChild(closeBtnDiv)
+            closeBtnDiv.querySelector('button.close-javaeditor').onclick = closeStore
+            closeBtnDiv.querySelector('button.compile-javaeditor').onclick = function(){
+                compileJavaWuClassScript()
+            }
+        })
+    })
     /*
     $('#locationTree').click(function() {
         $('#node-editor').parent().removeClass('active');
@@ -317,7 +381,7 @@ function application_fillList(r)
         name.click(nameHandler);
 
         remove.click(removeHandler);
-                
+
         act.append(remove);
 
         appentry.append(name);
@@ -494,7 +558,6 @@ function poll(url, version, options, callback)
     }
 
     global_polling_status = true;
-    console.log('polling');
     $.post(url, {version: version}, function(data) {
         if (typeof callback != 'undefined') {
             callback(data);
@@ -512,4 +575,22 @@ function poll(url, version, options, callback)
     });
 }
 
+function showNodeRedFrame(show){
+    if (typeof(show)=='undefined') show = true
+    var div = document.getElementById('node-red-frame')
+    var iframe = div.querySelector('iframe')
+    if (show){
+        iframe.src = location.protocol+'//'+location.hostname+':1880'
+        var size = getViewportSize();
+        div.style.display=''
+        div.style.width = (size.width-1)+'px'
+        div.style.height = (size.height-1)+'px'
+    }
+    else{
+        iframe.src = 'about:blank'
+        div.style.display='none'
+        div.style.width = '0px'
+        div.style.height = '0px'
+    }
+}
 

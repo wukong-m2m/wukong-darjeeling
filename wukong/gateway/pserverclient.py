@@ -1,4 +1,6 @@
-import socket
+# import socket
+import gevent
+from gevent import socket
 import sys
 import gtwconfig as Config
 

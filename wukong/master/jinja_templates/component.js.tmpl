@@ -5,10 +5,17 @@ function {{ func_name }}()
   {% for property in properties %}
     {% if property.getAttribute('visible') != 'false' %}
       {% if property.getAttribute('access') != 'readonly' %}
-        this.addAction( new Action('{{ property.getAttribute('name') }}'));
+        var action = this.addAction( new Action('{{ property.getAttribute('name') }}','{{property.getAttribute('datatype')}}'));
+          {% if property.getAttribute('default') %}
+            action.defaultValue = '{{property.getAttribute('default')}}'
+          {% endif %}
       {% endif %}
+      
       {% if property.getAttribute('access') != 'writeonly' %}
-        this.addSignal( new Signal('{{ property.getAttribute('name') }}'));
+        var signal = this.addSignal( new Signal('{{ property.getAttribute('name') }}','{{property.getAttribute('datatype')}}'));
+          {% if property.getAttribute('default') %}
+            signal.defaultValue = '{{property.getAttribute('default')}}'
+          {% endif %}
       {% endif %}
     {% endif %}
   {% endfor %}

@@ -274,7 +274,7 @@ class RPCAgent(TransportAgent):
                 self.verify(allowed_replies),
                 allowed_replies,
                 new_message(destination, command, self.getNextSequenceNumberAsPrefixPayload() + payload),
-                int(round(time.time() * 1000)) + 10000
+                int(round(time.time() * 1000)) + 5000
         )
 
         transport_agent_out_tasks.put_nowait(defer)
@@ -290,17 +290,23 @@ class RPCAgent(TransportAgent):
         def error_callback(reply):
             result.set(reply)
 
+        start_time = time.time()
         defer = new_defer(
                 callback,
                 error_callback,
                 self.verify(allowed_replies),
                 allowed_replies,
                 new_message(destination, command, self.getNextSequenceNumberAsPrefixPayload() + payload),
-                int(round(time.time() * 1000)) + 5000
+                int(round(start_time * 1000)) + 5000
         )
 
         transport_agent_out_tasks.put_nowait(defer)
-
+        while not result.ready():
+            gevent.sleep(0.01)
+            current_time = time.time()
+            if current_time - start_time > 1:
+                logger.info("waited %s to reply: sent cmd %s and pyld %s", MPTN.ID_TO_STRING(destination), str(cmd), str(payload))
+                start_time = current_time
         return result.get()
 
     # blocking method

@@ -26,6 +26,10 @@
         <enum value="PIN2"/>
     </WuTypedef>
 
+    <WuTypedef name="NodeREDMessage" type="enum">
+        <enum value="PAYLOAD"/>
+    </WuTypedef>
+
     <!-- Software -->
     <WuClass name="Threshold" id="1" virtual="true" type="soft">
         <property name="operator" access="readwrite" datatype="ThresholdOperator" default="lt"  />
@@ -104,6 +108,10 @@
         <property name="input1" access="readwrite" datatype="short" default="0"/>
         <property name="input2" access="readwrite" datatype="short" default="1"/>
         <property name="output" access="readonly" datatype="boolean" default="false"/>
+    </WuClass>
+    <WuClass name="NodeREDAgent" id="13" virtual="true" type="soft">
+        <property name="incoming_from" access="readonly" datatype="NodeREDMessage" default=""  />
+        <property name="outgoing_to" access="writeonly" datatype="NodeREDMessage" default=""  />
     </WuClass>
     
     <!-- Sensors -->
