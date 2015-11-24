@@ -76,7 +76,13 @@ let summariseResults resultsDirectory =
 
     let resultFiles = Directory.GetFiles(resultsDirectory, "*.xml") |> Array.toList
     let resultsXmlStrings = resultFiles |> List.map (fun filename -> File.ReadAllText(filename))
-    let results = resultsXmlStrings |> List.map (fun xml -> xmlSerializer.UnPickleOfString<Results> xml)
+    let results =
+        resultsXmlStrings
+            |> List.map (fun xml -> xmlSerializer.UnPickleOfString<Results> xml)
+            |> List.sortBy (fun r -> let sortorder = ["sortO"; "hsortO"; "binsrchO"; "fft"; "rc5"; "xxtea"; "sortX"; "hsortX"; "binsrchX"] in
+                                     match sortorder |> List.tryFindIndex ((=) r.benchmark) with
+                                     | Some (index) -> index
+                                     | None -> 100)
     let resultsSummaryAsTupleLists = results |> List.map resultToStringList
     let resultsSummary = resultsSummaryAsTupleLists |> flipTupleListsToStringList
     let resultLines = resultsSummary |> List.map stringListToString
@@ -93,5 +99,5 @@ let main(args : string[]) =
     else
         0
 
-//main(fsi.CommandLineArgs)
-summariseResults "/Users/niels/src/rtc/src/config/avrora/results"
+main(fsi.CommandLineArgs)
+//summariseResults "/Users/niels/src/rtc/src/config/avrora/results"
