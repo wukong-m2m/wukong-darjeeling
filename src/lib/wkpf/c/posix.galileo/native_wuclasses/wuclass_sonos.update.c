@@ -10,10 +10,10 @@
 #define COMMAND_DELAY 500000
 #define LOOP_DELAY    500
 
-char sonos_playlist_api[5][255]={"http://192.168.40.143:5005/playlist/Pop", "http://192.168.40.143:5005/playlist/Soundtrack", "http://192.168.40.143:5005/playlist/Jazz", "http://192.168.40.143:5005/playlist/NewAge", "http://192.168.40.143:5005/playlist/Classic"};
-char sonos_volume_api[1][255]={"http://192.168.40.143:5005/volume/%d"};
-char sonos_play_api[1][255]={"http://192.168.40.143:5005/play"};
-char sonos_pause_api[1][255]={"http://192.168.40.143:5005/pause"};
+char sonos_playlist_api[5][255]={"http://192.168.0.111:5005/playlist/Pop", "http://192.168.0.111:5005/playlist/Soundtrack", "http://192.168.0.111:5005/playlist/Jazz", "http://192.168.0.111:5005/playlist/NewAge", "http://192.168.0.111:5005/playlist/Classic"};
+char sonos_volume_api[1][255]={"http://192.168.0.111:5005/volume/%d"};
+char sonos_play_api[1][255]={"http://192.168.0.111:5005/play"};
+char sonos_pause_api[1][255]={"http://192.168.0.111:5005/pause"};
 
 void sonos_command_function(char *command){
   char buffer[255]={};

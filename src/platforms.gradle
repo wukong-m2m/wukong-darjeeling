@@ -15,6 +15,19 @@ switch (djConfig.getAllPlatforms().last()) {
         ext.djMcu='atmega128'
         ext.djReprogramFlashPageAddress='0x1F800'
     break
+    case 'posix.galileo':
+        ext.djArchitecture='native'
+        binaries.all {
+            cCompiler.args "-march=i386"
+            cCompiler.args "-m32"
+            linker.args "-m32"
+            linker.args "-Wl,-lmraa"
+        }
+    break
+    case 'posix.yun':
+        ext.djArchitecture='mips'
+    break
+
     case ~/^posix.*/:
         ext.djArchitecture='native'
     break

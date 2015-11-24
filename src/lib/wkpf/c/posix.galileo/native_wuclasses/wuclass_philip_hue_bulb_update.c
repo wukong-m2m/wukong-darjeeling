@@ -27,7 +27,7 @@ void wuclass_philip_hue_bulb_update(wuobject_t *wuobject) {
     static uint32_t currenttime, lasttime, command_delay = 50, loop_rate = 500;
     currenttime = dj_timer_getTimeMillis();
 	static char str[150];
-    char ip[20] = "192.168.0.101";
+    char ip[20] = "192.168.0.102";
     char command[3][126] = {"curl -X PUT --data '{\"on\":true, \"sat\":254, \"bri\":%d, \"hue\":%d}' http://%s/api/newdeveloper/lights/%d/state", "curl -X PUT --data '{\"on\":false}' http://%s/api/newdeveloper/lights/%d/state", "curl -X PUT --data '{\"sat\":254, \"bri\":%d, \"hue\":%d}' http://%s/api/newdeveloper/lights/%d/state"};
 	
     if (currenttime - lasttime > loop_rate){

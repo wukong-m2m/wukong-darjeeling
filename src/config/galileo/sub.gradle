@@ -5,9 +5,3 @@ djConfig {
 	appArchiveSize = 4096
 }
 
-binaries.all {
-        cCompiler.args "-m32"
-        linker.args "-m32"
-        linker.args "-Wl,-lmraa"
-}
-

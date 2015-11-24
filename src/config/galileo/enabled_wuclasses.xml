@@ -26,13 +26,50 @@
     <WuClass name="Relay" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
-    <WuClass name="Grove_LCD" appCanCreateInstances="false">
+    <!-- 192.168.0.101 is galileoPHONE -->
+    <WuClass name="Cabinet" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
-    <WuClass name="Grove_MP3" appCanCreateInstances="false">
+    <WuClass name="Phone" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
-    <WuClass name="User" appCanCreateInstances="false">
+    <WuClass name="IRremote_TV" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
+
+    <!-- 192.168.0.104 is galileoNUC -->
+    <!--<WuClass name="User" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Number" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Philip_Hue_Go" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>-->
+
+    <!-- 192.168.0.107 is galileoCABINET -->
+    <!-- <WuClass name="Philip_Hue_Bulb" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Philip_Hue_Bloom" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Philip_Hue_Go" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Philip_Hue_Strip" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="MOSFET_Fan" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Sonos" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>-->
+    
+    <!-- 192.168.0.106 is edisonENTRANCE -->
+    <!--<WuClass name="Cabinet" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>-->
 </WuKong>
