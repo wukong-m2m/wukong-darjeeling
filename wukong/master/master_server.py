@@ -1350,9 +1350,12 @@ class Upload(tornado.web.RequestHandler):
     self.write(log)
 
 class SetRefresh(tornado.web.RequestHandler):
-  def get(self, node_id, port_id, wuclass_id, value):
+  def get(self, node_id, port_id, wuclass_id, property_num, data_type, value):
     comm = getComm()
-    comm.setProperty(int(node_id), int(port_id), int(wuclass_id), 2, 'short', int(value))
+    if data_type == '0':
+        comm.setProperty(int(node_id), int(port_id), int(wuclass_id), int(property_num), 'boolean', int(value))
+    elif data_type == '1':
+        comm.setProperty(int(node_id), int(port_id), int(wuclass_id), int(property_num), 'short', int(value))
 
 class Progression(tornado.web.RequestHandler):
   def post(self):
@@ -1553,7 +1556,7 @@ wukong = tornado.web.Application([
   (r"/monitoring_planar",Monitoring_Planar),
   (r"/getvalue",GetValue),
   (r"/getvalue_array",GetValue_array),
-  (r"/refresh/([0-9]*)/([0-9]*)/([0-9]*)/([0-9]*)", SetRefresh),
+  (r"/refresh/([0-9]*)/([0-9]*)/([0-9]*)/([0-9]*)/([0-9]*)/([0-9]*)", SetRefresh),
   (r"/configuration", Progression),
   (r"/getRefresh/([0-9]*)/([0-9]*)/([0-9]*)", GetRefresh),
   (r"/nowUser/([0-9]*)", NowUser),

@@ -9,8 +9,7 @@ import logging
 
 LOG_LEVEL = logging.ERROR
 
-# MASTER_IP = '192.168.4.4'
-MASTER_IP = '10.0.0.9'
+MASTER_IP = '192.168.0.111'
 MASTER_TCP_PORT = 9010
 MASTER_ADDRESS = (MASTER_IP, MASTER_TCP_PORT)
 
@@ -33,8 +32,8 @@ ENABLE_AUTONET = False
 AUTONET_MAC_ADDR_LEN = 8
 
 
-ENABLE_MONITOR = False
-MONGODB_URL= "mongodb://140.112.170.32:27017/Wukong"
+ENABLE_MONITOR = True
+MONGODB_URL= ""
 
 ENABLE_PROGRESSION = False
 PSERVER_IP = 'localhost'
@@ -42,28 +41,19 @@ PSERVER_UDP_PORT = 8000
 
 # System represent the instance of a wukong system which is the data source
 # of a set of sensor data in graphite
-SYSTEM_NAME = 'Wukong1'
+SYSTEM_NAME = ''
 
 # Graphite Access info
 ENABLE_GRAPHITE = False
 GRAPHITE_IP = 'localhost'
-GRAPHITE_PORT = '2004'
+GRAPHITE_PORT = ''
 
-ENABLE_CONTEXT = False
-'''
-XMPP_IP = '140.112.28.107'
-XMPP_PORT = 10303
-XMPP_SERVER = 'localhost'
-XMPP_USER = 'user1'
-XMPP_PASS = ''
-XMPP_ROOM = 'pubsub@conference.'+XMPP_SERVER
-XMPP_NICK = XMPP_ROOM+'/gateway0'
-'''
-XMPP_IP = '140.112.170.26'
+ENABLE_CONTEXT = True
+ENABLE_PUB = True
+XMPP_IP = ''
 XMPP_PORT = 5222
-XMPP_SERVER = 'wukongdemac-mini.local'
-XMPP_USER = 'admin'
+XMPP_SERVER = ''
+XMPP_USER = ''
 XMPP_PASS = ''
-XMPP_ROOM = 'monitor@conference.'+XMPP_SERVER
-XMPP_NICK = XMPP_ROOM+'/gateway0'
-#'''
+XMPP_ROOM = ''+XMPP_SERVER
+XMPP_NICK = XMPP_ROOM+''

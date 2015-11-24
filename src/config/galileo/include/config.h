@@ -25,7 +25,7 @@
 #include <stdio.h>
 
 // Allocate 4k heap for the VM
-#define HEAPSIZE 4096
+#define HEAPSIZE 2048
 
 // 'Time slices' are 32 instructions
 #define RUNSIZE 32
@@ -45,30 +45,32 @@
 // #define DBG_DARJEELING_GC true
 // #define DBG_WKPF true
 // #define DBG_WKPFGC true
- #define DBG_WKPFUPDATE true
+#define DBG_WKPFUPDATE true
 // #define DBG_WKCOMM true
 // #define DBG_WKREPROG true
+// #define DBG_WKROUTING true
 // #define DBG_ZWAVETRACE true
+// #define DBG_WIFI true
 
 #define DARJEELING_PRINTF printf
 
 #define DARJEELING_PGMSPACE_MACRO
 
 // Routing: choose 1
- #define ROUTING_USE_NONE
+// #define ROUTING_USE_NONE
 // #define ROUTING_USE_DSDV
 // #define ROUTING_USE_WUKONG
-//#define ROUTING_USE_GATEWAY
+#define ROUTING_USE_GATEWAY
 
 // Radios: choose as many as the routing protocol allows (max 1 for routing_none)
 // #define RADIO_USE_ZWAVE
 // #define RADIO_USE_XBEE
- #define RADIO_USE_NETWORKSERVER
-//#define RADIO_USE_WIFI
+// #define RADIO_USE_NETWORKSERVER
+#define RADIO_USE_WIFI
 
 // GPIO: choose 1
 // #define INTEL_GALILEO_GEN1
-//#define INTEL_GALILEO_GEN2
-#define INTEL_EDISON
+#define INTEL_GALILEO_GEN2
+// #define INTEL_EDISON
 
 #endif
