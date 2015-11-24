@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <avr/pgmspace.h>
+#include "darjeeling3.h"
 #include "fix_fft.h"
 
 // #define TEST_FFT_WINDOWING
@@ -169,16 +170,23 @@ void fft_windowing(char f[], int16_t m)
   RESULT (in-place FFT), with 0 <= n < 2**m; set inverse to
   0 for forward transform (FFT), or 1 for iFFT.
 */
-int16_t fix_fft(char fr[], char fi[], int m, int inverse)
+// Renamed to rtcbenchmark_measure_native_performance
+// to measure performance in AOT benchmark scripts
+// int16_t fix_fft(char fr[], char fi[], int m, int inverse)
+int16_t rtcbenchmark_measure_native_performance(char fr[], char fi[], int m, int inverse)
 {
+	javax_darjeeling_Stopwatch_void_resetAndStart();
+
 	int16_t mr, nn, i, j, l, k, istep, n, scale, shift;			//int is 16-bit on Arduino (32bit on original system
 	char qr, qi, tr, ti, wr, wi;					// char is 8-bit signed
 
 	n = 1 << m;
 
 	/* max FFT size = N_WAVE */
-	if (n > N_WAVE)
+	if (n > N_WAVE) {
+		javax_darjeeling_Stopwatch_void_measure();
 		return -1;
+	}
 
 	mr = 0;
 	nn = n - 1;
@@ -267,6 +275,8 @@ int16_t fix_fft(char fr[], char fi[], int m, int inverse)
 		--k;
 		l = istep;
 	}
+
+	javax_darjeeling_Stopwatch_void_measure();
 	return scale;
 }
 
@@ -284,6 +294,9 @@ int16_t fix_fft(char fr[], char fi[], int m, int inverse)
   that fix_fft "sees" consecutive real samples as alternating
   real and imaginary samples in the complex array.
 */
+// Renamed fix_fft to rtcbenchmark_measure_native_performance
+// to measure performance in AOT benchmark scripts
+#define fix_fft rtcbenchmark_measure_native_performance
 int fix_fftr(char f[], int16_t m, int16_t inverse)
 {
     int16_t i, N = 1<<(m-1), scale = 0;

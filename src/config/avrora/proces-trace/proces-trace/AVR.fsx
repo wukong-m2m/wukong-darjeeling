@@ -6,6 +6,8 @@ let MASK_DOUBLE_REG_OPERAND             = 0xFC00
 let MASK_SINGLE_REG_OPERAND             = 0xFE0F
 //                                      1111 11kk kkkk k111, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
 let MASK_BRANCH                         = 0xFC07
+//                                      1111 1111 1111 1111
+let MASK_NO_OPERANDS                    = 0xFFFF
 
 // avr opcode ADC                   0001 11rd dddd rrrr, with d=dest register, r=source register
 let ADC                           = (0x1C00, MASK_DOUBLE_REG_OPERAND, "ADC")
@@ -29,7 +31,7 @@ let ASR                           = (0x9405, MASK_SINGLE_REG_OPERAND, "ASR")
 let BLD                           = (0xF800, 0xFE08, "BLD")
 
 // avr opcode BREAK                 1001 0101 1001 1000
-let BREAK                         = (0x9598, 0xFFFF, "BREAK")
+let BREAK                         = (0x9598, MASK_NO_OPERANDS, "BREAK")
 
 // avr opcode BRCC                  1111 01kk kkkk k000
 let BRCC                          = (0xF400, MASK_BRANCH, "BRCC")
@@ -60,7 +62,7 @@ let CALL                          = (0x940E, 0xFE0E, "CALL")
 let COM                           = (0x9400, MASK_SINGLE_REG_OPERAND, "COM")
 
 // avr opcode CLI                   1001 0100 1111 1000
-let CLI                           = (0x94F8, 0xFFFF, "CLI")
+let CLI                           = (0x94F8, MASK_NO_OPERANDS, "CLI")
 
 // avr opcode CP                    0001 01rd dddd rrrr, with r,d=the registers to compare
 let CP                            = (0x1400, MASK_DOUBLE_REG_OPERAND, "CP")
@@ -69,7 +71,10 @@ let CP                            = (0x1400, MASK_DOUBLE_REG_OPERAND, "CP")
 let CPC                           = (0x0400, MASK_DOUBLE_REG_OPERAND, "CPC")
 
 // avr opcode CPI                   0011 KKKK dddd KKKK, with 16 ≤ d ≤ 31, 0≤ K ≤ 255
-let CPI                           = (0x03000, 0xF000, "CPI")
+let CPI                           = (0x3000, 0xF000, "CPI")
+
+// avr opcode CPSE                  0001 00rd dddd rrrr, with r,d=the registers to compare
+let CPSE                          = (0x1000, MASK_DOUBLE_REG_OPERAND, "CPSE")
 
 // avr opcode DEC                   1001 010d dddd 1010
 let DEC                           = (0x940A, MASK_SINGLE_REG_OPERAND, "DEC")
@@ -78,7 +83,7 @@ let DEC                           = (0x940A, MASK_SINGLE_REG_OPERAND, "DEC")
 let EOR                           = (0x2400, MASK_DOUBLE_REG_OPERAND, "EOR")
 
 // avr opcode IJMP                  1001 0100 0000 1001
-let IJMP                          = (0x9409, 0xFFFF, "IJMP")
+let IJMP                          = (0x9409, MASK_NO_OPERANDS, "IJMP")
 
 // avr opcode IN                    1011 0AAd dddd AAAA, with d=dest register, A the address of the IO location to read 0<=A<=63 (63==0x3F)
 let IN                            = (0xB000, 0xF800, "IN")
@@ -130,6 +135,15 @@ let LDI                           = (0xE000, 0xF000, "LDI")
 // avr opcode LDS                   kkkk kkkk kkkk kkkk
 let LDS                           = (0x9000, MASK_SINGLE_REG_OPERAND, "LDS")
 
+// avr opcode LPM                   1001 0101 1100 1000, r0 <- Z
+let LPM                           = (0x95C8, MASK_NO_OPERANDS, "LPM")
+
+// avr opcode LPM_Z                 1001 000d dddd 0100, with d=dest register
+let LPM_Z                         = (0x9004, MASK_SINGLE_REG_OPERAND, "LPM_Z")
+
+// avr opcode LPM_ZINC              1001 000d dddd 0101, with d=dest register
+let LPM_ZINC                      = (0x9005, MASK_SINGLE_REG_OPERAND, "LPM_ZINC")
+
 // avr opcode LSR                   1001 010d dddd 0110
 let LSR                           = (0x9406, MASK_SINGLE_REG_OPERAND, "LSR")
 
@@ -142,8 +156,17 @@ let MOVW                          = (0x0100, 0xFF00, "MOVW")
 // avr opcode MUL                   1001 11rd dddd rrrr, with d=dest register, r=source register
 let MUL                           = (0x9C00, MASK_DOUBLE_REG_OPERAND, "MUL")
 
+// avr opcode MULS                  0000 0010 dddd rrrr, with d=source1 register-16, r=source2 register-16 (result in r1:r0)
+let MULS                          = (0x0200, 0xFF00, "MULS")
+
+// avr opcode MULSU                 0000 0011 0ddd 0rrr, with d=source1 register-16 (r16-r23), r=source2 register-16 (r16-r23) (result in r1:r0)
+let MULSU                         = (0x0300, 0xFF88, "MULSU")
+
+// avr opcode NEG                   1001 010d dddd 0001, with d=dest register
+let NEG                           = (0x9401, MASK_SINGLE_REG_OPERAND, "NEG")
+
 // avr opcode NOP                   0000 0000 0000 0000
-let NOP                           = (0x0000, 0xFFFF, "NOP")
+let NOP                           = (0x0000, MASK_NO_OPERANDS, "NOP")
 
 // avr opcode OR                    0010 10rd dddd rrrr, with d=dest register, r=source register
 let OR                            = (0x2800, MASK_DOUBLE_REG_OPERAND, "OR")
@@ -164,7 +187,7 @@ let POP                           = (0x900F, MASK_SINGLE_REG_OPERAND, "POP")
 let RCALL                         = (0xD000, 0xF000, "RCALL")
 
 // avr opcode RET                   1001 0101 0000 1000
-let RET                           = (0x9508, 0xFFFF, "RET")
+let RET                           = (0x9508, MASK_NO_OPERANDS, "RET")
 
 // avr opcode RJMP                  1100 kkkk kkkk kkkk, with k the signed offset to jump to, in WORDS, not bytes. PC <- PC + k + 1
 let RJMP                          = (0xC000, 0xF000, "RJMP")
@@ -188,10 +211,10 @@ let SBRC                          = (0xFC00, 0xFE08, "SBRC")
 let SBRS                          = (0xFE00, 0xFE08, "SBRS")
 
 // avr opcode SEI                   1001 0100 0111 1000
-let SEI                           = (0x9478, 0xFFFF, "SEI")
+let SEI                           = (0x9478, MASK_NO_OPERANDS, "SEI")
 
 // avr opcode SET                   1001 0100 0110 1000
-let SET                           = (0x9468, 0xFFFF, "SET")
+let SET                           = (0x9468, MASK_NO_OPERANDS, "SET")
 
 // avr opcode ST X, Rs              1001 001r rrrr 1100, with r=the register to store
 let ST_X                          = (0x920C, MASK_SINGLE_REG_OPERAND, "ST_XINC")
@@ -247,12 +270,12 @@ let opcodeCategories =
      ("04) Stack push/pop", [ POP; PUSH ]);
      ("05) Register moves", [ MOV; MOVW ]);         
      ("06) Constant load", [ LDI ]);
-     ("07) Comp./branches", [ BRCC; BRCS; BREQ; BRGE; BRLT; BRNE; BRPL; CP; CPC; CPI; SBRC; SBRS ]);
-     ("08) Math", [ ADC; ADD; ADIW; DEC; MUL; INC; SBC; SBCI; SBIW; SUB; SUBI ]);
+     ("07) Comp./branches", [ BRCC; BRCS; BREQ; BRGE; BRLT; BRNE; BRPL; CP; CPC; CPI; CPSE; SBRC; SBRS ]);
+     ("08) Math", [ ADC; ADD; ADIW; DEC; MUL; MULS; MULSU; NEG; INC; SBC; SBCI; SBIW; SUB; SUBI ]);
      ("09) Bit shifts", [ ASR; ROR; LSR ]);
      ("10) Bit logic", [ AND; ANDI; EOR; OR; ORI ]);
      ("11) Subroutines", [ CALL; RCALL ]);
-     ("12) Others", [ BREAK; NOP; RET; COM; IJMP; IN; JMP; LDS; RJMP; STS; SET; SEI; CLI; OUT; IN; BLD ])] in
+     ("12) Others", [ BREAK; NOP; RET; COM; IJMP; IN; JMP; LDS; RJMP; STS; SET; SEI; CLI; OUT; IN; BLD; LPM; LPM_Z; LPM_ZINC ])] in
 let allOpcodes = opcodeCategories |> List.map snd |> List.concat
 let getOpcodeForInstruction inst text =
     match allOpcodes |> List.tryFind (fun opcode -> is opcode inst) with

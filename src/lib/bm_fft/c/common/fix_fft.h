@@ -10,7 +10,10 @@
 
   Results are from 0 to n/2, (fr[0];fi[0]) contains DC component.
 */
-int fix_fft(char fr[], char fi[], int m, int inverse);
+// Renamed to rtcbenchmark_measure_native_performance
+// to measure performance in AOT benchmark scripts
+// int fix_fft(char fr[], char fi[], int m, int inverse);
+int rtcbenchmark_measure_native_performance(char fr[], char fi[], int m, int inverse);
 
 
 /*
