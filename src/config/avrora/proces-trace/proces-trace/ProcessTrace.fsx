@@ -275,11 +275,13 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profi
 let resultsToString (results : Results) =
     let totalCyclesAOTJava = results.jvmInstructions |> List.sumBy (fun r -> (r.counters.cycles))
     let totalCyclesNativeC = results.nativeCInstructions |> List.sumBy (fun (inst,cnt) -> (cnt.cycles))
+    let cyclesToSlowdown cycles1 cycles2 =
+        String.Format ("{0:0.00}", float cycles1 / float cycles2)
     let countersToString totalCycles (counters : ExecCounters) =
-        String.Format("exe:{0,8} cyc:{1,10} {2:00.000}% avg: {3:00.00}",
-                      counters.executions,
+        String.Format("cyc:{0,10} {1:00.000}%   exe:{2,8} avg: {3:00.00}",
                       counters.cycles,
                       100.0 * float (counters.cycles) / float totalCycles,
+                      counters.executions,
                       counters.average)
     let resultJavaToString (result : ResultJava) =
         String.Format("{0,-60}{1}\r\n",
@@ -298,23 +300,6 @@ let resultsToString (results : Results) =
                    |> List.fold (+) ""
     let nativeCInstructionToString ((inst, counters) : AvrInstruction*ExecCounters) =
         String.Format("0x{0,6:X6}: {1}    {2}\r\n", inst.address, (countersToString totalCyclesNativeC counters), inst.text)
-    let r1 = "--- COMPLETE LISTING\r\n"
-             + (results.jvmInstructions
-                    |> List.map (fun r -> (r |> resultJavaToString) + (r.avr |> resultsAvrToString))
-                    |> List.fold (+) "")
-    let r2 = "--- ONLY OPTIMISED AVR\r\n"
-             + (results.jvmInstructions
-                    |> List.map (fun r -> (r |> resultJavaToString) + (r.avr |> List.filter (fun avr -> avr.opt.IsSome) |> resultsAvrToString))
-                    |> List.fold (+) "")
-    let r3 = "--- ONLY JVM\r\n"
-             + (results.jvmInstructions
-                    |> List.map resultJavaToString
-                    |> List.fold (+) "")
-    let r4 = "--- NATIVE C AVR\r\n"
-             + (results.nativeCInstructions
-                    |> List.map nativeCInstructionToString
-                    |> List.fold (+) "")
-
     let opcodeResultsToString totalCycles opcodeResults =
             opcodeResults
             |> List.map (fun (category, opcode, counters)
@@ -331,30 +316,63 @@ let resultsToString (results : Results) =
                                               (countersToString totalCycles counters)))
             |> List.fold (+) ""
 
-    let r5 = "--- SUMMED PER AVR OPCODE (NATIVE C)\r\n"
-             + opcodeResultsToString totalCyclesNativeC results.cyclesPerAvrOpcodeNativeC
-    let r6 = "--- SUMMED PER AVR OPCODE (Java)\r\n"
-             + opcodeResultsToString totalCyclesAOTJava results.cyclesPerAvrOpcodeAOTJava
-    let r7 = "--- SUMMED PER JVM OPCODE\r\n"
-             + opcodeResultsToString totalCyclesAOTJava results.cyclesPerJvmOpcode
-    let r8 = "--- SUMMED PER AVR CATEGORY (NATIVE C)\r\n"
-             + categoryResultsToString totalCyclesNativeC results.cyclesPerAvrOpcodeCategoryNativeC
-    let r9 = "--- SUMMED PER AVR CATEGORY (Java)\r\n"
-             + categoryResultsToString totalCyclesAOTJava results.cyclesPerAvrOpcodeCategoryAOTJava
-    let r10 = "--- SUMMED PER JVM CATEGORY\r\n"
-             + categoryResultsToString totalCyclesAOTJava results.cyclesPerJvmOpcodeCategory
-    let r11 = "--- TOTAL CYCLES SPENT IN COMPILED JVM CODE: " + totalCyclesAOTJava.ToString() + "\r\n    (doesn't include called functions)"
-
-    let r12 = (String.Format ("--- TOTAL SPENT ON PUSH: {0}\r\n\
-                              --- TOTAL SPENT ON POP:  {1}\r\n\
-                              --- TOTAL SPENT ON MOVW: {2}\r\n\
-                              --- COMBINED:            {3}",
-                              (countersToString totalCyclesAOTJava results.cyclesPush),
-                              (countersToString totalCyclesAOTJava results.cyclesPop),
-                              (countersToString totalCyclesAOTJava results.cyclesMovw),
-                              (countersToString totalCyclesAOTJava (results.cyclesPush + results.cyclesPop + results.cyclesMovw))))
-
-    "------------------ " + results.benchmark + " ------------------\r\n\r\n" + r12 + "\r\n\r\n" + r11 + "\r\n\r\n" + r10 + "\r\n\r\n" + r9 + "\r\n\r\n" + r8 + "\r\n\r\n" + r7 + "\r\n\r\n" + r6 + "\r\n\r\n" + r5 + "\r\n\r\n" + r4 + "\r\n\r\n" + r3 + "\r\n\r\n" + r2 + "\r\n\r\n" + r1
+    seq {
+        yield "------------------ " + results.benchmark + " ------------------"
+        yield ""
+        yield String.Format ("--- STOPWATCHES Native C        {0,12}", results.stopwatchCyclesC)
+        yield String.Format ("                AOT             {0,12}", results.stopwatchCyclesAOT)
+        yield String.Format ("                JAVA            {0,12}", results.stopwatchCyclesJava)
+        yield String.Format ("                AOT/C           {0,12}", (cyclesToSlowdown results.stopwatchCyclesAOT results.stopwatchCyclesC))
+        yield String.Format ("                Java/C          {0,12}", (cyclesToSlowdown results.stopwatchCyclesJava results.stopwatchCyclesC))
+        yield String.Format ("                Java/AOT        {0,12}", (cyclesToSlowdown results.stopwatchCyclesJava results.stopwatchCyclesAOT))
+        yield ""
+        yield String.Format ("--- CYCLE COUNT Native C        {0,12} (={1})", results.executedCyclesC, totalCyclesNativeC)
+        yield String.Format ("                    stopw/count {0,12}", (cyclesToSlowdown results.stopwatchCyclesC results.executedCyclesC))
+        yield String.Format ("                AOT             {0,12} (={1})", results.executedCyclesAOT, totalCyclesAOTJava)
+        yield String.Format ("                    stopw/count {0,12}", (cyclesToSlowdown results.stopwatchCyclesAOT results.executedCyclesAOT))
+        yield String.Format ("                push            {0}", (countersToString totalCyclesAOTJava results.cyclesPush))
+        yield String.Format ("                pop             {0}", (countersToString totalCyclesAOTJava results.cyclesPop))
+        yield String.Format ("                movw            {0}", (countersToString totalCyclesAOTJava results.cyclesMovw))
+        yield String.Format ("                total           {0}", (countersToString totalCyclesAOTJava (results.cyclesPush + results.cyclesPop + results.cyclesMovw)))
+        yield ""
+        yield "--- SUMMED: PER JVM CATEGORY"
+        yield categoryResultsToString totalCyclesAOTJava results.cyclesPerJvmOpcodeCategory
+        yield ""
+        yield "--- SUMMED: PER AVR CATEGORY (Java)"
+        yield categoryResultsToString totalCyclesAOTJava results.cyclesPerAvrOpcodeCategoryAOTJava
+        yield ""
+        yield "--- SUMMED: PER AVR CATEGORY (NATIVE C)"
+        yield categoryResultsToString totalCyclesNativeC results.cyclesPerAvrOpcodeCategoryNativeC
+        yield ""
+        yield "--- SUMMED: PER JVM OPCODE"
+        yield opcodeResultsToString totalCyclesAOTJava results.cyclesPerJvmOpcode
+        yield ""
+        yield "--- SUMMED: PER AVR OPCODE (Java)"
+        yield opcodeResultsToString totalCyclesAOTJava results.cyclesPerAvrOpcodeAOTJava
+        yield ""
+        yield "--- SUMMED: PER AVR OPCODE (NATIVE C)"
+        yield opcodeResultsToString totalCyclesNativeC results.cyclesPerAvrOpcodeNativeC
+        yield ""
+        yield "--- LISTING: NATIVE C AVR\r\n"
+        yield results.nativeCInstructions
+                |> List.map nativeCInstructionToString
+                |> List.fold (+) ""
+        yield ""
+        yield "--- LISTING: ONLY JVM"
+        yield results.jvmInstructions
+                |> List.map resultJavaToString
+                |> List.fold (+) ""
+        yield ""
+        yield "--- LISTING: ONLY OPTIMISED AVR"
+        yield results.jvmInstructions
+                |> List.map (fun r -> (r |> resultJavaToString) + (r.avr |> List.filter (fun avr -> avr.opt.IsSome) |> resultsAvrToString))
+                |> List.fold (+) ""
+        yield ""
+        yield "--- LISTING: COMPLETE LISTING"
+        yield results.jvmInstructions
+                |> List.map (fun r -> (r |> resultJavaToString) + (r.avr |> resultsAvrToString))
+                |> List.fold (+) ""
+    } |> Seq.fold (fun acc x -> acc + "\r\n" + x) ""
 
 let main(args : string[]) =
     let benchmark = (Array.get args 1).[3..]
