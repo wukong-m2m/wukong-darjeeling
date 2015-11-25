@@ -125,9 +125,10 @@ let countersForAddress (profilerdata : ProfiledInstruction list) address =
 
 // Input: the original Java instructions, trace data from avrora profiler, and the output from matchOptUnopt
 // Returns: a list of Result records, showing the optimised code per original JVM instructions, and amount of cycles spent per optimised instruction
-let addCycles (jvmInstructions : JvmInstruction list) (profilerdata : ProfiledInstruction list) (matchedResults : (AvrInstruction option*AvrInstruction*JvmInstruction) list) =
-    jvmInstructions |> List.map
-        (fun jvm ->
+let addCyclesAndDebugData (jvmInstructions : JvmInstruction list) (profilerdata : ProfiledInstruction list) (matchedResults : (AvrInstruction option*AvrInstruction*JvmInstruction) list) (djDebugDatas : DJDebugData list) =
+    List.zip jvmInstructions (DJDebugData.empty :: djDebugDatas) // Add an empty entry to debug data to match the method preamble
+        |> List.map
+        (fun (jvm, debugdata) ->
             let resultsForThisJvm = matchedResults |> List.filter (fun b -> let (_, _, jvm2) = b in jvm.index = jvm2.index) in
             let resultsWithCycles = resultsForThisJvm |> List.map (fun (opt, unopt, _) ->
                   let counters = match opt with
@@ -138,7 +139,8 @@ let addCycles (jvmInstructions : JvmInstruction list) (profilerdata : ProfiledIn
                 { cycles = a.cycles+b.cycles; executions = (if a.executions > 0 then a.executions else b.executions) }
             { jvm = jvm
               avr = resultsWithCycles
-              counters = resultsWithCycles |> List.map (fun r -> r.counters) |> List.fold (avrCountersToJvmCounters) ExecCounters.empty })
+              counters = resultsWithCycles |> List.map (fun r -> r.counters) |> List.fold (avrCountersToJvmCounters) ExecCounters.empty
+              djDebugData = debugdata })
 
 let countPushPopMovw (results : ResultJava list) =
     let isAOT_PUSH x = AVR.is AVR.PUSH (x.opcode) || AVR.is AVR.ST_XINC (x.opcode) // AOT uses 2 stacks
@@ -187,8 +189,41 @@ let getNativeInstructionsFromObjdump (objdumpOutput : string list) (profilerdata
         })
     avrInstructions |> List.map (fun avr -> (avr, countersForAddress profilerdata avr.address))
 
+let parseDJDebug (allLines : string list) =
+  let regexLine = Regex("^\s*(?<byteOffset>\d\d\d\d);[^;]*;[^;]*;(?<text>[^;]*);(?<stackBefore>[^;]*);(?<stackAfter>[^;]*);.*")
+  let regexStackElement = Regex("^(?<byteOffset>\d+)(?<datatype>[a-zA-Z]+)$")
+
+  let startIndex = allLines |> List.findIndex (fun line -> Regex.IsMatch(line, "^\s*method.*rtcbenchmark_measure_java_performance$"))
+  let linesTail = allLines |> List.skip (startIndex + 3)
+  let endIndex = linesTail |> List.findIndex (fun line -> Regex.IsMatch(line, "^\s*}\s*$"))
+  let lines = linesTail |> List.take endIndex |> List.filter ((<>) "")
+
+  // System.Console.WriteLine (String.Join("\r\n", lines))
+
+  let regexMatches = lines |> List.map (fun x -> regexLine.Match(x))
+  let byteOffsetToInstOffset = regexMatches |> List.mapi (fun i m -> (Int32.Parse(m.Groups.["byteOffset"].Value.Trim()), i)) |> Map.ofList
+  let stackStringToStack (stackString: string) =
+      let split = stackString.Split(',')
+                  |> Seq.toList
+                  |> List.map (fun x -> match x.IndexOf('(') with // Some elements are in the form 20Short(Byte) to indicate Darjeeling knows the short value only contains a byte. Strip this information for now.
+                                        | -1 -> x
+                                        | index -> x.Substring(0, index))
+                  |> List.filter ((<>) "")
+      let regexMatches = split |> List.map (fun x -> regexStackElement.Match(x))
+      // System.Console.WriteLine (String.Join("///", regexMatches))
+      let stack = regexMatches |> List.map (fun m -> let byteOffset = Int32.Parse(m.Groups.["byteOffset"].Value) in
+                                                     let instOffset = Map.find byteOffset byteOffsetToInstOffset in
+                                                     let datatype = (m.Groups.["datatype"].Value |> StackDatatypeFromString) in
+                                                     { StackElement.origin=instOffset; datatype=datatype })
+      stack
+  regexMatches |> List.mapi (fun i m -> { byteOffset = Int32.Parse(m.Groups.["byteOffset"].Value.Trim());
+                                          instOffset = i;
+                                          text = m.Groups.["text"].Value.Trim();
+                                          stackBefore = (m.Groups.["stackBefore"].Value.Trim() |> stackStringToStack);
+                                          stackAfter = (m.Groups.["stackAfter"].Value.Trim()  |> stackStringToStack) })
+
 // Process trace main function
-let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (profilerdata : ProfiledInstruction list) (stdoutlog : string seq) (disasm : string list) =
+let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (profilerdata : ProfiledInstruction list) (stdoutlog : string seq) (disasm : string list) (djdebuglines : string list) =
     // Find the methodImplId for a certain method in a Darjeeling infusion header
     let findRtcbenchmarkMethodImplId (dih : Dih) methodName =
         let infusionName = dih.Infusion.Header.Name
@@ -206,9 +241,10 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profi
                                     |> Seq.toList
 
     let matchedResult = matchOptUnopt optimisedAvr unoptimisedAvrWithJvmIndex
-    let matchedResultWithCycles = addCycles (methodImpl.JavaInstructions |> Seq.map JvmInstructionFromXml |> Seq.toList) profilerdata matchedResult
+    let djdebugdata = parseDJDebug djdebuglines
+    let mainResults = addCyclesAndDebugData (methodImpl.JavaInstructions |> Seq.map JvmInstructionFromXml |> Seq.toList) profilerdata matchedResult djdebugdata
     let stopwatchTimers = getTimersFromStdout (stdoutlog |> Seq.toList)
-    let (cyclesPush, cyclesPop , cyclesMovw) = (countPushPopMovw matchedResultWithCycles)
+    let (cyclesPush, cyclesPop , cyclesMovw) = (countPushPopMovw mainResults)
 
     let groupFold keyFunc valueFunc foldFunc foldInitAcc x =
         x |> List.toSeq
@@ -217,7 +253,7 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profi
           |> Seq.toList
 
     let cyclesPerJvmOpcode =
-        matchedResultWithCycles
+        mainResults
             |> List.filter (fun r -> r.jvm.text <> "Method preamble")
             |> groupFold (fun r -> r.jvm.text.Split().First()) (fun r -> r.counters) (+) ExecCounters.empty
             |> List.sortBy (fun (opcode, _) -> (getCategoryForJvmOpcode opcode)+opcode)
@@ -230,7 +266,7 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profi
             |> groupFold fst snd (+) ExecCounters.empty
 
     let cyclesPerAvrOpcodeAOTJava =
-        matchedResultWithCycles
+        mainResults
             |> List.map (fun r -> r.avr)
             |> List.concat
             |> List.filter (fun avr -> avr.opt.IsSome)
@@ -254,7 +290,7 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profi
 
     {
         benchmark = benchmark;
-        jvmInstructions = matchedResultWithCycles;
+        jvmInstructions = mainResults;
         nativeCInstructions = nativeCInstructions |> Seq.toList;
         executedCyclesAOT = cyclesPerJvmOpcodeCategory |> List.sumBy (fun (cat, cnt) -> cnt.cycles);
         executedCyclesC = cyclesPerAvrOpcodeCategoryNativeC |> List.sumBy (fun (cat, cnt) -> cnt.cycles);
@@ -277,16 +313,20 @@ let resultsToString (results : Results) =
     let totalCyclesNativeC = results.nativeCInstructions |> List.sumBy (fun (inst,cnt) -> (cnt.cycles))
     let cyclesToSlowdown cycles1 cycles2 =
         String.Format ("{0:0.00}", float cycles1 / float cycles2)
+    let stackToString stack =
+        String.Join(",", stack |> List.map (fun el -> el.datatype |> StackDatatypeToString))
     let countersToString totalCycles (counters : ExecCounters) =
-        String.Format("cyc:{0,10} {1:00.000}%   exe:{2,8} avg: {3:00.00}",
+        String.Format("cyc:{0,10} {1:00.000}%   exe:{2,8} avg: {3:000.00}",
                       counters.cycles,
                       100.0 * float (counters.cycles) / float totalCycles,
                       counters.executions,
                       counters.average)
     let resultJavaToString (result : ResultJava) =
-        String.Format("{0,-60}{1}\r\n",
+        String.Format("{0,-60}{1} {2}:{3}\r\n",
                       result.jvm.text,
-                      countersToString totalCyclesAOTJava result.counters)
+                      countersToString totalCyclesAOTJava result.counters,
+                      result.djDebugData.stackSizeAfter,
+                      stackToString result.djDebugData.stackAfter)
     let resultsAvrToString (avrResults : ResultAvr list) =
         let avrInstOption2Text = function
             | Some (x : AvrInstruction)
@@ -319,17 +359,17 @@ let resultsToString (results : Results) =
     seq {
         yield "------------------ " + results.benchmark + " ------------------"
         yield ""
-        yield String.Format ("--- STOPWATCHES Native C        {0,12}", results.stopwatchCyclesC)
-        yield String.Format ("                AOT             {0,12}", results.stopwatchCyclesAOT)
-        yield String.Format ("                JAVA            {0,12}", results.stopwatchCyclesJava)
-        yield String.Format ("                AOT/C           {0,12}", (cyclesToSlowdown results.stopwatchCyclesAOT results.stopwatchCyclesC))
-        yield String.Format ("                Java/C          {0,12}", (cyclesToSlowdown results.stopwatchCyclesJava results.stopwatchCyclesC))
-        yield String.Format ("                Java/AOT        {0,12}", (cyclesToSlowdown results.stopwatchCyclesJava results.stopwatchCyclesAOT))
+        yield String.Format ("--- STOPWATCHES Native C        {0,14}", results.stopwatchCyclesC)
+        yield String.Format ("                AOT             {0,14}", results.stopwatchCyclesAOT)
+        yield String.Format ("                JAVA            {0,14}", results.stopwatchCyclesJava)
+        yield String.Format ("                AOT/C           {0,14}", (cyclesToSlowdown results.stopwatchCyclesAOT results.stopwatchCyclesC))
+        yield String.Format ("                Java/C          {0,14}", (cyclesToSlowdown results.stopwatchCyclesJava results.stopwatchCyclesC))
+        yield String.Format ("                Java/AOT        {0,14}", (cyclesToSlowdown results.stopwatchCyclesJava results.stopwatchCyclesAOT))
         yield ""
-        yield String.Format ("--- CYCLE COUNT Native C        {0,12} (={1})", results.executedCyclesC, totalCyclesNativeC)
-        yield String.Format ("                    stopw/count {0,12}", (cyclesToSlowdown results.stopwatchCyclesC results.executedCyclesC))
-        yield String.Format ("                AOT             {0,12} (={1})", results.executedCyclesAOT, totalCyclesAOTJava)
-        yield String.Format ("                    stopw/count {0,12}", (cyclesToSlowdown results.stopwatchCyclesAOT results.executedCyclesAOT))
+        yield String.Format ("--- CYCLE COUNT Native C        {0,14} (={1})", results.executedCyclesC, totalCyclesNativeC)
+        yield String.Format ("                    stopw/count {0,14}", (cyclesToSlowdown results.stopwatchCyclesC results.executedCyclesC))
+        yield String.Format ("                AOT             {0,14} (={1})", results.executedCyclesAOT, totalCyclesAOTJava)
+        yield String.Format ("                    stopw/count {0,14}", (cyclesToSlowdown results.stopwatchCyclesAOT results.executedCyclesAOT))
         yield String.Format ("                push            {0}", (countersToString totalCyclesAOTJava results.cyclesPush))
         yield String.Format ("                pop             {0}", (countersToString totalCyclesAOTJava results.cyclesPop))
         yield String.Format ("                movw            {0}", (countersToString totalCyclesAOTJava results.cyclesMovw))
@@ -384,7 +424,8 @@ let main(args : string[]) =
     let profilerdata = ProfilerdataXml.Load(String.Format("{0}/profilerdata.xml", builddir)).Instructions |> Seq.toList
     let stdoutlog = System.IO.File.ReadLines(String.Format("{0}/stdoutlog.txt", builddir))
     let disasm = System.IO.File.ReadLines(String.Format("{0}/darjeeling.S", builddir)) |> Seq.toList
-    let results = processTrace benchmark dih rtcdata profilerdata stdoutlog disasm
+    let djdebuglines = System.IO.File.ReadLines(String.Format("{0}/infusion-bm_{1}/jlib_bm_{1}.debug", builddir, benchmark)) |> Seq.toList
+    let results = processTrace benchmark dih rtcdata profilerdata stdoutlog disasm djdebuglines
 
     let txtFilename = outputfilename + ".txt"
     let xmlFilename = outputfilename + ".xml"

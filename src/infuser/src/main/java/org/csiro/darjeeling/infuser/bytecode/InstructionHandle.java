@@ -307,7 +307,7 @@ public class InstructionHandle implements Comparable<InstructionHandle>
 	
 	public String toString()
 	{
-		return String.format("%04d %-12s %-12s %-30s %-60s %-60s %1s%1s %s",
+		return String.format("%04d; %-12s; %-12s; %-30s; %-60s; %-60s; %1s%1s; %s",
 			pc,
 			buildIncomingHandlesString(),
 			buildOutgoingHandlesString(),

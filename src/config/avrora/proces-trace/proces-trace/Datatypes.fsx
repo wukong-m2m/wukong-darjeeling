@@ -12,9 +12,9 @@ type ExecCounters = {
     cycles : int; }
     with
     static member (+) (x, y) = { executions = x.executions + y.executions ; cycles = x.cycles + y.cycles }
-    member x.average = if x.executions > 0
-                       then float x.cycles / float x.executions
-                       else 0.0
+    member this.average = if this.executions > 0
+                          then float this.cycles / float this.executions
+                          else 0.0
     static member empty = { executions = 0; cycles = 0 }
 
 type ResultAvr = {
@@ -22,10 +22,51 @@ type ResultAvr = {
     opt : AvrInstruction option;
     counters : ExecCounters }
 
+type StackDatatype = Ref | Byte | Char | Short | Int
+let StackDatatypeToSize x =
+    match x with // stack slot width is 16 bit, so everything takes at least two bytes.
+    | Ref -> 2
+    | Byte -> 2
+    | Char -> 2
+    | Short -> 2
+    | Int -> 4
+let StackDatatypeToString x =
+    match x with
+    | Ref -> "Ref"
+    | Byte -> "Byte"
+    | Char -> "Char"
+    | Short -> "Short"
+    | Int -> "Int"
+let StackDatatypeFromString x =
+    match x with
+    | "Ref" -> Ref
+    | "Byte" -> Byte
+    | "Char" -> Char
+    | "Short" -> Short
+    | "Int" -> Int
+    | _ -> failwith ("Unknown datatype " + x)
+
+type StackElement = {
+    origin : int
+    datatype : StackDatatype
+}
+
+type DJDebugData = {
+    byteOffset : int;
+    instOffset : int;
+    text : string;
+    stackBefore : StackElement list;
+    stackAfter : StackElement list; }
+    with
+    static member empty = { byteOffset = 0; instOffset = 0; text = ""; stackBefore = []; stackAfter = [] }
+    member this.stackSizeBefore = this.stackBefore |> List.map (fun x -> x.datatype) |> List.sumBy StackDatatypeToSize
+    member this.stackSizeAfter = this.stackAfter |> List.map (fun x -> x.datatype) |> List.sumBy StackDatatypeToSize
+
 type ResultJava = {
     jvm : JvmInstruction;
     avr : ResultAvr list;
-    counters : ExecCounters }
+    counters : ExecCounters;
+    djDebugData : DJDebugData; }
 
 type Results = {
     benchmark : string;
