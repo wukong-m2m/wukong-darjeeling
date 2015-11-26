@@ -289,38 +289,45 @@
     <WuClass name="Number" id="2014" virtual="false" type="hard">
         <property name="input" access="readwrite" datatype="short" default="1" />
     </WuClass>
-    <WuClass name="Philip_Hue_Bulb" id="2015" virtual="false" type="hard">
-        <property name="on" access="readwrite" datatype="boolean" default="false"/>
-        <property name="bri" access="writeonly" datatype="short" default="20"/>
-        <property name="hue" access="writeonly" datatype="short" default="20"/>
-        <property name="red" access="readonly" datatype="short" default="0"/>
-        <property name="green" access="readonly" datatype="short" default="0"/>
-        <property name="blue" access="readonly" datatype="short" default="0"/>
+
+
+    <WuClass name="Philip_Hue_Bulb_Actuator" id="2015" virtual="false" type="hard">
+        <property name="ip_high" access="writeonly" datatype="short" default="0"/>
+        <property name="ip_low" access="writeonly" datatype="short" default="0"/>
+        <property name="index" access="writeonly" datatype="short" default="0"/>
+        <property name="on" access="writeonly" datatype="boolean" default="false"/>        
+        <property name="red" access="writeonly" datatype="short" default="0"/>
+        <property name="green" access="writeonly" datatype="short" default="0"/>
+        <property name="blue" access="writeonly" datatype="short" default="0"/>
     </WuClass>
-    <WuClass name="Philip_Hue_Bloom" id="2016" virtual="false" type="hard">
-        <property name="on" access="readwrite" datatype="boolean" default="false"/>
-        <property name="bri" access="writeonly" datatype="short" default="20"/>
-        <property name="hue" access="writeonly" datatype="short" default="20"/>
-        <property name="red" access="readonly" datatype="short" default="0"/>
-        <property name="green" access="readonly" datatype="short" default="0"/>
-        <property name="blue" access="readonly" datatype="short" default="0"/>
+    <WuClass name="Philip_Hue_Bloom_Actuator" id="2016" virtual="false" type="hard">
+        <property name="ip_high" access="writeonly" datatype="short" default="0"/>
+        <property name="ip_low" access="writeonly" datatype="short" default="0"/>
+        <property name="index" access="writeonly" datatype="short" default="0"/>
+        <property name="on" access="writeonly" datatype="boolean" default="false"/>
+        <property name="red" access="writeonly" datatype="short" default="0"/>
+        <property name="green" access="writeonly" datatype="short" default="0"/>
+        <property name="blue" access="writeonly" datatype="short" default="0"/>
     </WuClass>
-    <WuClass name="Philip_Hue_Go" id="2017" virtual="false" type="hard">
-        <property name="on" access="readwrite" datatype="boolean" default="false"/>
-        <property name="bri" access="writeonly" datatype="short" default="20"/>
-        <property name="hue" access="writeonly" datatype="short" default="20"/>
-        <property name="red" access="readonly" datatype="short" default="0"/>
-        <property name="green" access="readonly" datatype="short" default="0"/>
-        <property name="blue" access="readonly" datatype="short" default="0"/>
+    <WuClass name="Philip_Hue_Go_Actuator" id="2017" virtual="false" type="hard">
+        <property name="ip_high" access="writeonly" datatype="short" default="0"/>
+        <property name="ip_low" access="writeonly" datatype="short" default="0"/>
+        <property name="index" access="writeonly" datatype="short" default="0"/>
+        <property name="on" access="writeonly" datatype="boolean" default="false"/>
+        <property name="red" access="writeonly" datatype="short" default="0"/>
+        <property name="green" access="writeonly" datatype="short" default="0"/>
+        <property name="blue" access="writeonly" datatype="short" default="0"/>
     </WuClass>
-    <WuClass name="Philip_Hue_Strip" id="2018" virtual="false" type="hard">
-        <property name="on" access="readwrite" datatype="boolean" default="false"/>
-        <property name="bri" access="writeonly" datatype="short" default="20"/>
-        <property name="hue" access="writeonly" datatype="short" default="20"/>
-        <property name="red" access="readonly" datatype="short" default="0"/>
-        <property name="green" access="readonly" datatype="short" default="0"/>
-        <property name="blue" access="readonly" datatype="short" default="0"/>
+    <WuClass name="Philip_Hue_Strip_Actuator" id="2018" virtual="false" type="hard">
+        <property name="ip_high" access="writeonly" datatype="short" default="0"/>
+        <property name="ip_low" access="writeonly" datatype="short" default="0"/>
+        <property name="index" access="writeonly" datatype="short" default="0"/>
+        <property name="on" access="writeonly" datatype="boolean" default="false"/>
+        <property name="red" access="writeonly" datatype="short" default="0"/>
+        <property name="green" access="writeonly" datatype="short" default="0"/>
+        <property name="blue" access="writeonly" datatype="short" default="0"/>
     </WuClass>
+
     <WuClass name="MOSFET_Fan" id="2019" virtual="false" type="hard">
         <property name="speed" access="readwrite" datatype="short" default="1" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="50"  />
@@ -340,6 +347,43 @@
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="500"  />
     </WuClass>
 
+    <WuClass name="Philip_Hue_Bulb_Sensor" id="2023" virtual="false" type="hard">
+        <property name="ip_high" access="writeonly" datatype="short" default="0"/>
+        <property name="ip_low" access="writeonly" datatype="short" default="0"/>
+        <property name="index" access="writeonly" datatype="short" default="0"/>
+        <property name="on" access="readonly" datatype="boolean" default="false"/>
+        <property name="red" access="readonly" datatype="short" default="0"/>
+        <property name="green" access="readonly" datatype="short" default="0"/>
+        <property name="blue" access="readonly" datatype="short" default="0"/>
+    </WuClass>
+    <WuClass name="Philip_Hue_Bloom_Sensor" id="2024" virtual="false" type="hard">
+        <property name="ip_high" access="writeonly" datatype="short" default="0"/>
+        <property name="ip_low" access="writeonly" datatype="short" default="0"/>
+        <property name="index" access="writeonly" datatype="short" default="0"/>
+        <property name="on" access="readonly" datatype="boolean" default="false"/>
+        <property name="red" access="readonly" datatype="short" default="0"/>
+        <property name="green" access="readonly" datatype="short" default="0"/>
+        <property name="blue" access="readonly" datatype="short" default="0"/>
+    </WuClass>
+    <WuClass name="Philip_Hue_Go_Sensor" id="2025" virtual="false" type="hard">
+        <property name="ip_high" access="writeonly" datatype="short" default="0"/>
+        <property name="ip_low" access="writeonly" datatype="short" default="0"/>
+        <property name="index" access="writeonly" datatype="short" default="0"/>
+        <property name="on" access="readonly" datatype="boolean" default="false"/>
+        <property name="red" access="readonly" datatype="short" default="0"/>
+        <property name="green" access="readonly" datatype="short" default="0"/>
+        <property name="blue" access="readonly" datatype="short" default="0"/>
+    </WuClass>
+    <WuClass name="Philip_Hue_Strip_Sensor" id="2026" virtual="false" type="hard">
+        <property name="ip_high" access="writeonly" datatype="short" default="0"/>
+        <property name="ip_low" access="writeonly" datatype="short" default="0"/>
+        <property name="index" access="writeonly" datatype="short" default="0"/>
+        <property name="on" access="readonly" datatype="boolean" default="false"/>
+        <property name="red" access="readonly" datatype="short" default="0"/>
+        <property name="green" access="readonly" datatype="short" default="0"/>
+        <property name="blue" access="readonly" datatype="short" default="0"/>
+    </WuClass>
+
     <!-- PrClasses -->
     <WuClass name="SwithPrClass" id="10001" virtual="false" type="hard">
       <property name="switchinput" access="readwrite" datatype="short" default="1" />
@@ -357,36 +401,28 @@
     </WuClass>
 
     <WuClass name="ICSDemoFloorlampPrClass" id="9000" virtual="false" type="hard">
-      <property name="hue" access="readonly" datatype="short" default="0" />
-      <property name="saturation" access="readonly" datatype="short" default="0" />
-      <property name="brightness" access="readonly" datatype="short" default="0" />
-      <property name="x" access="readonly" datatype="short" default="0" />
-      <property name="y" access="readonly" datatype="short" default="0" />
       <property name="on_off" access="readonly" datatype="boolean" default="0" />
+      <property name="red" access="readonly" datatype="short" default="0" />
+      <property name="green" access="readonly" datatype="short" default="0" />
+      <property name="blue" access="readonly" datatype="short" default="0" />
     </WuClass>
     <WuClass name="ICSDemoBloomPrClass" id="9001" virtual="false" type="hard">
-      <property name="hue" access="readonly" datatype="short" default="0" />
-      <property name="saturation" access="readonly" datatype="short" default="0" />
-      <property name="brightness" access="readonly" datatype="short" default="0" />
-      <property name="x" access="readonly" datatype="short" default="0" />
-      <property name="y" access="readonly" datatype="short" default="0" />
       <property name="on_off" access="readonly" datatype="boolean" default="0" />
+      <property name="red" access="readonly" datatype="short" default="0" />
+      <property name="green" access="readonly" datatype="short" default="0" />
+      <property name="blue" access="readonly" datatype="short" default="0" />
     </WuClass>
     <WuClass name="ICSDemoGoPrClass" id="9002" virtual="false" type="hard">
-      <property name="hue" access="readonly" datatype="short" default="0" />
-      <property name="saturation" access="readonly" datatype="short" default="0" />
-      <property name="brightness" access="readonly" datatype="short" default="0" />
-      <property name="x" access="readonly" datatype="short" default="0" />
-      <property name="y" access="readonly" datatype="short" default="0" />
       <property name="on_off" access="readonly" datatype="boolean" default="0" />
+      <property name="red" access="readonly" datatype="short" default="0" />
+      <property name="green" access="readonly" datatype="short" default="0" />
+      <property name="blue" access="readonly" datatype="short" default="0" />
     </WuClass>
     <WuClass name="ICSDemoStripPrClass" id="9003" virtual="false" type="hard">
-      <property name="hue" access="readonly" datatype="short" default="0" />
-      <property name="saturation" access="readonly" datatype="short" default="0" />
-      <property name="brightness" access="readonly" datatype="short" default="0" />
-      <property name="x" access="readonly" datatype="short" default="0" />
-      <property name="y" access="readonly" datatype="short" default="0" />
       <property name="on_off" access="readonly" datatype="boolean" default="0" />
+      <property name="red" access="readonly" datatype="short" default="0" />
+      <property name="green" access="readonly" datatype="short" default="0" />
+      <property name="blue" access="readonly" datatype="short" default="0" />
     </WuClass>
     <WuClass name="ICSDemoFanPrClass" id="9004" virtual="false" type="hard">
       <property name="fan_onoff" access="readonly" datatype="boolean" default="0" />
