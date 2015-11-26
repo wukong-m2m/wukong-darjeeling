@@ -56,7 +56,14 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 		return ret;
 	}
 
-	private Collection<InstructionHandle> getIDupInstructions(int m, int n)
+	private static void copyPreAndPostState(Collection<InstructionHandle> newHandles, InstructionHandle oldHandle) {
+		for (InstructionHandle h : newHandles) {
+			h.setPreState(oldHandle.getPreState());
+			h.setPostState(oldHandle.getPostState());
+		}
+	}
+
+	private Collection<InstructionHandle> getIDupInstructions(int m, int n, InstructionHandle oldHandle)
 	{
 		// m: how many slots to duplicate
 		// n: how deep to bury them in the stack, excluding the copied slots
@@ -101,10 +108,12 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 				break;
 		}
 
+		copyPreAndPostState(ret, oldHandle);
+
 		return ret;
 	}
 
-	private Collection<InstructionHandle> getADupInstructions(int m, int n)
+	private Collection<InstructionHandle> getADupInstructions(int m, int n, InstructionHandle oldHandle)
 	{
 		ArrayList<InstructionHandle> ret = new ArrayList<InstructionHandle>();
 
@@ -130,10 +139,12 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 				throw new IllegalStateException(String.format("Cannot formulate adup instruction for m:%d, n:%d", m, n));
 		}
 
+		copyPreAndPostState(ret, oldHandle);
+
 		return ret;
 	}
 
-	private Collection<InstructionHandle> getIPopInstructions(int m)
+	private Collection<InstructionHandle> getIPopInstructions(int m, InstructionHandle oldHandle)
 	{
 		ArrayList<InstructionHandle> ret = new ArrayList<InstructionHandle>(); 
 
@@ -159,11 +170,13 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 			default:
 				throw new IllegalStateException(String.format("Cannot formulate integer pop opcode for m=%d", m));
 		}
+
+		copyPreAndPostState(ret, oldHandle);
 		
 		return ret;
 	}
 
-	private Collection<InstructionHandle> getAPopInstructions(int m)
+	private Collection<InstructionHandle> getAPopInstructions(int m, InstructionHandle oldHandle)
 	{
 		ArrayList<InstructionHandle> ret = new ArrayList<InstructionHandle>(); 
 
@@ -171,23 +184,29 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 		if (m==2) ret.add(new InstructionHandle(new StackInstruction(Opcode.APOP2)));
 		if (m>=3) throw new IllegalStateException(String.format("Cannot formulate reference pop opcode for m=%d", m));
 		
+		copyPreAndPostState(ret, oldHandle);
+
 		return ret;
 	}	
 	
-	private Collection<InstructionHandle> getISwapInstructions(int m, int n)
+	private Collection<InstructionHandle> getISwapInstructions(int m, int n, InstructionHandle oldHandle)
 	{
 		ArrayList<InstructionHandle> ret = new ArrayList<InstructionHandle>(); 
 
 		if ((m!=0)&&(n!=0)) ret.add(new InstructionHandle(new WideStackInstruction(Opcode.ISWAP_X, m, n)));
 		
+		copyPreAndPostState(ret, oldHandle);
+
 		return ret;
 	}
 	
-	private Collection<InstructionHandle> getASwapInstructions(int m, int n)
+	private Collection<InstructionHandle> getASwapInstructions(int m, int n, InstructionHandle oldHandle)
 	{
 		ArrayList<InstructionHandle> ret = new ArrayList<InstructionHandle>(); 
 
 		if ((m==1)&&(n==1)) ret.add(new InstructionHandle(new StackInstruction(Opcode.ASWAP)));
+
+		copyPreAndPostState(ret, oldHandle);
 		
 		return ret;
 	}
@@ -210,8 +229,8 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 				// ..., v1 -> ..., v1, v1
 				case IDUP:
 					type1 = preState.getStack().peek().getType();
-					instructions.insertBefore(handle, getIDupInstructions(getNrIntegerSlots(type1), 0));
-					instructions.insertBefore(handle, getADupInstructions(getNrReferenceSlots(type1), 0));
+					instructions.insertBefore(handle, getIDupInstructions(getNrIntegerSlots(type1), 0, handle));
+					instructions.insertBefore(handle, getADupInstructions(getNrReferenceSlots(type1), 0, handle));
 					instructions.remove(handle);
 					
 					break;
@@ -224,8 +243,8 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 					type1 = preState.getStack().peek(0).getType();
 					type2 = preState.getStack().peek(1).getType();
 					
-					instructions.insertBefore(handle, getIDupInstructions(getNrIntegerSlots(type1, type2), 0));
-					instructions.insertBefore(handle, getADupInstructions(getNrReferenceSlots(type1, type2), 0));
+					instructions.insertBefore(handle, getIDupInstructions(getNrIntegerSlots(type1, type2), 0, handle));
+					instructions.insertBefore(handle, getADupInstructions(getNrReferenceSlots(type1, type2), 0, handle));
 					instructions.remove(handle);
 					
 					break;
@@ -235,8 +254,8 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 					
 					type1 = preState.getStack().peek().getType();
 					
-					instructions.insertBefore(handle, getIPopInstructions(getNrIntegerSlots(type1)));
-					instructions.insertBefore(handle, getAPopInstructions(getNrReferenceSlots(type1)));
+					instructions.insertBefore(handle, getIPopInstructions(getNrIntegerSlots(type1), handle));
+					instructions.insertBefore(handle, getAPopInstructions(getNrReferenceSlots(type1), handle));
 					instructions.remove(handle);
 					
 					break;
@@ -256,13 +275,13 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 					type1 = preState.getStack().peek().getType();
 					if (type1.isLongSized())
 					{
-						instructions.insertBefore(handle, getIPopInstructions(getNrIntegerSlots(type1)/2));
+						instructions.insertBefore(handle, getIPopInstructions(getNrIntegerSlots(type1)/2, handle));
 						instructions.remove(handle);
 					} else
 					{
 						type2 = preState.getStack().peek(1).getType();
-						instructions.insertBefore(handle, getIPopInstructions(getNrIntegerSlots(type1, type2)));
-						instructions.insertBefore(handle, getAPopInstructions(getNrReferenceSlots(type1, type2)));
+						instructions.insertBefore(handle, getIPopInstructions(getNrIntegerSlots(type1, type2), handle));
+						instructions.insertBefore(handle, getAPopInstructions(getNrReferenceSlots(type1, type2), handle));
 						instructions.remove(handle);
 					}
 					
@@ -273,8 +292,8 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 					type1 = preState.getStack().peek(0).getType();
 					type2 = preState.getStack().peek(1).getType();
 					
-					instructions.insertBefore(handle, getIDupInstructions(getNrIntegerSlots(type1), getNrIntegerSlots(type2)));
-					instructions.insertBefore(handle, getADupInstructions(getNrReferenceSlots(type1), getNrReferenceSlots(type2)));
+					instructions.insertBefore(handle, getIDupInstructions(getNrIntegerSlots(type1), getNrIntegerSlots(type2), handle));
+					instructions.insertBefore(handle, getADupInstructions(getNrReferenceSlots(type1), getNrReferenceSlots(type2), handle));
 					instructions.remove(handle);
 					
 					break;
@@ -284,8 +303,8 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 					type2 = preState.getStack().peek(1).getType();
 					type3 = preState.getStack().peek(2).getType();
 					
-					instructions.insertBefore(handle, getIDupInstructions(getNrIntegerSlots(type1), getNrIntegerSlots(type2, type3)));
-					instructions.insertBefore(handle, getADupInstructions(getNrReferenceSlots(type1), getNrReferenceSlots(type2, type3)));
+					instructions.insertBefore(handle, getIDupInstructions(getNrIntegerSlots(type1), getNrIntegerSlots(type2, type3), handle));
+					instructions.insertBefore(handle, getADupInstructions(getNrReferenceSlots(type1), getNrReferenceSlots(type2, type3), handle));
 					instructions.remove(handle);
 					
 					break;
@@ -294,8 +313,8 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 					type1 = preState.getStack().peek(0).getType();
 					type2 = preState.getStack().peek(1).getType();
 					
-					instructions.insertBefore(handle, getISwapInstructions(getNrIntegerSlots(type1), getNrIntegerSlots(type2)));
-					instructions.insertBefore(handle, getASwapInstructions(getNrReferenceSlots(type1), getNrReferenceSlots(type2)));
+					instructions.insertBefore(handle, getISwapInstructions(getNrIntegerSlots(type1), getNrIntegerSlots(type2), handle));
+					instructions.insertBefore(handle, getASwapInstructions(getNrReferenceSlots(type1), getNrReferenceSlots(type2), handle));
 					instructions.remove(handle);
 					
 					System.out.println("ERROR EMITTING SWAP!!!!\n");
