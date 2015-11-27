@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include "cJSON.h"
 
-int get_gamma(uint32_t ip, char *message, int total, char *path, float *x, float *y, float *bri, bool *on);
+int get_gamma(uint32_t ip, char *message, int total, char *path, float *x, float *y, int *bri, bool *on);
 
 int socket_send_to(uint32_t ip, char *message, int total, char *response, int res_size);
 

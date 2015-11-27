@@ -20,7 +20,8 @@ void wuclass_philip_hue_go_sensor_update(wuobject_t *wuobject)
     uint32_t ip;
     int16_t index=0;
     int8_t gamma;
-    float x, y, bri;
+    float x, y;
+    int bri;
     uint8_t r, g, b;
 
     char message[MESSAGE_SIZE] = {0}, str[150] = {0};
@@ -45,12 +46,12 @@ void wuclass_philip_hue_go_sensor_update(wuobject_t *wuobject)
             lasttime = currenttime;
             return;
         }
-        XYbtoRGB(gamma, x, y, bri, &r, &g, &b);        
+        XYbtoRGB(gamma, x, y, (float)(bri)/255.0, &r, &g, &b);        
         wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_GO_SENSOR_RED, r);    
         wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_GO_SENSOR_GREEN, g);    
         wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_GO_SENSOR_BLUE, b);
         if (!on) bri = 0;
-        wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_GO_SENSOR_ON, bri); 
+        wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_GO_SENSOR_BRI, bri); 
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Philip_Hue_Go_Sensor): red: %d\n", r);
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Philip_Hue_Go_Sensor): green: %d\n", g);
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Philip_Hue_Go_Sensor): blue: %d\n", b);

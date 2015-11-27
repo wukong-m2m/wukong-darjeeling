@@ -291,7 +291,7 @@ int socket_send_to(uint32_t ip, char *message, int total, char *response, int re
 }
 
 
-int get_gamma(uint32_t ip, char *message, int total, char *path, float *x, float *y, float *bri, bool *on){
+int get_gamma(uint32_t ip, char *message, int total, char *path, float *x, float *y, int *bri, bool *on){
   memset(message, 0, total);
   char *tpl = "GET /%s HTTP/1.1\r\nConnection: close\r\n\r\n";
   sprintf(message, tpl, path);
@@ -315,7 +315,7 @@ int get_gamma(uint32_t ip, char *message, int total, char *path, float *x, float
     subitem = cJSON_GetArrayItem(item, 1);
     *y = (float)(subitem->valuedouble);
     subitem = cJSON_GetObjectItem(root,"bri");
-    *bri = (float)(subitem->valueint)/255.0;
+    *bri = subitem->valueint;
     subitem = cJSON_GetObjectItem(root,"on");
     *on = (subitem->type)?true:false;
   }
