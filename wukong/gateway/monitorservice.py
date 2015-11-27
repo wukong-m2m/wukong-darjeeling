@@ -157,7 +157,7 @@ class MonitorService(object):
             self.client.Process(0)
             if config.ENABLE_PUB:
                 self.client.RegisterHandler('message', self.message_handler)
-            # gevent.spawn(self.autoSendPresence)
+            gevent.spawn(self.autoSendPresence)
 
     def handle_monitor_message(self, context, message):
         self._task.put_nowait((context, message))
