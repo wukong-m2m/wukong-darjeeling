@@ -351,7 +351,7 @@
         <property name="ip_high" access="writeonly" datatype="short" default="0"/>
         <property name="ip_low" access="writeonly" datatype="short" default="0"/>
         <property name="index" access="writeonly" datatype="short" default="0"/>
-        <property name="on" access="readonly" datatype="boolean" default="false"/>
+        <property name="bri" access="readonly" datatype="short" default="0"/>
         <property name="red" access="readonly" datatype="short" default="0"/>
         <property name="green" access="readonly" datatype="short" default="0"/>
         <property name="blue" access="readonly" datatype="short" default="0"/>
@@ -360,7 +360,7 @@
         <property name="ip_high" access="writeonly" datatype="short" default="0"/>
         <property name="ip_low" access="writeonly" datatype="short" default="0"/>
         <property name="index" access="writeonly" datatype="short" default="0"/>
-        <property name="on" access="readonly" datatype="boolean" default="false"/>
+        <property name="bri" access="readonly" datatype="short" default="0"/>
         <property name="red" access="readonly" datatype="short" default="0"/>
         <property name="green" access="readonly" datatype="short" default="0"/>
         <property name="blue" access="readonly" datatype="short" default="0"/>
@@ -369,7 +369,7 @@
         <property name="ip_high" access="writeonly" datatype="short" default="0"/>
         <property name="ip_low" access="writeonly" datatype="short" default="0"/>
         <property name="index" access="writeonly" datatype="short" default="0"/>
-        <property name="on" access="readonly" datatype="boolean" default="false"/>
+        <property name="bri" access="readonly" datatype="short" default="0"/>
         <property name="red" access="readonly" datatype="short" default="0"/>
         <property name="green" access="readonly" datatype="short" default="0"/>
         <property name="blue" access="readonly" datatype="short" default="0"/>
@@ -378,7 +378,7 @@
         <property name="ip_high" access="writeonly" datatype="short" default="0"/>
         <property name="ip_low" access="writeonly" datatype="short" default="0"/>
         <property name="index" access="writeonly" datatype="short" default="0"/>
-        <property name="on" access="readonly" datatype="boolean" default="false"/>
+        <property name="bri" access="readonly" datatype="short" default="0"/>
         <property name="red" access="readonly" datatype="short" default="0"/>
         <property name="green" access="readonly" datatype="short" default="0"/>
         <property name="blue" access="readonly" datatype="short" default="0"/>

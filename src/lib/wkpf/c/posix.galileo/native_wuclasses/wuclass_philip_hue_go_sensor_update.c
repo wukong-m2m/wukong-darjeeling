@@ -48,12 +48,13 @@ void wuclass_philip_hue_go_sensor_update(wuobject_t *wuobject)
         XYbtoRGB(gamma, x, y, bri, &r, &g, &b);        
         wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_GO_SENSOR_RED, r);    
         wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_GO_SENSOR_GREEN, g);    
-        wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_GO_SENSOR_BLUE, b);    
-        wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_PHILIP_HUE_GO_SENSOR_ON, on); 
+        wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_GO_SENSOR_BLUE, b);
+        if (!on) bri = 0;
+        wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_GO_SENSOR_ON, bri); 
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Philip_Hue_Go_Sensor): red: %d\n", r);
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Philip_Hue_Go_Sensor): green: %d\n", g);
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Philip_Hue_Go_Sensor): blue: %d\n", b);
-        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Philip_Hue_Go_Sensor): on: %s\n", (on)?"true":"false");
+        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Philip_Hue_Go_Sensor): bri: %d\n", bri);
         lasttime = currenttime;
     }
 }
