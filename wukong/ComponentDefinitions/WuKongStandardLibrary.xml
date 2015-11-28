@@ -113,7 +113,6 @@
         <property name="incoming_from" access="readonly" datatype="NodeREDMessage" default=""  />
         <property name="outgoing_to" access="writeonly" datatype="NodeREDMessage" default=""  />
     </WuClass>
-    
     <!-- Sensors -->
     <WuClass name="Light_Sensor" id="1001" virtual="false" type="hard">
         <property name="current_value" access="readonly" datatype="short"  />
@@ -295,7 +294,7 @@
         <property name="ip_high" access="writeonly" datatype="short" default="0"/>
         <property name="ip_low" access="writeonly" datatype="short" default="0"/>
         <property name="index" access="writeonly" datatype="short" default="0"/>
-        <property name="on" access="writeonly" datatype="boolean" default="false"/>        
+        <property name="on" access="writeonly" datatype="boolean" default="false"/>
         <property name="red" access="writeonly" datatype="short" default="0"/>
         <property name="green" access="writeonly" datatype="short" default="0"/>
         <property name="blue" access="writeonly" datatype="short" default="0"/>
@@ -447,5 +446,14 @@
     </WuClass>
     <WuClass name="ICSDemoQPrClass" id="9009" virtual="false" type="hard">
       <property name="question" access="readonly" datatype="boolean" default="0" />
+    </WuClass>
+    <WuClass name="WeatherPrClass" id="10111" virtual="false" type="hard">
+      <property name="cityId" access="readwrite" datatype="short" default="0" />
+      <property name="temperature" access="readonly" datatype="short" default="0" />
+    </WuClass>
+    <WuClass name="BufferEnabledPrClass" id="10112" virtual="false" type="hard">
+      <property name="sInput" access="readonly" datatype="short" default="0" />
+      <property name="bInput" access="readonly" datatype="boolean" default="0" />
+      <property name="output" access="readonly" datatype="short" default="0" />
     </WuClass>
 </WuKong>
