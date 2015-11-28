@@ -200,6 +200,7 @@ task avrora_analyse_trace(type:Exec, dependsOn: [avrora_if_necessary, disassembl
     inputs.file avrora_if_necessary.rtcdataFile
     inputs.file avrora_if_necessary.profiledataFile
     inputs.file avrora_if_necessary.stdoutlogFile
+    inputs.dir "${project.rootDir}/config/${djConfigname}/proces-trace/proces-trace/"
     outputs.file analysedTraceOutput
 
     executable "fsharpi"

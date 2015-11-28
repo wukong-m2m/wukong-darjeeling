@@ -33,6 +33,11 @@ let resultToStringList (result : Results) =
         ("POP"                  , (cyclesToAOTPercentage result.cyclesPop.cycles));
         ("MOVW"                 , (cyclesToAOTPercentage result.cyclesMovw.cycles));
         ("PUSH+POP+MOVW"        , (cyclesToAOTPercentage (result.cyclesPush.cycles+result.cyclesPop.cycles+result.cyclesMovw.cycles)));
+        (""                     , "");
+        ("STACK"                , "");
+        ("max"                  , result.maxJvmStackInBytes.ToString());
+        ("avg/executed jvm"     , String.Format ("{0:000.00}", result.avgJvmStackInBytes));
+        ("avg change/exec jvm"  , String.Format ("{0:000.00}", result.avgJvmStackChangeInBytes));
         ]
     let r2 = 
         (""                     , "")

@@ -200,8 +200,8 @@ let parseDJDebug (allLines : string list) =
 
   // System.Console.WriteLine (String.Join("\r\n", lines))
 
-  let regexMatches = lines |> List.map (fun x -> regexLine.Match(x))
-  let byteOffsetToInstOffset = regexMatches |> List.mapi (fun i m -> (Int32.Parse(m.Groups.["byteOffset"].Value.Trim()), i)) |> Map.ofList
+  let regexLineMatches = lines |> List.map (fun x -> regexLine.Match(x))
+  let byteOffsetToInstOffset = regexLineMatches |> List.mapi (fun i m -> (Int32.Parse(m.Groups.["byteOffset"].Value.Trim()), i)) |> Map.ofList
   let stackStringToStack (stackString: string) =
       let split = stackString.Split(',')
                   |> Seq.toList
@@ -209,14 +209,17 @@ let parseDJDebug (allLines : string list) =
                                         | -1 -> x
                                         | index -> x.Substring(0, index))
                   |> List.filter ((<>) "")
-      let regexMatches = split |> List.map (fun x -> regexStackElement.Match(x))
-      // System.Console.WriteLine (String.Join("///", regexMatches))
-      let stack = regexMatches |> List.map (fun m -> let byteOffset = Int32.Parse(m.Groups.["byteOffset"].Value) in
-                                                     let instOffset = Map.find byteOffset byteOffsetToInstOffset in
-                                                     let datatype = (m.Groups.["datatype"].Value |> StackDatatypeFromString) in
-                                                     { StackElement.origin=instOffset; datatype=datatype })
-      stack
-  regexMatches |> List.mapi (fun i m -> { byteOffset = Int32.Parse(m.Groups.["byteOffset"].Value.Trim());
+      let regexElementMatches = split |> List.map (fun x -> regexStackElement.Match(x))
+      // Temporarily just fill each index with 0 since the debug output from Darjeeling has a bug when instructions are replaced. The origin of each stack element is determined before replacing DUP and POP instructions.
+      // So after replacing them, the indexes are no longer valid. Too much work to fix it properly in DJ for now. Will do that later if necessary.3
+      // regexElementMatches |> List.map (fun m -> let byteOffset = Int32.Parse(m.Groups.["byteOffset"].Value) in
+      //                                           let instOffset = if (Map.containsKey byteOffset byteOffsetToInstOffset)
+      //                                                            then Map.find byteOffset byteOffsetToInstOffset
+      //                                                            else failwith ("Key not found!!!! " + byteOffset.ToString() + " in " + string) in
+      //                                           let datatype = (m.Groups.["datatype"].Value |> StackDatatypeFromString) in
+      //                                           { StackElement.origin=instOffset; datatype=datatype })
+      regexElementMatches |> List.map (fun m -> { StackElement.origin=0; datatype=(m.Groups.["datatype"].Value |> StackDatatypeFromString) })
+  regexLineMatches |> List.mapi (fun i m -> { byteOffset = Int32.Parse(m.Groups.["byteOffset"].Value.Trim());
                                           instOffset = i;
                                           text = m.Groups.["text"].Value.Trim();
                                           stackBefore = (m.Groups.["stackBefore"].Value.Trim() |> stackStringToStack);
@@ -292,8 +295,6 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profi
         benchmark = benchmark;
         jvmInstructions = mainResults;
         nativeCInstructions = nativeCInstructions |> Seq.toList;
-        executedCyclesAOT = cyclesPerJvmOpcodeCategory |> List.sumBy (fun (cat, cnt) -> cnt.cycles);
-        executedCyclesC = cyclesPerAvrOpcodeCategoryNativeC |> List.sumBy (fun (cat, cnt) -> cnt.cycles);
         stopwatchCyclesJava = stopwatchTimers |> List.find (fun (t,c) -> t="Java") |> snd;
         stopwatchCyclesAOT = stopwatchTimers |> List.find (fun (t,c) -> t="AOT") |> snd;
         stopwatchCyclesC = stopwatchTimers |> List.find (fun (t,c) -> t="C") |> snd;
@@ -322,9 +323,10 @@ let resultsToString (results : Results) =
                       counters.executions,
                       counters.average)
     let resultJavaToString (result : ResultJava) =
-        String.Format("{0,-60}{1} {2}:{3}\r\n",
+        String.Format("{0,-60}{1} {2}->{3}:{4}\r\n",
                       result.jvm.text,
                       countersToString totalCyclesAOTJava result.counters,
+                      result.djDebugData.stackSizeBefore,
                       result.djDebugData.stackSizeAfter,
                       stackToString result.djDebugData.stackAfter)
     let resultsAvrToString (avrResults : ResultAvr list) =
@@ -374,6 +376,10 @@ let resultsToString (results : Results) =
         yield String.Format ("                pop             {0}", (countersToString totalCyclesAOTJava results.cyclesPop))
         yield String.Format ("                movw            {0}", (countersToString totalCyclesAOTJava results.cyclesMovw))
         yield String.Format ("                total           {0}", (countersToString totalCyclesAOTJava (results.cyclesPush + results.cyclesPop + results.cyclesMovw)))
+        yield ""
+        yield String.Format ("--- STACK max                   {0}", (results.maxJvmStackInBytes))
+        yield String.Format ("---       avg/executed jvm      {0:000.00}", results.avgJvmStackInBytes)
+        yield String.Format ("---       avg change/exec jvm   {0:000.00}", results.avgJvmStackChangeInBytes)
         yield ""
         yield "--- SUMMED: PER JVM CATEGORY"
         yield categoryResultsToString totalCyclesAOTJava results.cyclesPerJvmOpcodeCategory
