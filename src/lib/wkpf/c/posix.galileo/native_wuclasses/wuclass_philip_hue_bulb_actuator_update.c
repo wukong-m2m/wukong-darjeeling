@@ -61,6 +61,10 @@ void wuclass_philip_hue_bulb_actuator_update(wuobject_t *wuobject)
         }
         DEBUG_LOG(DBG_WKPFUPDATE, "\n_____%s_____PUT command:%s\n", debug_name, command);
         int ret = put_command(ip, message, MESSAGE_SIZE, index, command, strlen(command));
+        dj_timer_delay(50);
+        put_command(ip, message, MESSAGE_SIZE, index+1, command, strlen(command));
+        dj_timer_delay(50);
+        put_command(ip, message, MESSAGE_SIZE, index+2, command, strlen(command));
 
         if (!ret){
             DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(%s): Setting red to: %d\n", debug_name, r);

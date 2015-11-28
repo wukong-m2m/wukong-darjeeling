@@ -59,6 +59,7 @@ void wuclass_philip_hue_go_actuator_update(wuobject_t *wuobject)
     	}else{
             sprintf(command, "{\"on\":false}");
         }
+        dj_timer_delay(50);
         DEBUG_LOG(DBG_WKPFUPDATE, "\n_____%s_____PUT command:%s\n", debug_name, command);
         int ret = put_command(ip, message, MESSAGE_SIZE, index, command, strlen(command));
 
