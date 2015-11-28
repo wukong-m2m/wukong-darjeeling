@@ -9,11 +9,11 @@
 
 int8_t gamma_hue_bulb = -1;
 
-void wuclass_philip_hue_blub_actuator_setup(wuobject_t *wuobject)
+void wuclass_philip_hue_bulb_actuator_setup(wuobject_t *wuobject)
 {
 }
 
-void wuclass_philip_hue_blub_actuator_update(wuobject_t *wuobject)
+void wuclass_philip_hue_bulb_actuator_update(wuobject_t *wuobject)
 {
     bool on=false;
     uint32_t ip;
