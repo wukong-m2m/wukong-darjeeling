@@ -49,24 +49,37 @@
     </WuClass>-->
 
     <!-- 192.168.0.107 is galileoCABINET -->
-    <!--<WuClass name="Philip_Hue_Bulb" appCanCreateInstances="false">
+    <!-- <WuClass name="Philip_Hue_Bulb_Actuator" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
-    <WuClass name="Philip_Hue_Bloom" appCanCreateInstances="false">
+    <WuClass name="Philip_Hue_Bloom_Actuator" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
-    <WuClass name="Philip_Hue_Go" appCanCreateInstances="false">
+    <WuClass name="Philip_Hue_Go_Actuator" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
-    <WuClass name="Philip_Hue_Strip" appCanCreateInstances="false">
+    <WuClass name="Philip_Hue_Strip_Actuator" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
-    <WuClass name="MOSFET_Fan" appCanCreateInstances="false">
+
+    <WuClass name="Philip_Hue_Bulb_Sensor" appCanCreateInstances="false">
+        <CreateInstance />
+    </WuClass>
+    <WuClass name="Philip_Hue_Bloom_Sensor" appCanCreateInstances="false">
+        <CreateInstance />
+    </WuClass>
+    <WuClass name="Philip_Hue_Go_Sensor" appCanCreateInstances="false">
+        <CreateInstance />
+    </WuClass>
+    <WuClass name="Philip_Hue_Strip_Sensor" appCanCreateInstances="false">
+        <CreateInstance />
+    </WuClass> -->
+    <!-- <WuClass name="MOSFET_Fan" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
     <WuClass name="Sonos" appCanCreateInstances="false">
     	<CreateInstance />
-    </WuClass>-->
+    </WuClass> -->
     
     <!-- 192.168.0.106 is edisonENTRANCE -->
     <!--<WuClass name="Cabinet" appCanCreateInstances="false">
