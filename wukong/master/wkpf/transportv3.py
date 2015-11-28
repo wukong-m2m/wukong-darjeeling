@@ -305,7 +305,7 @@ class RPCAgent(TransportAgent):
             gevent.sleep(0.01)
             current_time = time.time()
             if current_time - start_time > 1:
-                logger.info("waited %s to reply: sent cmd %s and pyld %s", MPTN.ID_TO_STRING(destination), str(cmd), str(payload))
+                logger.info("waited %s to reply: sent cmd %s and pyld %s", MPTN.ID_TO_STRING(destination), str(command), str(payload))
                 start_time = current_time
         return result.get()
 
