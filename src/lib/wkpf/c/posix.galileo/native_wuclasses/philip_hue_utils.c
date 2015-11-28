@@ -2,6 +2,11 @@
 
 
 typedef struct point2d { float x; float y; } point2d;
+
+const char *philips_hue_path = "api/newdeveloper/lights/%d";
+const char *http_get_req_header = "GET /%s HTTP/1.1\r\nConnection: close\r\n\r\n";
+const char *http_put_req_header = "PUT /%s HTTP/1.1\r\nConnection: close\r\nContent-Length: %d\r\n\r\n";
+
 void gammaCorrection(float *rgb)
 {
   // http://www.babelcolor.com/download/A%20review%20of%20RGB%20color%20spaces.pdf
@@ -71,29 +76,41 @@ bool checkPointInLampsReach(point2d gamut_r, point2d gamut_g, point2d gamut_b, f
 }
 
 void getGamut(int8_t gamma, point2d *gamut_r, point2d *gamut_g, point2d *gamut_b){
+  //http://www.developers.meethue.com/documentation/supported-lights
+  //http://www.developers.meethue.com/documentation/hue-xy-values
+  //Find R, G, B in the table of XY-Values not Supported Lights
   switch(gamma){
     case 0:
-      gamut_r->x = 0.704; gamut_r->y = 0.296;
-      gamut_g->x = 0.2151; gamut_g->y = 0.7106;
-      gamut_b->x = 0.138; gamut_b->y = 0.08;
+      // gamut_r->x = 0.704; gamut_r->y = 0.296;
+      // gamut_g->x = 0.2151; gamut_g->y = 0.7106;
+      // gamut_b->x = 0.138; gamut_b->y = 0.08;
+      gamut_r->x = 0.7; gamut_r->y = 0.2986;
+      gamut_g->x = 0.214; gamut_g->y = 0.709;
+      gamut_b->x = 0.139; gamut_b->y = 0.081;
       break;
     case 1:
-      gamut_r->x = 0.675; gamut_r->y = 0.322;
-      gamut_g->x = 0.409; gamut_g->y = 0.518;
-      gamut_b->x = 0.167; gamut_b->y = 0.04;
+      // gamut_r->x = 0.675; gamut_r->y = 0.322;
+      // gamut_g->x = 0.409; gamut_g->y = 0.518;
+      // gamut_b->x = 0.167; gamut_b->y = 0.04;
+      gamut_r->x = 0.674; gamut_r->y = 0.322;
+      gamut_g->x = 0.408; gamut_g->y = 0.517;
+      gamut_b->x = 0.168; gamut_b->y = 0.041;
       break;
     case 2:
-      gamut_r->x = 0.675; gamut_r->y = 0.322;
-      gamut_g->x = 0.2151; gamut_g->y = 0.7106;
-      gamut_b->x = 0.167; gamut_b->y = 0.04;
+      // gamut_r->x = 0.675; gamut_r->y = 0.322;
+      // gamut_g->x = 0.2151; gamut_g->y = 0.7106;
+      // gamut_b->x = 0.167; gamut_b->y = 0.04;
+      gamut_r->x = 0.692; gamut_r->y = 0.308;
+      gamut_g->x = 0.17; gamut_g->y = 0.7;
+      gamut_b->x = 0.153; gamut_b->y = 0.048;
       break;
     default:
       break;
   }
 }
 
-void RGBtoXY(int8_t gamma, uint8_t red, uint8_t green, uint8_t blue, float *x, float *y){
-  float r = (float)red, g = (float)green, b = (float)blue;
+void RGBtoXY(int8_t gamma, uint8_t red, uint8_t green, uint8_t blue, float *x, float *y, float *bri){
+  float r = (float)red/255.0, g = (float)green/255.0, b = (float)blue/255.0;
   gammaCorrection(&r); gammaCorrection(&g); gammaCorrection(&b);
   float X, Y, Z, cx, cy;
 //      http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
@@ -127,6 +144,7 @@ void RGBtoXY(int8_t gamma, uint8_t red, uint8_t green, uint8_t blue, float *x, f
   }
   *x = cx;
   *y = cy;
+  *bri = Y;
 }
 
 void XYbtoRGB(int8_t gamma, float x, float y, float bri, uint8_t *red, uint8_t *green, uint8_t *blue)
@@ -291,18 +309,31 @@ int socket_send_to(uint32_t ip, char *message, int total, char *response, int re
 }
 
 
-int get_gamma(uint32_t ip, char *message, int total, char *path, float *x, float *y, int *bri, bool *on){
+int get_gamma(uint32_t ip, char *message, int total, int index, float *x, float *y, int *bri, bool *on){
   memset(message, 0, total);
-  char *tpl = "GET /%s HTTP/1.1\r\nConnection: close\r\n\r\n";
-  sprintf(message, tpl, path);
+  char path[BUF_SIZE] = {0};
+  sprintf(path, philips_hue_path, index);
+  sprintf(message, http_get_req_header, path);
   int ret = socket_send_to(ip, message, strlen(message), message, total);
-  if (ret < 0) return ret;
+  if (ret < 0)
+    // Socket send error 
+    return ret;
 
+  message = (strstr(message, "\r\n\r\n"))+4;
   cJSON * root = cJSON_Parse(message);
-  if (!root) return -98;
-  char *modelid = cJSON_GetObjectItem(root,"modelid")->valuestring;
+  if (!root)
+    // Cannot parse
+    return -100;
+  cJSON* item = cJSON_GetObjectItem(root,"modelid");
+  if (!item)
+    // No model id available
+    return -101;
+  char *modelid = item->valuestring;
   if (x != NULL && y != NULL && bri != NULL){
-    cJSON *item = cJSON_GetObjectItem(root,"xy");
+    item = cJSON_GetObjectItem(root,"xy");
+    if (!item)
+      // No xy available
+      return -102;
     // for (i = 0 ; i < cJSON_GetArraySize(item) ; i++)
     // {
     //    cJSON * subitem = cJSON_GetArrayItem(item, i);
@@ -311,12 +342,24 @@ int get_gamma(uint32_t ip, char *message, int total, char *path, float *x, float
     //    optional = cJSON_GetObjectItem(subitem, "optional"); 
     // }
     cJSON * subitem = cJSON_GetArrayItem(item, 0);
+    if (!subitem)
+      // No xy[0] available
+      return -103;
     *x = (float)(subitem->valuedouble);
     subitem = cJSON_GetArrayItem(item, 1);
+    if (!subitem)
+      // No xy[1] available
+      return -104;
     *y = (float)(subitem->valuedouble);
     subitem = cJSON_GetObjectItem(root,"bri");
+    if (!subitem)
+      // No bri available
+      return -105;
     *bri = subitem->valueint;
     subitem = cJSON_GetObjectItem(root,"on");
+    if (!subitem)
+      // No on available
+      return -106;
     *on = (subitem->type)?true:false;
   }
 
@@ -345,9 +388,29 @@ int get_gamma(uint32_t ip, char *message, int total, char *path, float *x, float
   }
   else
   {
-    ret = -99;
+    // Unknown Philips hue modelid 
+    ret = -102;
   }
   cJSON_Delete(root);
 
   return ret;
+}
+
+int put_command(uint32_t ip, char *message, int total, int index, char *command, int cmd_len){
+  memset(message, 0, total);
+  char path[BUF_SIZE] = {0};
+  sprintf(path, philips_hue_path, index);
+  strcat(path, "/state");
+  sprintf(message, http_put_req_header, path, cmd_len);
+  strcat(message, command);
+  int ret = socket_send_to(ip, message, strlen(message), message, total);
+  if (ret < 0)
+    // Socket send error 
+    return ret;
+
+  // message = (strstr(message, "\r\n\r\n"))+4;
+  if (strstr(message, "\"error\""))
+    return -100;
+
+  return 0;
 }

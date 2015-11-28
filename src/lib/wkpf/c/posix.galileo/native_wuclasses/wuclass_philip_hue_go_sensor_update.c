@@ -7,15 +7,12 @@
 #include "djtimer.h"
 #include "philip_hue_utils.h"
 
-#define MESSAGE_SIZE 1024
-
 void wuclass_philip_hue_go_sensor_setup(wuobject_t *wuobject)
 {
 }
 
 void wuclass_philip_hue_go_sensor_update(wuobject_t *wuobject)
 {
-
     bool on=false;
     uint32_t ip;
     int16_t index=0;
@@ -23,9 +20,7 @@ void wuclass_philip_hue_go_sensor_update(wuobject_t *wuobject)
     float x, y;
     int bri;
     uint8_t r, g, b;
-
-    char message[MESSAGE_SIZE] = {0}, str[150] = {0};
-    char *path = "api/newdeveloper/lights/%d/state";
+    char *debug_name = "Philip_HUE_GO_Sensor";
 
     wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_GO_SENSOR_IP_HIGH, &index);
     ip = (index & 0xffff) << 16;
@@ -33,16 +28,20 @@ void wuclass_philip_hue_go_sensor_update(wuobject_t *wuobject)
     ip |= (index & 0xffff);
 
     wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_GO_SENSOR_INDEX, &index);
-    sprintf(str, path, index);
 
     static uint32_t currenttime, lasttime;
     uint16_t loop_rate = 500;
     currenttime = dj_timer_getTimeMillis();
     
     if (currenttime - lasttime > loop_rate){
-        gamma = get_gamma(ip, message, MESSAGE_SIZE, str, &x, &y, &bri, &on);
+        char message[MESSAGE_SIZE] = {0};
+        gamma = get_gamma(ip, message, MESSAGE_SIZE, index, &x, &y, &bri, &on);
         if (gamma < 0) {
-            DEBUG_LOG(DBG_WKPFUPDATE, "\nFailded to get Gamma with error %d\n", gamma);
+            DEBUG_LOG(DBG_WKPFUPDATE, "\n_____%s_____GET gamma error:%d\n", debug_name, gamma);
+            if (gamma < -99){
+                char *tmp = strstr(message, "\r\n\r\n")+4;
+                DEBUG_LOG(DBG_WKPFUPDATE, "\n_____%s_____JSON error:%s\n", debug_name, tmp);
+            }
             lasttime = currenttime;
             return;
         }
@@ -52,10 +51,10 @@ void wuclass_philip_hue_go_sensor_update(wuobject_t *wuobject)
         wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_GO_SENSOR_BLUE, b);
         if (!on) bri = 0;
         wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_GO_SENSOR_BRI, bri); 
-        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Philip_Hue_Go_Sensor): red: %d\n", r);
-        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Philip_Hue_Go_Sensor): green: %d\n", g);
-        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Philip_Hue_Go_Sensor): blue: %d\n", b);
-        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Philip_Hue_Go_Sensor): bri: %d\n", bri);
+        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(%s): red: %d\n", debug_name, r);
+        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(%s): green: %d\n", debug_name, g);
+        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(%s): blue: %d\n", debug_name, b);
+        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(%s): bri: %d\n", debug_name, bri);
         lasttime = currenttime;
     }
 }

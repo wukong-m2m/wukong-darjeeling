@@ -9,12 +9,17 @@
 #include <stdbool.h>
 #include "cJSON.h"
 
-int get_gamma(uint32_t ip, char *message, int total, char *path, float *x, float *y, int *bri, bool *on);
+#define MESSAGE_SIZE 1024
+#define BUF_SIZE 150
+
+int get_gamma(uint32_t ip, char *message, int total, int index, float *x, float *y, int *bri, bool *on);
+
+int put_command(uint32_t ip, char *message, int total, int index, char *command, int cmd_len);
 
 int socket_send_to(uint32_t ip, char *message, int total, char *response, int res_size);
 
 void HSVtoRGB(float *r, float *g, float *b, float h, float s, float v );
 
-void RGBtoXY(int8_t gamma, uint8_t r, uint8_t g, uint8_t b, float *x, float *y);
+void RGBtoXY(int8_t gamma, uint8_t red, uint8_t green, uint8_t blue, float *x, float *y, float *bri);
 
 void XYbtoRGB(int8_t gamma, float x, float y, float bri, uint8_t *r, uint8_t *g, uint8_t *b);
