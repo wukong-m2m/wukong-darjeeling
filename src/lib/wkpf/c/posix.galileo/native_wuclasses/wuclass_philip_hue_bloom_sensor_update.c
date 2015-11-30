@@ -42,7 +42,7 @@ void wuclass_philip_hue_bloom_sensor_update(wuobject_t *wuobject)
                 char *tmp = strstr(message, "\r\n\r\n")+4;
                 DEBUG_LOG(DBG_WKPFUPDATE, "\n_____%s_____JSON error:%s\n", debug_name, tmp);
             } else {
-                    DEBUG_LOG(DBG_WKPFUPDATE, "\n_____%s____Error!ip:%d,index:%d\n", debug_name, ip, index);
+                    DEBUG_LOG(DBG_WKPFUPDATE, "\n_____%s____Error!ip:%u,index:%d\n", debug_name, ip, index);
                 }
             lasttime = currenttime;
             return;
