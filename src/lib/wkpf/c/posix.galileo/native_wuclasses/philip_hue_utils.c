@@ -330,10 +330,14 @@ int get_gamma(uint32_t ip, char *message, int total, int index, float *x, float 
     return -101;
   char *modelid = item->valuestring;
   if (x != NULL && y != NULL && bri != NULL){
-    item = cJSON_GetObjectItem(root,"xy");
+    cJSON* state_item = cJSON_GetObjectItem(root,"state");
+    if (!state_item)
+      // No state available
+      return -102;
+    item = cJSON_GetObjectItem(state_item,"xy");
     if (!item)
       // No xy available
-      return -102;
+      return -103;
     // for (i = 0 ; i < cJSON_GetArraySize(item) ; i++)
     // {
     //    cJSON * subitem = cJSON_GetArrayItem(item, i);
@@ -344,22 +348,22 @@ int get_gamma(uint32_t ip, char *message, int total, int index, float *x, float 
     cJSON * subitem = cJSON_GetArrayItem(item, 0);
     if (!subitem)
       // No xy[0] available
-      return -103;
+      return -104;
     *x = (float)(subitem->valuedouble);
     subitem = cJSON_GetArrayItem(item, 1);
     if (!subitem)
       // No xy[1] available
-      return -104;
+      return -105;
     *y = (float)(subitem->valuedouble);
-    subitem = cJSON_GetObjectItem(root,"bri");
+    subitem = cJSON_GetObjectItem(state_item,"bri");
     if (!subitem)
       // No bri available
-      return -105;
+      return -106;
     *bri = subitem->valueint;
-    subitem = cJSON_GetObjectItem(root,"on");
+    subitem = cJSON_GetObjectItem(state_item,"on");
     if (!subitem)
       // No on available
-      return -106;
+      return -107;
     *on = (subitem->type)?true:false;
   }
 
