@@ -48,8 +48,10 @@ void wuclass_philip_hue_strip_sensor_update(wuobject_t *wuobject)
             return;
         }
         XYbtoRGB(gamma, x, y, (float)(bri)/255.0, &r, &g, &b);        
-        wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_STRIP_SENSOR_RED, r);    
-        wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_STRIP_SENSOR_GREEN, g);    
+        // wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_STRIP_SENSOR_RED, r);    
+        // wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_STRIP_SENSOR_GREEN, g);    
+        uint16_t rg = (r << 8) | (g & 0xFF);
+        wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_STRIP_SENSOR_RED_GREEN, rg);        
         wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_STRIP_SENSOR_BLUE, b);
         if (!on) bri = 0;
         wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_PHILIP_HUE_STRIP_SENSOR_BRI, bri); 

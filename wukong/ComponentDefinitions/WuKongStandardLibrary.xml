@@ -351,36 +351,36 @@
         <property name="ip_low" access="writeonly" datatype="short" default="0"/>
         <property name="index" access="writeonly" datatype="short" default="0"/>
         <property name="bri" access="readonly" datatype="short" default="0"/>
-        <property name="red" access="readonly" datatype="short" default="0"/>
-        <property name="green" access="readonly" datatype="short" default="0"/>
+        <property name="red_green" access="readonly" datatype="short" default="0"/>
         <property name="blue" access="readonly" datatype="short" default="0"/>
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="300"/>
     </WuClass>
     <WuClass name="Philip_Hue_Bloom_Sensor" id="2024" virtual="false" type="hard">
         <property name="ip_high" access="writeonly" datatype="short" default="0"/>
         <property name="ip_low" access="writeonly" datatype="short" default="0"/>
         <property name="index" access="writeonly" datatype="short" default="0"/>
         <property name="bri" access="readonly" datatype="short" default="0"/>
-        <property name="red" access="readonly" datatype="short" default="0"/>
-        <property name="green" access="readonly" datatype="short" default="0"/>
+        <property name="red_green" access="readonly" datatype="short" default="0"/>
         <property name="blue" access="readonly" datatype="short" default="0"/>
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="300"/>
     </WuClass>
     <WuClass name="Philip_Hue_Go_Sensor" id="2025" virtual="false" type="hard">
         <property name="ip_high" access="writeonly" datatype="short" default="0"/>
         <property name="ip_low" access="writeonly" datatype="short" default="0"/>
         <property name="index" access="writeonly" datatype="short" default="0"/>
         <property name="bri" access="readonly" datatype="short" default="0"/>
-        <property name="red" access="readonly" datatype="short" default="0"/>
-        <property name="green" access="readonly" datatype="short" default="0"/>
+        <property name="red_green" access="readonly" datatype="short" default="0"/>
         <property name="blue" access="readonly" datatype="short" default="0"/>
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="300"/>
     </WuClass>
     <WuClass name="Philip_Hue_Strip_Sensor" id="2026" virtual="false" type="hard">
         <property name="ip_high" access="writeonly" datatype="short" default="0"/>
         <property name="ip_low" access="writeonly" datatype="short" default="0"/>
         <property name="index" access="writeonly" datatype="short" default="0"/>
         <property name="bri" access="readonly" datatype="short" default="0"/>
-        <property name="red" access="readonly" datatype="short" default="0"/>
-        <property name="green" access="readonly" datatype="short" default="0"/>
+        <property name="red_green" access="readonly" datatype="short" default="0"/>
         <property name="blue" access="readonly" datatype="short" default="0"/>
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="300"/>
     </WuClass>
 
     <!-- PrClasses -->
