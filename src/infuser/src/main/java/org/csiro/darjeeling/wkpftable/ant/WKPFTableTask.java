@@ -259,8 +259,8 @@ public class WKPFTableTask extends Task
 				if (valuesize == 1) { // TODO: make this more flexible, but for now we only have 1 or 2 byte values
 					initvalues_bytes.add(Byte.parseByte(initvalue.getAttribute("value")));
 				} else if (valuesize == 2) {
-					initvalues_bytes.add((byte)(Short.parseShort(initvalue.getAttribute("value")) % 256));
-					initvalues_bytes.add((byte)(Short.parseShort(initvalue.getAttribute("value")) / 256));
+					initvalues_bytes.add((byte)(Short.parseShort(initvalue.getAttribute("value")) & 0xFF));
+					initvalues_bytes.add((byte)(Short.parseShort(initvalue.getAttribute("value")) >> 8));
 				} else {
 					throw new org.apache.tools.ant.BuildException("Initvalue found with valueSize: " + valuesize);
 				}

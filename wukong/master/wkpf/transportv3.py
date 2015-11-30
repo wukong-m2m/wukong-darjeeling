@@ -140,8 +140,8 @@ class TransportAgent:
         gevent.spawn(self.receive)
 
     def getNextSequenceNumberAsPrefixPayload(self):
-      self._seq = (self._seq + 1) % (2**16)
-      return [self._seq/256, self._seq%256]
+      self._seq = (self._seq + 1) & 0xFFFF
+      return [(self._seq>>8)&0xFF, self._seq&0xFF]
 
     # to be overridden, non-blocking, send defer to greelet thread
     def deferSend(self, destination, command, payload, allowed_replies, cb):

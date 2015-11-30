@@ -44,7 +44,7 @@ class Communication:
         else:
           self.agent = getZwaveAgent()
       except Exception as e:
-        print "Exception while creating agent"
+        print "Exception while creating WKPFCOMM agent"
         print e
         print traceback.format_exc()
         is_not_connected()
@@ -474,8 +474,8 @@ class Communication:
       #         [pynvc.WKPF_READ_PROPERTY_R, pynvc.WKPF_ERROR_R])
       reply = self.agent.send(id,
               pynvc.WKPF_READ_PROPERTY,
-              [port, wuclassid/256,
-                    wuclassid%256, property_number],
+              [port, (wuclassid>>8)&0xFF,
+                    wuclassid&0xFF, property_number],
               [pynvc.WKPF_READ_PROPERTY_R, pynvc.WKPF_ERROR_R])
 
 
@@ -522,8 +522,8 @@ class Communication:
         datatype = WKPF_PROPERTY_TYPE_REFRESH_RATE
 
       if datatype == WKPF_PROPERTY_TYPE_BOOLEAN:
-        payload=[port, wuclassid/256,
-        wuclassid%256, property_number, datatype, 1 if value else 0,
+        payload=[port, (wuclassid>>8)&0xFF,
+                    wuclassid&0xFF, property_number, datatype, 1 if value else 0,
         0, 0, 0, 0, 0]
         # the last 5 0s are sender and receiver component id. set them to 0 to bypass property locking check.
         #Property locking check checks if the desired id and property is still the desired component in case of link change.
@@ -531,8 +531,9 @@ class Communication:
 
 
       elif datatype == WKPF_PROPERTY_TYPE_SHORT or datatype == WKPF_PROPERTY_TYPE_REFRESH_RATE:
-        payload=[port, wuclassid/256,
-        wuclassid%256, property_number, datatype, value/256, value%256,
+        payload=[port, (wuclassid>>8)&0xFF,
+                    wuclassid&0xFF, property_number, datatype, (value>>8)&0xFF,
+                    value&0xFF,
         0, 0, 0, 0, 0]
         # the last 5 0s are sender and receiver component id. see wkpf_generate_piggyback_token() in wkpf_links.c
 
@@ -602,7 +603,7 @@ class Communication:
 
       pos = 0
       while not pos == len(bytecode):
-        payload_pos = [pos%256, pos/256]
+        payload_pos = [pos&0xFF, (pos>>8)&0xFF]
         payload_data = bytecode[pos:pos+REPRG_CHUNK_SIZE]
         print "[wkpfcomm] Uploading bytes", pos, "to", pos+REPRG_CHUNK_SIZE, "of", len(bytecode)
         print '[wkpfcomm]', pos/pagesize, (pos+len(payload_data))/pagesize, "of pagesize", pagesize
@@ -627,7 +628,7 @@ class Communication:
             return False
         if pos == len(bytecode):
           print "[wkpfcomm] Send REPRG_DJ_COMMIT after last packet"
-          reply = self.agent.send(destination, pynvc.REPRG_DJ_COMMIT, [pos%256, pos/256], [pynvc.REPRG_DJ_COMMIT_R])
+          reply = self.agent.send(destination, pynvc.REPRG_DJ_COMMIT, [pos&0xFF, (pos>>8)&0xFF], [pynvc.REPRG_DJ_COMMIT_R])
           print "[wkpfcomm] Reply: ", reply
           if reply == None:
             print "[wkpfcomm] No reply, commit failed."
@@ -673,7 +674,7 @@ class Communication:
 
       pos = 0
       while not pos == len(bytecode):
-        payload_pos = [pos/256, pos%256]
+        payload_pos = [pos&0xFF, (pos>>8)&0xFF]
         payload_data = bytecode[pos:pos+MESSAGESIZE]
         print "[wkpfcomm] Uploading bytes", pos, "to", pos+MESSAGESIZE, "of", len(bytecode)
         print '[wkpfcomm]', pos/pagesize, (pos+len(payload_data))/pagesize, "of pagesize", pagesize
@@ -698,7 +699,7 @@ class Communication:
 
         if pos == len(bytecode):
           print "[wkpfcomm] Send REPRG_COMMIT after last packet"
-          reply = self.agent.send(destination, pynvc.REPRG_COMMIT, [pos/256, pos%256], [pynvc.REPRG_COMMIT_R_RETRANSMIT, pynvc.REPRG_COMMIT_R_FAILED, pynvc.REPRG_COMMIT_R_OK])
+          reply = self.agent.send(destination, pynvc.REPRG_COMMIT, [pos&0xFF, (pos>>8)&0xFF], [pynvc.REPRG_COMMIT_R_RETRANSMIT, pynvc.REPRG_COMMIT_R_FAILED, pynvc.REPRG_COMMIT_R_OK])
           if reply == None:
             print "[wkpfcomm] Commit failed."
             return False
