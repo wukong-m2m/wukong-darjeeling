@@ -119,13 +119,9 @@ let rec matchOptUnopt (optimisedAvr : AvrInstruction list) (unoptimisedAvr : (Av
     | [], [] -> [] // All done.
     | _, _ -> failwith "Some instructions couldn't be matched"
 
-let countersForAddress (profilerdata : ProfiledInstruction list) address =
-    let profiledInstruction = profilerdata |> List.find (fun x -> Convert.ToInt32(x.Address.Trim(), 16) = address) in
-     { executions = profiledInstruction.Executions; cycles = (profiledInstruction.Cycles+profiledInstruction.CyclesSubroutine) }
-
 // Input: the original Java instructions, trace data from avrora profiler, and the output from matchOptUnopt
 // Returns: a list of Result records, showing the optimised code per original JVM instructions, and amount of cycles spent per optimised instruction
-let addCyclesAndDebugData (jvmInstructions : JvmInstruction list) (profilerdata : ProfiledInstruction list) (matchedResults : (AvrInstruction option*AvrInstruction*JvmInstruction) list) (djDebugDatas : DJDebugData list) =
+let addCyclesAndDebugData (jvmInstructions : JvmInstruction list) (countersForAddress : int -> ExecCounters) (matchedResults : (AvrInstruction option*AvrInstruction*JvmInstruction) list) (djDebugDatas : DJDebugData list) =
     List.zip jvmInstructions (DJDebugData.empty :: djDebugDatas) // Add an empty entry to debug data to match the method preamble
         |> List.map
         (fun (jvm, debugdata) ->
@@ -133,7 +129,7 @@ let addCyclesAndDebugData (jvmInstructions : JvmInstruction list) (profilerdata 
             let resultsWithCycles = resultsForThisJvm |> List.map (fun (opt, unopt, _) ->
                   let counters = match opt with
                                  | None -> ExecCounters.empty
-                                 | Some(optValue) -> countersForAddress profilerdata optValue.address
+                                 | Some(optValue) -> countersForAddress optValue.address
                   { unopt = unopt; opt = opt; counters = counters }) in
             let avrCountersToJvmCounters a b =
                 { cycles = a.cycles+b.cycles; executions = (if a.executions > 0 then a.executions else b.executions) }
@@ -170,7 +166,7 @@ let getTimersFromStdout (stdoutlog : string list) =
                                 | _ -> ("", cycles))
               |> List.sortBy (fun (timer, cycles) -> match timer with "C" -> 1 | "AOT" -> 2 | "Java" -> 3 | _ -> 4)
 
-let getNativeInstructionsFromObjdump (objdumpOutput : string list) (profilerdata : ProfiledInstruction list) =
+let getNativeInstructionsFromObjdump (objdumpOutput : string list) (countersForAddress : int -> ExecCounters) =
     let startIndex = objdumpOutput |> List.findIndex (fun line -> Regex.IsMatch(line, "^[0-9a-fA-F]+ <rtcbenchmark_measure_native_performance>:$"))
     let disasmTail = objdumpOutput |> List.skip (startIndex + 1)
     let endIndex = disasmTail |> List.findIndex (fun line -> Regex.IsMatch(line, "^[0-9a-fA-F]+ <.*>:$"))
@@ -187,7 +183,7 @@ let getNativeInstructionsFromObjdump (objdumpOutput : string list) (profilerdata
             opcode = opcode;
             text = regexmatch.Groups.[4].Value;
         })
-    avrInstructions |> List.map (fun avr -> (avr, countersForAddress profilerdata avr.address))
+    avrInstructions |> List.map (fun avr -> (avr, countersForAddress avr.address))
 
 let parseDJDebug (allLines : string list) =
   let regexLine = Regex("^\s*(?<byteOffset>\d\d\d\d);[^;]*;[^;]*;(?<text>[^;]*);(?<stackBefore>[^;]*);(?<stackAfter>[^;]*);.*")
@@ -226,7 +222,7 @@ let parseDJDebug (allLines : string list) =
                                           stackAfter = (m.Groups.["stackAfter"].Value.Trim()  |> stackStringToStack) })
 
 // Process trace main function
-let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (profilerdata : ProfiledInstruction list) (stdoutlog : string seq) (disasm : string list) (djdebuglines : string list) =
+let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress : int -> ExecCounters) (stdoutlog : string seq) (disasm : string list) (djdebuglines : string list) =
     // Find the methodImplId for a certain method in a Darjeeling infusion header
     let findRtcbenchmarkMethodImplId (dih : Dih) methodName =
         let infusionName = dih.Infusion.Header.Name
@@ -245,7 +241,7 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profi
 
     let matchedResult = matchOptUnopt optimisedAvr unoptimisedAvrWithJvmIndex
     let djdebugdata = parseDJDebug djdebuglines
-    let mainResults = addCyclesAndDebugData (methodImpl.JavaInstructions |> Seq.map JvmInstructionFromXml |> Seq.toList) profilerdata matchedResult djdebugdata
+    let mainResults = addCyclesAndDebugData (methodImpl.JavaInstructions |> Seq.map JvmInstructionFromXml |> Seq.toList) countersForAddress matchedResult djdebugdata
     let stopwatchTimers = getTimersFromStdout (stdoutlog |> Seq.toList)
     let (cyclesPush, cyclesPop , cyclesMovw) = (countPushPopMovw mainResults)
 
@@ -261,7 +257,7 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (profilerdata : Profi
             |> groupFold (fun r -> r.jvm.text.Split().First()) (fun r -> r.counters) (+) ExecCounters.empty
             |> List.sortBy (fun (opcode, _) -> (getCategoryForJvmOpcode opcode)+opcode)
 
-    let nativeCInstructions = getNativeInstructionsFromObjdump disasm profilerdata
+    let nativeCInstructions = getNativeInstructionsFromObjdump disasm countersForAddress
 
     let cyclesPerAvrOpcodeNativeC =
         nativeCInstructions
@@ -428,10 +424,15 @@ let main(args : string[]) =
     let dih = DarjeelingInfusionHeaderXml.Load(String.Format("{0}/infusion-bm_{1}/bm_{1}.dih", builddir, benchmark))
     let rtcdata = RtcdataXml.Load(String.Format("{0}/rtcdata.xml", builddir))
     let profilerdata = ProfilerdataXml.Load(String.Format("{0}/profilerdata.xml", builddir)).Instructions |> Seq.toList
+    let profilerdataPerAddress = profilerdata |> List.map (fun x -> (Convert.ToInt32(x.Address.Trim(), 16), x))
+    let countersForAddress address =
+        match profilerdataPerAddress |> List.tryFind (fun (address2,inst) -> address = address2) with
+        | Some(_, profiledInstruction) -> { executions = profiledInstruction.Executions; cycles = (profiledInstruction.Cycles+profiledInstruction.CyclesSubroutine) }
+        | None -> failwith (String.Format ("No profilerdata found for address {0}", address))
     let stdoutlog = System.IO.File.ReadLines(String.Format("{0}/stdoutlog.txt", builddir))
     let disasm = System.IO.File.ReadLines(String.Format("{0}/darjeeling.S", builddir)) |> Seq.toList
     let djdebuglines = System.IO.File.ReadLines(String.Format("{0}/infusion-bm_{1}/jlib_bm_{1}.debug", builddir, benchmark)) |> Seq.toList
-    let results = processTrace benchmark dih rtcdata profilerdata stdoutlog disasm djdebuglines
+    let results = processTrace benchmark dih rtcdata countersForAddress stdoutlog disasm djdebuglines
 
     let txtFilename = outputfilename + ".txt"
     let xmlFilename = outputfilename + ".xml"

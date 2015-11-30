@@ -84,7 +84,7 @@ let summariseResults resultsDirectory =
     let results =
         resultsXmlStrings
             |> List.map (fun xml -> xmlSerializer.UnPickleOfString<Results> xml)
-            |> List.sortBy (fun r -> let sortorder = ["sortO"; "hsortO"; "binsrchO"; "fft"; "rc5"; "xxtea"; "sortX"; "hsortX"; "binsrchX"] in
+            |> List.sortBy (fun r -> let sortorder = ["sortO"; "hsortO"; "binsrchO"; "fft"; "rc5"; "xxtea"; "md5"; "sortX"; "hsortX"; "binsrchX"] in
                                      match sortorder |> List.tryFindIndex ((=) r.benchmark) with
                                      | Some (index) -> index
                                      | None -> 100)

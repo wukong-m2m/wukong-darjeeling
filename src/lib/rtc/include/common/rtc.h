@@ -1,5 +1,5 @@
 #include "types.h"
-#define RTC_COMPILED_CODE_BUFFER_SIZE 32767
+#define RTC_COMPILED_CODE_BUFFER_SIZE 30000
 
 void rtc_compile_lib(dj_infusion *);
 

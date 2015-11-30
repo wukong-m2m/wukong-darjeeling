@@ -72,8 +72,6 @@ type Results = {
     benchmark : string;
     jvmInstructions : ResultJava list;
     nativeCInstructions : (AvrInstruction*ExecCounters) list
-    executedCyclesAOT : int;
-    executedCyclesC : int;
     stopwatchCyclesJava : int;
     stopwatchCyclesAOT : int;
     stopwatchCyclesC : int;
@@ -84,6 +82,22 @@ type Results = {
     cyclesPerAvrOpcodeAOTJava : (string * string * ExecCounters) list;
     cyclesPerAvrOpcodeNativeC : (string * string * ExecCounters) list;
     cyclesPerJvmOpcodeCategory : (string * ExecCounters) list;
-    cyclesPerAvrOpcodeCategoryAOTJava : (string * ExecCounters) list
-    cyclesPerAvrOpcodeCategoryNativeC : (string * ExecCounters) list;
-}
+    cyclesPerAvrOpcodeCategoryAOTJava : (string * ExecCounters) list;
+    cyclesPerAvrOpcodeCategoryNativeC : (string * ExecCounters) list; }
+    with
+    member this.executedCyclesAOT = this.cyclesPerJvmOpcodeCategory |> List.sumBy (fun (cat, cnt) -> cnt.cycles);
+    member this.executedCyclesC = this.cyclesPerAvrOpcodeCategoryNativeC |> List.sumBy (fun (cat, cnt) -> cnt.cycles);
+    member this.maxJvmStackInBytes =
+        this.jvmInstructions
+        |> List.map (fun jvm -> jvm.djDebugData.stackSizeAfter)
+        |> List.max;
+    member this.avgJvmStackInBytes =
+        this.jvmInstructions 
+        |> List.fold (fun (accCnt, accSum) jvm -> (accCnt+jvm.counters.executions, accSum+(jvm.counters.executions*jvm.djDebugData.stackSizeAfter))) (0, 0)
+        |> (fun (cnt, sum) -> float sum / float cnt)
+    member this.avgJvmStackChangeInBytes =
+        this.jvmInstructions 
+        |> List.map (fun jvm -> (jvm.counters.executions, jvm.counters.executions * (abs (jvm.djDebugData.stackSizeBefore - jvm.djDebugData.stackSizeAfter))))
+        |> List.fold (fun (accCnt, accSum) (jvmCnt, jvmSum) -> (accCnt+jvmCnt, accSum+jvmSum)) (0, 0)
+        |> (fun (cnt, sum) -> float sum / float cnt)
+
