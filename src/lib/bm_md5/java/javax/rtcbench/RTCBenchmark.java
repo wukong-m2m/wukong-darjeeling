@@ -11,8 +11,6 @@ public class RTCBenchmark {
 
         byte[] hash = new byte[16];
 
-        // MD5.testMany(0);
-
         rtcbenchmark_measure_java_performance(input, hash);
         
         for (int i=0; i<hash.length; i++) {
@@ -29,15 +27,16 @@ public class RTCBenchmark {
         Stopwatch.resetAndStart();
 
         int i, j, len;
+        int length = input.length;
+        byte[] buffer = new byte[64];
+        int x[] = new int[16];
+        int state[];
 
         // Init
-        int length = input.length;
-
         if (length > 56 || output.length != 16) {
             return;
         }
 
-        byte[] buffer = new byte[64];
         for (i=0; i<64; i++) {
             buffer[i]=0;
         }
@@ -58,11 +57,9 @@ public class RTCBenchmark {
 
         //////// Decode/Transform/Encode : Decode (byte array to int array)
         // x = Decode(buffer, 64, 0);
-        int x[];
         // private static int[] Decode(byte buffer[], int len, int shift)
         {
         len = 64;
-        x = new int[16];
 
         for (i = j = 0; j < len; i++, j += 4)
         {
@@ -78,8 +75,8 @@ public class RTCBenchmark {
 
         //////// Decode/Transform/Encode : Transform
         // private static int[] Transform(byte buffer[])
-        int state[] =  new int[] { 0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476 };
         {
+        state =  new int[] { 0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476 };
         int a = state[0], b = state[1], c = state[2], d = state[3];
 
         /* Round 1 */
