@@ -132,6 +132,27 @@ task avarice << {
     }
 }
 
+task vm_sizenm (type: Exec, dependsOn: darjeeling) {
+    ext.nmOutput = "${buildDir}/nmdata.txt"
+
+    inputs.file architectureSpecificAssemble.djTargetElfFile
+    outputs.file nmOutput
+
+    executable 'avr-nm'
+    args '-S', '--size-sort', architectureSpecificAssemble.djTargetElfFile
+    standardOutput = new ByteArrayOutputStream()
+    doLast {
+        new File(nmOutput).write(standardOutput.toString())
+    }
+}
+
+task vm_size (type: Exec, dependsOn: vm_sizenm) {
+    def fsxScript = "${project.rootDir}/config/${djConfigname}/Vmsize.fsx"
+
+    executable 'fsharpi'
+    args '--exec', fsxScript, vm_sizenm.nmOutput
+}
+
 task avrora(dependsOn: darjeeling) {
     ext.rtcdataFile = "${buildDir}/rtcdata.xml"
     ext.profiledataFile = "${buildDir}/profilerdata.xml"

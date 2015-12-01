@@ -16,10 +16,6 @@
 #include <avr/pgmspace.h>
 #include <avr/boot.h>
 
-// PUSHREF
-#define emit_x_PUSHREF(reg)              emit_ST_XINC(reg)
-#define emit_x_POPREF(reg)               emit_LD_DECX(reg)
-
 // Offsets for static variables in an infusion, relative to the start of infusion->staticReferencesFields. (referenced infusion pointers follow the static variables)
 #define offset_for_static_ref(infusion_ptr, variable_index)                 ((uint16_t)((void*)(&((infusion_ptr)->staticReferenceFields[variable_index])) - (void *)((infusion_ptr)->staticReferenceFields)))
 #define offset_for_static_byte(infusion_ptr, variable_index)                ((uint16_t)((void*)(&((infusion_ptr)->staticByteFields[variable_index]))      - (void *)((infusion_ptr)->staticReferenceFields)))
@@ -129,6 +125,7 @@ static void emit2(uint16_t opcode1, uint16_t opcode2) {
     emit_raw_word(opcode1);
     emit_raw_word(opcode2);
 }
+#include "rtc_x_emit.h"
 
 void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t *rtc_method_start_addresses) {
     DEBUG_LOG(DBG_RTC, "[rtc] handler list is at %p\n", infusion->native_handlers);
@@ -156,16 +153,6 @@ void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t 
     wkreprog_close();
 }
 
-void emit_x_CALL(uint16_t target) {
-    // Flush the code buffer before emitting a CALL to prevent PUSH/POP pairs being optimised across a CALL instruction.
-    emit_PUSH(RXH);
-    emit_PUSH(RXL);
-    rtc_flush();
-    emit2( asm_CALL1(target) , asm_CALL2(target) );
-    emit_POP(RXL);
-    emit_POP(RXH);
-}
-
 #define rtc_is_branchtag(opcode) (opcode == OPCODE_BREAK)
 void emit_x_branchtag(uint16_t opcode, uint16_t target) {
     // instead of the branch, output a tag that can be replaced when target addresses are all known:
@@ -189,7 +176,8 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     uint8_t jvm_operand_byte3;
     uint8_t m, n;
     int8_t i;
-    uint16_t jvm_operand_word;
+    uint16_t jvm_operand_word0;
+    uint16_t jvm_operand_word1;
     int16_t jvm_operand_signed_word;
     dj_infusion *target_infusion;
     dj_di_pointer tmp_current_position; // Used to temporarily store the current position when processing brtarget instructions.
@@ -229,13 +217,21 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 #ifdef AVRORA
         avroraRTCTraceDarjeelingOpcodeInProgmem(code + pc);
 #endif
+        // Load possible operands. May waste some time if we don't need then, but saves some space.
+        jvm_operand_byte0 = dj_di_getU8(code + pc + 1);
+        jvm_operand_byte1 = dj_di_getU8(code + pc + 2);
+        jvm_operand_byte2 = dj_di_getU8(code + pc + 3);
+        jvm_operand_byte3 = dj_di_getU8(code + pc + 4);
+        jvm_operand_word0 = (jvm_operand_byte0 << 8) | jvm_operand_byte1;
+        jvm_operand_word1 = (jvm_operand_byte2 << 8) | jvm_operand_byte3;
+
         switch (opcode) {
             case JVM_NOP:
             break;
             case JVM_SCONST_M1:
+                emit_LDI(R24, 0xFF);
                 emit_LDI(R25, 0xFF);
-                emit_PUSH(R25);
-                emit_PUSH(R25);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_SCONST_0:
             case JVM_SCONST_1:
@@ -243,18 +239,16 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_SCONST_3:
             case JVM_SCONST_4:
             case JVM_SCONST_5:
-                jvm_operand_byte0 = opcode - JVM_SCONST_0;
-                emit_LDI(R24, jvm_operand_byte0);
+                emit_LDI(R24, opcode - JVM_SCONST_0); // Operand is implicit in opcode
                 emit_LDI(R25, 0);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_ICONST_M1:
+                emit_LDI(R22, 0xFF);
+                emit_LDI(R23, 0xFF);
+                emit_LDI(R24, 0xFF);
                 emit_LDI(R25, 0xFF);
-                emit_PUSH(R25);
-                emit_PUSH(R25);
-                emit_PUSH(R25);
-                emit_PUSH(R25);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_ICONST_0:
             case JVM_ICONST_1:
@@ -262,75 +256,55 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_ICONST_3:
             case JVM_ICONST_4:
             case JVM_ICONST_5:
-                jvm_operand_byte0 = opcode - JVM_ICONST_0;
-                emit_LDI(R22, jvm_operand_byte0);
+                emit_LDI(R22, opcode - JVM_ICONST_0); // Operand is implicit in opcode
                 emit_LDI(R23, 0);
                 emit_LDI(R24, 0);
                 emit_LDI(R25, 0);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_ACONST_NULL:
+                emit_LDI(R24, 0);
                 emit_LDI(R25, 0);
-                emit_x_PUSHREF(R25);                
-                emit_x_PUSHREF(R25);                
+                emit_x_PUSH_REF(R24);
             break;
             case JVM_BSPUSH:
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                pc += 1; // Skip operand (already read into jvm_operand_byte0)
                 emit_LDI(R24, jvm_operand_byte0);
                 emit_LDI(R25, 0);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_BIPUSH:
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                pc += 1; // Skip operand (already read into jvm_operand_byte0)
                 emit_LDI(R22, jvm_operand_byte0);
                 emit_LDI(R23, 0);
                 emit_LDI(R24, 0);
                 emit_LDI(R25, 0);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_SSPUSH:
                 // bytecode is big endian
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc);
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
                 emit_LDI(R24, jvm_operand_byte1);
                 emit_LDI(R25, jvm_operand_byte0);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_SIPUSH:
                 // bytecode is big endian
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc);
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
                 emit_LDI(R22, jvm_operand_byte1);
                 emit_LDI(R23, jvm_operand_byte0);
                 emit_LDI(R24, 0);
                 emit_LDI(R25, 0);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_IIPUSH:
                 // bytecode is big endian
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc);
-                jvm_operand_byte2 = dj_di_getU8(code + ++pc);
-                jvm_operand_byte3 = dj_di_getU8(code + ++pc);
+                pc += 4; // Skip operand (already read into jvm_operand_byte0)
                 emit_LDI(R22, jvm_operand_byte3);
                 emit_LDI(R23, jvm_operand_byte2);
                 emit_LDI(R24, jvm_operand_byte1);
                 emit_LDI(R25, jvm_operand_byte0);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_LDS:
                 // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
@@ -339,8 +313,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
 
                 // make the call
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc);
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
                 emit_LDI(R24, jvm_operand_byte0); // infusion id
                 emit_LDI(R25, jvm_operand_byte1); // entity id
                 emit_x_CALL((uint16_t)&RTC_LDS);
@@ -355,8 +328,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
 
                 // push the reference to the string onto the ref stack
-                emit_x_PUSHREF(R24);
-                emit_x_PUSHREF(R25);
+                emit_x_PUSH_REF(R24);
             break;
             case JVM_SLOAD:
             case JVM_SLOAD_0:
@@ -364,13 +336,12 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_SLOAD_2:
             case JVM_SLOAD_3:
                 if (opcode == JVM_SLOAD)
-                    jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                    pc += 1; // Skip operand (already read into jvm_operand_byte0)
                 else
                     jvm_operand_byte0 = opcode - JVM_SLOAD_0;
                 emit_LDD(R24, Y, offset_for_intlocal_short(methodimpl, jvm_operand_byte0));
                 emit_LDD(R25, Y, offset_for_intlocal_short(methodimpl, jvm_operand_byte0)+1);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_ILOAD:
             case JVM_ILOAD_0:
@@ -378,17 +349,14 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_ILOAD_2:
             case JVM_ILOAD_3:
                 if (opcode == JVM_ILOAD)
-                    jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                    pc += 1; // Skip operand (already read into jvm_operand_byte0)
                 else
                     jvm_operand_byte0 = opcode - JVM_ILOAD_0;
                 emit_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0));
                 emit_LDD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1);
                 emit_LDD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2);
                 emit_LDD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_ALOAD:
             case JVM_ALOAD_0:
@@ -396,13 +364,12 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_ALOAD_2:
             case JVM_ALOAD_3:
                 if (opcode == JVM_ALOAD)
-                    jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                    pc += 1; // Skip operand (already read into jvm_operand_byte0)
                 else
                     jvm_operand_byte0 = opcode - JVM_ALOAD_0;
                 emit_LDD(R24, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0));
                 emit_LDD(R25, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0)+1);
-                emit_x_PUSHREF(R24);
-                emit_x_PUSHREF(R25);
+                emit_x_PUSH_REF(R24);
             break;
             case JVM_SSTORE:
             case JVM_SSTORE_0:
@@ -410,11 +377,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_SSTORE_2:
             case JVM_SSTORE_3:
                 if (opcode == JVM_SSTORE)
-                    jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                    pc += 1; // Skip operand (already read into jvm_operand_byte0)
                 else
                     jvm_operand_byte0 = opcode - JVM_SSTORE_0;
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_16bit(R24);
                 emit_STD(R24, Y, offset_for_intlocal_short(methodimpl, jvm_operand_byte0));
                 emit_STD(R25, Y, offset_for_intlocal_short(methodimpl, jvm_operand_byte0)+1);
             break;
@@ -424,13 +390,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_ISTORE_2:
             case JVM_ISTORE_3:
                 if (opcode == JVM_ISTORE)
-                    jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                    pc += 1; // Skip operand (already read into jvm_operand_byte0)
                 else
                     jvm_operand_byte0 = opcode - JVM_ISTORE_0;
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_32bit(R22);
                 emit_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0));
                 emit_STD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1);
                 emit_STD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2);
@@ -442,11 +405,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_ASTORE_2:
             case JVM_ASTORE_3:
                 if (opcode == JVM_ASTORE)
-                    jvm_operand_byte0 = dj_di_getU8(code + ++pc);
+                    pc += 1; // Skip operand (already read into jvm_operand_byte0)
                 else
                     jvm_operand_byte0 = opcode - JVM_ASTORE_0;
-                emit_x_POPREF(R25);
-                emit_x_POPREF(R24);
+                emit_x_POP_REF(R24);
                 emit_STD(R24, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0));
                 emit_STD(R25, Y, offset_for_reflocal(methodimpl, jvm_operand_byte0)+1);
             break;
@@ -457,14 +419,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_AALOAD:
                 // Arrays are indexed by a 32bit int. But we don't have enough memory to hold arrays that large, so just ignore the upper two.
                 // Should check that they are 0 when implementing bounds checks.
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_32bit(R22);
 
                 // POP the array reference into Z.
-                emit_x_POPREF(RZH);
-                emit_x_POPREF(RZL); // Z now pointer to the base of the array object.
+                emit_x_POP_REF(RZ); // Z now pointer to the base of the array object.
 
                 if (opcode==JVM_SALOAD || opcode==JVM_AALOAD) {
                     // Multiply the index by 2, since we're indexing 16 bit shorts.
@@ -498,30 +456,24 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                         emit_CLR(R25);
                         emit_SBRC(R24, 7); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
                         emit_COM(R25); // otherwise: flip R24 to 0xFF to extend the sign
-                        emit_PUSH(R25);
-                        emit_PUSH(R24);
+                        emit_x_PUSH_16bit(R24);
                     break;
                     case JVM_SALOAD:
                         emit_LD_ZINC(R24);
                         emit_LD_Z(R25);
-                        emit_PUSH(R25);
-                        emit_PUSH(R24);
+                        emit_x_PUSH_16bit(R24);
                     break;
                     case JVM_IALOAD:
                         emit_LD_ZINC(R22);
                         emit_LD_ZINC(R23);
                         emit_LD_ZINC(R24);
                         emit_LD_Z(R25);
-                        emit_PUSH(R25);
-                        emit_PUSH(R24);
-                        emit_PUSH(R23);
-                        emit_PUSH(R22);
+                        emit_x_PUSH_32bit(R22);
                     break;
                     case JVM_AALOAD:
                         emit_LD_ZINC(R24);
                         emit_LD_Z(R25);
-                        emit_x_PUSHREF(R24);
-                        emit_x_PUSHREF(R25);
+                        emit_x_PUSH_REF(R24);
                     break;
                 }
             break;
@@ -535,31 +487,22 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     case JVM_BASTORE:
                     case JVM_CASTORE:
                     case JVM_SASTORE:
-                        emit_POP(R24);
-                        emit_POP(R25);
+                        emit_x_POP_16bit(R24);
                     break;
                     case JVM_IASTORE:
-                        emit_POP(R22);
-                        emit_POP(R23);
-                        emit_POP(R24);
-                        emit_POP(R25);
+                        emit_x_POP_32bit(R22);
                     break;
                     case JVM_AASTORE:
-                        emit_x_POPREF(R25);
-                        emit_x_POPREF(R24);
+                        emit_x_POP_REF(R24);
                     break;
                 }
 
                 // Arrays are indexed by a 32bit int. But we don't have enough memory to hold arrays that large, so just ignore the upper two.
                 // Should check that they are 0 when implementing bounds checks.
-                emit_POP(R18);
-                emit_POP(R19);
-                emit_POP(R20);
-                emit_POP(R21);
+                emit_x_POP_32bit(R18);
 
                 // POP the array reference into Z.
-                emit_x_POPREF(RZH);
-                emit_x_POPREF(RZL); // Z now pointer to the base of the array object.
+                emit_x_POP_REF(RZ); // Z now pointer to the base of the array object.
 
                 if (opcode==JVM_SASTORE || opcode==JVM_AASTORE) {
                     // Multiply the index by 2, since we're indexing 16 bit shorts.
@@ -605,38 +548,23 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 }
             break;
             case JVM_IPOP:
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_16bit(R24);
             break;
             case JVM_IPOP2:
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_16bit(R24);
+                emit_x_POP_16bit(R24);
             break;
             case JVM_IDUP:
                 // IDUP duplicates the top one SLOTS on the integer stack, not the top int. So IDUP2 is actually IDUP, and IDUP is actually SDUP.
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_POP_16bit(R24);
+                emit_x_PUSH_16bit(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_IDUP2:
                 // IDUP2 duplicates the top two SLOTS on the integer stack, not the top two ints. So IDUP2 is actually IDUP, and IDUP is actually SDUP.
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_POP_32bit(R22);
+                emit_x_PUSH_32bit(R22);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_IDUP_X:
                 m = dj_di_getU8(code + ++pc); // 
@@ -653,161 +581,123 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 } else {
                     for (i = 0; i < n; i++) {
                         // First pop n values
-                        emit_POP(R18+(2*i));
-                        emit_POP(R18+(2*i)+1);
+                        emit_x_POP_16bit(R18+(2*i));
                     }
                     for (i = m-1; i >= 0; i--) { // loop from m-1 back to 0
                         // Then push the m values that need to be duplicated
-                        emit_PUSH(R18+(2*i)+1);
-                        emit_PUSH(R18+(2*i));
+                        emit_x_PUSH_16bit(R18+(2*i));
                     }
                     for (i = n-1; i >= 0; i--) { // loop from n-1 back to 0
                         // Finally push the original n values back on the stack
-                        emit_PUSH(R18+(2*i)+1);
-                        emit_PUSH(R18+(2*i));
+                        emit_x_PUSH_16bit(R18+(2*i));
                     }
                 }
             break;
             case JVM_APOP:
-                emit_x_POPREF(R25);
-                emit_x_POPREF(R24);                
+                emit_x_POP_REF(R24);                
             break;
             case JVM_ADUP:
-                emit_x_POPREF(R25);
-                emit_x_POPREF(R24);
-                emit_x_PUSHREF(R24);
-                emit_x_PUSHREF(R25);
-                emit_x_PUSHREF(R24);
-                emit_x_PUSHREF(R25);
+                emit_x_POP_REF(R24);
+                emit_x_PUSH_REF(R24);
+                emit_x_PUSH_REF(R24);
             break;
             case JVM_GETFIELD_B:
             case JVM_GETFIELD_C:
-                jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
-                pc += 2;
-                emit_x_POPREF(R31); // POP the reference into Z
-                emit_x_POPREF(R30);
-                emit_LDD(R24, Z, jvm_operand_word);
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                emit_x_POP_REF(RZ); // POP the reference into Z
+                emit_LDD(R24, Z, jvm_operand_word0);
 
                 // need to extend the sign to push it as a short
                 emit_CLR(R25);
                 emit_SBRC(R24, 7); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
                 emit_COM(R25); // otherwise: flip R24 to 0xFF to extend the sign
 
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_GETFIELD_S:
-                jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
-                pc += 2;
-                emit_x_POPREF(R31); // POP the reference into Z
-                emit_x_POPREF(R30);
-                emit_LDD(R24, Z, jvm_operand_word);
-                emit_LDD(R25, Z, jvm_operand_word+1);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                emit_x_POP_REF(RZ); // POP the reference into Z
+                emit_LDD(R24, Z, jvm_operand_word0);
+                emit_LDD(R25, Z, jvm_operand_word0+1);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_GETFIELD_I:
-                jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
-                pc += 2;
-                emit_x_POPREF(R31); // POP the reference into Z
-                emit_x_POPREF(R30);
-                emit_LDD(R22, Z, jvm_operand_word);
-                emit_LDD(R23, Z, jvm_operand_word+1);
-                emit_LDD(R24, Z, jvm_operand_word+2);
-                emit_LDD(R25, Z, jvm_operand_word+3);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                emit_x_POP_REF(RZ); // POP the reference into Z
+                emit_LDD(R22, Z, jvm_operand_word0);
+                emit_LDD(R23, Z, jvm_operand_word0+1);
+                emit_LDD(R24, Z, jvm_operand_word0+2);
+                emit_LDD(R25, Z, jvm_operand_word0+3);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_GETFIELD_A:
-                jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
-                pc += 2;
-                emit_x_POPREF(R25); // POP the reference
-                emit_x_POPREF(R24);
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                emit_x_POP_REF(R24); // POP the reference
 
                 // First find the location of reference fields
                 // PUSH important stuff
-                emit_PUSH(RXH);
-                emit_PUSH(RXL);
+                emit_x_PUSH_16bit(RX);
 
                 // make the call
                 emit_x_CALL((uint16_t)&dj_object_getReferences);
 
                 // POP important stuff
-                emit_POP(RXL);
-                emit_POP(RXH);
+                emit_x_POP_16bit(RX);
 
                 // R24:R25 now points to the location of the instance references
                 emit_MOVW(RZ, R24); // Move the location to Z
-                emit_LDD(R24, Z, (jvm_operand_word*2)); // jvm_operand_word is an index in the (16 bit) array, so multiply by 2
-                emit_LDD(R25, Z, (jvm_operand_word*2)+1);
-                emit_x_PUSHREF(R24);
-                emit_x_PUSHREF(R25);
+                emit_LDD(R24, Z, (jvm_operand_word0*2)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
+                emit_LDD(R25, Z, (jvm_operand_word0*2)+1);
+                emit_x_PUSH_REF(R24);
             break;
             case JVM_PUTFIELD_B:
             case JVM_PUTFIELD_C:
-                jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
-                pc += 2;
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_x_POPREF(R31); // POP the reference into Z
-                emit_x_POPREF(R30);
-                emit_STD(R24, Z, jvm_operand_word);
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                emit_x_POP_16bit(R24);
+                emit_x_POP_REF(RZ); // POP the reference into Z
+                emit_STD(R24, Z, jvm_operand_word0);
             break;
             case JVM_PUTFIELD_S:
-                jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
-                pc += 2;
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_x_POPREF(R31); // POP the reference into Z
-                emit_x_POPREF(R30);
-                emit_STD(R24, Z, jvm_operand_word);
-                emit_STD(R25, Z, jvm_operand_word+1);
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                emit_x_POP_16bit(R24);
+                emit_x_POP_REF(RZ); // POP the reference into Z
+                emit_STD(R24, Z, jvm_operand_word0);
+                emit_STD(R25, Z, jvm_operand_word0+1);
             break;
             case JVM_PUTFIELD_I:
-                jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
-                pc += 2;
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_x_POPREF(R31); // POP the reference into Z
-                emit_x_POPREF(R30);
-                emit_STD(R22, Z, jvm_operand_word);
-                emit_STD(R23, Z, jvm_operand_word+1);
-                emit_STD(R24, Z, jvm_operand_word+2);
-                emit_STD(R25, Z, jvm_operand_word+3);
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                emit_x_POP_32bit(R22);
+                emit_x_POP_REF(RZ); // POP the reference into Z
+                emit_STD(R22, Z, jvm_operand_word0);
+                emit_STD(R23, Z, jvm_operand_word0+1);
+                emit_STD(R24, Z, jvm_operand_word0+2);
+                emit_STD(R25, Z, jvm_operand_word0+3);
             break;
             case JVM_PUTFIELD_A:
-                jvm_operand_word = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
-                pc += 2;
-                emit_x_POPREF(R17); // POP the value to store (store in in call-saved R16-R17)
-                emit_x_POPREF(R16);
-                emit_x_POPREF(R25); // POP the reference to the object to store it in.
-                emit_x_POPREF(R24);
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                emit_x_POP_REF(R16); // POP the value to store (store in in call-saved R16-R17)
+                emit_x_POP_REF(R24); // POP the reference to the object to store it in.
 
                 // First find the location of reference fields
                 // PUSH important stuff
-                emit_PUSH(RXH);
-                emit_PUSH(RXL);
+                emit_x_PUSH_16bit(RX);
 
                 // make the call
                 emit_x_CALL((uint16_t)&dj_object_getReferences);
 
                 // POP important stuff
-                emit_POP(RXL);
-                emit_POP(RXH);
+                emit_x_POP_16bit(RX);
 
                 // R24:R25 now points to the location of the instance references
                 emit_MOVW(RZ, R24); // Move the location to Z
-                emit_STD(R16, Z, (jvm_operand_word*2)); // jvm_operand_word is an index in the (16 bit) array, so multiply by 2
-                emit_STD(R17, Z, (jvm_operand_word*2)+1);
+                emit_STD(R16, Z, (jvm_operand_word0*2)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
+                emit_STD(R17, Z, (jvm_operand_word0*2)+1);
             break;
             case JVM_GETSTATIC_B:
             case JVM_GETSTATIC_C:
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                // jvm_operand_byte0: the infusion.
+                // jvm_operand_byte1: Get the field.
                 emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
 
                 if (jvm_operand_byte0 == 0) {
@@ -830,12 +720,12 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_CLR(R25);
                 emit_SBRC(R24, 7); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
                 emit_COM(R25); // otherwise: flip R24 to 0xFF to extend the sign
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_GETSTATIC_S:
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                // jvm_operand_byte0: the infusion.
+                // jvm_operand_byte1: Get the field.
                 emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
 
                 if (jvm_operand_byte0 == 0) {
@@ -855,12 +745,12 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
                 emit_LDD(R24, Z, offset_for_static_short(target_infusion, jvm_operand_byte1));
                 emit_LDD(R25, Z, offset_for_static_short(target_infusion, jvm_operand_byte1)+1);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_GETSTATIC_I:
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                // jvm_operand_byte0: the infusion.
+                // jvm_operand_byte1: Get the field.
                 emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
 
                 if (jvm_operand_byte0 == 0) {
@@ -882,14 +772,12 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_LDD(R23, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+1);
                 emit_LDD(R24, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+2);
                 emit_LDD(R25, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+3);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_GETSTATIC_A:
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                // jvm_operand_byte0: the infusion.
+                // jvm_operand_byte1: Get the field.
                 emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
 
                 if (jvm_operand_byte0 == 0) {
@@ -909,13 +797,13 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
                 emit_LDD(R24, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1));
                 emit_LDD(R25, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1)+1);
-                emit_x_PUSHREF(R24);
-                emit_x_PUSHREF(R25);
+                emit_x_PUSH_REF(R24);
             break;
             case JVM_PUTSTATIC_B:
             case JVM_PUTSTATIC_C:
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                // jvm_operand_byte0: the infusion.
+                // jvm_operand_byte1: Get the field.
                 emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
 
                 if (jvm_operand_byte0 == 0) {
@@ -933,13 +821,13 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
                 }
 
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_16bit(R24);
                 emit_STD(R24, Z, offset_for_static_byte(target_infusion, jvm_operand_byte1));
             break;
             case JVM_PUTSTATIC_S:
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                // jvm_operand_byte0: the infusion.
+                // jvm_operand_byte1: Get the field.
                 emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
 
                 if (jvm_operand_byte0 == 0) {
@@ -957,14 +845,14 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
                 }
 
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_16bit(R24);
                 emit_STD(R24, Z, offset_for_static_short(target_infusion, jvm_operand_byte1));
                 emit_STD(R25, Z, offset_for_static_short(target_infusion, jvm_operand_byte1)+1);
             break;
             case JVM_PUTSTATIC_I:
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                // jvm_operand_byte0: the infusion.
+                // jvm_operand_byte1: Get the field.
                 emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
 
                 if (jvm_operand_byte0 == 0) {
@@ -982,18 +870,16 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
                 }
 
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_32bit(R22);
                 emit_STD(R22, Z, offset_for_static_int(target_infusion, jvm_operand_byte1));
                 emit_STD(R23, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+1);
                 emit_STD(R24, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+2);
                 emit_STD(R25, Z, offset_for_static_int(target_infusion, jvm_operand_byte1)+3);
             break;
             case JVM_PUTSTATIC_A:
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc); // Get the infusion.
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc); // Get the field.
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                // jvm_operand_byte0: the infusion.
+                // jvm_operand_byte1: Get the field.
                 emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
 
                 if (jvm_operand_byte0 == 0) {
@@ -1011,36 +897,27 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
                 }
 
-                emit_x_POPREF(R25);
-                emit_x_POPREF(R24);
+                emit_x_POP_REF(R24);
                 emit_STD(R24, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1));
                 emit_STD(R25, Z, offset_for_static_ref(target_infusion, jvm_operand_byte1)+1);
             break;
             case JVM_SADD:
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_POP(R22);
-                emit_POP(R23);
+                emit_x_POP_16bit(R24);
+                emit_x_POP_16bit(R22);
                 emit_ADD(R24, R22);
                 emit_ADC(R25, R23);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_SSUB:
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_POP(R22);
-                emit_POP(R23);
+                emit_x_POP_16bit(R24);
+                emit_x_POP_16bit(R22);
                 emit_SUB(R22, R24);
                 emit_SBC(R23, R25);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_16bit(R22);
             break;
             case JVM_SMUL:
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_POP(R22);
-                emit_POP(R23);
+                emit_x_POP_16bit(R24);
+                emit_x_POP_16bit(R22);
 
                 // Code generated by avr-gcc -mmcu=atmega2560 -O3
                 // mul r24,r22
@@ -1061,39 +938,28 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_ADD(R19, R0);
                 emit_CLR(R1);
                 emit_MOVW(R24, R18);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_SDIV:
             case JVM_SREM:
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
+            emit_x_POP_32bit(R22);
                 emit_x_CALL((uint16_t)&__divmodhi4);
                 if (opcode == JVM_SDIV) {
-                    emit_PUSH(R23);
-                    emit_PUSH(R22);
+                    emit_x_PUSH_16bit(R22);
                 } else { // JVM_SREM
-                    emit_PUSH(R25);
-                    emit_PUSH(R24);
+                    emit_x_PUSH_16bit(R24);
                 }
             break;
             case JVM_SNEG:
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_16bit(R24);
                 emit_CLR(R22);
                 emit_CLR(R23);
                 emit_SUB(R22, R24);
                 emit_SBC(R23, R25);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_16bit(R22);
             break;
             case JVM_SSHL:
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_32bit(R22);
 
                 emit_RJMP(4);
                 emit_LSL(R24);
@@ -1101,14 +967,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_DEC(R22);
                 emit_BRPL(-8);
 
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_SSHR:
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_32bit(R22);
 
                 emit_RJMP(4);
                 emit_ASR(R25);
@@ -1116,14 +978,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_DEC(R22);
                 emit_BRPL(-8);
 
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_SUSHR:
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_32bit(R22);
 
                 emit_RJMP(4);
                 emit_LSR(R25);
@@ -1131,118 +989,66 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_DEC(R22);
                 emit_BRPL(-8);
 
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_SAND:
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_POP(R22);
-                emit_POP(R23);
+                emit_x_POP_16bit(R24);
+                emit_x_POP_16bit(R22);
                 emit_AND(R24, R22);
                 emit_AND(R25, R23);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_SOR:
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_POP(R22);
-                emit_POP(R23);
+                emit_x_POP_16bit(R24);
+                emit_x_POP_16bit(R22);
                 emit_OR(R24, R22);
                 emit_OR(R25, R23);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_SXOR:
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_POP(R22);
-                emit_POP(R23);
+                emit_x_POP_16bit(R24);
+                emit_x_POP_16bit(R22);
                 emit_EOR(R24, R22);
                 emit_EOR(R25, R23);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_IADD:
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_POP(R18);
-                emit_POP(R19);
-                emit_POP(R20);
-                emit_POP(R21);
+                emit_x_POP_32bit(R22);
+                emit_x_POP_32bit(R18);
                 emit_ADD(R22, R18);
                 emit_ADC(R23, R19);
                 emit_ADC(R24, R20);
                 emit_ADC(R25, R21);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_ISUB:
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_POP(R18);
-                emit_POP(R19);
-                emit_POP(R20);
-                emit_POP(R21);
+                emit_x_POP_32bit(R22);
+                emit_x_POP_32bit(R18);
                 emit_SUB(R18, R22);
                 emit_SBC(R19, R23);
                 emit_SBC(R20, R24);
                 emit_SBC(R21, R25);
-                emit_PUSH(R21);
-                emit_PUSH(R20);
-                emit_PUSH(R19);
-                emit_PUSH(R18);
+                emit_x_PUSH_32bit(R18);
             break;
             case JVM_IMUL:
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_POP(R18);
-                emit_POP(R19);
-                emit_POP(R20);
-                emit_POP(R21);
+                emit_x_POP_32bit(R22);
+                emit_x_POP_32bit(R18);
                 emit_x_CALL((uint16_t)&__mulsi3);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_IDIV:
             case JVM_IREM:
-                emit_POP(R18);
-                emit_POP(R19);
-                emit_POP(R20);
-                emit_POP(R21);
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_32bit(R18);
+                emit_x_POP_32bit(R22);
                 emit_x_CALL((uint16_t)&__divmodsi4);
                 if (opcode == JVM_IDIV) {
-                    emit_PUSH(R21);
-                    emit_PUSH(R20);
-                    emit_PUSH(R19);
-                    emit_PUSH(R18);
+                    emit_x_PUSH_32bit(R18);
                 } else { // JVM_IREM
-                    emit_PUSH(R25);
-                    emit_PUSH(R24);
-                    emit_PUSH(R23);
-                    emit_PUSH(R22);
+                    emit_x_PUSH_32bit(R22);
                 }
             break;
             case JVM_INEG:
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_32bit(R22);
                 emit_CLR(R18);
                 emit_CLR(R19);
                 emit_MOVW(R20, R18);
@@ -1250,20 +1056,11 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_SBC(R19, R23);
                 emit_SBC(R20, R24);
                 emit_SBC(R21, R25);
-                emit_PUSH(R21);
-                emit_PUSH(R20);
-                emit_PUSH(R19);
-                emit_PUSH(R18);
+                emit_x_PUSH_32bit(R18);
             break;
             case JVM_ISHL:
-                emit_POP(R18);
-                emit_POP(R19);
-                emit_POP(R20);
-                emit_POP(R21);
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_32bit(R18);
+                emit_x_POP_32bit(R22);
 
                 emit_RJMP(8);
                 emit_LSL(R22);
@@ -1273,20 +1070,11 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_DEC(R18);
                 emit_BRPL(-12);
 
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_ISHR:
-                emit_POP(R18);
-                emit_POP(R19);
-                emit_POP(R20);
-                emit_POP(R21);
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_32bit(R18);
+                emit_x_POP_32bit(R22);
 
                 emit_RJMP(8);
                 emit_ASR(R25);
@@ -1296,18 +1084,11 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_DEC(R18);
                 emit_BRPL(-12);
 
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_IUSHR: // x >>> y
-                emit_POP(R20); // short y
-                emit_POP(R21);
-                emit_POP(R22); // int x
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_16bit(R20); // short y
+                emit_x_POP_32bit(R22); // int x
 
                 emit_RJMP(8);
                 emit_LSR(R25);
@@ -1317,64 +1098,34 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_DEC(R20);
                 emit_BRPL(-12);
 
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_IAND:
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_POP(R18);
-                emit_POP(R19);
-                emit_POP(R20);
-                emit_POP(R21);
+                emit_x_POP_32bit(R22);
+                emit_x_POP_32bit(R18);
                 emit_AND(R22, R18);
                 emit_AND(R23, R19);
                 emit_AND(R24, R20);
                 emit_AND(R25, R21);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_IOR:
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_POP(R18);
-                emit_POP(R19);
-                emit_POP(R20);
-                emit_POP(R21);
+                emit_x_POP_32bit(R22);
+                emit_x_POP_32bit(R18);
                 emit_OR(R22, R18);
                 emit_OR(R23, R19);
                 emit_OR(R24, R20);
                 emit_OR(R25, R21);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_IXOR:
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_POP(R18);
-                emit_POP(R19);
-                emit_POP(R20);
-                emit_POP(R21);
+                emit_x_POP_32bit(R22);
+                emit_x_POP_32bit(R18);
                 emit_EOR(R22, R18);
                 emit_EOR(R23, R19);
                 emit_EOR(R24, R20);
                 emit_EOR(R25, R21);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_IINC:
             case JVM_IINC_W:
@@ -1382,11 +1133,13 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 // -128 -> JVM_IINC
                 // +127 -> JVM_IINC
                 // +128 -> JVM_IINC_W
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc); // index of int local
+                // jvm_operand_byte0: index of int local
                 if (opcode == JVM_IINC) {
-                    jvm_operand_signed_word = (int8_t)dj_di_getU8(code + ++pc);
-                } else {
-                    jvm_operand_signed_word = (int16_t)(((uint16_t)dj_di_getU8(code + ++pc) << 8) + dj_di_getU8(code + ++pc));
+                    jvm_operand_signed_word = (int8_t)jvm_operand_byte1;
+                    pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            } else {
+                    jvm_operand_signed_word = (int16_t)(((uint16_t)jvm_operand_byte1 << 8) + jvm_operand_byte2);
+                    pc += 3; // Skip operand (already read into jvm_operand_byte0)
                 }
                 if (jvm_operand_signed_word == 1) {
                     // Special case
@@ -1431,20 +1184,17 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             break;
             case JVM_S2B:
             case JVM_S2C:
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_16bit(R24);
 
                 // need to extend the sign
                 emit_CLR(R25);
                 emit_SBRC(R24, 7); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
                 emit_COM(R25); // otherwise: flip R24 to 0xFF to extend the sign
 
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_S2I:
-                emit_POP(R22);
-                emit_POP(R23);
+                emit_x_POP_16bit(R22);
 
                 // need to extend the sign
                 emit_CLR(R24);
@@ -1452,61 +1202,26 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_COM(R24); // otherwise: flip R24 to 0xFF to extend the sign
                 emit_MOV(R25, R24);
 
-                emit_PUSH(R25);
-                emit_PUSH(R24);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_PUSH_32bit(R22);
             break;
             case JVM_I2S:
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_PUSH(R23);
-                emit_PUSH(R22);
+                emit_x_POP_32bit(R22);
+                emit_x_PUSH_16bit(R22);
             break;
             case JVM_SRETURN:
-                emit_POP(R24);
-                emit_POP(R25);
-
-                // epilogue (is this the right way?)
-                emit_POP(R28); // Pop Y
-                emit_POP(R29);
-                emit_POP(R2);
-                emit_POP(R3);
-                emit_RET();
+                emit_x_POP_16bit(R24);
+                emit_x_epilogue();
             break;
             case JVM_IRETURN:
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
-
-                // epilogue (is this the right way?)
-                emit_POP(R28); // Pop Y
-                emit_POP(R29);
-                emit_POP(R2);
-                emit_POP(R3);
-                emit_RET();
+                emit_x_POP_32bit(R22);
+                emit_x_epilogue();
             break;
             case JVM_ARETURN:
-                emit_x_POPREF(R25); // POP the reference into Z
-                emit_x_POPREF(R24);
-
-                // epilogue (is this the right way?)
-                emit_POP(R28); // Pop Y
-                emit_POP(R29);
-                emit_POP(R2);
-                emit_POP(R3);
-                emit_RET();
+                emit_x_POP_REF(R24); // POP the reference into Z
+                emit_x_epilogue();
             break;
             case JVM_RETURN:
-                // epilogue (is this the right way?)
-                emit_POP(R28); // Pop Y
-                emit_POP(R29);
-                emit_POP(R2);
-                emit_POP(R3);
-                emit_RET();
+                emit_x_epilogue();
             break;
             case JVM_INVOKEVIRTUAL:
             case JVM_INVOKESPECIAL:
@@ -1540,8 +1255,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
                 
                 // make the call
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc);
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
                 emit_LDI(R24, jvm_operand_byte0); // infusion id
                 emit_LDI(R25, jvm_operand_byte1); // entity id
                 if        (opcode == JVM_INVOKEVIRTUAL
@@ -1578,8 +1292,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
 
                 // make the call
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc);
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
                 emit_LDI(R24, jvm_operand_byte0); // infusion id
                 emit_LDI(R25, jvm_operand_byte1); // entity id
                 emit_x_CALL((uint16_t)&RTC_NEW);
@@ -1594,8 +1307,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
 
                 // push the reference to the new object onto the ref stack
-                emit_x_PUSHREF(R24);
-                emit_x_PUSHREF(R25);
+                emit_x_PUSH_REF(R24);
             break;
             case JVM_NEWARRAY:
                 // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
@@ -1604,9 +1316,8 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
 
                 // make the call
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-                emit_POP(R22); // size
-                emit_POP(R23);
+                pc += 1; // Skip operand (already read into jvm_operand_byte0)
+                emit_x_POP_16bit(R22); // size
                 emit_LDI(R24, jvm_operand_byte0); // (int) element type
                 emit_x_CALL((uint16_t)&dj_int_array_create);
 
@@ -1620,8 +1331,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
 
                 // push the reference to the new object onto the ref stack
-                emit_x_PUSHREF(R24);
-                emit_x_PUSHREF(R25);
+                emit_x_PUSH_REF(R24);
             break;
             case JVM_ANEWARRAY:
                 // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
@@ -1630,10 +1340,8 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
 
                 // make the call
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc);
-                emit_POP(R22); // size
-                emit_POP(R23);
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                emit_x_POP_16bit(R22); // size
                 emit_LDI(R24, jvm_operand_byte0); // infusion id
                 emit_LDI(R25, jvm_operand_byte1); // entity id
                 emit_x_CALL((uint16_t)&RTC_ANEWARRAY);
@@ -1648,64 +1356,51 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
 
                 // push the reference to the new object onto the ref stack
-                emit_x_PUSHREF(R24);
-                emit_x_PUSHREF(R25);
+                emit_x_PUSH_REF(R24);
             break;
             case JVM_ARRAYLENGTH: // The length of an array is stored as 16 bit at the start of the array
-                emit_x_POPREF(R31); // POP the reference into Z
-                emit_x_POPREF(R30);
+                emit_x_POP_REF(RZ); // POP the reference into Z
                 emit_LD_ZINC(R24);
                 emit_LD_Z(R25);
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                emit_x_PUSH_16bit(R24);
             break;
             case JVM_CHECKCAST:
                 // THIS WILL BREAK IF GC RUNS, BUT IT COULD ONLY RUN IF AN EXCEPTION IS THROWN, WHICH MEANS WE CRASH ANYWAY
 
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc);
-                emit_x_POPREF(R23); // reference to the object
-                emit_x_POPREF(R22);
-                emit_x_PUSHREF(R22); // TODO: optimise this. CHECKCAST should only peek.
-                emit_x_PUSHREF(R23);
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                emit_x_POP_REF(R22); // reference to the object
+                emit_x_PUSH_REF(R22); // TODO: optimise this. CHECKCAST should only peek.
                 emit_LDI(R24, jvm_operand_byte0); // infusion id
                 emit_LDI(R25, jvm_operand_byte1); // entity id
 
                 // PUSH important stuff
-                emit_PUSH(RXH);
-                emit_PUSH(RXL);
+                emit_x_PUSH_16bit(RX);
 
                 // make the call
                 emit_x_CALL((uint16_t)&RTC_CHECKCAST);
 
                 // POP important stuff
-                emit_POP(RXL);
-                emit_POP(RXH);
+                emit_x_POP_16bit(RX);
             break;
             case JVM_INSTANCEOF:
                 // THIS WILL BREAK IF GC RUNS, BUT IT COULD ONLY RUN IF AN EXCEPTION IS THROWN, WHICH MEANS WE CRASH ANYWAY
 
-                jvm_operand_byte0 = dj_di_getU8(code + ++pc);
-                jvm_operand_byte1 = dj_di_getU8(code + ++pc);
-                emit_x_POPREF(R23); // reference to the object
-                emit_x_POPREF(R22);
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                emit_x_POP_REF(R22); // reference to the object
                 emit_LDI(R24, jvm_operand_byte0); // infusion id
                 emit_LDI(R25, jvm_operand_byte1); // entity id
 
                 // PUSH important stuff
-                emit_PUSH(RXH);
-                emit_PUSH(RXL);
+                emit_x_PUSH_16bit(RX);
 
                 // make the call
                 emit_x_CALL((uint16_t)&RTC_INSTANCEOF);
 
                 // POP important stuff
-                emit_POP(RXL);
-                emit_POP(RXH);
+                emit_x_POP_16bit(RX);
 
-                // push the reference to the new object onto the ref stack
-                emit_PUSH(R25);
-                emit_PUSH(R24);
+                // push the result onto the stack
+                emit_x_PUSH_16bit(R24);
             break;
             // BRANCHES
             case JVM_SIFEQ:
@@ -1714,32 +1409,30 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_SIFGE:
             case JVM_SIFGT:
             case JVM_SIFLE:
-                // Branch instructions first have a bytecode offset, used by the interpreter,
-                // followed by a branch target index used when compiling to native code.
-                jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
+                // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
                 pc += 4;
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_16bit(R24);
                 if (opcode == JVM_SIFEQ) {
                     emit_OR(R24, R25);
-                    emit_x_branchtag(OPCODE_BREQ, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BREQ, jvm_operand_word1);
                 } else if (opcode == JVM_SIFNE) {
                     emit_OR(R24, R25);
-                    emit_x_branchtag(OPCODE_BRNE, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRNE, jvm_operand_word1);
                 } else if (opcode == JVM_SIFLT) {
                     emit_CP(R25, ZERO_REG); // Only need to consider the highest byte to decide < 0 or >= 0
-                    emit_x_branchtag(OPCODE_BRLT, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
                 } else if (opcode == JVM_SIFGE) {
                     emit_CP(R25, ZERO_REG); // Only need to consider the highest byte to decide < 0 or >= 0
-                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word1);
                 } else if (opcode == JVM_SIFGT) {
                     emit_CP(ZERO_REG, R24);
                     emit_CPC(ZERO_REG, R25);
-                    emit_x_branchtag(OPCODE_BRLT, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
                 } else if (opcode == JVM_SIFLE) {
                     emit_CP(ZERO_REG, R24);
                     emit_CPC(ZERO_REG, R25);
-                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word1);
                 }
             break;
             case JVM_IIFEQ:
@@ -1748,60 +1441,54 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_IIFGE:
             case JVM_IIFGT:
             case JVM_IIFLE:
-                // Branch instructions first have a bytecode offset, used by the interpreter,
-                // followed by a branch target index used when compiling to native code.
-                jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
+                // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
                 pc += 4;
 
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_32bit(R22);
                 if (opcode == JVM_IIFEQ) {
                     emit_OR(R22, R23);
                     emit_OR(R22, R24);
                     emit_OR(R22, R25);
-                    emit_x_branchtag(OPCODE_BREQ, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BREQ, jvm_operand_word1);
                 } else if (opcode == JVM_IIFNE) {
                     emit_OR(R22, R23);
                     emit_OR(R22, R24);
                     emit_OR(R22, R25);
-                    emit_x_branchtag(OPCODE_BRNE, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRNE, jvm_operand_word1);
                 } else if (opcode == JVM_IIFLT) {
                     emit_CP(R25, ZERO_REG); // Only need to consider the highest byte to decide < 0 or >= 0
-                    emit_x_branchtag(OPCODE_BRLT, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
                 } else if (opcode == JVM_IIFGE) {
                     emit_CP(R25, ZERO_REG); // Only need to consider the highest byte to decide < 0 or >= 0
-                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word1);
                 } else if (opcode == JVM_IIFGT) {
                     emit_CP(ZERO_REG, R22);
                     emit_CPC(ZERO_REG, R23);
                     emit_CPC(ZERO_REG, R24);
                     emit_CPC(ZERO_REG, R25);
-                    emit_x_branchtag(OPCODE_BRLT, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
                 } else if (opcode == JVM_IIFLE) {
                     emit_CP(ZERO_REG, R22);
                     emit_CPC(ZERO_REG, R23);
                     emit_CPC(ZERO_REG, R24);
                     emit_CPC(ZERO_REG, R25);
-                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word1);
                 }
             break;
             case JVM_IFNULL:
             case JVM_IFNONNULL:
-                // Branch instructions first have a bytecode offset, used by the interpreter,
-                // followed by a branch target index used when compiling to native code.
-                jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
+                // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
                 pc += 4;
 
-                emit_x_POPREF(R25);
-                emit_x_POPREF(R24);
+                emit_x_POP_REF(R24);
                 if (opcode == JVM_IFNULL) {
                     emit_OR(R24, R25);
-                    emit_x_branchtag(OPCODE_BREQ, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BREQ, jvm_operand_word1);
                 } else if (opcode == JVM_IFNONNULL) {
                     emit_OR(R24, R25);
-                    emit_x_branchtag(OPCODE_BRNE, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRNE, jvm_operand_word1);
                 }
             break;
             case JVM_IF_SCMPEQ:
@@ -1810,39 +1497,36 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_IF_SCMPGE:
             case JVM_IF_SCMPGT:
             case JVM_IF_SCMPLE:
-                // Branch instructions first have a bytecode offset, used by the interpreter,
-                // followed by a branch target index used when compiling to native code.
-                jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
+                // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
                 pc += 4;
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_POP(R22);
-                emit_POP(R23);
+                emit_x_POP_16bit(R24);
+                emit_x_POP_16bit(R22);
                 // Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
                 if (opcode == JVM_IF_SCMPEQ) {
                     emit_CP(R22, R24);
                     emit_CPC(R23, R25);
-                    emit_x_branchtag(OPCODE_BREQ, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BREQ, jvm_operand_word1);
                 } else if (opcode == JVM_IF_SCMPNE) {
                     emit_CP(R22, R24);
                     emit_CPC(R23, R25);
-                    emit_x_branchtag(OPCODE_BRNE, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRNE, jvm_operand_word1);
                 } else if (opcode == JVM_IF_SCMPLT) {
                     emit_CP(R22, R24);
                     emit_CPC(R23, R25);
-                    emit_x_branchtag(OPCODE_BRLT, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
                 } else if (opcode == JVM_IF_SCMPGE) {
                     emit_CP(R22, R24);
                     emit_CPC(R23, R25);
-                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word1);
                 } else if (opcode == JVM_IF_SCMPGT) {
                     emit_CP(R24, R22);
                     emit_CPC(R25, R23);
-                    emit_x_branchtag(OPCODE_BRLT, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
                 } else if (opcode == JVM_IF_SCMPLE) {
                     emit_CP(R24, R22);
                     emit_CPC(R25, R23);
-                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word1);
                 }
             break;
             case JVM_IF_ICMPEQ:
@@ -1851,95 +1535,80 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
             case JVM_IF_ICMPGE:
             case JVM_IF_ICMPGT:
             case JVM_IF_ICMPLE:
-                // Branch instructions first have a bytecode offset, used by the interpreter,
-                // followed by a branch target index used when compiling to native code.
-                jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
+                // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
                 pc += 4;
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
-                emit_POP(R18);
-                emit_POP(R19);
-                emit_POP(R20);
-                emit_POP(R21);
+                emit_x_POP_32bit(R22);
+                emit_x_POP_32bit(R18);
                 if (opcode == JVM_IF_ICMPEQ) {
                     emit_CP(R18, R22);
                     emit_CPC(R19, R23);
                     emit_CPC(R20, R24);
                     emit_CPC(R21, R25);
-                    emit_x_branchtag(OPCODE_BREQ, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BREQ, jvm_operand_word1);
                 } else if (opcode == JVM_IF_ICMPNE) {
                     emit_CP(R18, R22);
                     emit_CPC(R19, R23);
                     emit_CPC(R20, R24);
                     emit_CPC(R21, R25);
-                    emit_x_branchtag(OPCODE_BRNE, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRNE, jvm_operand_word1);
                 } else if (opcode == JVM_IF_ICMPLT) {
                     emit_CP(R18, R22);
                     emit_CPC(R19, R23);
                     emit_CPC(R20, R24);
                     emit_CPC(R21, R25);
-                    emit_x_branchtag(OPCODE_BRLT, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
                 } else if (opcode == JVM_IF_ICMPGE) {
                     emit_CP(R18, R22);
                     emit_CPC(R19, R23);
                     emit_CPC(R20, R24);
                     emit_CPC(R21, R25);
-                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word1);
                 } else if (opcode == JVM_IF_ICMPGT) {
                     emit_CP(R22, R18);
                     emit_CPC(R23, R19);
                     emit_CPC(R24, R20);
                     emit_CPC(R25, R21);
-                    emit_x_branchtag(OPCODE_BRLT, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
                 } else if (opcode == JVM_IF_ICMPLE) {
                     emit_CP(R22, R18);
                     emit_CPC(R23, R19);
                     emit_CPC(R24, R20);
                     emit_CPC(R25, R21);
-                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRGE, jvm_operand_word1);
                 }
             break;
             case JVM_IF_ACMPEQ:
             case JVM_IF_ACMPNE:
-                // Branch instructions first have a bytecode offset, used by the interpreter,
-                // followed by a branch target index used when compiling to native code.
-                jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
+                // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
                 pc += 4;
-                emit_x_POPREF(R25);
-                emit_x_POPREF(R24);
-                emit_x_POPREF(R23);
-                emit_x_POPREF(R22);
+                emit_x_POP_REF(R24);
+                emit_x_POP_REF(R22);
                 if (opcode == JVM_IF_ACMPEQ) {
                     emit_CP(R22, R24);
                     emit_CPC(R23, R25);
-                    emit_x_branchtag(OPCODE_BREQ, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BREQ, jvm_operand_word1);
                 } else if (opcode == JVM_IF_ACMPNE) {
                     emit_CP(R22, R24);
                     emit_CPC(R23, R25);
-                    emit_x_branchtag(OPCODE_BRNE, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BRNE, jvm_operand_word1);
                 }
             break;
             case JVM_GOTO:
-                // Branch instructions first have a bytecode offset, used by the interpreter,
-                // followed by a branch target index used when compiling to native code.
-                jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
+                // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
                 pc += 4;
 
-                emit_x_branchtag(OPCODE_RJMP, jvm_operand_word);
+                emit_x_branchtag(OPCODE_RJMP, jvm_operand_word1);
             break;
             case JVM_TABLESWITCH: {
-                // Branch instructions first have a bytecode offset, used by the interpreter,
-                // followed by a branch target index used when compiling to native code.
-                jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
+                // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
                 pc += 4;
 
                 // Pop the key value
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_32bit(R22);
                 // Load the upper bound
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
                 jvm_operand_byte1 = dj_di_getU8(code + ++pc);
@@ -1954,7 +1623,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_CPC(R19, R23);
                 emit_CPC(R20, R24);
                 emit_CPC(R21, R25);
-                emit_x_branchtag(OPCODE_BRLT, jvm_operand_word);
+                emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
 
                 // Lower than or equal to the upper bound: load the lower bound
                 jvm_operand_byte0 = dj_di_getU8(code + ++pc);
@@ -1970,7 +1639,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 emit_CPC(R23, R19);
                 emit_CPC(R24, R20);
                 emit_CPC(R25, R21);
-                emit_x_branchtag(OPCODE_BRLT, jvm_operand_word);
+                emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
 
                 // Also higher than or equal to the lower bound: branch through the switch table
                 // Substract lower bound from the key to find the index (assume 16b will be enough)
@@ -1996,23 +1665,20 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
                 // Now emit the RJMP table itself
                 for (int i=0; i<(upperbound-lowerbound+1); i++) { // +1 since both bounds are inclusive
-                    jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                    jvm_operand_word0 = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
                     pc += 4;
-                    emit_x_branchtag(OPCODE_RJMP, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_RJMP, jvm_operand_word0);
                 }
             }
             break;
             case JVM_LOOKUPSWITCH: {
-                // Branch instructions first have a bytecode offset, used by the interpreter,
-                // followed by a branch target index used when compiling to native code.
-                uint16_t default_branch_target = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
+                // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
+                uint16_t default_branch_target = jvm_operand_word1;
                 pc += 4;
 
                 // Pop the key value
-                emit_POP(R22);
-                emit_POP(R23);
-                emit_POP(R24);
-                emit_POP(R25);
+                emit_x_POP_32bit(R22);
 
                 uint16_t number_of_cases = (dj_di_getU8(code + pc + 1) << 8) | dj_di_getU8(code + pc + 2);
                 pc += 2;
@@ -2023,7 +1689,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     jvm_operand_byte2 = dj_di_getU8(code + ++pc);
                     jvm_operand_byte3 = dj_di_getU8(code + ++pc);
                     // Get the branch target (and skip the branch address used by the interpreter)
-                    jvm_operand_word = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
+                    jvm_operand_word0 = (dj_di_getU8(code + pc + 3) << 8) | dj_di_getU8(code + pc + 4);
                     pc += 4;
                     emit_LDI(R21, jvm_operand_byte0); // Bytecode is big endian
                     emit_LDI(R20, jvm_operand_byte1);
@@ -2033,7 +1699,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     emit_CPC(R19, R23);
                     emit_CPC(R20, R24);
                     emit_CPC(R21, R25);
-                    emit_x_branchtag(OPCODE_BREQ, jvm_operand_word);
+                    emit_x_branchtag(OPCODE_BREQ, jvm_operand_word0);
                 }
 
                 emit_x_branchtag(OPCODE_RJMP, default_branch_target);

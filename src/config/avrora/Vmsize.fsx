@@ -48,7 +48,8 @@ let categoryEntriesToString details (category, entries) =
                   category,
                   if details then "\r\n" + String.Join("\r\n", (entries |> Seq.map entryToString)) else "")
 
-let nmData = System.IO.File.ReadLines("darjeeling-nm.txt") |> Seq.map nmlineToData
+let filename = fsi.CommandLineArgs.[1]
+let nmData = System.IO.File.ReadLines(filename) |> Seq.map nmlineToData
 let categoryData =
     nmData
     |> Seq.filter (fun n -> (n.entryType <> "B"))
