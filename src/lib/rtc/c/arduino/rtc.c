@@ -101,8 +101,9 @@ void rtc_flush() {
 static void emit_raw_word(uint16_t word) {
     *(rtc_codebuffer_position++) = word;
 
-    if (rtc_codebuffer_position >= rtc_codebuffer+RTC_CODEBUFFER_SIZE) // Buffer full, do a flush.
-        rtc_flush();    
+    if (rtc_codebuffer_position >= rtc_codebuffer+RTC_CODEBUFFER_SIZE) { // Buffer full, do a flush.
+        rtc_flush();
+    }
 }
 
 static void emit_without_optimisation(uint16_t word) {
@@ -111,14 +112,14 @@ static void emit_without_optimisation(uint16_t word) {
     rtc_flush();
 }
 
-static void emit(uint16_t opcode) {
+void emit(uint16_t opcode) {
 #ifdef AVRORA
     avroraRTCTraceSingleWordInstruction(opcode);
 #endif
     emit_raw_word(opcode);
 }
 
-static void emit2(uint16_t opcode1, uint16_t opcode2) {
+void emit2(uint16_t opcode1, uint16_t opcode2) {
 #ifdef AVRORA
     avroraRTCTraceDoubleWordInstruction(opcode1, opcode2);
 #endif

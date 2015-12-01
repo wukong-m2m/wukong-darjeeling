@@ -7,7 +7,7 @@ void emit_x_CALL(uint16_t target) {
     emit_PUSH(RXH);
     emit_PUSH(RXL);
     rtc_flush();
-    emit2( asm_CALL1(target) , asm_CALL2(target) );
+    emit_2_CALL(target);
     emit_POP(RXL);
     emit_POP(RXH);
 }

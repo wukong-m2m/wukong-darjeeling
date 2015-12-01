@@ -31,7 +31,7 @@ let categories = [
             (fun name -> name.StartsWith("GET"))
             (fun name -> name.StartsWith("PUT")) ])
     ("AOT compiler",
-        [   (fun name -> name.StartsWith("rtc_") || name.StartsWith("RTC_")) ])
+        [   (fun name -> name.StartsWith("rtc_") || name.StartsWith("RTC_") || name.StartsWith("emit") || name.StartsWith("asm_")) ])
     ]
 
 let nameToCategory name =
