@@ -286,23 +286,33 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress :
     let cyclesPerJvmOpcodeCategory = groupOpcodesInCategories getAllJvmOpcodeCategories getCategoryForJvmOpcode cyclesPerJvmOpcode
     let cyclesPerAvrOpcodeCategoryNativeC = groupOpcodesInCategories AVR.getAllOpcodeCategories AVR.opcodeCategory cyclesPerAvrOpcodeNativeC
     let cyclesPerAvrOpcodeCategoryAOTJava = groupOpcodesInCategories AVR.getAllOpcodeCategories AVR.opcodeCategory cyclesPerAvrOpcodeAOTJava
+    let lastInList x = x |> List.reduce (fun _ x -> x)
+    let codesizeJava = methodImpl.JvmMethodSize
+    let codesizeAOT = methodImpl.AvrMethodSize
+    let codesizeC =
+        let startAddress = (nativeCInstructions |> List.head |> fst).address
+        let endAddress = (nativeCInstructions |> lastInList |> fst).address
+        endAddress - startAddress + 2 // assuming the function ends in a 2 byte opcode.
 
     {
-        benchmark = benchmark;
-        jvmInstructions = mainResults;
-        nativeCInstructions = nativeCInstructions |> Seq.toList;
-        stopwatchCyclesJava = stopwatchTimers |> List.find (fun (t,c) -> t="Java") |> snd;
-        stopwatchCyclesAOT = stopwatchTimers |> List.find (fun (t,c) -> t="AOT") |> snd;
-        stopwatchCyclesC = stopwatchTimers |> List.find (fun (t,c) -> t="C") |> snd;
-        cyclesPush = cyclesPush;
-        cyclesPop = cyclesPop;
-        cyclesMovw = cyclesMovw;
-        cyclesPerJvmOpcode = cyclesPerJvmOpcode |> List.map (fun (opc, cnt) -> (getCategoryForJvmOpcode opc, opc, cnt));
-        cyclesPerAvrOpcodeAOTJava = cyclesPerAvrOpcodeAOTJava |> List.map (fun (opc, cnt) -> (AVR.opcodeCategory opc, AVR.opcodeName opc, cnt));
-        cyclesPerAvrOpcodeNativeC = cyclesPerAvrOpcodeNativeC |> List.map (fun (opc, cnt) -> (AVR.opcodeCategory opc, AVR.opcodeName opc, cnt));
-        cyclesPerJvmOpcodeCategory = cyclesPerJvmOpcodeCategory;
-        cyclesPerAvrOpcodeCategoryAOTJava = cyclesPerAvrOpcodeCategoryAOTJava;
-        cyclesPerAvrOpcodeCategoryNativeC = cyclesPerAvrOpcodeCategoryNativeC;
+        benchmark = benchmark
+        jvmInstructions = mainResults
+        nativeCInstructions = nativeCInstructions |> Seq.toList
+        stopwatchCyclesJava = stopwatchTimers |> List.find (fun (t,c) -> t="Java") |> snd
+        stopwatchCyclesAOT = stopwatchTimers |> List.find (fun (t,c) -> t="AOT") |> snd
+        stopwatchCyclesC = stopwatchTimers |> List.find (fun (t,c) -> t="C") |> snd
+        codesizeJava = codesizeJava
+        codesizeAOT = codesizeAOT
+        codesizeC = codesizeC
+        cyclesPush = cyclesPush
+        cyclesPop = cyclesPop
+        cyclesMovw = cyclesMovw
+        cyclesPerJvmOpcode = cyclesPerJvmOpcode |> List.map (fun (opc, cnt) -> (getCategoryForJvmOpcode opc, opc, cnt))
+        cyclesPerAvrOpcodeAOTJava = cyclesPerAvrOpcodeAOTJava |> List.map (fun (opc, cnt) -> (AVR.opcodeCategory opc, AVR.opcodeName opc, cnt))
+        cyclesPerAvrOpcodeNativeC = cyclesPerAvrOpcodeNativeC |> List.map (fun (opc, cnt) -> (AVR.opcodeCategory opc, AVR.opcodeName opc, cnt))
+        cyclesPerJvmOpcodeCategory = cyclesPerJvmOpcodeCategory
+        cyclesPerAvrOpcodeCategoryAOTJava = cyclesPerAvrOpcodeCategoryAOTJava
+        cyclesPerAvrOpcodeCategoryNativeC = cyclesPerAvrOpcodeCategoryNativeC
     }
 
 let resultsToString (results : Results) =
@@ -373,9 +383,15 @@ let resultsToString (results : Results) =
         yield String.Format ("                movw            {0}", (countersToString totalCyclesAOTJava results.cyclesMovw))
         yield String.Format ("                total           {0}", (countersToString totalCyclesAOTJava (results.cyclesPush + results.cyclesPop + results.cyclesMovw)))
         yield ""
-        yield String.Format ("--- STACK max                   {0}", (results.maxJvmStackInBytes))
-        yield String.Format ("---       avg/executed jvm      {0:000.00}", results.avgJvmStackInBytes)
-        yield String.Format ("---       avg change/exec jvm   {0:000.00}", results.avgJvmStackChangeInBytes)
+        yield String.Format ("--- STACK max                   {0,14}", (results.maxJvmStackInBytes))
+        yield String.Format ("          avg/executed jvm      {0,14:000.00}", results.avgJvmStackInBytes)
+        yield String.Format ("          avg change/exec jvm   {0,14:000.00}", results.avgJvmStackChangeInBytes)
+        yield ""
+        yield String.Format ("--- CODE SIZE   Native C        {0,14}", (results.codesizeC))
+        yield String.Format ("                AOT             {0,14}", (results.codesizeAOT))
+        yield String.Format ("                Java            {0,14}", (results.codesizeJava))
+        yield String.Format ("                AOT/C           {0,14}", (cyclesToSlowdown results.codesizeAOT results.codesizeC))
+        yield String.Format ("                AOT/Java        {0,14}", (cyclesToSlowdown results.codesizeAOT results.codesizeJava))
         yield ""
         yield "--- SUMMED: PER JVM CATEGORY"
         yield categoryResultsToString totalCyclesAOTJava results.cyclesPerJvmOpcodeCategory

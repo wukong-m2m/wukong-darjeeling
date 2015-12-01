@@ -38,6 +38,13 @@ let resultToStringList (result : Results) =
         ("max"                  , result.maxJvmStackInBytes.ToString());
         ("avg/executed jvm"     , String.Format ("{0:000.00}", result.avgJvmStackInBytes));
         ("avg change/exec jvm"  , String.Format ("{0:000.00}", result.avgJvmStackChangeInBytes));
+        (""                     , "");
+        ("CODE SIZE"            , "");
+        ("Native C"             , result.codesizeC.ToString());
+        ("AOT"                  , result.codesizeAOT.ToString());
+        ("Java"                 , result.codesizeJava.ToString());
+        ("AOT/C"                , (cyclesToSlowdown result.codesizeAOT result.codesizeC));
+        ("AOT/Java"             , (cyclesToSlowdown result.codesizeAOT result.codesizeJava));
         ]
     let r2 = 
         (""                     , "")

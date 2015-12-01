@@ -75,6 +75,9 @@ type Results = {
     stopwatchCyclesJava : int;
     stopwatchCyclesAOT : int;
     stopwatchCyclesC : int;
+    codesizeJava : int;
+    codesizeAOT : int;
+    codesizeC : int;
     cyclesPush : ExecCounters;
     cyclesPop : ExecCounters;
     cyclesMovw : ExecCounters;
