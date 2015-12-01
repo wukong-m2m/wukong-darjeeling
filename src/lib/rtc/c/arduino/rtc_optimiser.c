@@ -52,7 +52,7 @@ void rtc_optimise_drop_2_instructions(uint16_t *first_instr, uint16_t **code_end
 	*code_end -= 2;
 }
 
-bool instruction_uses_target_reg(uint16_t instruction, uint16_t target_reg) {
+bool rtc_instruction_uses_target_reg(uint16_t instruction, uint16_t target_reg) {
 	const uint16_t TWO_REG_OPERAND_MASK = 0xFC00;
     const uint16_t ONE_REG_OPERAND_MASK = 0xFE0F;
     const uint16_t LDD_MASK             = 0xD200;
@@ -159,32 +159,6 @@ bool instruction_uses_target_reg(uint16_t instruction, uint16_t target_reg) {
     return false;
 }
 
-
-
-// void rtc_optimise(uint16_t *buffer, uint16_t **code_end) {
-// 	// PUSH                                 1001 001d dddd 1111, with d=source register
-// 	// POP                                  1001 000d dddd 1111
-// 	bool found;
-
-// 	do {
-// 		found = false;
-// 		for (uint16_t *p = buffer; p < *code_end-1; p++) {
-// 			uint16_t inst1 = *(p);
-// 			uint16_t inst2 = *(p+1);
-// 			if (IS_INT_PUSH(inst1)
-// 					&& IS_INT_POP(inst2)
-// 					&& GET_1REG_OPERAND(inst1) == GET_1REG_OPERAND(inst2)) {
-// 				// PUSH rX, POP rX -> remove
-// 				rtc_optimise_drop_2_instructions(p, code_end);
-// 				found = true;
-// 				break;
-// 			}
-// 		}
-// 	} while (found);
-// }
-
-
-
 bool rtc_maybe_optimise_push_pop(uint16_t *push_finger, uint16_t *pop_finger, uint16_t **code_end) {
     uint16_t push_reg = GET_1REG_OPERAND(*push_finger);
     uint16_t pop_reg  = GET_1REG_OPERAND(*pop_finger);
@@ -193,7 +167,7 @@ bool rtc_maybe_optimise_push_pop(uint16_t *push_finger, uint16_t *pop_finger, ui
     uint16_t *check_reg_write_finger = push_finger+1;
     while (check_reg_write_finger < pop_finger) {
         uint16_t check_reg_write_finger_instr = *check_reg_write_finger;
-        if (instruction_uses_target_reg(check_reg_write_finger_instr, pop_reg)) {
+        if (rtc_instruction_uses_target_reg(check_reg_write_finger_instr, pop_reg)) {
             // Some instruction inbetween the PUSH and POP writes to the target register, so we can't remove them or change them to a MOV.
             return false;
         }
