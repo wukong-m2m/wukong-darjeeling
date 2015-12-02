@@ -175,6 +175,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     uint8_t jvm_operand_byte1;
     uint8_t jvm_operand_byte2;
     uint8_t jvm_operand_byte3;
+    uint8_t offset;
     uint8_t m, n;
     int8_t i;
     uint16_t jvm_operand_word0;
@@ -706,9 +707,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 } else {
                     // We need to read from another infusion. Get that infusion's address first.
                     // Load the address of the referenced infusion into R24:R25
-                    uint8_t infusionOffset = rtc_offset_for_referenced_infusion(infusion, jvm_operand_byte0);
-                    emit_LDD(R24, Z, infusionOffset);
-                    emit_LDD(R25, Z, infusionOffset+1);
+                    offset = rtc_offset_for_referenced_infusion(infusion, jvm_operand_byte0);
+                    emit_LDD(R24, Z, offset);
+                    emit_LDD(R25, Z, offset+1);
                     // Then move R24:R25 to Z
                     emit_MOVW(RZ, R24);
                     // Z now points to the target infusion, but it should point to the start of the static variables
@@ -735,9 +736,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 } else {
                     // We need to read from another infusion. Get that infusion's address first.
                     // Load the address of the referenced infusion into R24:R25
-                    uint8_t infusionOffset = rtc_offset_for_referenced_infusion(infusion, jvm_operand_byte0);
-                    emit_LDD(R24, Z, infusionOffset);
-                    emit_LDD(R25, Z, infusionOffset+1);
+                    offset = rtc_offset_for_referenced_infusion(infusion, jvm_operand_byte0);
+                    emit_LDD(R24, Z, offset);
+                    emit_LDD(R25, Z, offset+1);
                     // Then move R24:R25 to Z
                     emit_MOVW(RZ, R24);
                     // Z now points to the target infusion, but it should point to the start of the static variables
@@ -746,8 +747,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
                 }
 
-                emit_LDD(R24, Z, rtc_offset_for_static_short(target_infusion, jvm_operand_byte1));
-                emit_LDD(R25, Z, rtc_offset_for_static_short(target_infusion, jvm_operand_byte1)+1);
+                offset = rtc_offset_for_static_short(target_infusion, jvm_operand_byte1);
+                emit_LDD(R24, Z, offset);
+                emit_LDD(R25, Z, offset+1);
                 emit_x_PUSH_16bit(R24);
             break;
             case JVM_GETSTATIC_I:
@@ -761,9 +763,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 } else {
                     // We need to read from another infusion. Get that infusion's address first.
                     // Load the address of the referenced infusion into R24:R25
-                    uint8_t infusionOffset = rtc_offset_for_referenced_infusion(infusion, jvm_operand_byte0);
-                    emit_LDD(R24, Z, infusionOffset);
-                    emit_LDD(R25, Z, infusionOffset+1);
+                    offset = rtc_offset_for_referenced_infusion(infusion, jvm_operand_byte0);
+                    emit_LDD(R24, Z, offset);
+                    emit_LDD(R25, Z, offset+1);
                     // Then move R24:R25 to Z
                     emit_MOVW(RZ, R24);
                     // Z now points to the target infusion, but it should point to the start of the static variables
@@ -772,10 +774,11 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
                 }
 
-                emit_LDD(R22, Z, rtc_offset_for_static_int(target_infusion, jvm_operand_byte1));
-                emit_LDD(R23, Z, rtc_offset_for_static_int(target_infusion, jvm_operand_byte1)+1);
-                emit_LDD(R24, Z, rtc_offset_for_static_int(target_infusion, jvm_operand_byte1)+2);
-                emit_LDD(R25, Z, rtc_offset_for_static_int(target_infusion, jvm_operand_byte1)+3);
+                offset = rtc_offset_for_static_int(target_infusion, jvm_operand_byte1);
+                emit_LDD(R22, Z, offset);
+                emit_LDD(R23, Z, offset+1);
+                emit_LDD(R24, Z, offset+2);
+                emit_LDD(R25, Z, offset+3);
                 emit_x_PUSH_32bit(R22);
             break;
             case JVM_GETSTATIC_A:
@@ -789,9 +792,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 } else {
                     // We need to read from another infusion. Get that infusion's address first.
                     // Load the address of the referenced infusion into R24:R25
-                    uint8_t infusionOffset = rtc_offset_for_referenced_infusion(infusion, jvm_operand_byte0);
-                    emit_LDD(R24, Z, infusionOffset);
-                    emit_LDD(R25, Z, infusionOffset+1);
+                    offset = rtc_offset_for_referenced_infusion(infusion, jvm_operand_byte0);
+                    emit_LDD(R24, Z, offset);
+                    emit_LDD(R25, Z, offset+1);
                     // Then move R24:R25 to Z
                     emit_MOVW(RZ, R24);
                     // Z now points to the target infusion, but it should point to the start of the static variables
@@ -800,8 +803,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                     target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
                 }
 
-                emit_LDD(R24, Z, rtc_offset_for_static_ref(target_infusion, jvm_operand_byte1));
-                emit_LDD(R25, Z, rtc_offset_for_static_ref(target_infusion, jvm_operand_byte1)+1);
+                offset = rtc_offset_for_static_ref(target_infusion, jvm_operand_byte1);
+                emit_LDD(R24, Z, offset);
+                emit_LDD(R25, Z, offset+1);
                 emit_x_PUSH_REF(R24);
             break;
             case JVM_PUTSTATIC_B:
@@ -816,9 +820,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 } else {
                     // We need to read from another infusion. Get that infusion's address first.
                     // Load the address of the referenced infusion into R24:R25
-                    uint8_t infusionOffset = rtc_offset_for_referenced_infusion(infusion, jvm_operand_byte0);
-                    emit_LDD(R24, Z, infusionOffset);
-                    emit_LDD(R25, Z, infusionOffset+1);
+                    offset = rtc_offset_for_referenced_infusion(infusion, jvm_operand_byte0);
+                    emit_LDD(R24, Z, offset);
+                    emit_LDD(R25, Z, offset+1);
                     // Then move R24:R25 to Z
                     emit_MOVW(RZ, R24);
                     // Z now points to the target infusion, but it should point to the start of the static variables
@@ -841,9 +845,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 } else {
                     // We need to read from another infusion. Get that infusion's address first.
                     // Load the address of the referenced infusion into R24:R25
-                    uint8_t infusionOffset = rtc_offset_for_referenced_infusion(infusion, jvm_operand_byte0);
-                    emit_LDD(R24, Z, infusionOffset);
-                    emit_LDD(R25, Z, infusionOffset+1);
+                    offset = rtc_offset_for_referenced_infusion(infusion, jvm_operand_byte0);
+                    emit_LDD(R24, Z, offset);
+                    emit_LDD(R25, Z, offset+1);
                     // Then move R24:R25 to Z
                     emit_MOVW(RZ, R24);
                     // Z now points to the target infusion, but it should point to the start of the static variables
@@ -853,8 +857,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 }
 
                 emit_x_POP_16bit(R24);
-                emit_STD(R24, Z, rtc_offset_for_static_short(target_infusion, jvm_operand_byte1));
-                emit_STD(R25, Z, rtc_offset_for_static_short(target_infusion, jvm_operand_byte1)+1);
+                offset = rtc_offset_for_static_short(target_infusion, jvm_operand_byte1);
+                emit_STD(R24, Z, offset);
+                emit_STD(R25, Z, offset+1);
             break;
             case JVM_PUTSTATIC_I:
                 pc += 2; // Skip operand (already read into jvm_operand_byte0)
@@ -867,9 +872,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 } else {
                     // We need to read from another infusion. Get that infusion's address first.
                     // Load the address of the referenced infusion into R24:R25
-                    uint8_t infusionOffset = rtc_offset_for_referenced_infusion(infusion, jvm_operand_byte0);
-                    emit_LDD(R24, Z, infusionOffset);
-                    emit_LDD(R25, Z, infusionOffset+1);
+                    offset = rtc_offset_for_referenced_infusion(infusion, jvm_operand_byte0);
+                    emit_LDD(R24, Z, offset);
+                    emit_LDD(R25, Z, offset+1);
                     // Then move R24:R25 to Z
                     emit_MOVW(RZ, R24);
                     // Z now points to the target infusion, but it should point to the start of the static variables
@@ -879,10 +884,11 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 }
 
                 emit_x_POP_32bit(R22);
-                emit_STD(R22, Z, rtc_offset_for_static_int(target_infusion, jvm_operand_byte1));
-                emit_STD(R23, Z, rtc_offset_for_static_int(target_infusion, jvm_operand_byte1)+1);
-                emit_STD(R24, Z, rtc_offset_for_static_int(target_infusion, jvm_operand_byte1)+2);
-                emit_STD(R25, Z, rtc_offset_for_static_int(target_infusion, jvm_operand_byte1)+3);
+                offset = rtc_offset_for_static_int(target_infusion, jvm_operand_byte1);
+                emit_STD(R22, Z, offset);
+                emit_STD(R23, Z, offset+1);
+                emit_STD(R24, Z, offset+2);
+                emit_STD(R25, Z, offset+3);
             break;
             case JVM_PUTSTATIC_A:
                 pc += 2; // Skip operand (already read into jvm_operand_byte0)
@@ -895,9 +901,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 } else {
                     // We need to read from another infusion. Get that infusion's address first.
                     // Load the address of the referenced infusion into R24:R25
-                    uint8_t infusionOffset = rtc_offset_for_referenced_infusion(infusion, jvm_operand_byte0);
-                    emit_LDD(R24, Z, infusionOffset);
-                    emit_LDD(R25, Z, infusionOffset+1);
+                    offset = rtc_offset_for_referenced_infusion(infusion, jvm_operand_byte0);
+                    emit_LDD(R24, Z, offset);
+                    emit_LDD(R25, Z, offset+1);
                     // Then move R24:R25 to Z
                     emit_MOVW(RZ, R24);
                     // Z now points to the target infusion, but it should point to the start of the static variables
@@ -907,8 +913,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 }
 
                 emit_x_POP_REF(R24);
-                emit_STD(R24, Z, rtc_offset_for_static_ref(target_infusion, jvm_operand_byte1));
-                emit_STD(R25, Z, rtc_offset_for_static_ref(target_infusion, jvm_operand_byte1)+1);
+                offset = rtc_offset_for_static_ref(target_infusion, jvm_operand_byte1);
+                emit_STD(R24, Z, offset);
+                emit_STD(R25, Z, offset+1);
             break;
             case JVM_SADD:
                 emit_x_POP_16bit(R24);
@@ -1146,32 +1153,33 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                 if (opcode == JVM_IINC) {
                     jvm_operand_signed_word = (int8_t)jvm_operand_byte1;
                     pc += 2; // Skip operand (already read into jvm_operand_byte0)
-            } else {
+                } else {
                     jvm_operand_signed_word = (int16_t)(((uint16_t)jvm_operand_byte1 << 8) + jvm_operand_byte2);
                     pc += 3; // Skip operand (already read into jvm_operand_byte0)
                 }
+                uint8_t offset = offset_for_intlocal_int(methodimpl, jvm_operand_byte0);
                 if (jvm_operand_signed_word == 1) {
                     // Special case
-                    emit_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0));
+                    emit_LDD(R22, Y, offset);
                     emit_INC(R22);
-                    emit_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0));
+                    emit_STD(R22, Y, offset);
                     emit_BRNE(22);
-                    emit_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1);
+                    emit_LDD(R22, Y, offset+1);
                     emit_INC(R22);
-                    emit_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1);
+                    emit_STD(R22, Y, offset+1);
                     emit_BRNE(14);
-                    emit_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2);
+                    emit_LDD(R22, Y, offset+2);
                     emit_INC(R22);
-                    emit_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2);
+                    emit_STD(R22, Y, offset+2);
                     emit_BRNE(6);
-                    emit_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3);
+                    emit_LDD(R22, Y, offset+3);
                     emit_INC(R22);
-                    emit_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3);
+                    emit_STD(R22, Y, offset+3);
                 } else {
-                    emit_LDD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0));
-                    emit_LDD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1);
-                    emit_LDD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2);
-                    emit_LDD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3);
+                    emit_LDD(R22, Y, offset);
+                    emit_LDD(R23, Y, offset+1);
+                    emit_LDD(R24, Y, offset+2);
+                    emit_LDD(R25, Y, offset+3);
                     if (jvm_operand_signed_word > 0) {
                         // Positive operand
                         emit_SUBI(R22, -(jvm_operand_signed_word & 0xFF));
@@ -1185,10 +1193,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
                         emit_SBCI(R24, 0);
                         emit_SBCI(R25, 0);
                     }
-                    emit_STD(R22, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0));
-                    emit_STD(R23, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+1);
-                    emit_STD(R24, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+2);
-                    emit_STD(R25, Y, offset_for_intlocal_int(methodimpl, jvm_operand_byte0)+3);
+                    emit_STD(R22, Y, offset);
+                    emit_STD(R23, Y, offset+1);
+                    emit_STD(R24, Y, offset+2);
+                    emit_STD(R25, Y, offset+3);
                 }
             break;
             case JVM_S2B:
