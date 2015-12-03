@@ -87,24 +87,48 @@ class Cgi(Protocol):
         print request
         # /cgi-bin/proxy?cmd=/scene&p=1&d=113&serialno=,65535
         # GET /cgi-bin/proxy?cmd=/scene&p=1&d=113&serialno=,65535 HTTP/1.
-        tokens = request.split(' ')
-        if tokens[0] == 'GET':
-            ulist = tokens[1].split('?')
+        lines = request.split('\n')
+        print lines[0]
+        tokens = lines[0].split(' ')
+        ulist = tokens[1].split('?')
+        if len(ulist) >= 2:
             paths = ulist[0].split('/')
             pars = ulist[1].split('&')
             query = {}
             for p in pars:
                 ff = p.split('=')
+                if len(ff) != 2:
+                    return self.render_none()
                 query[ff[0]] = ff[1]
-            print paths
-            if paths[1] == 'cgi-bin' and paths[2] == 'proxy':
-                print query
-                if query['cmd'] == '/scene':
-                    self.render_scene(query)
-                elif query['cmd'][0:2] == '/r':
-                    self.render_control(query['cmd'])
+        else:
+            paths = ulist[0].split('/')
+            query={}
+        print paths
+        if tokens[0] == 'GET':
+            if paths[1] == 'cgi-bin':
+                if paths[2] == 'proxy':
+                    print query
+                    if query['cmd'] == '/scene':
+                        self.render_scene(query)
+                    elif query['cmd'][0:2] == '/r':
+                        self.render_control(query['cmd'])
+                    else:
+                        self.render_none()
                 else:
                     self.render_none()
+            else:
+                self.render_none()
+        elif tokens[0] == 'POST':
+            print 'POST method',paths
+            if paths[1] == 'cgi-bin':
+                if paths[2] == 'ssidlist':
+                    print lines
+                    for i in range(len(lines)):
+                        if lines[i] == '' or lines[i] == '\r':
+                            obj = cjson.decode('\n'.join(lines[i+1:]))
+                            print obj
+            self.render_none()
+
     def doCommand(self,p,d,v):
         obj = self.factory.device.findSlider(p,d)
         if obj: obj.setProperty(0,v)
