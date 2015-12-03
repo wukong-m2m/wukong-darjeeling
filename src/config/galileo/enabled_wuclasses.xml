@@ -36,6 +36,9 @@
     <WuClass name="IRremote_TV" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
+    <WuClass name="ST_Switch" appCanCreateInstances="false">
+        <CreateInstance />
+    </WuClass>
 
     <!-- 192.168.0.104 is galileoNUC -->
     <!--<WuClass name="User" appCanCreateInstances="false">

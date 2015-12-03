@@ -21,7 +21,7 @@ switch (djConfig.getAllPlatforms().last()) {
             cCompiler.args "-march=i386"
             cCompiler.args "-m32"
             linker.args "-m32"
-            linker.args "-Wl,-lmraa"
+            linker.args "-Wl,-lmraa,-lcrypto,-lssl"
         }
     break
     case 'posix.yun':

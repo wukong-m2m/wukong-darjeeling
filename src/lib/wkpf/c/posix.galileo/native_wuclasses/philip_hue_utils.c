@@ -4,8 +4,8 @@
 typedef struct point2d { float x; float y; } point2d;
 
 const char *philips_hue_path = "api/newdeveloper/lights/%d";
-const char *http_get_req_header = "GET /%s HTTP/1.1\r\nConnection: close\r\n\r\n";
-const char *http_put_req_header = "PUT /%s HTTP/1.1\r\nConnection: close\r\nContent-Length: %d\r\n\r\n";
+const char *hue_http_get_header = "GET /%s HTTP/1.1\r\nConnection: close\r\n\r\n";
+const char *hue_http_put_header = "PUT /%s HTTP/1.1\r\nConnection: close\r\nContent-Length: %d\r\n\r\n";
 
 void gammaCorrection(float *rgb)
 {
@@ -313,7 +313,7 @@ int get_gamma(uint32_t ip, char *message, int total, int index, float *x, float 
   memset(message, 0, total);
   char path[BUF_SIZE] = {0};
   sprintf(path, philips_hue_path, index);
-  sprintf(message, http_get_req_header, path);
+  sprintf(message, hue_http_get_header, path);
   int ret = socket_send_to(ip, message, strlen(message), message, total);
   if (ret < 0)
     // Socket send error 
@@ -405,7 +405,7 @@ int put_command(uint32_t ip, char *message, int total, int index, char *command,
   char path[BUF_SIZE] = {0};
   sprintf(path, philips_hue_path, index);
   strcat(path, "/state");
-  sprintf(message, http_put_req_header, path, cmd_len);
+  sprintf(message,hue_http_put_header,path, cmd_len);
   strcat(message, command);
   int ret = socket_send_to(ip, message, strlen(message), message, total);
   if (ret < 0)
