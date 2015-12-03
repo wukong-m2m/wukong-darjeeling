@@ -5,7 +5,7 @@
 #define HASH_LENGTH_BYTES 16
 
 // Split into separate function to avoid the compiler just optimising away the whole test.
-void rtcbenchmark_measure_native_performance(uint8_t input[], uint8_t inputLength, uint8_t output[]) {
+void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint8_t input[], uint8_t inputLength, uint8_t output[]) {
 	javax_darjeeling_Stopwatch_void_resetAndStart();
         uint8_t i, j, len;
         uint8_t buffer[64];

@@ -167,7 +167,7 @@ let getTimersFromStdout (stdoutlog : string list) =
               |> List.sortBy (fun (timer, cycles) -> match timer with "C" -> 1 | "AOT" -> 2 | "Java" -> 3 | _ -> 4)
 
 let getNativeInstructionsFromObjdump (objdumpOutput : string list) (countersForAddress : int -> ExecCounters) =
-    let startIndex = objdumpOutput |> List.findIndex (fun line -> Regex.IsMatch(line, "^[0-9a-fA-F]+ <rtcbenchmark_measure_native_performance>:$"))
+    let startIndex = objdumpOutput |> List.findIndex (fun line -> Regex.IsMatch(line, "^[0-9a-fA-F]+ <rtcbenchmark_measure_native_performance(\.constprop\.\d*)?>:$"))
     let disasmTail = objdumpOutput |> List.skip (startIndex + 1)
     let endIndex = disasmTail |> List.findIndex (fun line -> Regex.IsMatch(line, "^[0-9a-fA-F]+ <.*>:$"))
     let disasm = disasmTail |> List.take endIndex |> List.filter ((<>) "")

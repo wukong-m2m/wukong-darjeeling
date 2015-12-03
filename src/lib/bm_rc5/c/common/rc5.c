@@ -102,7 +102,7 @@ int rc5_setup(const unsigned char *key, int keylen, int num_rounds, rc5_key *ske
   @param skey The key as scheduled
   @return CRYPT_OK if successful
 */
-int rtcbenchmark_measure_native_performance(const unsigned char *pt, unsigned char *ct, rc5_key *skey)
+int __attribute__((noinline)) rtcbenchmark_measure_native_performance(const unsigned char *pt, unsigned char *ct, rc5_key *skey)
 {
     javax_darjeeling_Stopwatch_void_resetAndStart();
 

@@ -12,7 +12,7 @@
 
 #define NOT_FOUND -1;
 
-void rtcbenchmark_measure_native_performance(uint16_t NUMNUMBERS, int16_t numbers[]) {
+void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t NUMNUMBERS, int16_t numbers[]) {
     javax_darjeeling_Stopwatch_void_resetAndStart();
 
     int16_t toFind = numbers[NUMNUMBERS-1] + 1;

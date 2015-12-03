@@ -3,7 +3,7 @@
 
 // Split into separate function to avoid the compiler just optimising away the whole test.
 
-void rtcbenchmark_measure_native_performance(uint16_t NUMNUMBERS, int16_t numbers[]) {
+void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t NUMNUMBERS, int16_t numbers[]) {
 	javax_darjeeling_Stopwatch_void_resetAndStart();
 
 	// Then sort it

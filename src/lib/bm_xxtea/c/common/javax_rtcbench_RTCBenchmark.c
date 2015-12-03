@@ -7,7 +7,7 @@
 #define MX (((z>>5^y<<2) + (y>>3^z<<4)) ^ ((sum^y) + (key[(p&3)^e] ^ z)))
 
 // Split into separate function to avoid the compiler just optimising away the whole test.
-void rtcbenchmark_measure_native_performance(uint32_t *v, uint8_t n, uint32_t const key[4]) {
+void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint32_t *v, uint8_t n, uint32_t const key[4]) {
 	javax_darjeeling_Stopwatch_void_resetAndStart();
 
 	uint32_t y, z, sum;

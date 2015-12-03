@@ -173,7 +173,7 @@ void fft_windowing(char f[], int16_t m)
 // Renamed to rtcbenchmark_measure_native_performance
 // to measure performance in AOT benchmark scripts
 // int16_t fix_fft(char fr[], char fi[], int m, int inverse)
-int16_t rtcbenchmark_measure_native_performance(char fr[], char fi[], int m, int inverse)
+int16_t __attribute__((noinline)) rtcbenchmark_measure_native_performance(char fr[], char fi[], int m, int inverse)
 {
 	javax_darjeeling_Stopwatch_void_resetAndStart();
 
