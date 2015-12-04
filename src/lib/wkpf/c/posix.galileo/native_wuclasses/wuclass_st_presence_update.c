@@ -18,8 +18,6 @@ void wuclass_st_presence_update(wuobject_t *wuobject)
     char *debug_name = "ST_PRESENCE";
     char *retrived_status_name = "presence";
 
-    wkpf_internal_read_property_boolean(wuobject, WKPF_PROPERTY_ST_PRESENCE_PRESENCE, &presence);
-
     static uint32_t currenttime, lasttime;
     uint16_t loop_rate = 500;
     currenttime = dj_timer_getTimeMillis();
@@ -43,7 +41,7 @@ void wuclass_st_presence_update(wuobject_t *wuobject)
             return;
         }
         presence = (!strcmp(status, "present"))?true:false;
-        wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_ST_SWITCH_ON_OFF_STATE, presence);
+        wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_ST_PRESENCE_PRESENCE, presence);
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(%s): presence_state:%s\n", debug_name, status);
         lasttime = currenttime;
     }

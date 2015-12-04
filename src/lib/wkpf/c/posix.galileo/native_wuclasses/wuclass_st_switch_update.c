@@ -27,7 +27,7 @@ void wuclass_st_switch_update(wuobject_t *wuobject)
     if (currenttime - lasttime > loop_rate){
         char message[MESSAGE_SIZE] = {0}, status[BUF_SIZE] = {0};
         strcpy(status, retrived_status_name);
-        int ret = getStatus(message, MESSAGE_SIZE, APP_ID, ACCESS_TOKEN, PRESENCE_DEV_ID, status, BUF_SIZE);
+        int ret = getStatus(message, MESSAGE_SIZE, APP_ID, ACCESS_TOKEN, SWITCH_DEV_ID, status, BUF_SIZE);
         if (ret < 0) {
             DEBUG_LOG(DBG_WKPFUPDATE, "\n_____%s_____GET status error:%d\n", debug_name, ret);
             if (ret < -99){
