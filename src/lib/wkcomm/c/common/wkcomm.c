@@ -36,8 +36,8 @@ int wkcomm_do_send(wkcomm_address_t dest, uint8_t command, uint8_t *payload, uin
 
 	uint8_t buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+3]; // 2 bytes for the seq nr, 1 for the command
 	buffer[0] = command;
-    buffer[1] = seqnr % 256;
-    buffer[2] = seqnr / 256;
+    buffer[1] = seqnr & 0xFF;
+    buffer[2] = seqnr >> 8;
 	memcpy (buffer+3, payload, length);
 	return routing_send(dest, buffer, length+3);
 }
