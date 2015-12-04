@@ -1,0 +1,4 @@
+char *APP_ID = "";
+char *SWITCH_DEV_ID = "";
+char *PRESENCE_DEV_ID = "";
+char *ACCESS_TOKEN = "";
