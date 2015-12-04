@@ -1,3 +1,5 @@
+#ifndef PHILIP_HUE_UTILS_H
+#define PHILIP_HUE_UTILS_H
 #include <stdio.h> /* printf, sprintf */
 #include <stdlib.h> /* exit */
 #include <unistd.h> /* read, write, close */
@@ -23,3 +25,4 @@ void HSVtoRGB(float *r, float *g, float *b, float h, float s, float v );
 void RGBtoXY(int8_t gamma, uint8_t red, uint8_t green, uint8_t blue, float *x, float *y, float *bri);
 
 void XYbtoRGB(int8_t gamma, float x, float y, float bri, uint8_t *r, uint8_t *g, uint8_t *b);
+#endif

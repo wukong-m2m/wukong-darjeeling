@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <math.h>
 #include "djtimer.h"
-#include "smartthings.h"
+#include "smartthings_utils.h"
 #include "stconfig.h"
 
 void wuclass_st_switch_setup(wuobject_t *wuobject)

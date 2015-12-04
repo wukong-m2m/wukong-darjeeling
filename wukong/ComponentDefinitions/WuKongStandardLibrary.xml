@@ -392,10 +392,10 @@
         <property name="on_off_state" access="readwrite" datatype="boolean" default="false" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="2000"  />
     </WuClass>
-    <!-- <WuClass name="ST_Presence" id="2028" virtual="false" type="hard">
+    <WuClass name="ST_Presence" id="2028" virtual="false" type="hard">
         <property name="presence" access="readonly" datatype="boolean" default="false" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="2000"  />
-    </WuClass> -->
+    </WuClass>
 
 
 
