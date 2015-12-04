@@ -472,4 +472,11 @@
       <property name="bInput" access="readonly" datatype="boolean" default="0" />
       <property name="output" access="readonly" datatype="short" default="0" />
     </WuClass>
+    <WuClass name="OccupanyDetection" id="10113" virtual="false" type="hard">
+      <property name="pir" access="readonly" datatype="boolean" default="0" />
+      <property name="days" access="readwrite" datatype="short" default="30" />
+      <property name="topK" access="readwrite" datatype="short" default="5" />
+      <property name="interval" access="readwrite" datatype="short" default="15" />
+      <property name="occupany" access="readonly" datatype="boolean" default="0"/>
+    </WuClass>
 </WuKong>
