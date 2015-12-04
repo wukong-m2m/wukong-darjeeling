@@ -39,6 +39,12 @@
     <WuClass name="ST_Switch" appCanCreateInstances="false">
         <CreateInstance />
     </WuClass>
+    <WuClass name="ST_Presence" appCanCreateInstances="false">
+        <CreateInstance />
+    </WuClass>
+    <WuClass name="Number" appCanCreateInstances="false">
+        <CreateInstance />
+    </WuClass>
 
     <!-- 192.168.0.104 is galileoNUC -->
     <!--<WuClass name="User" appCanCreateInstances="false">

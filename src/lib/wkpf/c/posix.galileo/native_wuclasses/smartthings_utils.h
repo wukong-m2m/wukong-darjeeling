@@ -16,7 +16,7 @@
 
 #include "cJSON.h"
 
-#define MESSAGE_SIZE 1024
+#define MESSAGE_SIZE 5000
 #define BUF_SIZE 150
 
 extern int getStatus (char *message, int msg_len, char *app_id, char *access_token,

@@ -29,7 +29,8 @@ void wuclass_st_presence_update(wuobject_t *wuobject)
         if (ret < 0) {
             DEBUG_LOG(DBG_WKPFUPDATE, "\n_____%s_____GET status error:%d\n", debug_name, ret);
             if (ret < -99){
-                char *tmp = strstr(message, "\r\n\r\n")+4;
+                char *tmp = strstr(message, "\r\n\r\n");
+                tmp = strstr(tmp, "{");
                 DEBUG_LOG(DBG_WKPFUPDATE, "\n_____%s_____JSON error:%s\n", debug_name, tmp);
             }
             lasttime = currenttime;

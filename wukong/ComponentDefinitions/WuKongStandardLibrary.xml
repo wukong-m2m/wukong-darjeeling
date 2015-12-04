@@ -292,6 +292,7 @@
     </WuClass>
     <WuClass name="Number" id="2014" virtual="false" type="hard">
         <property name="input" access="readwrite" datatype="short" default="1" />
+        <property name="boolean_input" access="readwrite" datatype="boolean" default="false" />
     </WuClass>
 
 
