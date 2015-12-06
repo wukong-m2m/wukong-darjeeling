@@ -1,3 +1,6 @@
+#ifndef RTC_ASM_FUNCTIONS_H
+#define RTC_ASM_FUNCTIONS_H
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -11,3 +14,5 @@ void emit_BRANCH(uint16_t opcode, uint8_t offset);
 void emit_ADIW(uint8_t reg, uint8_t constant);
 uint16_t asm_opcodeWithSingleRegOperand(uint16_t opcode, uint8_t reg);
 uint16_t asm_opcodeWithSrcAndDestRegOperand(uint16_t opcode, uint8_t destreg, uint8_t srcreg);
+
+#endif // RTC_ASM_FUNCTIONS_H

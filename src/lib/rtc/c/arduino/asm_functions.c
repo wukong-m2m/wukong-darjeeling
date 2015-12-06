@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "asm.h"
-#include "emit.h"
+#include "rtc_emit.h"
 
 bool rtc_is_double_word_instruction(uint16_t instruction) {
     const uint16_t CALL_MASK            = 0xFE0E;

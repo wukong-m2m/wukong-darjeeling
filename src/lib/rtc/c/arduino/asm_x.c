@@ -1,12 +1,12 @@
-// PUSHREF
-#define emit_x_PUSHREF8(reg)              emit_ST_XINC(reg)
-#define emit_x_POPREF8(reg)               emit_LD_DECX(reg)
+#include "asm.h"
+#include "rtc_emit.h"
+
 
 void emit_x_CALL(uint16_t target) {
     // Flush the code buffer before emitting a CALL to prevent PUSH/POP pairs being optimised across a CALL instruction.
     emit_PUSH(RXH);
     emit_PUSH(RXL);
-    rtc_flush();
+    emit_flush_to_flash();
     emit_2_CALL(target);
     emit_POP(RXL);
     emit_POP(RXH);
@@ -40,6 +40,17 @@ void emit_x_PUSH_16bit(uint8_t base) {
 void emit_x_PUSH_REF(uint8_t base) {
     emit_x_PUSHREF8(base+0);
     emit_x_PUSHREF8(base+1);                
+}
+
+void emit_x_prologue() {
+    // prologue (is this the right way?)
+    emit_PUSH(R3);
+    emit_PUSH(R2);
+    emit_PUSH(R29); // Push Y
+    emit_PUSH(R28);
+    emit_MOVW(R28, R24); // Pointer to locals in Y
+    emit_MOVW(R26, R22); // Pointer to ref stack in X
+    emit_MOVW(R2, R20); // Pointer to static in R2 (will be MOVWed to R30 when necessary)
 }
 
 void emit_x_epilogue() {

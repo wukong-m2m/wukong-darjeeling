@@ -1,5 +1,9 @@
+#ifndef ASM_H
+#define ASM_H
+
+#include "asm_x.h"
 #include "asm_functions.h"
-#include "emit.h"
+#include "rtc_emit.h"
 
 #define R0        0
 #define R1        1
@@ -310,3 +314,4 @@
                                                  + (((reg) - 16) << 4) \
                                                  + makeSUBIconstant(constant))
 
+#endif // ASM_H
