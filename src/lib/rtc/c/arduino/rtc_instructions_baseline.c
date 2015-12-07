@@ -1,3 +1,5 @@
+#ifdef AOT_STRATEGY_BASELINE
+
 #include "types.h"
 #include "array.h"
 #include "panic.h"
@@ -1563,3 +1565,5 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
 
     return pc+1;
 }
+
+#endif // AOT_STRATEGY_BASELINE

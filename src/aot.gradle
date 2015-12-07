@@ -1,0 +1,39 @@
+// For AOT benchmarks use -O3 optimisation level. But -Os for everything else
+tasks.whenTaskAdded { task ->
+    if (task.name.startsWith("compileDarjeelingExecutableDarjeelingBm_")) {
+        ext.needToRestoreOs = false
+        task.doFirst {
+            binaries.all {
+                if (cCompiler.args.contains("-Os")) {
+                    println "============= SETTING -O3"
+                    println cCompiler.args
+                    ext.needToRestoreOs = true
+                    cCompiler.args.remove "-Os"
+                    cCompiler.args "-O3"
+                    println cCompiler.args
+                }
+            }
+        }
+        task.doLast {
+            binaries.all {
+                if (ext.needToRestoreOs) {
+                    println "============= RESTORING -Os"
+                    println cCompiler.args
+                    ext.needToRestoreOs = true
+                    cCompiler.args.remove "-O3"
+                    cCompiler.args "-Os"
+                    println cCompiler.args
+                }
+            }
+        }
+    }
+}
+
+if (!project.hasProperty('aot')) {
+    project.ext.aot = 'baseline'
+}
+
+binaries.all {
+    cCompiler.args "-D AOT_STRATEGY_${project.ext.aot.toUpperCase()}"
+}
+
