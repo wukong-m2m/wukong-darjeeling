@@ -16,15 +16,15 @@ void emit_x_POP_32bit(uint8_t base) {
     emit_POP(base+0);
     emit_POP(base+1);
     emit_POP(base+2);
-    emit_POP(base+3);    
+    emit_POP(base+3);
 }
 void emit_x_POP_16bit(uint8_t base) {
     emit_POP(base+0);
-    emit_POP(base+1);    
+    emit_POP(base+1);
 }
 void emit_x_POP_REF(uint8_t base) {
     emit_x_POPREF8(base+1);
-    emit_x_POPREF8(base+0);                
+    emit_x_POPREF8(base+0);
 }
 
 void emit_x_PUSH_32bit(uint8_t base) {
@@ -39,7 +39,7 @@ void emit_x_PUSH_16bit(uint8_t base) {
 }
 void emit_x_PUSH_REF(uint8_t base) {
     emit_x_PUSHREF8(base+0);
-    emit_x_PUSHREF8(base+1);                
+    emit_x_PUSHREF8(base+1);
 }
 
 void emit_x_prologue() {
@@ -61,4 +61,3 @@ void emit_x_epilogue() {
     emit_POP(R3);
     emit_RET();
 }
-

@@ -641,7 +641,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         break;
         case JVM_SDIV:
         case JVM_SREM:
-        emit_x_POP_32bit(R22);
+            emit_x_POP_32bit(R22);
             emit_x_CALL((uint16_t)&__divmodhi4);
             if (opcode == JVM_SDIV) {
                 emit_x_PUSH_16bit(R22);
