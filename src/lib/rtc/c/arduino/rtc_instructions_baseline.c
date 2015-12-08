@@ -132,7 +132,6 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
 
 
-            // make the call
             pc += 2; // Skip operand (already read into jvm_operand_byte0)
             emit_LDI(R24, jvm_operand_byte0); // infusion id
             emit_LDI(R25, jvm_operand_byte1); // entity id
@@ -455,14 +454,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             emit_x_POP_REF(R24); // POP the reference
 
             // First find the location of reference fields
-            // PUSH important stuff
-            emit_x_PUSH_16bit(RX);
-
-            // make the call
             emit_x_CALL((uint16_t)&dj_object_getReferences);
-
-            // POP important stuff
-            emit_x_POP_16bit(RX);
 
             // R24:R25 now points to the location of the instance references
             emit_MOVW(RZ, R24); // Move the location to Z
@@ -499,14 +491,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             emit_x_POP_REF(R24); // POP the reference to the object to store it in.
 
             // First find the location of reference fields
-            // PUSH important stuff
-            emit_x_PUSH_16bit(RX);
-
-            // make the call
             emit_x_CALL((uint16_t)&dj_object_getReferences);
-
-            // POP important stuff
-            emit_x_POP_16bit(RX);
 
             // R24:R25 now points to the location of the instance references
             emit_MOVW(RZ, R24); // Move the location to Z
@@ -954,7 +939,6 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
 
             
-            // make the call
             pc += 2; // Skip operand (already read into jvm_operand_byte0)
             emit_LDI(R24, jvm_operand_byte0); // infusion id
             emit_LDI(R25, jvm_operand_byte1); // entity id
@@ -991,7 +975,6 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
 
 
-            // make the call
             pc += 2; // Skip operand (already read into jvm_operand_byte0)
             emit_LDI(R24, jvm_operand_byte0); // infusion id
             emit_LDI(R25, jvm_operand_byte1); // entity id
@@ -1015,7 +998,6 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
 
 
-            // make the call
             pc += 1; // Skip operand (already read into jvm_operand_byte0)
             emit_x_POP_16bit(R22); // size
             emit_LDI(R24, jvm_operand_byte0); // (int) element type
@@ -1039,7 +1021,6 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
 
 
-            // make the call
             pc += 2; // Skip operand (already read into jvm_operand_byte0)
             emit_x_POP_16bit(R22); // size
             emit_LDI(R24, jvm_operand_byte0); // infusion id
@@ -1073,14 +1054,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             emit_LDI(R24, jvm_operand_byte0); // infusion id
             emit_LDI(R25, jvm_operand_byte1); // entity id
 
-            // PUSH important stuff
-            emit_x_PUSH_16bit(RX);
-
-            // make the call
             emit_x_CALL((uint16_t)&RTC_CHECKCAST);
-
-            // POP important stuff
-            emit_x_POP_16bit(RX);
         break;
         case JVM_INSTANCEOF:
             // THIS WILL BREAK IF GC RUNS, BUT IT COULD ONLY RUN IF AN EXCEPTION IS THROWN, WHICH MEANS WE CRASH ANYWAY
@@ -1090,14 +1064,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             emit_LDI(R24, jvm_operand_byte0); // infusion id
             emit_LDI(R25, jvm_operand_byte1); // entity id
 
-            // PUSH important stuff
-            emit_x_PUSH_16bit(RX);
-
-            // make the call
             emit_x_CALL((uint16_t)&RTC_INSTANCEOF);
-
-            // POP important stuff
-            emit_x_POP_16bit(RX);
 
             // push the result onto the stack
             emit_x_PUSH_16bit(R24);
