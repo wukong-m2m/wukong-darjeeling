@@ -1,4 +1,8 @@
 apply plugin: 'c'
+
+// AOT specifics
+apply from: 'aot.gradle'
+
 apply from: 'taskdefs.gradle'
 apply from: 'configplugin.gradle'
 apply from: 'djsourcesetplugin.gradle'
@@ -184,7 +188,4 @@ if (buildStaticLibrary) {
 } else {
     defaultTasks 'darjeeling'
 }
-
-// AOT specifics
-apply from: 'aot.gradle'
 

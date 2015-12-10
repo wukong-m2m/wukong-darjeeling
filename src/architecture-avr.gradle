@@ -213,8 +213,9 @@ task disassemble(type:Exec, dependsOn: darjeeling) {
 
 task avrora_analyse_trace(type:Exec, dependsOn: [avrora_if_necessary, disassemble]) {
     def fsxScript = "${project.rootDir}/config/${djConfigname}/proces-trace/proces-trace/ProcessTrace.fsx"
-    def dihFile = "${buildDir}/infusion-${rtcbenchmark}/${rtcbenchmark}.dih"
-    def analysedTraceOutput = "${project.rootDir}/config/${djConfigname}/results/${rtcbenchmark}"
+    def dihFile = "${buildDir}/infusion-bm_${project.ext.aotbm}/bm_${project.ext.aotbm}.dih"
+    def analysedTraceOutputDir = new File("${project.rootDir}/config/${djConfigname}/${project.ext.aotTraceResultsDirName}")
+    def analysedTraceOutput = "${analysedTraceOutputDir}/${project.ext.aotbm}"
 
     inputs.file fsxScript
     inputs.file dihFile
@@ -224,8 +225,14 @@ task avrora_analyse_trace(type:Exec, dependsOn: [avrora_if_necessary, disassembl
     inputs.dir "${project.rootDir}/config/${djConfigname}/proces-trace/proces-trace/"
     outputs.file analysedTraceOutput
 
+    doFirst {
+        if (!analysedTraceOutputDir.exists()) {
+            analysedTraceOutputDir.mkdirs()
+        }
+    }
+
     executable "fsharpi"
-    args '--exec', fsxScript, rtcbenchmark, buildDir, analysedTraceOutput
+    args '--exec', fsxScript, aotbm, buildDir, analysedTraceOutput
 }
 
 task avrora_rtcdata_toscreen(dependsOn: darjeeling) << {

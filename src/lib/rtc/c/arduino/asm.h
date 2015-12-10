@@ -60,15 +60,6 @@
 #define makeBranchOffset(offset) ( \
                 ((offset) & 0x7F) << 3)
 
-
-// 0000 KKKK 0000 KKKK
-#define makeLDIconstant(constant) ( \
-               ((constant) & 0x0F) \
-            + (((constant) & 0xF0) << 4))
-#define makeSBCIconstant(constant) makeLDIconstant(constant)
-#define makeSUBIconstant(constant) makeLDIconstant(constant)
-
-
 // 0000 00r0 0000 rrrr, with d=dest register, r=source register
 #define makeSourceRegister(src_register) ( \
                ((src_register) & 0x0F) \
@@ -102,7 +93,6 @@
 // BREAK                                1001 0101 1001 1000
 #define OPCODE_BREAK                    0x9598
 #define emit_BREAK()                    emit(OPCODE_BREAK)
-
 
 // BREQ                                 1111 00kk kkkk k001, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
 #define OPCODE_BREQ                     0xF001
@@ -218,8 +208,8 @@
 
 // MOVW                                 0000 0001 dddd rrrr, with d=dest register/2, r=source register/2
 #define OPCODE_MOVW                     0x0100
-#define asm_MOVW(destreg, srcreg)       asm_opcodeWithSrcAndDestRegOperand(OPCODE_MOVW, (destreg/2), (srcreg/2))
-#define emit_MOVW(destreg, srcreg)      emit_opcodeWithSrcAndDestRegOperand(OPCODE_MOVW, (destreg/2), (srcreg/2))
+#define asm_MOVW(destreg, srcreg)       asm_MOVW(destreg, srcreg)
+#define emit_MOVW(destreg, srcreg)      emit_MOVW(destreg, srcreg)
 
 // MUL                                  1001 11rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_MUL                      0x9C00
@@ -267,9 +257,7 @@
 
 // SBCI                                 0100 KKKK dddd KKKK, with K a constant <= 255,d the destination register - 16
 #define OPCODE_SBCI                     0x4000
-#define emit_SBCI(reg, constant)        emit (OPCODE_SBCI \
-                                                 + (((reg) - 16) << 4) \
-                                                 + makeSBCIconstant(constant))
+#define emit_SBCI(reg, constant)        emit_SBCI(reg, constant)
 
 // SBRC                                 1111 110r rrrr 0bbb, with r=a register and b=the bit to test
 #define OPCODE_SBRC                     0xFC00
@@ -310,8 +298,6 @@
 
 // SUBI                                 0101 KKKK dddd KKKK, with K a constant <= 255,d the destination register - 16
 #define OPCODE_SUBI                     0x5000
-#define emit_SUBI(reg, constant)        emit(OPCODE_SUBI \
-                                                 + (((reg) - 16) << 4) \
-                                                 + makeSUBIconstant(constant))
+#define emit_SUBI(reg, constant)        emit_SUBI(reg, constant)
 
 #endif // ASM_H

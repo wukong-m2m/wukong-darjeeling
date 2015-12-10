@@ -2,6 +2,7 @@
 #include "panic.h"
 #include "asm.h"
 
+#ifdef AOT_STRATEGY_BASELINE
 // LEAVING THE OLD COMMENT HERE JUST AS ILLUSTRATION OF WHAT WENT WRONG:
     // ST_XINC and LD_DECX are basically single operand opcodes just like PUSH/POP,
     // so the same optimisation code will work for both stacks as long as we respect
@@ -301,8 +302,4 @@ void rtc_optimise(uint16_t *buffer, uint16_t **code_end) {
         }
     } while (found);
 }
-
-
-
-
-
+#endif

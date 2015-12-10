@@ -293,14 +293,17 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress :
         let startAddress = (nativeCInstructions |> List.head |> fst).address
         let endAddress = (nativeCInstructions |> lastInList |> fst).address
         endAddress - startAddress + 2 // assuming the function ends in a 2 byte opcode.
-
+    let getTimer timer =
+        match stopwatchTimers |> List.tryFind (fun (t,c) -> t=timer) with
+        | Some(x) -> x |> snd
+        | None -> 0
     {
         benchmark = benchmark
         jvmInstructions = mainResults
         nativeCInstructions = nativeCInstructions |> Seq.toList
-        stopwatchCyclesJava = stopwatchTimers |> List.find (fun (t,c) -> t="Java") |> snd
-        stopwatchCyclesAOT = stopwatchTimers |> List.find (fun (t,c) -> t="AOT") |> snd
-        stopwatchCyclesC = stopwatchTimers |> List.find (fun (t,c) -> t="C") |> snd
+        stopwatchCyclesJava = (getTimer "Java")
+        stopwatchCyclesAOT = (getTimer "AOT")
+        stopwatchCyclesC = (getTimer "C")
         codesizeJava = codesizeJava
         codesizeAOT = codesizeAOT
         codesizeC = codesizeC
@@ -338,7 +341,7 @@ let resultsToString (results : Results) =
     let resultsAvrToString (avrResults : ResultAvr list) =
         let avrInstOption2Text = function
             | Some (x : AvrInstruction)
-                -> String.Format("{0:10}: {1,-15}", x.address, x.text)
+                -> String.Format("0x{0,6:X6}: {1,-15}", x.address, x.text)
             | None -> "" in
         avrResults |> List.map (fun r -> String.Format("        {0,-15} -> {1,-36} {2,8} {3,14}\r\n",
                                                       r.unopt.text,
@@ -433,7 +436,7 @@ let resultsToString (results : Results) =
     } |> Seq.fold (fun acc x -> acc + "\r\n" + x) ""
 
 let main(args : string[]) =
-    let benchmark = (Array.get args 1).[3..]
+    let benchmark = (Array.get args 1)
     let builddir = (Array.get args 2)
     let outputfilename = (Array.get args 3)
 

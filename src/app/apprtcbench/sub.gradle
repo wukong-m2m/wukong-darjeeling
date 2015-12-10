@@ -1,17 +1,5 @@
 djappsource {
     apprtcbench {
-        javaDependencies = [ 'base', 'darjeeling3', 'rtc', rtcbenchmark ]
+        javaDependencies = [ 'base', 'darjeeling3', 'rtc', "bm_${aotbm}" ]
     }
-}
-
-if (project.hasProperty('rtcbenchmark')) {
-	// Each benchmark implements the same interface, so this app can use any.
-	// But the link in the infusion from the app infusion to the lib infusion is on library name
-	// so we still need to recompile the app when the benchmark library changes, or we'll
-	// get a "link not satisfied" panic at run time.
-	tasks.whenTaskAdded {
-		theTask -> if (theTask.name == 'infusion_apprtcbench') {
-			theTask.inputs.property("rtcbenchmark", project.rtcbenchmark)
-		}
-	}
 }

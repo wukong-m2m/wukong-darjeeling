@@ -66,8 +66,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_ICONST_M1:
             emit_LDI(R22, 0xFF);
             emit_LDI(R23, 0xFF);
-            emit_LDI(R24, 0xFF);
-            emit_LDI(R25, 0xFF);
+            emit_MOVW(R24, R22);
             emit_x_PUSH_32bit(R22);
         break;
         case JVM_ICONST_0:

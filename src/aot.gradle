@@ -29,11 +29,26 @@ tasks.whenTaskAdded { task ->
     }
 }
 
-if (!project.hasProperty('aot')) {
-    project.ext.aot = 'baseline'
+// Each benchmark implements the same interface, so this app can use any.
+// But the link in the infusion from the app infusion to the lib infusion is on library name
+// so we still need to recompile the app when the benchmark library changes, or we'll
+// get a "link not satisfied" panic at run time.
+tasks.whenTaskAdded { task ->
+    if (task.name == 'infusion_apprtcbench') {
+        task.inputs.property("aotbm", project.aotbm)
+    }
+}
+
+
+if (!project.hasProperty('aotstrat')) {
+    project.ext.aotstrat = 'baseline'
+}
+if (!project.hasProperty('aotbm')) {
+    project.ext.aotbm = 'sortO'
 }
 
 binaries.all {
-    cCompiler.args "-D AOT_STRATEGY_${project.ext.aot.toUpperCase()}"
+    cCompiler.args "-D AOT_STRATEGY_${project.ext.aotstrat.toUpperCase()}"
 }
 
+project.ext.aotTraceResultsDirName = "results_${project.ext.aotstrat}"

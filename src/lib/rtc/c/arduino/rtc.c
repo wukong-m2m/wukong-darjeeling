@@ -15,6 +15,10 @@
 #include "rtc_emit.h"
 #include <avr/pgmspace.h>
 #include <avr/boot.h>
+#ifdef AOT_STRATEGY_SIMPLESTACKCACHING    
+#include "rtc_stackcache.h"
+#endif
+
 
 // Offsets for static variables in an infusion, relative to the start of infusion->staticReferencesFields. (referenced infusion pointers follow the static variables)
 uint16_t rtc_offset_for_static_ref(dj_infusion *infusion_ptr, uint8_t variable_index)   { return ((uint16_t)((void*)(&((infusion_ptr)->staticReferenceFields[variable_index])) - (void *)((infusion_ptr)->staticReferenceFields))); }
@@ -103,6 +107,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     // Reserve space for the branch table
     DEBUG_LOG(DBG_RTC, "[rtc] Reserving %d bytes for %d branch targets at address %p\n", rtc_branch_table_size(methodimpl), dj_di_methodImplementation_getNumberOfBranchTargets(methodimpl), branch_target_table_start_ptr);
     wkreprog_skip(rtc_branch_table_size(methodimpl));
+    // If we're using stack caching, initialise the cache
+#ifdef AOT_STRATEGY_SIMPLESTACKCACHING    
+    rtc_stackcache_init();
+#endif
 
     emit_x_prologue();
 
