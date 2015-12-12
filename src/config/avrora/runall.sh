@@ -2,7 +2,8 @@
 alias gdj="gradle -b ../../build.gradle"
 
 ## declare an array variable
-benchmarks=(sortX sortO hsortX hsortO fft xxtea rc5 md5 binsrchX binsrchO)
+# benchmarks=(sortX sortO hsortX hsortO fft xxtea rc5 md5 binsrchX binsrchO)
+benchmarks=(sortO hsortO fft xxtea rc5 md5 binsrchO)
 aot_strategies=(baseline simplestackcaching)
 
 ## now loop through the above array

@@ -200,7 +200,7 @@ public class RTCBenchmark {
 				// 0 <= j < N_WAVE/2
 				// wr =  COS8(j);
 				// wi = (byte)-SIN8(j);
-				wr =  Sinewave[((j + N_WAVE/4) % N_WAVE)]; // COS8(j)
+				wr =  Sinewave[((short)(j + N_WAVE/4) % N_WAVE)]; // COS8(j)
 				wi = (byte)-Sinewave[(j % N_WAVE)]; // -SIN8(j)
 				if (inverse)
 					wi = (byte)-wi;
@@ -213,10 +213,10 @@ public class RTCBenchmark {
 					// tr = (byte)(FIX_MPY(wr,fr[j]) - FIX_MPY(wi,fi[j]));
 					// ti = (byte)(FIX_MPY(wr,fi[j]) + FIX_MPY(wi,fr[j]));
 					// Inlined FIX_MPY
-					short c1 = (short)(((short)wr * (short)fr[j]) >> 6);
-					short c2 = (short)(((short)wi * (short)fi[j]) >> 6);
-					short c3 = (short)(((short)wr * (short)fi[j]) >> 6);
-					short c4 = (short)(((short)wi * (short)fr[j]) >> 6);
+					short c1 = (short)((short)((short)wr * (short)fr[j]) >> 6);
+					short c2 = (short)((short)((short)wi * (short)fi[j]) >> 6);
+					short c3 = (short)((short)((short)wr * (short)fi[j]) >> 6);
+					short c4 = (short)((short)((short)wi * (short)fr[j]) >> 6);
 					tr = (byte)((byte)((c1 >> 1) + ((byte)(c1 & 0x01))) - (byte)((c2 >> 1) + ((byte)(c2 & 0x01))));
 					ti = (byte)((byte)((c3 >> 1) + ((byte)(c3 & 0x01))) + (byte)((c4 >> 1) + ((byte)(c4 & 0x01))));
 					qr = fr[i];
