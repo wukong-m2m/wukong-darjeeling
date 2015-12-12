@@ -6,7 +6,7 @@ import javax.rtc.*;
 public class RTCBenchmark {
     public static String name = "FIX_FFT";
     public static native void test_native();
-    public static void test_java(){
+    public static boolean test_java() {
     	final int RTCTEST_FFT_ARRAYSIZE = 3;
 		final int NUMNUMBERS = 1<<RTCTEST_FFT_ARRAYSIZE;
 		byte data[] = new byte[NUMNUMBERS];
@@ -18,18 +18,28 @@ public class RTCBenchmark {
 			im[i] = (byte)0;
 		}
 
-		System.out.println("BEFORE FFT");
-		for (int i=0; i<NUMNUMBERS; i++) {
-			System.out.println("-----" + data[i] + " " + im[i]);
-		}
+		// System.out.println("BEFORE FFT");
+		// for (int i=0; i<NUMNUMBERS; i++) {
+		// 	System.out.println("-----" + data[i] + " " + im[i]);
+		// }
 
 		// Do the actual FFT
 		rtcbenchmark_measure_java_performance(data, im, (byte)RTCTEST_FFT_ARRAYSIZE, false);
 
-		System.out.println("AFTER FFT");
+       final byte desiredOutputData[] = new byte[] { 54, -8, -8, -8, -8, -8, -8, -8  };
+       final byte desiredOutputIm[] = new byte[] { 0, 20, 8, 4, 0, -4, -8, -20 };
+
+		// System.out.println("AFTER FFT");
+		// for (int i=0; i<NUMNUMBERS; i++) {
+		// 	System.out.println("-----" + data[i] + " " + im[i]);
+		// }
 		for (int i=0; i<NUMNUMBERS; i++) {
-			System.out.println("----- " + data[i] + " " + im[i]);
+			if (desiredOutputData[i] != data[i] || desiredOutputIm[i] != im[i]) {
+				return false;
+			}
 		}
+
+		return true;
 	}
 
 	private final static short N_WAVE = 256;    // full length of Sinewave[]

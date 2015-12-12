@@ -222,7 +222,7 @@ let parseDJDebug (allLines : string list) =
                                           stackAfter = (m.Groups.["stackAfter"].Value.Trim()  |> stackStringToStack) })
 
 // Process trace main function
-let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress : int -> ExecCounters) (stdoutlog : string seq) (disasm : string list) (djdebuglines : string list) =
+let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress : int -> ExecCounters) (stdoutlog : string list) (disasm : string list) (djdebuglines : string list) =
     // Find the methodImplId for a certain method in a Darjeeling infusion header
     let findRtcbenchmarkMethodImplId (dih : Dih) methodName =
         let infusionName = dih.Infusion.Header.Name
@@ -242,7 +242,7 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress :
     let matchedResult = matchOptUnopt optimisedAvr unoptimisedAvrWithJvmIndex
     let djdebugdata = parseDJDebug djdebuglines
     let mainResults = addCyclesAndDebugData (methodImpl.JavaInstructions |> Seq.map JvmInstructionFromXml |> Seq.toList) countersForAddress matchedResult djdebugdata
-    let stopwatchTimers = getTimersFromStdout (stdoutlog |> Seq.toList)
+    let stopwatchTimers = getTimersFromStdout stdoutlog
     let (cyclesPush, cyclesPop , cyclesMovw) = (countPushPopMovw mainResults)
 
     let groupFold keyFunc valueFunc foldFunc foldInitAcc x =
@@ -301,6 +301,8 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress :
         benchmark = benchmark
         jvmInstructions = mainResults
         nativeCInstructions = nativeCInstructions |> Seq.toList
+        passedTestJava = stdoutlog |> List.exists (fun line -> line.Contains("JAVA OK."))
+        passedTestAOT = stdoutlog |> List.exists (fun line -> line.Contains("RTC OK."))
         stopwatchCyclesJava = (getTimer "Java")
         stopwatchCyclesAOT = (getTimer "AOT")
         stopwatchCyclesC = (getTimer "C")
@@ -367,8 +369,10 @@ let resultsToString (results : Results) =
                                               (countersToString totalCycles counters)))
             |> List.fold (+) ""
 
+    let testResultAOT = if results.passedTestAOT then "PASSED" else "FAILED"
+    let testResultJAVA = if results.passedTestJava then "PASSED" else "FAILED"
     seq {
-        yield "------------------ " + results.benchmark + " ------------------"
+        yield "------------------ " + results.benchmark + ": AOT " + testResultAOT + ", Java " + testResultJAVA + " ------------------"
         yield ""
         yield String.Format ("--- STOPWATCHES Native C        {0,14}", results.stopwatchCyclesC)
         yield String.Format ("                AOT             {0,14}", results.stopwatchCyclesAOT)
@@ -448,7 +452,7 @@ let main(args : string[]) =
         match profilerdataPerAddress |> List.tryFind (fun (address2,inst) -> address = address2) with
         | Some(_, profiledInstruction) -> { executions = profiledInstruction.Executions; cycles = (profiledInstruction.Cycles+profiledInstruction.CyclesSubroutine) }
         | None -> failwith (String.Format ("No profilerdata found for address {0}", address))
-    let stdoutlog = System.IO.File.ReadLines(String.Format("{0}/stdoutlog.txt", builddir))
+    let stdoutlog = System.IO.File.ReadLines(String.Format("{0}/stdoutlog.txt", builddir)) |> Seq.toList
     let disasm = System.IO.File.ReadLines(String.Format("{0}/darjeeling.S", builddir)) |> Seq.toList
     let djdebuglines = System.IO.File.ReadLines(String.Format("{0}/infusion-bm_{1}/jlib_bm_{1}.debug", builddir, benchmark)) |> Seq.toList
     let results = processTrace benchmark dih rtcdata countersForAddress stdoutlog disasm djdebuglines

@@ -5,7 +5,7 @@ import javax.darjeeling.Stopwatch;
 public class RTCBenchmark {
     public static String name = "MD5";
     public static native void test_native();
-    public static void test_java() {
+    public static boolean test_java() {
         byte[] input = new byte[] { (byte)'m', (byte)'e', (byte)'s', (byte)'s', (byte)'a', (byte)'g', (byte)'e', (byte)' ', (byte)'d', (byte)'i', (byte)'g', (byte)'e', (byte)'s', (byte)'t' };
         byte[] desiredOutput = new byte[] { (byte)0xf9, (byte)0x6b, (byte)0x69, (byte)0x7d, (byte)0x7c, (byte)0xb7, (byte)0x93, (byte)0x8d, (byte)0x52, (byte)0x5a, (byte)0x2f, (byte)0x31, (byte)0xaa, (byte)0xf1, (byte)0x61, (byte)0xd0 };
 
@@ -15,11 +15,11 @@ public class RTCBenchmark {
         
         for (int i=0; i<hash.length; i++) {
             if (desiredOutput[i]!=hash[i]) {
-                System.out.println("INCORRECT HASH");
-                return;
+                return false;
             }
         }
-        System.out.println("HASH OK.");
+
+        return true;
     }
 
     public static void rtcbenchmark_measure_java_performance(byte input[], byte output[])

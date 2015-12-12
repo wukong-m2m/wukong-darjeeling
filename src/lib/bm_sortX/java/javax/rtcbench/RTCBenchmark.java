@@ -7,7 +7,7 @@ public class RTCBenchmark {
 
     public static String name = "BUBBLESORT NOT OPTIMISED";
     public static native void test_native();
-    public static void test_java(){
+    public static boolean test_java() {
 		short numbers[] = new short[NUMNUMBERS]; // Not including this in the timing since we can't do it in C
 
 		// Fill the array
@@ -17,11 +17,13 @@ public class RTCBenchmark {
 		// Then sort it
 		rtcbenchmark_measure_java_performance(numbers);
 
-        System.out.print("Sorted:");
         for (int k=0; k<NUMNUMBERS; k++) {
-            System.out.print(" " + numbers[k]);
+            if (numbers[k] != k) {
+                return false;
+            }
         }
-        System.out.println(" done.");
+
+        return true;
 	}
 
 	public static void rtcbenchmark_measure_java_performance(short[] numbers) {

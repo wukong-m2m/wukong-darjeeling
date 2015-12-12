@@ -5,8 +5,7 @@ import javax.darjeeling.Stopwatch;
 public class RTCBenchmark {
     public static String name = "RC5";
     public static native void test_native();
-    public static void test_java()
-    {
+    public static boolean test_java() {
         byte NUMNUMBERS = 8;
         final byte[] test_key = { (byte)0x91, (byte)0x5f, (byte)0x46, (byte)0x19, (byte)0xbe, (byte)0x41, (byte)0xb2, (byte)0x51, (byte)0x63, (byte)0x55, (byte)0xa5, (byte)0x01, (byte)0x10, (byte)0xa9, (byte)0xce, (byte)0x91 };
         final byte[] test_pt  = { (byte)0x21, (byte)0xa5, (byte)0xdb, (byte)0xee, (byte)0x15, (byte)0x4b, (byte)0x8f, (byte)0x6d };
@@ -47,11 +46,11 @@ public class RTCBenchmark {
 
         for (byte k=0; k<NUMNUMBERS; k++) {
           if ((tmp0[k] != test_ct[k])) { // || (tmp1[k] != test_pt[k])) {
-            System.out.println("TEST FAILED");
-            return;
+            return false;
           }
         }
-        System.out.println("TEST OK");
+
+        return true;
     }
 
     private final static int CRYPT_OK = 0;

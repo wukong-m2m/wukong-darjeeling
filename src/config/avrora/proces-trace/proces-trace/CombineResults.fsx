@@ -17,6 +17,8 @@ let resultToStringList (result : Results) =
     let r1 =
         [
         ("BENCHMARK"            , result.benchmark);
+        ("Test"                 , if result.passedTestAOT then "PASSED" else "FAILED");
+        (""                     , "");        
         (""                     , "");
         ("STOPWATCHES"          , "");
         ("Native C"             , result.stopwatchCyclesC.ToString());

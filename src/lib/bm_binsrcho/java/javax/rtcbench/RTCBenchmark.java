@@ -13,7 +13,7 @@ public class RTCBenchmark {
 
     public static String name = "BINARY SEARCH OPTIMISED";
     public static native void test_native();
-    public static void test_java(){
+    public static boolean test_java() {
         short numbers[] = new short[NUMNUMBERS]; // Not including this in the timing since we can't do it in C
 
         // Fill the array
@@ -22,6 +22,8 @@ public class RTCBenchmark {
         }
 
         rtcbenchmark_measure_java_performance(numbers);
+
+        return true;
     }
 
     public static void rtcbenchmark_measure_java_performance(short[] numbers) {

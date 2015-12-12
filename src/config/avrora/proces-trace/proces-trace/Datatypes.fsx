@@ -72,6 +72,8 @@ type Results = {
     benchmark : string;
     jvmInstructions : ResultJava list;
     nativeCInstructions : (AvrInstruction*ExecCounters) list
+    passedTestJava : bool;
+    passedTestAOT : bool;
     stopwatchCyclesJava : int;
     stopwatchCyclesAOT : int;
     stopwatchCyclesC : int;
