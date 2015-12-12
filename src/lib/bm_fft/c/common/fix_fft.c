@@ -97,13 +97,15 @@ const int8_t Sinewave[N_WAVE] PROGMEM = {
 
 inline char SIN8(int16_t n)
 {
-  n = n % N_WAVE;
+  // n = n % N_WAVE;
+  n = n & 0xFF;
   return pgm_read_byte_near(Sinewave+n);
 }
 
 inline char COS8(int16_t n)
 {
-  n = (n + N_WAVE/4) % N_WAVE;
+  // n = (n + N_WAVE/4) % N_WAVE;
+  n = (n + N_WAVE/4) & 0xFF;
   return pgm_read_byte_near(Sinewave+n);
 }
 
