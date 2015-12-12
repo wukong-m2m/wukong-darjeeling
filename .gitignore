@@ -37,3 +37,4 @@ wukong/tools/testrtt/testrtt
 .gradle
 bin
 obj
+src/config/avrora/results_*
