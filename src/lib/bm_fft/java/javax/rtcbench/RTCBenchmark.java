@@ -7,7 +7,7 @@ public class RTCBenchmark {
     public static String name = "FIX_FFT";
     public static native void test_native();
     public static boolean test_java() {
-    	final int RTCTEST_FFT_ARRAYSIZE = 3;
+    	final int RTCTEST_FFT_ARRAYSIZE = 6;
 		final int NUMNUMBERS = 1<<RTCTEST_FFT_ARRAYSIZE;
 		byte data[] = new byte[NUMNUMBERS];
 		byte im[] = new byte[NUMNUMBERS];
@@ -18,21 +18,16 @@ public class RTCBenchmark {
 			im[i] = (byte)0;
 		}
 
-		// System.out.println("BEFORE FFT");
-		// for (int i=0; i<NUMNUMBERS; i++) {
-		// 	System.out.println("-----" + data[i] + " " + im[i]);
-		// }
+		// System.out.println("BEFORE FFT"); for (int i=0; i<NUMNUMBERS; i++) { System.out.println("-----" + data[i] + " " + im[i]); }
 
 		// Do the actual FFT
 		rtcbenchmark_measure_java_performance(data, im, (byte)RTCTEST_FFT_ARRAYSIZE, false);
 
-       final byte desiredOutputData[] = new byte[] { 54, -8, -8, -8, -8, -8, -8, -8  };
-       final byte desiredOutputIm[] = new byte[] { 0, 20, 8, 4, 0, -4, -8, -20 };
+        final byte desiredOutputData[] = new byte[] { -9, 0, 0, 0, 7, 0, 0, 0, -8, 0, 0, 0, 7, 0, 0, 0, -8, 0, 0, 0, 7, 0, 0, 0, -8, 0, 0, 0, 7, 0, 0, 0, -7, 0, 0, 0, 7, 0, 0, 0, -8, 0, 0, 0, 7, 0, 0, 0, -8, 0, 0, 0, 7, 0, 0, 0, -8, 0, 0, 0, 7, 0, 0, 0 };
+        final byte desiredOutputIm[] = new byte[] { 0, 0, 0, 0, -40, 0, -1, 0, 20, 0, 0, 0, -12, 0, -1, 0, 8, 0, 0, 0, -5, 0, -1, 0, 4, 0, 0, 0, -2, 0, -1, 0, 0, 0, 0, 0, 2, 0, -1, 0, -4, 0, 0, 0, 4, 0, -1, 0, -8, 0, 0, 0, 11, 0, -1, 0, -20, 0, 0, 0, 38, 0, -1, 0 };
 
-		// System.out.println("AFTER FFT");
-		// for (int i=0; i<NUMNUMBERS; i++) {
-		// 	System.out.println("-----" + data[i] + " " + im[i]);
-		// }
+		// System.out.println("AFTER FFT"); for (int i=0; i<NUMNUMBERS; i++) { System.out.println("-----" + data[i] + " " + im[i]); }
+		
 		for (int i=0; i<NUMNUMBERS; i++) {
 			if (desiredOutputData[i] != data[i] || desiredOutputIm[i] != im[i]) {
 				return false;

@@ -403,7 +403,7 @@ let resultsToString (results : Results) =
         yield "--- SUMMED: PER JVM CATEGORY"
         yield categoryResultsToString totalCyclesAOTJava results.cyclesPerJvmOpcodeCategory
         yield ""
-        yield "--- SUMMED: PER AVR CATEGORY (Java)"
+        yield "--- SUMMED: PER AVR CATEGORY (Java AOT)"
         yield categoryResultsToString totalCyclesAOTJava results.cyclesPerAvrOpcodeCategoryAOTJava
         yield ""
         yield "--- SUMMED: PER AVR CATEGORY (NATIVE C)"
@@ -412,7 +412,7 @@ let resultsToString (results : Results) =
         yield "--- SUMMED: PER JVM OPCODE"
         yield opcodeResultsToString totalCyclesAOTJava results.cyclesPerJvmOpcode
         yield ""
-        yield "--- SUMMED: PER AVR OPCODE (Java)"
+        yield "--- SUMMED: PER AVR OPCODE (Java AOT)"
         yield opcodeResultsToString totalCyclesAOTJava results.cyclesPerAvrOpcodeAOTJava
         yield ""
         yield "--- SUMMED: PER AVR OPCODE (NATIVE C)"

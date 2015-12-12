@@ -3,7 +3,7 @@
 #include "darjeeling3.h"
 #include "fix_fft.h"
 
-#define RTCTEST_FFT_ARRAYSIZE 3
+#define RTCTEST_FFT_ARRAYSIZE 6
 
 void javax_rtcbench_RTCBenchmark_void_test_native() {
 	const uint16_t NUMNUMBERS = 1<<RTCTEST_FFT_ARRAYSIZE;
