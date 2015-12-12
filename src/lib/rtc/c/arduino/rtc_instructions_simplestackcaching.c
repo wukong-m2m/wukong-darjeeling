@@ -195,11 +195,11 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             pc += 4; // Skip operand (already read into jvm_operand_byte0)
 
             if (rtc_stackcache_getfree_16bit_prefer_ge_R16(operand_regs1)) {
-                emit_LDI(operand_regs1[0], jvm_operand_byte1);
-                emit_LDI(operand_regs1[1], jvm_operand_byte0);
+                emit_LDI(operand_regs1[0], jvm_operand_byte3);
+                emit_LDI(operand_regs1[1], jvm_operand_byte2);
             } else {
-                emit_LDI(R24, jvm_operand_byte1);
-                emit_LDI(R25, jvm_operand_byte0);
+                emit_LDI(R24, jvm_operand_byte3);
+                emit_LDI(R25, jvm_operand_byte2);
                 emit_MOVW(operand_regs1[0], R24);                
             }
             if (rtc_stackcache_getfree_16bit_prefer_ge_R16(operand_regs1+2)) {
