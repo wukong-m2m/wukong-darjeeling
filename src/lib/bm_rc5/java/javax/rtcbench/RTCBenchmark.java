@@ -21,7 +21,7 @@ public class RTCBenchmark {
         /* setup key */
         if ((err = rc5_setup(test_key, 16, skey_rounds, skey_K)) != CRYPT_OK) {
             System.out.println("TEST SETUP FAILED");
-            return;
+            return false;
         }
 
         /* encrypt and decrypt */
