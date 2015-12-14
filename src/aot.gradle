@@ -46,9 +46,21 @@ if (!project.hasProperty('aotstrat')) {
 if (!project.hasProperty('aotbm')) {
     project.ext.aotbm = 'sortO'
 }
+if (project.hasProperty('aotstackcachesize')) {
+    if (project.ext.aotstackcachesize.toInteger() > 10) {
+        throw new InvalidUserDataException("Max size for stack cache is 10 words")
+    }
+    binaries.all {
+        cCompiler.args "-D RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE=${project.ext.aotstackcachesize}"
+        }
+}
 
 binaries.all {
     cCompiler.args "-D AOT_STRATEGY_${project.ext.aotstrat.toUpperCase()}"
 }
 
-project.ext.aotTraceResultsDirName = "results_${project.ext.aotstrat}"
+if (project.hasProperty('aotstackcachesize')) {
+    project.ext.aotTraceResultsDirName = "results_${project.ext.aotstrat}_size${project.ext.aotstackcachesize}"
+} else {
+    project.ext.aotTraceResultsDirName = "results_${project.ext.aotstrat}"
+}

@@ -250,7 +250,7 @@ void rtc_stackcache_push_scratch_pair(uint8_t which_stack) {
     // We'll first see if there's any available register, if so,
     // MOVW the value there. If no register is available, we will
     // use R21:R20.
-    // This is a bit dangeour, since it will be marked IN USE after
+    // This is a bit dangerous, since it will be marked IN USE after
     // a native function call. (after calling
     // rtc_stackcache_clear_call_used_regs_before_native_function_call)
     // However, this is always the last thing an instruction does,
@@ -291,12 +291,16 @@ void rtc_stackcache_push_ref(uint8_t *regs) {
 }
 
 uint8_t rtc_stackcache_pop_pair(uint8_t which_stack, uint8_t target_reg) {
-    // If a target register is specified, it must be either Z, or it must be AVAILABLE
     if (target_reg != 0xFF
-            && target_reg != R24
-            && target_reg != RZ
-            && !RTC_STACKCACHE_IS_IN_USE(REG_TO_ARRAY_INDEX(target_reg))) {
-        while (true) { dj_panic(DJ_PANIC_AOT_STACKCACHE_INVALID_POP_TARGET); }
+     && target_reg != R18
+     && target_reg != R20
+     && target_reg != R22
+     && target_reg != R24
+     && target_reg != RZ) {
+        while (true) {
+            avroraPrintUInt8(which_stack);
+            avroraPrintUInt8(target_reg);
+         dj_panic(DJ_PANIC_AOT_STACKCACHE_INVALID_POP_TARGET); }
     }
     uint8_t target_idx = (target_reg == 0xFF)
                          ? 0xFF

@@ -1,20 +1,28 @@
 #!/bin/zsh
 alias gdj="gradle -b ../../build.gradle"
 
-## declare an array variable
 # benchmarks=(sortX sortO hsortX hsortO fft xxtea rc5 md5 binsrchX binsrchO)
 benchmarks=(sortO hsortO fft xxtea rc5 md5 binsrchO)
-aot_strategies=(baseline simplestackcaching)
 
-## now loop through the above array
-for aot_strategy in ${aot_strategies}
+# BASELINE
+for benchmark in ${benchmarks}
 do
-    for benchmark in ${benchmarks}
-    do
-        echo "${benchmark} ${aot_strategy}"
-        gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=${aot_strategy}
-    done
-    fsharpi --exec proces-trace/proces-trace/CombineResults.fsx ./results_${aot_strategy}
+    gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=baseline
+done
+
+# SIMPLE STACK CACHING
+for benchmark in ${benchmarks}
+do
+	cachesizes=(5 6 7 8 9 10)
+	for aotstackcachesize in ${cachesizes}
+	do
+	    gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=simplestackcaching -Paotstackcachesize=${aotstackcachesize}
+	done
+done
+
+for resultsdir in `ls | grep results_`
+do
+	fsharpi --exec proces-trace/proces-trace/CombineResults.fsx "./${resultsdir}"
 done
 
 

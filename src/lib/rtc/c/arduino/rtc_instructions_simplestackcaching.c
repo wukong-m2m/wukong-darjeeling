@@ -63,7 +63,6 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
                 emit_MOVW(operand_regs1[0], R24);
                 rtc_stackcache_push_16bit(operand_regs1);                
             }
-            rtc_stackcache_getfree_16bit(operand_regs1);
         break;
         case JVM_SCONST_0:
             rtc_stackcache_getfree_16bit(operand_regs1);
@@ -404,12 +403,12 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
                 break;
             }
 
+            // POP the array reference into Z
+            rtc_stackcache_pop_ref_into_Z(); // Z now points to the base of the array object.
+
             // Arrays are indexed by a 32bit int. But we don't have enough memory to hold arrays that large, so just ignore the upper two.
             // Should check that they are 0 when implementing bounds checks.
             rtc_stackcache_pop_32bit(operand_regs2);
-
-            // POP the array reference into Z
-            rtc_stackcache_pop_ref_into_Z(); // Z now points to the base of the array object.
 
             if (opcode==JVM_SASTORE || opcode==JVM_AASTORE) {
                 // Multiply the index by 2, since we're indexing 16 bit shorts.
@@ -1565,8 +1564,8 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             pc += 4;
 
             // Pop the key value, and reserve some registers
-            rtc_stackcache_pop_32bit(operand_regs1); // r22
-            rtc_stackcache_getfree_32bit(operand_regs2); // r18
+            rtc_stackcache_pop_32bit(operand_regs1);
+            rtc_stackcache_getfree_32bit(operand_regs2);
 
             uint16_t number_of_cases = (dj_di_getU8(ts->jvm_code_start + pc + 1) << 8) | dj_di_getU8(ts->jvm_code_start + pc + 2);
             pc += 2;

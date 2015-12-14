@@ -19,7 +19,6 @@ let resultToStringList (result : Results) =
         ("BENCHMARK"            , result.benchmark);
         ("Test"                 , if result.passedTestAOT then "PASSED" else "FAILED");
         (""                     , "");        
-        (""                     , "");
         ("STOPWATCHES"          , "");
         ("Native C"             , result.stopwatchCyclesC.ToString());
         ("AOT"                  , result.stopwatchCyclesAOT.ToString());
@@ -101,7 +100,7 @@ let summariseResults resultsDirectory =
     let resultsSummary = resultsSummaryAsTupleLists |> flipTupleListsToStringList
     let resultLines = resultsSummary |> List.map stringListToString
 
-    let csvFilename = resultsDirectory + "/summary.csv"
+    let csvFilename = resultsDirectory + "/summary" + (resultsDirectory.Replace("./results","")) + ".csv"
     File.WriteAllText (csvFilename, String.Join("\r\n", resultLines))
     Console.Error.WriteLine ("Wrote output to " + csvFilename)
 
