@@ -41,7 +41,7 @@ public class RTCBenchmark {
             // {
             int root = start;
             int child;
-            while ( (child = root*2+1) < count ) {
+            while ( (child = (root << 1)+1) < count ) {
                 int child_plus_one = child + 1;
                 if ((child_plus_one < count) && (a[child] < a[child_plus_one])) {
                     child += 1;
@@ -70,7 +70,7 @@ public class RTCBenchmark {
             // {
             int root = 0;
             int child;
-            while ( (child = root*2+1) < end ) {
+            while ( (child = (root << 1)+1) < end ) {
                 int child_plus_one = child + 1;
                 if ((child_plus_one < end) && (a[child] < a[child_plus_one])) {
                     child += 1;

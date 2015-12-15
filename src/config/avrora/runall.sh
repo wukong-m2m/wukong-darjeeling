@@ -4,6 +4,8 @@ alias gdj="gradle -b ../../build.gradle"
 # benchmarks=(sortX sortO hsortX hsortO fft xxtea rc5 md5 binsrchX binsrchO)
 benchmarks=(sortO hsortO fft xxtea rc5 md5 binsrchO)
 
+gdj clean
+
 # BASELINE
 for benchmark in ${benchmarks}
 do
