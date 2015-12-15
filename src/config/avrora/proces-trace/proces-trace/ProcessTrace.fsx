@@ -328,9 +328,16 @@ let resultsToString (results : Results) =
     let stackToString stack =
         String.Join(",", stack |> List.map (fun el -> el.datatype |> StackDatatypeToString))
     let countersToString totalCycles (counters : ExecCounters) =
-        String.Format("cyc:{0,10} {1:00.000}%   exe:{2,8} avg: {3:000.00}",
+        String.Format("cyc:{0,10}  {1,4:0.0}%  exe:{2,8}  avg: {3,5:0.0}",
                       counters.cycles,
                       100.0 * float (counters.cycles) / float totalCycles,
+                      counters.executions,
+                      counters.average)
+    let countersToStringVsNativeC totalCycles totalCyclesNativeC (counters : ExecCounters) =
+        String.Format("cyc:{0,10}  {1,4:0.0}%  {2,7:0.0}%(NativeC)  exe:{3,8}  avg: {4,5:0.0}",
+                      counters.cycles,
+                      100.0 * float (counters.cycles) / float totalCycles,
+                      100.0 * float (counters.cycles) / float totalCyclesNativeC,
                       counters.executions,
                       counters.average)
     let resultJavaToString (result : ResultJava) =
@@ -353,20 +360,20 @@ let resultsToString (results : Results) =
                    |> List.fold (+) ""
     let nativeCInstructionToString ((inst, counters) : AvrInstruction*ExecCounters) =
         String.Format("0x{0,6:X6}: {1}    {2}\r\n", inst.address, (countersToString totalCyclesNativeC counters), inst.text)
-    let opcodeResultsToString totalCycles opcodeResults =
+    let opcodeResultsToString totalCycles totalCyclesNativeC opcodeResults =
             opcodeResults
             |> List.map (fun (category, opcode, counters)
                              ->  String.Format("{0,-20}{1,-20} total {2}\r\n",
                                                category,
                                                opcode,
-                                               (countersToString totalCycles counters)))
+                                               (countersToStringVsNativeC totalCycles totalCyclesNativeC counters)))
             |> List.fold (+) ""
-    let categoryResultsToString totalCycles categoryResults =
+    let categoryResultsToString totalCycles totalCyclesNativeC categoryResults =
             categoryResults
             |> List.map (fun (category, counters)
                              -> String.Format("{0,-40} total {1}\r\n",
                                               category,
-                                              (countersToString totalCycles counters)))
+                                              (countersToStringVsNativeC totalCycles totalCyclesNativeC counters)))
             |> List.fold (+) ""
 
     let testResultAOT = if results.passedTestAOT then "PASSED" else "FAILED"
@@ -385,10 +392,10 @@ let resultsToString (results : Results) =
         yield String.Format ("                    stopw/count {0,14}", (cyclesToSlowdown results.stopwatchCyclesC results.executedCyclesC))
         yield String.Format ("                AOT             {0,14} (={1})", results.executedCyclesAOT, totalCyclesAOTJava)
         yield String.Format ("                    stopw/count {0,14}", (cyclesToSlowdown results.stopwatchCyclesAOT results.executedCyclesAOT))
-        yield String.Format ("                push            {0}", (countersToString totalCyclesAOTJava results.cyclesPush))
-        yield String.Format ("                pop             {0}", (countersToString totalCyclesAOTJava results.cyclesPop))
-        yield String.Format ("                movw            {0}", (countersToString totalCyclesAOTJava results.cyclesMovw))
-        yield String.Format ("                total           {0}", (countersToString totalCyclesAOTJava (results.cyclesPush + results.cyclesPop + results.cyclesMovw)))
+        yield String.Format ("                push            {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesPush))
+        yield String.Format ("                pop             {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesPop))
+        yield String.Format ("                movw            {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesMovw))
+        yield String.Format ("                total           {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC (results.cyclesPush + results.cyclesPop + results.cyclesMovw)))
         yield ""
         yield String.Format ("--- STACK max                   {0,14}", (results.maxJvmStackInBytes))
         yield String.Format ("          avg/executed jvm      {0,14:000.00}", results.avgJvmStackInBytes)
@@ -401,22 +408,22 @@ let resultsToString (results : Results) =
         yield String.Format ("                AOT/Java        {0,14}", (cyclesToSlowdown results.codesizeAOT results.codesizeJava))
         yield ""
         yield "--- SUMMED: PER JVM CATEGORY"
-        yield categoryResultsToString totalCyclesAOTJava results.cyclesPerJvmOpcodeCategory
+        yield categoryResultsToString totalCyclesAOTJava totalCyclesNativeC results.cyclesPerJvmOpcodeCategory
         yield ""
         yield "--- SUMMED: PER AVR CATEGORY (Java AOT)"
-        yield categoryResultsToString totalCyclesAOTJava results.cyclesPerAvrOpcodeCategoryAOTJava
+        yield categoryResultsToString totalCyclesAOTJava totalCyclesNativeC results.cyclesPerAvrOpcodeCategoryAOTJava
         yield ""
         yield "--- SUMMED: PER AVR CATEGORY (NATIVE C)"
-        yield categoryResultsToString totalCyclesNativeC results.cyclesPerAvrOpcodeCategoryNativeC
+        yield categoryResultsToString totalCyclesNativeC totalCyclesNativeC results.cyclesPerAvrOpcodeCategoryNativeC
         yield ""
         yield "--- SUMMED: PER JVM OPCODE"
-        yield opcodeResultsToString totalCyclesAOTJava results.cyclesPerJvmOpcode
+        yield opcodeResultsToString totalCyclesAOTJava totalCyclesNativeC results.cyclesPerJvmOpcode
         yield ""
         yield "--- SUMMED: PER AVR OPCODE (Java AOT)"
-        yield opcodeResultsToString totalCyclesAOTJava results.cyclesPerAvrOpcodeAOTJava
+        yield opcodeResultsToString totalCyclesAOTJava totalCyclesNativeC results.cyclesPerAvrOpcodeAOTJava
         yield ""
         yield "--- SUMMED: PER AVR OPCODE (NATIVE C)"
-        yield opcodeResultsToString totalCyclesNativeC results.cyclesPerAvrOpcodeNativeC
+        yield opcodeResultsToString totalCyclesNativeC totalCyclesNativeC results.cyclesPerAvrOpcodeNativeC
         yield ""
         yield "--- LISTING: NATIVE C AVR\r\n"
         yield results.nativeCInstructions

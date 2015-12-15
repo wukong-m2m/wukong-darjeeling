@@ -9,7 +9,7 @@ open Datatypes
 
 let resultToStringList (result : Results) =
     let cyclesToPercentage totalCycles cycles =
-        String.Format ("{0:00.0}", 100.0 * float cycles / float totalCycles)
+        String.Format ("{0,5:0.0}", 100.0 * float cycles / float totalCycles)
     let cyclesToAOTPercentage = cyclesToPercentage result.executedCyclesAOT
     let cyclesToCPercentage = cyclesToPercentage result.executedCyclesC
     let cyclesToSlowdown cycles1 cycles2 =
@@ -49,12 +49,12 @@ let resultToStringList (result : Results) =
         ]
     let r2 = 
         (""                     , "")
-        :: ("JVM"               , "")
-        :: (result.cyclesPerJvmOpcodeCategory |> List.map (fun (cat, cnt) -> (cat, (cyclesToAOTPercentage cnt.cycles))))
+        :: ("JVM (%C)"          , "")
+        :: (result.cyclesPerJvmOpcodeCategory |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
     let r3 = 
         (""                     , "")
-        :: ("AVR Java AOT"      , "")
-        :: (result.cyclesPerAvrOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (cyclesToAOTPercentage cnt.cycles))))
+        :: ("AVR Java AOT (%C)" , "")
+        :: (result.cyclesPerAvrOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
     let r4 = 
         (""                     , "")
         :: ("AVR Native C"      , "")
