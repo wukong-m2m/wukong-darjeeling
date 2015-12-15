@@ -41,25 +41,25 @@ tasks.whenTaskAdded { task ->
 
 
 if (!project.hasProperty('aotstrat')) {
-    project.ext.aotstrat = 'baseline'
+    project.ext.aotstrat = 'simplestackcaching'
 }
 if (!project.hasProperty('aotbm')) {
     project.ext.aotbm = 'sortO'
 }
-if (project.hasProperty('aotstackcachesize')) {
-    if (project.ext.aotstackcachesize.toInteger() > 10) {
-        throw new InvalidUserDataException("Max size for stack cache is 10 words")
-    }
-    binaries.all {
-        cCompiler.args "-D RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE=${project.ext.aotstackcachesize}"
-        }
+if (!project.hasProperty('aotstackcachesize')) {
+    project.ext.aotstackcachesize = '10'
+}
+
+if (project.ext.aotstackcachesize.toInteger() > 10) {
+    throw new InvalidUserDataException("Max size for stack cache is 10 words")
 }
 
 binaries.all {
     cCompiler.args "-D AOT_STRATEGY_${project.ext.aotstrat.toUpperCase()}"
+    cCompiler.args "-D RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE=${project.ext.aotstackcachesize}"
 }
 
-if (project.hasProperty('aotstackcachesize')) {
+if (project.ext.aotstrat == 'simplestackcaching') {
     project.ext.aotTraceResultsDirName = "results_${project.ext.aotstrat}_size${project.ext.aotstackcachesize}"
 } else {
     project.ext.aotTraceResultsDirName = "results_${project.ext.aotstrat}"
