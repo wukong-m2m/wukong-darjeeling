@@ -141,7 +141,7 @@ class DjSourceSet {
         }
         def infusion_task = project.tasks.create(name: this.getInfusionTaskName()) {
             def infusionClassesSourceDir
-            if (project.hasProperty('proguard')) {
+            if (!project.hasProperty('proguard')) {
                 dependsOn(javac_task)
                 infusionClassesSourceDir = outputClassesDir
             } else {
