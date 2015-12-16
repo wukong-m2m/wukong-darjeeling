@@ -160,73 +160,73 @@ public final class Long {
      * @exception  NumberFormatException  if the string does not contain a
      *                                    parsable integer.
      */
-    public static long parseLong(String s, int radix)
-            throws NumberFormatException {
-        if (s == null) {
-            throw new NumberFormatException("null");
-        }
+    // public static long parseLong(String s, int radix)
+    //         throws NumberFormatException {
+    //     if (s == null) {
+    //         throw new NumberFormatException("null");
+    //     }
 
-        if (radix < Character.MIN_RADIX) {
-            throw new NumberFormatException("radix " + radix +
-                    " less than Character.MIN_RADIX");
-        }
-        if (radix > Character.MAX_RADIX) {
-            throw new NumberFormatException("radix " + radix +
-                    " greater than Character.MAX_RADIX");
-        }
+    //     if (radix < Character.MIN_RADIX) {
+    //         throw new NumberFormatException("radix " + radix +
+    //                 " less than Character.MIN_RADIX");
+    //     }
+    //     if (radix > Character.MAX_RADIX) {
+    //         throw new NumberFormatException("radix " + radix +
+    //                 " greater than Character.MAX_RADIX");
+    //     }
 
-        long result = 0;
-        boolean negative = false;
-        int i = 0, max = s.length();
-        long limit;
-        long multmin;
-        int digit;
+    //     long result = 0;
+    //     boolean negative = false;
+    //     int i = 0, max = s.length();
+    //     long limit;
+    //     long multmin;
+    //     int digit;
 
-        if (max > 0) {
-            if (s.charAt(0) == '-') {
-                negative = true;
-                limit = Long.MIN_VALUE;
-                i++;
-            } else {
-                limit = -Long.MAX_VALUE;
-            }
-            multmin = limit / radix;
-            if (i < max) {
-                digit = Character.digit(s.charAt(i++), radix);
-                if (digit < 0) {
-                    throw new NumberFormatException(s);
-                } else {
-                    result = -digit;
-                }
-            }
-            while (i < max) {
-                // Accumulating negatively avoids surprises near MAX_VALUE
-                digit = Character.digit(s.charAt(i++), radix);
-                if (digit < 0) {
-                    throw new NumberFormatException(s);
-                }
-                if (result < multmin) {
-                    throw new NumberFormatException(s);
-                }
-                result *= radix;
-                if (result < limit + digit) {
-                    throw new NumberFormatException(s);
-                }
-                result -= digit;
-            }
-        } else {
-            throw new NumberFormatException(s);
-        }
-        if (negative) {
-            if (i > 1) {
-                return result;
-            } else {    /* Only got "-" */
-                throw new NumberFormatException(s);
-            }
-        } else {
-            return -result;
-        }
-    }
+    //     if (max > 0) {
+    //         if (s.charAt(0) == '-') {
+    //             negative = true;
+    //             limit = Long.MIN_VALUE;
+    //             i++;
+    //         } else {
+    //             limit = -Long.MAX_VALUE;
+    //         }
+    //         multmin = limit / radix;
+    //         if (i < max) {
+    //             digit = Character.digit(s.charAt(i++), radix);
+    //             if (digit < 0) {
+    //                 throw new NumberFormatException(s);
+    //             } else {
+    //                 result = -digit;
+    //             }
+    //         }
+    //         while (i < max) {
+    //             // Accumulating negatively avoids surprises near MAX_VALUE
+    //             digit = Character.digit(s.charAt(i++), radix);
+    //             if (digit < 0) {
+    //                 throw new NumberFormatException(s);
+    //             }
+    //             if (result < multmin) {
+    //                 throw new NumberFormatException(s);
+    //             }
+    //             result *= radix;
+    //             if (result < limit + digit) {
+    //                 throw new NumberFormatException(s);
+    //             }
+    //             result -= digit;
+    //         }
+    //     } else {
+    //         throw new NumberFormatException(s);
+    //     }
+    //     if (negative) {
+    //         if (i > 1) {
+    //             return result;
+    //         } else {    /* Only got "-" */
+    //             throw new NumberFormatException(s);
+    //         }
+    //     } else {
+    //         return -result;
+    //     }
+    // }
 
     /**
      * Parses the string argument as a signed decimal <code>long</code>.
@@ -246,9 +246,9 @@ public final class Long {
      * @exception  NumberFormatException  if the string does not contain a
      *               parsable <code>long</code>.
      */
-    public static long parseLong(String s) throws NumberFormatException {
-        return parseLong(s, 10);
-    }
+    // public static long parseLong(String s) throws NumberFormatException {
+    //     return parseLong(s, 10);
+    // }
     /**
      * The value of the Long.
      */

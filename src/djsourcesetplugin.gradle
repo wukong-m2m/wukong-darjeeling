@@ -1,5 +1,14 @@
 apply plugin: DjSourceSetPlugin
 
+buildscript {
+    repositories {
+        flatDir dirs: '/Users/niels/src/proguard5.2.1/lib/'
+    }
+    dependencies {
+        classpath ':proguard:'
+    }
+}
+
 // Add plugin to run addTasks for all djlibsource and djappsource
 // declared in the sub.gradle files in /lib/* and /app/*
 class DjSourceSetPlugin implements Plugin<Project> {
@@ -75,8 +84,10 @@ class DjSourceSet {
     void addJavaTasks() {
         def srcDir = "${this.basedir}/java"
         def outputClassesDir = new File("${project.buildDir}/classes-${this.name}")
+        def outputOptimisedClassesDir = new File("${project.buildDir}/classes-${this.name}-optimised")
         def infusionDir = new File(this.getInfusionDir())
         def outputJar = libToJarName(this.name)
+        def outputOptimisedJar = libToJarName(this.name)+".optimised.jar"
         def bootclasspath = libToJarName('base')
         def classpath = this.javaDependencies.collect { libname -> libToJarName(libname) }.join(':')
 
@@ -101,7 +112,7 @@ class DjSourceSet {
         }
         def jar_task = project.tasks.create(name: 'jar_'+this.name) {
             dependsOn(javac_task)
-            inputs.files project.fileTree(dir: outputClassesDir).include('**/*.class')
+            inputs.dir outputClassesDir
             outputs.file outputJar
             doLast {
                 ant.jar (destfile: outputJar) {
@@ -109,9 +120,35 @@ class DjSourceSet {
                 }
             }
         }
+        def proguard_task = project.tasks.create(name: 'proguard_'+this.name, type: proguard.gradle.ProGuardTask) {
+            dependsOn(jar_task)
+            inputs.file outputJar
+            outputs.file outputOptimisedJar
+
+            injars outputJar
+            outjars outputOptimisedJar
+            dontwarn
+            dontusemixedcaseclassnames
+            keep 'public class * { public *;  private *; }'
+        }
+        def proguard_unjar_task = project.tasks.create(name: 'proguard_unjar_'+this.name, type: Copy) {
+            dependsOn(proguard_task)
+            inputs.file outputOptimisedJar
+            outputs.dir outputOptimisedClassesDir
+
+            from project.zipTree(outputOptimisedJar)
+            into outputOptimisedClassesDir
+        }
         def infusion_task = project.tasks.create(name: this.getInfusionTaskName()) {
-            dependsOn(javac_task)
-            inputs.files project.fileTree(dir: outputClassesDir).include('**/*.class')
+            def infusionClassesSourceDir
+            if (project.hasProperty('proguard')) {
+                dependsOn(javac_task)
+                infusionClassesSourceDir = outputClassesDir
+            } else {
+                dependsOn(proguard_unjar_task)
+                infusionClassesSourceDir = outputOptimisedClassesDir
+            }
+            inputs.files project.fileTree(dir: infusionClassesSourceDir).include('**/*.class')
             outputs.dir infusionDir
             this.javaDependencies.each { jlibname ->
                 dependsOn("infusion_${jlibname}")
@@ -126,7 +163,7 @@ class DjSourceSet {
                         hfile: "${infusionDir}/jlib_${this.name}.h",
                         cfile: "${infusionDir}/jlib_${this.name}.c",
                         debugfile: "${infusionDir}/jlib_${this.name}.debug") {
-                    fileset(dir: outputClassesDir, includes: '**/*.class')
+                    fileset(dir: infusionClassesSourceDir, includes: '**/*.class')
                     javaDependencies.each { jlibname ->
                         fileset(dir: libToInfusionDir(jlibname), includes: "${jlibname}.dih")
                     }
