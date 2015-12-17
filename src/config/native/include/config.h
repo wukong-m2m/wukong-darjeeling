@@ -44,7 +44,7 @@
 // #define DBG_DARJEELING_GC true
 // #define DBG_WKPF true
 // #define DBG_WKPFGC true
-// #define DBG_WKPFUPDATE true
+#define DBG_WKPFUPDATE true
 #define DBG_WKCOMM true
 // #define DBG_WKREPROG true
 #define DBG_WKROUTING true

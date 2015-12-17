@@ -4,8 +4,6 @@ binaries.all {
     cCompiler.args "-Wall"
     cCompiler.args "-Werror"
     cCompiler.args "-std=gnu99"
-    //cCompiler.args "-mfpmath=387"
-    cCompiler.args "-march=i386"
 }
 
 model {
