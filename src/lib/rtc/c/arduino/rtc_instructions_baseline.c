@@ -810,6 +810,46 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             emit_EOR(R25, R21);
             emit_x_PUSH_32bit(R22);
         break;
+        case JVM_SINC:
+        case JVM_SINC_W:
+            // -129 -> JVM_SINC_W
+            // -128 -> JVM_SINC
+            // +127 -> JVM_SINC
+            // +128 -> JVM_SINC_W
+            // jvm_operand_byte0: index of int local
+            if (opcode == JVM_SINC) {
+                jvm_operand_signed_word = (int8_t)jvm_operand_byte1;
+                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            } else {
+                jvm_operand_signed_word = (int16_t)(((uint16_t)jvm_operand_byte1 << 8) + jvm_operand_byte2);
+                pc += 3; // Skip operand (already read into jvm_operand_byte0)
+            }
+            offset = offset_for_intlocal_short(ts->methodimpl, jvm_operand_byte0);
+            if (jvm_operand_signed_word == 1) {
+                // Special case
+                emit_LDD(R22, Y, offset);
+                emit_INC(R22);
+                emit_STD(R22, Y, offset);
+                emit_BRNE(6);
+                emit_LDD(R22, Y, offset+1);
+                emit_INC(R22);
+                emit_STD(R22, Y, offset+1);
+            } else {
+                emit_LDD(R22, Y, offset);
+                emit_LDD(R23, Y, offset+1);
+                if (jvm_operand_signed_word > 0) {
+                    // Positive operand
+                    emit_SUBI(R22, -(jvm_operand_signed_word & 0xFF));
+                    emit_SBCI(R23, -((jvm_operand_signed_word >> 8) & 0xFF)-1);
+                } else {
+                    // Negative operand
+                    emit_SUBI(R22, (-jvm_operand_signed_word) & 0xFF);
+                    emit_SBCI(R23, ((-jvm_operand_signed_word) >> 8) & 0xFF);
+                }
+                emit_STD(R22, Y, offset);
+                emit_STD(R23, Y, offset+1);
+            }
+        break;
         case JVM_IINC:
         case JVM_IINC_W:
             // -129 -> JVM_IINC_W
@@ -824,7 +864,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
                 jvm_operand_signed_word = (int16_t)(((uint16_t)jvm_operand_byte1 << 8) + jvm_operand_byte2);
                 pc += 3; // Skip operand (already read into jvm_operand_byte0)
             }
-            uint8_t offset = offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0);
+            offset = offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0);
             if (jvm_operand_signed_word == 1) {
                 // Special case
                 emit_LDD(R22, Y, offset);

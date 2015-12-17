@@ -37,6 +37,7 @@ import org.csiro.darjeeling.infuser.bytecode.transformations.InsertExplicitCasts
 import org.csiro.darjeeling.infuser.bytecode.transformations.OptimizeByteCode;
 import org.csiro.darjeeling.infuser.bytecode.transformations.ReMapLocalVariables;
 import org.csiro.darjeeling.infuser.bytecode.transformations.ReplaceStackInstructions;
+import org.csiro.darjeeling.infuser.bytecode.transformations.UseSINC;
 import org.csiro.darjeeling.infuser.structure.BaseType;
 import org.csiro.darjeeling.infuser.structure.LocalId;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractClassDefinition;
@@ -314,6 +315,8 @@ public class CodeBlock
 		
 		// assign indices to the local variables
 		new ReMapLocalVariables(ret).transform();
+
+		new UseSINC(ret).transform();
 
 		// fix the branch addresses in the branch instructions
 		ret.instructions.fixBranchAddresses();
