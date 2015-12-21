@@ -12,6 +12,10 @@
 #include <sys/syscall.h>
 #include <math.h>
 #include "config.h"
+#include <mraa.h>
+#include "IO_utils.h"
+
+mraa_aio_context adc_a1;
 
 void wuclass_light_sensor_setup(wuobject_t *wuobject) {
     #ifdef INTEL_GALILEO_GEN1
@@ -47,41 +51,36 @@ void wuclass_light_sensor_setup(wuobject_t *wuobject) {
     system("echo in > /sys/class/gpio/gpio209/direction");
     system("echo high > /sys/class/gpio/gpio214/direction");
     #endif
+    #ifdef MRAA_LIBRARY
+    adc_a1 = mraa_aio_init(1);
+    #endif
 }
 
 void wuclass_light_sensor_update(wuobject_t *wuobject) {
+    int16_t output = 0;
+    #if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2)
     int16_t fd=-1;
     char buf[4] = {'\\','\\','\\','\\'};
-    #ifdef INTEL_GALILEO_GEN1
     fd = open("/sys/bus/iio/devices/iio:device0/in_voltage1_raw", O_RDONLY | O_NONBLOCK);
     lseek(fd, 0, SEEK_SET);
     read(fd, buf, 4);
     close(fd);
-    #endif
-    #ifdef INTEL_GALILEO_GEN2
-    fd = open("/sys/bus/iio/devices/iio:device0/in_voltage1_raw", O_RDONLY | O_NONBLOCK);
-    lseek(fd, 0, SEEK_SET);
-    read(fd, buf, 4);
-    close(fd);
+    output = aio_read(buf);
     #endif
     #ifdef INTEL_EDISON
+    int16_t fd=-1;
+    char buf[4] = {'\\','\\','\\','\\'};
     fd = open("/sys/bus/iio/devices/iio:device1/in_voltage1_raw", O_RDONLY | O_NONBLOCK);
     lseek(fd, 0, SEEK_SET);
     read(fd, buf, 4);
     close(fd);
     system("echo high > /sys/class/gpio/gpio214/direction");
+    output = aio_read(buf);
     #endif
-    int16_t num=0;
-    int16_t i;
-    //use this loop to convert char to int
-    //at first, we use atoi (e.g. num=atoi(buf)) but quickly realize that atoi is not reliable
-    for(i=0;i<4;i++){
-        if(buf[i]>='0' && buf[i] <='9')
-           num = num*10 + (buf[i] - '0');
-    }
-    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Light_Sensor): Sensed raw value: %d\n", num);
-
-    int16_t output = (int16_t)((num/4095.0)*255);
+    #ifdef MRAA_LIBRARY
+    output = mraa_aio_read(adc_a1);
+    #endif
+    output = (int16_t)((output/4095.0)*255);
     wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_LIGHT_SENSOR_CURRENT_VALUE, output);
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Light_Sensor): output %d\n", output);
 }

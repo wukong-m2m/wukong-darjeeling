@@ -12,6 +12,10 @@
 #include <sys/syscall.h>
 #include <math.h>
 #include "config.h"
+#include <mraa.h>
+#include "IO_utils.h"
+
+mraa_aio_context adc_a2;
 
 void wuclass_temperature_sensor_setup(wuobject_t *wuobject) {
     #ifdef INTEL_GALILEO_GEN1
@@ -47,43 +51,40 @@ void wuclass_temperature_sensor_setup(wuobject_t *wuobject) {
     system("echo in > /sys/class/gpio/gpio210/direction");
     system("echo high > /sys/class/gpio/gpio214/direction");
     #endif
+    #ifdef MRAA_LIBRARY
+    adc_a2 = mraa_aio_init(2);
+    #endif
 }
 
 void wuclass_temperature_sensor_update(wuobject_t *wuobject) {
+    int16_t output = 0;
+    #if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2)
     int16_t fd=-1;
     char buf[4] = {'\\','\\','\\','\\'};
-    #ifdef INTEL_GALILEO_GEN1
     fd = open("/sys/bus/iio/devices/iio:device0/in_voltage2_raw", O_RDONLY | O_NONBLOCK);
     lseek(fd, 0, SEEK_SET);
     read(fd, buf, 4);
     close(fd);
-    #endif
-    #ifdef INTEL_GALILEO_GEN2
-    fd = open("/sys/bus/iio/devices/iio:device0/in_voltage2_raw", O_RDONLY | O_NONBLOCK);
-    lseek(fd, 0, SEEK_SET);
-    read(fd, buf, 4);
-    close(fd);
+    output = aio_read(buf);
     #endif
     #ifdef INTEL_EDISON
+    int16_t fd=-1;
+    char buf[4] = {'\\','\\','\\','\\'};
     fd = open("/sys/bus/iio/devices/iio:device1/in_voltage2_raw", O_RDONLY | O_NONBLOCK);
     lseek(fd, 0, SEEK_SET);
     read(fd, buf, 4);
     close(fd);
     system("echo high > /sys/class/gpio/gpio214/direction");
+    output = aio_read(buf);
     #endif
-    int16_t num=0;
-    int16_t i;
-    //use this loop to convert char to int
-    //at first, we use atoi (e.g. num=atoi(buf)) but quickly realize that atoi is not reliable
-    for(i=0;i<4;i++){
-        if(buf[i]>='0' && buf[i] <='9')
-           num = num*10 + (buf[i] - '0');
-    }
-    if(num == 0){
+    #ifdef MRAA_LIBRARY
+    output = mraa_aio_read(adc_a2);
+    #endif
+    if(output == 0){
       DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Temperature): zero input\n");
     }else{
-      DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Temperature_Sensor): Sensed raw value: %d\n", num);
-      int16_t resistance = (4095 - num) * 10000 / num;
+      DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Temperature_Sensor): Sensed raw value: %d\n", output);
+      int16_t resistance = (4095 - output) * 10000 / output;
       DEBUG_LOG(DBG_WKPFUPDATE, "Resistance is %d\n", resistance);
       float temperature = 1/(((log(resistance/10000.0))/3975)+(1/298.15))-273.15;
       wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_TEMPERATURE_SENSOR_CURRENT_VALUE, temperature);
