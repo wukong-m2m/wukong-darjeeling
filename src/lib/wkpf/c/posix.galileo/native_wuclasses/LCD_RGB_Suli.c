@@ -28,7 +28,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/errno.h>
-#include "mraa/mraa.h"
+#include <mraa.h>
 #include "LCD_RGB_Suli.h"
 
 uint8_t _displayfunction;
