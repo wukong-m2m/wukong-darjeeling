@@ -111,6 +111,8 @@ public class UseSINC extends CodeBlockTransformation
 			InstructionHandle handleSINC = ((byte)increment)==increment
 										 ? new InstructionHandle(new IncreaseInstruction(Opcode.SINC, variable, increment))
 										 : new InstructionHandle(new WideIncreaseInstruction(Opcode.SINC_W, variable, increment));
+			handleSINC.setPreState(handleLOAD.getPreState());
+			handleSINC.setPostState(handleSTORE.getPostState());
 			instructions.insertBefore(handleLOAD, handleSINC);
 			instructions.remove(handleLOAD);
 			instructions.remove(handleCONST);
