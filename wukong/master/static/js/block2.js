@@ -22,14 +22,27 @@ function loadIcon(){
     _icon44.onload = function(){
         block.icon44 = this;
         var icons = document.querySelectorAll('.wuClassIcon.wuClass'+typename+'Type, .wuClassIcon22.wuClass'+typename+'Type')
-        for (var i in icons){
-            icons[i].src = this.src;
+        for (var i=0,icon;icon=icons[i];i++){
+            icon.src = this.src;
+        }
+        var blocks = document.querySelectorAll('block.default-icon22.wuClass'+typename+'Type')
+        for (var i=0,b;b=blocks[i];i++){
+            var $icon = $('<img src="'+this.src+'" class="default-icon22 wuClassIcon wuClass'+block.type+'Type"/>')
+            b.parentNode.replaceChild($icon[0],b)
+        }
+        var blocks = document.querySelectorAll('div.default-icon44.wuClass'+typename+'Type')
+        for (var i=0,b;b=blocks[i];i++){
+            var $icon = $('<img src="'+this.src+'" class="wuClassIcon wuClass'+block.type+'Type"/>')
+            b.parentNode.replaceChild($icon[0],b)
         }
     }
     _icon44.onerror = function(){
-        block.icon44 = false
+        //block.icon44 = false
     }
+    setTimeout(function(){
     _icon44.src = '/static/images/wuclass/'+typename+'.png'
+    },1000)
+    block.icon44 = false
 }
 Block.register = function (type, b) {
     Block.classes[type] = b;
@@ -68,8 +81,8 @@ Block.prototype.init=function() {
     this.signals=[];
     this.actions=[];
     this.slots=[];
-    this.sigProper=[];
-    this.actProper=[];
+    this.sigProper={};
+    this.actProper={};
     this.monitorProper={};
     this.numSlot = 0;
     Block_count++;
@@ -197,7 +210,20 @@ Block.restore=function(a) {
     n.reaction_time = a.reaction_time;
     n.sigProper = a.sigProper;
     n.monitorProper = a.monitorProper;
-
+    
+    if (n.type=='NodeRED_InputFrom'){
+        //kick off the refreshing
+        n.getSignal('message').refreshValue()
+    }
+    else if (n.type=='NodeRED_OutputTo'){
+        //kick off the refreshing
+        n.getAction('message').repeatAction()
+    }    
+    else if (n.type=='Debug_Trigger'){
+        //kick off the refreshing
+        n.getSignal('timestamp').refreshTimestamp()
+    }
+    
     // Call the restore of the derived class in the future
     return n;
 }
@@ -227,6 +253,7 @@ Block.prototype.setSlotRWProperty = function(){
 Block.prototype.draw=function() {
     // Annotation type is special wuclass
     if (this.type=='Annotation') return this.drawAnnotation()
+    //else if (this.type=='Debug_Inspector') return this.drawDebugInspector()
 
     var i;
     var pos = this.getPosition();
@@ -237,20 +264,20 @@ Block.prototype.draw=function() {
     var iconClass = this.type
     var type = this.type
     //var name = (this.name || type.replace('_',' '))
-    var name = (this.name==this.type ? '&nbsp;' : this.name)
+    var name = this.name==this.type ? '&nbsp;' : (this.name=='block' ? '&nbsp;' : this.name)
     var icon;
     if (this.icon44){
         icon = '<img src="'+this.icon44.src+'" class="wuClassIcon22 wuClass'+type+'Type"/>'
     }
     else{
-        icon = '<block class="default-icon22">'+type.substr(0,1)+'</block>'
+        icon = '<block class="default-icon22 wuClass'+type+'Type"">'+type.substr(0,1)+'</block>'
     }
     tags.push('<div class="block-type">'+icon + type + '</div>');
-    if (type=='NodeREDAgent'){
-        tags.push('<div class="block-name" blockid="'+this.id+'"><a class=" NodeREDAgent">Edit Node-RED Subgraph</a></div>')
+    if (type.indexOf('NodeRED_')==0){
+        tags.push('<div class="block-name" blockid="'+this.id+'"><a class="'+type+'">Go Node-RED</a></div>')
     }
     else{
-        tags.push('<div class="block-name" blockid="'+this.id+'">'+name+'</div>')
+        tags.push('<div class="block-name" blockid="'+this.id+'">'+(name)+'</div>')
     }
     tags.push('<div class="block-signals">');
 
@@ -272,7 +299,16 @@ Block.prototype.draw=function() {
         if (slot._writable) divclass.push('writable')
         var readableMark =  slot._readable ? '<span class="slottail">▶</span>' : ''
         var writableMark = slot._writable ? '◉' : ''
-        tags.push('<div'+(slot._readable ? ' readable="1"' : '')+(slot._writable ? ' writable="1"' : '')+' class="'+divclass.join(' ')+'" id="'+signalId+'"><span class="slothead">'+writableMark+'</span><span class="slotbody"> '+slot.name.replace('_', ' ')+'</span>'+readableMark+'</div>');
+        var slotContent;
+        if (this.type=='Debug_Inspector'){
+            var content = this.sigProper[slot.name]
+            slotContent = 'Content'
+            //slotContent +='<div class="content">'+(content || '&nbsp;')+'</div>'
+        }
+        else{
+            slotContent = slot.name.replace('_', ' ')
+        }
+        tags.push('<div'+(slot._readable ? ' readable="1"' : '')+(slot._writable ? ' writable="1"' : '')+' class="'+divclass.join(' ')+'" id="'+signalId+'"><span class="slothead">'+writableMark+'</span><span class="slotbody"> '+slotContent+'</span>'+readableMark+'</div>');
     }
     //add to DOM
     this.div.append(tags.join('')+'</div>')
@@ -281,6 +317,7 @@ Block.prototype.draw=function() {
 
     // when the block item was clicked
     var clickHandler = function(evt) {
+        console.log('clickeedddd')
         var $signal = $(evt.currentTarget)
         // ignore the click event when user clicks outside the
         // current focus block, only if this is a link destination
@@ -309,12 +346,12 @@ Block.prototype.draw=function() {
         $signal.data('block_id', this.id);
         if(this.monitorProper[i] != undefined) {
             $signal.addClass("monitor_enable");
-        }
+        }        
         $signal.on('click', clickHandler);
     }
     // implement "Edit in Node-RED"
-    if (type=='NodeREDAgent'){
-        var a= document.querySelector('div.block-name[blockid="'+this.id+'"] a.NodeREDAgent');
+    if (type.indexOf('NodeRED_')==0){
+        var a= document.querySelector('div.block-name[blockid="'+this.id+'"] a.'+type);
         a.onclick = function(evt){
             evt.preventDefault;
             evt.stopPropagation();
@@ -326,13 +363,26 @@ Block.prototype.draw=function() {
 Block.prototype.drawAnnotation = function(){
     this.div.html('<div class="slothead">&nbsp;</div><div class="content"></div>')
     var content = this.sigProper['content']
-    this.div.find('div.content').text(content ? decodeURIComponent(content) : 'Text')
+    this.div.find('div.content').text(content ? decodeURIComponent(content) : 'Annotation')
     this.div.addClass('annotation')
     this.div.css('background-color','')
 }
-Block.prototype.addSignal=function(con) {
-    var i;
+/*
+Block.prototype.drawDebugInspector = function(){
+    this.div.html('<div class="block-type">Debug</div><div class="slot"><div class="content"></div></div>')
+    var content = this.sigProper['content']
+    this.div.find('div.content').text(content ? decodeURIComponent(content) : '')
+    this.div.addClass('debug-inspector')
+    this.div.css('background-color','')
+}
+*/
 
+
+
+Block.prototype.addSignal=function(con) {
+    con.parent = this
+
+    var i;
     for(i=0;i<this.slots.length;i++) {
         if (this.slots[i].name == con.name) {
             con.index = this.slots[i].index;
@@ -350,10 +400,23 @@ Block.prototype.addSignal=function(con) {
 Block.prototype.getSignals=function() {
     return this.signals;
 }
+Block.prototype.getSignal=function(name) {
+    for (var i=0,signal;signal=this.signals[i];i++){
+        if (signal.name==name) return signal
+    }
+}
+
 Block.prototype.getActions=function() {
     return this.actions;
 }
+Block.prototype.getAction=function(name) {
+    for (var i=0,action;action=this.actions[i];i++){
+        if (action.name==name) return action
+    }
+}
+
 Block.prototype.addAction=function(con) {
+    con.parent = this
     var i;
 
     for(i=0;i<this.slots.length;i++) {
@@ -693,7 +756,49 @@ Block.prototype.getBounds=function() {
 }
 /* HY's version of PropertyEditor */
 Block.prototype.renderPropertyEditForm = function(){
-    if (this.type=='Annotation') return this.renderAnnotationPropertyEditForm()
+    sidebarActiveTab('t3')
+    if (this.type=='Annotation') {
+        return this.renderAnnotationPropertyEditForm()
+    }
+    var editForm = document.getElementById('blockPropEditForm')
+    if (this.type=='Debug_Inspector') {
+        var tags = []
+        tags.push('<div class="Debug_Inspector_Content" style="width:90%;height:85%;overflow-y:auto"><div>')
+        tags.push('</div></div>')
+        editForm.innerHTML = tags.join('')
+        
+        var action = this.getAction('content')
+        var lastValues = []
+        var c = editForm.querySelector('.Debug_Inspector_Content')
+        var showValue = function(){
+            var value 
+            var tags = []
+            for (var i=0,s;s=action.connectedSignals[i];i++){
+                var svalue;
+                //temporary hard code this two type
+                if (s.parent.type=='NodeRED_InputFrom'||s.parent.type=='Debug_Trigger'){
+                    svalue = s.value
+                }
+                else{
+                    svalue = s.parent.sigProper[s.name]||''
+                }
+                if (typeof(svalue)=='object'){
+                    svalue = JSON.stringify(svalue)
+                }
+                if ((typeof(lastValues[i]) != 'undefined') && lastValues[i]==svalue) continue
+                lastValues[i]= svalue
+                tags.push('<div style="margin-bottom:15px;border-bottom:dashed 1px #c0c0c0">')
+                if (typeof(svalue)=='string') tags.push(svalue.replace(/"/g,'&quot;'))
+                else tags.push(''+svalue)
+                tags.push('</div>')
+            }
+            c.innerHTML += tags.join('')
+            setTimeout(function(){showValue()},3000)
+        }
+        showValue()
+        return
+    }
+
     var self = this
 
     var tags = ['<table class="form">']
@@ -711,32 +816,47 @@ Block.prototype.renderPropertyEditForm = function(){
         // default to open
         //var style = i==0 ? '' : ' style="display:none"'
         var style = ''
-        var value = this.sigProper[slot.name]
-        var placeholder = null
+        var value;
+        if (slot.name=='message' && this.type.indexOf('NodeRED_')==0){
+            value = this.getSignal(slot.name).value
+        }
+        else{
+            value = this.sigProper[slot.name]
+        }
+        var placeholder = ''
         if (typeof(value)=='undefined') value = null;
+        else if (typeof(value)=='object') {
+            value=JSON.stringify(value)
+            value = value.replace(/,/g,', ')
+        }
         var input;
+        if (typeof(value)=='string') value = value.replace(/"/g,'&quot;')
+        var useTextarea = (slot.datetype=='text'||slot.datatype=='json'||slot.datatype=='any')
         if (slot._writable) {
             if (value===null || value=='') {
                 placeholder = ' placeholder="Default"'
                 value = ''
             }
-            input = '<input class="slot" '+placeholder+' name="'+slot.name+'" value="'+value+'">'
+            if (useTextarea){
+                input = '<textarea class="slot" '+placeholder+' name="'+slot.name+'">'+vlaue+'</textarea>'
+            }
+            else{
+                input = '<input class="slot" '+placeholder+' name="'+slot.name+'" value="'+value+'">'
+            }
         }
         else{
             if (value===null||value=='') {
                 placeholder = ' placeholder="Read Only"'
                 value = ''
             }
-            input = '<input'+placeholder+' name="'+slot.name+'" value="'+value+'" disabled>'
+            input = '<div class="slot" name="'+slot.name+'">'+value+'</div>'
         }
         tags.push('<tr'+style+'><th>'+slot.name+':</th><td>'+input+'</td></tr>')
     }
     tags.push('</table>')
     tags.push('<button onclick="FBP_deleteBlock()">Delete</button>')
     tags.push('</div>')
-    var editForm = document.getElementById('blockPropEditForm')
     editForm.innerHTML = tags.join('')
-    sidebarActiveTab('t3')
     $('Button.foldHandler').on('click',function(evt){
         var btn = evt.currentTarget
         var hasOpened = btn.className.indexOf('rotate90')>=0

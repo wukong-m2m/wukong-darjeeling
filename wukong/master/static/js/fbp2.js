@@ -293,12 +293,15 @@ function FBP_fillBlockType($div,blocks)
     for(i=0;i<blocks.length;i++) {
        var block = blocks[i]
        var icon
+       /*
        if (block.icon44){
         icon = '<img src="'+(block.icon44 ? block.icon44.src : genericIcon.src)+'" class="wuClassIcon wuClass'+block.typename+'Type"/>'
        }
        else{
         icon = '<div class="default-icon44">'+block.typename.substr(0,1)+'</div>'
        }
+       */
+       icon = '<div class="wuClass'+block.typename+'Type default-icon44">'+block.typename.substr(0,1)+'</div>'
        var desc = '<span>'+(block.desc || '')+'</span>'
        tags.push('<li><input type="radio" name="blocktype" value="'+block.typename+'">'+icon+'<label>'+block.typename+'</label>'+desc+'</li>');
     }
@@ -341,7 +344,20 @@ function FBP_addBlock(type){
     var size = getViewportSize()
     var offset = getViewportOffset()
     block.setPosition(size.width/4,size.height/4)
+    
     if (block.type=='Annotation') Block.setCurrent(block)
+    else if (block.type=='NodeRED_InputFrom'){
+        //kick off the refreshing
+        block.getSignal('message').refreshValue()
+    }
+    else if (block.type=='NodeRED_OutputTo'){
+        //kick off the refreshing
+        block.getAction('message').repeatAction()
+    }
+    else if (block.type=='Debug_Trigger'){
+        //kick off the refreshing
+        block.getSignal('timestamp').refreshTimestamp()
+    }
 }
 
 function FBP_deleteBlock()
@@ -384,6 +400,12 @@ function FBP_deleteLink(){
     if (!g_selected_line) return;
     var yes = confirm('Are you sure?')
     if (!yes) return;
+     
+    var signal = g_selected_line.source.getSignal(g_selected_line.signal)
+    var action = g_selected_line.dest.getAction(g_selected_line.action)
+    if (signal && action) signal.disconnect(action)
+    else {console.log(['Warning: signal or action not existed to delete',signal,action])}
+    
     var new_lines = [];
     for(i=0;i<g_lines.length;i++) {
         if (g_lines[i] !== g_selected_line) new_lines.push(g_lines[i]);
@@ -450,6 +472,7 @@ function FBP_buildConnection(source,sIndex, obj,aIndex)
                 console.log('ACT:'+act)
                 console.log(obj.actions)
                 */
+                source.signals[sig].connect(obj.actions[act])
                 var l = new Line(source,source.signals[sig].name,obj,obj.actions[act].name);
                 g_lines.push(l);
                 FBP_refreshLines();
@@ -561,9 +584,11 @@ function FBP_link(evt)
             //FBP_canvastop.hide();
             e.stopImmediatePropagation()
             var slot = obj.div[0].querySelector('.slot:hover')
-            var actionIndex = slot.getAttribute('id').split('_')[2];
-            FBP_buildConnection(FBP_source,signalIndex,obj,actionIndex);
-            top.notifyApplicationContentTainted(true)
+            if (slot){
+                var actionIndex = slot.getAttribute('id').split('_')[2];
+                FBP_buildConnection(FBP_source,signalIndex,obj,actionIndex);
+                top.notifyApplicationContentTainted(true)
+            }
         }
         else if (!obj){
             // pan the workarea (canvas and client)
@@ -773,6 +798,11 @@ function FBP_renderPage(page)
         line.dest = hash[page.lines[i].dest];
         line.action = page.lines[i].action;
         g_lines.push(Line.restore(line));
+
+        var signal = line.source.getSignal(line.signal)
+        var action = line.dest.getAction(line.action)
+        if (signal && action) signal.connect(action)
+        else {console.log(['Warning singal or action is null=>',signal,action])}
     }
     FBP_refreshLines();
 }
@@ -985,7 +1015,7 @@ function FBP_load()
                     g_lines = [];
                     var hash={};
                     for(i=0;i<meta.nodes.length;i++) {
-                    console.log(meta.nodes[i])
+                        console.log(meta.nodes[i])
                         n = Block.restore(meta.nodes[i]);
                         // This should be replaced with the node type system latter
                         n.attach($('#content'));
@@ -1119,22 +1149,140 @@ function FBP_toXML(gnodes,glines)
             xml = xml + '    </component>\n';
         }
     }
-
+    console.log(xml)
     return xml;
 }
 
-function Signal(name)
+function Signal(name,datatype)
 {
     this.name = name;
     this.index = 0;
+    this.datatype = datatype;
+    this.defaultValue = '';
+    //the owner device, will be assigned later
+    this.parent = null 
+    this.value = ''
+    this.connectedActions = []
+}
+Signal.prototype = {
+    connect:function(action,viseversa){
+        this.connectedActions.push(action)
+        if (typeof(viseversa)=='undefined') viseversa = true
+        if (viseversa) action.connect(this,false)
+    },
+    disconnect:function(action,viseversa){
+        for (var i=0,a;a=this.connectedActions[i];i++){
+            if (a===action){
+                this.connectedActions.splice(i,1)
+                break
+            }
+        }
+        if (typeof(viseversa)=='undefined') viseversa = true
+        if (viseversa) action.disconnect(this,false)
+    },
+    refreshValue:function(interval_seconds){
+        if (typeof(interval_seconds)=='undefined') interval_seconds = 1000
+        var self = this
+        $.ajax({
+            url:'/applications/'+currentApplication.id+'/fbp/read_signal?slot='+this.name,
+            type:'GET'
+        }).done(function(data){
+            // don't save to this.parent.sigProper[this.name]
+            // because it will be serialized, but we don't want it to be
+            if (data.status){
+                self.value = data.value
+            }
+            else{
+                self.value = '--failed to refresh--'
+            }
+            setTimeout(function(){self.refreshValue()},interval_seconds)
+        })
+    },
+    refreshTimestamp:function(stop,interval_seconds){
+        if (this.refreshTimestampTimer) clearTimeout(this.refreshTimestampTimer)
+        if (typeof(stop)=='undefined') stop = false
+        if (stop) return;
+        if (typeof(interval_seconds)=='undefined') interval_seconds = 1000
+        var self = this
+        this.value = new Date().getTime()
+        this.refreshTimestampTimer = setTimeout(function(){
+            self.refreshTimestampTimer = 0
+            self.refreshTimestamp(false,interval_seconds)
+        },interval_seconds)
+    },
+
 }
 
-function Action(name)
+function Action(name,datatype)
 {
     this.name = name;
     this.index = 0;
+    this.datatype = datatype;
+    this.defaultValue = '';
+    //the owner device, will be assigned later
+    this.parent = null
+    this.connectedSignals = []
 }
-
+Action.prototype = {
+    connect:function(signal,viseversa){
+        this.connectedSignals.push(signal)
+        if (typeof(viseversa)=='undefined') viseversa = true
+        if (viseversa) signal.connect(this,false)
+    },
+    disconnect:function(signal,viseversa){
+        for (var i=0,s;s=this.connectedSignals[i];i++){
+            if (s===signal){
+                this.connectedSignals.splice(i,1)
+                break
+            }
+        }
+        if (typeof(viseversa)=='undefined') viseversa = true
+        if (viseversa) signal.disconnect(this,false)
+    },
+    repeatAction:function(){
+        var self = this
+        this.refreshValueToServer(function(){
+            setTimeout(function(){
+                self.repeatAction()
+            },1000)  
+        })
+    },
+    refreshValueToServer:function(callback){
+        var dataobj = []
+        for (var i=0,s;s=this.connectedSignals[i];i++){
+            if (s.value) dataobj.push(s.value)
+        }
+        if (dataobj.length==1) dataobj = dataobj[0]
+        
+        var samevalue = true
+        if (typeof(dataobj)=='object' && typeof(this.lastValue2Server)=='object'){
+            for (var k in dataobj){
+                if (dataobj[k] != this.lastValue2Server[k]){
+                    samevalue = false
+                    break
+                }
+            }
+        }
+        else if (dataobj!=this.lastValue2Server){
+            samevalue = false
+        }
+        /* don't send again for same value */
+        if (samevalue) {
+            callback()
+            return;
+        }
+        var self = this
+        $.ajax({
+            url:'/nodered/outputto',
+            type:'POST',
+            dataType:'json',
+            contentType:'application/x-www-form-urlencoded',
+            data:{'message':JSON.stringify(dataobj)}
+        }).done(function(data){
+            if (callback) callback(data)
+        })
+    }       
+}
 
 
 
@@ -1370,7 +1518,7 @@ function FBP_map_do(){
                 else{
                     for (var j=0,k=instances.length;j<k;j++){
                         var instance = instances[j]
-                        $table.append('<tr class=info><td>'+instance.instanceId+'</td><td>(Virtual) '+instance.name+'</td><td>'+instance.nodeId+'</td><td>'+instance.portNumber+'</td></tr>');
+                        $table.append('<tr class=info><td>'+instance.instanceId+'</td><td>(Virtual) '+instance.name+'</td><td>&lt;'+location.hostname+'&gt;:'+instance.nodeId+'</td><td>'+instance.portNumber+'</td></tr>');
                     }
                 }
             }
@@ -1459,3 +1607,34 @@ function FBP_submit2AppstoreDialog(){
         })
     })
 }
+// monitor property refreshment
+var refreshMonitorPropertyTimer;
+var monitorPropertySlots;
+function refreshMonitorProperty(){
+    if (monitorPropertySlots){
+        //reset
+        for (var i=0,span;span=monitorPropertySlots[i];i++){
+            span.innerText = span.innerText.length ==  1 ? '' : span.innerText.substr(0,1)
+        }
+    }
+    var properties = document.querySelectorAll('.wublock .slot.monitor_enable')
+    monitorPropertySlots = []
+    for (var i=0,prop;prop=properties[i];i++){
+        var cols = prop.getAttribute('id').split('_')
+        var node;
+        for (var j = 0,gnode;gnode=g_nodes[j];j++){
+            if (gnode.id==cols[1]){
+                node = gnode;
+                break
+            }
+        }
+        if (!node) continue;
+        var slot = node.slots[parseInt(cols[2])]
+        var tail = prop.querySelector('.slottail')
+        monitorPropertySlots.push(tail)
+        var headvalue = tail.innerText
+        tail.innerText = headvalue.length ? headvalue.substr(0,1)+slot.defaultValue : ''
+    }
+    refreshMonitorPropertyTimer = setTimeout(refreshMonitorProperty,3000)
+}
+if (!refreshMonitorPropertyTimer) refreshMonitorProperty()
