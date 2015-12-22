@@ -155,7 +155,8 @@ public class RTCBenchmark {
         // K used to be a pointer to somewhere in skey->K.
         // But since Java doesn't allow the same pointer trick, I'll use K as an offset to add when indexing skey->K instead.
         int A, B;
-        int r, K;
+        int r;
+        short K;
 
         // #define LOAD32L(x, y)                            \
         //   do { x = ((uint32_t)((y)[3] & 255)<<24) | \
@@ -164,11 +165,11 @@ public class RTCBenchmark {
         //            ((uint32_t)((y)[0] & 255)); } while(0)
         // LOAD32L(A, &pt[0]);
         // LOAD32L(B, &pt[4]);
-        A = ((int)(pt[3] & 255)<<24) | ((int)(pt[2] & 255)<<16) | ((int)(pt[1] & 255)<<8) | ((int)(pt[0] & 255));
-        B = ((int)(pt[4+3] & 255)<<24) | ((int)(pt[4+2] & 255)<<16) | ((int)(pt[4+1] & 255)<<8) | ((int)(pt[4+0] & 255));
+        A = ((int)(pt[(short)3] & 255)<<24) | ((int)(pt[(short)2] & 255)<<16) | ((int)(pt[(short)1] & 255)<<8) | ((int)(pt[(short)0] & 255));
+        B = ((int)(pt[(short)(4+3)] & 255)<<24) | ((int)(pt[(short)(4+2)] & 255)<<16) | ((int)(pt[(short)(4+1)] & 255)<<8) | ((int)(pt[(short)(4+0)] & 255));
 
-        A += skey_K[0];
-        B += skey_K[1];
+        A += skey_K[(short)0];
+        B += skey_K[(short)1];
         // K  = skey_K + 2;
         K  = 2;
 
@@ -179,16 +180,16 @@ public class RTCBenchmark {
                 // B = ROL(B ^ A, A) + K[1];
                 // A = ROL(A ^ B, B) + K[2];
                 // B = ROL(B ^ A, A) + K[3];
-                A = ( ((A ^ B)<<(B&31)) | ((A ^ B)>>>(32-(B&31))) ) + skey_K[K+0];
-                B = ( ((B ^ A)<<(A&31)) | ((B ^ A)>>>(32-(A&31))) ) + skey_K[K+1];
-                A = ( ((A ^ B)<<(B&31)) | ((A ^ B)>>>(32-(B&31))) ) + skey_K[K+2];
-                B = ( ((B ^ A)<<(A&31)) | ((B ^ A)>>>(32-(A&31))) ) + skey_K[K+3];
+                A = ( ((A ^ B)<<(B&31)) | ((A ^ B)>>>(32-(B&31))) ) + skey_K[(short)(K+0)];
+                B = ( ((B ^ A)<<(A&31)) | ((B ^ A)>>>(32-(A&31))) ) + skey_K[(short)(K+1)];
+                A = ( ((A ^ B)<<(B&31)) | ((A ^ B)>>>(32-(B&31))) ) + skey_K[(short)(K+2)];
+                B = ( ((B ^ A)<<(A&31)) | ((B ^ A)>>>(32-(A&31))) ) + skey_K[(short)(K+3)];
                 K += 4;
           }
         } else {
             for (r = 0; r < skey_rounds; r++) {
-                A = ( ((A ^ B)<<(B&31)) | ((A ^ B)>>>(32-(B&31))) ) + skey_K[K+0];
-                B = ( ((B ^ A)<<(A&31)) | ((B ^ A)>>>(32-(A&31))) ) + skey_K[K+1];
+                A = ( ((A ^ B)<<(B&31)) | ((A ^ B)>>>(32-(B&31))) ) + skey_K[(short)(K+0)];
+                B = ( ((B ^ A)<<(A&31)) | ((B ^ A)>>>(32-(A&31))) ) + skey_K[(short)(K+1)];
                 K += 2;
             }
         }
@@ -197,8 +198,8 @@ public class RTCBenchmark {
         //        (y)[1] = (unsigned char)(((x)>>8)&255); (y)[0] = (unsigned char)((x)&255); } while(0)
         // STORE32L(A, &ct[0]);
         // STORE32L(B, &ct[4]);
-        ct[3] = (byte)(((A)>>>24)&255); ct[2] = (byte)(((A)>>>16)&255); ct[1] = (byte)(((A)>>>8)&255); ct[0] = (byte)((A)&255);
-        ct[4+3] = (byte)(((B)>>>24)&255); ct[4+2] = (byte)(((B)>>>16)&255); ct[4+1] = (byte)(((B)>>>8)&255); ct[4+0] = (byte)((B)&255);
+        ct[(short)3] = (byte)(((A)>>>24)&255); ct[(short)2] = (byte)(((A)>>>16)&255); ct[(short)1] = (byte)(((A)>>>8)&255); ct[(short)0] = (byte)((A)&255);
+        ct[(short)(4+3)] = (byte)(((B)>>>24)&255); ct[(short)(4+2)] = (byte)(((B)>>>16)&255); ct[(short)(4+1)] = (byte)(((B)>>>8)&255); ct[(short)(4+0)] = (byte)((B)&255);
 
         Stopwatch.measure();
         return CRYPT_OK;

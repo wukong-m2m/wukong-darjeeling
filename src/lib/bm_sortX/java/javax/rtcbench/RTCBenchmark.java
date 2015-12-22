@@ -29,8 +29,8 @@ public class RTCBenchmark {
 	public static void rtcbenchmark_measure_java_performance(short[] numbers) {
 		Stopwatch.resetAndStart();
 
-		for (int i=0; i<NUMNUMBERS; i++) {
-			for (int j=0; j<NUMNUMBERS-i-1; j++) {
+		for (short i=0; i<NUMNUMBERS; i++) {
+			for (short j=0; j<NUMNUMBERS-i-1; j++) {
 				if (numbers[j]>numbers[j+1]) {
 					short temp = numbers[j];
 					numbers[j] = numbers[j+1];

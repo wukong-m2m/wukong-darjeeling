@@ -31,18 +31,18 @@ public class RTCBenchmark {
 
         // Exact copy of http://rosettacode.org/wiki/Sorting_algorithms/Heapsort#C, but with SWAP and siftDown inlined to prevent expensive method calls
 
-        int count = a.length;
-        int start, end;
+        short count = (short)a.length;
+        short start, end;
      
         /* heapify */
-        for (start = (count-2)/2; start >=0; start--) {
+        for (start = (short)((count-2)/2); start >=0; start--) {
             // siftDown( a, start, count);
-            // void siftDown( short *a, int start, int count)
+            // void siftDown( short *a, short start, short count)
             // {
-            int root = start;
-            int child;
-            while ( (child = (root << 1)+1) < count ) {
-                int child_plus_one = child + 1;
+            short root = start;
+            short child;
+            while ( (child = (short)((root << 1)+1)) < count ) {
+                short child_plus_one = (short)(child + 1);
                 if ((child_plus_one < count) && (a[child] < a[child_plus_one])) {
                     child += 1;
                 }
@@ -61,17 +61,17 @@ public class RTCBenchmark {
             // }
         }
      
-        for (end=count-1; end > 0; end--) {
+        for (end=(short)(count-1); end > 0; end--) {
             // SWAP(a[end],a[0]);
             {short t=a[end]; a[end]=a[0]; a[0]=t; }
 
             // siftDown(a, 0, end);
-            // void siftDown( short *a, int start, int end)
+            // void siftDown( short *a, short start, short end)
             // {
-            int root = 0;
-            int child;
-            while ( (child = (root << 1)+1) < end ) {
-                int child_plus_one = child + 1;
+            short root = 0;
+            short child;
+            while ( (child = (short)((root << 1)+1)) < end ) {
+                short child_plus_one = (short)(child + 1);
                 if ((child_plus_one < end) && (a[child] < a[child_plus_one])) {
                     child += 1;
                 }

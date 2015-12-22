@@ -131,6 +131,7 @@ public class RTCBenchmark {
 	public static short rtcbenchmark_measure_java_performance(byte[] fr, byte[] fi, short m, boolean inverse) {
 		Stopwatch.resetAndStart();
 
+		// Can't convert FFT to short array index since I wrote it that way from the beginning. Just adding a comment so all benchmarks will show up in the git commit.
 		short mr, nn, i, j, l, k, istep, n, scale;	//int is 16-bit on Arduino (32bit on original system), using short in Java
 		boolean shift;
 		byte qr, qi, tr, ti, wr, wi;						// byte is 8-bit signed

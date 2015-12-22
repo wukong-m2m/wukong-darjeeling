@@ -32,18 +32,18 @@ public class RTCBenchmark {
         short toFind = (short)(numbers[0] - 1);
 
         for (short i=0; i<1000; i++) {
-            int low = 0;
-            int high = numbers.length - 1;
-            int mid;
+            short low = 0;
+            short high = (short)(numbers.length - 1);
+            short mid;
             while (low <= high) {
                 // mid = (low + high) / 2;
-                mid = (low + high) >>> 1; // This is usually much faster than / 2. Any optimising compiler should know this.
+                mid = (short)((low + high) >>> 1); // This is usually much faster than / 2. Any optimising compiler should know this.
 
                 short number_mid;
                 if ((number_mid=numbers[mid]) < toFind) {
-                    low = mid + 1;
+                    low = (short)(mid + 1);
                 } else if (number_mid > toFind) {
-                    high = mid - 1;
+                    high = (short)(mid - 1);
                 } else {
                     break; // Found. Would return from here in a normal search, but for this benchmark we just want to try many numbers.
                 }
