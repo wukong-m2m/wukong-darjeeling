@@ -57,6 +57,7 @@ import org.csiro.darjeeling.infuser.processingphase.IndexVisitor;
 import org.csiro.darjeeling.infuser.processingphase.InterfaceListFlattenVisitor;
 import org.csiro.darjeeling.infuser.processingphase.StringTableVisitor;
 import org.csiro.darjeeling.infuser.structure.elements.internal.InternalInfusion;
+import org.csiro.darjeeling.infuser.bytecode.Opcode;
 import org.w3c.dom.Document;
 
 /**
@@ -70,7 +71,7 @@ import org.w3c.dom.Document;
 public class Infuser
 {
 	// Version of the infusion format. VM should check if it matches the VM's format
-	public static int infusionFormatVersion = 2;
+	public static final int infusionFormatVersion = Opcode.Use32BitArrayIndex ? 100 : 101;
 
 	// never start with version 1.0.0 :-)
 	public static final String version = "1.1.12";

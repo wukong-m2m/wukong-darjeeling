@@ -26,7 +26,13 @@
 #include "program_mem.h"
 
 
-#define INFUSION_FORMAT_VERSION 2
+#ifdef ARRAYINDEX_32BIT
+ // Version 100: 32 bit index
+#define INFUSION_FORMAT_VERSION 100
+#else
+ // Version 101: 16 bit index
+#define INFUSION_FORMAT_VERSION 101
+#endif
 
 enum ElementType
 {

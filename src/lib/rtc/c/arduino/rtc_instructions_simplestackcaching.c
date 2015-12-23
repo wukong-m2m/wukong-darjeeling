@@ -323,10 +323,11 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_SALOAD:
         case JVM_IALOAD:
         case JVM_AALOAD:
-            // Arrays are indexed by a 32bit int. But we don't have enough memory to hold arrays that large, so just ignore the upper two.
-            // Should check that they are 0 when implementing bounds checks.
+#ifdef ARRAYINDEX_32BIT
             rtc_stackcache_pop_32bit(operand_regs1);
-
+#else
+            rtc_stackcache_pop_16bit(operand_regs1);
+#endif
             // POP the array reference into Z
             rtc_stackcache_pop_ref_into_Z(); // Z now points to the base of the array object.
 
@@ -372,6 +373,10 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
                 case JVM_IALOAD:
                     emit_LD_ZINC(operand_regs1[0]);
                     emit_LD_ZINC(operand_regs1[1]);
+                    // If we're using 16 bit index, we now need 2 more registers to store the result
+#ifndef ARRAYINDEX_32BIT
+                    rtc_stackcache_getfree_16bit(operand_regs1+2);
+#endif
                     emit_LD_ZINC(operand_regs1[2]);
                     emit_LD_Z(operand_regs1[3]);
                     rtc_stackcache_push_32bit(operand_regs1);
@@ -406,9 +411,11 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             // POP the array reference into Z
             rtc_stackcache_pop_ref_into_Z(); // Z now points to the base of the array object.
 
-            // Arrays are indexed by a 32bit int. But we don't have enough memory to hold arrays that large, so just ignore the upper two.
-            // Should check that they are 0 when implementing bounds checks.
+#ifdef ARRAYINDEX_32BIT
             rtc_stackcache_pop_32bit(operand_regs2);
+#else
+            rtc_stackcache_pop_16bit(operand_regs2);
+#endif
 
             if (opcode==JVM_SASTORE || opcode==JVM_AASTORE) {
                 // Multiply the index by 2, since we're indexing 16 bit shorts.

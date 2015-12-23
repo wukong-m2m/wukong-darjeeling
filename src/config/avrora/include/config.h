@@ -38,6 +38,8 @@
 #define PACK_STRUCTS
 #define ALIGN_16
 
+// #define ARRAYINDEX_32BIT
+
 /* Please see common/debug.h */
 // #define DARJEELING_DEBUG
 // #define DARJEELING_DEBUG_FRAME

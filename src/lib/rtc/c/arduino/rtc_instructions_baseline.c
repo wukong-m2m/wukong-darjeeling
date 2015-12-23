@@ -235,10 +235,11 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_SALOAD:
         case JVM_IALOAD:
         case JVM_AALOAD:
-            // Arrays are indexed by a 32bit int. But we don't have enough memory to hold arrays that large, so just ignore the upper two.
-            // Should check that they are 0 when implementing bounds checks.
+#ifdef ARRAYINDEX_32BIT
             emit_x_POP_32bit(R22);
-
+#else
+            emit_x_POP_16bit(R22);
+#endif
             // POP the array reference into Z.
             emit_x_POP_REF(RZ); // Z now pointer to the base of the array object.
 
@@ -315,9 +316,11 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
                 break;
             }
 
-            // Arrays are indexed by a 32bit int. But we don't have enough memory to hold arrays that large, so just ignore the upper two.
-            // Should check that they are 0 when implementing bounds checks.
+#ifdef ARRAYINDEX_32BIT
             emit_x_POP_32bit(R18);
+#else
+            emit_x_POP_16bit(R18);
+#endif
 
             // POP the array reference into Z.
             emit_x_POP_REF(RZ); // Z now pointer to the base of the array object.

@@ -67,7 +67,11 @@ static inline void ARRAYLENGTH()
  */
 static inline void BALOAD()
 {
+#ifdef ARRAYINDEX_32BIT
 	int32_t index = popInt();
+#else
+	int16_t index = popShort();
+#endif
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
@@ -97,7 +101,11 @@ static inline void CALOAD()
  */
 static inline void SALOAD()
 {
+#ifdef ARRAYINDEX_32BIT
 	int32_t index = popInt();
+#else
+	int16_t index = popShort();
+#endif
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
@@ -117,7 +125,11 @@ static inline void SALOAD()
  */
 static inline void IALOAD()
 {
+#ifdef ARRAYINDEX_32BIT
 	int32_t index = popInt();
+#else
+	int16_t index = popShort();
+#endif
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
@@ -136,7 +148,11 @@ static inline void IALOAD()
  */
 static inline void LALOAD()
 {
+#ifdef ARRAYINDEX_32BIT
 	int32_t index = popInt();
+#else
+	int16_t index = popShort();
+#endif
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
@@ -151,7 +167,11 @@ static inline void LALOAD()
 
 static inline void AALOAD()
 {
+#ifdef ARRAYINDEX_32BIT
 	int32_t index = popInt();
+#else
+	int16_t index = popShort();
+#endif
 	dj_ref_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
@@ -171,7 +191,11 @@ static inline void AALOAD()
 static inline void BASTORE()
 {
 	uint8_t value = popShort();
+#ifdef ARRAYINDEX_32BIT
 	int32_t index = popInt();
+#else
+	int16_t index = popShort();
+#endif
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 	if (arr==NULL)
 		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
@@ -200,7 +224,11 @@ static inline void CASTORE()
 static inline void SASTORE()
 {
 	int16_t value = popShort();
+#ifdef ARRAYINDEX_32BIT
 	int32_t index = popInt();
+#else
+	int16_t index = popShort();
+#endif
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
@@ -220,7 +248,11 @@ static inline void SASTORE()
 static inline void IASTORE()
 {
 	int32_t value = popInt();
+#ifdef ARRAYINDEX_32BIT
 	int32_t index = popInt();
+#else
+	int16_t index = popShort();
+#endif
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
@@ -241,7 +273,11 @@ static inline void IASTORE()
 static inline void LASTORE()
 {
 	int64_t value = popLong();
+#ifdef ARRAYINDEX_32BIT
 	int32_t index = popInt();
+#else
+	int16_t index = popShort();
+#endif
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
@@ -262,7 +298,11 @@ static inline void LASTORE()
 static inline void AASTORE()
 {
 	ref_t value = popRef();
+#ifdef ARRAYINDEX_32BIT
 	int32_t index = popInt();
+#else
+	int16_t index = popShort();
+#endif
 	dj_ref_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)

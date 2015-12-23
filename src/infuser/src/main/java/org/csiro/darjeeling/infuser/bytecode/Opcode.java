@@ -87,16 +87,16 @@ public enum Opcode
 	ASTORE_1((short)49,"astore_1", null),
 	ASTORE_2((short)50,"astore_2", null),
 	ASTORE_3((short)51,"astore_3", null),
-	BALOAD((short)52,"baload", BaseType.Byte, BaseType.Int),
-	CALOAD((short)53,"caload", BaseType.Char, BaseType.Int),
-	SALOAD((short)54,"saload", BaseType.Short, BaseType.Int),
-	IALOAD((short)55,"iaload", BaseType.Int, BaseType.Int),
-	AALOAD((short)56,"aaload", BaseType.Ref, BaseType.Int),
-	BASTORE((short)57,"bastore", null, BaseType.Int, BaseType.Byte),
-	CASTORE((short)58,"castore", null, BaseType.Int, BaseType.Char),
-	SASTORE((short)59,"sastore", null, BaseType.Int, BaseType.Short),
-	IASTORE((short)60,"iastore", null, BaseType.Int, BaseType.Int),
-	AASTORE((short)61,"aastore", null, BaseType.Int, BaseType.Ref),
+	BALOAD((short)52,"baload", BaseType.Byte, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short),
+	CALOAD((short)53,"caload", BaseType.Char, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short),
+	SALOAD((short)54,"saload", BaseType.Short, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short),
+	IALOAD((short)55,"iaload", BaseType.Int, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short),
+	AALOAD((short)56,"aaload", BaseType.Ref, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short),
+	BASTORE((short)57,"bastore", null, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short, BaseType.Byte),
+	CASTORE((short)58,"castore", null, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short, BaseType.Char),
+	SASTORE((short)59,"sastore", null, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short, BaseType.Short),
+	IASTORE((short)60,"iastore", null, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short, BaseType.Int),
+	AASTORE((short)61,"aastore", null, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short, BaseType.Ref),
 	IPOP((short)62,"ipop", null),
 	IPOP2((short)63,"ipop2", null),
 	IDUP((short)64,"idup", null),
@@ -267,6 +267,8 @@ public enum Opcode
 	S2S((short)-1,"s2s", BaseType.Short, BaseType.Short)
 	;
 	
+	public static final boolean Use32BitArrayIndex = false;
+
 	// Defines the group of conditional branch instructions. Membership testing on this group is used in the isConditionalBranch method.
 	private static List<Opcode> conditionalBranchInstructions = 
 		Arrays.asList(new Opcode[] {
