@@ -503,7 +503,8 @@ public final class StringBuilder {
 			if (newcount > value.length) {
 				expandCapacity(newcount);
 			}
-			value[count++] = c;
+			value[count] = c;
+            count++; // If we put count++ in the array access, the infuser will fail using 16 bit array indexes, because it wants to cast a stack element that isn't the top element.
 			return this;
 		}
     }

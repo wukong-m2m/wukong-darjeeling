@@ -70,6 +70,11 @@ public class AnalyseTypes extends CodeBlockTransformation
 				LocalVariable localVariable = ((LocalVariableInstruction)instruction).getLocalVariable();
 				localVariable.setType(BaseType.Int);
 			}
+			if (instruction.getOpcode()==Opcode.SINC || instruction.getOpcode()==Opcode.SINC_W)
+			{
+				LocalVariable localVariable = ((LocalVariableInstruction)instruction).getLocalVariable();
+				localVariable.setType(BaseType.Short);
+			}
 			
 		}
 		

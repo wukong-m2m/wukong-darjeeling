@@ -279,8 +279,15 @@ public class OptimizeByteCode extends CodeBlockTransformation
 					i=instructions.size()-1;
 					break;
 
+				// Not really sure if I should replace the cast here, but it seems not because the correct code is generated.
+				case L2I:
+					handle.setOptimisationHint(0, BaseType.Int);
+					break;
+
+				case L2S:
+					handle.setOptimisationHint(0, BaseType.Short);
+					break;
 			}
-			
 		}
 	}
 	
