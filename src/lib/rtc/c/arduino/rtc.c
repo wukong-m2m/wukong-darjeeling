@@ -126,7 +126,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     translationstate.branch_target_table_start_ptr = branch_target_table_start_ptr;
     translationstate.end_of_safe_region = END_OF_SAFE_REGION;
     translationstate.branch_target_count = 0;
-
+#ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
+    translationstate.rtc_next_instruction_shifts_1_bit = false;
+#endif // AOT_OPTIMISE_CONSTANT_SHIFTS
+    
     while (pc < translationstate.method_length) {
         pc = rtc_translate_single_instruction(pc, &translationstate);
     }
