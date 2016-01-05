@@ -4,7 +4,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "config.h"
+#include <mraa.h>
+#include "IO_utils.h"
 
+mraa_gpio_context magnetic_gpio;
+    
 void wuclass_magnetic_sensor_setup(wuobject_t *wuobject) {
     #ifdef INTEL_GALILEO_GEN1
     #endif
@@ -44,24 +48,28 @@ void wuclass_magnetic_sensor_setup(wuobject_t *wuobject) {
     system("echo in > /sys/class/gpio/gpio129/direction");
     system("echo high > /sys/class/gpio/gpio214/direction");
     #endif
+    #ifdef MRAA_LIBRARY
+    magnetic_gpio = mraa_gpio_init(4);
+    mraa_gpio_dir(magnetic_gpio, MRAA_GPIO_IN);
+    #endif
 }
 
 void wuclass_magnetic_sensor_update(wuobject_t *wuobject) {
     bool value;
-    int value_i;
-    FILE *fp = NULL;
+    int16_t value_i;
     #ifdef INTEL_GALILEO_GEN1
     #endif
-    #ifdef INTEL_GALILEO_GEN2 
-    while (fp == NULL)
-      fp = fopen("/sys/class/gpio/gpio6/value", "r");
+    #ifdef INTEL_GALILEO_GEN2
+    char this_gpio[10]={"gpio6"};
+    value_i = gpio_read(this_gpio);
     #endif
     #ifdef INTEL_EDISON
-    while (fp == NULL)
-      fp = fopen("/sys/class/gpio/gpio129/value", "r");
+    char this_gpio[10]={"gpio129"};
+    value_i = gpio_read(this_gpio);
     #endif
-    fscanf(fp, "%d", &value_i);
-    fclose(fp);
+    #ifdef MRAA_LIBRARY
+    value_i = mraa_gpio_read(magnetic_gpio);
+    #endif
     value = (value_i != 0);
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Magnetic Sensor): Sensed binary value: %d\n", value); 
     wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_TOUCH_SENSOR_CURRENT_VALUE, value);

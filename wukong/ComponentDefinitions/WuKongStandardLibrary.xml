@@ -26,10 +26,6 @@
         <enum value="PIN2"/>
     </WuTypedef>
 
-    <WuTypedef name="NodeREDMessage" type="enum">
-        <enum value="PAYLOAD"/>
-    </WuTypedef>
-
     <!-- Software -->
     <WuClass name="Threshold" id="1" virtual="true" type="soft">
         <property name="operator" access="readwrite" datatype="ThresholdOperator" default="lt"  />
@@ -109,11 +105,6 @@
         <property name="input2" access="readwrite" datatype="short" default="1"/>
         <property name="output" access="readonly" datatype="boolean" default="false"/>
     </WuClass>
-    <WuClass name="NodeREDAgent" id="13" virtual="true" type="soft">
-        <property name="incoming_from" access="readonly" datatype="NodeREDMessage" default=""  />
-        <property name="outgoing_to" access="writeonly" datatype="NodeREDMessage" default=""  />
-    </WuClass>
-
 
     <!-- Sensors -->
     <WuClass name="Light_Sensor" id="1001" virtual="false" type="hard">
@@ -397,9 +388,21 @@
         <property name="presence" access="readonly" datatype="boolean" default="false" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="2000"  />
     </WuClass>
-
-
-
+    <WuClass name="NodeRED_InputFrom" id="2029" virtual="true" type="soft">
+        <property name="message" access="readonly" datatype="json" default=""  />
+    </WuClass>
+    <WuClass name="NodeRED_OutputTo" id="2030" virtual="true" type="soft">
+        <property name="message" access="writeonly" datatype="any" default=""  />
+    </WuClass>
+    <WuClass name="Annotation" id="2031" virtual="true" type="soft">
+        <property name="content" access="readwrite" datatype="text"  />
+    </WuClass>
+    <WuClass name="Debug_Inspector" id="2032" virtual="true" type="soft">
+        <property name="content" access="writeonly" datatype="any"  />
+    </WuClass>
+    <WuClass name="Debug_Trigger" id="2033" virtual="true" type="soft">
+        <property name="timestamp" access="readonly" datatype="timestamp"  />
+    </WuClass>
 
     <!-- PrClasses -->
    <WuClass name="ICSDemoFloorlampPrClass" id="9000" virtual="false" type="hard">

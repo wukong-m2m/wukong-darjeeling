@@ -12,6 +12,10 @@
 #include <sys/syscall.h>
 #include <math.h>
 #include "config.h"
+#include <mraa.h>
+#include "IO_utils.h"
+
+mraa_aio_context adc_a0;
 
 void wuclass_slider_setup(wuobject_t *wuobject) {
     #ifdef INTEL_GALILEO_GEN1
@@ -47,42 +51,36 @@ void wuclass_slider_setup(wuobject_t *wuobject) {
     system("echo in > /sys/class/gpio/gpio208/direction");
     system("echo high > /sys/class/gpio/gpio214/direction");
     #endif
+    #ifdef MRAA_LIBRARY
+    adc_a0 = mraa_aio_init(0);
+    #endif
     DEBUG_LOG(true, "WKPFUPDATE(Slider): Slider\n");
 }
 
 void wuclass_slider_update(wuobject_t *wuobject) {
-	
+    int16_t num=0;
+    #if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2)
     int16_t fd=-1;
     char buf[4] = {'\\','\\','\\','\\'};
-    #ifdef INTEL_GALILEO_GEN1
     fd = open("/sys/bus/iio/devices/iio:device0/in_voltage0_raw", O_RDONLY | O_NONBLOCK);
     lseek(fd, 0, SEEK_SET);
     read(fd, buf, 4);
     close(fd);
-    #endif
-    #ifdef INTEL_GALILEO_GEN2
-    fd = open("/sys/bus/iio/devices/iio:device0/in_voltage0_raw", O_RDONLY | O_NONBLOCK);
-    lseek(fd, 0, SEEK_SET);
-    read(fd, buf, 4);
-    close(fd);
+    num = aio_read(buf);
     #endif
     #ifdef INTEL_EDISON
+    int16_t fd=-1;
+    char buf[4] = {'\\','\\','\\','\\'};
     fd = open("/sys/bus/iio/devices/iio:device1/in_voltage0_raw", O_RDONLY | O_NONBLOCK);
     lseek(fd, 0, SEEK_SET);
     read(fd, buf, 4);
     close(fd);
     system("echo high > /sys/class/gpio/gpio214/direction"); // this line is nesseccesry but have no idea how to explain it
+    num = aio_read(buf);
     #endif 
-    int16_t num=0;
-    int16_t i;
-    //use this loop to convert char to int
-    //at first, we use atoi (e.g. num=atoi(buf)) but quickly realize that atoi is not reliable
-    for(i=0;i<4;i++){
-        if(buf[i]>='0' && buf[i] <='9')
-            num = num*10 + (buf[i] - '0');
-    }
-    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Slider): Sensed value: %d\n", num);
-    
+    #ifdef MRAA_LIBRARY
+    num = mraa_aio_read(adc_a0);
+    #endif
     int16_t low;
     int16_t high;
     wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_SLIDER_LOW_VALUE, &low);

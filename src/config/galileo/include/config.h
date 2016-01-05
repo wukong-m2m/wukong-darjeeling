@@ -70,7 +70,8 @@
 
 // GPIO: choose 1
 // #define INTEL_GALILEO_GEN1
-#define INTEL_GALILEO_GEN2
+// #define INTEL_GALILEO_GEN2
 // #define INTEL_EDISON
+#define MRAA_LIBRARY
 
 #endif

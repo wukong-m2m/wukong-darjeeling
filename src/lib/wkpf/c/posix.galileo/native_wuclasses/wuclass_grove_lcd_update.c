@@ -7,19 +7,18 @@
 void wuclass_grove_lcd_setup(wuobject_t *wuobject) {
     #ifdef INTEL_GALILEO_GEN1
 	rgb_lcd_init(0);
-	rgb_lcd_clear();
-	rgb_lcd_setRGB(255,0,0);
     #endif
     #ifdef INTEL_GALILEO_GEN2
 	rgb_lcd_init(0);
-	rgb_lcd_clear();
-	rgb_lcd_setRGB(255,0,0);
     #endif
     #ifdef INTEL_EDISON
 	rgb_lcd_init(6);
+    #endif
+    #ifdef MRAA_LIBRARY
+	rgb_lcd_init(6);
+    #endif
 	rgb_lcd_clear();
 	rgb_lcd_setRGB(255,0,0);
-    #endif
 }
 
 void wuclass_grove_lcd_update(wuobject_t *wuobject) {
@@ -28,5 +27,6 @@ void wuclass_grove_lcd_update(wuobject_t *wuobject) {
 
     char buffer[128];
     snprintf(buffer, 128, "Value: %d", value);
+    rgb_lcd_setCursor(0, 0);
     rgb_lcd_print(buffer);
 }

@@ -13,7 +13,7 @@
 #include <sys/syscall.h>
 #include <math.h>
 #include "config.h"
-#include "mraa.h"
+#include <mraa.h>
 
 mraa_uart_context ics_uart;
 int ics_ttyFd;
