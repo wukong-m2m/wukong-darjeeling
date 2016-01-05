@@ -110,7 +110,7 @@ class UDPTransport(Transport):
                         # data[10] is the size of the payload
                         # block unknown sender
                         d_ip, d_port = self.getDeviceAddress(host_id)
-                        if d_ip == 0 or d_ip != ip or d_port != port:
+                        if d_ip == 0 or d_ip != MPTN.ID_FROM_STRING(addr[0]) or d_port != addr[1]:
                             logger.debug("drop unknown sender's packet")
                             continue
                         data = data[11:]
