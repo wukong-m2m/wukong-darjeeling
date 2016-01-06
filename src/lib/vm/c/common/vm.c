@@ -109,6 +109,7 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 
 #ifdef AVRORA
 	avroraPrintStr("DJ Go!\n\r");
+	avroraRTCTraceInit();
 #endif
 	DEBUG_LOG(true, "DJ Go!\n");
 
