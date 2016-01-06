@@ -110,13 +110,6 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     // Reserve space for the branch table
     DEBUG_LOG(DBG_RTC, "[rtc] Reserving %d bytes for %d branch targets at address %p\n", rtc_branch_table_size(methodimpl), dj_di_methodImplementation_getNumberOfBranchTargets(methodimpl), branch_target_table_start_ptr);
     wkreprog_skip(rtc_branch_table_size(methodimpl));
-    // If we're using stack caching, initialise the cache
-#ifdef AOT_STRATEGY_SIMPLESTACKCACHE    
-    rtc_stackcache_init();
-#endif
-#ifdef AOT_STRATEGY_POPPEDSTACKCACHE    
-    rtc_stackcache_init();
-#endif
 
     emit_x_prologue();
 
@@ -135,6 +128,14 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
     ts.rtc_next_instruction_shifts_1_bit = false;
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
+
+    // If we're using stack caching, initialise the cache
+#ifdef AOT_STRATEGY_SIMPLESTACKCACHE    
+    rtc_stackcache_init();
+#endif
+#ifdef AOT_STRATEGY_POPPEDSTACKCACHE    
+    rtc_stackcache_init(&ts);
+#endif
     
     while (ts.pc < ts.method_length) {
         rtc_translate_single_instruction(&ts);

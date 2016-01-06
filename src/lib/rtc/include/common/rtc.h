@@ -40,6 +40,10 @@ typedef struct _rtc_translationstate {
 #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
     bool rtc_next_instruction_shifts_1_bit;
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
+#ifdef AOT_STRATEGY_POPPEDSTACKCACHE
+    uint16_t current_instruction_pc; // We may need this later, after the instruction already forwarded pc to skip over arguments
+    uint16_t current_instruction_valuetag;
+#endif // AOT_STRATEGY_POPPEDSTACKCACHE
 } rtc_translationstate;
 
 #endif // RTC_H

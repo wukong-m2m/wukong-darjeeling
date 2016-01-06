@@ -1,8 +1,9 @@
 #ifndef RTC_STACKCACHE_H
 #define RTC_STACKCACHE_H
 #include <stdint.h>
+#include "rtc.h"
 
-void rtc_stackcache_init();
+void rtc_stackcache_init(rtc_translationstate *ts);
 
 void rtc_stackcache_getfree_16bit(uint8_t *regs);
 void rtc_stackcache_getfree_32bit(uint8_t *regs);
@@ -29,5 +30,8 @@ void rtc_stackcache_clear_call_used_regs_before_native_function_call(); // Pushe
 void rtc_stackcache_flush_all_regs();                                   // Pushes all registers onto the stack, so the stack is in the state the next JVM method expects
 
 void rtc_stackcache_next_instruction();
+
+bool rtc_poppedstackcache_can_I_skip_this();
+void rtc_poppedstackcache_brtarget();
 
 #endif // RTC_STACKCACHE_H

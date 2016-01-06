@@ -52,6 +52,12 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
     uint8_t *operand_regs2 = operand_regs1 + 4;
     uint8_t *operand_regs3 = operand_regs1 + 8;
 
+    if (!rtc_poppedstackcache_can_I_skip_this()) {
+    // rtc_poppedstackcache will check if the result of the current instruction
+    // is already in a register. if so it will update the cache state to put this
+    // value at the top of the stack, and return true.
+    // if it returns false, we just need to generate this value as normal.
+    // not that poppedstackcache uses a global reference to ts, which is a bit ugly
     switch (opcode) {
         case JVM_NOP:
         break;
@@ -1789,6 +1795,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         break;
         case JVM_BRTARGET:
             rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
+            rtc_poppedstackcache_brtarget();
 
             // This is a noop, but we need to record the offset of the next
             // instruction in the branch target table at the start of the method.
@@ -1810,6 +1817,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             DEBUG_LOG(DBG_RTC, "Unimplemented Java opcode %d at pc=%d\n", opcode, pc);
             dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
         break;
+    }
     }
 
     rtc_stackcache_next_instruction();
