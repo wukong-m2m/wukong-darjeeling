@@ -23,7 +23,7 @@ extern int16_t *intStack;
 extern ref_t *refStack;
 extern ref_t *localReferenceVariables;
 
-uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts) {
+void rtc_translate_single_instruction(rtc_translationstate *ts) {
     dj_infusion *target_infusion;
     dj_di_pointer tmp_current_position;
     uint8_t offset;
@@ -31,20 +31,20 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
     int8_t i;
 
 #ifdef AVRORA
-    avroraRTCTraceDarjeelingOpcodeInProgmem(ts->jvm_code_start + pc);
+    avroraRTCTraceDarjeelingOpcodeInProgmem(ts->jvm_code_start + ts->pc);
 #endif
 
-    uint8_t opcode = dj_di_getU8(ts->jvm_code_start + pc);
+    uint8_t opcode = dj_di_getU8(ts->jvm_code_start + ts->pc);
 #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
-    uint8_t next_opcode = dj_di_getU8(ts->jvm_code_start + pc + 1);
+    uint8_t next_opcode = dj_di_getU8(ts->jvm_code_start + ts->pc + 1);
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
     DEBUG_LOG(DBG_RTCTRACE, "[rtc] JVM opcode %d (pc=%d, method length=%d)\n", opcode, pc, ts->method_length);
 
     // Load possible operands. May waste some time if we don't need then, but saves some space.
-    uint8_t jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + pc + 1);
-    uint8_t jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + pc + 2);
-    uint8_t jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + pc + 3);
-    uint8_t jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + pc + 4);
+    uint8_t jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ts->pc + 1);
+    uint8_t jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + ts->pc + 2);
+    uint8_t jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ts->pc + 3);
+    uint8_t jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ts->pc + 4);
     uint16_t jvm_operand_word0 = (jvm_operand_byte0 << 8) | jvm_operand_byte1;
     uint16_t jvm_operand_word1 = (jvm_operand_byte2 << 8) | jvm_operand_byte3;
     int16_t jvm_operand_signed_word;
@@ -150,7 +150,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             rtc_stackcache_push_ref(operand_regs1);
         break;
         case JVM_BSPUSH:
-            pc += 1; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 1; // Skip operand (already read into jvm_operand_byte0)
             if (rtc_stackcache_getfree_16bit_prefer_ge_R16(operand_regs1)) {
                 emit_LDI(operand_regs1[0], jvm_operand_byte0);
                 emit_CLR(operand_regs1[1]);
@@ -162,7 +162,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             rtc_stackcache_push_16bit(operand_regs1);
         break;
         case JVM_BIPUSH:
-            pc += 1; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 1; // Skip operand (already read into jvm_operand_byte0)
 
             if (rtc_stackcache_getfree_16bit_prefer_ge_R16(operand_regs1)) {
                 emit_LDI(operand_regs1[0], jvm_operand_byte0);
@@ -179,7 +179,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         break;
         case JVM_SSPUSH:
             // bytecode is big endian
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
             if (rtc_stackcache_getfree_16bit_prefer_ge_R16(operand_regs1)) {
                 emit_LDI(operand_regs1[0], jvm_operand_byte1);
@@ -193,7 +193,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         break;
         case JVM_SIPUSH:
             // bytecode is big endian
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
             if (rtc_stackcache_getfree_16bit_prefer_ge_R16(operand_regs1)) {
                 emit_LDI(operand_regs1[0], jvm_operand_byte1);
@@ -210,7 +210,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         break;
         case JVM_IIPUSH:
             // bytecode is big endian
-            pc += 4; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 4; // Skip operand (already read into jvm_operand_byte0)
 
             if (rtc_stackcache_getfree_16bit_prefer_ge_R16(operand_regs1)) {
                 emit_LDI(operand_regs1[0], jvm_operand_byte3);
@@ -231,7 +231,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             rtc_stackcache_push_32bit(operand_regs1);
         break;
         case JVM_LDS:
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
@@ -258,7 +258,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_SLOAD_2:
         case JVM_SLOAD_3:
             if (opcode == JVM_SLOAD)
-                pc += 1; // Skip operand (already read into jvm_operand_byte0)
+                ts->pc += 1; // Skip operand (already read into jvm_operand_byte0)
             else
                 jvm_operand_byte0 = opcode - JVM_SLOAD_0;
             rtc_stackcache_getfree_16bit(operand_regs1);
@@ -272,7 +272,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_ILOAD_2:
         case JVM_ILOAD_3:
             if (opcode == JVM_ILOAD)
-                pc += 1; // Skip operand (already read into jvm_operand_byte0)
+                ts->pc += 1; // Skip operand (already read into jvm_operand_byte0)
             else
                 jvm_operand_byte0 = opcode - JVM_ILOAD_0;
             rtc_stackcache_getfree_32bit(operand_regs1);
@@ -288,7 +288,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_ALOAD_2:
         case JVM_ALOAD_3:
             if (opcode == JVM_ALOAD)
-                pc += 1; // Skip operand (already read into jvm_operand_byte0)
+                ts->pc += 1; // Skip operand (already read into jvm_operand_byte0)
             else
                 jvm_operand_byte0 = opcode - JVM_ALOAD_0;
             rtc_stackcache_getfree_ref(operand_regs1);
@@ -302,7 +302,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_SSTORE_2:
         case JVM_SSTORE_3:
             if (opcode == JVM_SSTORE)
-                pc += 1; // Skip operand (already read into jvm_operand_byte0)
+                ts->pc += 1; // Skip operand (already read into jvm_operand_byte0)
             else
                 jvm_operand_byte0 = opcode - JVM_SSTORE_0;
             rtc_stackcache_pop_16bit(operand_regs1);
@@ -315,7 +315,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_ISTORE_2:
         case JVM_ISTORE_3:
             if (opcode == JVM_ISTORE)
-                pc += 1; // Skip operand (already read into jvm_operand_byte0)
+                ts->pc += 1; // Skip operand (already read into jvm_operand_byte0)
             else
                 jvm_operand_byte0 = opcode - JVM_ISTORE_0;
             rtc_stackcache_pop_32bit(operand_regs1);
@@ -330,7 +330,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_ASTORE_2:
         case JVM_ASTORE_3:
             if (opcode == JVM_ASTORE)
-                pc += 1; // Skip operand (already read into jvm_operand_byte0)
+                ts->pc += 1; // Skip operand (already read into jvm_operand_byte0)
             else
                 jvm_operand_byte0 = opcode - JVM_ASTORE_0;
             rtc_stackcache_pop_ref(operand_regs1);
@@ -504,7 +504,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             rtc_stackcache_push_32bit(operand_regs2);
         break;
         case JVM_IDUP_X:
-            m = dj_di_getU8(ts->jvm_code_start + ++pc); // 
+            m = dj_di_getU8(ts->jvm_code_start + ++(ts->pc)); // 
             n = m & 15;
             m >>= 4;
             // m: how many integer slots to duplicate
@@ -553,7 +553,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         break;
         case JVM_GETFIELD_B:
         case JVM_GETFIELD_C:
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
             rtc_stackcache_getfree_16bit(operand_regs1);
             // POP the reference into Z
@@ -568,7 +568,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             rtc_stackcache_push_16bit(operand_regs1);
         break;
         case JVM_GETFIELD_S:
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
             rtc_stackcache_getfree_16bit(operand_regs1);
             // POP the reference into Z
@@ -580,7 +580,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             rtc_stackcache_push_16bit(operand_regs1);
         break;
         case JVM_GETFIELD_I:
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
             rtc_stackcache_getfree_32bit(operand_regs1);
             // POP the reference into Z
@@ -594,7 +594,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             rtc_stackcache_push_32bit(operand_regs1);
         break;
         case JVM_GETFIELD_A:
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
             rtc_stackcache_clear_call_used_regs_before_native_function_call();
             rtc_stackcache_pop_ref_into_fixed_reg(R24); // POP the reference
@@ -612,20 +612,20 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         break;
         case JVM_PUTFIELD_B:
         case JVM_PUTFIELD_C:
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
             rtc_stackcache_pop_16bit(operand_regs1);
             rtc_stackcache_pop_ref_into_Z();
             emit_STD(operand_regs1[0], Z, jvm_operand_word0);
         break;
         case JVM_PUTFIELD_S:
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
             rtc_stackcache_pop_16bit(operand_regs1);
             rtc_stackcache_pop_ref_into_Z();
             emit_STD(operand_regs1[0], Z, jvm_operand_word0);
             emit_STD(operand_regs1[1], Z, jvm_operand_word0+1);
         break;
         case JVM_PUTFIELD_I:
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
             rtc_stackcache_pop_32bit(operand_regs1);
             rtc_stackcache_pop_ref_into_Z();
             emit_STD(operand_regs1[0], Z, jvm_operand_word0);
@@ -634,7 +634,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             emit_STD(operand_regs1[3], Z, jvm_operand_word0+3);
         break;
         case JVM_PUTFIELD_A:
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
             rtc_stackcache_pop_ref(operand_regs1); // POP the value to store
             rtc_stackcache_pop_ref(operand_regs2); // POP the reference
@@ -663,7 +663,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_PUTSTATIC_S:
         case JVM_PUTSTATIC_I:
         case JVM_PUTSTATIC_A:
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
             // jvm_operand_byte0: the infusion.
             // jvm_operand_byte1: Get the field.
             emit_MOVW(RZ, R2); // Z now points to the current infusion (0)
@@ -1145,10 +1145,10 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             // jvm_operand_byte0: index of int local
             if (opcode == JVM_SINC) {
                 jvm_operand_signed_word = (int8_t)jvm_operand_byte1;
-                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
             } else {
                 jvm_operand_signed_word = (int16_t)(((uint16_t)jvm_operand_byte1 << 8) + jvm_operand_byte2);
-                pc += 3; // Skip operand (already read into jvm_operand_byte0)
+                ts->pc += 3; // Skip operand (already read into jvm_operand_byte0)
             }
             offset = offset_for_intlocal_short(ts->methodimpl, jvm_operand_byte0);
             if (jvm_operand_signed_word == 1) {
@@ -1190,10 +1190,10 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             // jvm_operand_byte0: index of int local
             if (opcode == JVM_IINC) {
                 jvm_operand_signed_word = (int8_t)jvm_operand_byte1;
-                pc += 2; // Skip operand (already read into jvm_operand_byte0)
+                ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
             } else {
                 jvm_operand_signed_word = (int16_t)(((uint16_t)jvm_operand_byte1 << 8) + jvm_operand_byte2);
-                pc += 3; // Skip operand (already read into jvm_operand_byte0)
+                ts->pc += 3; // Skip operand (already read into jvm_operand_byte0)
             }
             offset = offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0);
             if (jvm_operand_signed_word == 1) {
@@ -1297,7 +1297,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_INVOKESPECIAL:
         case JVM_INVOKESTATIC:
         case JVM_INVOKEINTERFACE:
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
             // clear the stack cache, so all stack elements are in memory, not in registers
             rtc_stackcache_flush_all_regs();
@@ -1330,7 +1330,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             emit_LDI(R25, jvm_operand_byte1); // entity id
             if        (opcode == JVM_INVOKEVIRTUAL
                     || opcode == JVM_INVOKEINTERFACE) {
-                jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ++pc);
+                jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
                 emit_LDI(R22, jvm_operand_byte2); // nr_ref_args
                 emit_x_CALL((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE);
             } else if (opcode == JVM_INVOKESPECIAL) {
@@ -1355,7 +1355,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             emit_POP(R25); // JUST POP AND DISCARD TO CLEAR THE BYTE WE RESERVED IN THE FIRST LINE FOR INVOKESTATIC. SEE COMMENT ABOVE.
         break;
         case JVM_NEW:
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
             rtc_stackcache_clear_call_used_regs_before_native_function_call();
 
@@ -1379,7 +1379,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             rtc_stackcache_push_ref_from_scratch_R24R25();
         break;
         case JVM_NEWARRAY:
-            pc += 1; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 1; // Skip operand (already read into jvm_operand_byte0)
 
             rtc_stackcache_clear_call_used_regs_before_native_function_call();
 
@@ -1404,7 +1404,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             rtc_stackcache_push_ref_from_scratch_R24R25();
         break;
         case JVM_ANEWARRAY:
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
             rtc_stackcache_clear_call_used_regs_before_native_function_call();
 
@@ -1436,7 +1436,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             rtc_stackcache_push_16bit(operand_regs1);
         break;
         case JVM_CHECKCAST:
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
             // TODO: optimise this. CHECKCAST should only peek.
             rtc_stackcache_pop_ref(operand_regs1);
@@ -1453,7 +1453,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             emit_x_CALL((uint16_t)&RTC_CHECKCAST);
         break;
         case JVM_INSTANCEOF:
-            pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
             rtc_stackcache_clear_call_used_regs_before_native_function_call();
             rtc_stackcache_pop_ref_into_fixed_reg(R22); // reference to the object
@@ -1475,7 +1475,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_SIFLE:
             // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
-            pc += 4;
+            ts->pc += 4;
 
             rtc_stackcache_pop_16bit(operand_regs1);
             rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
@@ -1509,7 +1509,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_IIFLE:
             // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
-            pc += 4;
+            ts->pc += 4;
 
             rtc_stackcache_pop_32bit(operand_regs1);
             rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
@@ -1547,7 +1547,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_IFNONNULL:
             // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
-            pc += 4;
+            ts->pc += 4;
 
             rtc_stackcache_pop_ref(operand_regs1);
             rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
@@ -1567,7 +1567,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_IF_SCMPLE:
             // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
-            pc += 4;
+            ts->pc += 4;
             rtc_stackcache_pop_16bit(operand_regs1);
             rtc_stackcache_pop_16bit(operand_regs2);
             rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
@@ -1606,7 +1606,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_IF_ICMPLE:
             // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
-            pc += 4;
+            ts->pc += 4;
             rtc_stackcache_pop_32bit(operand_regs1);
             rtc_stackcache_pop_32bit(operand_regs2);
             rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
@@ -1652,7 +1652,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_IF_ACMPNE:
             // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
-            pc += 4;
+            ts->pc += 4;
             rtc_stackcache_pop_ref(operand_regs1);
             rtc_stackcache_pop_ref(operand_regs2);                
             rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
@@ -1669,7 +1669,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_GOTO:
             // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
-            pc += 4;
+            ts->pc += 4;
 
             rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
             emit_x_branchtag(OPCODE_RJMP, jvm_operand_word1);
@@ -1677,16 +1677,16 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
         case JVM_TABLESWITCH: {
             // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
-            pc += 4;
+            ts->pc += 4;
 
             // Pop the key value, and reserve some registers
             rtc_stackcache_pop_32bit(operand_regs1);
 
             // Load the upper bound
-            jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ++pc);
-            jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + ++pc);
-            jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ++pc);
-            jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ++pc);
+            jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
+            jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
+            jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
+            jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
             int32_t upperbound = (int32_t)(((uint32_t)jvm_operand_byte0 << 24) | ((uint32_t)jvm_operand_byte1 << 16) | ((uint32_t)jvm_operand_byte2 << 8) | ((uint32_t)jvm_operand_byte3 << 0));
             emit_LDI(R24, jvm_operand_byte0); // Bytecode is big endian
             emit_CP (R24, operand_regs1[0]);
@@ -1699,10 +1699,10 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
 
             // Lower than or equal to the upper bound: load the lower bound
-            jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ++pc);
-            jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + ++pc);
-            jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ++pc);
-            jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ++pc);
+            jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
+            jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
+            jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
+            jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
             int32_t lowerbound = (int32_t)(((uint32_t)jvm_operand_byte0 << 24) | ((uint32_t)jvm_operand_byte1 << 16) | ((uint32_t)jvm_operand_byte2 << 8) | ((uint32_t)jvm_operand_byte3 << 0));
             emit_LDI(R24, jvm_operand_byte0); // Bytecode is big endian
             emit_CP(operand_regs1[0], R24);
@@ -1746,8 +1746,8 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
 
             // Now emit the RJMP table itself
             for (int i=0; i<(upperbound-lowerbound+1); i++) { // +1 since both bounds are inclusive
-                jvm_operand_word0 = (dj_di_getU8(ts->jvm_code_start + pc + 3) << 8) | dj_di_getU8(ts->jvm_code_start + pc + 4);
-                pc += 4;
+                jvm_operand_word0 = (dj_di_getU8(ts->jvm_code_start + ts->pc + 3) << 8) | dj_di_getU8(ts->jvm_code_start + ts->pc + 4);
+                ts->pc += 4;
                 emit_x_branchtag(OPCODE_RJMP, jvm_operand_word0);
             }
         }
@@ -1756,23 +1756,23 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
             // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
             uint16_t default_branch_target = jvm_operand_word1;
-            pc += 4;
+            ts->pc += 4;
 
             // Pop the key value, and reserve some registers
             rtc_stackcache_pop_32bit(operand_regs1);
             rtc_stackcache_getfree_32bit(operand_regs2);
 
-            uint16_t number_of_cases = (dj_di_getU8(ts->jvm_code_start + pc + 1) << 8) | dj_di_getU8(ts->jvm_code_start + pc + 2);
-            pc += 2;
+            uint16_t number_of_cases = (dj_di_getU8(ts->jvm_code_start + ts->pc + 1) << 8) | dj_di_getU8(ts->jvm_code_start + ts->pc + 2);
+            ts->pc += 2;
             for (int i=0; i<number_of_cases; i++) {
                 // Get the case label
-                jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ++pc);
-                jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + ++pc);
-                jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ++pc);
-                jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ++pc);
+                jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
+                jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
+                jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
+                jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
                 // Get the branch target (and skip the branch address used by the interpreter)
-                jvm_operand_word0 = (dj_di_getU8(ts->jvm_code_start + pc + 3) << 8) | dj_di_getU8(ts->jvm_code_start + pc + 4);
-                pc += 4;
+                jvm_operand_word0 = (dj_di_getU8(ts->jvm_code_start + ts->pc + 3) << 8) | dj_di_getU8(ts->jvm_code_start + ts->pc + 4);
+                ts->pc += 4;
                 emit_LDI(R24, jvm_operand_byte0); // Bytecode is big endian
                 emit_CP(R24, operand_regs1[0]);
                 emit_LDI(R24, jvm_operand_byte1);
@@ -1813,7 +1813,7 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
     }
 
     rtc_stackcache_next_instruction();
-    return pc+1;
+    ts->pc++;
 }
 
 #endif // AOT_STRATEGY_POPPEDSTACKCACHE

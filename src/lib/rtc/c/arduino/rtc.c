@@ -123,21 +123,21 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     // translate the method
     DEBUG_LOG(DBG_RTC, "[rtc] method length %d\n", method_length);
 
-    uint16_t pc = 0;
-    rtc_translationstate translationstate;
-    translationstate.infusion = infusion;
-    translationstate.methodimpl = methodimpl;
-    translationstate.jvm_code_start = dj_di_methodImplementation_getData(methodimpl);
-    translationstate.method_length = dj_di_methodImplementation_getLength(methodimpl);
-    translationstate.branch_target_table_start_ptr = branch_target_table_start_ptr;
-    translationstate.end_of_safe_region = END_OF_SAFE_REGION;
-    translationstate.branch_target_count = 0;
+    rtc_translationstate ts;
+    ts.pc = 0;
+    ts.infusion = infusion;
+    ts.methodimpl = methodimpl;
+    ts.jvm_code_start = dj_di_methodImplementation_getData(methodimpl);
+    ts.method_length = dj_di_methodImplementation_getLength(methodimpl);
+    ts.branch_target_table_start_ptr = branch_target_table_start_ptr;
+    ts.end_of_safe_region = END_OF_SAFE_REGION;
+    ts.branch_target_count = 0;
 #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
-    translationstate.rtc_next_instruction_shifts_1_bit = false;
+    ts.rtc_next_instruction_shifts_1_bit = false;
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
     
-    while (pc < translationstate.method_length) {
-        pc = rtc_translate_single_instruction(pc, &translationstate);
+    while (ts.pc < ts.method_length) {
+        rtc_translate_single_instruction(&ts);
     }
 
     emit_flush_to_flash();
