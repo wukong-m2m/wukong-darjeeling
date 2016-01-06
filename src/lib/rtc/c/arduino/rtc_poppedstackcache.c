@@ -1,9 +1,9 @@
-#ifdef AOT_STRATEGY_SIMPLESTACKCACHING
+#ifdef AOT_STRATEGY_POPPEDSTACKCACHE
 
 #include <stdint.h>
 #include <stdbool.h>
 #include "panic.h"
-#include "rtc_stackcache.h"
+#include "rtc_poppedstackcache.h"
 #include "asm.h"
 
 #define RTC_STACKCACHE_MAX_IDX             16 // 16 because we only keep track of pairs
@@ -457,4 +457,4 @@ void rtc_stackcache_next_instruction() {
     }
 }
 
-#endif // AOT_STRATEGY_SIMPLESTACKCACHING
+#endif // AOT_STRATEGY_POPPEDSTACKCACHE

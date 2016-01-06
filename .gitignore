@@ -38,3 +38,4 @@ wukong/tools/testrtt/testrtt
 bin
 obj
 src/config/avrora/results_*
+src/config/avrora/allresults

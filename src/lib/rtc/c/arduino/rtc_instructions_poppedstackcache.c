@@ -1,4 +1,4 @@
-#ifdef AOT_STRATEGY_SIMPLESTACKCACHING
+#ifdef AOT_STRATEGY_POPPEDSTACKCACHE
 
 #include "types.h"
 #include "array.h"
@@ -11,7 +11,7 @@
 #include "rtc_branches.h"
 #include "rtc_complex_instructions.h"
 #include "asm.h"
-#include "rtc_stackcache.h"
+#include "rtc_poppedstackcache.h"
 
 // NOTE: Function pointers are a "PC address", so already divided by 2 since the PC counts in words, not bytes.
 // avr-libgcc functions used by translation
@@ -1816,4 +1816,4 @@ uint16_t rtc_translate_single_instruction(uint16_t pc, rtc_translationstate *ts)
     return pc+1;
 }
 
-#endif // AOT_STRATEGY_SIMPLESTACKCACHING
+#endif // AOT_STRATEGY_POPPEDSTACKCACHE

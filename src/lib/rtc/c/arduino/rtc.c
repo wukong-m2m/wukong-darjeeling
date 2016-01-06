@@ -15,8 +15,11 @@
 #include "rtc_emit.h"
 #include <avr/pgmspace.h>
 #include <avr/boot.h>
-#ifdef AOT_STRATEGY_SIMPLESTACKCACHING    
-#include "rtc_stackcache.h"
+#ifdef AOT_STRATEGY_SIMPLESTACKCACHE    
+#include "rtc_simplestackcache.h"
+#endif
+#ifdef AOT_STRATEGY_POPPEDSTACKCACHE    
+#include "rtc_poppedstackcache.h"
 #endif
 
 
@@ -108,7 +111,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     DEBUG_LOG(DBG_RTC, "[rtc] Reserving %d bytes for %d branch targets at address %p\n", rtc_branch_table_size(methodimpl), dj_di_methodImplementation_getNumberOfBranchTargets(methodimpl), branch_target_table_start_ptr);
     wkreprog_skip(rtc_branch_table_size(methodimpl));
     // If we're using stack caching, initialise the cache
-#ifdef AOT_STRATEGY_SIMPLESTACKCACHING    
+#ifdef AOT_STRATEGY_SIMPLESTACKCACHE    
+    rtc_stackcache_init();
+#endif
+#ifdef AOT_STRATEGY_POPPEDSTACKCACHE    
     rtc_stackcache_init();
 #endif
 
