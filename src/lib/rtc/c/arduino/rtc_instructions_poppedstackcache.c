@@ -38,7 +38,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
     uint8_t next_opcode = dj_di_getU8(ts->jvm_code_start + ts->pc + 1);
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
-    DEBUG_LOG(DBG_RTCTRACE, "[rtc] JVM opcode %d (pc=%d, method length=%d)\n", opcode, pc, ts->method_length);
+    DEBUG_LOG(DBG_RTCTRACE, "[rtc] JVM opcode %d (pc=%d, method length=%d)\n", opcode, ts->pc, ts->method_length);
 
     // Load possible operands. May waste some time if we don't need then, but saves some space.
     uint8_t jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ts->pc + 1);
@@ -1814,7 +1814,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 
         // Not implemented
         default:
-            DEBUG_LOG(DBG_RTC, "Unimplemented Java opcode %d at pc=%d\n", opcode, pc);
+            DEBUG_LOG(DBG_RTC, "Unimplemented Java opcode %d at pc=%d\n", opcode, ts->pc);
             dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
         break;
     }

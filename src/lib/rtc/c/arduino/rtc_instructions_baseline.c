@@ -1432,7 +1432,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 
         // Not implemented
         default:
-            DEBUG_LOG(DBG_RTC, "Unimplemented Java opcode %d at pc=%d\n", opcode, pc);
+            DEBUG_LOG(DBG_RTC, "Unimplemented Java opcode %d at pc=%d\n", opcode, ts->pc);
             dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
         break;
     }

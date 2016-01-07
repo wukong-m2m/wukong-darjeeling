@@ -113,9 +113,6 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
     emit_x_prologue();
 
-    // translate the method
-    DEBUG_LOG(DBG_RTC, "[rtc] method length %d\n", method_length);
-
     rtc_translationstate ts;
     ts.pc = 0;
     ts.infusion = infusion;
@@ -136,7 +133,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 #ifdef AOT_STRATEGY_POPPEDSTACKCACHE    
     rtc_stackcache_init(&ts);
 #endif
-    
+
+    // translate the method
+    DEBUG_LOG(DBG_RTC, "[rtc] method length %d\n", ts.method_length);
     while (ts.pc < ts.method_length) {
         rtc_translate_single_instruction(&ts);
     }
