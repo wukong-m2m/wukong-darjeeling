@@ -300,6 +300,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             rtc_stackcache_pop_16bit(operand_regs1);
             emit_STD(operand_regs1[0], Y, offset_for_intlocal_short(ts->methodimpl, jvm_operand_byte0));
             emit_STD(operand_regs1[1], Y, offset_for_intlocal_short(ts->methodimpl, jvm_operand_byte0)+1);
+            rtc_poppedstackcache_clear_all_with_valuetag(ts->current_instruction_valuetag);
+            rtc_poppedstackcache_setvaluetag(operand_regs1, ts->current_instruction_valuetag);
         break;
         case JVM_ISTORE:
         case JVM_ISTORE_0:
@@ -313,6 +315,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_STD(operand_regs1[1], Y, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0)+1);
             emit_STD(operand_regs1[2], Y, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0)+2);
             emit_STD(operand_regs1[3], Y, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0)+3);
+            rtc_poppedstackcache_clear_all_with_valuetag(ts->current_instruction_valuetag);
+            rtc_poppedstackcache_setvaluetag_int(operand_regs1, ts->current_instruction_valuetag);
         break;
         case JVM_ASTORE:
         case JVM_ASTORE_0:
@@ -324,6 +328,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             rtc_stackcache_pop_ref(operand_regs1);
             emit_STD(operand_regs1[0], Y, offset_for_reflocal(ts->methodimpl, jvm_operand_byte0));
             emit_STD(operand_regs1[1], Y, offset_for_reflocal(ts->methodimpl, jvm_operand_byte0)+1);
+            rtc_poppedstackcache_clear_all_with_valuetag(ts->current_instruction_valuetag);
+            rtc_poppedstackcache_setvaluetag(operand_regs1, ts->current_instruction_valuetag);
         break;
         case JVM_BALOAD:
         case JVM_CALOAD:
@@ -363,6 +369,9 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             }
 
             // Now Z points to the target element
+            // We could load into operand_regs1, but this contains the array reference, which we may want to preserve.
+            // Ask the stack cache for an available register pair, but it shouldn't spill to memory if nothing is available.
+            rtc_stackcache_getfree_16bit_but_only_if_we_wont_spill(operand_regs1);
             switch (opcode) {
                 case JVM_BALOAD:
                 case JVM_CALOAD:
@@ -760,8 +769,11 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_MUL(operand_regs2[1], operand_regs1[0]);
             emit_ADD(operand_regs3[1], R0);
             emit_CLR(R1);
-            emit_MOVW(operand_regs1[0], operand_regs3[0]);
-            rtc_stackcache_push_16bit(operand_regs1);
+
+            // emit_MOVW(operand_regs1[0], operand_regs3[0]);
+            // rtc_stackcache_push_16bit(operand_regs1);
+            rtc_stackcache_push_16bit(operand_regs3);
+            rtc_poppedstackcache_clearvaluetag(operand_regs2[0]); // This value was destroyed so clear the tag.
         break;
         case JVM_SDIV:
         case JVM_SREM:
@@ -777,6 +789,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             } else { // JVM_SREM
                 rtc_stackcache_push_16bit_from_scratch_R24R25();
             }
+            rtc_poppedstackcache_clearvaluetag(R22); // This value was destroyed so clear the tag.
+            rtc_poppedstackcache_clearvaluetag(R24); // This value was destroyed so clear the tag.
         break;
         case JVM_SNEG:
             rtc_stackcache_getfree_16bit(operand_regs1);
@@ -802,6 +816,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 if (!(ts->rtc_next_instruction_shifts_1_bit)) {
                     emit_DEC(operand_regs1[0]);
                     emit_BRPL(-8);
+                    rtc_poppedstackcache_clearvaluetag(operand_regs1[0]); // This value was destroyed so clear the tag.
                 } else {
                     // special case for shifting by 1 bit. -> optimise I/SCONST_1 followed by a shift, to a single shift.
                     ts->rtc_next_instruction_shifts_1_bit = false;
@@ -819,6 +834,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_BRPL(-8);
             
             rtc_stackcache_push_16bit(operand_regs2);
+            rtc_poppedstackcache_clearvaluetag(operand_regs1[0]); // This value was destroyed so clear the tag.
             #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
         break;
         case JVM_SSHR:
@@ -834,6 +850,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 if (!(ts->rtc_next_instruction_shifts_1_bit)) {
                     emit_DEC(operand_regs1[0]);
                     emit_BRPL(-8);
+                    rtc_poppedstackcache_clearvaluetag(operand_regs1[0]); // This value was destroyed so clear the tag.
                 } else {
                     // special case for shifting by 1 bit. -> optimise I/SCONST_1 followed by a shift, to a single shift.
                     ts->rtc_next_instruction_shifts_1_bit = false;
@@ -851,6 +868,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_BRPL(-8);
             
             rtc_stackcache_push_16bit(operand_regs2);
+            rtc_poppedstackcache_clearvaluetag(operand_regs1[0]); // This value was destroyed so clear the tag.
             #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
         break;
         case JVM_SUSHR:
@@ -866,6 +884,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 if (!(ts->rtc_next_instruction_shifts_1_bit)) {
                     emit_DEC(operand_regs1[0]);
                     emit_BRPL(-8);
+                    rtc_poppedstackcache_clearvaluetag(operand_regs1[0]); // This value was destroyed so clear the tag.
                 } else {
                     // special case for shifting by 1 bit. -> optimise I/SCONST_1 followed by a shift, to a single shift.
                     ts->rtc_next_instruction_shifts_1_bit = false;
@@ -883,6 +902,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_BRPL(-8);
             
             rtc_stackcache_push_16bit(operand_regs2);
+            rtc_poppedstackcache_clearvaluetag(operand_regs1[0]); // This value was destroyed so clear the tag.
             #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
         break;
         case JVM_SAND:
@@ -941,6 +961,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 
             emit_x_CALL((uint16_t)&__mulsi3);
             rtc_stackcache_push_32bit_from_scratch_R22R25();
+            rtc_poppedstackcache_clearvaluetag(R18);
+            rtc_poppedstackcache_clearvaluetag(R20);
         break;
         case JVM_IDIV:
         case JVM_IREM:
@@ -955,8 +977,12 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 operand_regs1[2] = R20;
                 operand_regs1[3] = R21;
                 rtc_stackcache_push_32bit(operand_regs1);
+                rtc_poppedstackcache_clearvaluetag(R22);
+                rtc_poppedstackcache_clearvaluetag(R24);
             } else { // JVM_IREM
                 rtc_stackcache_push_32bit_from_scratch_R22R25();
+                rtc_poppedstackcache_clearvaluetag(R18);
+                rtc_poppedstackcache_clearvaluetag(R20);
             }
         break;
         case JVM_INEG:
@@ -988,6 +1014,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 if (!(ts->rtc_next_instruction_shifts_1_bit)) {
                     emit_DEC(operand_regs1[0]);
                     emit_BRPL(-12);
+                    rtc_poppedstackcache_clearvaluetag(operand_regs1[0]);
+                    rtc_poppedstackcache_clearvaluetag(operand_regs1[2]);
                 } else  {
                     // special case for shifting by 1 bit. -> optimise I/SCONST_1 followed by a shift, to a single shift.
                     ts->rtc_next_instruction_shifts_1_bit = false;
@@ -1007,6 +1035,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_BRPL(-12);
 
             rtc_stackcache_push_32bit(operand_regs2);
+            rtc_poppedstackcache_clearvaluetag(operand_regs1[0]);
+            rtc_poppedstackcache_clearvaluetag(operand_regs1[2]);
             #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
         break;
         case JVM_ISHR:
@@ -1024,6 +1054,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 if (!(ts->rtc_next_instruction_shifts_1_bit)) {
                     emit_DEC(operand_regs1[0]);
                     emit_BRPL(-12);
+                    rtc_poppedstackcache_clearvaluetag(operand_regs1[0]);
+                    rtc_poppedstackcache_clearvaluetag(operand_regs1[2]);
                 } else  {
                     // special case for shifting by 1 bit. -> optimise I/SCONST_1 followed by a shift, to a single shift.
                     ts->rtc_next_instruction_shifts_1_bit = false;
@@ -1043,6 +1075,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_BRPL(-12);
 
             rtc_stackcache_push_32bit(operand_regs2);
+            rtc_poppedstackcache_clearvaluetag(operand_regs1[0]);
+            rtc_poppedstackcache_clearvaluetag(operand_regs1[2]);
             #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
         break;
         case JVM_IUSHR: // x >>> y
@@ -1060,6 +1094,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 if (!(ts->rtc_next_instruction_shifts_1_bit)) {
                     emit_DEC(operand_regs1[0]);
                     emit_BRPL(-12);
+                    rtc_poppedstackcache_clearvaluetag(operand_regs1[0]);
+                    rtc_poppedstackcache_clearvaluetag(operand_regs1[2]);
                 } else  {
                     // special case for shifting by 1 bit. -> optimise I/SCONST_1 followed by a shift, to a single shift.
                     ts->rtc_next_instruction_shifts_1_bit = false;
@@ -1079,6 +1115,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_BRPL(-12);
 
             rtc_stackcache_push_32bit(operand_regs2);
+            rtc_poppedstackcache_clearvaluetag(operand_regs1[0]);
+            rtc_poppedstackcache_clearvaluetag(operand_regs1[2]);
             #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
         break;
         case JVM_IAND:
@@ -1156,6 +1194,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_SBCI(R24, c1);
                 emit_STD(R24, Y, offset+1);
             }
+            rtc_poppedstackcache_clear_all_with_valuetag(ts->current_instruction_valuetag); // Any cached value for this variable is now outdated.
         break;
         case JVM_IINC:
         case JVM_IINC_W:
@@ -1219,6 +1258,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_SBCI(R24, c3);
                 emit_STD(R24, Y, offset+3);
             }
+            rtc_poppedstackcache_clear_all_with_valuetag(ts->current_instruction_valuetag); // Any cached value for this variable is now outdated.
         break;
         case JVM_S2B:
         case JVM_S2C:
@@ -1247,6 +1287,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         break;
         case JVM_I2S:
             rtc_stackcache_pop_32bit(operand_regs1);
+            ts->current_instruction_valuetag = rtc_poppedstackcache_getvaluetag(operand_regs1); // Copy the valuetag here, since shortening it to a short doesn't affect the value in the register.
             rtc_stackcache_push_16bit(operand_regs1);
         break;
         case JVM_SRETURN:
@@ -1274,6 +1315,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 
             // clear the stack cache, so all stack elements are in memory, not in registers
             rtc_stackcache_flush_all_regs();
+            // clear the valuetags for all call-used registers, since the value may be gone after the function call returns
+            rtc_poppedstackcache_clear_all_callused_valuetags();
 
             // set intStack to SP
             emit_PUSH(ZERO_REG); // NOTE: THE DVM STACK IS A 16 BIT POINTER, SP IS 8 BIT. 
@@ -1746,7 +1789,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         break;
         case JVM_BRTARGET:
             rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
-            rtc_poppedstackcache_brtarget();
+            rtc_poppedstackcache_clear_all_valuetags();
 
             // This is a noop, but we need to record the offset of the next
             // instruction in the branch target table at the start of the method.

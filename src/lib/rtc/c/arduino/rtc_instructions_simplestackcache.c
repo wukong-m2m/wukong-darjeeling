@@ -782,8 +782,9 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_MUL(operand_regs2[1], operand_regs1[0]);
             emit_ADD(operand_regs3[1], R0);
             emit_CLR(R1);
-            emit_MOVW(operand_regs1[0], operand_regs3[0]);
-            rtc_stackcache_push_16bit(operand_regs1);
+            // emit_MOVW(operand_regs1[0], operand_regs3[0]);
+            // rtc_stackcache_push_16bit(operand_regs1);
+            rtc_stackcache_push_16bit(operand_regs3);
         break;
         case JVM_SDIV:
         case JVM_SREM:

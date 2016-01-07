@@ -233,12 +233,29 @@ uint8_t rtc_stackcache_getfree_pair() {
         idx = rtc_stackcache_spill_deepest_pair();
     }
     RTC_STACKCACHE_MARK_IN_USE(idx);
+    RTC_STACKCACHE_CLEAR_VALUE_TAG(idx);
     return ARRAY_INDEX_TO_REG(idx);
+}
+uint8_t rtc_stackcache_getfree_pair_but_only_if_we_wont_spill() {
+    uint8_t idx = rtc_get_lru_available_index();
+    if (idx != 0xFF) {
+        RTC_STACKCACHE_MARK_IN_USE(idx);
+        RTC_STACKCACHE_CLEAR_VALUE_TAG(idx);        
+        return ARRAY_INDEX_TO_REG(idx);
+    }
+    return 0xFF;
 }
 void rtc_stackcache_getfree_16bit(uint8_t *regs) {
     uint8_t r = rtc_stackcache_getfree_pair();
     regs[0] = r;
     regs[1] = r+1;
+}
+void rtc_stackcache_getfree_16bit_but_only_if_we_wont_spill(uint8_t *regs) {
+    uint8_t r = rtc_stackcache_getfree_pair_but_only_if_we_wont_spill();
+    if (r != 0xFF) {
+        regs[0] = r;
+        regs[1] = r+1;
+    }
 }
 void rtc_stackcache_getfree_32bit(uint8_t *regs) {
     uint8_t r = rtc_stackcache_getfree_pair();
@@ -260,6 +277,7 @@ bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs) {
         uint8_t idx = REG_TO_ARRAY_INDEX(reg);
         if (RTC_STACKCACHE_IS_AVAILABLE(idx)) {
             // We're in luck.
+            RTC_STACKCACHE_CLEAR_VALUE_TAG(idx);
             RTC_STACKCACHE_MARK_IN_USE(idx);
             regs[0] = reg;
             regs[1] = reg+1;
@@ -511,12 +529,7 @@ void rtc_stackcache_clear_call_used_regs_before_native_function_call() {
     }
 
     // Finally, clear the valuetags for all call-used registers, since the value may be gone after the function call returns
-    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
-        // Is this a call-used register?
-        if (rtc_stackcache_is_call_used_idx(idx)) {
-            RTC_STACKCACHE_SET_VALUE_TAG(idx, RTC_VALUETAG_UNUSED);
-        }
-    }
+    rtc_poppedstackcache_clear_all_callused_valuetags();
 }
 void rtc_stackcache_flush_all_regs() {
     // This is done before branches to make sure the whole stack is in memory. (Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.)
@@ -549,32 +562,72 @@ uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts) {
 
     switch (opcode) {
         case JVM_ALOAD:
+        case JVM_ASTORE:
             return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_REF   + jvm_operand_byte0;
         case JVM_ALOAD_0:
         case JVM_ALOAD_1:
         case JVM_ALOAD_2:
         case JVM_ALOAD_3:
             return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_REF + opcode - JVM_ALOAD_0;
+        case JVM_ASTORE_0:
+        case JVM_ASTORE_1:
+        case JVM_ASTORE_2:
+        case JVM_ASTORE_3:
+            return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_REF + opcode - JVM_ASTORE_0;
 
         case JVM_SLOAD:
+        case JVM_SSTORE:
+        case JVM_SINC:
+        case JVM_SINC_W:
             return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_SHORT + jvm_operand_byte0;
         case JVM_SLOAD_0:
         case JVM_SLOAD_1:
         case JVM_SLOAD_2:
         case JVM_SLOAD_3:
             return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_SHORT + opcode - JVM_SLOAD_0;
+        case JVM_SSTORE_0:
+        case JVM_SSTORE_1:
+        case JVM_SSTORE_2:
+        case JVM_SSTORE_3:
+            return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_SHORT + opcode - JVM_SSTORE_0;
 
         // case JVM_ILOAD:
+        // case JVM_ISTORE:
+        // case JVM_IINC:
+        // case JVM_IINC_W:
         //     return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT   + jvm_operand_byte0;
         // case JVM_ILOAD_0:
         // case JVM_ILOAD_1:
         // case JVM_ILOAD_2:
         // case JVM_ILOAD_3:
         //     return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT   + opcode - JVM_ILOAD_0;
+        // case JVM_ISTORE_0:
+        // case JVM_ISTORE_1:
+        // case JVM_ISTORE_2:
+        // case JVM_ISTORE_3:
+        //     return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT   + opcode - JVM_ISTORE_0;
 
         default:
             return RTC_VALUETAG_UNUSED;
     }
+}
+
+bool rtc_poppedstackcache_produces_value_which_can_be_skipped(uint8_t opcode) {
+    return opcode == JVM_ALOAD
+        || opcode == JVM_ALOAD_0
+        || opcode == JVM_ALOAD_1
+        || opcode == JVM_ALOAD_2
+        || opcode == JVM_ALOAD_3
+        || opcode == JVM_SLOAD
+        || opcode == JVM_SLOAD_0
+        || opcode == JVM_SLOAD_1
+        || opcode == JVM_SLOAD_2
+        || opcode == JVM_SLOAD_3
+        || opcode == JVM_ILOAD
+        || opcode == JVM_ILOAD_0
+        || opcode == JVM_ILOAD_1
+        || opcode == JVM_ILOAD_2
+        || opcode == JVM_ILOAD_3;
 }
 
 uint8_t rtc_poppedstackcache_find_available_valuetag(uint16_t valuetag) {
@@ -592,7 +645,8 @@ bool rtc_poppedstackcache_can_I_skip_this() {
     rtc_ts->current_instruction_pc = rtc_ts->pc; // Save this because we may need in later after the instruction already increased pc to skip over arguments
     rtc_ts->current_instruction_valuetag = rtc_stackcache_determine_valuetag(rtc_ts);
 
-    if (rtc_ts->current_instruction_valuetag == RTC_VALUETAG_UNUSED) {
+    if (rtc_ts->current_instruction_valuetag == RTC_VALUETAG_UNUSED
+            || !rtc_poppedstackcache_produces_value_which_can_be_skipped(dj_di_getU8(rtc_ts->jvm_code_start + rtc_ts->pc))) {
         return false;
     } else {
         // Check if there is an available register that contains the value we need (because it was loaded and the popped earlier in this basic block)
@@ -631,13 +685,45 @@ bool rtc_poppedstackcache_can_I_skip_this() {
     }
 }
 
-void rtc_poppedstackcache_brtarget() {
+
+uint16_t rtc_poppedstackcache_getvaluetag(uint8_t *regs) {
+    return RTC_STACKCACHE_GET_VALUE_TAG(REG_TO_ARRAY_INDEX(regs[0]));
+}
+void rtc_poppedstackcache_setvaluetag(uint8_t *regs, uint16_t valuetag) {
+    RTC_STACKCACHE_SET_VALUE_TAG(REG_TO_ARRAY_INDEX(regs[0]), valuetag);
+}
+void rtc_poppedstackcache_setvaluetag_int(uint8_t *regs, uint16_t valuetag) {
+    RTC_STACKCACHE_SET_VALUE_TAG(REG_TO_ARRAY_INDEX(regs[0]), valuetag);
+    RTC_STACKCACHE_SET_VALUE_TAG(REG_TO_ARRAY_INDEX(regs[2]), RTC_VALUETAG_TO_INT_L(valuetag));
+}
+void rtc_poppedstackcache_clearvaluetag(uint8_t reg_base) {
+    RTC_STACKCACHE_SET_VALUE_TAG(REG_TO_ARRAY_INDEX(reg_base), RTC_VALUETAG_UNUSED);
+}
+void rtc_poppedstackcache_clear_all_with_valuetag(uint16_t valuetag) {
+    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+        if (RTC_STACKCACHE_GET_VALUE_TAG(idx) == valuetag) {
+            RTC_STACKCACHE_CLEAR_VALUE_TAG(idx);
+        }
+    }
+    // For int value tags, also clear the second register pair.
+    if (RTC_VALUETAG_IS_INT(valuetag)) {
+        rtc_poppedstackcache_clear_all_with_valuetag(RTC_VALUETAG_TO_INT_L(valuetag));
+    }
+}
+void rtc_poppedstackcache_clear_all_valuetags() {
     // At a branch target we can't make any assumption about the register state since it will depend on the execution path. Clear all ages and valuetags to start with a clean cache.
     for (uint8_t i=0; i<RTC_STACKCACHE_MAX_IDX; i++) {
         RTC_STACKCACHE_SET_VALUE_TAG(i, RTC_VALUETAG_UNUSED);
         RTC_STACKCACHE_UPDATE_AGE(i);
     }
 }
-
+void rtc_poppedstackcache_clear_all_callused_valuetags() {
+    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+        // Is this a call-used register?
+        if (rtc_stackcache_is_call_used_idx(idx)) {
+            RTC_STACKCACHE_SET_VALUE_TAG(idx, RTC_VALUETAG_UNUSED);
+        }
+    }
+}
 
 #endif // AOT_STRATEGY_POPPEDSTACKCACHE
