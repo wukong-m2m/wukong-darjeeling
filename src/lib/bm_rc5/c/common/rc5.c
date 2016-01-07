@@ -18,9 +18,10 @@
 #include "config.h"
 #include "darjeeling3.h"
 #include "rc5.h"
+#include <avr/pgmspace.h>
 // #include "tomcrypt.h"
 
-static const uint32_t stab[50] = {
+const uint32_t stab[50] PROGMEM = {
 0xb7e15163UL, 0x5618cb1cUL, 0xf45044d5UL, 0x9287be8eUL, 0x30bf3847UL, 0xcef6b200UL, 0x6d2e2bb9UL, 0x0b65a572UL,
 0xa99d1f2bUL, 0x47d498e4UL, 0xe60c129dUL, 0x84438c56UL, 0x227b060fUL, 0xc0b27fc8UL, 0x5ee9f981UL, 0xfd21733aUL,
 0x9b58ecf3UL, 0x399066acUL, 0xd7c7e065UL, 0x75ff5a1eUL, 0x1436d3d7UL, 0xb26e4d90UL, 0x50a5c749UL, 0xeedd4102UL,
@@ -80,7 +81,7 @@ int rc5_setup(const unsigned char *key, int keylen, int num_rounds, rc5_key *ske
     t = (uint32_t)(2 * (num_rounds + 1));
     // XMEMCPY(S, stab, t * sizeof(*S));
     for (uint8_t k=0; k<t; k++) {
-       S[k] = stab[k];
+       S[k] = pgm_read_dword(stab + k);
     }
 
     /* mix buffer */
