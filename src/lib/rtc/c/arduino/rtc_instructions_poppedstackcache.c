@@ -349,26 +349,26 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         case JVM_IALOAD:
         case JVM_AALOAD:
 #ifdef ARRAYINDEX_32BIT
+        broken!
             rtc_stackcache_pop_32bit(operand_regs1);
 #else
-            rtc_stackcache_pop_16bit(operand_regs1);
+            rtc_stackcache_pop_16bit_into_fixed_reg(RZ);
 #endif
-            // POP the array reference into Z
-            rtc_stackcache_pop_ref_into_Z(); // Z now points to the base of the array object.
+            rtc_stackcache_pop_ref(operand_regs1);
 
             if (opcode==JVM_SALOAD || opcode==JVM_AALOAD) {
                 // Multiply the index by 2, since we're indexing 16 bit shorts.
-                emit_LSL(operand_regs1[0]);
-                emit_ROL(operand_regs1[1]);
+                emit_LSL(RZL);
+                emit_ROL(RZH);
             } else if (opcode==JVM_IALOAD) {
                 // Multiply the index by 4, since we're indexing 16 bit shorts.
-                emit_LSL(operand_regs1[0]);
-                emit_ROL(operand_regs1[1]);
-                emit_LSL(operand_regs1[0]);
-                emit_ROL(operand_regs1[1]);
+                emit_LSL(RZL);
+                emit_ROL(RZH);
+                emit_LSL(RZL);
+                emit_ROL(RZH);
             }
 
-            // Add (1/2/4)*the index to Z
+            // Add the array base address to the offset in Z
             emit_ADD(RZL, operand_regs1[0]);
             emit_ADC(RZH, operand_regs1[1]);
 
@@ -433,28 +433,28 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 break;
             }
 
-            // POP the array reference into Z
-            rtc_stackcache_pop_ref_into_Z(); // Z now points to the base of the array object.
+            rtc_stackcache_pop_ref(operand_regs2);
 
 #ifdef ARRAYINDEX_32BIT
+        broken!
             rtc_stackcache_pop_32bit(operand_regs2);
 #else
-            rtc_stackcache_pop_16bit(operand_regs2);
+            rtc_stackcache_pop_16bit_into_fixed_reg(RZ);
 #endif
 
             if (opcode==JVM_SASTORE || opcode==JVM_AASTORE) {
                 // Multiply the index by 2, since we're indexing 16 bit shorts.
-                emit_LSL(operand_regs2[0]);
-                emit_ROL(operand_regs2[1]);
+                emit_LSL(RZL);
+                emit_ROL(RZH);
             } else if (opcode==JVM_IASTORE) {
                 // Multiply the index by 4, since we're indexing 16 bit shorts.
-                emit_LSL(operand_regs2[0]);
-                emit_ROL(operand_regs2[1]);
-                emit_LSL(operand_regs2[0]);
-                emit_ROL(operand_regs2[1]);
+                emit_LSL(RZL);
+                emit_ROL(RZH);
+                emit_LSL(RZL);
+                emit_ROL(RZH);
             }
 
-            // Add (1/2/4)*the index to Z
+            // Add the array base address to the offset in Z
             emit_ADD(RZL, operand_regs2[0]);
             emit_ADC(RZH, operand_regs2[1]);
 
