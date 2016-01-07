@@ -541,103 +541,7 @@ void rtc_stackcache_next_instruction() {
 
 /////// POPPED STACK CACHING
 
-void rtc_poppedstackcache_skip_operands(rtc_translationstate *ts) {
-    uint8_t opcode = dj_di_getU8(ts->jvm_code_start + ts->pc);
 
-    switch(opcode) {
-        case JVM_BSPUSH:
-        case JVM_BIPUSH:
-        case JVM_SLOAD:
-        case JVM_ILOAD:
-        case JVM_ALOAD:
-        case JVM_SSTORE:
-        case JVM_ISTORE:
-        case JVM_ASTORE:
-        case JVM_IDUP_X:
-        case JVM_NEWARRAY:
-             ts->pc += 1;
-        break;
-
-        case JVM_SSPUSH:
-        case JVM_SIPUSH:
-        case JVM_LDS:
-        case JVM_GETFIELD_B:
-        case JVM_GETFIELD_C:
-        case JVM_GETFIELD_S:
-        case JVM_GETFIELD_I:
-        case JVM_GETFIELD_A:
-        case JVM_PUTFIELD_B:
-        case JVM_PUTFIELD_C:
-        case JVM_PUTFIELD_S:
-        case JVM_PUTFIELD_I:
-        case JVM_PUTFIELD_A:
-        case JVM_GETSTATIC_B:
-        case JVM_GETSTATIC_C:
-        case JVM_GETSTATIC_S:
-        case JVM_GETSTATIC_I:
-        case JVM_GETSTATIC_A:
-        case JVM_PUTSTATIC_B:
-        case JVM_PUTSTATIC_C:
-        case JVM_PUTSTATIC_S:
-        case JVM_PUTSTATIC_I:
-        case JVM_PUTSTATIC_A:
-        case JVM_SINC:
-        case JVM_IINC:
-        case JVM_INVOKESPECIAL:
-        case JVM_INVOKESTATIC:
-        case JVM_NEW:
-        case JVM_ANEWARRAY:
-        case JVM_CHECKCAST:
-        case JVM_INSTANCEOF:
-             ts->pc += 2;
-        break;
-
-        case JVM_SINC_W:
-        case JVM_IINC_W:
-        case JVM_INVOKEVIRTUAL:
-        case JVM_INVOKEINTERFACE:
-             ts->pc += 3;
-        break;
-
-        case JVM_IIPUSH:
-        case JVM_SIFEQ:
-        case JVM_SIFNE:
-        case JVM_SIFLT:
-        case JVM_SIFGE:
-        case JVM_SIFGT:
-        case JVM_SIFLE:
-        case JVM_IIFEQ:
-        case JVM_IIFNE:
-        case JVM_IIFLT:
-        case JVM_IIFGE:
-        case JVM_IIFGT:
-        case JVM_IIFLE:
-        case JVM_IFNULL:
-        case JVM_IFNONNULL:
-        case JVM_IF_SCMPEQ:
-        case JVM_IF_SCMPNE:
-        case JVM_IF_SCMPLT:
-        case JVM_IF_SCMPGE:
-        case JVM_IF_SCMPGT:
-        case JVM_IF_SCMPLE:
-        case JVM_IF_ICMPEQ:
-        case JVM_IF_ICMPNE:
-        case JVM_IF_ICMPLT:
-        case JVM_IF_ICMPGE:
-        case JVM_IF_ICMPGT:
-        case JVM_IF_ICMPLE:
-        case JVM_IF_ACMPEQ:
-        case JVM_IF_ACMPNE:
-        case JVM_GOTO:
-             ts->pc += 4;
-        break;
-
-        case JVM_TABLESWITCH:
-        case JVM_LOOKUPSWITCH:
-            // handle during codegen
-        break;
-    }
-}
 
 uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts) {
     uint8_t opcode = dj_di_getU8(ts->jvm_code_start + ts->pc);
@@ -722,7 +626,7 @@ bool rtc_poppedstackcache_can_I_skip_this() {
                 rtc_stackcache_push_16bit(operand_regs);
             }
         }
-        rtc_poppedstackcache_skip_operands(rtc_ts);
+
         return true;
     }
 }

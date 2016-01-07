@@ -13,6 +13,7 @@
 #include "rtc_instructions.h"
 #include "rtc_branches.h"
 #include "rtc_emit.h"
+#include "opcodes.h"
 #include <avr/pgmspace.h>
 #include <avr/boot.h>
 #ifdef AOT_STRATEGY_SIMPLESTACKCACHE    
@@ -216,7 +217,105 @@ void rtc_compile_lib(dj_infusion *infusion) {
     rtc_update_method_pointers(infusion, rtc_method_start_addresses);
 
     // Mark the infusion as translated (how?)
-
 }
 
+uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode) {
+    switch(opcode) {
+        case JVM_BSPUSH:
+        case JVM_BIPUSH:
+        case JVM_SLOAD:
+        case JVM_ILOAD:
+        case JVM_ALOAD:
+        case JVM_SSTORE:
+        case JVM_ISTORE:
+        case JVM_ASTORE:
+        case JVM_IDUP_X:
+        case JVM_NEWARRAY:
+             return 1;
+        break;
 
+        case JVM_SSPUSH:
+        case JVM_SIPUSH:
+        case JVM_LDS:
+        case JVM_GETFIELD_B:
+        case JVM_GETFIELD_C:
+        case JVM_GETFIELD_S:
+        case JVM_GETFIELD_I:
+        case JVM_GETFIELD_A:
+        case JVM_PUTFIELD_B:
+        case JVM_PUTFIELD_C:
+        case JVM_PUTFIELD_S:
+        case JVM_PUTFIELD_I:
+        case JVM_PUTFIELD_A:
+        case JVM_GETSTATIC_B:
+        case JVM_GETSTATIC_C:
+        case JVM_GETSTATIC_S:
+        case JVM_GETSTATIC_I:
+        case JVM_GETSTATIC_A:
+        case JVM_PUTSTATIC_B:
+        case JVM_PUTSTATIC_C:
+        case JVM_PUTSTATIC_S:
+        case JVM_PUTSTATIC_I:
+        case JVM_PUTSTATIC_A:
+        case JVM_SINC:
+        case JVM_IINC:
+        case JVM_INVOKESPECIAL:
+        case JVM_INVOKESTATIC:
+        case JVM_NEW:
+        case JVM_ANEWARRAY:
+        case JVM_CHECKCAST:
+        case JVM_INSTANCEOF:
+             return 2;
+        break;
+
+        case JVM_SINC_W:
+        case JVM_IINC_W:
+        case JVM_INVOKEVIRTUAL:
+        case JVM_INVOKEINTERFACE:
+             return 3;
+        break;
+
+        case JVM_IIPUSH:
+        case JVM_SIFEQ:
+        case JVM_SIFNE:
+        case JVM_SIFLT:
+        case JVM_SIFGE:
+        case JVM_SIFGT:
+        case JVM_SIFLE:
+        case JVM_IIFEQ:
+        case JVM_IIFNE:
+        case JVM_IIFLT:
+        case JVM_IIFGE:
+        case JVM_IIFGT:
+        case JVM_IIFLE:
+        case JVM_IFNULL:
+        case JVM_IFNONNULL:
+        case JVM_IF_SCMPEQ:
+        case JVM_IF_SCMPNE:
+        case JVM_IF_SCMPLT:
+        case JVM_IF_SCMPGE:
+        case JVM_IF_SCMPGT:
+        case JVM_IF_SCMPLE:
+        case JVM_IF_ICMPEQ:
+        case JVM_IF_ICMPNE:
+        case JVM_IF_ICMPLT:
+        case JVM_IF_ICMPGE:
+        case JVM_IF_ICMPGT:
+        case JVM_IF_ICMPLE:
+        case JVM_IF_ACMPEQ:
+        case JVM_IF_ACMPNE:
+        case JVM_GOTO:
+             return 4;
+        break;
+
+        case JVM_TABLESWITCH:
+        case JVM_LOOKUPSWITCH:
+            // need to skip a lot, but we'll handle during codegen.
+            // these won't be optimised away by stackcaching anyway.
+            return 0;
+        break;
+
+        default:
+            return 0;
+    }
+}

@@ -25,6 +25,7 @@ uint8_t offset_for_intlocal_short(dj_di_pointer methodimpl, uint8_t local);
 uint8_t offset_for_intlocal_int(dj_di_pointer methodimpl, uint8_t local);
 uint8_t offset_for_intlocal_long(dj_di_pointer methodimpl, uint8_t local);
 uint8_t offset_for_reflocal(dj_di_pointer methodimpl, uint8_t local);
+uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode);
 
 // Just a container for a lot of parameters we need to
 // make available to rtc_translate_single_instruction
