@@ -591,21 +591,21 @@ uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts) {
         case JVM_SSTORE_3:
             return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_SHORT + opcode - JVM_SSTORE_0;
 
-        // case JVM_ILOAD:
-        // case JVM_ISTORE:
-        // case JVM_IINC:
-        // case JVM_IINC_W:
-        //     return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT   + jvm_operand_byte0;
-        // case JVM_ILOAD_0:
-        // case JVM_ILOAD_1:
-        // case JVM_ILOAD_2:
-        // case JVM_ILOAD_3:
-        //     return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT   + opcode - JVM_ILOAD_0;
-        // case JVM_ISTORE_0:
-        // case JVM_ISTORE_1:
-        // case JVM_ISTORE_2:
-        // case JVM_ISTORE_3:
-        //     return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT   + opcode - JVM_ISTORE_0;
+        case JVM_ILOAD:
+        case JVM_ISTORE:
+        case JVM_IINC:
+        case JVM_IINC_W:
+            return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT   + jvm_operand_byte0;
+        case JVM_ILOAD_0:
+        case JVM_ILOAD_1:
+        case JVM_ILOAD_2:
+        case JVM_ILOAD_3:
+            return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT   + opcode - JVM_ILOAD_0;
+        case JVM_ISTORE_0:
+        case JVM_ISTORE_1:
+        case JVM_ISTORE_2:
+        case JVM_ISTORE_3:
+            return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT   + opcode - JVM_ISTORE_0;
 
         default:
             return RTC_VALUETAG_UNUSED;
@@ -693,8 +693,8 @@ void rtc_poppedstackcache_setvaluetag(uint8_t *regs, uint16_t valuetag) {
     RTC_STACKCACHE_SET_VALUE_TAG(REG_TO_ARRAY_INDEX(regs[0]), valuetag);
 }
 void rtc_poppedstackcache_setvaluetag_int(uint8_t *regs, uint16_t valuetag) {
-    RTC_STACKCACHE_SET_VALUE_TAG(REG_TO_ARRAY_INDEX(regs[0]), valuetag);
-    RTC_STACKCACHE_SET_VALUE_TAG(REG_TO_ARRAY_INDEX(regs[2]), RTC_VALUETAG_TO_INT_L(valuetag));
+    RTC_STACKCACHE_SET_VALUE_TAG(REG_TO_ARRAY_INDEX(regs[0]), RTC_VALUETAG_TO_INT_L(valuetag));
+    RTC_STACKCACHE_SET_VALUE_TAG(REG_TO_ARRAY_INDEX(regs[2]), valuetag);
 }
 void rtc_poppedstackcache_clearvaluetag(uint8_t reg_base) {
     RTC_STACKCACHE_SET_VALUE_TAG(REG_TO_ARRAY_INDEX(reg_base), RTC_VALUETAG_UNUSED);

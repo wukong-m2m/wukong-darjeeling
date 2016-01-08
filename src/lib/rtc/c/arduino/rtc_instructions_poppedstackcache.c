@@ -1275,6 +1275,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             // 32 bit: pop 16 off the stack, the reserve 16 more free bits
             // needs to be in this order to get a little endian 32 bit integer
             rtc_stackcache_pop_16bit(operand_regs1);
+            ts->current_instruction_valuetag = rtc_poppedstackcache_getvaluetag(operand_regs1); // Copy the valuetag here, since widening it to an int doesn't affect the value in the register.
             rtc_stackcache_getfree_16bit(operand_regs1+2);
 
             // need to extend the sign
@@ -1284,6 +1285,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_MOV(operand_regs1[3], operand_regs1[2]);
 
             rtc_stackcache_push_32bit(operand_regs1);
+            rtc_poppedstackcache_clearvaluetag(operand_regs1[2]); // Push will have written the original value tag to both pairs, clear the valuetag for the high word.
         break;
         case JVM_I2S:
             rtc_stackcache_pop_32bit(operand_regs1);
