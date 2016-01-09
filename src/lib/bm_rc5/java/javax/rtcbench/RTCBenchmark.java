@@ -158,6 +158,7 @@ public class RTCBenchmark {
         int r;
         short K;
 
+        for (int i=0; i<100; i++) {
         // #define LOAD32L(x, y)                            \
         //   do { x = ((uint32_t)((y)[3] & 255)<<24) | \
         //            ((uint32_t)((y)[2] & 255)<<16) | \
@@ -200,6 +201,7 @@ public class RTCBenchmark {
         // STORE32L(B, &ct[4]);
         ct[(short)3] = (byte)(((A)>>>24)&255); ct[(short)2] = (byte)(((A)>>>16)&255); ct[(short)1] = (byte)(((A)>>>8)&255); ct[(short)0] = (byte)((A)&255);
         ct[(short)(4+3)] = (byte)(((B)>>>24)&255); ct[(short)(4+2)] = (byte)(((B)>>>16)&255); ct[(short)(4+1)] = (byte)(((B)>>>8)&255); ct[(short)(4+0)] = (byte)((B)&255);
+        }
 
         Stopwatch.measure();
         return CRYPT_OK;

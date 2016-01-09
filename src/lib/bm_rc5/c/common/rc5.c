@@ -113,6 +113,7 @@ int __attribute__((noinline)) rtcbenchmark_measure_native_performance(const unsi
     // LTC_ARGCHK(pt   != NULL);
     // LTC_ARGCHK(ct   != NULL);
 
+    for (int i=0; i<100; i++) {
     LOAD32L(A, &pt[0]);
     LOAD32L(B, &pt[4]);
     A += skey->K[0];
@@ -136,6 +137,7 @@ int __attribute__((noinline)) rtcbenchmark_measure_native_performance(const unsi
     }
     STORE32L(A, &ct[0]);
     STORE32L(B, &ct[4]);
+    }
 
     javax_darjeeling_Stopwatch_void_measure();
     return CRYPT_OK;
