@@ -158,7 +158,7 @@ public class RTCBenchmark {
         int r;
         short K;
 
-        for (int i=0; i<100; i++) {
+        for (byte i=0; i<100; i++) {
         // #define LOAD32L(x, y)                            \
         //   do { x = ((uint32_t)((y)[3] & 255)<<24) | \
         //            ((uint32_t)((y)[2] & 255)<<16) | \

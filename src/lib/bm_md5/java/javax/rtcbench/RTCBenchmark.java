@@ -32,6 +32,7 @@ public class RTCBenchmark {
         int x[] = new int[16];
         int state[];
 
+        for (byte k=0; k<10; k++) {
         // Init
         if (length > 56 || output.length != 16) {
             return;
@@ -244,6 +245,8 @@ public class RTCBenchmark {
         // return byteHash;
         }
         //////// Decode/Transform/Encode : End Encode (int array result to byte array)
+
+        }
 
         Stopwatch.measure();
     }

@@ -11,6 +11,7 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint8_t i
         uint8_t buffer[64];
         uint32_t x[16];
 
+        for (uint8_t k=0; k<10; k++) {
         // Init
         if (inputLength > 56) {
             return;
@@ -224,8 +225,7 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint8_t i
         }
         //////// Decode/Transform/Encode : End Encode (int array result to byte array)
 
-
-
+        }
 
 	javax_darjeeling_Stopwatch_void_measure();
 }

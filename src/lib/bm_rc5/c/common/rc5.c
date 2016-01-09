@@ -113,7 +113,7 @@ int __attribute__((noinline)) rtcbenchmark_measure_native_performance(const unsi
     // LTC_ARGCHK(pt   != NULL);
     // LTC_ARGCHK(ct   != NULL);
 
-    for (int i=0; i<100; i++) {
+    for (uint8_t i=0; i<100; i++) {
     LOAD32L(A, &pt[0]);
     LOAD32L(B, &pt[4]);
     A += skey->K[0];
