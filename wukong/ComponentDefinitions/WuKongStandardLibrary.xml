@@ -106,6 +106,40 @@
         <property name="output" access="readonly" datatype="boolean" default="false"/>
     </WuClass>
 
+    <WuClass name="GestureSwitch" id="13" virtual="false" type="hard">
+        <property name="change_mode" access="writeonly" datatype="boolean" default="false"/>
+        <property name="gesture" access="writeonly" datatype="short" default="0"/>
+        <property name="mode1gesture" access="readwrite" datatype="short" default="0"/>
+        <property name="mode2gesture" access="readwrite" datatype="short" default="0"/>
+        <property name="mode3gesture" access="readwrite" datatype="short" default="0"/>
+        <property name="mode4gesture" access="readwrite" datatype="short" default="0"/>
+        <property name="mode5gesture" access="readwrite" datatype="short" default="0"/>
+    </WuClass>
+    <WuClass name="GestureToBrightnessControl" id="14" virtual="false" type="hard">
+        <property name="gesture" access="writeonly" datatype="short" default="0"/>
+        <property name="brightness" access="readwrite" datatype="short" default="0"/>
+    </WuClass>
+    <WuClass name="GestureToColorControl" id="15" virtual="false" type="hard">
+        <property name="gesture" access="writeonly" datatype="short" default="0"/>
+        <property name="red" access="readwrite" datatype="short" default="0"/>
+        <property name="green" access="readwrite" datatype="short" default="0"/>
+        <property name="blue" access="readwrite" datatype="short" default="0"/>
+    </WuClass>
+    <WuClass name="GestureToHangoutControl" id="16" virtual="false" type="hard">
+        <property name="gesture" access="writeonly" datatype="short" default="0"/>
+        <property name="answer" access="readwrite" datatype="boolean" default="false"/>
+        <property name="decline" access="readwrite" datatype="boolean" default="false"/>
+    </WuClass>
+    <WuClass name="GestureToVideoControl" id="17" virtual="false" type="hard">
+        <property name="gesture" access="writeonly" datatype="short" default="0"/>
+        <property name="play" access="readwrite" datatype="boolean" default="false"/>
+        <property name="stop" access="readwrite" datatype="boolean" default="false"/>
+        <property name="next_section" access="readwrite" datatype="boolean" default="false"/>
+        <property name="prev_section" access="readwrite" datatype="boolean" default="false"/>
+        <property name="volume_increase" access="readwrite" datatype="boolean" default="false"/>
+        <property name="volume_decrease" access="readwrite" datatype="boolean" default="false"/>
+    </WuClass>
+
     <!-- Sensors -->
     <WuClass name="Light_Sensor" id="1001" virtual="false" type="hard">
         <property name="current_value" access="readonly" datatype="short"  />
@@ -223,6 +257,11 @@
     </WuClass>
     <WuClass name="Phone" id="1910" virtual="false" type="hard">
         <property name="talking" access="readwrite" datatype="boolean" default="false" />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
+    </WuClass>
+    <WuClass name="RealSense" id="1911" virtual="false" type="hard">
+        <property name="mode" access="readonly" datatype="boolean" default="false" />
+        <property name="gesture" access="readonly" datatype="short" default="0" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
     </WuClass>
 
@@ -389,20 +428,34 @@
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="2000"  />
     </WuClass>
     <WuClass name="NodeRED_InputFrom" id="2029" virtual="true" type="soft">
-        <property name="message" access="readonly" datatype="json" default=""  />
+        <property name="message" access="readonly" datatype="short" default=""  />
     </WuClass>
     <WuClass name="NodeRED_OutputTo" id="2030" virtual="true" type="soft">
-        <property name="message" access="writeonly" datatype="any" default=""  />
+        <property name="message" access="writeonly" datatype="short" default=""  />
     </WuClass>
     <WuClass name="Annotation" id="2031" virtual="true" type="soft">
-        <property name="content" access="readwrite" datatype="text"  />
+        <property name="content" access="readwrite" datatype="short"  />
     </WuClass>
     <WuClass name="Debug_Inspector" id="2032" virtual="true" type="soft">
-        <property name="content" access="writeonly" datatype="any"  />
+        <property name="content" access="writeonly" datatype="short"  />
     </WuClass>
     <WuClass name="Debug_Trigger" id="2033" virtual="true" type="soft">
-        <property name="timestamp" access="readonly" datatype="timestamp"  />
+        <property name="timestamp" access="readonly" datatype="short"  />
     </WuClass>
+    <WuClass name="HangoutControl" id="2034" virtual="false" type="hard">
+        <property name="answer" access="readwrite" datatype="boolean" default="false" />
+        <property name="decline" access="readwrite" datatype="boolean" default="false" />
+    </WuClass>
+    <WuClass name="VideoControl" id="2035" virtual="false" type="hard">
+        <property name="play" access="readwrite" datatype="boolean" default="false"/>
+        <property name="stop" access="readwrite" datatype="boolean" default="false"/>
+        <property name="next_section" access="readwrite" datatype="boolean" default="false"/>
+        <property name="prev_section" access="readwrite" datatype="boolean" default="false"/>
+        <property name="volume_increase" access="readwrite" datatype="boolean" default="false"/>
+        <property name="volume_decrease" access="readwrite" datatype="boolean" default="false"/>
+    </WuClass>
+
+
 
     <!-- PrClasses -->
    <WuClass name="ICSDemoFloorlampPrClass" id="9000" virtual="false" type="hard">
