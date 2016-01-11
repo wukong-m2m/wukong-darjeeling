@@ -44,7 +44,7 @@ if (!project.hasProperty('aotstrat')) {
     project.ext.aotstrat = 'poppedstackcache'
 }
 if (!project.hasProperty('aotbm')) {
-    project.ext.aotbm = 'sortO'
+    project.ext.aotbm = 'bsort'
 }
 if (!project.hasProperty('aotstackcachesize')) {
     project.ext.aotstackcachesize = '10'

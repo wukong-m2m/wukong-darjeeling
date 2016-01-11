@@ -1,5 +1,5 @@
 djlibsource {
-    bm_binsrchO {
+    bm_bsort {
         cDependencies = [ 'darjeeling3' ]
         javaDependencies = [ 'base', 'darjeeling3', 'rtc' ]
     }
