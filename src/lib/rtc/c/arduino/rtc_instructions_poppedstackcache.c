@@ -1807,6 +1807,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             wkreprog_open_raw(tmp_current_position, ts->end_of_safe_region);
             ts->branch_target_count++;
         break;
+        case JVM_MARKLOOP:
+        break;
 
         // Not implemented
         default:

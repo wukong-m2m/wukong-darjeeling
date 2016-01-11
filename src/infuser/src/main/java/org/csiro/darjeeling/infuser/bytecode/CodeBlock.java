@@ -31,6 +31,7 @@ import org.apache.bcel.classfile.CodeException;
 import org.apache.bcel.classfile.ConstantClass;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.csiro.darjeeling.infuser.bytecode.transformations.AddBranchTargetInstructions;
+import org.csiro.darjeeling.infuser.bytecode.transformations.AddMarkLoopInstructions;
 import org.csiro.darjeeling.infuser.bytecode.transformations.AnalyseTypes;
 import org.csiro.darjeeling.infuser.bytecode.transformations.CalculateMaxStack;
 import org.csiro.darjeeling.infuser.bytecode.transformations.InsertExplicitCasts;
@@ -317,6 +318,8 @@ public class CodeBlock
 		new ReMapLocalVariables(ret).transform();
 
 		new UseSINC(ret).transform();
+
+		new AddMarkLoopInstructions(ret).transform();
 
 		// fix the branch addresses in the branch instructions
 		ret.instructions.fixBranchAddresses();

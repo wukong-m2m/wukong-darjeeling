@@ -262,6 +262,7 @@ public enum Opcode
 	LCMP((short)218,"lcmp", BaseType.Short, BaseType.Long, BaseType.Long),
 	
 	BRTARGET((short)219, "brtarget", null),
+	MARKLOOP((short)220, "markloop", null),
 
 	// this is a dummy placeholder opcode, will not appear in the final output
 	S2S((short)-1,"s2s", BaseType.Short, BaseType.Short)

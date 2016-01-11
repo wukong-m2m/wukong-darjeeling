@@ -28,10 +28,10 @@
 
 #ifdef ARRAYINDEX_32BIT
  // Version 100: 32 bit index
-#define INFUSION_FORMAT_VERSION 100
+#define INFUSION_FORMAT_VERSION 102
 #else
  // Version 101: 16 bit index
-#define INFUSION_FORMAT_VERSION 101
+#define INFUSION_FORMAT_VERSION 103
 #endif
 
 enum ElementType
