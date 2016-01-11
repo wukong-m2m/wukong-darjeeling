@@ -41,7 +41,7 @@ tasks.whenTaskAdded { task ->
 
 
 if (!project.hasProperty('aotstrat')) {
-    project.ext.aotstrat = 'simplestackcache'
+    project.ext.aotstrat = 'poppedstackcache'
 }
 if (!project.hasProperty('aotbm')) {
     project.ext.aotbm = 'sortO'
