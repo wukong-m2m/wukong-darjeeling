@@ -315,6 +315,10 @@ uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode) {
             return 0;
         break;
 
+        case JVM_MARKLOOP_START:
+            // need to skip a lot, but we'll handle during codegen.
+            // these won't be optimised away by stackcaching anyway.
+
         default:
             return 0;
     }

@@ -32,6 +32,21 @@ void rtc_stackcache_flush_all_regs();                                   // Pushe
 
 void rtc_stackcache_next_instruction();
 
+
+#define RTC_VALUETAG_TYPE_LOCAL     0x0000
+#define RTC_VALUETAG_TYPE_STATIC    0x4000
+#define RTC_VALUETAG_TYPE_CONSTANT  0x8000
+#define RTC_VALUETAG_UNUSED         0xFFFF
+#define RTC_VALUETAG_DATATYPE_REF   0x0000
+#define RTC_VALUETAG_DATATYPE_SHORT 0x1000
+#define RTC_VALUETAG_DATATYPE_INT   0x2000
+#define RTC_VALUETAG_DATATYPE_INT_L 0x3000
+#define RTC_VALUETAG_IS_REF(tag)    (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_REF)
+#define RTC_VALUETAG_IS_SHORT(tag)  (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_SHORT)
+#define RTC_VALUETAG_IS_INT(tag)    (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_INT)
+#define RTC_VALUETAG_IS_INT_L(tag)  (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_INT_L)
+#define RTC_VALUETAG_TO_INT_L(tag)  ((tag) + 0x1000)
+
 bool rtc_poppedstackcache_can_I_skip_this();
 uint16_t rtc_poppedstackcache_getvaluetag(uint8_t *regs);
 void rtc_poppedstackcache_setvaluetag(uint8_t *regs, uint16_t valuetag);

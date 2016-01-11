@@ -243,7 +243,8 @@
 #define JVM_S2L 217
 #define JVM_LCMP 218
 #define JVM_BRTARGET 219
-#define JVM_MARKLOOP 220
+#define JVM_MARKLOOP_START 220
+#define JVM_MARKLOOP_END 221
 
 #endif // __opcodes__h
 

@@ -38,19 +38,6 @@
                                                       rtc_stackcache_value_tags[(dest)] = rtc_stackcache_value_tags[(src)]; \
                                                       RTC_STACKCACHE_MARK_IN_USE(src); }
 
-#define RTC_VALUETAG_TYPE_LOCAL     0x0000
-#define RTC_VALUETAG_TYPE_STATIC    0x4000
-#define RTC_VALUETAG_TYPE_CONSTANT  0x8000
-#define RTC_VALUETAG_UNUSED         0xFFFF
-#define RTC_VALUETAG_DATATYPE_REF   0x0000
-#define RTC_VALUETAG_DATATYPE_SHORT 0x1000
-#define RTC_VALUETAG_DATATYPE_INT   0x2000
-#define RTC_VALUETAG_DATATYPE_INT_L 0x3000
-#define RTC_VALUETAG_IS_REF(tag)    (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_REF)
-#define RTC_VALUETAG_IS_SHORT(tag)  (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_SHORT)
-#define RTC_VALUETAG_IS_INT(tag)    (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_INT)
-#define RTC_VALUETAG_IS_INT_L(tag)  (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_INT_L)
-#define RTC_VALUETAG_TO_INT_L(tag)  ((tag) + 0x1000)
 #define RTC_STACKCACHE_SET_VALUE_TAG(idx, tag)       (rtc_stackcache_value_tags[(idx)] = tag)
 #define RTC_STACKCACHE_GET_VALUE_TAG(idx)            (rtc_stackcache_value_tags[(idx)])
 #define RTC_STACKCACHE_CLEAR_VALUE_TAG(idx)          (rtc_stackcache_value_tags[(idx)] = 0xFFFF)

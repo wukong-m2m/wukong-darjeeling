@@ -21,27 +21,44 @@
  
 package org.csiro.darjeeling.infuser.bytecode.instructions;
 
+import java.util.ArrayList;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+import org.csiro.darjeeling.infuser.bytecode.LocalVariable;
 import org.csiro.darjeeling.infuser.bytecode.Instruction;
 import org.csiro.darjeeling.infuser.bytecode.Opcode;
 
-public class MarkLoopInstruction extends SimpleInstruction
+public class MarkLoopStartInstruction extends SimpleInstruction
 {
-	protected boolean isBegin;
+	ArrayList<Integer> valuetags;
 
-	public MarkLoopInstruction(Opcode opcode, boolean isBegin)
+	public MarkLoopStartInstruction(Opcode opcode, ArrayList<Integer> valuetags)
 	{
 		super(opcode);
-		this.isBegin = isBegin;
-	}
-
-	public boolean isBegin()
-	{
-		return this.isBegin;
+		this.valuetags = valuetags;
 	}
 	
 	@Override
-	public String toString()
+	public int getLength()
 	{
-		return opcode.getName() + (this.isBegin ? "(BEGIN)" : "(END)");
+		return 2 + 2 * this.valuetags.size();
+	}
+
+	@Override
+	public void dump(DataOutputStream out) throws IOException
+	{
+		out.write(opcode.getOpcode());
+		int size = this.valuetags.size();
+		if (size > 16) {
+			size = 16;
+		} 
+		out.write(size);
+		for (int i=0; i<size; i++) {
+			int valuetag = this.valuetags.get(i);
+			// Big endian
+			out.write((valuetag >> 8) & 0xFF);
+			out.write((valuetag >> 8) & 0xFF);
+		}
 	}
 }

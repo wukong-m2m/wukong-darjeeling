@@ -1716,6 +1716,10 @@ int dj_exec_run(int nrOpcodes)
 		// misc
 		case JVM_NOP: /* do nothing :3 */ break;
 		case JVM_BRTARGET: /* do nothing :3 */ break;
+		case JVM_MARKLOOP_START:
+			pc += (2*fetch()) + 1; // Skip over the markloop instruction
+			break;
+		case JVM_MARKLOOP_END: /* do nothing :3 */ break;
 
 		default:
 			DEBUG_LOG(DBG_DARJEELING, "Unimplemented opcode %d at pc=%d\n", opcode, oldPc);
