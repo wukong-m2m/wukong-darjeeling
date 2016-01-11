@@ -317,11 +317,6 @@ void rtc_stackcache_push_pair(uint8_t reg_base, uint8_t which_stack, bool is_int
             RTC_STACKCACHE_SET_VALUE_TAG(idx, rtc_ts->current_instruction_valuetag);            
         }
     } else {
-        avroraPrintUInt8(idx);
-        avroraPrintUInt8(reg_base);
-        avroraPrintUInt8(is_int_l);
-        avroraPrintUInt16(RTC_STACKCACHE_GET_VALUE_TAG(idx));
-        avroraPrintUInt16(rtc_ts->current_instruction_valuetag);
         dj_panic(DJ_PANIC_AOT_STACKCACHE_PUSHED_REG_NOT_IN_USE);
     }
 }
@@ -606,6 +601,27 @@ uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts) {
         case JVM_ISTORE_2:
         case JVM_ISTORE_3:
             return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT   + opcode - JVM_ISTORE_0;
+
+        case JVM_SCONST_M1:
+        case JVM_SCONST_0:
+        case JVM_SCONST_1:
+        case JVM_SCONST_2:
+        case JVM_SCONST_3:
+        case JVM_SCONST_4:
+        case JVM_SCONST_5:
+            return RTC_VALUETAG_TYPE_CONSTANT + RTC_VALUETAG_DATATYPE_SHORT + opcode - JVM_SCONST_M1;
+
+        case JVM_ICONST_M1:
+        case JVM_ICONST_0:
+        case JVM_ICONST_1:
+        case JVM_ICONST_2:
+        case JVM_ICONST_3:
+        case JVM_ICONST_4:
+        case JVM_ICONST_5:
+            return RTC_VALUETAG_TYPE_CONSTANT + RTC_VALUETAG_DATATYPE_INT + opcode - JVM_ICONST_M1;
+
+        case JVM_ACONST_NULL:
+            return RTC_VALUETAG_TYPE_CONSTANT + RTC_VALUETAG_DATATYPE_REF + 0;
 
         default:
             return RTC_VALUETAG_UNUSED;
