@@ -203,6 +203,11 @@
         <property name="current_value" access="readwrite" datatype="boolean" default="false"  />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
     </WuClass>
+    <WuClass name="Makey_Gesture" id="1016" virtual="false" type="hard">
+        <property name="number" access="readwrite" datatype="short" default="7"  />
+        <property name="mode" access="readwrite" datatype="boolean" default="false"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
+    </WuClass>
 
 
 
@@ -311,7 +316,7 @@
         <property name="track" access="readwrite" datatype="short" default="0" />
         <property name="__pin" access="readonly" datatype="Pin" />
     </WuClass>
-    <WuClass name="MOSFET_LED" id="2012" virtual="false" type="hard">
+    <WuClass name="MUSIC_LED" id="2012" virtual="false" type="hard">
         <property name="command" access="readwrite" datatype="short" default="1" />
         <property name="instrument" access="readwrite" datatype="short" default="1" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="50"  />
@@ -454,6 +459,10 @@
         <property name="volume_increase" access="readwrite" datatype="boolean" default="false"/>
         <property name="volume_decrease" access="readwrite" datatype="boolean" default="false"/>
     </WuClass>
+    <WuClass name="MOSFET_LED" id="2036" virtual="false" type="hard">
+        <property name="brightness" access="readwrite" datatype="short" default="1" />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="50"  />
+    </WuClass>
 
 
 
@@ -536,4 +545,37 @@
       <property name="interval" access="readwrite" datatype="short" default="15" />
       <property name="occupany" access="readonly" datatype="boolean" default="0"/>
     </WuClass>
+    <WuClass name="UIImage" id="11001" virtual="fasle" type="soft">
+      <property name="picture" access="writeonly" datatype="short" default="0" />
+    </WuClass>
+
+    <WuClass name="UIButton" id="11002" virtual="fasle" type="soft">
+      <property name="click" access="writeonly" datatype="short" default="0" />
+      <property name="device" access="readwrite" datatype="short" default="0" />
+      <property name="port" access="readwrite" datatype="short" default="0" />
+    </WuClass>
+
+    <WuClass name="UINumber" id="11003" virtual="fasle" type="soft">
+      <property name="number" access="writeonly" datatype="short" default="0" />
+      <property name="device" access="readwrite" datatype="short" default="0" />
+      <property name="port" access="readwrite" datatype="short" default="0" />
+    </WuClass>
+    <WuClass name="Email" id="11004" virtual="fasle" type="soft">
+      <property name="send" access="writeonly" datatype="short" default="0" />
+    </WuClass>
+    <WuClass name="URL" id="11005" virtual="fasle" type="soft">
+      <property name="input" access="readonly" datatype="short" default="0" />
+    </WuClass>
+    <WuClass name="UISlider" id="11006" virtual="false" type="soft">
+      <property name="number" access="readwrite" datatype="short" default="0" />
+      <property name="device" access="readwrite" datatype="short" default="0" />
+      <property name="port" access="readwrite" datatype="short" default="0" />
+      <property name="mode" access="readwrite" datatype="boolean" default="0" />
+    </WuClass>
+    <WuClass name="UIScene" id="11007" virtual="false" type="soft">
+      <property name="number" access="readwrite" datatype="short" default="0" />
+      <property name="device" access="readwrite" datatype="short" default="0" />
+      <property name="port" access="readwrite" datatype="short" default="0" />
+    </WuClass>
+
 </WuKong>
