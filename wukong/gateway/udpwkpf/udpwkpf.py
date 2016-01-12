@@ -10,6 +10,7 @@ import cjson
 import traceback
 import xml.dom.minidom
 
+lib_path = "/../../ComponentDefinitions/WuKongStandardLibrary.xml"
 
 class WKPF(DatagramProtocol):
     GET_WUCLASS_LIST        = 0x90
@@ -480,7 +481,7 @@ class WuClass:
         return self.wkpf.getProperty(port,pID)
     def getWuClassID(self,name):
         for p in sys.path:
-            path = p+"/../ComponentDefinitions/WuKongStandardLibrary.xml"
+            path = p+lib_path
             if os.path.isfile(path):
                 break
         dom = xml.dom.minidom.parse(path)
@@ -492,7 +493,7 @@ class WuClass:
 
     def loadClass(self,name):
         for p in sys.path:
-            path = p+"/../ComponentDefinitions/WuKongStandardLibrary.xml"
+            path = p+lib_path
             if os.path.isfile(path):
                 break
         dom = xml.dom.minidom.parse(path)
