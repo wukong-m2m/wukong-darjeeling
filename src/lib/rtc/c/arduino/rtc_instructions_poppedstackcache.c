@@ -660,12 +660,11 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             } else {
                 // We need to read from another infusion. Get that infusion's address first.
                 // Load the address of the referenced infusion into operand_regs2[0]:operand_regs2[1]
-                rtc_stackcache_getfree_16bit(operand_regs2);
                 offset = rtc_offset_for_referenced_infusion(ts->infusion, jvm_operand_byte0);
-                emit_LDD(operand_regs2[0], Z, offset);
-                emit_LDD(operand_regs2[1], Z, offset+1);
+                emit_LDD(R24, Z, offset);
+                emit_LDD(R25, Z, offset+1);
                 // Then move operand_regs2[0]:operand_regs2[1] to Z
-                emit_MOVW(RZ, operand_regs2[0]);
+                emit_MOVW(RZ, R24);
                 // Z now points to the target infusion, but it should point to the start of the static variables
                 emit_ADIW(RZ, sizeof(dj_infusion));
                 // Find the target infusion to calculate the right offset in the next step
@@ -1762,7 +1761,6 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 
             // Pop the key value, and reserve some registers
             rtc_stackcache_pop_32bit(operand_regs1);
-            rtc_stackcache_getfree_32bit(operand_regs2);
 
             uint16_t number_of_cases = (dj_di_getU8(ts->jvm_code_start + ts->pc + 1) << 8) | dj_di_getU8(ts->jvm_code_start + ts->pc + 2);
             ts->pc += 2;
