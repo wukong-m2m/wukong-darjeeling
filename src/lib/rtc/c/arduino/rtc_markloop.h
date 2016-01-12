@@ -1,10 +1,12 @@
-#ifndef RTC_SIMPLESTACKCACHE_H
-#define RTC_SIMPLESTACKCACHE_H
+#ifndef RTC_MARKLOOP_H
+#define RTC_MARKLOOP_H
 #include <stdint.h>
+#include "rtc.h"
 
-void rtc_stackcache_init();
+void rtc_stackcache_init(rtc_translationstate *ts);
 
 void rtc_stackcache_getfree_16bit(uint8_t *regs);
+void rtc_stackcache_getfree_16bit_but_only_if_we_wont_spill(uint8_t *regs);
 void rtc_stackcache_getfree_32bit(uint8_t *regs);
 void rtc_stackcache_getfree_ref(uint8_t *regs);
 bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs);
@@ -30,4 +32,27 @@ void rtc_stackcache_flush_all_regs();                                   // Pushe
 
 void rtc_stackcache_next_instruction();
 
-#endif // RTC_SIMPLESTACKCACHE_H
+
+#define RTC_VALUETAG_TYPE_LOCAL     0x0000
+#define RTC_VALUETAG_TYPE_STATIC    0x4000
+#define RTC_VALUETAG_TYPE_CONSTANT  0x8000
+#define RTC_VALUETAG_UNUSED         0xFFFF
+#define RTC_VALUETAG_DATATYPE_REF   0x0000
+#define RTC_VALUETAG_DATATYPE_SHORT 0x1000
+#define RTC_VALUETAG_DATATYPE_INT   0x2000
+#define RTC_VALUETAG_DATATYPE_INT_L 0x3000
+#define RTC_VALUETAG_IS_REF(tag)    (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_REF)
+#define RTC_VALUETAG_IS_SHORT(tag)  (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_SHORT)
+#define RTC_VALUETAG_IS_INT(tag)    (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_INT)
+#define RTC_VALUETAG_IS_INT_L(tag)  (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_INT_L)
+#define RTC_VALUETAG_TO_INT_L(tag)  ((tag) + 0x1000)
+
+bool rtc_poppedstackcache_can_I_skip_this();
+uint16_t rtc_poppedstackcache_getvaluetag(uint8_t *regs);
+void rtc_poppedstackcache_setvaluetag(uint8_t *regs, uint16_t valuetag);
+void rtc_poppedstackcache_setvaluetag_int(uint8_t *regs, uint16_t valuetag);
+void rtc_poppedstackcache_clearvaluetag(uint8_t reg_base);
+void rtc_poppedstackcache_clear_all_valuetags();
+void rtc_poppedstackcache_clear_all_with_valuetag(uint16_t valuetag);
+void rtc_poppedstackcache_clear_all_callused_valuetags();
+#endif // RTC_MARKLOOP_H

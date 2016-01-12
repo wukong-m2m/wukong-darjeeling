@@ -1,5 +1,5 @@
-#ifndef RTC_STACKCACHE_H
-#define RTC_STACKCACHE_H
+#ifndef RTC_POPPEDSTACKCACHE_H
+#define RTC_POPPEDSTACKCACHE_H
 #include <stdint.h>
 #include "rtc.h"
 
@@ -55,4 +55,4 @@ void rtc_poppedstackcache_clearvaluetag(uint8_t reg_base);
 void rtc_poppedstackcache_clear_all_valuetags();
 void rtc_poppedstackcache_clear_all_with_valuetag(uint16_t valuetag);
 void rtc_poppedstackcache_clear_all_callused_valuetags();
-#endif // RTC_STACKCACHE_H
+#endif // RTC_POPPEDSTACKCACHE_H
