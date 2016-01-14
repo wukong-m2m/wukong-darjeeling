@@ -1,5 +1,5 @@
-#ifndef RTC_MARKLOOP_H
-#define RTC_MARKLOOP_H
+#ifndef RTC_POPPEDSTACKCACHE_H
+#define RTC_POPPEDSTACKCACHE_H
 #include <stdint.h>
 #include "rtc.h"
 
@@ -55,4 +55,4 @@ void rtc_poppedstackcache_clear_all_valuetags();
 
 bool rtc_poppedstackcache_can_I_skip_this();
 
-#endif // RTC_MARKLOOP_H
+#endif // RTC_POPPEDSTACKCACHE_H
