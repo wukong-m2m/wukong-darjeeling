@@ -39,7 +39,7 @@ typedef struct _rtc_translationstate {
 	dj_di_pointer end_of_safe_region;
     uint16_t branch_target_count; // Keep track of how many branch targets we've seen
 #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
-    bool rtc_next_instruction_shifts_1_bit;
+    bool do_CONST1_SHIFT_optimisation;
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
 #ifdef AOT_STRATEGY_POPPEDSTACKCACHE
     uint16_t current_instruction_pc; // We may need this later, after the instruction already forwarded pc to skip over arguments

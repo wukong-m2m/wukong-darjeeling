@@ -35,7 +35,7 @@
 #define RTC_STACKCACHE_MARK_INT_STACK_DEPTH0(idx)    (rtc_stackcache_state[(idx)] = RTC_STACKCACHE_INT_STACK_TYPE)
 #define RTC_STACKCACHE_MARK_REF_STACK_DEPTH0(idx)    (rtc_stackcache_state[(idx)] = RTC_STACKCACHE_REF_STACK_TYPE)
 #define RTC_STACKCACHE_MOVE_CACHE_ELEMENT(dest, src) {rtc_stackcache_state[(dest)] = rtc_stackcache_state[(src)]; \
-                                                      rtc_stackcache_value_tags[(dest)] = rtc_stackcache_value_tags[(src)]; \
+                                                      rtc_stackcache_valuetags[(dest)] = rtc_stackcache_valuetags[(src)]; \
                                                       RTC_STACKCACHE_MARK_IN_USE(src); }
 
 #define RTC_VALUETAG_TYPE_LOCAL     0x0000
@@ -51,18 +51,15 @@
 #define RTC_VALUETAG_IS_INT(tag)    (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_INT)
 #define RTC_VALUETAG_IS_INT_L(tag)  (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_INT_L)
 #define RTC_VALUETAG_TO_INT_L(tag)  ((tag) + 0x1000)
-#define RTC_STACKCACHE_SET_VALUE_TAG(idx, tag)       (rtc_stackcache_value_tags[(idx)] = tag)
-#define RTC_STACKCACHE_GET_VALUE_TAG(idx)            (rtc_stackcache_value_tags[(idx)])
-#define RTC_STACKCACHE_CLEAR_VALUE_TAG(idx)          (rtc_stackcache_value_tags[(idx)] = 0xFFFF)
-
-
-
+#define RTC_STACKCACHE_SET_VALUETAG(idx, tag)       (rtc_stackcache_valuetags[(idx)] = tag)
+#define RTC_STACKCACHE_GET_VALUETAG(idx)            (rtc_stackcache_valuetags[(idx)])
+#define RTC_STACKCACHE_CLEAR_VALUETAG(idx)          (rtc_stackcache_valuetags[(idx)] = 0xFFFF)
 #define RTC_STACKCACHE_UPDATE_AGE(idx)               (rtc_stackcache_age[(idx)] = rtc_ts->pc)
 #define RTC_STACKCACHE_GET_AGE(idx)                  (rtc_stackcache_age[(idx)])
 
 rtc_translationstate *rtc_ts; // Store a global pointer to the translation state. Bit of a hack, but this way I don't need to pass the pointer on each call.
 uint8_t rtc_stackcache_state[RTC_STACKCACHE_MAX_IDX];
-uint16_t rtc_stackcache_value_tags[RTC_STACKCACHE_MAX_IDX];
+uint16_t rtc_stackcache_valuetags[RTC_STACKCACHE_MAX_IDX];
 uint16_t rtc_stackcache_age[RTC_STACKCACHE_MAX_IDX];
 
 // IMPORTANT: REGISTERS ARE ALWAYS ASSIGNED IN PAIRS:
@@ -90,12 +87,10 @@ uint16_t rtc_stackcache_age[RTC_STACKCACHE_MAX_IDX];
 // AVAILABLE -> IN USE              : getfree
 // IN USE -> ON STACK               : push (if source not yet on stack)
 // ON STACK -> IN USE               : pop
-// IN USE -> AVAILABLE              : next_instruction
-// AVAILABLE -> ON STACK            : push (if source already on stack)
-//
 // ON STACK -> AVAILABLE            : pop_into_fixed (for reg containing value)
 // AVAILABLE -> IN USE              : pop_into_fixed (for target reg)
-
+// IN USE -> AVAILABLE              : next_instruction
+//
 // Calling convention:
 // Call used:  r0, r18-r25, r26:r27 (X), r30:r31 (Z)
 // Call saved: r1, r2-r17, r28:r29 (Y)
@@ -108,29 +103,10 @@ uint16_t rtc_stackcache_age[RTC_STACKCACHE_MAX_IDX];
 // Z       : pointer to infusion's static fields or to an object (need to load at each operation)
 
 
-
-// Private utility functions
-void rtc_stackcache_assert_no_in_use() {
-    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
-        if (RTC_STACKCACHE_IS_IN_USE(idx)) {
-            dj_panic(DJ_PANIC_AOT_STACKCACHE_IN_USE);
-        }
-    }
-}
-#define RTC_NUMBER_OF_CALL_USED_REGS_PAIRS 3
+////////////////////// HELPERS
 bool rtc_stackcache_is_call_used_idx(uint8_t idx) {
     uint8_t reg = ARRAY_INDEX_TO_REG(idx);
-
-    uint8_t call_used_regs[RTC_NUMBER_OF_CALL_USED_REGS_PAIRS] = {
-        R18, R20, R22 // Call used
-    };
-
-    for (uint8_t i=0; i<RTC_NUMBER_OF_CALL_USED_REGS_PAIRS; i++) {
-        if (reg == call_used_regs[i]) {
-            return true;
-        }
-    }
-    return false;
+    return reg == R18 || reg == R20 || reg == R22;
 }
 uint8_t get_deepest_pair_idx() { // Returns 0xFF if there's nothing on the stack.
     int8_t deepest_depth = -1;
@@ -171,33 +147,37 @@ uint8_t rtc_get_stack_idx_at_depth(uint8_t depth) {
 }
 uint8_t rtc_get_lru_available_index() {
     uint16_t oldest_available_age = 0xFFFF;
-    uint8_t oldest_available_idx = 0xFF;
+    uint8_t idx_to_return = 0xFF;
 
     // We prefer registers without a value tag, since we can't recycle those anyway. (so it's technically not lru_available...)
     for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
-        if (RTC_STACKCACHE_IS_AVAILABLE(idx) && RTC_STACKCACHE_GET_VALUE_TAG(idx)==RTC_VALUETAG_UNUSED) {
-            return idx;
+        if (RTC_STACKCACHE_IS_AVAILABLE(idx) && RTC_STACKCACHE_GET_VALUETAG(idx)==RTC_VALUETAG_UNUSED) {
+            idx_to_return = idx;
+            break;
         }
     }
 
     // If there are no available registers without valuetag, we want to use the oldest one
-    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
-        if (RTC_STACKCACHE_IS_AVAILABLE(idx) && RTC_STACKCACHE_GET_AGE(idx)<oldest_available_age) {
-            oldest_available_age = RTC_STACKCACHE_GET_AGE(idx);
-            oldest_available_idx = idx;
+    if (idx_to_return == 0xFF) {
+        for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+            if (RTC_STACKCACHE_IS_AVAILABLE(idx) && RTC_STACKCACHE_GET_AGE(idx)<oldest_available_age) {
+                oldest_available_age = RTC_STACKCACHE_GET_AGE(idx);
+                idx_to_return = idx;
+            }
         }
     }
-    if (oldest_available_idx != 0xFF) {
-        // Since this register will be used by whoever called rtc_get_lru_available_index, clear the valuetag because the value currently stored there will be overwritten.
-        RTC_STACKCACHE_SET_VALUE_TAG(oldest_available_idx, RTC_VALUETAG_UNUSED);
+
+    if (idx_to_return != 0xFF) {
+        // Since this register will be used by whoever called rtc_get_lru_available_index, mark it IN USE and clear the valuetag because the value currently stored there will be overwritten.
+        RTC_STACKCACHE_MARK_IN_USE(idx_to_return);
+        RTC_STACKCACHE_CLEAR_VALUETAG(idx_to_return);        
     }
 
     // Return the oldest available register with a value tag, or this will be 0xFF if no register was available at all.
-    return oldest_available_idx;
+    return idx_to_return;
 }
 
-
-// Public API
+////////////////////// PUBLIC INTERFACE
 #define RTC_NUMBER_OF_USABLE_REGS_PAIRS 10
 // #define this so we can control it from Gradle if we want. If not, default to using all available regs.
 #ifndef RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE
@@ -209,7 +189,7 @@ void rtc_stackcache_init(rtc_translationstate *ts) {
     // First mark all regs as DISABLED.
     for (uint8_t i=0; i<RTC_STACKCACHE_MAX_IDX; i++) {
         RTC_STACKCACHE_MARK_DISABLED(i);
-        RTC_STACKCACHE_SET_VALUE_TAG(i, RTC_VALUETAG_UNUSED);
+        RTC_STACKCACHE_SET_VALUETAG(i, RTC_VALUETAG_UNUSED);
         RTC_STACKCACHE_UPDATE_AGE(i);
     }
 
@@ -226,6 +206,51 @@ void rtc_stackcache_init(rtc_translationstate *ts) {
     }
 }
 
+void rtc_stackcache_next_instruction() {
+    avroraRTCTraceStackCacheState(rtc_stackcache_state); // Store it here so we can see what's IN USE
+    avroraRTCTraceStackCacheValuetags(rtc_stackcache_valuetags);
+    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+        if (RTC_STACKCACHE_IS_IN_USE(idx)) {
+            RTC_STACKCACHE_MARK_AVAILABLE(idx);
+        }
+    }
+}
+
+// VALUETAG functions
+uint16_t rtc_poppedstackcache_get_valuetag(uint8_t *regs) {
+    return RTC_STACKCACHE_GET_VALUETAG(REG_TO_ARRAY_INDEX(regs[0]));
+}
+void rtc_poppedstackcache_set_valuetag(uint8_t *regs, uint16_t valuetag) {
+    RTC_STACKCACHE_SET_VALUETAG(REG_TO_ARRAY_INDEX(regs[0]), valuetag);
+}
+void rtc_poppedstackcache_clear_all_with_valuetag(uint16_t valuetag, bool is_int_l) {
+    if (is_int_l) {
+        valuetag = RTC_VALUETAG_TO_INT_L(valuetag);
+    }
+    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+        if (RTC_STACKCACHE_GET_VALUETAG(idx) == valuetag) {
+            RTC_STACKCACHE_CLEAR_VALUETAG(idx);
+        }
+    }
+}
+void rtc_poppedstackcache_clear_all_callused_valuetags() {
+    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+        // Is this a call-used register?
+        if (rtc_stackcache_is_call_used_idx(idx)) {
+            RTC_STACKCACHE_SET_VALUETAG(idx, RTC_VALUETAG_UNUSED);
+        }
+    }
+}
+void rtc_poppedstackcache_clear_all_valuetags() {
+    // At a branch target we can't make any assumption about the register state since it will depend on the execution path. Clear all ages and valuetags to start with a clean cache.
+    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+        RTC_STACKCACHE_CLEAR_VALUETAG(idx);
+    }
+}
+
+// GETFREE
+//    finds a free register pair, possibly spilling the lowest pair to memory to free it up
+//    clears the valuetag of the register pair returned
 uint8_t rtc_stackcache_getfree_pair() {
     // If there's an available register, use it
     uint8_t idx = rtc_get_lru_available_index();
@@ -233,14 +258,14 @@ uint8_t rtc_stackcache_getfree_pair() {
         idx = rtc_stackcache_spill_deepest_pair();
     }
     RTC_STACKCACHE_MARK_IN_USE(idx);
-    RTC_STACKCACHE_CLEAR_VALUE_TAG(idx);
+    RTC_STACKCACHE_CLEAR_VALUETAG(idx);
     return ARRAY_INDEX_TO_REG(idx);
 }
 uint8_t rtc_stackcache_getfree_pair_but_only_if_we_wont_spill() {
     uint8_t idx = rtc_get_lru_available_index();
     if (idx != 0xFF) {
         RTC_STACKCACHE_MARK_IN_USE(idx);
-        RTC_STACKCACHE_CLEAR_VALUE_TAG(idx);        
+        RTC_STACKCACHE_CLEAR_VALUETAG(idx);
         return ARRAY_INDEX_TO_REG(idx);
     }
     return 0xFF;
@@ -249,13 +274,6 @@ void rtc_stackcache_getfree_16bit(uint8_t *regs) {
     uint8_t r = rtc_stackcache_getfree_pair();
     regs[0] = r;
     regs[1] = r+1;
-}
-void rtc_stackcache_getfree_16bit_but_only_if_we_wont_spill(uint8_t *regs) {
-    uint8_t r = rtc_stackcache_getfree_pair_but_only_if_we_wont_spill();
-    if (r != 0xFF) {
-        regs[0] = r;
-        regs[1] = r+1;
-    }
 }
 void rtc_stackcache_getfree_32bit(uint8_t *regs) {
     uint8_t r = rtc_stackcache_getfree_pair();
@@ -270,6 +288,15 @@ void rtc_stackcache_getfree_ref(uint8_t *regs) {
     regs[0] = r;
     regs[1] = r+1;
 }
+void rtc_stackcache_getfree_16bit_but_only_if_we_wont_spill_otherwise_clear_valuetag(uint8_t *regs) {
+    uint8_t r = rtc_stackcache_getfree_pair_but_only_if_we_wont_spill();
+    if (r != 0xFF) {
+        regs[0] = r;
+        regs[1] = r+1;
+    } else {
+        RTC_STACKCACHE_CLEAR_VALUETAG(REG_TO_ARRAY_INDEX(regs[0]));
+    }
+}
 // Returns true if a register in the range >=r16 is allocated, false otherwise
 bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs) {
     // Check if any reg in the range starting at R16 is free
@@ -277,8 +304,8 @@ bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs) {
         uint8_t idx = REG_TO_ARRAY_INDEX(reg);
         if (RTC_STACKCACHE_IS_AVAILABLE(idx)) {
             // We're in luck.
-            RTC_STACKCACHE_CLEAR_VALUE_TAG(idx);
             RTC_STACKCACHE_MARK_IN_USE(idx);
+            RTC_STACKCACHE_CLEAR_VALUETAG(idx);
             regs[0] = reg;
             regs[1] = reg+1;
             return true;
@@ -291,11 +318,14 @@ bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs) {
     return regs[0] >= R16;
 }
 
+// PUSH
+//    if we're pushing from R24, copy it to a free register first (calls GETFREE internally)
+//    if the valuetag is set for the current instruction, record it
 void rtc_stackcache_push_pair(uint8_t reg_base, uint8_t which_stack, bool is_int_l) {
     uint8_t idx = REG_TO_ARRAY_INDEX(reg_base);
     if (RTC_STACKCACHE_IS_IN_USE(idx)
-        || (RTC_STACKCACHE_IS_AVAILABLE(idx) && (RTC_STACKCACHE_GET_VALUE_TAG(idx) == rtc_ts->current_instruction_valuetag
-                                                 || (is_int_l && RTC_STACKCACHE_GET_VALUE_TAG(idx) == RTC_VALUETAG_TO_INT_L(rtc_ts->current_instruction_valuetag))))) {
+    || (RTC_STACKCACHE_IS_AVAILABLE(idx) && (RTC_STACKCACHE_GET_VALUETAG(idx) == rtc_ts->current_instruction_valuetag
+                                             || (RTC_STACKCACHE_GET_VALUETAG(idx) == RTC_VALUETAG_TO_INT_L(rtc_ts->current_instruction_valuetag) && is_int_l)))) {
         // shift depth for all pairs on the stack
         for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
             if (RTC_STACKCACHE_IS_ON_STACK(idx)) {
@@ -309,19 +339,31 @@ void rtc_stackcache_push_pair(uint8_t reg_base, uint8_t which_stack, bool is_int
             RTC_STACKCACHE_MARK_REF_STACK_DEPTH0(idx);
         }
 
-        // set the value tag for the pushed value.
-        if (RTC_VALUETAG_IS_INT(rtc_ts->current_instruction_valuetag) && is_int_l) {
-            // Special case when pushing the 2nd word of an int. Need to update the valuetag to be able to tell the high and low word apart.
-            RTC_STACKCACHE_SET_VALUE_TAG(idx, RTC_VALUETAG_TO_INT_L(rtc_ts->current_instruction_valuetag));
-        } else {
-            RTC_STACKCACHE_SET_VALUE_TAG(idx, rtc_ts->current_instruction_valuetag);            
+        // set the value tag for the pushed value if we have one
+        if (rtc_ts->current_instruction_valuetag != RTC_VALUETAG_UNUSED) {
+            if (RTC_VALUETAG_IS_INT(rtc_ts->current_instruction_valuetag) && is_int_l) {
+                // Special case when pushing the 2nd word of an int. Need to update the valuetag to be able to tell the high and low word apart.
+                RTC_STACKCACHE_SET_VALUETAG(idx, RTC_VALUETAG_TO_INT_L(rtc_ts->current_instruction_valuetag));
+            } else {
+                RTC_STACKCACHE_SET_VALUETAG(idx, rtc_ts->current_instruction_valuetag);            
+            }
         }
     } else {
         dj_panic(DJ_PANIC_AOT_STACKCACHE_PUSHED_REG_NOT_IN_USE);
     }
 }
+void rtc_stackcache_push_16bit(uint8_t *regs) {
+    rtc_stackcache_push_pair(regs[0], RTC_STACKCACHE_INT_STACK_TYPE, false);
+}
+void rtc_stackcache_push_32bit(uint8_t *regs) {
+    rtc_stackcache_push_pair(regs[2], RTC_STACKCACHE_INT_STACK_TYPE, false);
+    rtc_stackcache_push_pair(regs[0], RTC_STACKCACHE_INT_STACK_TYPE, true);
+}
+void rtc_stackcache_push_ref(uint8_t *regs) {
+    rtc_stackcache_push_pair(regs[0], RTC_STACKCACHE_REF_STACK_TYPE, false);
+}
 void rtc_stackcache_push_scratch_pair(uint8_t which_stack) {
-    // We want to push R24:R25 onto the stack. This is common after
+    // We want to push R24:R25 onto the stack. This only used after
     // a native function call to push the return value.
 
     // We'll first see if there's any available register, if so,
@@ -329,7 +371,7 @@ void rtc_stackcache_push_scratch_pair(uint8_t which_stack) {
     // use R21:R20.
     // This is a bit dangerous, since it will be marked IN USE after
     // a native function call. (after calling
-    // rtc_stackcache_clear_call_used_regs_before_native_function_call)
+    // rtc_stackcache_flush_call_used_regs)
     // However, this is always the last thing an instruction does,
     // so it should be safe. The alternative would be to spill to
     // memory, but that would hurt performance.
@@ -337,8 +379,6 @@ void rtc_stackcache_push_scratch_pair(uint8_t which_stack) {
     uint8_t target_idx = (rtc_get_lru_available_index() != 0xFF)
                          ? rtc_get_lru_available_index()
                          : REG_TO_ARRAY_INDEX(R20);
-    // Mark the target register IN USE (if it was AVAILABLE before)
-    RTC_STACKCACHE_MARK_IN_USE(target_idx);
     // and move the value there.
     emit_MOVW(ARRAY_INDEX_TO_REG(target_idx), R24);
 
@@ -355,19 +395,16 @@ void rtc_stackcache_push_32bit_from_scratch_R22R25() {
 void rtc_stackcache_push_ref_from_scratch_R24R25() {
     rtc_stackcache_push_scratch_pair(RTC_STACKCACHE_REF_STACK_TYPE);
 }
-// LET OP: ALS EEN GEPUSHT REGISTER AL OP DE STACK STAAT MOET HET WORDEN GEDUPLICEERD
-void rtc_stackcache_push_16bit(uint8_t *regs) {
-    rtc_stackcache_push_pair(regs[0], RTC_STACKCACHE_INT_STACK_TYPE, false);
-}
-void rtc_stackcache_push_32bit(uint8_t *regs) {
-    rtc_stackcache_push_pair(regs[2], RTC_STACKCACHE_INT_STACK_TYPE, false);
-    rtc_stackcache_push_pair(regs[0], RTC_STACKCACHE_INT_STACK_TYPE, true);
-}
-void rtc_stackcache_push_ref(uint8_t *regs) {
-    rtc_stackcache_push_pair(regs[0], RTC_STACKCACHE_REF_STACK_TYPE, false);
-}
 
-uint8_t rtc_stackcache_pop_pair(uint8_t which_stack, uint8_t target_reg) {
+// POP
+//    if nondestructive: pop, retaining the valuetag so it may be recycled later
+//    if destructive: pop, and clear the valuetag since the calling instruction will destroy the value
+//    if to_store: pop, and set the valuetag since we will write this value to memory. also clear any other register with the same value tag since it's no longer current
+#define RTC_STACKCACHE_POP_NONDESTRUCTIVE 1
+#define RTC_STACKCACHE_POP_DESTRUCTIVE    2
+#define RTC_STACKCACHE_POP_TO_STORE       3
+#define RTC_STACKCACHE_POP_TO_STORE_INT_L 4
+void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack, uint8_t target_reg) {
     if (target_reg != 0xFF
      && target_reg != R18
      && target_reg != R20
@@ -375,13 +412,9 @@ uint8_t rtc_stackcache_pop_pair(uint8_t which_stack, uint8_t target_reg) {
      && target_reg != R24
      && target_reg != RZ) {
         while (true) {
-            avroraPrintUInt8(which_stack);
-            avroraPrintUInt8(target_reg);
          dj_panic(DJ_PANIC_AOT_STACKCACHE_INVALID_POP_TARGET); }
     }
-    uint8_t target_idx = (target_reg == 0xFF)
-                         ? 0xFF
-                         : REG_TO_ARRAY_INDEX(target_reg);
+    uint8_t target_idx = (target_reg == 0xFF) ? 0xFF : REG_TO_ARRAY_INDEX(target_reg);
 
     // The top element may be of the wrong stack type. This happens because of the way
     // Darjeeling transforms the single JVM stack into separate int and reference stacks.
@@ -407,8 +440,7 @@ uint8_t rtc_stackcache_pop_pair(uint8_t which_stack, uint8_t target_reg) {
             }
         } else {
             if (!RTC_STACKCACHE_IS_STACK_TYPE(stack_top_idx, which_stack)) {
-                // The element at this stack depth is of the wrong type
-                // Try the next one.
+                // The element at this stack depth is of the wrong type: try the next one.
                 depth++;
                 continue;
             }
@@ -429,59 +461,99 @@ uint8_t rtc_stackcache_pop_pair(uint8_t which_stack, uint8_t target_reg) {
             if (target_idx != stack_top_idx) {
                 // The value needs to go to a specific target, which is different from where it is now.
                 emit_MOVW(target_reg, ARRAY_INDEX_TO_REG(stack_top_idx)); // Move the value to the target register
-                RTC_STACKCACHE_UPDATE_AGE(stack_top_idx); // Mark the fact that this value was used at this pc.
-                RTC_STACKCACHE_SET_VALUE_TAG(target_idx, RTC_STACKCACHE_GET_VALUE_TAG(stack_top_idx)); // Also copy the valuetag if there is any
                 RTC_STACKCACHE_MARK_AVAILABLE(stack_top_idx); // Original location is now AVAILABLE
+                RTC_STACKCACHE_UPDATE_AGE(stack_top_idx); // Mark the fact that this value was used at this pc.
+                RTC_STACKCACHE_SET_VALUETAG(target_idx, RTC_STACKCACHE_GET_VALUETAG(stack_top_idx)); // Also copy the valuetag if there is any
             }
-        }
-        if (target_idx != REG_TO_ARRAY_INDEX(R24) && target_idx != REG_TO_ARRAY_INDEX(RZ)) { // Don't mark R24 or Z in use, because they can't become available after this instruction
-            RTC_STACKCACHE_MARK_IN_USE(target_idx); // Target is now IN USE (if it wasn't already)
         }
 
         RTC_STACKCACHE_UPDATE_AGE(target_idx); // Mark the fact that this value was used at this pc.
-        return ARRAY_INDEX_TO_REG(target_idx);
+        if (target_idx != REG_TO_ARRAY_INDEX(R24) && target_idx != REG_TO_ARRAY_INDEX(RZ)) { // Don't mark R24 or Z in use, because they should't become available after this instruction
+            RTC_STACKCACHE_MARK_IN_USE(target_idx); // Target is now IN USE (might already have been IN USE if we're popping to a specific register before a function call)
+        }
+        if (poptype == RTC_STACKCACHE_POP_NONDESTRUCTIVE) {
+            // Just keep the valuetag since we may reuse it later
+        } else if (poptype == RTC_STACKCACHE_POP_DESTRUCTIVE) {
+            // The value will be destroyed, so clear the value tag
+            RTC_STACKCACHE_CLEAR_VALUETAG(target_idx);
+        } else if (poptype == RTC_STACKCACHE_POP_TO_STORE) {
+            // The value will be stored to memory, so we should mark the value tag,
+            // and also clear any other registers with the same tag since they no
+            // longer contain the right value.
+            rtc_poppedstackcache_clear_all_with_valuetag(rtc_ts->current_instruction_valuetag, false);
+            RTC_STACKCACHE_SET_VALUETAG(target_idx, rtc_ts->current_instruction_valuetag);
+        } else if (poptype == RTC_STACKCACHE_POP_TO_STORE_INT_L) {
+            // The value will be stored to memory, so we should mark the value tag,
+            // and also clear any other registers with the same tag since they no
+            // longer contain the right value.
+            rtc_poppedstackcache_clear_all_with_valuetag(rtc_ts->current_instruction_valuetag, true);
+            RTC_STACKCACHE_SET_VALUETAG(target_idx, RTC_VALUETAG_TO_INT_L(rtc_ts->current_instruction_valuetag));
+        }
 
+        if (regs != NULL) {
+            regs[0] = ARRAY_INDEX_TO_REG(target_idx);
+            regs[1] = ARRAY_INDEX_TO_REG(target_idx)+1;
+        }
+        return;
     }
 }
-void rtc_stackcache_pop_16bit(uint8_t *regs) {
-    uint8_t r = rtc_stackcache_pop_pair(RTC_STACKCACHE_INT_STACK_TYPE, 0xFF);
-    regs[0] = r;
-    regs[1] = r+1;
+
+void rtc_stackcache_pop_nondestructive_16bit(uint8_t *regs) {
+    rtc_stackcache_pop_pair(regs, RTC_STACKCACHE_POP_NONDESTRUCTIVE, RTC_STACKCACHE_INT_STACK_TYPE, 0xFF);
 }
-void rtc_stackcache_pop_32bit(uint8_t *regs) {
-    uint8_t r = rtc_stackcache_pop_pair(RTC_STACKCACHE_INT_STACK_TYPE, 0xFF);
-    regs[0] = r;
-    regs[1] = r+1;
-    r = rtc_stackcache_pop_pair(RTC_STACKCACHE_INT_STACK_TYPE, 0xFF);
-    regs[2] = r;
-    regs[3] = r+1;
+void rtc_stackcache_pop_nondestructive_32bit(uint8_t *regs) {
+    rtc_stackcache_pop_pair(regs, RTC_STACKCACHE_POP_NONDESTRUCTIVE, RTC_STACKCACHE_INT_STACK_TYPE, 0xFF);
+    rtc_stackcache_pop_pair(regs+2, RTC_STACKCACHE_POP_NONDESTRUCTIVE, RTC_STACKCACHE_INT_STACK_TYPE, 0xFF);
 }
-void rtc_stackcache_pop_ref(uint8_t *regs) {
-    uint8_t r = rtc_stackcache_pop_pair(RTC_STACKCACHE_REF_STACK_TYPE, 0xFF);
-    regs[0] = r;
-    regs[1] = r+1;
+void rtc_stackcache_pop_nondestructive_ref(uint8_t *regs) {
+    rtc_stackcache_pop_pair(regs, RTC_STACKCACHE_POP_NONDESTRUCTIVE, RTC_STACKCACHE_REF_STACK_TYPE, 0xFF);
 }
-// Pops a value into a specific range of consecutive regs. Panics if any reg is in use.
-void rtc_stackcache_pop_16bit_into_fixed_reg(uint8_t reg_base) {
-    rtc_stackcache_pop_pair(RTC_STACKCACHE_INT_STACK_TYPE, reg_base);
+void rtc_stackcache_pop_destructive_16bit(uint8_t *regs) {
+    rtc_stackcache_pop_pair(regs, RTC_STACKCACHE_POP_DESTRUCTIVE, RTC_STACKCACHE_INT_STACK_TYPE, 0xFF);
 }
-void rtc_stackcache_pop_32bit_into_fixed_reg(uint8_t reg_base) {
-    rtc_stackcache_pop_pair(RTC_STACKCACHE_INT_STACK_TYPE, reg_base);
-    rtc_stackcache_pop_pair(RTC_STACKCACHE_INT_STACK_TYPE, reg_base+2);
+void rtc_stackcache_pop_destructive_32bit(uint8_t *regs) {
+    rtc_stackcache_pop_pair(regs, RTC_STACKCACHE_POP_DESTRUCTIVE, RTC_STACKCACHE_INT_STACK_TYPE, 0xFF);
+    rtc_stackcache_pop_pair(regs+2, RTC_STACKCACHE_POP_DESTRUCTIVE, RTC_STACKCACHE_INT_STACK_TYPE, 0xFF);
 }
-void rtc_stackcache_pop_ref_into_fixed_reg(uint8_t reg_base) {
-    rtc_stackcache_pop_pair(RTC_STACKCACHE_REF_STACK_TYPE, reg_base);
+void rtc_stackcache_pop_destructive_ref(uint8_t *regs) {
+    rtc_stackcache_pop_pair(regs, RTC_STACKCACHE_POP_DESTRUCTIVE, RTC_STACKCACHE_REF_STACK_TYPE, 0xFF);
 }
-void rtc_stackcache_pop_ref_into_Z() {
-    rtc_stackcache_pop_pair(RTC_STACKCACHE_REF_STACK_TYPE, RZ);
+void rtc_stackcache_pop_to_store_16bit(uint8_t *regs) {
+    rtc_stackcache_pop_pair(regs, RTC_STACKCACHE_POP_TO_STORE, RTC_STACKCACHE_INT_STACK_TYPE, 0xFF);
+}
+void rtc_stackcache_pop_to_store_32bit(uint8_t *regs) {
+    rtc_stackcache_pop_pair(regs, RTC_STACKCACHE_POP_TO_STORE_INT_L, RTC_STACKCACHE_INT_STACK_TYPE, 0xFF);
+    rtc_stackcache_pop_pair(regs+2, RTC_STACKCACHE_POP_TO_STORE, RTC_STACKCACHE_INT_STACK_TYPE, 0xFF);
+}
+void rtc_stackcache_pop_to_store_ref(uint8_t *regs) {
+    rtc_stackcache_pop_pair(regs, RTC_STACKCACHE_POP_TO_STORE, RTC_STACKCACHE_REF_STACK_TYPE, 0xFF);
+}
+void rtc_stackcache_pop_destructive_16bit_into_fixed_reg(uint8_t reg_base) {         // Pops a value into a specific range of consecutive regs. Panics if any reg is not marked IN USE.
+    rtc_stackcache_pop_pair(NULL, RTC_STACKCACHE_POP_DESTRUCTIVE, RTC_STACKCACHE_INT_STACK_TYPE, reg_base);
+}
+void rtc_stackcache_pop_destructive_32bit_into_fixed_reg(uint8_t reg_base) {         // Pops a value into a specific range of consecutive regs. Panics if any reg is not marked IN USE.
+    rtc_stackcache_pop_pair(NULL, RTC_STACKCACHE_POP_DESTRUCTIVE, RTC_STACKCACHE_INT_STACK_TYPE, reg_base);
+    rtc_stackcache_pop_pair(NULL, RTC_STACKCACHE_POP_DESTRUCTIVE, RTC_STACKCACHE_INT_STACK_TYPE, reg_base+2);
+}
+void rtc_stackcache_pop_destructive_ref_into_fixed_reg(uint8_t reg_base) {           // Pops a value into a specific range of consecutive regs. Panics if any reg is not marked IN USE.
+    rtc_stackcache_pop_pair(NULL, RTC_STACKCACHE_POP_DESTRUCTIVE, RTC_STACKCACHE_REF_STACK_TYPE, reg_base);
+}
+void rtc_stackcache_pop_destructive_ref_into_Z() {                                   // Pops a value into Z. Panics if any reg is not marked IN USE.
+    rtc_stackcache_pop_pair(NULL, RTC_STACKCACHE_POP_DESTRUCTIVE, RTC_STACKCACHE_REF_STACK_TYPE, RZ);
 }
 
-void rtc_stackcache_clear_call_used_regs_before_native_function_call() {
+void rtc_stackcache_assert_no_in_use() {
+    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+        if (RTC_STACKCACHE_IS_IN_USE(idx)) {
+            dj_panic(DJ_PANIC_AOT_STACKCACHE_IN_USE);
+        }
+    }
+}
+void rtc_stackcache_flush_call_used_regs_and_clear_valuetags() {        // Pushes all call-used registers onto the stack, removing them from the cache (R18–R27, R30, R31), and clears the value tags since the value is about to be destroyed
     // Pushes all call-used registers onto the stack, removing them from the cache (R18–R25)
     rtc_stackcache_assert_no_in_use();
 
-    // After this all call-used registers are marked IN USE, so they can be pushed on the stack
-    // to store a function result
+    // After this all call-used registers are marked IN USE, so they can be pushed on the stack to store a function result
     while(true) {
         // Check if there's any call-used reg on the stack
         uint8_t call_used_reg_on_stack_idx = 0xFF;
@@ -518,14 +590,16 @@ void rtc_stackcache_clear_call_used_regs_before_native_function_call() {
         } else {
             // There's also an available call-saved register, so move the value in the call-used reg there.
             emit_MOVW(ARRAY_INDEX_TO_REG(call_saved_reg_available_idx), ARRAY_INDEX_TO_REG(call_used_reg_on_stack_idx));
-            // Update the cache state
+            // Update the cache state and value tag
             RTC_STACKCACHE_MOVE_CACHE_ELEMENT(call_saved_reg_available_idx, call_used_reg_on_stack_idx);
+            RTC_STACKCACHE_SET_VALUETAG(call_saved_reg_available_idx, RTC_STACKCACHE_GET_VALUETAG(call_used_reg_on_stack_idx));
         }
     }
 
     // Finally, clear the valuetags for all call-used registers, since the value may be gone after the function call returns
     rtc_poppedstackcache_clear_all_callused_valuetags();
 }
+
 void rtc_stackcache_flush_all_regs() {
     // This is done before branches to make sure the whole stack is in memory. (Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.)
     // There's no need to clear the valuetags here, as we may reuse the values later if the branch wasn't taken. If it was, the valuetags are clears at the BRTARGET.
@@ -534,35 +608,23 @@ void rtc_stackcache_flush_all_regs() {
     }
 }
 
-void rtc_stackcache_next_instruction() {
-    avroraRTCTraceStackCacheState(rtc_stackcache_state); // Store it here so we can see what's IN USE
-    avroraRTCTraceStackCacheValuetags(rtc_stackcache_value_tags);
-    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
-        if (RTC_STACKCACHE_IS_IN_USE(idx)) {
-            RTC_STACKCACHE_MARK_AVAILABLE(idx);
-        }
-    }
-}
-
-
-
-
-/////// POPPED STACK CACHING
-
-
-
-uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts) {
+// Code to skip instructions if the valuetag is found
+uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts, bool *instruction_produces_value_which_can_be_skipped) {
     uint8_t opcode = dj_di_getU8(ts->jvm_code_start + ts->pc);
     uint8_t jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ts->pc + 1);
+    uint8_t next_opcode = jvm_operand_byte0;
 
     switch (opcode) {
         case JVM_ALOAD:
+            *instruction_produces_value_which_can_be_skipped = true;
+            return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_REF + jvm_operand_byte0;
         case JVM_ASTORE:
-            return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_REF   + jvm_operand_byte0;
+            return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_REF + jvm_operand_byte0;
         case JVM_ALOAD_0:
         case JVM_ALOAD_1:
         case JVM_ALOAD_2:
         case JVM_ALOAD_3:
+            *instruction_produces_value_which_can_be_skipped = true;
             return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_REF + opcode - JVM_ALOAD_0;
         case JVM_ASTORE_0:
         case JVM_ASTORE_1:
@@ -571,6 +633,7 @@ uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts) {
             return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_REF + opcode - JVM_ASTORE_0;
 
         case JVM_SLOAD:
+            *instruction_produces_value_which_can_be_skipped = true;
         case JVM_SSTORE:
         case JVM_SINC:
         case JVM_SINC_W:
@@ -579,6 +642,7 @@ uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts) {
         case JVM_SLOAD_1:
         case JVM_SLOAD_2:
         case JVM_SLOAD_3:
+            *instruction_produces_value_which_can_be_skipped = true;
             return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_SHORT + opcode - JVM_SLOAD_0;
         case JVM_SSTORE_0:
         case JVM_SSTORE_1:
@@ -587,40 +651,59 @@ uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts) {
             return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_SHORT + opcode - JVM_SSTORE_0;
 
         case JVM_ILOAD:
+            *instruction_produces_value_which_can_be_skipped = true;
         case JVM_ISTORE:
         case JVM_IINC:
         case JVM_IINC_W:
-            return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT   + jvm_operand_byte0;
+            return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT + jvm_operand_byte0;
         case JVM_ILOAD_0:
         case JVM_ILOAD_1:
         case JVM_ILOAD_2:
         case JVM_ILOAD_3:
-            return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT   + opcode - JVM_ILOAD_0;
+            *instruction_produces_value_which_can_be_skipped = true;
+            return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT + opcode - JVM_ILOAD_0;
         case JVM_ISTORE_0:
         case JVM_ISTORE_1:
         case JVM_ISTORE_2:
         case JVM_ISTORE_3:
-            return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT   + opcode - JVM_ISTORE_0;
+            return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT + opcode - JVM_ISTORE_0;
 
+        case JVM_SCONST_1:
+#ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
+            if (next_opcode == JVM_SSHL
+                || next_opcode == JVM_SSHR
+                || next_opcode == JVM_SUSHR
+                || next_opcode == JVM_IUSHR) { // Somehow IUSHR has 16 bit operand but ISHR and ISHL have 32 bit.
+                ts->do_CONST1_SHIFT_optimisation = true;
+            }
+#endif // AOT_OPTIMISE_CONSTANT_SHIFTS
         case JVM_SCONST_M1:
         case JVM_SCONST_0:
-        case JVM_SCONST_1:
         case JVM_SCONST_2:
         case JVM_SCONST_3:
         case JVM_SCONST_4:
         case JVM_SCONST_5:
+            *instruction_produces_value_which_can_be_skipped = true;
             return RTC_VALUETAG_TYPE_CONSTANT + RTC_VALUETAG_DATATYPE_SHORT + opcode - JVM_SCONST_M1;
 
+        case JVM_ICONST_1:
+#ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
+            if (next_opcode == JVM_ISHL
+                || next_opcode == JVM_ISHR) { // Somehow IUSHR has 16 bit operand but ISHR and ISHL have 32 bit.
+                ts->do_CONST1_SHIFT_optimisation = true;
+            }
+#endif // AOT_OPTIMISE_CONSTANT_SHIFTS
         case JVM_ICONST_M1:
         case JVM_ICONST_0:
-        case JVM_ICONST_1:
         case JVM_ICONST_2:
         case JVM_ICONST_3:
         case JVM_ICONST_4:
         case JVM_ICONST_5:
+            *instruction_produces_value_which_can_be_skipped = true;
             return RTC_VALUETAG_TYPE_CONSTANT + RTC_VALUETAG_DATATYPE_INT + opcode - JVM_ICONST_M1;
 
         case JVM_ACONST_NULL:
+            *instruction_produces_value_which_can_be_skipped = true;
             return RTC_VALUETAG_TYPE_CONSTANT + RTC_VALUETAG_DATATYPE_REF + 0;
 
         default:
@@ -628,27 +711,9 @@ uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts) {
     }
 }
 
-bool rtc_poppedstackcache_produces_value_which_can_be_skipped(uint8_t opcode) {
-    return opcode == JVM_ALOAD
-        || opcode == JVM_ALOAD_0
-        || opcode == JVM_ALOAD_1
-        || opcode == JVM_ALOAD_2
-        || opcode == JVM_ALOAD_3
-        || opcode == JVM_SLOAD
-        || opcode == JVM_SLOAD_0
-        || opcode == JVM_SLOAD_1
-        || opcode == JVM_SLOAD_2
-        || opcode == JVM_SLOAD_3
-        || opcode == JVM_ILOAD
-        || opcode == JVM_ILOAD_0
-        || opcode == JVM_ILOAD_1
-        || opcode == JVM_ILOAD_2
-        || opcode == JVM_ILOAD_3;
-}
-
 uint8_t rtc_poppedstackcache_find_available_valuetag(uint16_t valuetag) {
     for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
-        if (RTC_STACKCACHE_IS_AVAILABLE(idx) && RTC_STACKCACHE_GET_VALUE_TAG(idx) == valuetag) {
+        if (RTC_STACKCACHE_IS_AVAILABLE(idx) && RTC_STACKCACHE_GET_VALUETAG(idx) == valuetag) {
             return idx;
         }
     }
@@ -657,14 +722,17 @@ uint8_t rtc_poppedstackcache_find_available_valuetag(uint16_t valuetag) {
 
 bool rtc_poppedstackcache_can_I_skip_this() {
     uint8_t idx, idx_l = 0xFF;
+    bool instruction_produces_value_which_can_be_skipped = false;
 
     rtc_ts->current_instruction_pc = rtc_ts->pc; // Save this because we may need in later after the instruction already increased pc to skip over arguments
-    rtc_ts->current_instruction_valuetag = rtc_stackcache_determine_valuetag(rtc_ts);
+    rtc_ts->current_instruction_valuetag = rtc_stackcache_determine_valuetag(rtc_ts, &instruction_produces_value_which_can_be_skipped);
 
-    if (rtc_ts->current_instruction_valuetag == RTC_VALUETAG_UNUSED
-            || !rtc_poppedstackcache_produces_value_which_can_be_skipped(dj_di_getU8(rtc_ts->jvm_code_start + rtc_ts->pc))) {
-        return false;
-    } else {
+
+    if (instruction_produces_value_which_can_be_skipped) {
+        if (rtc_ts->do_CONST1_SHIFT_optimisation) {
+            return true; // Skip the CONST1 and let the next shift instruction shift by 1 bit.
+        }
+
         // Check if there is an available register that contains the value we need (because it was loaded and the popped earlier in this basic block)
         idx = rtc_poppedstackcache_find_available_valuetag(rtc_ts->current_instruction_valuetag);
         if (idx == 0xFF) {
@@ -698,48 +766,10 @@ bool rtc_poppedstackcache_can_I_skip_this() {
         }
 
         return true;
+    } else {
+        return false;
     }
 }
 
-
-uint16_t rtc_poppedstackcache_getvaluetag(uint8_t *regs) {
-    return RTC_STACKCACHE_GET_VALUE_TAG(REG_TO_ARRAY_INDEX(regs[0]));
-}
-void rtc_poppedstackcache_setvaluetag(uint8_t *regs, uint16_t valuetag) {
-    RTC_STACKCACHE_SET_VALUE_TAG(REG_TO_ARRAY_INDEX(regs[0]), valuetag);
-}
-void rtc_poppedstackcache_setvaluetag_int(uint8_t *regs, uint16_t valuetag) {
-    RTC_STACKCACHE_SET_VALUE_TAG(REG_TO_ARRAY_INDEX(regs[0]), RTC_VALUETAG_TO_INT_L(valuetag));
-    RTC_STACKCACHE_SET_VALUE_TAG(REG_TO_ARRAY_INDEX(regs[2]), valuetag);
-}
-void rtc_poppedstackcache_clearvaluetag(uint8_t reg_base) {
-    RTC_STACKCACHE_SET_VALUE_TAG(REG_TO_ARRAY_INDEX(reg_base), RTC_VALUETAG_UNUSED);
-}
-void rtc_poppedstackcache_clear_all_with_valuetag(uint16_t valuetag) {
-    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
-        if (RTC_STACKCACHE_GET_VALUE_TAG(idx) == valuetag) {
-            RTC_STACKCACHE_CLEAR_VALUE_TAG(idx);
-        }
-    }
-    // For int value tags, also clear the second register pair.
-    if (RTC_VALUETAG_IS_INT(valuetag)) {
-        rtc_poppedstackcache_clear_all_with_valuetag(RTC_VALUETAG_TO_INT_L(valuetag));
-    }
-}
-void rtc_poppedstackcache_clear_all_valuetags() {
-    // At a branch target we can't make any assumption about the register state since it will depend on the execution path. Clear all ages and valuetags to start with a clean cache.
-    for (uint8_t i=0; i<RTC_STACKCACHE_MAX_IDX; i++) {
-        RTC_STACKCACHE_SET_VALUE_TAG(i, RTC_VALUETAG_UNUSED);
-        RTC_STACKCACHE_UPDATE_AGE(i);
-    }
-}
-void rtc_poppedstackcache_clear_all_callused_valuetags() {
-    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
-        // Is this a call-used register?
-        if (rtc_stackcache_is_call_used_idx(idx)) {
-            RTC_STACKCACHE_SET_VALUE_TAG(idx, RTC_VALUETAG_UNUSED);
-        }
-    }
-}
 
 #endif // AOT_STRATEGY_POPPEDSTACKCACHE

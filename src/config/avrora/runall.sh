@@ -2,7 +2,7 @@
 alias gdj="gradle -b ../../build.gradle"
 
 # benchmarks=(sortX hsortX binsrchX)
-benchmarks=(sortO hsortO fft xxtea rc5 md5 binsrchO)
+benchmarks=(bsort hsort fft xxtea rc5 md5 binsrch)
 
 gdj clean
 
@@ -22,6 +22,18 @@ do
 	    gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Paotstackcachesize=${aotstackcachesize}
 	done
 done
+
+# POPPED STACK CACHING
+for benchmark in ${benchmarks}
+do
+    # cachesizes=(5 6 7 8 9 10)
+    cachesizes=(10)
+    for aotstackcachesize in ${cachesizes}
+    do
+        gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Paotstackcachesize=${aotstackcachesize}
+    done
+done
+
 
 for resultsdir in `ls | grep results_`
 do
