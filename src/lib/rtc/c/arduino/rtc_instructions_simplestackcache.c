@@ -79,7 +79,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 || next_opcode == JVM_SSHR
                 || next_opcode == JVM_SUSHR
                 || next_opcode == JVM_IUSHR) { // Somehow IUSHR has 16 bit operand but ISHR and ISHL have 32 bit.
-                ts->rtc_next_instruction_shifts_1_bit = true;
+                ts->do_CONST1_SHIFT_optimisation = true;
                 break;
             }
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
@@ -122,7 +122,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
             if (next_opcode == JVM_ISHL
                 || next_opcode == JVM_ISHR) { // Somehow IUSHR has 16 bit operand but ISHR and ISHL have 32 bit.
-                ts->rtc_next_instruction_shifts_1_bit = true;
+                ts->do_CONST1_SHIFT_optimisation = true;
                 break;
             }
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
@@ -813,7 +813,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         break;
         case JVM_SSHL:
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
-                if (!(ts->rtc_next_instruction_shifts_1_bit)) {
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     rtc_stackcache_pop_16bit(operand_regs1);
                     emit_RJMP(4);
                 }
@@ -821,12 +821,12 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 
                 emit_LSL(operand_regs2[0]);
                 emit_ROL(operand_regs2[1]);
-                if (!(ts->rtc_next_instruction_shifts_1_bit)) {
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     emit_DEC(operand_regs1[0]);
                     emit_BRPL(-8);
                 } else {
                     // special case for shifting by 1 bit. -> optimise I/SCONST_1 followed by a shift, to a single shift.
-                    ts->rtc_next_instruction_shifts_1_bit = false;
+                    ts->do_CONST1_SHIFT_optimisation = false;
                 }
 
                 rtc_stackcache_push_16bit(operand_regs2);
@@ -845,7 +845,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         break;
         case JVM_SSHR:
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
-                if (!(ts->rtc_next_instruction_shifts_1_bit)) {
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     rtc_stackcache_pop_16bit(operand_regs1);
                     emit_RJMP(4);
                 }
@@ -853,12 +853,12 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 
                 emit_ASR(operand_regs2[1]);
                 emit_ROR(operand_regs2[0]);
-                if (!(ts->rtc_next_instruction_shifts_1_bit)) {
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     emit_DEC(operand_regs1[0]);
                     emit_BRPL(-8);
                 } else {
                     // special case for shifting by 1 bit. -> optimise I/SCONST_1 followed by a shift, to a single shift.
-                    ts->rtc_next_instruction_shifts_1_bit = false;
+                    ts->do_CONST1_SHIFT_optimisation = false;
                 }
 
                 rtc_stackcache_push_16bit(operand_regs2);
@@ -877,7 +877,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         break;
         case JVM_SUSHR:
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
-                if (!(ts->rtc_next_instruction_shifts_1_bit)) {
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     rtc_stackcache_pop_16bit(operand_regs1);
                     emit_RJMP(4);
                 }
@@ -885,12 +885,12 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 
                 emit_LSR(operand_regs2[1]);
                 emit_ROR(operand_regs2[0]);
-                if (!(ts->rtc_next_instruction_shifts_1_bit)) {
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     emit_DEC(operand_regs1[0]);
                     emit_BRPL(-8);
                 } else {
                     // special case for shifting by 1 bit. -> optimise I/SCONST_1 followed by a shift, to a single shift.
-                    ts->rtc_next_instruction_shifts_1_bit = false;
+                    ts->do_CONST1_SHIFT_optimisation = false;
                 }
 
                 rtc_stackcache_push_16bit(operand_regs2);
@@ -997,7 +997,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         break;
         case JVM_ISHL:
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
-                if (!(ts->rtc_next_instruction_shifts_1_bit)) {
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     rtc_stackcache_pop_32bit(operand_regs1);
                     emit_RJMP(8);
                 }
@@ -1007,12 +1007,12 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_ROL(operand_regs2[1]);
                 emit_ROL(operand_regs2[2]);
                 emit_ROL(operand_regs2[3]);
-                if (!(ts->rtc_next_instruction_shifts_1_bit)) {
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     emit_DEC(operand_regs1[0]);
                     emit_BRPL(-12);
                 } else  {
                     // special case for shifting by 1 bit. -> optimise I/SCONST_1 followed by a shift, to a single shift.
-                    ts->rtc_next_instruction_shifts_1_bit = false;
+                    ts->do_CONST1_SHIFT_optimisation = false;
                 }
 
                 rtc_stackcache_push_32bit(operand_regs2);
@@ -1033,7 +1033,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         break;
         case JVM_ISHR:
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
-                if (!(ts->rtc_next_instruction_shifts_1_bit)) {
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     rtc_stackcache_pop_32bit(operand_regs1);
                     emit_RJMP(8);
                 }
@@ -1043,12 +1043,12 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_ROR(operand_regs2[2]);
                 emit_ROR(operand_regs2[1]);
                 emit_ROR(operand_regs2[0]);
-                if (!(ts->rtc_next_instruction_shifts_1_bit)) {
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     emit_DEC(operand_regs1[0]);
                     emit_BRPL(-12);
                 } else  {
                     // special case for shifting by 1 bit. -> optimise I/SCONST_1 followed by a shift, to a single shift.
-                    ts->rtc_next_instruction_shifts_1_bit = false;
+                    ts->do_CONST1_SHIFT_optimisation = false;
                 }
 
                 rtc_stackcache_push_32bit(operand_regs2);
@@ -1069,7 +1069,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         break;
         case JVM_IUSHR: // x >>> y
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
-                if (!(ts->rtc_next_instruction_shifts_1_bit)) {
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     rtc_stackcache_pop_16bit(operand_regs1);
                     emit_RJMP(8);
                 }
@@ -1079,12 +1079,12 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_ROR(operand_regs2[2]);
                 emit_ROR(operand_regs2[1]);
                 emit_ROR(operand_regs2[0]);
-                if (!(ts->rtc_next_instruction_shifts_1_bit)) {
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     emit_DEC(operand_regs1[0]);
                     emit_BRPL(-12);
                 } else  {
                     // special case for shifting by 1 bit. -> optimise I/SCONST_1 followed by a shift, to a single shift.
-                    ts->rtc_next_instruction_shifts_1_bit = false;
+                    ts->do_CONST1_SHIFT_optimisation = false;
                 }
 
                 rtc_stackcache_push_32bit(operand_regs2);

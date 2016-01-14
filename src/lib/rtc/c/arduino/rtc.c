@@ -124,7 +124,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     ts.end_of_safe_region = END_OF_SAFE_REGION;
     ts.branch_target_count = 0;
 #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
-    ts.rtc_next_instruction_shifts_1_bit = false;
+    ts.do_CONST1_SHIFT_optimisation = false;
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
 
     // If we're using stack caching, initialise the cache

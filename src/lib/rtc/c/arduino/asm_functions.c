@@ -13,10 +13,6 @@ void asm_guard_assert(bool condition) {
     }
 }
 void asm_guard_check_regs(uint16_t opcode, uint8_t reg1, uint8_t reg2) {
-    // avroraPrintStr("GUARD");
-    // avroraPrintHex16(opcode);
-    // avroraPrintUInt8(reg1);
-    // avroraPrintUInt8(reg2);
     switch(opcode) {
         case OPCODE_ADIW: // r24, X(r26), Y(r28), Z(r30)
             asm_guard_assert(reg1==R24 || reg1==R26 || reg1==R28 || reg1==R30);
@@ -24,9 +20,9 @@ void asm_guard_check_regs(uint16_t opcode, uint8_t reg1, uint8_t reg2) {
         case OPCODE_MOVW: // only even reg pairs
             asm_guard_assert((reg1%2) == 0 && (reg2%2) == 0);
         break;
-        case OPCODE_LDI : // r16-31
-        case OPCODE_SBCI: // r16-31
-        case OPCODE_SUBI: // r16-31
+        case OPCODE_LDI : // r16-31 // 0xE000
+        case OPCODE_SBCI: // r16-31 // 0x4000
+        case OPCODE_SUBI: // r16-31 // 0x5000
             asm_guard_assert(R16 <= reg1 && reg1 <= R31);
         break;
         default:
