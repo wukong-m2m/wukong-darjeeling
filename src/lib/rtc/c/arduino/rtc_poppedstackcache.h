@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include "rtc.h"
 
+#define RTC_VALUETAG_TO_INT_L(tag)  ((tag) + 0x1000)
+
 void rtc_stackcache_init(rtc_translationstate *ts);
 void rtc_stackcache_next_instruction();
 
@@ -49,7 +51,7 @@ void rtc_stackcache_flush_all_regs();                                   // Pushe
 
 uint16_t rtc_poppedstackcache_get_valuetag(uint8_t *regs);
 void rtc_poppedstackcache_set_valuetag(uint8_t *regs, uint16_t valuetag);
-void rtc_poppedstackcache_clear_all_with_valuetag(uint16_t valuetag, bool is_int_l);
+void rtc_poppedstackcache_clear_all_with_valuetag(uint16_t valuetag);
 void rtc_poppedstackcache_clear_all_callused_valuetags();
 void rtc_poppedstackcache_clear_all_valuetags();
 

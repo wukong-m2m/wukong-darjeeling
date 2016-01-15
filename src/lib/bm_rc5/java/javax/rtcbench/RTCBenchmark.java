@@ -186,7 +186,10 @@ public class RTCBenchmark {
                 A = ( ((A ^ B)<<(B&31)) | ((A ^ B)>>>(32-(B&31))) ) + skey_K[(short)(K+2)];
                 B = ( ((B ^ A)<<(A&31)) | ((B ^ A)>>>(32-(A&31))) ) + skey_K[(short)(K+3)];
                 K += 4;
-          }
+            }
+            K++; // This doesn't do anything but is just here to make sure the point of exit for the loop is here, so we can optimise it with a MARKLOOP.
+            // Without this statement, the branch that terminates by branching over the else clause, which is more efficient, but we can't handle that case yet.
+            // We should improve the infuser to automatically transform the code so that there's a single point of exit, but for now this will do as well.
         } else {
             for (r = 0; r < skey_rounds; r++) {
                 A = ( ((A ^ B)<<(B&31)) | ((A ^ B)>>>(32-(B&31))) ) + skey_K[(short)(K+0)];

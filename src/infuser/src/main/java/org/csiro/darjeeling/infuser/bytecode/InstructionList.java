@@ -295,6 +295,17 @@ public class InstructionList
 
 	public void setBranchTargetIndexes()
 	{
+		// First number all branch targets
+		int branchTargetCount = 0;
+		for (InstructionHandle handle : instructions)
+		{
+			Instruction instruction = handle.getInstruction();
+			
+			if (instruction.getOpcode() == Opcode.BRTARGET) {
+				((BranchTargetInstruction)instruction).setBranchTargetIndex(branchTargetCount++);
+			}
+		}
+
 		for (InstructionHandle handle : instructions)
 		{
 			Opcode opcode = handle.getInstruction().getOpcode();

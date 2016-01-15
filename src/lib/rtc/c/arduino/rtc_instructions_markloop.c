@@ -11,7 +11,7 @@
 #include "rtc_branches.h"
 #include "rtc_complex_instructions.h"
 #include "asm.h"
-#include "rtc_poppedstackcache.h"
+#include "rtc_markloop.h"
 
 // NOTE: Function pointers are a "PC address", so already divided by 2 since the PC counts in words, not bytes.
 // avr-libgcc functions used by translation
@@ -238,8 +238,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             if (opcode != JVM_SLOAD)
                 jvm_operand_byte0 = opcode - JVM_SLOAD_0;
             rtc_stackcache_getfree_16bit(operand_regs1);
-            emit_LDD(operand_regs1[0], Y, offset_for_intlocal_short(ts->methodimpl, jvm_operand_byte0));
-            emit_LDD(operand_regs1[1], Y, offset_for_intlocal_short(ts->methodimpl, jvm_operand_byte0)+1);
+            emit_load_local_16bit(operand_regs1, offset_for_intlocal_short(ts->methodimpl, jvm_operand_byte0));
             rtc_stackcache_push_16bit(operand_regs1);
         break;
         case JVM_ILOAD:
@@ -250,10 +249,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             if (opcode != JVM_ILOAD)
                 jvm_operand_byte0 = opcode - JVM_ILOAD_0;
             rtc_stackcache_getfree_32bit(operand_regs1);
-            emit_LDD(operand_regs1[0], Y, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0));
-            emit_LDD(operand_regs1[1], Y, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0)+1);
-            emit_LDD(operand_regs1[2], Y, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0)+2);
-            emit_LDD(operand_regs1[3], Y, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0)+3);
+            emit_load_local_32bit(operand_regs1, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0));
             rtc_stackcache_push_32bit(operand_regs1);
         break;
         case JVM_ALOAD:
@@ -264,8 +260,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             if (opcode != JVM_ALOAD)
                 jvm_operand_byte0 = opcode - JVM_ALOAD_0;
             rtc_stackcache_getfree_ref(operand_regs1);
-            emit_LDD(operand_regs1[0], Y, offset_for_reflocal(ts->methodimpl, jvm_operand_byte0));
-            emit_LDD(operand_regs1[1], Y, offset_for_reflocal(ts->methodimpl, jvm_operand_byte0)+1);
+            emit_load_local_ref(operand_regs1, offset_for_reflocal(ts->methodimpl, jvm_operand_byte0));
             rtc_stackcache_push_ref(operand_regs1);
         break;
         case JVM_SSTORE:
@@ -276,8 +271,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             if (opcode != JVM_SSTORE)
                 jvm_operand_byte0 = opcode - JVM_SSTORE_0;
             rtc_stackcache_pop_to_store_16bit(operand_regs1);
-            emit_STD(operand_regs1[0], Y, offset_for_intlocal_short(ts->methodimpl, jvm_operand_byte0));
-            emit_STD(operand_regs1[1], Y, offset_for_intlocal_short(ts->methodimpl, jvm_operand_byte0)+1);
+            emit_store_local_16bit(operand_regs1, offset_for_intlocal_short(ts->methodimpl, jvm_operand_byte0));
         break;
         case JVM_ISTORE:
         case JVM_ISTORE_0:
@@ -287,10 +281,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             if (opcode != JVM_ISTORE)
                 jvm_operand_byte0 = opcode - JVM_ISTORE_0;
             rtc_stackcache_pop_to_store_32bit(operand_regs1);
-            emit_STD(operand_regs1[0], Y, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0));
-            emit_STD(operand_regs1[1], Y, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0)+1);
-            emit_STD(operand_regs1[2], Y, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0)+2);
-            emit_STD(operand_regs1[3], Y, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0)+3);
+            emit_store_local_32bit(operand_regs1, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0));
         break;
         case JVM_ASTORE:
         case JVM_ASTORE_0:
@@ -300,8 +291,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             if (opcode != JVM_ASTORE)
                 jvm_operand_byte0 = opcode - JVM_ASTORE_0;
             rtc_stackcache_pop_to_store_ref(operand_regs1);
-            emit_STD(operand_regs1[0], Y, offset_for_reflocal(ts->methodimpl, jvm_operand_byte0));
-            emit_STD(operand_regs1[1], Y, offset_for_reflocal(ts->methodimpl, jvm_operand_byte0)+1);
+            emit_store_local_ref(operand_regs1, offset_for_reflocal(ts->methodimpl, jvm_operand_byte0));
         break;
         case JVM_BALOAD:
         case JVM_CALOAD:
@@ -763,9 +753,11 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
                 if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     rtc_stackcache_pop_destructive_16bit(operand_regs1);
-                    emit_RJMP(4);
                 }
                 rtc_stackcache_pop_destructive_16bit(operand_regs2); // operand
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
+                    emit_RJMP(4);
+                }
 
                 if (opcode == JVM_SSHL) {
                     emit_LSL(operand_regs2[0]);
@@ -905,9 +897,11 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                     } else { // JVM_ISHL or JVM_ISHR
                         rtc_stackcache_pop_destructive_32bit(operand_regs1);
                     }
-                    emit_RJMP(8);
                 }
                 rtc_stackcache_pop_destructive_32bit(operand_regs2); // operand
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
+                    emit_RJMP(8);
+                }
 
                 if (opcode == JVM_ISHL) {                
                     emit_LSL(operand_regs2[0]);
@@ -1040,7 +1034,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_SBCI(R24, c1);
                 emit_STD(R24, Y, offset+1);
             }
-            rtc_poppedstackcache_clear_all_with_valuetag(ts->current_instruction_valuetag, false); // Any cached value for this variable is now outdated.
+            rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(ts->current_instruction_valuetag); // Any cached value for this variable is now outdated.
         break;
         case JVM_IINC:
         case JVM_IINC_W:
@@ -1104,8 +1098,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_SBCI(R24, c3);
                 emit_STD(R24, Y, offset+3);
             }
-            rtc_poppedstackcache_clear_all_with_valuetag(ts->current_instruction_valuetag, false); // Any cached value for this variable is now outdated.
-            rtc_poppedstackcache_clear_all_with_valuetag(ts->current_instruction_valuetag, true); // Also for the 2nd word
+            rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(ts->current_instruction_valuetag); // Any cached value for this variable is now outdated.
+            rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(RTC_VALUETAG_TO_INT_L(ts->current_instruction_valuetag)); // Also for the 2nd word
         break;
         case JVM_S2B:
         case JVM_S2C:
@@ -1633,7 +1627,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         break;
         case JVM_BRTARGET:
             rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
-            rtc_poppedstackcache_clear_all_valuetags();
+            rtc_poppedstackcache_clear_all_except_pinned_valuetags();
 
             // This is a noop, but we need to record the offset of the next
             // instruction in the branch target table at the start of the method.
@@ -1648,6 +1642,13 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             wkreprog_close();
             wkreprog_open_raw(tmp_current_position, ts->end_of_safe_region);
             ts->branch_target_count++;
+        break;
+        case JVM_MARKLOOP_START:
+            rtc_markloop_emit_prologue();
+            ts->pc += (2*jvm_operand_byte0)+1;
+        break;
+        case JVM_MARKLOOP_END:
+            rtc_markloop_emit_epilogue();
         break;
 
         // Not implemented

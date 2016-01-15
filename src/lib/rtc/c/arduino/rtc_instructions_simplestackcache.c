@@ -815,9 +815,11 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
                 if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     rtc_stackcache_pop_16bit(operand_regs1);
-                    emit_RJMP(4);
                 }
                 rtc_stackcache_pop_16bit(operand_regs2); // operand
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
+                    emit_RJMP(4);
+                }
 
                 emit_LSL(operand_regs2[0]);
                 emit_ROL(operand_regs2[1]);
@@ -847,9 +849,11 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
                 if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     rtc_stackcache_pop_16bit(operand_regs1);
-                    emit_RJMP(4);
                 }
                 rtc_stackcache_pop_16bit(operand_regs2); // operand
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
+                    emit_RJMP(4);
+                }
 
                 emit_ASR(operand_regs2[1]);
                 emit_ROR(operand_regs2[0]);
@@ -879,9 +883,11 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
                 if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     rtc_stackcache_pop_16bit(operand_regs1);
-                    emit_RJMP(4);
                 }
                 rtc_stackcache_pop_16bit(operand_regs2); // operand
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
+                    emit_RJMP(4);
+                }
 
                 emit_LSR(operand_regs2[1]);
                 emit_ROR(operand_regs2[0]);
@@ -999,9 +1005,11 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
                 if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     rtc_stackcache_pop_32bit(operand_regs1);
-                    emit_RJMP(8);
                 }
                 rtc_stackcache_pop_32bit(operand_regs2); // operand
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
+                    emit_RJMP(8);
+                }
 
                 emit_LSL(operand_regs2[0]);
                 emit_ROL(operand_regs2[1]);
@@ -1035,9 +1043,11 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
                 if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     rtc_stackcache_pop_32bit(operand_regs1);
-                    emit_RJMP(8);
                 }
                 rtc_stackcache_pop_32bit(operand_regs2); // operand
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
+                    emit_RJMP(8);
+                }
 
                 emit_ASR(operand_regs2[3]);
                 emit_ROR(operand_regs2[2]);
@@ -1071,9 +1081,11 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
                 if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     rtc_stackcache_pop_16bit(operand_regs1);
-                    emit_RJMP(8);
                 }
                 rtc_stackcache_pop_32bit(operand_regs2); // operand
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
+                    emit_RJMP(8);
+                }
 
                 emit_LSR(operand_regs2[3]);
                 emit_ROR(operand_regs2[2]);

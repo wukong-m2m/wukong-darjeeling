@@ -319,7 +319,7 @@ public class CodeBlock
 
 		new UseSINC(ret).transform();
 
-		new AddMarkLoopInstructions(ret).transform();
+		new AddMarkLoopInstructions(ret, methodImplementation.toString()).transform();
 
 		// fix the branch addresses in the branch instructions
 		ret.instructions.fixBranchAddresses();

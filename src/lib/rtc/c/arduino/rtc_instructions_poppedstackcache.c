@@ -763,9 +763,11 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
                 if (!(ts->do_CONST1_SHIFT_optimisation)) {
                     rtc_stackcache_pop_destructive_16bit(operand_regs1);
-                    emit_RJMP(4);
                 }
                 rtc_stackcache_pop_destructive_16bit(operand_regs2); // operand
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
+                    emit_RJMP(4);
+                }
 
                 if (opcode == JVM_SSHL) {
                     emit_LSL(operand_regs2[0]);
@@ -905,9 +907,11 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                     } else { // JVM_ISHL or JVM_ISHR
                         rtc_stackcache_pop_destructive_32bit(operand_regs1);
                     }
-                    emit_RJMP(8);
                 }
                 rtc_stackcache_pop_destructive_32bit(operand_regs2); // operand
+                if (!(ts->do_CONST1_SHIFT_optimisation)) {
+                    emit_RJMP(8);
+                }
 
                 if (opcode == JVM_ISHL) {                
                     emit_LSL(operand_regs2[0]);
@@ -1040,7 +1044,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_SBCI(R24, c1);
                 emit_STD(R24, Y, offset+1);
             }
-            rtc_poppedstackcache_clear_all_with_valuetag(ts->current_instruction_valuetag, false); // Any cached value for this variable is now outdated.
+            rtc_poppedstackcache_clear_all_with_valuetag(ts->current_instruction_valuetag); // Any cached value for this variable is now outdated.
         break;
         case JVM_IINC:
         case JVM_IINC_W:
@@ -1104,8 +1108,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_SBCI(R24, c3);
                 emit_STD(R24, Y, offset+3);
             }
-            rtc_poppedstackcache_clear_all_with_valuetag(ts->current_instruction_valuetag, false); // Any cached value for this variable is now outdated.
-            rtc_poppedstackcache_clear_all_with_valuetag(ts->current_instruction_valuetag, true); // Also for the 2nd word
+            rtc_poppedstackcache_clear_all_with_valuetag(ts->current_instruction_valuetag); // Any cached value for this variable is now outdated.
+            rtc_poppedstackcache_clear_all_with_valuetag(RTC_VALUETAG_TO_INT_L(ts->current_instruction_valuetag)); // Also for the 2nd word
         break;
         case JVM_S2B:
         case JVM_S2C:

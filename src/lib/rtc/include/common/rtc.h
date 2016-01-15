@@ -45,6 +45,12 @@ typedef struct _rtc_translationstate {
     uint16_t current_instruction_pc; // We may need this later, after the instruction already forwarded pc to skip over arguments
     uint16_t current_instruction_valuetag;
 #endif // AOT_STRATEGY_POPPEDSTACKCACHE
+#ifdef AOT_STRATEGY_MARKLOOP
+    uint16_t current_instruction_pc; // We may need this later, after the instruction already forwarded pc to skip over arguments
+    uint16_t current_instruction_valuetag;
+    uint8_t current_instruction_opcode;
+    uint8_t current_instruction_opcodetype;
+#endif // AOT_STRATEGY_MARKLOOP
 } rtc_translationstate;
 
 #endif // RTC_H

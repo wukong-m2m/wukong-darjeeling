@@ -34,6 +34,16 @@ do
     done
 done
 
+# POPPED STACK CACHING + MARKLOOP
+for benchmark in ${benchmarks}
+do
+    # cachesizes=(5 6 7 8 9 10)
+    cachesizes=(10)
+    for aotstackcachesize in ${cachesizes}
+    do
+        gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=markloop -Paotstackcachesize=${aotstackcachesize}
+    done
+done
 
 for resultsdir in `ls | grep results_`
 do

@@ -83,17 +83,6 @@ public class AddBranchTargetInstructions extends CodeBlockTransformation
 			}
 		}
 
-		// Now number all branch targets
-		int branchTargetCount = 0;
-		for (int i=0; i<instructions.size(); i++)
-		{
-			InstructionHandle handle = instructions.get(i);
-			
-			Instruction instruction = handle.getInstruction();
-			
-			if (instruction.getOpcode() == Opcode.BRTARGET) {
-				((BranchTargetInstruction)instruction).setBranchTargetIndex(branchTargetCount++);
-			}
-		}
+		// Numbering the branch targets will be done in InstructionList, since AddMarkLoopInstructions may add some more.
 	}
 }

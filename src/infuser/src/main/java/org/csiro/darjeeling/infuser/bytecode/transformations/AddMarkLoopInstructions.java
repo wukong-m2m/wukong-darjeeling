@@ -14,12 +14,14 @@ import org.csiro.darjeeling.infuser.bytecode.instructions.LoadStoreInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.IncreaseInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.WideIncreaseInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.MarkLoopStartInstruction;
+import org.csiro.darjeeling.infuser.bytecode.instructions.BranchTargetInstruction;
 
 public class AddMarkLoopInstructions extends CodeBlockTransformation
 {
-    public AddMarkLoopInstructions(CodeBlock codeBlock)
+    public AddMarkLoopInstructions(CodeBlock codeBlock, String methodname)
     {
         super(codeBlock);
+        // System.err.println("AddMarkLoopInstructions: " + methodname);
     }
 
     private final static int RTC_VALUETAG_TYPE_LOCAL     = 0x0000;
@@ -123,14 +125,55 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
         }
     }
 
-    private static void insertMARKLOOP(InstructionList instructions, InstructionHandle loopBeginHandle, InstructionHandle loopEndHandle) {
+    private static void splitFinalBranchTargetIfNecessary(InstructionList instructions, InstructionHandle beginTargetHandle, InstructionHandle endBranchHandle) {
+        // Example:
+        // public static void test(int a, short[] numbers) {
+        //     if (a ==1 ) {
+        //        for (short i=0; i<NUMNUMBERS; i++) {
+        //            numbers[i] = 1;
+        //        }
+        //     }
+        // }
+        // In this case there will be a single branch target at the end of the for loop,
+        // but there will be two branches to that location, one from the if, and another
+        // when the loop terminates.
+        // Because the loop MARKLOOP instruction needs to come after the end of the loop,
+        // but shouldn't be executed if we don't enter the loop at all, the branch target
+        // needs to be split so the MARKLOOP instruction can sit inbetween.
+
+        if (endBranchHandle.getInstruction().getOpcode() != Opcode.BRTARGET) {
+            return; // This only applies to loops that end with a GOTO+BRTARGET.
+        }
+
+        InstructionHandle splitBranchTargetHandle = null;
+
+        for (int i=0; i<instructions.size(); i++) {
+            InstructionHandle handle = instructions.get(i);
+            Instruction instruction = handle.getInstruction();
+
+            if (instruction.getOpcode().isBranch()
+                    && (handle.getPc() < beginTargetHandle.getPc() || endBranchHandle.getPc() < handle.getPc())
+                    && handle.getBranchHandle() == endBranchHandle) {
+                // Insert a new branchtarget if we hadn't already.
+                if (splitBranchTargetHandle == null) {
+                    splitBranchTargetHandle = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
+                    splitBranchTargetHandle.setPreState(endBranchHandle.getPreState());
+                    splitBranchTargetHandle.setPostState(endBranchHandle.getPostState());
+                    instructions.insertAfter(endBranchHandle, splitBranchTargetHandle);
+                }
+                handle.setBranchHandle(splitBranchTargetHandle);
+            }
+        }
+    }
+
+    private static void insertMARKLOOP(InstructionList instructions, InstructionHandle beginTargetHandle, InstructionHandle endBranchHandle) {
         HashMap<Integer,Integer> valuetagDict = new HashMap<Integer,Integer>();
         for (int i=0; i<instructions.size(); i++)
         {
             InstructionHandle handle = instructions.get(i);
             Instruction instruction = handle.getInstruction();
 
-            if (handle.getPc() < loopEndHandle.getPc() && handle.getPc() > loopBeginHandle.getPc()) {
+            if (handle.getPc() < endBranchHandle.getPc() && handle.getPc() > beginTargetHandle.getPc()) {
                 int valuetag = instructionToValuetag(instruction);
                 if (valuetag != RTC_VALUETAG_UNUSED) {
                     if (valuetagDict.containsKey(valuetag)) {
@@ -149,21 +192,22 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
         Collections.sort(valuetagCountList, Collections.reverseOrder());
 
         ArrayList<Integer> valuetagList = new ArrayList<Integer>();
+        // System.err.println("MARKLOOP_START valuetags: ");
         for (ValuetagCount c : valuetagCountList) {
             valuetagList.add(c.valuetag);
-            System.err.println("Valuetag: " + c.valuetag);
-            System.err.println("Count: " + c.count);
+            // System.err.println("Valuetag: " + c.valuetag);
+            // System.err.println("Count: " + c.count);
         }
 
         InstructionHandle markLoopHandle;
         markLoopHandle = new InstructionHandle(new MarkLoopStartInstruction(Opcode.MARKLOOP_START, valuetagList));
-        markLoopHandle.setPreState(loopBeginHandle.getPreState());
-        markLoopHandle.setPostState(loopBeginHandle.getPostState());
-        instructions.insertBefore(loopBeginHandle, markLoopHandle);
+        markLoopHandle.setPreState(beginTargetHandle.getPreState());
+        markLoopHandle.setPostState(beginTargetHandle.getPostState());
+        instructions.insertBefore(beginTargetHandle, markLoopHandle);
         markLoopHandle = new InstructionHandle(new SimpleInstruction(Opcode.MARKLOOP_END));
-        markLoopHandle.setPreState(loopEndHandle.getPreState());
-        markLoopHandle.setPostState(loopEndHandle.getPostState());
-        instructions.insertAfter(loopEndHandle, markLoopHandle);
+        markLoopHandle.setPreState(endBranchHandle.getPreState());
+        markLoopHandle.setPostState(endBranchHandle.getPostState());
+        instructions.insertAfter(endBranchHandle, markLoopHandle);
     }
 
     @Override
@@ -179,29 +223,30 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
         InstructionList instructions = codeBlock.getInstructions();
         for (int i=0; i<instructions.size(); i++)
         {
-            InstructionHandle loopEndHandle = instructions.get(i);
-            Instruction instruction = loopEndHandle.getInstruction();
-            
-            if (instruction.getOpcode().isBranch()) {
-                InstructionHandle loopBeginHandle = loopEndHandle.getBranchHandle();
+            InstructionHandle endBranchHandle = instructions.get(i);
+            Instruction endBranchInstruction = endBranchHandle.getInstruction();
 
-                // System.err.println("Considering branch at: " + loopEndHandle.getPc() + ".");
+            if (endBranchInstruction.getOpcode().isBranch()) {
+                int pcAfterBranchInstruction = (i+1) < instructions.size() ? instructions.get(i+1).getPc() : Integer.MAX_VALUE;
+                InstructionHandle beginTargetHandle = endBranchHandle.getBranchHandle();
 
                 //  1 the branch branches backwards (it's a loop)
-                if (loopEndHandle.getPc() < loopBeginHandle.getPc()) {
-                    // System.err.println("Reject: not a back branch.");
+                if (endBranchHandle.getPc() < beginTargetHandle.getPc()) {
                     // Discard this branch.
                     continue;
                 }
 
-                //  2 there are no other backward branches in the block between this branch and the branch target (it's the inner loop)
+                // System.err.println("Considering back branch at: " + endBranchHandle.getPc() + ".");
+
+                //  2 there are no other backward branches in the block between this branch and the branch target, to a different location (it's the inner loop)
                 boolean reject = false;
                 for (int j=0; j<instructions.size(); j++) {
                     InstructionHandle handle = instructions.get(j);
                     if (handle.getInstruction().getOpcode().isBranch()
-                            && handle.getPc() < loopEndHandle.getPc()
-                            && handle.getPc() > loopBeginHandle.getPc()
-                            && handle.getPc() > handle.getBranchHandle().getPc()) {
+                            && beginTargetHandle.getPc() < handle.getPc()
+                            && handle.getPc() < endBranchHandle.getPc()
+                            && handle.getBranchHandle().getPc() < handle.getPc()
+                            && handle.getBranchHandle() != beginTargetHandle) {
                         // System.err.println("Reject: inner back branch found at " + handle.getPc() + ".");
                         // Discard this branch.
                         reject = true;
@@ -217,22 +262,62 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
                 for (int j=0; j<instructions.size(); j++) {
                     InstructionHandle handle = instructions.get(j);
                     if (handle.getInstruction().getOpcode().isBranch()
-                            && handle.getPc() > loopEndHandle.getPc()
-                            && handle.getPc() < loopBeginHandle.getPc()
-                            && handle.getBranchHandle().getPc() > (loopBeginHandle.getPc() + 1)) {
+                            && beginTargetHandle.getPc() < handle.getPc()
+                            && handle.getPc() < endBranchHandle.getPc()) {
+                        // System.err.println("vliegtuig " + pcAfterBranchInstruction + " " + handle.getBranchHandle().getPc());
+                            }
+                    if (handle.getInstruction().getOpcode().isBranch()
+                            && beginTargetHandle.getPc() < handle.getPc()
+                            && handle.getPc() < endBranchHandle.getPc()
+                            && pcAfterBranchInstruction < handle.getBranchHandle().getPc()) {
                         // System.err.println("Reject: inner forward branch to beyond end of loop found at " + handle.getPc() + ".");
                         // Discard this branch.
-                        continue;
+                        reject = true;
+                        break;
                     }
                 }
                 if (reject) {
                     continue;
                 }
 
-                // System.err.println("Found inner loop from " + loopBeginHandle.getPc() + " to " + loopEndHandle.getPc() + ".");
+                // 4 there are no later back branches branches to the beginning of the loop (some loops have two, for example if the loop ends in an if block, the compiler may generate a back branch for the reverse condition)
+                reject = false;
+                for (int j=0; j<instructions.size(); j++) {
+                    InstructionHandle handle = instructions.get(j);
+                    if (handle.getInstruction().getOpcode().isBranch()
+                            && endBranchHandle.getPc() < handle.getPc()
+                            && handle.getBranchHandle() == beginTargetHandle) {
+                        // System.err.println("Reject: later backbranch to the same loop beginning found at " + handle.getPc() + ".");
+                        // Discard this branch.
+                        reject = true;
+                        break;
+                    }
+                }
+                if (reject) {
+                    continue;
+                }
 
-                // Found an inner loop. Mark it.
-                insertMARKLOOP(instructions, loopBeginHandle, loopEndHandle);
+
+                // If this is a conditional back branch, we're done. (not sure if Java ever emits those)
+                // If this is a goto, then there will be a branchtarget following, and that branch target
+                // should be the end of the loop instead.
+                if (endBranchInstruction.getOpcode() == Opcode.GOTO) {
+                    InstructionHandle brachTargetHandle = instructions.get(i+1);
+                    Instruction brachTargetInstruction = brachTargetHandle.getInstruction();
+                    if (brachTargetInstruction.getOpcode() != Opcode.BRTARGET) {
+                        // If the back branch marking this block is a GOTO, the next instruction should have been BRTARGET.
+                        continue;
+                    }
+                    endBranchHandle = brachTargetHandle;
+                    endBranchInstruction = brachTargetInstruction;
+                }
+
+                // System.err.println("Found inner loop from " + beginTargetHandle.getPc() + " to " + endBranchHandle.getPc() + ".");
+
+                // Found an inner loop. If the end is a branch target and other instructions outside the loop branch to it, then we need to split the target.
+                splitFinalBranchTargetIfNecessary(instructions, beginTargetHandle, endBranchHandle);
+                // Finally mark the loop.
+                insertMARKLOOP(instructions, beginTargetHandle, endBranchHandle);
                 i += 2; // Skip the MARKLOOP instructions we just added
             }
         }

@@ -50,7 +50,6 @@
 #define RTC_VALUETAG_IS_SHORT(tag)  (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_SHORT)
 #define RTC_VALUETAG_IS_INT(tag)    (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_INT)
 #define RTC_VALUETAG_IS_INT_L(tag)  (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_INT_L)
-#define RTC_VALUETAG_TO_INT_L(tag)  ((tag) + 0x1000)
 #define RTC_STACKCACHE_SET_VALUETAG(idx, tag)       (rtc_stackcache_valuetags[(idx)] = tag)
 #define RTC_STACKCACHE_GET_VALUETAG(idx)            (rtc_stackcache_valuetags[(idx)])
 #define RTC_STACKCACHE_CLEAR_VALUETAG(idx)          (rtc_stackcache_valuetags[(idx)] = 0xFFFF)
@@ -223,10 +222,7 @@ uint16_t rtc_poppedstackcache_get_valuetag(uint8_t *regs) {
 void rtc_poppedstackcache_set_valuetag(uint8_t *regs, uint16_t valuetag) {
     RTC_STACKCACHE_SET_VALUETAG(REG_TO_ARRAY_INDEX(regs[0]), valuetag);
 }
-void rtc_poppedstackcache_clear_all_with_valuetag(uint16_t valuetag, bool is_int_l) {
-    if (is_int_l) {
-        valuetag = RTC_VALUETAG_TO_INT_L(valuetag);
-    }
+void rtc_poppedstackcache_clear_all_with_valuetag(uint16_t valuetag) {
     for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
         if (RTC_STACKCACHE_GET_VALUETAG(idx) == valuetag) {
             RTC_STACKCACHE_CLEAR_VALUETAG(idx);
@@ -480,13 +476,13 @@ void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack
             // The value will be stored to memory, so we should mark the value tag,
             // and also clear any other registers with the same tag since they no
             // longer contain the right value.
-            rtc_poppedstackcache_clear_all_with_valuetag(rtc_ts->current_instruction_valuetag, false);
+            rtc_poppedstackcache_clear_all_with_valuetag(rtc_ts->current_instruction_valuetag);
             RTC_STACKCACHE_SET_VALUETAG(target_idx, rtc_ts->current_instruction_valuetag);
         } else if (poptype == RTC_STACKCACHE_POP_TO_STORE_INT_L) {
             // The value will be stored to memory, so we should mark the value tag,
             // and also clear any other registers with the same tag since they no
             // longer contain the right value.
-            rtc_poppedstackcache_clear_all_with_valuetag(rtc_ts->current_instruction_valuetag, true);
+            rtc_poppedstackcache_clear_all_with_valuetag(RTC_VALUETAG_TO_INT_L(rtc_ts->current_instruction_valuetag));
             RTC_STACKCACHE_SET_VALUETAG(target_idx, RTC_VALUETAG_TO_INT_L(rtc_ts->current_instruction_valuetag));
         }
 

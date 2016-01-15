@@ -19,8 +19,11 @@
 #ifdef AOT_STRATEGY_SIMPLESTACKCACHE    
 #include "rtc_simplestackcache.h"
 #endif
-#ifdef AOT_STRATEGY_POPPEDSTACKCACHE    
+#ifdef AOT_STRATEGY_POPPEDSTACKCACHE
 #include "rtc_poppedstackcache.h"
+#endif
+#ifdef AOT_STRATEGY_MARKLOOP
+#include "rtc_markloop.h"
 #endif
 
 
@@ -132,6 +135,9 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     rtc_stackcache_init();
 #endif
 #ifdef AOT_STRATEGY_POPPEDSTACKCACHE    
+    rtc_stackcache_init(&ts);
+#endif
+#ifdef AOT_STRATEGY_MARKLOOP    
     rtc_stackcache_init(&ts);
 #endif
 

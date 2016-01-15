@@ -58,7 +58,7 @@ public class MarkLoopStartInstruction extends SimpleInstruction
 			int valuetag = this.valuetags.get(i);
 			// Big endian
 			out.write((valuetag >> 8) & 0xFF);
-			out.write((valuetag >> 8) & 0xFF);
+			out.write((valuetag) & 0xFF);
 		}
 	}
 }
