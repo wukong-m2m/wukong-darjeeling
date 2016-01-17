@@ -64,9 +64,9 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_LDI(operand_regs1[1], 0xFF);
                 rtc_stackcache_push_16bit(operand_regs1);                
             } else {
-                emit_LDI(R24, 0xFF);
-                emit_LDI(R25, 0xFF);
-                emit_MOVW(operand_regs1[0], R24);
+                emit_LDI(RZL, 0xFF);
+                emit_LDI(RZH, 0xFF);
+                emit_MOVW(operand_regs1[0], RZ);
                 rtc_stackcache_push_16bit(operand_regs1);                
             }
         break;
@@ -85,9 +85,9 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_LDI(operand_regs1[0], opcode - JVM_SCONST_0); // Operand is implicit in opcode
                 emit_CLR(operand_regs1[1]);
             } else {
-                emit_LDI(R24, opcode - JVM_SCONST_0); // Operand is implicit in opcode
-                emit_CLR(R25);
-                emit_MOVW(operand_regs1[0], R24);                
+                emit_LDI(RZL, opcode - JVM_SCONST_0); // Operand is implicit in opcode
+                emit_CLR(RZH);
+                emit_MOVW(operand_regs1[0], RZ);
             }
             rtc_stackcache_push_16bit(operand_regs1);
         break;
@@ -96,9 +96,9 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_LDI(operand_regs1[0], 0xFF);
                 emit_LDI(operand_regs1[1], 0xFF);
             } else {
-                emit_LDI(R24, 0xFF);
-                emit_LDI(R25, 0xFF);
-                emit_MOVW(operand_regs1[0], R24);                
+                emit_LDI(RZL, 0xFF);
+                emit_LDI(RZH, 0xFF);
+                emit_MOVW(operand_regs1[0], RZ);
             }
             rtc_stackcache_getfree_16bit(operand_regs1+2);
             emit_MOVW(operand_regs1[2], operand_regs1[0]);
@@ -121,9 +121,9 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_LDI(operand_regs1[0], opcode - JVM_ICONST_0); // Operand is implicit in opcode
                 emit_CLR(operand_regs1[1]);
             } else {
-                emit_LDI(R24, opcode - JVM_ICONST_0); // Operand is implicit in opcode
-                emit_CLR(R25);
-                emit_MOVW(operand_regs1[0], R24);                
+                emit_LDI(RZL, opcode - JVM_ICONST_0); // Operand is implicit in opcode
+                emit_CLR(RZH);
+                emit_MOVW(operand_regs1[0], RZ);
             }
             rtc_stackcache_getfree_16bit(operand_regs1+2);
             emit_CLR(operand_regs1[2]);
@@ -141,9 +141,9 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_LDI(operand_regs1[0], jvm_operand_byte0);
                 emit_CLR(operand_regs1[1]);
             } else {
-                emit_LDI(R24, jvm_operand_byte0);
-                emit_CLR(R25);
-                emit_MOVW(operand_regs1[0], R24);
+                emit_LDI(RZL, jvm_operand_byte0);
+                emit_CLR(RZH);
+                emit_MOVW(operand_regs1[0], RZ);
             }
             rtc_stackcache_push_16bit(operand_regs1);
         break;
@@ -152,9 +152,9 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_LDI(operand_regs1[0], jvm_operand_byte0);
                 emit_CLR(operand_regs1[1]);
             } else {
-                emit_LDI(R24, jvm_operand_byte0);
-                emit_CLR(R25);
-                emit_MOVW(operand_regs1[0], R24);                
+                emit_LDI(RZL, jvm_operand_byte0);
+                emit_CLR(RZH);
+                emit_MOVW(operand_regs1[0], RZ);
             }
             rtc_stackcache_getfree_16bit(operand_regs1+2);
             emit_CLR(operand_regs1[2]);
@@ -167,9 +167,9 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_LDI(operand_regs1[0], jvm_operand_byte1);
                 emit_LDI(operand_regs1[1], jvm_operand_byte0);
             } else {
-                emit_LDI(R24, jvm_operand_byte1);
-                emit_LDI(R25, jvm_operand_byte0);
-                emit_MOVW(operand_regs1[0], R24);                
+                emit_LDI(RZL, jvm_operand_byte1);
+                emit_LDI(RZH, jvm_operand_byte0);
+                emit_MOVW(operand_regs1[0], RZ);
             }
             rtc_stackcache_push_16bit(operand_regs1);
         break;
@@ -179,9 +179,9 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_LDI(operand_regs1[0], jvm_operand_byte1);
                 emit_LDI(operand_regs1[1], jvm_operand_byte0);
             } else {
-                emit_LDI(R24, jvm_operand_byte1);
-                emit_LDI(R25, jvm_operand_byte0);
-                emit_MOVW(operand_regs1[0], R24);                
+                emit_LDI(RZL, jvm_operand_byte1);
+                emit_LDI(RZH, jvm_operand_byte0);
+                emit_MOVW(operand_regs1[0], RZ);
             }
             rtc_stackcache_getfree_16bit(operand_regs1+2);
             emit_CLR(operand_regs1[2]);
@@ -195,17 +195,17 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_LDI(operand_regs1[0], jvm_operand_byte3);
                 emit_LDI(operand_regs1[1], jvm_operand_byte2);
             } else {
-                emit_LDI(R24, jvm_operand_byte3);
-                emit_LDI(R25, jvm_operand_byte2);
-                emit_MOVW(operand_regs1[0], R24);                
+                emit_LDI(RZL, jvm_operand_byte3);
+                emit_LDI(RZH, jvm_operand_byte2);
+                emit_MOVW(operand_regs1[0], RZ);
             }
             if (rtc_stackcache_getfree_16bit_prefer_ge_R16(operand_regs1+2)) {
                 emit_LDI(operand_regs1[2], jvm_operand_byte1);
                 emit_LDI(operand_regs1[3], jvm_operand_byte0);
             } else {
-                emit_LDI(R24, jvm_operand_byte1);
-                emit_LDI(R25, jvm_operand_byte0);
-                emit_MOVW(operand_regs1[2], R24);                
+                emit_LDI(RZL, jvm_operand_byte1);
+                emit_LDI(RZH, jvm_operand_byte0);
+                emit_MOVW(operand_regs1[2], RZL);                
             }
             rtc_stackcache_push_32bit(operand_regs1);
         break;
@@ -228,7 +228,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_2_LDS(RXH, (uint16_t)&(refStack)+1); // Load refStack into X
 
             // push the reference to the string onto the ref stack
-            rtc_stackcache_push_ref_from_scratch_R24R25();
+            rtc_stackcache_push_ref_from_R24R25();
         break;
         case JVM_SLOAD:
         case JVM_SLOAD_0:
@@ -743,7 +743,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 operand_regs1[1] = R23;
                 rtc_stackcache_push_16bit(operand_regs1);
             } else { // JVM_SREM
-                rtc_stackcache_push_16bit_from_scratch_R24R25();
+                rtc_stackcache_push_16bit_from_R24R25();
             }
         break;
         case JVM_SNEG:
@@ -864,7 +864,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             rtc_stackcache_pop_destructive_32bit_into_fixed_reg(R18);
 
             emit_x_CALL((uint16_t)&__mulsi3);
-            rtc_stackcache_push_32bit_from_scratch_R22R25();
+            rtc_stackcache_push_32bit_from_R22R25();
         break;
         case JVM_IDIV:
         case JVM_IREM:
@@ -880,7 +880,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 operand_regs1[3] = R21;
                 rtc_stackcache_push_32bit(operand_regs1);
             } else { // JVM_IREM
-                rtc_stackcache_push_32bit_from_scratch_R22R25();
+                rtc_stackcache_push_32bit_from_R22R25();
             }
         break;
         case JVM_INEG:
@@ -1017,13 +1017,13 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             offset = offset_for_intlocal_short(ts->methodimpl, jvm_operand_byte0);
             if (jvm_operand_signed_word == 1) {
                 // Special case
-                emit_LDD(R24, Y, offset);
-                emit_INC(R24);
-                emit_STD(R24, Y, offset);
+                emit_LDD(RZL, Y, offset);
+                emit_INC(RZL);
+                emit_STD(RZL, Y, offset);
                 emit_BRNE(6);
-                emit_LDD(R24, Y, offset+1);
-                emit_INC(R24);
-                emit_STD(R24, Y, offset+1);
+                emit_LDD(RZL, Y, offset+1);
+                emit_INC(RZL);
+                emit_STD(RZL, Y, offset+1);
             } else {
                 uint8_t c0, c1;
                 if (jvm_operand_signed_word > 0) {
@@ -1036,13 +1036,13 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                     c1 = ((-jvm_operand_signed_word) >> 8) & 0xFF;
                 }
 
-                emit_LDD(R24, Y, offset);
-                emit_SUBI(R24, c0);
-                emit_STD(R24, Y, offset);
+                emit_LDD(RZL, Y, offset);
+                emit_SUBI(RZL, c0);
+                emit_STD(RZL, Y, offset);
 
-                emit_LDD(R24, Y, offset+1);
-                emit_SBCI(R24, c1);
-                emit_STD(R24, Y, offset+1);
+                emit_LDD(RZL, Y, offset+1);
+                emit_SBCI(RZL, c1);
+                emit_STD(RZL, Y, offset+1);
             }
             rtc_poppedstackcache_clear_all_with_valuetag(ts->current_instruction_valuetag); // Any cached value for this variable is now outdated.
         break;
@@ -1061,21 +1061,21 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             offset = offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0);
             if (jvm_operand_signed_word == 1) {
                 // Special case
-                emit_LDD(R24, Y, offset);
-                emit_INC(R24);
-                emit_STD(R24, Y, offset);
+                emit_LDD(RZL, Y, offset);
+                emit_INC(RZL);
+                emit_STD(RZL, Y, offset);
                 emit_BRNE(22);
-                emit_LDD(R24, Y, offset+1);
-                emit_INC(R24);
-                emit_STD(R24, Y, offset+1);
+                emit_LDD(RZL, Y, offset+1);
+                emit_INC(RZL);
+                emit_STD(RZL, Y, offset+1);
                 emit_BRNE(14);
-                emit_LDD(R24, Y, offset+2);
-                emit_INC(R24);
-                emit_STD(R24, Y, offset+2);
+                emit_LDD(RZL, Y, offset+2);
+                emit_INC(RZL);
+                emit_STD(RZL, Y, offset+2);
                 emit_BRNE(6);
-                emit_LDD(R24, Y, offset+3);
-                emit_INC(R24);
-                emit_STD(R24, Y, offset+3);
+                emit_LDD(RZL, Y, offset+3);
+                emit_INC(RZL);
+                emit_STD(RZL, Y, offset+3);
             } else {
                 uint8_t c0, c1, c2, c3;
                 if (jvm_operand_signed_word > 0) {
@@ -1092,21 +1092,21 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                     c3 = 0;
                 }
 
-                emit_LDD(R24, Y, offset);
-                emit_SUBI(R24, c0);
-                emit_STD(R24, Y, offset);
+                emit_LDD(RZL, Y, offset);
+                emit_SUBI(RZL, c0);
+                emit_STD(RZL, Y, offset);
 
-                emit_LDD(R24, Y, offset+1);
-                emit_SBCI(R24, c1);
-                emit_STD(R24, Y, offset+1);
+                emit_LDD(RZL, Y, offset+1);
+                emit_SBCI(RZL, c1);
+                emit_STD(RZL, Y, offset+1);
 
-                emit_LDD(R24, Y, offset+2);
-                emit_SBCI(R24, c2);
-                emit_STD(R24, Y, offset+2);
+                emit_LDD(RZL, Y, offset+2);
+                emit_SBCI(RZL, c2);
+                emit_STD(RZL, Y, offset+2);
 
-                emit_LDD(R24, Y, offset+3);
-                emit_SBCI(R24, c3);
-                emit_STD(R24, Y, offset+3);
+                emit_LDD(RZL, Y, offset+3);
+                emit_SBCI(RZL, c3);
+                emit_STD(RZL, Y, offset+3);
             }
             rtc_poppedstackcache_clear_all_with_valuetag(ts->current_instruction_valuetag); // Any cached value for this variable is now outdated.
             rtc_poppedstackcache_clear_all_with_valuetag(RTC_VALUETAG_TO_INT_L(ts->current_instruction_valuetag)); // Also for the 2nd word
@@ -1172,10 +1172,10 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_PUSH(ZERO_REG); // NOTE: THE DVM STACK IS A 16 BIT POINTER, SP IS 8 BIT. 
                                         // BOTH POINT TO THE NEXT free SLOT, BUT SINCE THEY GROW down THIS MEANS THE DVM POINTER SHOULD POINT TO TWO BYTES BELOW THE LAST VALUE,
                                         // WHILE CURRENTLY THE NATIVE SP POINTS TO THE BYTE DIRECTLY BELOW IT. RESERVE AN EXTRA BYTE TO FIX THIS.
-            emit_2_LDS(R24, SPaddress_L); // Load SP into R24:R25
-            emit_2_LDS(R25, SPaddress_H); // Load SP into R24:R25
-            emit_2_STS((uint16_t)&(intStack), R24); // Store SP into intStack
-            emit_2_STS((uint16_t)&(intStack)+1, R25); // Store SP into intStack
+            emit_2_LDS(RZL, SPaddress_L); // Load SP into RZ
+            emit_2_LDS(RZH, SPaddress_H); // Load SP into RZ
+            emit_2_STS((uint16_t)&(intStack), RZL); // Store SP into intStack
+            emit_2_STS((uint16_t)&(intStack)+1, RZH); // Store SP into intStack
 
             // Reserve 8 bytes of space on the stack, in case the returned int is large than passed ints
             // TODO: make this more efficient by looking up the method, and seeing if the return type is int,
@@ -1213,11 +1213,11 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 
 
             // get SP from intStack
-            emit_2_LDS(R24, (uint16_t)&(intStack)); // Load intStack into R24:R25
-            emit_2_LDS(R25, (uint16_t)&(intStack)+1); // Load intStack into R24:R25
-            emit_2_STS(SPaddress_L, R24); // Store R24:25 into SP
-            emit_2_STS(SPaddress_H, R25); // Store R24:25 into SP
-            emit_POP(R25); // JUST POP AND DISCARD TO CLEAR THE BYTE WE RESERVED IN THE FIRST LINE FOR INVOKESTATIC. SEE COMMENT ABOVE.
+            emit_2_LDS(RZL, (uint16_t)&(intStack)); // Load intStack into RZ
+            emit_2_LDS(RZH, (uint16_t)&(intStack)+1); // Load intStack into RZ
+            emit_2_STS(SPaddress_L, RZL); // Store RZ into SP
+            emit_2_STS(SPaddress_H, RZH); // Store RZ into SP
+            emit_POP(RZH); // JUST POP AND DISCARD TO CLEAR THE BYTE WE RESERVED IN THE FIRST LINE FOR INVOKESTATIC. SEE COMMENT ABOVE.
         break;
         case JVM_NEW:
             rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
@@ -1239,7 +1239,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 
 
             // push the reference to the new object onto the ref stack
-            rtc_stackcache_push_ref_from_scratch_R24R25();
+            rtc_stackcache_push_ref_from_R24R25();
         break;
         case JVM_NEWARRAY:
             rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
@@ -1262,7 +1262,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 
 
             // push the reference to the new array onto the ref stack
-            rtc_stackcache_push_ref_from_scratch_R24R25();
+            rtc_stackcache_push_ref_from_R24R25();
         break;
         case JVM_ANEWARRAY:
             rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
@@ -1285,7 +1285,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 
 
             // push the reference to the new object onto the ref stack
-            rtc_stackcache_push_ref_from_scratch_R24R25();
+            rtc_stackcache_push_ref_from_R24R25();
         break;
         case JVM_ARRAYLENGTH: // The length of an array is stored as 16 bit at the start of the array
             rtc_stackcache_pop_destructive_ref_into_Z(RZ); // POP the reference into Z
@@ -1319,7 +1319,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_x_CALL((uint16_t)&RTC_INSTANCEOF);
 
             // push the result onto the stack
-            rtc_stackcache_push_16bit_from_scratch_R24R25();
+            rtc_stackcache_push_16bit_from_R24R25();
         break;
         // BRANCHES
         case JVM_SIFEQ:
@@ -1536,14 +1536,14 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
             jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
             int32_t upperbound = (int32_t)(((uint32_t)jvm_operand_byte0 << 24) | ((uint32_t)jvm_operand_byte1 << 16) | ((uint32_t)jvm_operand_byte2 << 8) | ((uint32_t)jvm_operand_byte3 << 0));
-            emit_LDI(R24, jvm_operand_byte0); // Bytecode is big endian
-            emit_CP (R24, operand_regs1[0]);
-            emit_LDI(R24, jvm_operand_byte1);
-            emit_CPC(R24, operand_regs1[1]);
-            emit_LDI(R24, jvm_operand_byte2);
-            emit_CPC(R24, operand_regs1[2]);
-            emit_LDI(R24, jvm_operand_byte3);
-            emit_CPC(R24, operand_regs1[3]);
+            emit_LDI(RZL, jvm_operand_byte0); // Bytecode is big endian
+            emit_CP (RZL, operand_regs1[0]);
+            emit_LDI(RZL, jvm_operand_byte1);
+            emit_CPC(RZL, operand_regs1[1]);
+            emit_LDI(RZL, jvm_operand_byte2);
+            emit_CPC(RZL, operand_regs1[2]);
+            emit_LDI(RZL, jvm_operand_byte3);
+            emit_CPC(RZL, operand_regs1[3]);
             emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
 
             // Lower than or equal to the upper bound: load the lower bound
@@ -1552,14 +1552,14 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
             jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
             int32_t lowerbound = (int32_t)(((uint32_t)jvm_operand_byte0 << 24) | ((uint32_t)jvm_operand_byte1 << 16) | ((uint32_t)jvm_operand_byte2 << 8) | ((uint32_t)jvm_operand_byte3 << 0));
-            emit_LDI(R24, jvm_operand_byte0); // Bytecode is big endian
-            emit_CP(operand_regs1[0], R24);
-            emit_LDI(R24, jvm_operand_byte1);
-            emit_CPC(operand_regs1[1], R24);
-            emit_LDI(R24, jvm_operand_byte2);
-            emit_CPC(operand_regs1[2], R24);
-            emit_LDI(R24, jvm_operand_byte3);
-            emit_CPC(operand_regs1[3], R24);
+            emit_LDI(RZL, jvm_operand_byte0); // Bytecode is big endian
+            emit_CP(operand_regs1[0], RZL);
+            emit_LDI(RZL, jvm_operand_byte1);
+            emit_CPC(operand_regs1[1], RZL);
+            emit_LDI(RZL, jvm_operand_byte2);
+            emit_CPC(operand_regs1[2], RZL);
+            emit_LDI(RZL, jvm_operand_byte3);
+            emit_CPC(operand_regs1[3], RZL);
             emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
 
             // Also higher than or equal to the lower bound: branch through the switch table
@@ -1568,9 +1568,9 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 emit_LDI(operand_regs2[0], jvm_operand_byte3);
                 emit_LDI(operand_regs2[1], jvm_operand_byte2);
             } else {
-                emit_LDI(R24, jvm_operand_byte3);
-                emit_LDI(R25, jvm_operand_byte2);
-                emit_MOVW(operand_regs2[0], R24);                
+                emit_LDI(RZL, jvm_operand_byte3);
+                emit_LDI(RZH, jvm_operand_byte2);
+                emit_MOVW(operand_regs2[0], RZ);                
             }
             emit_SUB(operand_regs1[0], operand_regs2[0]);
             emit_SBC(operand_regs1[1], operand_regs2[1]);
@@ -1621,14 +1621,14 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 // Get the branch target (and skip the branch address used by the interpreter)
                 jvm_operand_word0 = (dj_di_getU8(ts->jvm_code_start + ts->pc + 3) << 8) | dj_di_getU8(ts->jvm_code_start + ts->pc + 4);
                 ts->pc += 4;
-                emit_LDI(R24, jvm_operand_byte0); // Bytecode is big endian
-                emit_CP(R24, operand_regs1[0]);
-                emit_LDI(R24, jvm_operand_byte1);
-                emit_CPC(R24, operand_regs1[1]);
-                emit_LDI(R24, jvm_operand_byte2);
-                emit_CPC(R24, operand_regs1[2]);
-                emit_LDI(R24, jvm_operand_byte3);
-                emit_CPC(R24, operand_regs1[3]);
+                emit_LDI(RZL, jvm_operand_byte0); // Bytecode is big endian
+                emit_CP(RZL, operand_regs1[0]);
+                emit_LDI(RZL, jvm_operand_byte1);
+                emit_CPC(RZL, operand_regs1[1]);
+                emit_LDI(RZL, jvm_operand_byte2);
+                emit_CPC(RZL, operand_regs1[2]);
+                emit_LDI(RZL, jvm_operand_byte3);
+                emit_CPC(RZL, operand_regs1[3]);
                 emit_x_branchtag(OPCODE_BREQ, jvm_operand_word0);
             }
 
@@ -1652,6 +1652,11 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             wkreprog_close();
             wkreprog_open_raw(tmp_current_position, ts->end_of_safe_region);
             ts->branch_target_count++;
+        break;
+        case JVM_MARKLOOP_START:
+            ts->pc += (2*jvm_operand_byte0)+1;
+        break;
+        case JVM_MARKLOOP_END:
         break;
 
         // Not implemented

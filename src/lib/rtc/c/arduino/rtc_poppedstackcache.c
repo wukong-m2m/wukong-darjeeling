@@ -96,16 +96,15 @@ uint16_t rtc_stackcache_age[RTC_STACKCACHE_MAX_IDX];
 // In use:
 // r0:r1   : fixed registers
 // r2:r3   : pointer to infusion's static fields
-// r24:r25 : scratch register
 // X       : ref stack pointer
 // Y       : JVM frame pointer
-// Z       : pointer to infusion's static fields or to an object (need to load at each operation)
+// Z       : scratch/pointer to infusion's static fields or to an object (need to load at each operation)
 
 
 ////////////////////// HELPERS
 bool rtc_stackcache_is_call_used_idx(uint8_t idx) {
     uint8_t reg = ARRAY_INDEX_TO_REG(idx);
-    return reg == R18 || reg == R20 || reg == R22;
+    return reg == R18 || reg == R20 || reg == R22 || reg == R24;
 }
 uint8_t get_deepest_pair_idx() { // Returns 0xFF if there's nothing on the stack.
     int8_t deepest_depth = -1;
@@ -177,7 +176,7 @@ uint8_t rtc_get_lru_available_index() {
 }
 
 ////////////////////// PUBLIC INTERFACE
-#define RTC_NUMBER_OF_USABLE_REGS_PAIRS 10
+#define RTC_NUMBER_OF_USABLE_REGS_PAIRS 11
 // #define this so we can control it from Gradle if we want. If not, default to using all available regs.
 #ifndef RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE
 #define RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE RTC_NUMBER_OF_USABLE_REGS_PAIRS
@@ -195,7 +194,7 @@ void rtc_stackcache_init(rtc_translationstate *ts) {
     // These are the registers we may use
     uint8_t registers_we_can_use[RTC_NUMBER_OF_USABLE_REGS_PAIRS] = {
             R4, R6, R8, R10, R12, R14, R16, // Call saved
-            R18, R20, R22 // Call used
+            R18, R20, R22, R24 // Call used
     };
 
     // Depending on the defined number of actual registers to use, mark those AVAILABLE
@@ -358,38 +357,15 @@ void rtc_stackcache_push_32bit(uint8_t *regs) {
 void rtc_stackcache_push_ref(uint8_t *regs) {
     rtc_stackcache_push_pair(regs[0], RTC_STACKCACHE_REF_STACK_TYPE, false);
 }
-void rtc_stackcache_push_scratch_pair(uint8_t which_stack) {
-    // We want to push R24:R25 onto the stack. This only used after
-    // a native function call to push the return value.
-
-    // We'll first see if there's any available register, if so,
-    // MOVW the value there. If no register is available, we will
-    // use R21:R20.
-    // This is a bit dangerous, since it will be marked IN USE after
-    // a native function call. (after calling
-    // rtc_stackcache_flush_call_used_regs)
-    // However, this is always the last thing an instruction does,
-    // so it should be safe. The alternative would be to spill to
-    // memory, but that would hurt performance.
-
-    uint8_t target_idx = (rtc_get_lru_available_index() != 0xFF)
-                         ? rtc_get_lru_available_index()
-                         : REG_TO_ARRAY_INDEX(R20);
-    // and move the value there.
-    emit_MOVW(ARRAY_INDEX_TO_REG(target_idx), R24);
-
-    // Then do a normal push to get it on the stack.
-    rtc_stackcache_push_pair(ARRAY_INDEX_TO_REG(target_idx), which_stack, false);
+void rtc_stackcache_push_16bit_from_R24R25() {
+    rtc_stackcache_push_pair(R24, RTC_STACKCACHE_INT_STACK_TYPE, false);
 }
-void rtc_stackcache_push_16bit_from_scratch_R24R25() {
-    rtc_stackcache_push_scratch_pair(RTC_STACKCACHE_INT_STACK_TYPE);
-}
-void rtc_stackcache_push_32bit_from_scratch_R22R25() {
-    rtc_stackcache_push_scratch_pair(RTC_STACKCACHE_INT_STACK_TYPE);
+void rtc_stackcache_push_32bit_from_R22R25() {
+    rtc_stackcache_push_pair(R24, RTC_STACKCACHE_INT_STACK_TYPE, false);
     rtc_stackcache_push_pair(R22, RTC_STACKCACHE_INT_STACK_TYPE, true);
 }
-void rtc_stackcache_push_ref_from_scratch_R24R25() {
-    rtc_stackcache_push_scratch_pair(RTC_STACKCACHE_REF_STACK_TYPE);
+void rtc_stackcache_push_ref_from_R24R25() {
+    rtc_stackcache_push_pair(R24, RTC_STACKCACHE_REF_STACK_TYPE, false);
 }
 
 // POP
@@ -464,7 +440,7 @@ void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack
         }
 
         RTC_STACKCACHE_UPDATE_AGE(target_idx); // Mark the fact that this value was used at this pc.
-        if (target_idx != REG_TO_ARRAY_INDEX(R24) && target_idx != REG_TO_ARRAY_INDEX(RZ)) { // Don't mark R24 or Z in use, because they should't become available after this instruction
+        if (target_idx != REG_TO_ARRAY_INDEX(RZ)) { // Don't mark Z in use, because it should't become available after this instruction
             RTC_STACKCACHE_MARK_IN_USE(target_idx); // Target is now IN USE (might already have been IN USE if we're popping to a specific register before a function call)
         }
         if (poptype == RTC_STACKCACHE_POP_NONDESTRUCTIVE) {
