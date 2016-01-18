@@ -851,6 +851,7 @@ void rtc_markloop_store_to_pinned_pair(uint8_t idx, uint8_t which_stack, bool is
 void rtc_markloop_handle_skipping_instruction_for_pinned_valuetag(uint8_t pinned_idx) {
     uint16_t valuetag = rtc_ts->current_instruction_valuetag;
     uint8_t pinned_idx_l = 0xFF;
+    uint8_t pinned_idx_reg = ARRAY_INDEX_TO_REG(pinned_idx);
 
     if (RTC_VALUETAG_IS_INT(valuetag)) {
         // If it's an int, we also need to find the other half
@@ -895,49 +896,66 @@ void rtc_markloop_handle_skipping_instruction_for_pinned_valuetag(uint8_t pinned
         rtc_markloop_make_sure_pinned_pair_is_not_on_the_stack(pinned_idx);
         rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(valuetag);
         if (RTC_VALUETAG_IS_INT(valuetag)) {
+            uint8_t pinned_idx_l_reg = ARRAY_INDEX_TO_REG(pinned_idx_l);
             rtc_markloop_make_sure_pinned_pair_is_not_on_the_stack(pinned_idx_l);
             rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(RTC_VALUETAG_TO_INT_L(valuetag));
 
-            uint8_t c0, c1, c2, c3;
-            if (jvm_operand_signed_word > 0) {
-                // Positive operand
-                c0 = -(jvm_operand_signed_word & 0xFF);
-                c1 = -((jvm_operand_signed_word >> 8) & 0xFF)-1;
-                c2 = -1;
-                c3 = -1;
+            if (jvm_operand_signed_word == 1) {
+                emit_INC(pinned_idx_l_reg);
+                emit_BRNE(2);
+                emit_INC(pinned_idx_l_reg+1);
+                emit_BRNE(2);
+                emit_INC(pinned_idx_reg);
+                emit_BRNE(2);
+                emit_INC(pinned_idx_reg+1);
             } else {
-                // Negative operand
-                c0 = (-jvm_operand_signed_word) & 0xFF;
-                c1 = ((-jvm_operand_signed_word) >> 8) & 0xFF;
-                c2 = 0;
-                c3 = 0;
+                uint8_t c0, c1, c2, c3;
+                if (jvm_operand_signed_word > 0) {
+                    // Positive operand
+                    c0 = -(jvm_operand_signed_word & 0xFF);
+                    c1 = -((jvm_operand_signed_word >> 8) & 0xFF)-1;
+                    c2 = -1;
+                    c3 = -1;
+                } else {
+                    // Negative operand
+                    c0 = (-jvm_operand_signed_word) & 0xFF;
+                    c1 = ((-jvm_operand_signed_word) >> 8) & 0xFF;
+                    c2 = 0;
+                    c3 = 0;
+                }
+
+                emit_MOVW(RZL, pinned_idx_l_reg);
+                emit_SUBI(RZL, c0);
+                emit_SBCI(RZH, c1);
+                emit_MOVW(pinned_idx_l_reg, RZL);
+
+                emit_MOVW(RZL, pinned_idx_reg);
+                emit_SBCI(RZL, c2);
+                emit_SBCI(RZH, c3);
+                emit_MOVW(pinned_idx_reg, RZL);
             }
-
-            emit_MOVW(RZL, ARRAY_INDEX_TO_REG(pinned_idx_l));
-            emit_SUBI(RZL, c0);
-            emit_SBCI(RZH, c1);
-            emit_MOVW(ARRAY_INDEX_TO_REG(pinned_idx_l), RZL);
-
-            emit_MOVW(RZL, ARRAY_INDEX_TO_REG(pinned_idx));
-            emit_SBCI(RZL, c2);
-            emit_SBCI(RZH, c3);
-            emit_MOVW(ARRAY_INDEX_TO_REG(pinned_idx), RZL);
         } else { // SHORT
-            uint8_t c0, c1;
-            if (jvm_operand_signed_word > 0) {
-                // Positive operand
-                c0 = -(jvm_operand_signed_word & 0xFF);
-                c1 = -((jvm_operand_signed_word >> 8) & 0xFF)-1;
+            if (jvm_operand_signed_word == 1) {
+                emit_INC(pinned_idx_reg);
+                emit_BRNE(2);
+                emit_INC(pinned_idx_reg+1);
             } else {
-                // Negative operand
-                c0 = (-jvm_operand_signed_word) & 0xFF;
-                c1 = ((-jvm_operand_signed_word) >> 8) & 0xFF;
-            }
+                uint8_t c0, c1;
+                if (jvm_operand_signed_word > 0) {
+                    // Positive operand
+                    c0 = -(jvm_operand_signed_word & 0xFF);
+                    c1 = -((jvm_operand_signed_word >> 8) & 0xFF)-1;
+                } else {
+                    // Negative operand
+                    c0 = (-jvm_operand_signed_word) & 0xFF;
+                    c1 = ((-jvm_operand_signed_word) >> 8) & 0xFF;
+                }
 
-            emit_MOVW(RZL, ARRAY_INDEX_TO_REG(pinned_idx));
-            emit_SUBI(RZL, c0);
-            emit_SBCI(RZH, c1);
-            emit_MOVW(ARRAY_INDEX_TO_REG(pinned_idx), RZL);
+                emit_MOVW(RZL, pinned_idx_reg);
+                emit_SUBI(RZL, c0);
+                emit_SBCI(RZH, c1);
+                emit_MOVW(pinned_idx_reg, RZL);
+            }
         }
     }
 }
