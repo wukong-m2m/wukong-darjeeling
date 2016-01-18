@@ -63,7 +63,11 @@ binaries.all {
     cCompiler.args "-D RTC_MARKLOOP_MAX_NUMBER_OF_IDX_TO_PIN=${project.ext.aotmarkloopregs}"
 }
 
-if (project.ext.aotstrat == 'simplestackcache') {
+if (project.ext.aotstrat == 'markloop') {
+    project.ext.aotTraceResultsDirName = "results_${project.ext.aotstrat}_size${project.ext.aotstackcachesize}_pinned${project.ext.aotmarkloopregs}"
+} else if (project.ext.aotstrat == 'poppedstackcache') {
+    project.ext.aotTraceResultsDirName = "results_${project.ext.aotstrat}_size${project.ext.aotstackcachesize}"
+} else if (project.ext.aotstrat == 'simplestackcache') {
     project.ext.aotTraceResultsDirName = "results_${project.ext.aotstrat}_size${project.ext.aotstackcachesize}"
 } else {
     project.ext.aotTraceResultsDirName = "results_${project.ext.aotstrat}"
