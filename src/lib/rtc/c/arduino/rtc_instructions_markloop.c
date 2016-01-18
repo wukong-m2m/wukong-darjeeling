@@ -465,7 +465,6 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 // n == 0 not supported, n>4 also not supported. Could be expanded using more registers, but for now it's not necessary
                 dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
             } else {
-                uint8_t idupx_copy_operands[8];
                 uint8_t j;
 
                 // First pop n values
@@ -474,14 +473,12 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 }
 
                 // Then push the m values that need to be duplicated
-                for (i = 0; i < m; i++) {
-                    // Allocate space first
-                    rtc_stackcache_getfree_16bit(idupx_copy_operands + (2*i));
-                }
                 for (i = m-1, j = 0; i >= 0; i--, j++) { // loop from m-1 back to 0
-                    // Then copy the values and push them
-                    emit_MOVW(idupx_copy_operands[2*j], operand_regs1[2*i]);
-                    rtc_stackcache_push_16bit(idupx_copy_operands + 2*j);
+                    // rtc_stackcache_IDUP_X_copy_and_push(operand_regs1[2*i]);
+                    uint8_t idupx_copy_operands[2];
+                    rtc_stackcache_getfree_16bit(idupx_copy_operands);
+                    emit_MOVW(idupx_copy_operands[0], operand_regs1[2*i]);
+                    rtc_stackcache_push_16bit(idupx_copy_operands);
                 }
 
                 // Finally push the original n values back on the stack

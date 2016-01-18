@@ -37,7 +37,7 @@ done
 # POPPED STACK CACHING + MARKLOOP
 for benchmark in ${benchmarks}
 do
-    markloopregs=(1 2 3 4 5)
+    markloopregs=(1 2 3 4 5 6 7)
     for aotmarkloopregs in ${markloopregs}
     do
         gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=markloop -Paotstackcachesize=11 -Paotmarkloopregs=${aotmarkloopregs}

@@ -449,9 +449,12 @@ void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack
             // register, or the first available register.
             if (target_idx == 0xFF) {
                 target_idx = rtc_get_lru_available_index();
-                if (target_idx == 0xFF) {
-                    while (true) { dj_panic(DJ_PANIC_AOT_STACKCACHE_NO_SPACE_FOR_POP); } // There should be enough space if there's nothing in the stack cache
-                }
+            }
+            // Nothing available. This happens because we have separate int and ref stacks.
+            // For example, we may want to pop from the ref stack, while all regs are used to
+            // cache int stack values. First spill from one stack, then restore from the other.
+            if (target_idx == 0xFF) {
+                target_idx = rtc_stackcache_freeup_a_non_pinned_pair();
             }
 
             if (which_stack == RTC_STACKCACHE_INT_STACK_TYPE) {
