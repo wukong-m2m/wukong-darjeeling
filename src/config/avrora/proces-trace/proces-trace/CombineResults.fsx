@@ -14,6 +14,8 @@ let resultToStringList (result : Results) =
     let cyclesToCPercentage = cyclesToPercentage result.executedCyclesC
     let cyclesToSlowdown cycles1 cycles2 =
         String.Format ("{0:0.00}", float cycles1 / float cycles2)
+    let cyclesToOverhead cycles1 cycles2 =
+        String.Format ("{0:0}%", float (cycles1-cycles2) / float cycles2 * 100.0)
     let r1 =
         [
         ("BENCHMARK"            , result.benchmark);
@@ -24,6 +26,7 @@ let resultToStringList (result : Results) =
         ("AOT"                  , result.stopwatchCyclesAOT.ToString());
         ("Java"                 , result.stopwatchCyclesJava.ToString());
         ("AOT/C"                , (cyclesToSlowdown result.stopwatchCyclesAOT result.stopwatchCyclesC));
+        ("AOT overhead"         , (cyclesToOverhead result.stopwatchCyclesAOT result.stopwatchCyclesC));
         ("Java/C"               , (cyclesToSlowdown result.stopwatchCyclesJava result.stopwatchCyclesC));
         ("Java/AOT"             , (cyclesToSlowdown result.stopwatchCyclesJava result.stopwatchCyclesAOT));
         (""                     , "");
