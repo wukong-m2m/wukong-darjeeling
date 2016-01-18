@@ -1,0 +1,60 @@
+
+results_baseline/summary_baseline.csv
+BENCHMARK           ,       fft,       rc5,     xxtea,       md5,   binsrch,     bsort,     hsort
+Test                ,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED
+AOT/C               ,      5.10,      2.06,      3.50,      2.84,      4.80,      4.63,      4.14
+AOT overhead        ,      410%,      106%,      250%,      184%,      380%,      363%,      314%
+
+results_markloop_size11_pinned1/summary_markloop_size11_pinned1.csv
+BENCHMARK           ,       fft,       rc5,     xxtea,       md5,   binsrch,     bsort,     hsort
+Test                ,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED
+AOT/C               ,      2.96,      1.49,      2.00,      2.02,      2.95,      3.01,      2.40
+AOT overhead        ,      196%,       49%,      100%,      102%,      195%,      201%,      140%
+
+results_markloop_size11_pinned2/summary_markloop_size11_pinned2.csv
+BENCHMARK           ,       fft,       rc5,     xxtea,       md5,   binsrch,     bsort,     hsort
+Test                ,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED
+AOT/C               ,      2.91,      1.45,      2.03,      2.00,      2.78,      2.77,      2.30
+AOT overhead        ,      191%,       45%,      103%,      100%,      178%,      177%,      130%
+
+results_markloop_size11_pinned3/summary_markloop_size11_pinned3.csv
+BENCHMARK           ,       fft,       rc5,     xxtea,       md5,   binsrch,     bsort,     hsort
+Test                ,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED
+AOT/C               ,      2.85,      1.45,      1.99,      1.99,      2.67,      2.54,      2.24
+AOT overhead        ,      185%,       45%,       99%,       99%,      167%,      154%,      124%
+
+results_markloop_size11_pinned4/summary_markloop_size11_pinned4.csv
+BENCHMARK           ,       fft,       rc5,     xxtea,       md5,   binsrch,     bsort,     hsort
+Test                ,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED
+AOT/C               ,      2.83,      1.41,      2.01,      1.98,      2.49,      2.45,      2.12
+AOT overhead        ,      183%,       41%,      101%,       98%,      149%,      145%,      112%
+
+results_markloop_size11_pinned5/summary_markloop_size11_pinned5.csv
+BENCHMARK           ,       fft,       rc5,     xxtea,       md5,   binsrch,     bsort,     hsort
+Test                ,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED
+AOT/C               ,      2.81,      1.42,      1.99,      1.98,      2.30,      2.35,      2.10
+AOT overhead        ,      181%,       42%,       99%,       98%,      130%,      135%,      110%
+
+results_markloop_size11_pinned6/summary_markloop_size11_pinned6.csv
+BENCHMARK           ,       fft,       rc5,     xxtea,       md5,   binsrch,     bsort,     hsort
+Test                ,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED
+AOT/C               ,      2.76,      1.46,      2.13,      1.98,      2.22,      2.22,      2.06
+AOT overhead        ,      176%,       46%,      113%,       98%,      122%,      122%,      106%
+
+results_markloop_size11_pinned7/summary_markloop_size11_pinned7.csv
+BENCHMARK           ,       rc5,     xxtea,       md5,   binsrch,     bsort,     hsort
+Test                ,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED
+AOT/C               ,      1.46,      2.33,      1.98,      2.22,      2.22,      2.06
+AOT overhead        ,       46%,      133%,       98%,      122%,      122%,      106%
+
+results_poppedstackcache_size11/summary_poppedstackcache_size11.csv
+BENCHMARK           ,       fft,       rc5,     xxtea,       md5,   binsrch,     bsort,     hsort
+Test                ,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED
+AOT/C               ,      3.01,      1.51,      2.01,      2.06,      3.10,      3.10,      2.50
+AOT overhead        ,      201%,       51%,      101%,      106%,      210%,      210%,      150%
+
+results_simplestackcache_size11/summary_simplestackcache_size11.csv
+BENCHMARK           ,       fft,       rc5,     xxtea,       md5,   binsrch,     bsort,     hsort
+Test                ,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED,    PASSED
+AOT/C               ,      3.56,      1.58,      2.12,      2.21,      3.49,      4.43,      3.52
+AOT overhead        ,      256%,       58%,      112%,      121%,      249%,      343%,      252%
