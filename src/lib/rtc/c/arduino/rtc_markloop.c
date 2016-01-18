@@ -346,7 +346,7 @@ bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs) {
     // Check if any reg in the range starting at R16 is free
     for(uint8_t reg=16; reg<=30; reg+=2) {
         uint8_t idx = REG_TO_ARRAY_INDEX(reg);
-        if (RTC_STACKCACHE_IS_AVAILABLE(idx)) {
+        if (RTC_STACKCACHE_IS_AVAILABLE(idx) && !RTC_MARKLOOP_ISPINNED(idx)) {
             // We're in luck.
             RTC_STACKCACHE_MARK_IN_USE(idx);
             RTC_STACKCACHE_CLEAR_VALUETAG(idx);
