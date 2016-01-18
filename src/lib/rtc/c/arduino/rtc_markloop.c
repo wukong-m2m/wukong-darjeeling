@@ -130,6 +130,12 @@ uint16_t rtc_stackcache_pinned;
 
 
 ////////////////////// HELPERS
+void rtc_panic(uint8_t panictype) {
+    avroraRTCTraceStackCacheState(rtc_stackcache_state); // Store it here so we can see what's IN USE
+    avroraRTCTraceStackCacheValuetags(rtc_stackcache_valuetags);
+    avroraRTCTraceStackCachePinnedRegisters(rtc_stackcache_pinned);
+    dj_panic(panictype);
+}
 bool rtc_stackcache_is_call_used_idx(uint8_t idx) {
     uint8_t reg = ARRAY_INDEX_TO_REG(idx);
     return reg == R18 || reg == R20 || reg == R22 || reg == R24;
@@ -167,7 +173,7 @@ uint8_t rtc_stackcache_freeup_a_non_pinned_pair() { // Returns the idx of the fr
                 return idx;
             }
         } else {
-            while(true) { dj_panic(DJ_PANIC_AOT_STACKCACHE_NOTHING_TO_SPILL); }
+            while(true) { rtc_panic(DJ_PANIC_AOT_STACKCACHE_NOTHING_TO_SPILL); }
         }
     }
 }
@@ -387,7 +393,7 @@ void rtc_stackcache_push_pair(uint8_t reg_base, uint8_t which_stack, bool is_int
             }
         }
     } else {
-        dj_panic(DJ_PANIC_AOT_STACKCACHE_PUSHED_REG_NOT_IN_USE);
+        rtc_panic(DJ_PANIC_AOT_STACKCACHE_PUSHED_REG_NOT_IN_USE);
     }
 }
 void rtc_stackcache_push_16bit(uint8_t *regs) {
@@ -427,7 +433,7 @@ void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack
      && target_reg != R24
      && target_reg != RZ) {
         while (true) {
-         dj_panic(DJ_PANIC_AOT_STACKCACHE_INVALID_POP_TARGET); }
+         rtc_panic(DJ_PANIC_AOT_STACKCACHE_INVALID_POP_TARGET); }
     }
     uint8_t target_idx = (target_reg == 0xFF) ? 0xFF : REG_TO_ARRAY_INDEX(target_reg);
 
@@ -569,7 +575,7 @@ void rtc_stackcache_pop_destructive_ref_into_Z() {                              
 void rtc_stackcache_assert_no_in_use() {
     for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
         if (RTC_STACKCACHE_IS_IN_USE(idx)) {
-            dj_panic(DJ_PANIC_AOT_STACKCACHE_IN_USE);
+            rtc_panic(DJ_PANIC_AOT_STACKCACHE_IN_USE);
         }
     }
 }
@@ -851,7 +857,7 @@ void rtc_markloop_handle_skipping_instruction_for_pinned_valuetag(uint8_t pinned
         // If it's an int, we also need to find the other half
         pinned_idx_l = rtc_markloop_find_pinned_valuetag(RTC_VALUETAG_TO_INT_L(valuetag));
         if (pinned_idx_l == 0xFF) {
-            while (true) { dj_panic(DJ_PANIC_AOT_MARKLOOP_LOW_WORD_NOT_FOUND); }
+            while (true) { rtc_panic(DJ_PANIC_AOT_MARKLOOP_LOW_WORD_NOT_FOUND); }
         }
     }
 
