@@ -134,7 +134,8 @@ public class RTCBenchmark {
 		// Can't convert FFT to short array index since I wrote it that way from the beginning. Just adding a comment so all benchmarks will show up in the git commit.
 		short mr, nn, i, j, l, k, istep, n, scale;	//int is 16-bit on Arduino (32bit on original system), using short in Java
 		boolean shift;
-		byte qr, qi, tr, ti, wr, wi;						// byte is 8-bit signed
+		short qr, qi;
+		byte tr, ti, wr, wi;						// byte is 8-bit signed
 
 		n = (short)(1 << m);
 
@@ -220,8 +221,8 @@ public class RTCBenchmark {
 					short c2 = (short)((wi * fi[j]) >> 6);
 					short c3 = (short)((wr * fi[j]) >> 6);
 					short c4 = (short)((wi * fr[j]) >> 6);
-					tr = (byte)((byte)((c1 >> 1) + ((byte)(c1 & 0x01))) - (byte)((c2 >> 1) + ((byte)(c2 & 0x01))));
-					ti = (byte)((byte)((c3 >> 1) + ((byte)(c3 & 0x01))) + (byte)((c4 >> 1) + ((byte)(c4 & 0x01))));
+					tr = (byte)(((c1 >> 1) + ((c1 & 0x01))) - ((c2 >> 1) + ((c2 & 0x01))));
+					ti = (byte)(((c3 >> 1) + ((c3 & 0x01))) + ((c4 >> 1) + ((c4 & 0x01))));
 					qr = fr[i];
 					qi = fi[i];
 					if (shift) {
