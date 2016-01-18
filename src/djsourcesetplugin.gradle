@@ -148,6 +148,7 @@ class DjSourceSet {
                 dependsOn(proguard_unjar_task)
                 infusionClassesSourceDir = outputOptimisedClassesDir
             }
+            inputs.file new File("${project.project.rootDir}/infuser/build/libs/infuser-1.0.jar")
             inputs.files project.fileTree(dir: infusionClassesSourceDir).include('**/*.class')
             outputs.dir infusionDir
             this.javaDependencies.each { jlibname ->

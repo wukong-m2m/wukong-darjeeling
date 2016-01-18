@@ -1334,13 +1334,21 @@ int dj_exec_run(int nrOpcodes)
 			break;
 
 		case JVM_INEG: pushInt(-popInt()); break;
-		case JVM_ISHR: INT_ARITHMETIC_OP(>>); break;
+		case JVM_ISHR:
+			temp2 = popShort() & 31;
+			temp1 = popInt();
+			pushInt(((int32_t) temp1) >> temp2);
+			break;
 		case JVM_IUSHR:
 			temp2 = popShort() & 31;
 			temp1 = popInt();
 			pushInt(((uint32_t) temp1) >> temp2);
 			break;
-		case JVM_ISHL: INT_ARITHMETIC_OP(<<); break;
+		case JVM_ISHL:
+			temp2 = popShort() & 31;
+			temp1 = popInt();
+			pushInt(((int32_t) temp1) << temp2);
+			break;
 		case JVM_IREM: INT_ARITHMETIC_OP(%); break;
 		case JVM_IAND: INT_ARITHMETIC_OP(&); break;
 		case JVM_IOR: INT_ARITHMETIC_OP(|); break;

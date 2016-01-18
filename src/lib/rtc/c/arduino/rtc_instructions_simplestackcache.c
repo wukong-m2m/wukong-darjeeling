@@ -78,6 +78,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             if (next_opcode == JVM_SSHL
                 || next_opcode == JVM_SSHR
                 || next_opcode == JVM_SUSHR
+                || next_opcode == JVM_ISHL
+                || next_opcode == JVM_ISHR
                 || next_opcode == JVM_IUSHR) { // Somehow IUSHR has 16 bit operand but ISHR and ISHL have 32 bit.
                 ts->do_CONST1_SHIFT_optimisation = true;
                 break;
@@ -119,13 +121,6 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             rtc_stackcache_push_32bit(operand_regs1);
         break;
         case JVM_ICONST_1:
-#ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
-            if (next_opcode == JVM_ISHL
-                || next_opcode == JVM_ISHR) { // Somehow IUSHR has 16 bit operand but ISHR and ISHL have 32 bit.
-                ts->do_CONST1_SHIFT_optimisation = true;
-                break;
-            }
-#endif // AOT_OPTIMISE_CONSTANT_SHIFTS
         case JVM_ICONST_2:
         case JVM_ICONST_3:
         case JVM_ICONST_4:
@@ -1005,7 +1000,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         case JVM_ISHL:
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
                 if (!(ts->do_CONST1_SHIFT_optimisation)) {
-                    rtc_stackcache_pop_32bit(operand_regs1);
+                    rtc_stackcache_pop_16bit(operand_regs1);
                 }
                 rtc_stackcache_pop_32bit(operand_regs2); // operand
                 if (!(ts->do_CONST1_SHIFT_optimisation)) {
@@ -1043,7 +1038,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         case JVM_ISHR:
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
                 if (!(ts->do_CONST1_SHIFT_optimisation)) {
-                    rtc_stackcache_pop_32bit(operand_regs1);
+                    rtc_stackcache_pop_16bit(operand_regs1);
                 }
                 rtc_stackcache_pop_32bit(operand_regs2); // operand
                 if (!(ts->do_CONST1_SHIFT_optimisation)) {

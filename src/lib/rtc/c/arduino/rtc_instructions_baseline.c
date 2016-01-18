@@ -745,7 +745,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_x_PUSH_32bit(R18);
         break;
         case JVM_ISHL:
-            emit_x_POP_32bit(R18);
+            emit_x_POP_16bit(R18);
             emit_x_POP_32bit(R22);
 
             emit_RJMP(8);
@@ -759,7 +759,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_x_PUSH_32bit(R22);
         break;
         case JVM_ISHR:
-            emit_x_POP_32bit(R18);
+            emit_x_POP_16bit(R18);
             emit_x_POP_32bit(R22);
 
             emit_RJMP(8);

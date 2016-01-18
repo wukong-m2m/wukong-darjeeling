@@ -902,11 +902,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         case JVM_IUSHR:
             #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
                 if (!(ts->do_CONST1_SHIFT_optimisation)) {
-                    if (opcode == JVM_IUSHR) {
-                        rtc_stackcache_pop_destructive_16bit(operand_regs1);
-                    } else { // JVM_ISHL or JVM_ISHR
-                        rtc_stackcache_pop_destructive_32bit(operand_regs1);
-                    }
+                    rtc_stackcache_pop_destructive_16bit(operand_regs1);
                 }
                 rtc_stackcache_pop_destructive_32bit(operand_regs2); // operand
                 if (!(ts->do_CONST1_SHIFT_optimisation)) {

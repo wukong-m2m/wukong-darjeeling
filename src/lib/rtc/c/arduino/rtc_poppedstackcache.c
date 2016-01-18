@@ -645,6 +645,8 @@ uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts, bool *instr
             if (next_opcode == JVM_SSHL
                 || next_opcode == JVM_SSHR
                 || next_opcode == JVM_SUSHR
+                || next_opcode == JVM_ISHL
+                || next_opcode == JVM_ISHR
                 || next_opcode == JVM_IUSHR) { // Somehow IUSHR has 16 bit operand but ISHR and ISHL have 32 bit.
                 ts->do_CONST1_SHIFT_optimisation = true;
             }
@@ -659,12 +661,6 @@ uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts, bool *instr
             return RTC_VALUETAG_TYPE_CONSTANT + RTC_VALUETAG_DATATYPE_SHORT + opcode - JVM_SCONST_M1;
 
         case JVM_ICONST_1:
-#ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
-            if (next_opcode == JVM_ISHL
-                || next_opcode == JVM_ISHR) { // Somehow IUSHR has 16 bit operand but ISHR and ISHL have 32 bit.
-                ts->do_CONST1_SHIFT_optimisation = true;
-            }
-#endif // AOT_OPTIMISE_CONSTANT_SHIFTS
         case JVM_ICONST_M1:
         case JVM_ICONST_0:
         case JVM_ICONST_2:
