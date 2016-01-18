@@ -86,6 +86,7 @@ uint16_t rtc_stackcache_pinned;
 // Only stored for even numbered registers (for the pair x:x+1)
 // AVAILABLE: 0xFF
 // IN USE   : 0xFE
+// DISABLED : 0xFD
 // ON STACK : 0pdrssss, with
 //            r    = 1 for reference stack element, 0 for integer stack element
 //            ssss = stack depth. the top element has s=0, then next s=1, etc.
@@ -1051,6 +1052,8 @@ void rtc_markloop_emit_prologue() {
                     RTC_STACKCACHE_SET_VALUETAG(idx_to_pin, RTC_VALUETAG_TO_INT_L(valuetag));
                     RTC_STACKCACHE_SET_VALUETAG(idx_to_pin2, valuetag);
                     number_idx_pinned += 2;
+                } else {
+                    RTC_STACKCACHE_MARK_AVAILABLE(idx_to_pin);
                 }
             } else {
                 // shorts and ref can be handled almost the same way here, since emit_load_local_ref is defined to be identical anyway.
