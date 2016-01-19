@@ -1,20 +1,5 @@
 <WuKong>
-    <WuClass name="Or_Gate" appCanCreateInstances="true"/>
-    <WuClass name="Light_Actuator" appCanCreateInstances="false">
-        <CreateInstance />
-    </WuClass>
-    <WuClass name="Light_Sensor" appCanCreateInstances="false">
-        <CreateInstance />
-    </WuClass>
     <WuClass name="PIR_Sensor" appCanCreateInstances="false">
         <CreateInstance />
-    </WuClass>
-    <WuClass name="Magnetic_Sensor" appCanCreateInstances="false">
-        <CreateInstance>
-            <Property name="__pin" value="PIN1"/>
-        </CreateInstance>
-        <CreateInstance>
-            <Property name="__pin" value="PIN2"/>
-        </CreateInstance>
     </WuClass>
 </WuKong>

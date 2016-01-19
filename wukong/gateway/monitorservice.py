@@ -1,3 +1,8 @@
+import gevent
+from gevent.queue import Queue, Empty
+from gevent import monkey
+monkey.patch_all()
+import sys
 try:
     from pymongo import MongoClient
 except:
@@ -5,11 +10,7 @@ except:
     print "easy_install pymongo"
     sys.exit(-1)
 
-import gevent
-from gevent.queue import Queue, Empty
-import sys
-
-from txCarbonClient import CarbonClientService
+#from txCarbonClient import CarbonClientService
 import json
 import ast
 import datetime
@@ -37,7 +38,7 @@ class UserData:
         table = [[1907, 'CabinetDoor', 'Slipper1', 'Slipper2', 'Slipper3'],
                  [1909, 'CabinetSpace1', 'CabinetSpace2', 'CabinetSpace3'],
                  [1910, 'PHONE'],
-                 [2022, 'No', 'No', 'TV']]
+                 [2022, 'No','No','TV']]
         for wuclass in table:
             if wuclass_id == wuclass[0]:
                 if wuclass[property_num+1]:
@@ -58,7 +59,7 @@ class UserData:
 class ContextData:
     def __init__(self):
         self.message = {}
-        self.message['From']='WK_Env'
+        self.message['From']='Wukong'
         self.send = False
     
     def addData(self, sensorData):
@@ -67,13 +68,15 @@ class ContextData:
         value = sensorData.value
         if value == 65535:
             value = -1
-        table = [[2015, 'Floorlamp', 'Floorlamp_Lux', 'No', 'Floorlamp_R', 'Floorlamp_G', 'Floorlamp_B'],
-                 [2016, 'Bloom', 'Bloom_Lux', 'No', 'Bloom_R', 'Bloom_G', 'Bloom_B'],
-                 [2017, 'Go', 'Go_Lux', 'No', 'Go_R', 'Go_G', 'Go_B'],
-                 [2018, 'Strip', 'Strip_Lux', 'No', 'Strip_R', 'Strip_G', 'Strip_B'],
-                 [2009, 'Mist'],
-                 [2020, 'Music', 'Music_Type', 'Music_Vol'],
-                 [2022, 'No', 'TV_Mute', 'TV']]
+        table = [[9000, 'Floorlamp', 'Floorlamp_R', 'Floorlamp_G', 'Floorlamp_B', 'Floorlamp_Lux'],
+                 [9001, 'Bloom', 'Bloom_R', 'Bloom_G', 'Bloom_B', 'Bloom_Lux'],
+                 [9002, 'Go', 'Go_R', 'Go_G', 'Go_B', 'Go_Lux'],
+                 [9003, 'Strip', 'Strip_R', 'Strip_G', 'Strip_B', 'Strip_Lux'],
+                 [9004, 'Fan', 'Fan_Speed', 'Fan_Rotate'],
+                 [9005, 'Mist'],
+                 [9006, 'Music', 'Music_Type', 'Music_Vol'],
+                 [9007, 'TV', 'TV_Mute'],
+                 [9008, 'PHONE']]
         for wuclass in table:
             if wuclass_id == wuclass[0]:
                 if wuclass[property_num+1]:
@@ -86,7 +89,7 @@ class ContextData:
 
     def reset(self):
         self.message = {}
-        self.message['From']='WK_Env'
+        self.message['From']='Wukong'
         self.send = False        
 
 class SensorData:
@@ -109,7 +112,7 @@ class SensorData:
                 value = payload[7]
             else:
                 value = (payload[7] << 8) + payload[8]
-            return SensorData(node_id, class_id, port, property_num, value, time.strftime("%Y%m%d%H%M%S"))
+            return SensorData(node_id, class_id, port, property_num, value, time.strftime("%d%H%M%S"))
         return None
 
     @classmethod
@@ -126,7 +129,6 @@ class SensorData:
 
 class MonitorService(object):
     def __init__(self):
-        '''
         try:
             self._mongodb_client = MongoClient(config.MONGODB_URL)
         except:
@@ -141,23 +143,22 @@ class MonitorService(object):
             print "Graphite instance on " + config.GRAPHITE_IP + ":" + config.GRAPHITE_PORT + " can't be connected";
             print "Please install the txCarbonClient module."
         print "Graphite Client init"
-        '''
+        
         self._pserver_client = ProgressionServerClient() if config.ENABLE_PROGRESSION else None
         self._task = Queue()
         if config.ENABLE_CONTEXT:
             self.xmpp_wait = False
             self.xmpp_user = UserData()
-            self.xmpp_context = ContextData()
+            #self.xmpp_context = ContextData()
             self.client = xmpp.Client(config.XMPP_SERVER)
             self.client.connect(server=(config.XMPP_IP, config.XMPP_PORT))
             self.client.auth(config.XMPP_USER, config.XMPP_PASS)
             self.client.sendInitPresence(requestRoster=0)
             mes = xmpp.Presence(to=config.XMPP_NICK)
             self.client.send(mes)
-            self.client.Process(0)
+            self.client.Process(1)
             if config.ENABLE_PUB:
                 self.client.RegisterHandler('message', self.message_handler)
-            gevent.spawn(self.autoSendPresence)
 
     def handle_monitor_message(self, context, message):
         self._task.put_nowait((context, message))
@@ -167,26 +168,28 @@ class MonitorService(object):
             try:
                 context, message = self._task.get(timeout=1)
             except Empty:
-                if config.ENABLE_CONTEXT:
-                    if self.xmpp_wait:
+        	if config.ENABLE_CONTEXT: 
+		    if self.xmpp_wait:
                         self.xmpp_wait = False
                         if self.xmpp_user.send:
                             message =  xmpp.Message(config.XMPP_ROOM, self.xmpp_user.toDocument())
                             message.setAttr('type', 'groupchat')
                             self.client.send(message)
                             self.xmpp_user.reset()
-                        if self.xmpp_context.send:
+                        '''if self.xmpp_context.send:
                             message =  xmpp.Message(config.XMPP_ROOM, self.xmpp_context.toDocument())
                             message.setAttr('type', 'groupchat')
                             self.client.send(message)
-                            self.xmpp_context.reset()
-                        self.client.Process(0)
-                gevent.sleep(0.001)
+                            self.xmpp_context.reset()'''
+                    self.client.Process(1)
                 continue
+
             data_collection = SensorData.createByPayload(context, message)
             logging.debug(data_collection.toDocument())
             if (data_collection != None):
-                #self._mongodb_client.wukong.readings.insert(ast.literal_eval(data_collection.toDocument()))
+                if config.ENABLE_MONITOR:
+                    self._mongodb_client.wukong.readings.insert(ast.literal_eval(data_collection.toDocument()))
+
                 if config.ENABLE_PROGRESSION:
                     self._pserver_client.send(data_collection.node_id, data_collection.port, data_collection.value)
                 if config.ENABLE_GRAPHITE:
@@ -194,9 +197,9 @@ class MonitorService(object):
                 if config.ENABLE_CONTEXT:
                     self.xmpp_wait = True
                     self.xmpp_user.addData(data_collection)
-                    self.xmpp_context.addData(data_collection)
+                    #self.xmpp_context.addData(data_collection)
             if config.ENABLE_CONTEXT:
-                self.client.Process(0)
+                self.client.Process(1)
             gevent.sleep(0.001)
     def message_handler(self, sess, mess):
         text = mess.getBody()
@@ -261,10 +264,3 @@ class MonitorService(object):
                 print str(e)
                 return
 
-
-    def autoSendPresence(self):
-        while True:
-            gevent.sleep(60)
-            mes = xmpp.Presence(to=config.XMPP_NICK)
-            self.client.send(mes)
-            self.client.Process(0)

@@ -1,5 +1,25 @@
 <WuKong>
-    <WuClass name="Button" appCanCreateInstances="false">
+    <!-- List sensor and actuator for individual Intel Edison Board-->
+    <!--  Node 2  -->
+    <WuClass name="Grove_LCD" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <!--  Node 3  -->
+    <WuClass name="Slider" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+</WuKong>
+
+
+
+
+
+
+
+
+
+
+    <!--<WuClass name="Button" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
     <WuClass name="Touch_Sensor" appCanCreateInstances="false">
@@ -25,9 +45,10 @@
     </WuClass>
     <WuClass name="Relay" appCanCreateInstances="false">
     	<CreateInstance />
-    </WuClass>
+    </WuClass>-->
+ 
     <!-- 192.168.0.101 is galileoPHONE -->
-    <WuClass name="Cabinet" appCanCreateInstances="false">
+    <!--<WuClass name="Cabinet" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
     <WuClass name="Phone" appCanCreateInstances="false">
@@ -44,7 +65,7 @@
     </WuClass>
     <WuClass name="Number" appCanCreateInstances="false">
         <CreateInstance />
-    </WuClass>
+    </WuClass-->
 
     <!-- 192.168.0.104 is galileoNUC -->
     <!--<WuClass name="User" appCanCreateInstances="false">

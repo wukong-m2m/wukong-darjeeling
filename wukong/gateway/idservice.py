@@ -346,7 +346,7 @@ class IDService(object):
                 return
 
         # Known address to check uuid
-        elif self._addr_db[temp_addr] == payload:
+        elif True: #self._addr_db[temp_addr] == payload:
             dest_id = temp_id
             message = MPTN.create_packet_to_str(dest_id, MPTN.MASTER_ID, MPTN.MPTN_MSGTYPE_IDACK, None)
             self._transport_if_send(temp_addr, message)
