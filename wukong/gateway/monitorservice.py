@@ -22,13 +22,17 @@ import gtwconfig as config
 if config.ENABLE_CONTEXT:
     import xmpp
 
+if config.ENABLE_GRAPHITE:
+    from twisted.internet import reactor
+    from txCarbonClient import CarbonClientService
+
 class UserData:
     def __init__(self):
         self.message = {}
         self.message['From']='Wukong'
         self.send = False
         self.cnt = 0
-    
+
     def addData(self, sensorData):
         wuclass_id = sensorData.wuclass_id
         property_num = sensorData.property_num
@@ -61,7 +65,7 @@ class ContextData:
         self.message = {}
         self.message['From']='Wukong'
         self.send = False
-    
+
     def addData(self, sensorData):
         wuclass_id = sensorData.wuclass_id
         property_num = sensorData.property_num
@@ -90,7 +94,7 @@ class ContextData:
     def reset(self):
         self.message = {}
         self.message['From']='Wukong'
-        self.send = False        
+        self.send = False
 
 class SensorData:
     def __init__(self, node_id, wuclass_id, port, property_num, value, timestamp):
@@ -129,21 +133,25 @@ class SensorData:
 
 class MonitorService(object):
     def __init__(self):
-        try:
-            self._mongodb_client = MongoClient(config.MONGODB_URL)
-        except:
-            print "MongoDB instance " + url + " can't be connected."
-            print "Please install the mongDB, pymongo module."
-            sys.exit(-1)
-        print "MongoDB init"
 
-        try:
-            self._graphite_client = CarbonClientService(config.GRAPHITE_IP, config.GRAPHITE_PORT)
-        except:
-            print "Graphite instance on " + config.GRAPHITE_IP + ":" + config.GRAPHITE_PORT + " can't be connected";
-            print "Please install the txCarbonClient module."
-        print "Graphite Client init"
-        
+        if config.ENABLE_MONGO:
+            try:
+                self._mongodb_client = MongoClient(config.MONGODB_URL)
+            except:
+                print "MongoDB instance " + url + " can't be connected."
+                print "Please install the mongDB, pymongo module."
+                sys.exit(-1)
+            print "MongoDB init"
+
+        if config.ENABLE_GRAPHITE:
+            try:
+                self._graphite_client = CarbonClientService(reactor, config.GRAPHITE_IP, config.GRAPHITE_PORT)
+            except Exception as exception:
+                print exception
+                print "Graphite instance on " + config.GRAPHITE_IP + ":" + str(config.GRAPHITE_PORT) + " can't be connected";
+                print "Please install the txCarbonClient module by using pip (pip install txCarbonClient)"
+            print "Graphite Client init"
+
         self._pserver_client = ProgressionServerClient() if config.ENABLE_PROGRESSION else None
         self._task = Queue()
         if config.ENABLE_CONTEXT:
@@ -168,7 +176,7 @@ class MonitorService(object):
             try:
                 context, message = self._task.get(timeout=1)
             except Empty:
-        	if config.ENABLE_CONTEXT: 
+        	if config.ENABLE_CONTEXT:
 		    if self.xmpp_wait:
                         self.xmpp_wait = False
                         if self.xmpp_user.send:
@@ -207,7 +215,7 @@ class MonitorService(object):
             print 'input: '+text
             try:
                 input_data = json.loads(text)
-                if input_data['From'] == 'CE': 
+                if input_data['From'] == 'CE':
                     iq = xmpp.Iq(typ='set', to='pubsub.'+config.XMPP_SERVER, xmlns=xmpp.NS_CLIENT)
                     iq.pubsub = iq.addChild(name='pubsub', namespace=xmpp.NS_PUBSUB)
                     iq.pubsub.publish = iq.pubsub.addChild(name='publish', attrs={'node': 'nooneknow'})
@@ -263,4 +271,3 @@ class MonitorService(object):
             except Exception, e:
                 print str(e)
                 return
-

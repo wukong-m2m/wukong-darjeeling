@@ -528,7 +528,7 @@
       <property name="light" access="readwrite" datatype="short" default="1" />
     </WuClass>
 
- 
+
     <WuClass name="WeatherPrClass" id="10111" virtual="false" type="hard">
       <property name="cityId" access="readwrite" datatype="short" default="0" />
       <property name="temperature" access="readonly" datatype="short" default="0" />
