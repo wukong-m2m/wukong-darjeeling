@@ -255,6 +255,8 @@ int socket_send_to(uint32_t ip, char *message, int total, char *response, int re
   int portno = 80;
   struct sockaddr_in serv_addr;
   int sockfd, bytes, sent, received;
+  if ((ip & 0xFF) == 0 || (ip & 0xFF) == 0xFF)
+    return -1;
 
   /* create the socket */
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -318,6 +320,9 @@ int get_gamma(uint32_t ip, char *message, int total, int index, float *x, float 
   if (ret < 0)
     // Socket send error 
     return ret;
+
+  if (strstr(message, "404 Not Found") != NULL)
+    return -98;
 
   message = (strstr(message, "\r\n\r\n"))+4;
   cJSON * root = cJSON_Parse(message);

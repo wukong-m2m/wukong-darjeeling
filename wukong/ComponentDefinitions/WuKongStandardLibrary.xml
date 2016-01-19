@@ -334,7 +334,7 @@
     <WuClass name="Philip_Hue_Bulb_Actuator" id="2015" virtual="false" type="hard">
         <property name="ip_high" access="writeonly" datatype="short" default="0"/>
         <property name="ip_low" access="writeonly" datatype="short" default="0"/>
-        <property name="index" access="writeonly" datatype="short" default="0"/>
+        <property name="index" access="writeonly" datatype="short" default="1"/>
         <property name="on" access="writeonly" datatype="boolean" default="false"/>
         <property name="red" access="writeonly" datatype="short" default="0"/>
         <property name="green" access="writeonly" datatype="short" default="0"/>
@@ -343,7 +343,7 @@
     <WuClass name="Philip_Hue_Bloom_Actuator" id="2016" virtual="false" type="hard">
         <property name="ip_high" access="writeonly" datatype="short" default="0"/>
         <property name="ip_low" access="writeonly" datatype="short" default="0"/>
-        <property name="index" access="writeonly" datatype="short" default="0"/>
+        <property name="index" access="writeonly" datatype="short" default="1"/>
         <property name="on" access="writeonly" datatype="boolean" default="false"/>
         <property name="red" access="writeonly" datatype="short" default="0"/>
         <property name="green" access="writeonly" datatype="short" default="0"/>
@@ -352,7 +352,7 @@
     <WuClass name="Philip_Hue_Go_Actuator" id="2017" virtual="false" type="hard">
         <property name="ip_high" access="writeonly" datatype="short" default="0"/>
         <property name="ip_low" access="writeonly" datatype="short" default="0"/>
-        <property name="index" access="writeonly" datatype="short" default="0"/>
+        <property name="index" access="writeonly" datatype="short" default="1"/>
         <property name="on" access="writeonly" datatype="boolean" default="false"/>
         <property name="red" access="writeonly" datatype="short" default="0"/>
         <property name="green" access="writeonly" datatype="short" default="0"/>
@@ -361,7 +361,7 @@
     <WuClass name="Philip_Hue_Strip_Actuator" id="2018" virtual="false" type="hard">
         <property name="ip_high" access="writeonly" datatype="short" default="0"/>
         <property name="ip_low" access="writeonly" datatype="short" default="0"/>
-        <property name="index" access="writeonly" datatype="short" default="0"/>
+        <property name="index" access="writeonly" datatype="short" default="1"/>
         <property name="on" access="writeonly" datatype="boolean" default="false"/>
         <property name="red" access="writeonly" datatype="short" default="0"/>
         <property name="green" access="writeonly" datatype="short" default="0"/>

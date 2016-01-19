@@ -7,7 +7,7 @@ import time
 class GestureSwitch():
     def __init__(self):
         self.mode = -1
-        self.mode_avail_list = [CONST.MODE_VIDEO, CONST.MODE_HANGOUT]#, CONST.MODE_1ST_FLOOR, CONST.MODE_3RD_FLOOR, CONST.MODE_KITCHEN]
+        self.mode_avail_list = [CONST.MODE_VIDEO, CONST.MODE_HANGOUT, CONST.MODE_1ST_FLOOR]#, CONST.MODE_3RD_FLOOR, CONST.MODE_KITCHEN]
 
         self.vlc_window_name = r".*VLC"
         try:
@@ -27,18 +27,18 @@ class GestureSwitch():
             print "Please start Hangout app"
             exit()
 
-        # self.web_window_name = r"New Tab"
-        # try:
-        #     pywinauto.findwindows.find_window(title_re=self.web_window_name)
-        # except Exception as e:
-        #     print "Please start Webpage"
-        #     exit()
+        self.web_window_name = r"Brightness of 1st-Floor"
+        try:
+            pywinauto.findwindows.find_window(title_re=self.web_window_name)
+        except Exception as e:
+            print "Please start Webpage"
+            exit()
 
         self.update_time = time.time()
 
     def update_bool(self, in_change_mode, in_gesture):
         print "GestureSwitch update_bool mode is ", in_change_mode, "gesture is", in_gesture
-        if self.update_time + 0.5 > time.time():
+        if self.update_time + 0.2 > time.time():
             return None
 
         if in_change_mode:
