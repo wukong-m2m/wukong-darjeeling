@@ -226,106 +226,160 @@ void rtc_compile_lib(dj_infusion *infusion) {
 }
 
 uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode) {
-    switch(opcode) {
-        case JVM_BSPUSH:
-        case JVM_BIPUSH:
-        case JVM_SLOAD:
-        case JVM_ILOAD:
-        case JVM_ALOAD:
-        case JVM_SSTORE:
-        case JVM_ISTORE:
-        case JVM_ASTORE:
-        case JVM_IDUP_X:
-        case JVM_NEWARRAY:
-             return 1;
-        break;
-
-        case JVM_SSPUSH:
-        case JVM_SIPUSH:
-        case JVM_LDS:
-        case JVM_GETFIELD_B:
-        case JVM_GETFIELD_C:
-        case JVM_GETFIELD_S:
-        case JVM_GETFIELD_I:
-        case JVM_GETFIELD_A:
-        case JVM_PUTFIELD_B:
-        case JVM_PUTFIELD_C:
-        case JVM_PUTFIELD_S:
-        case JVM_PUTFIELD_I:
-        case JVM_PUTFIELD_A:
-        case JVM_GETSTATIC_B:
-        case JVM_GETSTATIC_C:
-        case JVM_GETSTATIC_S:
-        case JVM_GETSTATIC_I:
-        case JVM_GETSTATIC_A:
-        case JVM_PUTSTATIC_B:
-        case JVM_PUTSTATIC_C:
-        case JVM_PUTSTATIC_S:
-        case JVM_PUTSTATIC_I:
-        case JVM_PUTSTATIC_A:
-        case JVM_SINC:
-        case JVM_IINC:
-        case JVM_INVOKESPECIAL:
-        case JVM_INVOKESTATIC:
-        case JVM_NEW:
-        case JVM_ANEWARRAY:
-        case JVM_CHECKCAST:
-        case JVM_INSTANCEOF:
-             return 2;
-        break;
-
-        case JVM_SINC_W:
-        case JVM_IINC_W:
-        case JVM_INVOKEVIRTUAL:
-        case JVM_INVOKEINTERFACE:
-             return 3;
-        break;
-
-        case JVM_IIPUSH:
-        case JVM_SIFEQ:
-        case JVM_SIFNE:
-        case JVM_SIFLT:
-        case JVM_SIFGE:
-        case JVM_SIFGT:
-        case JVM_SIFLE:
-        case JVM_IIFEQ:
-        case JVM_IIFNE:
-        case JVM_IIFLT:
-        case JVM_IIFGE:
-        case JVM_IIFGT:
-        case JVM_IIFLE:
-        case JVM_IFNULL:
-        case JVM_IFNONNULL:
-        case JVM_IF_SCMPEQ:
-        case JVM_IF_SCMPNE:
-        case JVM_IF_SCMPLT:
-        case JVM_IF_SCMPGE:
-        case JVM_IF_SCMPGT:
-        case JVM_IF_SCMPLE:
-        case JVM_IF_ICMPEQ:
-        case JVM_IF_ICMPNE:
-        case JVM_IF_ICMPLT:
-        case JVM_IF_ICMPGE:
-        case JVM_IF_ICMPGT:
-        case JVM_IF_ICMPLE:
-        case JVM_IF_ACMPEQ:
-        case JVM_IF_ACMPNE:
-        case JVM_GOTO:
-             return 4;
-        break;
-
-        case JVM_TABLESWITCH:
-        case JVM_LOOKUPSWITCH:
-            // need to skip a lot, but we'll handle during codegen.
-            // these won't be optimised away by stackcaching anyway.
-            return 0;
-        break;
-
-        case JVM_MARKLOOP_START:
-            // need to skip a lot, but we'll handle during codegen.
-            // these won't be optimised away by stackcaching anyway.
-
-        default:
-            return 0;
+    if (opcode == JVM_BSPUSH
+        || opcode == JVM_BIPUSH
+        || opcode == JVM_SLOAD
+        || opcode == JVM_ILOAD
+        || opcode == JVM_ALOAD
+        || opcode == JVM_SSTORE
+        || opcode == JVM_ISTORE
+        || opcode == JVM_ASTORE
+        || opcode == JVM_NEWARRAY
+        || opcode == JVM_IDUP_X) {
+        return 1;
     }
+
+    if (opcode == JVM_SSPUSH
+        || opcode == JVM_SIPUSH
+        || opcode == JVM_LDS
+        || (opcode >= JVM_GETFIELD_B && opcode <= JVM_PUTSTATIC_A)
+        || opcode == JVM_SINC
+        || opcode == JVM_IINC
+        || opcode == JVM_INVOKESPECIAL
+        || opcode == JVM_INVOKESTATIC
+        || opcode == JVM_NEW
+        || opcode == JVM_ANEWARRAY
+        || opcode == JVM_CHECKCAST
+        || opcode == JVM_INSTANCEOF) {
+        return 2;
+    }
+
+    if (opcode == JVM_SINC_W
+        || opcode == JVM_IINC_W
+        || opcode == JVM_INVOKEVIRTUAL
+        || opcode == JVM_INVOKEINTERFACE) {
+        return 3;
+    }
+
+    if (opcode == JVM_IIPUSH
+        || (opcode >= JVM_IIFEQ && opcode <= JVM_GOTO)
+        || (opcode >= JVM_SIFEQ && opcode <= JVM_SIFLE)) {
+        return 4;
+    }
+
+
+    // JVM_TABLESWITCH
+    // JVM_LOOKUPSWITCH
+    // need to skip a lot, but we'll handle during codegen.
+    // these won't be optimised away by stackcaching anyway.
+
+    // JVM_MARKLOOP_START
+    // need to skip a lot, but we'll handle during codegen.
+    // these won't be optimised away by stackcaching anyway.
+
+    return 0;
 }
+// uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode) {
+//     switch(opcode) {
+//         case JVM_BSPUSH: // 16
+//         case JVM_BIPUSH: // 17
+//         case JVM_SLOAD:  // 22
+//         case JVM_ILOAD:  // 27
+//         case JVM_ALOAD:  // 32
+//         case JVM_SSTORE:  // 37
+//         case JVM_ISTORE:  // 42
+//         case JVM_ASTORE:  // 47
+//         case JVM_NEWARRAY:  // 161
+//         case JVM_IDUP_X:  // 175
+//              return 1;
+//         break;
+
+//         case JVM_SSPUSH:  // 18
+//         case JVM_SIPUSH:  // 19
+//         case JVM_LDS:  // 21
+//         case JVM_GETFIELD_B:  // 75
+//         case JVM_GETFIELD_C:  // 
+//         case JVM_GETFIELD_S:  // 
+//         case JVM_GETFIELD_I:  // 
+//         case JVM_GETFIELD_A:  // 
+//         case JVM_PUTFIELD_B:  // 
+//         case JVM_PUTFIELD_C:  // 
+//         case JVM_PUTFIELD_S:  // 
+//         case JVM_PUTFIELD_I:  // 
+//         case JVM_PUTFIELD_A:  // 84
+//         case JVM_GETSTATIC_B:  // 85
+//         case JVM_GETSTATIC_C:  // 
+//         case JVM_GETSTATIC_S:  // 
+//         case JVM_GETSTATIC_I:  // 
+//         case JVM_GETSTATIC_A:  // 
+//         case JVM_PUTSTATIC_B:  // 
+//         case JVM_PUTSTATIC_C:  // 
+//         case JVM_PUTSTATIC_S:  // 
+//         case JVM_PUTSTATIC_I:  // 
+//         case JVM_PUTSTATIC_A:  // 94
+//         case JVM_SINC:  // 120
+//         case JVM_IINC:  // 121
+//         case JVM_INVOKESPECIAL:  // 157
+//         case JVM_INVOKESTATIC:  // 158
+//         case JVM_NEW:  // 160
+//         case JVM_ANEWARRAY:  // 162
+//         case JVM_CHECKCAST:  // 165
+//         case JVM_INSTANCEOF:  // 166
+//              return 2;
+//         break;
+
+//         case JVM_SINC_W:  // 170
+//         case JVM_IINC_W:  // 171
+//         case JVM_INVOKEVIRTUAL:  // 156
+//         case JVM_INVOKEINTERFACE:  // 159
+//              return 3;
+//         break;
+
+//         case JVM_IIPUSH:  // 20
+//         case JVM_IIFEQ:  // 126
+//         case JVM_IIFNE:  // 
+//         case JVM_IIFLT:  // 
+//         case JVM_IIFGE:  // 
+//         case JVM_IIFGT:  // 
+//         case JVM_IIFLE:  // 131
+//         case JVM_IFNULL:  // 132
+//         case JVM_IFNONNULL:  // 133
+//         case JVM_IF_SCMPEQ:  // 134
+//         case JVM_IF_SCMPNE:  // 
+//         case JVM_IF_SCMPLT:  // 
+//         case JVM_IF_SCMPGE:  // 
+//         case JVM_IF_SCMPGT:  // 
+//         case JVM_IF_SCMPLE:  // 
+//         case JVM_IF_ICMPEQ:  // 
+//         case JVM_IF_ICMPNE:  // 
+//         case JVM_IF_ICMPLT:  // 
+//         case JVM_IF_ICMPGE:  // 
+//         case JVM_IF_ICMPGT:  // 
+//         case JVM_IF_ICMPLE:  // 
+//         case JVM_IF_ACMPEQ:  // 
+//         case JVM_IF_ACMPNE:  // 147
+//         case JVM_GOTO:  // 148
+//         case JVM_SIFEQ:  // 176
+//         case JVM_SIFNE:  // 
+//         case JVM_SIFLT:  // 
+//         case JVM_SIFGE:  // 
+//         case JVM_SIFGT:  // 
+//         case JVM_SIFLE:  // 181
+//              return 4;
+//         break;
+
+//         case JVM_TABLESWITCH:  // 
+//         case JVM_LOOKUPSWITCH:  // 
+//             // need to skip a lot, but we'll handle during codegen.
+//             // these won't be optimised away by stackcaching anyway.
+//             return 0;
+//         break;
+
+//         case JVM_MARKLOOP_START:  // 
+//             // need to skip a lot, but we'll handle during codegen.
+//             // these won't be optimised away by stackcaching anyway.
+
+//         default:
+//             return 0;
+//     }
+// }
