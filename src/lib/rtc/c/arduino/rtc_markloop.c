@@ -593,7 +593,7 @@ void rtc_stackcache_flush_call_used_regs_and_clear_valuetags() {        // Pushe
         uint8_t call_saved_reg_available_idx = 0xFF;
         for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
             // Is this an available call-saved register?
-            if (!rtc_stackcache_is_call_used_idx(idx) && RTC_STACKCACHE_IS_AVAILABLE(idx)) {
+            if (!rtc_stackcache_is_call_used_idx(idx) && RTC_STACKCACHE_IS_AVAILABLE(idx) && !RTC_MARKLOOP_ISPINNED(idx)) {
                 call_saved_reg_available_idx = idx;
             }
 
