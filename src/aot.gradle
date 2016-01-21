@@ -50,7 +50,7 @@ if (!project.hasProperty('aotstackcachesize')) {
     project.ext.aotstackcachesize = '11'
 }
 if (!project.hasProperty('aotmarkloopregs')) {
-    project.ext.aotmarkloopregs = '5'
+    project.ext.aotmarkloopregs = '7'
 }
 
 if (project.ext.aotstackcachesize.toInteger() > 11) {
