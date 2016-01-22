@@ -173,7 +173,7 @@ uint8_t rtc_stackcache_freeup_a_non_pinned_pair() { // Returns the idx of the fr
                 return idx;
             }
         } else {
-            while(true) { rtc_panic(DJ_PANIC_AOT_STACKCACHE_NOTHING_TO_SPILL); }
+            rtc_panic(DJ_PANIC_AOT_STACKCACHE_NOTHING_TO_SPILL);
         }
     }
 }
@@ -432,8 +432,7 @@ void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack
      && target_reg != R22
      && target_reg != R24
      && target_reg != RZ) {
-        while (true) {
-         rtc_panic(DJ_PANIC_AOT_STACKCACHE_INVALID_POP_TARGET); }
+         rtc_panic(DJ_PANIC_AOT_STACKCACHE_INVALID_POP_TARGET);
     }
     uint8_t target_idx = (target_reg == 0xFF) ? 0xFF : REG_TO_ARRAY_INDEX(target_reg);
 
@@ -662,7 +661,6 @@ void rtc_stackcache_determine_valuetag_and_opcodetype(rtc_translationstate *ts) 
         case JVM_ALOAD:
             opcodetype = RTC_MARKLOOP_OPCODETYPE_LOAD;
             valuetag =  RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_REF + jvm_operand_byte0;
-
         break;
 
         case JVM_ASTORE:
@@ -852,22 +850,22 @@ void rtc_markloop_store_to_pinned_pair(uint8_t idx, uint8_t which_stack, bool is
 
 void rtc_markloop_handle_skipping_instruction_for_pinned_valuetag(uint8_t pinned_idx) {
     uint16_t valuetag = rtc_ts->current_instruction_valuetag;
-    uint8_t pinned_idx_l = 0xFF;
-    uint8_t pinned_idx_reg = ARRAY_INDEX_TO_REG(pinned_idx);
+    uint8_t pinned_idx_h = 0xFF;
 
     if (RTC_VALUETAG_IS_INT(valuetag)) {
         // If it's an int, we also need to find the other half
-        pinned_idx_l = rtc_markloop_find_pinned_valuetag(RTC_VALUETAG_TO_INT_L(valuetag));
-        if (pinned_idx_l == 0xFF) {
-            while (true) { rtc_panic(DJ_PANIC_AOT_MARKLOOP_LOW_WORD_NOT_FOUND); }
+        pinned_idx_h = pinned_idx;
+        pinned_idx = rtc_markloop_find_pinned_valuetag(RTC_VALUETAG_TO_INT_L(valuetag));
+        if (pinned_idx_h == 0xFF) {
+            rtc_panic(DJ_PANIC_AOT_MARKLOOP_LOW_WORD_NOT_FOUND);
         }
     }
 
     if (rtc_ts->current_instruction_opcodetype == RTC_MARKLOOP_OPCODETYPE_LOAD) {
         if (RTC_VALUETAG_IS_INT(valuetag)) {
         // It's a load for a variable that has been pinned to the register with index pinned_idx
-            rtc_markloop_push_pinned_pair(pinned_idx, RTC_STACKCACHE_INT_STACK_TYPE, false);
-            rtc_markloop_push_pinned_pair(pinned_idx_l, RTC_STACKCACHE_INT_STACK_TYPE, true);
+            rtc_markloop_push_pinned_pair(pinned_idx_h, RTC_STACKCACHE_INT_STACK_TYPE, false);
+            rtc_markloop_push_pinned_pair(pinned_idx, RTC_STACKCACHE_INT_STACK_TYPE, true);
         } else if (RTC_VALUETAG_IS_SHORT(valuetag)) {
             rtc_markloop_push_pinned_pair(pinned_idx, RTC_STACKCACHE_INT_STACK_TYPE, false);
         } else { // REF
@@ -877,8 +875,8 @@ void rtc_markloop_handle_skipping_instruction_for_pinned_valuetag(uint8_t pinned
         // The instruction wants to do a store to a pinned variable
         if (RTC_VALUETAG_IS_INT(valuetag)) {
         // It's a load for a variable that has been pinned to the register with index pinned_idx
-            rtc_markloop_store_to_pinned_pair(pinned_idx_l, RTC_STACKCACHE_INT_STACK_TYPE, true);
-            rtc_markloop_store_to_pinned_pair(pinned_idx, RTC_STACKCACHE_INT_STACK_TYPE, false);
+            rtc_markloop_store_to_pinned_pair(pinned_idx, RTC_STACKCACHE_INT_STACK_TYPE, true);
+            rtc_markloop_store_to_pinned_pair(pinned_idx_h, RTC_STACKCACHE_INT_STACK_TYPE, false);
         } else if (RTC_VALUETAG_IS_SHORT(valuetag)) {
             rtc_markloop_store_to_pinned_pair(pinned_idx, RTC_STACKCACHE_INT_STACK_TYPE, false);
         } else { // REF
@@ -888,75 +886,59 @@ void rtc_markloop_handle_skipping_instruction_for_pinned_valuetag(uint8_t pinned
         uint8_t jvm_operand_byte1 = dj_di_getU8(rtc_ts->jvm_code_start + rtc_ts->pc + 2);
         uint8_t jvm_operand_byte2 = dj_di_getU8(rtc_ts->jvm_code_start + rtc_ts->pc + 3);
         int16_t jvm_operand_signed_word;
+
+        uint8_t pinned_idx_reg = ARRAY_INDEX_TO_REG(pinned_idx);
+        uint8_t pinned_idx_h_reg = ARRAY_INDEX_TO_REG(pinned_idx_h);
+
+        // The instruction wants to do an INC by jvm_operand_signed_word for a pinned variable.
+        rtc_markloop_make_sure_pinned_pair_is_not_on_the_stack(pinned_idx);
+        rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(valuetag);
+        if (RTC_VALUETAG_IS_INT(valuetag)) {
+            rtc_markloop_make_sure_pinned_pair_is_not_on_the_stack(pinned_idx_h);
+            rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(RTC_VALUETAG_TO_INT_L(valuetag));
+        }
+
         if (rtc_ts->current_instruction_opcode == JVM_SINC || rtc_ts->current_instruction_opcode == JVM_IINC) {
             jvm_operand_signed_word = (int8_t)jvm_operand_byte1;
         } else { // JVM_SINC_W or JVM_IINC_W
             jvm_operand_signed_word = (int16_t)(((uint16_t)jvm_operand_byte1 << 8) + jvm_operand_byte2);
         }
 
-        // The instruction wants to do an INC by jvm_operand_signed_word for a pinned variable.
-        rtc_markloop_make_sure_pinned_pair_is_not_on_the_stack(pinned_idx);
-        rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(valuetag);
-        if (RTC_VALUETAG_IS_INT(valuetag)) {
-            uint8_t pinned_idx_l_reg = ARRAY_INDEX_TO_REG(pinned_idx_l);
-            rtc_markloop_make_sure_pinned_pair_is_not_on_the_stack(pinned_idx_l);
-            rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(RTC_VALUETAG_TO_INT_L(valuetag));
+        uint8_t c0, c1, c2;
+        if (jvm_operand_signed_word > 0) {
+            // Positive operand
+            c0 = -(jvm_operand_signed_word & 0xFF);
+            c1 = -((jvm_operand_signed_word >> 8) & 0xFF)-1;
+            c2 = -1;
+        } else {
+            // Negative operand
+            c0 = (-jvm_operand_signed_word) & 0xFF;
+            c1 = ((-jvm_operand_signed_word) >> 8) & 0xFF;
+            c2 = 0;
+        }
 
-            if (jvm_operand_signed_word == 1) {
-                emit_INC(pinned_idx_l_reg);
-                emit_BRNE(2);
-                emit_INC(pinned_idx_l_reg+1);
-                emit_BRNE(2);
-                emit_INC(pinned_idx_reg);
-                emit_BRNE(2);
-                emit_INC(pinned_idx_reg+1);
-            } else {
-                uint8_t c0, c1, c2, c3;
-                if (jvm_operand_signed_word > 0) {
-                    // Positive operand
-                    c0 = -(jvm_operand_signed_word & 0xFF);
-                    c1 = -((jvm_operand_signed_word >> 8) & 0xFF)-1;
-                    c2 = -1;
-                    c3 = -1;
-                } else {
-                    // Negative operand
-                    c0 = (-jvm_operand_signed_word) & 0xFF;
-                    c1 = ((-jvm_operand_signed_word) >> 8) & 0xFF;
-                    c2 = 0;
-                    c3 = 0;
-                }
 
-                emit_MOVW(RZL, pinned_idx_l_reg);
-                emit_SUBI(RZL, c0);
-                emit_SBCI(RZH, c1);
-                emit_MOVW(pinned_idx_l_reg, RZL);
-
-                emit_MOVW(RZL, pinned_idx_reg);
-                emit_SBCI(RZL, c2);
-                emit_SBCI(RZH, c3);
-                emit_MOVW(pinned_idx_reg, RZL);
+        if (jvm_operand_signed_word == 1) {
+            emit_INC(pinned_idx_reg);
+            emit_BRNE(2);
+            emit_INC(pinned_idx_reg+1);
+            if (RTC_VALUETAG_IS_INT(valuetag)) {
+                emit_BRNE(2);
+                emit_INC(pinned_idx_h_reg);
+                emit_BRNE(2);
+                emit_INC(pinned_idx_h_reg+1);
             }
-        } else { // SHORT
-            if (jvm_operand_signed_word == 1) {
-                emit_INC(pinned_idx_reg);
-                emit_BRNE(2);
-                emit_INC(pinned_idx_reg+1);
-            } else {
-                uint8_t c0, c1;
-                if (jvm_operand_signed_word > 0) {
-                    // Positive operand
-                    c0 = -(jvm_operand_signed_word & 0xFF);
-                    c1 = -((jvm_operand_signed_word >> 8) & 0xFF)-1;
-                } else {
-                    // Negative operand
-                    c0 = (-jvm_operand_signed_word) & 0xFF;
-                    c1 = ((-jvm_operand_signed_word) >> 8) & 0xFF;
-                }
+        } else {
+            emit_MOVW(RZL, pinned_idx_reg);
+            emit_SUBI(RZL, c0);
+            emit_SBCI(RZH, c1);
+            emit_MOVW(pinned_idx_reg, RZL);
 
-                emit_MOVW(RZL, pinned_idx_reg);
-                emit_SUBI(RZL, c0);
-                emit_SBCI(RZH, c1);
-                emit_MOVW(pinned_idx_reg, RZL);
+            if (RTC_VALUETAG_IS_INT(valuetag)) {
+                emit_MOVW(RZL, pinned_idx_h_reg);
+                emit_SBCI(RZL, c2);
+                emit_SBCI(RZH, c2);
+                emit_MOVW(pinned_idx_h_reg, RZL);
             }
         }
     }
