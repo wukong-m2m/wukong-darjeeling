@@ -514,7 +514,9 @@ void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack
             // and also clear any other registers with the same tag since they no
             // longer contain the right value.
             rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(rtc_ts->current_instruction_valuetag);
-            RTC_STACKCACHE_SET_VALUETAG(target_idx, rtc_ts->current_instruction_valuetag);
+            if (!RTC_MARKLOOP_ISPINNED(target_idx)) {
+                RTC_STACKCACHE_SET_VALUETAG(target_idx, rtc_ts->current_instruction_valuetag);
+            }
         } else if (poptype == RTC_STACKCACHE_POP_TO_STORE_INT_L) {
             // The value will be stored to memory, so we should mark the value tag,
             // and also clear any other registers with the same tag since they no
