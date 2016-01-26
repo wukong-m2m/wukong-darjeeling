@@ -49,12 +49,14 @@ public class RTCBenchmark {
         for (short i=0; i<NUMNUMBERS; i++) {
             short x=(short)(NUMNUMBERS-i-1); // This doesn't get optimised the way I expected it would. Without this extra variable, it will calculate NUMNUMBERS-i-1 on each interation of the inner loop! (speedup 14.7M -> 14.2M cycles)
             short j_plus_one = 1; // Same goes for "j+1"
+            short val_at_j_plus_one = numbers[0];
             for (short j=0; j<x; j++) {
-                short val_at_j = numbers[j];
-                short val_at_j_plus_one = numbers[j_plus_one];
+                short val_at_j = val_at_j_plus_one;
+                val_at_j_plus_one = numbers[j_plus_one];
                 if (val_at_j>val_at_j_plus_one) {
                     numbers[j] = val_at_j_plus_one;
                     numbers[j_plus_one] = val_at_j;
+                    val_at_j_plus_one = val_at_j;
                 }
                 j_plus_one++;
             }
