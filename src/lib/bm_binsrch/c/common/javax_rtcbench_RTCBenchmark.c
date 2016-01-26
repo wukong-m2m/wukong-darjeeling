@@ -22,7 +22,7 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t 
         uint16_t high = NUMNUMBERS - 1;
         uint16_t mid;
         while (low <= high) {
-            mid = (low + high) >> 1;
+            mid = ((uint16_t)(low + high)) >> 1;
             int16_t number_mid;
             if ((number_mid=numbers[mid]) < toFind) {
                 low = mid + 1;
