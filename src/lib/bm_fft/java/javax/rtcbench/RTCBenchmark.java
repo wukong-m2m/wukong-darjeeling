@@ -152,7 +152,7 @@ public class RTCBenchmark {
 			l = n;
 			do {
 				l >>= 1;
-			} while (mr+l > nn);
+			} while ((short)(mr+l) > nn);
 			mr = (short)((mr & (l-1)) + l);
 			if (mr <= m)
 				continue;
