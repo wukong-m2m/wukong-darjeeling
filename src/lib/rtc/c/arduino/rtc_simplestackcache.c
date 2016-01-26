@@ -215,7 +215,7 @@ bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs) {
 
 void rtc_stackcache_push_pair(uint8_t reg_base, uint8_t which_stack) {
     uint8_t idx = REG_TO_ARRAY_INDEX(reg_base);
-    if (RTC_STACKCACHE_IS_IN_USE(idx)) {
+    if (RTC_STACKCACHE_IS_IN_USE(idx) || reg_base == R22 || reg_base == R24) {
         // shift depth for all pairs on the stack
         for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
             if (RTC_STACKCACHE_IS_ON_STACK(idx)) {
