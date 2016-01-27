@@ -50,6 +50,7 @@ typedef struct _rtc_translationstate {
     uint16_t current_instruction_valuetag;
     uint8_t current_instruction_opcode;
     uint8_t current_instruction_opcodetype;
+    uint16_t pinned_reg_needs_store;
 #endif // AOT_STRATEGY_MARKLOOP
 } rtc_translationstate;
 

@@ -13,7 +13,7 @@ import org.csiro.darjeeling.infuser.bytecode.instructions.SimpleInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.LoadStoreInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.IncreaseInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.WideIncreaseInstruction;
-import org.csiro.darjeeling.infuser.bytecode.instructions.MarkLoopStartInstruction;
+import org.csiro.darjeeling.infuser.bytecode.instructions.MarkLoopInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.BranchTargetInstruction;
 
 public class AddMarkLoopInstructions extends CodeBlockTransformation
@@ -32,6 +32,14 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
     private final static int RTC_VALUETAG_DATATYPE_SHORT = 0x1000;
     private final static int RTC_VALUETAG_DATATYPE_INT   = 0x2000;
     private final static int RTC_VALUETAG_DATATYPE_INT_L = 0x3000;
+    private final static int RTC_VALUETAG_NEEDS_LOAD     = 0x0800;
+    private final static int RTC_VALUETAG_NEEDS_STORE    = 0x0400;
+
+
+    private static boolean isTYPE_LOCAL(int valuetag) { return (valuetag & 0xC000) == RTC_VALUETAG_TYPE_LOCAL; }
+    private static boolean isTYPE_STATIC(int valuetag) { return (valuetag & 0xC000) == RTC_VALUETAG_TYPE_STATIC; }
+    private static boolean isTYPE_CONSTANT(int valuetag) { return (valuetag & 0xC000) == RTC_VALUETAG_TYPE_CONSTANT; }
+    private static boolean isDATATYPE_REF(int valuetag) { return (valuetag & 0x3000) == RTC_VALUETAG_DATATYPE_REF; }
 
 
     private static int instructionToValuetag(Instruction instruction) {
@@ -113,6 +121,70 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
         }
     }
 
+
+    private static boolean isDestructive(Instruction instruction) {
+        Opcode opcode = instruction.getOpcode();
+        switch (instruction.getOpcode()) {
+            case ASTORE:
+            case ASTORE_0:
+            case ASTORE_1:
+            case ASTORE_2:
+            case ASTORE_3:
+            case SSTORE:
+            case SINC:
+            case SINC_W:
+            case SSTORE_0:
+            case SSTORE_1:
+            case SSTORE_2:
+            case SSTORE_3:
+            case ISTORE:
+            case IINC:
+            case IINC_W:
+            case ISTORE_0:
+            case ISTORE_1:
+            case ISTORE_2:
+            case ISTORE_3:
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    private static boolean isLiveAtInstruction(InstructionHandle instruction, int valuetag) {
+        if (isTYPE_CONSTANT(valuetag) || isTYPE_STATIC(valuetag)) {
+            return true;
+        }
+        if (isDATATYPE_REF(valuetag)) {
+            return instruction.getLiveVariables().containsReferenceIndex(valuetag & 0x03FF);
+        } else {
+            return instruction.getLiveVariables().containsIntegerIndex(valuetag & 0x03FF);            
+        }
+    }
+
+    private static boolean isModifiedInBlock(InstructionList instructions, InstructionHandle beginTargetHandle, InstructionHandle endBranchHandle, int valuetag) {
+        if (isTYPE_CONSTANT(valuetag)) {
+            return false;
+        }
+        if (isTYPE_STATIC(valuetag)) {
+            return true;
+        }
+
+
+        for (int i=0; i<instructions.size(); i++)
+        {
+            InstructionHandle handle = instructions.get(i);
+            Instruction instruction = handle.getInstruction();
+
+            if (beginTargetHandle.getPc() < handle.getPc() && handle.getPc() < endBranchHandle.getPc()) {
+                if (instructionToValuetag(instruction) == valuetag && isDestructive(instruction)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private static class ValuetagCount implements Comparable<ValuetagCount> {
         public int valuetag;
         public int count;
@@ -166,6 +238,25 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
         }
     }
 
+    public static String valuetagToString(int valuetag) {
+        String type, datatype;
+        switch (valuetag & 0xC000) {
+            case RTC_VALUETAG_TYPE_LOCAL: type = "Local"; break;
+            case RTC_VALUETAG_TYPE_STATIC: type = "Static"; break;
+            case RTC_VALUETAG_TYPE_CONSTANT: type = "Constant"; break;
+            default: type = "??";
+        }
+        switch (valuetag & 0x3000) {
+            case RTC_VALUETAG_DATATYPE_REF: datatype = "Ref"; break;
+            case RTC_VALUETAG_DATATYPE_SHORT: datatype = "Short"; break;
+            case RTC_VALUETAG_DATATYPE_INT: datatype = "Int"; break;
+            case RTC_VALUETAG_DATATYPE_INT_L: datatype = "Int_l"; break;
+            default: datatype = "??";
+        }
+
+        return type + " " + datatype + " " + (valuetag & 0x03FF) + " (" + ((valuetag & 0x0800) == 0x0800 ? "NEEDS LOAD" : "") + "," + ((valuetag & 0x0400) == 0x0400 ? "NEEDS STORE" : "") + ")";
+    }
+
     private static void insertMARKLOOP(InstructionList instructions, InstructionHandle beginTargetHandle, InstructionHandle endBranchHandle) {
         HashMap<Integer,Integer> valuetagDict = new HashMap<Integer,Integer>();
         for (int i=0; i<instructions.size(); i++)
@@ -187,20 +278,29 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
 
         ArrayList<ValuetagCount> valuetagCountList = new ArrayList<ValuetagCount>();
         for (int valuetag : valuetagDict.keySet()) {
-            valuetagCountList.add(new ValuetagCount(valuetag, valuetagDict.get(valuetag)));
+            int count = valuetagDict.get(valuetag);
+            int flags = 0;
+            if (isLiveAtInstruction(beginTargetHandle, valuetag)) {
+                flags += RTC_VALUETAG_NEEDS_LOAD;
+            }
+            if (isLiveAtInstruction(beginTargetHandle, valuetag) && isModifiedInBlock(instructions, beginTargetHandle, endBranchHandle, valuetag)) {
+                flags += RTC_VALUETAG_NEEDS_STORE;
+            }
+            // flags = RTC_VALUETAG_NEEDS_STORE + RTC_VALUETAG_NEEDS_LOAD;
+            valuetagCountList.add(new ValuetagCount(valuetag + flags, count));
         }
         Collections.sort(valuetagCountList, Collections.reverseOrder());
 
         ArrayList<Integer> valuetagList = new ArrayList<Integer>();
-        // System.err.println("MARKLOOP_START valuetags: ");
+        System.err.println("MARKLOOP_START valuetags: ");
         for (ValuetagCount c : valuetagCountList) {
             valuetagList.add(c.valuetag);
-            // System.err.println("Valuetag: " + c.valuetag);
-            // System.err.println("Count: " + c.count);
+            System.err.println("Valuetag: " + valuetagToString(c.valuetag));
+            System.err.println("Count: " + c.count);
         }
 
         InstructionHandle markLoopHandle;
-        markLoopHandle = new InstructionHandle(new MarkLoopStartInstruction(Opcode.MARKLOOP_START, valuetagList));
+        markLoopHandle = new InstructionHandle(new MarkLoopInstruction(Opcode.MARKLOOP_START, valuetagList));
         markLoopHandle.setPreState(beginTargetHandle.getPreState());
         markLoopHandle.setPostState(beginTargetHandle.getPostState());
         instructions.insertBefore(beginTargetHandle, markLoopHandle);
@@ -238,7 +338,7 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
 
                 // System.err.println("Considering back branch at: " + endBranchHandle.getPc() + ".");
 
-                //  2 there are no other backward branches in the block between this branch and the branch target, to a different location (it's the inner loop)
+                //  2A there are no other backward branches in the block between this branch and the branch target, to a different location (it's the inner loop)
                 boolean reject = false;
                 for (int j=0; j<instructions.size(); j++) {
                     InstructionHandle handle = instructions.get(j);
@@ -256,6 +356,26 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
                 if (reject) {
                     continue;
                 }
+
+
+                // //  2B there are no other backward branches enveloping this block (it's the outer loop)
+                // boolean reject = false;
+                // for (int j=0; j<instructions.size(); j++) {
+                //     InstructionHandle handle = instructions.get(j);
+                //     if (handle.getInstruction().getOpcode().isBranch()
+                //             && endBranchHandle.getPc() < handle.getPc()
+                //             && handle.getBranchHandle().getPc() < beginTargetHandle.getPc()) {
+                //         // System.err.println("Reject: inner back branch found at " + handle.getPc() + ".");
+                //         // Discard this branch.
+                //         reject = true;
+                //         break;
+                //     }
+                // }
+                // if (reject) {
+                //     continue;
+                // }
+
+
 
                 //  3 there are no forward branches beyond the instruction following this branch (single point of exit)
                 reject = false;

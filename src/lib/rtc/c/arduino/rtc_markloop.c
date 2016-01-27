@@ -63,9 +63,14 @@
 #define RTC_STACKCACHE_UPDATE_AGE(idx)              (rtc_stackcache_age[(idx)] = rtc_ts->pc)
 #define RTC_STACKCACHE_GET_AGE(idx)                 (rtc_stackcache_age[(idx)])
 
-#define RTC_MARKLOOP_PIN(idx)                       (rtc_stackcache_pinned |= (1 << idx))
+#define RTC_MARKLOOP_PIN(idx, needs_store)          {rtc_stackcache_pinned |= (1 << idx); if(needs_store) {RTC_MARKLOOP_SET_PINNED_REG_NEEDS_STORE(idx);} else {RTC_MARKLOOP_CLR_PINNED_REG_NEEDS_STORE(idx);}}
 #define RTC_MARKLOOP_UNPIN(idx)                     (rtc_stackcache_pinned &= ~(1 << idx))
-#define RTC_MARKLOOP_ISPINNED(idx)                  (rtc_stackcache_pinned &  (1 << idx))
+#define RTC_MARKLOOP_ISPINNED(idx)                  (rtc_stackcache_pinned & (1 << idx))
+
+#define RTC_MARKLOOP_SET_PINNED_REG_NEEDS_STORE(idx)   (rtc_ts->pinned_reg_needs_store |= (1 << idx))
+#define RTC_MARKLOOP_CLR_PINNED_REG_NEEDS_STORE(idx)   (rtc_ts->pinned_reg_needs_store &= ~(1 << idx))
+#define RTC_MARKLOOP_PINNED_REG_NEEDS_STORE(idx)       (rtc_ts->pinned_reg_needs_store & (1 << idx))
+
 
 rtc_translationstate *rtc_ts; // Store a global pointer to the translation state. Bit of a hack, but this way I don't need to pass the pointer on each call.
 uint8_t rtc_stackcache_state[RTC_STACKCACHE_MAX_IDX];
@@ -94,7 +99,7 @@ uint16_t rtc_stackcache_pinned;
 //            p    = pinned
 
 // Valuetags:
-//  ttdd nnnn nnnn nnnn, with
+//  ttdd lsnn nnnn nnnn, with
 //    tt =  00 for local variables
 //          01 for statics
 //          10 for constant values
@@ -102,6 +107,8 @@ uint16_t rtc_stackcache_pinned;
 //          01 for a 16b short value
 //          10 for the high word of a 32b int value
 //          11 for the low word of a 32b int value
+//    l = needs load: only used in the markloop instructions to indicate we need to generate code in the prologue (the value is live)
+//    s = needs store: only used in the markloop instructions to indicate we need to generate code in the epilogue (the value is live and may have changed)
 //    nn = the identifier: the index for locals
 //                         statics aren't implemented yet
 //                         the value+1 for constants (+1 so CONST_M1 doesn't result in a negative value)
@@ -1020,7 +1027,7 @@ uint8_t rtc_markloop_getfree_16bit_idx_callsaved_only() {
     // If there's an available register that's not call used, return it.
     // Otherwise free a register and try again.
     for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
-        if(RTC_STACKCACHE_IS_AVAILABLE(idx) && !rtc_stackcache_is_call_used_idx(idx)) {
+        if(RTC_STACKCACHE_IS_AVAILABLE(idx) && !RTC_MARKLOOP_ISPINNED(idx) && !rtc_stackcache_is_call_used_idx(idx)) {
             RTC_STACKCACHE_MARK_IN_USE(idx);
             return idx;
         }
@@ -1032,15 +1039,41 @@ void rtc_markloop_emit_prologue() {
     uint8_t number_idx_pinned = 0;
     uint8_t i = 0;
     uint8_t number_of_valuetags_in_instruction = dj_di_getU8(rtc_ts->jvm_code_start + rtc_ts->pc + 1);
-
     while (number_idx_pinned < RTC_MARKLOOP_MAX_NUMBER_OF_IDX_TO_PIN && i < number_of_valuetags_in_instruction) {
+        uint8_t idx_to_pin, idx_to_pin2;
         // While we have registers left, and valuetags in the instruction
         uint16_t valuetag = (dj_di_getU8(rtc_ts->jvm_code_start + rtc_ts->pc + 2 + 2*i) << 8)
                            | dj_di_getU8(rtc_ts->jvm_code_start + rtc_ts->pc + 3 + 2*i);
         i++;
 
+        bool needs_load = ((valuetag & 0x0800) == 0x0800);
+        bool needs_store = ((valuetag & 0x0400) == 0x0400);
+        valuetag = valuetag & 0xF3FF;
+
         if (RTC_VALUETAG_IS_TYPE_LOCAL(valuetag)) {
-            uint16_t idx_to_pin = rtc_markloop_getfree_16bit_idx_callsaved_only();
+#define GeenVLIEGTUIG
+#ifdef VLIEGTUIG
+            idx_to_pin = rtc_poppedstackcache_find_available_valuetag(valuetag);
+            if (RTC_VALUETAG_IS_INT(valuetag)) {
+                idx_to_pin2 = rtc_poppedstackcache_find_available_valuetag(RTC_VALUETAG_TO_INT_L(valuetag));
+                if (idx_to_pin != 0xFF && idx_to_pin2 != 0xFF && !rtc_stackcache_is_call_used_idx(idx_to_pin) && !rtc_stackcache_is_call_used_idx(idx_to_pin2)) {
+                    // Int is already in a non-callused reg. Just pin it.
+                    RTC_MARKLOOP_PIN(idx_to_pin, needs_store);
+                    RTC_MARKLOOP_PIN(idx_to_pin2, needs_store);
+                    number_idx_pinned+=2;
+                    continue;
+                }
+            } else {
+                if (idx_to_pin != 0xFF && !rtc_stackcache_is_call_used_idx(idx_to_pin)) {
+                // Short or ref is already in a non-callused reg. Just pin it.
+                    RTC_MARKLOOP_PIN(idx_to_pin, needs_store);
+                    number_idx_pinned++;
+                    continue;
+                }
+            }
+#endif
+
+            idx_to_pin = rtc_markloop_getfree_16bit_idx_callsaved_only();
             uint8_t operand_regs[4];
             operand_regs[0] = ARRAY_INDEX_TO_REG(idx_to_pin);
             operand_regs[1] = ARRAY_INDEX_TO_REG(idx_to_pin)+1;
@@ -1049,13 +1082,16 @@ void rtc_markloop_emit_prologue() {
             if (RTC_VALUETAG_IS_INT(valuetag)) {
                 if (number_idx_pinned+1 < RTC_MARKLOOP_MAX_NUMBER_OF_IDX_TO_PIN) {
                     // Need to get an extra pair to pin an int
-                    uint16_t idx_to_pin2 = rtc_markloop_getfree_16bit_idx_callsaved_only();
+                    idx_to_pin2 = rtc_markloop_getfree_16bit_idx_callsaved_only();
                     operand_regs[2] = ARRAY_INDEX_TO_REG(idx_to_pin2);
                     operand_regs[3] = ARRAY_INDEX_TO_REG(idx_to_pin2)+1;
 
-                    emit_load_local_32bit(operand_regs, offset_for_intlocal_int(rtc_ts->methodimpl, local_index));
-                    RTC_MARKLOOP_PIN(idx_to_pin);
-                    RTC_MARKLOOP_PIN(idx_to_pin2);
+                    if (needs_load)
+                    {
+                        emit_load_local_32bit(operand_regs, offset_for_intlocal_int(rtc_ts->methodimpl, local_index));
+                    }
+                    RTC_MARKLOOP_PIN(idx_to_pin, needs_store);
+                    RTC_MARKLOOP_PIN(idx_to_pin2, needs_store);
                     RTC_STACKCACHE_SET_VALUETAG(idx_to_pin, RTC_VALUETAG_TO_INT_L(valuetag));
                     RTC_STACKCACHE_SET_VALUETAG(idx_to_pin2, valuetag);
                     number_idx_pinned += 2;
@@ -1066,20 +1102,24 @@ void rtc_markloop_emit_prologue() {
                 // shorts and ref can be handled almost the same way here, since emit_load_local_ref is defined to be identical anyway.
                 uint8_t offset = RTC_VALUETAG_IS_REF(valuetag) ? offset_for_reflocal(rtc_ts->methodimpl, local_index) : offset_for_intlocal_short(rtc_ts->methodimpl, local_index);
 
-                emit_load_local_16bit(operand_regs, offset);
-                RTC_MARKLOOP_PIN(idx_to_pin);
+                if (needs_load)
+                {
+                    emit_load_local_16bit(operand_regs, offset);
+                }
+                RTC_MARKLOOP_PIN(idx_to_pin, needs_store);
                 RTC_STACKCACHE_SET_VALUETAG(idx_to_pin, valuetag);
                 number_idx_pinned++;
             }
         }
     }
 }
+
 void rtc_markloop_emit_epilogue() {
     for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
         if (RTC_MARKLOOP_ISPINNED(idx)) {
             uint16_t valuetag = RTC_STACKCACHE_GET_VALUETAG(idx);
 
-            if (RTC_VALUETAG_IS_TYPE_LOCAL(valuetag)) {
+            if (RTC_VALUETAG_IS_TYPE_LOCAL(valuetag) && RTC_MARKLOOP_PINNED_REG_NEEDS_STORE(idx)) {
                 // We should write the pinned value back to memory
                 uint8_t local_index = RTC_VALUETAG_GET_LOCAL_INDEX(valuetag);
                 uint8_t offset = 0;
@@ -1101,6 +1141,7 @@ void rtc_markloop_emit_epilogue() {
         }
     }
 }
+
 
 // emit instructions to be used by MARKLOOP prologue and epilogue as well as normal instructions
 void emit_load_local_16bit(uint8_t *regs, uint16_t offset) {

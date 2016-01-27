@@ -23,6 +23,7 @@ package org.csiro.darjeeling.infuser.bytecode;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 
 import org.csiro.darjeeling.infuser.bytecode.analysis.GeneratedValueSet;
 import org.csiro.darjeeling.infuser.bytecode.analysis.InterpreterState;
@@ -294,7 +295,9 @@ public class InstructionHandle implements Comparable<InstructionHandle>
 		String ret = "";
 		
 		boolean first = true;
-		for (LocalVariable variable : liveVariables)
+		ArrayList<LocalVariable> tmp = new ArrayList(liveVariables);
+		Collections.sort(tmp, new Comparator<LocalVariable>(){ public int compare(LocalVariable l1,LocalVariable l2){ return (l1 != null && l2 != null) ? l1.getSlot() - l2.getSlot() : 0; } });
+		for (LocalVariable variable : tmp)
 		{
 			if (variable!=null)
 			{

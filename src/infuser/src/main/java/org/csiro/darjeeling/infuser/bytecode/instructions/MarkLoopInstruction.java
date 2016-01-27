@@ -29,11 +29,11 @@ import org.csiro.darjeeling.infuser.bytecode.LocalVariable;
 import org.csiro.darjeeling.infuser.bytecode.Instruction;
 import org.csiro.darjeeling.infuser.bytecode.Opcode;
 
-public class MarkLoopStartInstruction extends SimpleInstruction
+public class MarkLoopInstruction extends SimpleInstruction
 {
 	ArrayList<Integer> valuetags;
 
-	public MarkLoopStartInstruction(Opcode opcode, ArrayList<Integer> valuetags)
+	public MarkLoopInstruction(Opcode opcode, ArrayList<Integer> valuetags)
 	{
 		super(opcode);
 		this.valuetags = valuetags;

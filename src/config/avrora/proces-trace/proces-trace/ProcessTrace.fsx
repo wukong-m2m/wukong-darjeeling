@@ -44,7 +44,8 @@ let jvmOpcodeCategories =
      ("07) Bit shifts", ["JVM_SSHL"; "JVM_SSHR"; "JVM_SUSHR"; "JVM_ISHL"; "JVM_ISHR"; "JVM_IUSHR"]);
      ("08) Bit logic", ["JVM_SAND"; "JVM_SOR"; "JVM_SXOR"; "JVM_IAND"; "JVM_IOR"; "JVM_IXOR"]);
      ("09) Conversions", ["JVM_S2B"; "JVM_S2C"; "JVM_S2I"; "JVM_I2S"]);
-     ("10) Others", ["JVM_NOP"; "JVM_SRETURN"; "JVM_IRETURN"; "JVM_ARETURN"; "JVM_RETURN"; "JVM_INVOKEVIRTUAL"; "JVM_INVOKESPECIAL"; "JVM_INVOKESTATIC"; "JVM_INVOKEINTERFACE"; "JVM_NEW"; "JVM_NEWARRAY"; "JVM_ANEWARRAY"; "JVM_ARRAYLENGTH"; "JVM_CHECKCAST"; "JVM_INSTANCEOF"])] in
+     ("10) Markloop", ["JVM_MARKLOOP_START"; "JVM_MARKLOOP_END"]);
+     ("11) Others", ["JVM_NOP"; "JVM_SRETURN"; "JVM_IRETURN"; "JVM_ARETURN"; "JVM_RETURN"; "JVM_INVOKEVIRTUAL"; "JVM_INVOKESPECIAL"; "JVM_INVOKESTATIC"; "JVM_INVOKEINTERFACE"; "JVM_NEW"; "JVM_NEWARRAY"; "JVM_ANEWARRAY"; "JVM_ARRAYLENGTH"; "JVM_CHECKCAST"; "JVM_INSTANCEOF"])] in
 let getCategoryForJvmOpcode opcode =
     match jvmOpcodeCategories |> List.tryFind (fun (cat, opcodes) -> opcodes |> List.exists ((=) opcode)) with
     | Some(cat, _) -> cat
@@ -220,6 +221,11 @@ let parseDJDebug (allLines : string list) =
                                           text = m.Groups.["text"].Value.Trim();
                                           stackBefore = (m.Groups.["stackBefore"].Value.Trim() |> stackStringToStack);
                                           stackAfter = (m.Groups.["stackAfter"].Value.Trim()  |> stackStringToStack) })
+
+let getLoops results =
+  let jvmInstructions = results.jvmInstructions |> List.map (fun jvm -> jvm.jvm)
+  let filteredInstructions = jvmInstructions |> List.filter (fun jvm -> jvm.text.Contains("MARKLOOP") || jvm.text.Contains("JVM_BRTARGET") || jvm.text.Contains("Branch target"))
+  filteredInstructions |> List.map (fun jvm -> String.Format("{0} {1}\n\r", jvm.index, jvm.text)) |> List.fold (+) ""
 
 // Process trace main function
 let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress : int -> ExecCounters) (stdoutlog : string list) (disasm : string list) (djdebuglines : string list) =
@@ -434,6 +440,9 @@ let resultsToString (results : Results) =
         yield results.jvmInstructions
                 |> List.map resultJavaToString
                 |> List.fold (+) ""
+        yield ""
+        yield "--- LISTING: JVM LOOPS"
+        yield (getLoops results)
         yield ""
         yield "--- LISTING: ONLY OPTIMISED AVR"
         yield results.jvmInstructions

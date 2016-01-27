@@ -39,4 +39,22 @@ public class LiveSet extends HashSet<LocalVariable>
 			return false;
 	}
 
+
+	public boolean containsIntegerIndex(int index) {
+		for (LocalVariable var : this) {
+			if (var != null && var.getIntegerIndex() == index) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean containsReferenceIndex(int index) {
+		for (LocalVariable var : this) {
+			if (var != null && var.getReferenceIndex() == index) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
