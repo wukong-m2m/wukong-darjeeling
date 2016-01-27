@@ -217,10 +217,14 @@ public class RTCBenchmark {
 					// tr = (byte)(FIX_MPY(wr,fr[j]) - FIX_MPY(wi,fi[j]));
 					// ti = (byte)(FIX_MPY(wr,fi[j]) + FIX_MPY(wi,fr[j]));
 					// Inlined FIX_MPY
-					short c1 = (short)((wr * fr[j]) >> 6);
-					short c2 = (short)((wi * fi[j]) >> 6);
-					short c3 = (short)((wr * fi[j]) >> 6);
-					short c4 = (short)((wi * fr[j]) >> 6);
+
+					short c3 = fr[j];
+					short c1 = (short)((short)(wr * c3) >> 6);
+					short c4 = (short)((short)(wi * c3) >> 6);
+					c3 = fi[j];
+					short c2 = (short)((short)(wi * c3) >> 6);
+					      c3 = (short)((short)(wr * c3) >> 6);
+
 					tr = (byte)(((c1 >> 1) + ((c1 & 0x01))) - ((c2 >> 1) + ((c2 & 0x01))));
 					ti = (byte)(((c3 >> 1) + ((c3 & 0x01))) + ((c4 >> 1) + ((c4 & 0x01))));
 					qr = fr[i];
