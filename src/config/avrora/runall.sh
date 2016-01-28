@@ -6,7 +6,7 @@ benchmarks=(bsort hsort fft xxtea rc5 md5 binsrch)
 
 gdj clean
 
-# BASELINE
+# BASELINE (plus 16 bit array index, improved shift by 1 bit, improved INC)
 for benchmark in ${benchmarks}
 do
     gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=baseline
@@ -16,7 +16,7 @@ done
 for benchmark in ${benchmarks}
 do
 	# cachesizes=(5 6 7 8 9 10 11)
-	cachesizes=(5 10 11)
+	cachesizes=(5 11)
 	for aotstackcachesize in ${cachesizes}
 	do
 	    gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Paotstackcachesize=${aotstackcachesize}
@@ -27,7 +27,7 @@ done
 for benchmark in ${benchmarks}
 do
     # cachesizes=(5 6 7 8 9 10 11)
-    cachesizes=(11)
+    cachesizes=(5 11)
     for aotstackcachesize in ${cachesizes}
     do
         gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Paotstackcachesize=${aotstackcachesize}

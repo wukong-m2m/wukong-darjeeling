@@ -269,6 +269,7 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress :
         nativeCInstructions
             |> List.map (fun (avr, cnt) -> (AVR.getOpcodeForInstruction avr.opcode avr.text, cnt))
             |> groupFold fst snd (+) ExecCounters.empty
+            |> List.sortBy (fun (avr, _) -> (AVR.opcodeCategory avr)+(AVR.opcodeName avr))
 
     let cyclesPerAvrOpcodeAOTJava =
         mainResults
@@ -277,6 +278,7 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress :
             |> List.filter (fun avr -> avr.opt.IsSome)
             |> List.map (fun avr -> (AVR.getOpcodeForInstruction avr.opt.Value.opcode avr.opt.Value.text, avr.counters))
             |> groupFold fst snd (+) ExecCounters.empty
+            |> List.sortBy (fun (avr, _) -> (AVR.opcodeCategory avr)+(AVR.opcodeName avr))
 
     let groupOpcodesInCategories (allCategories : string list) (getCategory : ('a -> string)) (results : ('a * ExecCounters) list) =
         let categoriesPresent =

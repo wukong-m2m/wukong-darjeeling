@@ -11,6 +11,7 @@ do
     head -n 2 ${summary} | tail -n 1 >> sumsum.txt
     head -n 8 ${summary} | tail -n 1 >> sumsum.txt
     head -n 9 ${summary} | tail -n 1 >> sumsum.txt
+    head -n 10 ${summary} | tail -n 1 >> sumsum.txt
 done
 
 cat sumsum.txt
