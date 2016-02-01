@@ -1642,7 +1642,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_flush_to_flash(); // Finish writing, and also make sure we won't optimise across basic block boundaries.
             tmp_current_position = wkreprog_get_raw_position();
             wkreprog_close();
-            wkreprog_open_raw(rtc_branch_target_table_address(ts->branch_target_table_start_ptr, ts->branch_target_count), ts->end_of_safe_region);
+            wkreprog_open_raw(rtc_branch_target_table_1_address(ts, ts->branch_target_count), ts->end_of_safe_region);
             emit_raw_word(tmp_current_position/2 - ts->branch_target_table_start_ptr/2);
             emit_flush_to_flash();
             wkreprog_close();

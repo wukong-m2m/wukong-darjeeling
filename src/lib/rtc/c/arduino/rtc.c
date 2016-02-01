@@ -211,7 +211,7 @@ void rtc_compile_lib(dj_infusion *infusion) {
     dj_di_pointer tmp_address = wkreprog_get_raw_position();
     wkreprog_close();
     wkreprog_open_raw(tmp_address, END_OF_SAFE_REGION);
-    avroraRTCTraceEndMethod(wkreprog_get_raw_position(), dj_di_methodImplementation_getLength(methodimpl), rtc_branch_table_size(methodimpl)/2);
+    avroraRTCTraceEndMethod(wkreprog_get_raw_position(), dj_di_methodImplementation_getLength(methodimpl), rtc_branch_table_size(methodimpl)/4);
 #endif
     }
 
