@@ -1,0 +1,6 @@
+djlibsource {
+    bm_binsrch32 {
+        cDependencies = [ 'darjeeling3' ]
+        javaDependencies = [ 'base', 'darjeeling3', 'rtc' ]
+    }
+}
