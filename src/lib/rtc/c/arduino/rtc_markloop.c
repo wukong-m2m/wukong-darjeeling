@@ -528,7 +528,9 @@ void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack
             // and also clear any other registers with the same tag since they no
             // longer contain the right valuertc_ts->RTC_VALUETAG_TO_INT_L(rtc_ts->current_instruction_valuetag));
             rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(RTC_VALUETAG_TO_INT_L(rtc_ts->current_instruction_valuetag));
-            RTC_STACKCACHE_SET_VALUETAG(target_idx, RTC_VALUETAG_TO_INT_L(rtc_ts->current_instruction_valuetag));
+            if (!RTC_MARKLOOP_ISPINNED(target_idx)) {
+                RTC_STACKCACHE_SET_VALUETAG(target_idx, RTC_VALUETAG_TO_INT_L(rtc_ts->current_instruction_valuetag));
+            }
         }
 
         if (regs != NULL) {
@@ -850,6 +852,10 @@ void rtc_markloop_store_to_pinned_pair(uint8_t idx, uint8_t which_stack, bool is
     // Move the value to the pinned register
     emit_MOVW(ARRAY_INDEX_TO_REG(idx), operand_regs[0]);
 
+avroraPrintStr("sinterklaas");
+avroraPrintInt32(ARRAY_INDEX_TO_REG(idx));
+avroraPrintInt32(operand_regs[0]);
+avroraPrintHex32(is_int_l ? RTC_VALUETAG_TO_INT_L(valuetag) : valuetag);
     // And restore the valuetag for the pinned register
     RTC_STACKCACHE_SET_VALUETAG(idx, is_int_l ? RTC_VALUETAG_TO_INT_L(valuetag) : valuetag);
 }
