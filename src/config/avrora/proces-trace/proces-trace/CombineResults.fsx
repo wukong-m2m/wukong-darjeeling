@@ -85,9 +85,9 @@ let flipTupleListsToStringList (benchmarks : (string * string) list list) =
 let stringListToString (list : string list) =
     match list with
     | head :: tail
-        -> String.Format ("{0,-20},{1}",
+        -> String.Format ("{0,-20} {1}",
                             head,
-                            String.Join(",", tail |> List.map (fun x -> String.Format("{0,10}", x))))
+                            String.Join(" ", tail |> List.map (fun x -> String.Format("{0,10}", x))))
     | [] -> ""
 
 let summariseResults resultsDirectory =
@@ -98,7 +98,7 @@ let summariseResults resultsDirectory =
     let results =
         resultsXmlStrings
             |> List.map (fun xml -> xmlSerializer.UnPickleOfString<Results> xml)
-            |> List.sortBy (fun r -> let sortorder = ["sortO"; "hsortO"; "binsrchO"; "fft"; "rc5"; "xxtea"; "md5"; "sortX"; "hsortX"; "binsrchX"] in
+            |> List.sortBy (fun r -> let sortorder = ["bsort16"; "bsort32"; "hsort16"; "hsort32"; "binsrch16"; "binsrch32"; "fft"; "rc5"; "xxtea"; "md5"; "sortX"; "hsortX"; "binsrchX"] in
                                      match sortorder |> List.tryFindIndex ((=) r.benchmark) with
                                      | Some (index) -> index
                                      | None -> 100)

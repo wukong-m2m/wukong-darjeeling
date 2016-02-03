@@ -94,11 +94,11 @@ type Results = {
     member this.executedCyclesC = this.cyclesPerAvrOpcodeCategoryNativeC |> List.sumBy (fun (cat, cnt) -> cnt.cycles);
     member this.maxJvmStackInBytes =
         this.jvmInstructions
-        |> List.map (fun jvm -> jvm.djDebugData.stackSizeAfter)
+        |> List.map (fun jvm -> jvm.djDebugData.stackSizeBefore)
         |> List.max;
     member this.avgJvmStackInBytes =
         this.jvmInstructions 
-        |> List.fold (fun (accCnt, accSum) jvm -> (accCnt+jvm.counters.executions, accSum+(jvm.counters.executions*jvm.djDebugData.stackSizeAfter))) (0, 0)
+        |> List.fold (fun (accCnt, accSum) jvm -> (accCnt+jvm.counters.executions, accSum+(jvm.counters.executions*jvm.djDebugData.stackSizeBefore))) (0, 0)
         |> (fun (cnt, sum) -> float sum / float cnt)
     member this.avgJvmStackChangeInBytes =
         this.jvmInstructions 
