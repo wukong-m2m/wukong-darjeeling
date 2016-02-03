@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include "config.h"
 #include "GENERATEDwuclass_grove_mp3.h"
+
+#ifdef MRAA_LIBRARY
 #include "MP3_wt5001.h"
 
 void wuclass_grove_mp3_setup(wuobject_t *wuobject) {
@@ -92,3 +94,4 @@ void wuclass_grove_mp3_update(wuobject_t *wuobject) {
   }
   DEBUG_LOG(DBG_WKPFUPDATE,"WKPFUPDATE(Grove_MP3): on_off:%d track:%d\n", on_off, track);
 }
+#endif

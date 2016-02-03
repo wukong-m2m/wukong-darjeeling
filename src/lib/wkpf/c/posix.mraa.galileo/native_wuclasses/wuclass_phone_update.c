@@ -12,13 +12,10 @@
 #include <sys/syscall.h>
 #include <math.h>
 #include "config.h"
-#include <mraa.h>
+#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
 
-mraa_gpio_context phone_gpio;
 
 void wuclass_phone_setup(wuobject_t *wuobject) {
-    
-/*
     #ifdef INTEL_GALILEO_GEN1
     system("echo -n 37 > /sys/class/gpio/export");
     system("echo -n out > /sys/class/gpio/gpio37/direction");
@@ -52,14 +49,9 @@ void wuclass_phone_setup(wuobject_t *wuobject) {
     system("echo in > /sys/class/gpio/gpio208/direction");
     system("echo high > /sys/class/gpio/gpio214/direction");
     #endif
-*/
-    phone_gpio = mraa_gpio_init(5);
-    mraa_gpio_dir(phone_gpio, MRAA_GPIO_IN);
-    DEBUG_LOG(true, "WKPFUPDATE(Phone): start\n");
 }
 
 void wuclass_phone_update(wuobject_t *wuobject) {
-	/*
     int16_t fd=-1;
     char buf[4] = {'\\','\\','\\','\\'};
     #ifdef INTEL_GALILEO_GEN1
@@ -94,12 +86,6 @@ void wuclass_phone_update(wuobject_t *wuobject) {
     int16_t output = (int16_t)((num/4095.0)*255);
     wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_PHONE_TALKING, output < 100);
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Slider): Sensed %d, output %d\n", num, output);
-*/
-    bool value;
-    int value_i;
-    value_i = mraa_gpio_read(phone_gpio);
-    value = (value_i != 1);  //because we use magnetic sensor which will output "1" when it's turned off
-    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Phone): Send value: %d\n", value); 
-    wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_PHONE_TALKING, value);
 
 }
+#endif

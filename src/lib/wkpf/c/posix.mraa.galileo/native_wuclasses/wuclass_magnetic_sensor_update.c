@@ -4,11 +4,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "config.h"
-#include <mraa.h>
-#include "IO_utils.h"
 
-mraa_gpio_context magnetic_gpio;
-    
+#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
+
 void wuclass_magnetic_sensor_setup(wuobject_t *wuobject) {
     #ifdef INTEL_GALILEO_GEN1
     #endif
@@ -48,10 +46,6 @@ void wuclass_magnetic_sensor_setup(wuobject_t *wuobject) {
     system("echo in > /sys/class/gpio/gpio129/direction");
     system("echo high > /sys/class/gpio/gpio214/direction");
     #endif
-    #ifdef MRAA_LIBRARY
-    magnetic_gpio = mraa_gpio_init(4);
-    mraa_gpio_dir(magnetic_gpio, MRAA_GPIO_IN);
-    #endif
 }
 
 void wuclass_magnetic_sensor_update(wuobject_t *wuobject) {
@@ -67,10 +61,8 @@ void wuclass_magnetic_sensor_update(wuobject_t *wuobject) {
     char this_gpio[10]={"gpio129"};
     value_i = gpio_read(this_gpio);
     #endif
-    #ifdef MRAA_LIBRARY
-    value_i = mraa_gpio_read(magnetic_gpio);
-    #endif
     value = (value_i != 0);
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Magnetic Sensor): Sensed binary value: %d\n", value); 
     wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_TOUCH_SENSOR_CURRENT_VALUE, value);
 }
+#endif

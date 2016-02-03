@@ -12,10 +12,9 @@
 #include <sys/syscall.h>
 #include <math.h>
 #include "config.h"
-#include <mraa.h>
-#include "IO_utils.h"
 
-mraa_aio_context adc_a0;
+#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
+#include "IO_utils.h"
 
 void wuclass_slider_setup(wuobject_t *wuobject) {
     #ifdef INTEL_GALILEO_GEN1
@@ -51,9 +50,6 @@ void wuclass_slider_setup(wuobject_t *wuobject) {
     system("echo in > /sys/class/gpio/gpio208/direction");
     system("echo high > /sys/class/gpio/gpio214/direction");
     #endif
-    #ifdef MRAA_LIBRARY
-    adc_a0 = mraa_aio_init(0);
-    #endif
     DEBUG_LOG(true, "WKPFUPDATE(Slider): Slider\n");
 }
 
@@ -78,9 +74,6 @@ void wuclass_slider_update(wuobject_t *wuobject) {
     system("echo high > /sys/class/gpio/gpio214/direction"); // this line is nesseccesry but have no idea how to explain it
     num = aio_read(buf);
     #endif 
-    #ifdef MRAA_LIBRARY
-    num = mraa_aio_read(adc_a0);
-    #endif
     int16_t low;
     int16_t high;
     wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_SLIDER_LOW_VALUE, &low);
@@ -90,3 +83,4 @@ void wuclass_slider_update(wuobject_t *wuobject) {
     wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_SLIDER_OUTPUT, output);
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Slider): Sensed %d, low %d, high %d, output %d\n", num, low, high, output);
 }
+#endif

@@ -12,6 +12,8 @@
 #include <sys/syscall.h>
 #include <math.h>
 #include "config.h"
+
+#ifdef MRAA_LIBRARY
 #include <mraa.h>
 
 mraa_uart_context user_uart;
@@ -78,3 +80,4 @@ void wuclass_user_update(wuobject_t *wuobject) {
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(userID): output %d\n", output);
     }
 }
+#endif

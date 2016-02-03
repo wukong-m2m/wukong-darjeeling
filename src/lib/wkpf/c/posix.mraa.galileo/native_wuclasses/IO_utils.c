@@ -13,7 +13,7 @@ int16_t aio_read(char *buf){
 }
 
 int16_t gpio_read(char *this_gpio){
-    int value_i;
+    int value_i = 0;
     char path[100]={0};
     snprintf(path, 100, "/sys/class/gpio/%s/value", this_gpio);
     FILE *fp = NULL;

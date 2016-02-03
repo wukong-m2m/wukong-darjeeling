@@ -1,20 +1,13 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "native_wuclasses.h"
-#include "../../posix.mraa/native_wuclasses/LCD_RGB_Suli.h"
-#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
 #include "config.h"
 
+#ifdef MRAA_LIBRARY
+#include "LCD_RGB_Suli.h"
+
 void wuclass_grove_lcd_setup(wuobject_t *wuobject) {
-    #ifdef INTEL_GALILEO_GEN1
-	rgb_lcd_init(0);
-    #endif
-    #ifdef INTEL_GALILEO_GEN2
-	rgb_lcd_init(0);
-    #endif
-    #ifdef INTEL_EDISON
 	rgb_lcd_init(6);
-    #endif
 	rgb_lcd_clear();
 	rgb_lcd_setRGB(255,0,0);
 }
@@ -28,5 +21,4 @@ void wuclass_grove_lcd_update(wuobject_t *wuobject) {
     rgb_lcd_setCursor(0, 0);
     rgb_lcd_print(buffer);
 }
-
 #endif

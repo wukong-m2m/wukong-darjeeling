@@ -12,11 +12,9 @@
 #include <sys/syscall.h>
 #include <math.h>
 #include "config.h"
-#include <mraa.h>
+
+#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
 #include "IO_utils.h"
-
-mraa_aio_context adc_a3;
-
 void wuclass_sound_sensor_setup(wuobject_t *wuobject) {
     #ifdef INTEL_GALILEO_GEN1
     system("echo -n 22 > /sys/class/gpio/export");
@@ -51,9 +49,6 @@ void wuclass_sound_sensor_setup(wuobject_t *wuobject) {
     system("echo in > /sys/class/gpio/gpio211/direction");
     system("echo high > /sys/class/gpio/gpio214/direction");
     #endif
-    #ifdef MRAA_LIBRARY
-    adc_a3 = mraa_aio_init(3);
-    #endif
 }
 
 void wuclass_sound_sensor_update(wuobject_t *wuobject) {
@@ -77,11 +72,9 @@ void wuclass_sound_sensor_update(wuobject_t *wuobject) {
     system("echo high > /sys/class/gpio/gpio214/direction");
     output = aio_read(buf);
     #endif
-    #ifdef MRAA_LIBRARY
-    output = mraa_aio_read(adc_a3);
-    #endif
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Sound_Sensor): raw value %d\n", output);
     output = (int16_t)((output/4095.0)*255);
     wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_SOUND_SENSOR_CURRENT_VALUE, output);
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Sound_Sensor): output %d\n", output);
 }
+#endif

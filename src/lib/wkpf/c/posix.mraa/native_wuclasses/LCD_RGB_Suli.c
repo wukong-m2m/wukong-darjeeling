@@ -22,14 +22,14 @@
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
 #include <unistd.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/errno.h>
-#include <mraa.h>
+  
 #include "LCD_RGB_Suli.h"
+#include <mraa.h>
 
 uint8_t _displayfunction;
 uint8_t _displaycontrol;
@@ -322,4 +322,3 @@ void rgb_lcd_setColor(uint8_t color)
     if(color > 3)return ;
     rgb_lcd_setRGB(color_define[color][0], color_define[color][1], color_define[color][2]);
 }
-

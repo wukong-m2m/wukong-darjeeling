@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include "config.h"
+
+#ifdef MRAA_LIBRARY
 #include "MOSFET_cjq4435.h"
 
 void wuclass_mosfet_led_setup(wuobject_t *wuobject) {
@@ -20,3 +22,4 @@ void wuclass_mosfet_led_update(wuobject_t *wuobject) {
     setDutyCycle(brightness/255.0);
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MOSFET_LED): %d\n", brightness);
 }
+#endif

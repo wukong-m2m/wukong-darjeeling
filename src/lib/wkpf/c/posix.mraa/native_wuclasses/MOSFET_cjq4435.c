@@ -21,8 +21,8 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 #include "MOSFET_cjq4435.h"
+#include <mraa.h>
 
 bool m_enabled;
 mraa_pwm_context m_pwm;
@@ -106,4 +106,3 @@ void off()
   setDutyCycle(0.0);
   enable(true);
 }
-

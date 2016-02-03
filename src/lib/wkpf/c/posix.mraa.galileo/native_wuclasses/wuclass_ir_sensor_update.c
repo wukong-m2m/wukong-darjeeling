@@ -11,6 +11,8 @@
 #include <sys/resource.h>
 #include <sys/syscall.h>
 #include <math.h>
+#include "config.h"
+#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
 
 void wuclass_ir_sensor_setup(wuobject_t *wuobject) {
 	system("echo -n 37 > /sys/class/gpio/unexport");
@@ -91,3 +93,4 @@ void wuclass_ir_sensor_update(wuobject_t *wuobject) {
         printf("The distance after smoothing is: %d cm\n",final_dis_0);
 	wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_IR_SENSOR_CURRENT_VALUE, final_dis_0);
 }
+#endif

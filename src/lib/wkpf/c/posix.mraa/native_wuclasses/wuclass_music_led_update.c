@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include "config.h"
+
+#ifdef MRAA_LIBRARY
 #include "MOSFET_cjq4435.h"
 
 #define NONE        0
@@ -113,3 +115,4 @@ void wuclass_music_led_update(wuobject_t *wuobject) {
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(MUSIC_LED): %d\n", amplitude);
     }
 }
+#endif

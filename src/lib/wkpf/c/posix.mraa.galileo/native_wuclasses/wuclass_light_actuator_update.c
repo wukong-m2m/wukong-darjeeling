@@ -3,10 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "config.h"
-#include <mraa.h>
 
-mraa_gpio_context la_gpio;
+#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
+#include "config.h"
 
 void wuclass_light_actuator_setup(wuobject_t *wuobject) {
     #ifdef INTEL_GALILEO_GEN1
@@ -52,10 +51,6 @@ void wuclass_light_actuator_setup(wuobject_t *wuobject) {
     system("echo -n out > /sys/class/gpio/gpio48/direction");
     system("echo -n out > /sys/class/gpio/gpio214/direction");
     #endif
-    #ifdef MRAA_LIBRARY
-    la_gpio = mraa_gpio_init(7);
-    mraa_gpio_dir(la_gpio, MRAA_GPIO_OUT);
-    #endif
 }
 
 void wuclass_light_actuator_update(wuobject_t *wuobject) {
@@ -85,12 +80,6 @@ void wuclass_light_actuator_update(wuobject_t *wuobject) {
             system("echo -n 0 > /sys/class/gpio/gpio48/value");
     }
     #endif 
-    #ifdef MRAA_LIBRARY
-    if (onOff){
-      mraa_gpio_write(la_gpio, 1);
-    }else{
-      mraa_gpio_write(la_gpio, 0);
-    }
-    #endif
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Light): Sensed lightness: %x\n", onOff);
 }
+#endif

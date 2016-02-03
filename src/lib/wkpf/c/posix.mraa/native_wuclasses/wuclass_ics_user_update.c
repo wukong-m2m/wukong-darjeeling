@@ -13,6 +13,8 @@
 #include <sys/syscall.h>
 #include <math.h>
 #include "config.h"
+
+#ifdef MRAA_LIBRARY
 #include <mraa.h>
 
 mraa_uart_context ics_uart;
@@ -97,3 +99,4 @@ void wuclass_ics_user_update(wuobject_t *wuobject) {
         }
     }
 }
+#endif

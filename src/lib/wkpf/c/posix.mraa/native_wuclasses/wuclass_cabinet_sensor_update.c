@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "config.h"
+
+#ifdef MRAA_LIBRARY
 #include <mraa.h>
 
 mraa_gpio_context shoe_gpio[3];
@@ -37,3 +39,4 @@ void wuclass_cabinet_update(wuobject_t *wuobject) {
     wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_CABINET_SPACE2, value_i[1]);
     wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_CABINET_SPACE3, value_i[2]);
 }
+#endif

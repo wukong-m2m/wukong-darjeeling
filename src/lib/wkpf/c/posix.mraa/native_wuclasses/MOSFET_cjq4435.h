@@ -22,7 +22,6 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <mraa.h>
 #include <stdbool.h>
   /**
    * @brief CJQ4435 MOSFET library
@@ -111,5 +110,3 @@
      * a shortcut for turning the output to continuous off (low)
      */
     void off();
-
-

@@ -13,6 +13,9 @@
 #include "fast_gpio_sc.h"
 #include <time.h>
 //#include "./arduino/wiring_digital.h"
+#include "config.h"
+#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
+
 float pulseIn()
 {
 	char buf[2];
@@ -186,4 +189,4 @@ void wuclass_ultrasound_sensor_update(wuobject_t *wuobject) {
 		printf("2same final_dis: %d\n", final_dis);
 	}
 }
-
+#endif

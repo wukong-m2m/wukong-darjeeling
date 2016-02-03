@@ -11,7 +11,7 @@
 #include <sys/select.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <mraa/uart.h>
+
 
 #define WT5001_DEFAULT_UART 0
 #define WT5001_MAX_VOLUME   31
@@ -209,4 +209,3 @@ bool _getDate(uint16_t *year, uint8_t *month, uint8_t *day);
 * @return true if successful
 */
 bool _getTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
-

@@ -12,11 +12,9 @@
 #include <sys/syscall.h>
 #include <math.h>
 #include "config.h"
-#include <mraa.h>
+
+#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
 #include "IO_utils.h"
-
-mraa_aio_context adc_a2;
-
 void wuclass_temperature_sensor_setup(wuobject_t *wuobject) {
     #ifdef INTEL_GALILEO_GEN1
     system("echo -n  > /sys/class/gpio/export");
@@ -51,9 +49,6 @@ void wuclass_temperature_sensor_setup(wuobject_t *wuobject) {
     system("echo in > /sys/class/gpio/gpio210/direction");
     system("echo high > /sys/class/gpio/gpio214/direction");
     #endif
-    #ifdef MRAA_LIBRARY
-    adc_a2 = mraa_aio_init(2);
-    #endif
 }
 
 void wuclass_temperature_sensor_update(wuobject_t *wuobject) {
@@ -77,9 +72,6 @@ void wuclass_temperature_sensor_update(wuobject_t *wuobject) {
     system("echo high > /sys/class/gpio/gpio214/direction");
     output = aio_read(buf);
     #endif
-    #ifdef MRAA_LIBRARY
-    output = mraa_aio_read(adc_a2);
-    #endif
     if(output == 0){
       DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Temperature): zero input\n");
     }else{
@@ -91,3 +83,4 @@ void wuclass_temperature_sensor_update(wuobject_t *wuobject) {
       DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Temperature): %f decree\n", temperature);
     }
 }
+#endif

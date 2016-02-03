@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include "config.h"
+
+#ifdef MRAA_LIBRARY
 #include "MP3_wt5001.h"
 
 #define NONE        0
@@ -103,3 +105,4 @@ void wuclass_gesture_mp3_update(wuobject_t *wuobject) {
     if (comm != NONE)
         wkpf_internal_write_property_int16(wuobject, WKPF_PROPERTY_GESTURE_MP3_COMMAND, NONE);
 }
+#endif

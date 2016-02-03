@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "config.h"
+
+#ifdef MRAA_LIBRARY
 #include <mraa.h>
 
 mraa_gpio_context button_gpio;
@@ -21,3 +23,4 @@ void wuclass_button_update(wuobject_t *wuobject) {
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(NButton): Sensed binary value: %d\n", value_i); 
     wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_BUTTON_CURRENT_VALUE, value);
 }
+#endif

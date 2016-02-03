@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "config.h"
+
+#ifdef MRAA_LIBRARY
 #include <mraa.h>
 
 mraa_gpio_context tv_onoff_in_gpio;  //pin 3
@@ -37,3 +39,4 @@ void wuclass_irremote_tv_update(wuobject_t *wuobject) {
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(IRremote TV): Sensed on_off_state: %d\n", value_i); 
     wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_IRREMOTE_TV_ON_OFF_STATE, on_off_state);
 }
+#endif

@@ -68,10 +68,7 @@
 // #define RADIO_USE_NETWORKSERVER
 #define RADIO_USE_WIFI
 
-// GPIO: choose 1
-// #define INTEL_GALILEO_GEN1
-// #define INTEL_GALILEO_GEN2
-// #define INTEL_EDISON
+// GPIO:
 #define MRAA_LIBRARY
 
 #endif

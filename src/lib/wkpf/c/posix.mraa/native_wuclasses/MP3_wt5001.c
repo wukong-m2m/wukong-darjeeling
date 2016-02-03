@@ -2,6 +2,7 @@
 
 static const int defaultDelay = 100;     // max wait time for read
 
+#include <mraa/uart.h>
 mraa_uart_context m_uart;
 int m_ttyFd;
 
@@ -614,4 +615,3 @@ bool _getTime(uint8_t *hour, uint8_t *minute, uint8_t *second){
   *second = buf[2];
   return true;
 }
-

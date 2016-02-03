@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "config.h"
+
+#ifdef MRAA_LIBRARY
 #include <mraa.h>
 
 mraa_gpio_context pir_gpio;
@@ -20,3 +23,4 @@ void wuclass_pir_sensor_update(wuobject_t *wuobject) {
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(PIR): Sensed binary value: %d\n", value_i); 
     wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_PIR_SENSOR_CURRENT_VALUE, value);
 }
+#endif
