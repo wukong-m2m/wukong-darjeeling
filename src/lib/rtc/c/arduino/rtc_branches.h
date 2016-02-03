@@ -11,6 +11,6 @@
 #define rtc_branch_target_table_1_address(rtc_ts, i) ((rtc_ts->branch_target_table_start_ptr) + 2*i)
 
 void emit_x_branchtag(uint16_t opcode, uint16_t target);
-void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_pointer end_of_safe_region, uint16_t branchTableSize, dj_di_pointer end_of_method);
+void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_pointer end_of_method, uint16_t branchTableSize);
 
 #endif // RTC_BRANCHES_H

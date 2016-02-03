@@ -155,7 +155,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     // Second pass:
     // All branchtarget addresses should be known now.
     // Scan for branch tags, and replace them with the proper instructions.
-    rtc_patch_branches(branch_target_table_start_ptr, END_OF_SAFE_REGION, rtc_branch_table_size(methodimpl), tmp_current_position);
+    rtc_patch_branches(branch_target_table_start_ptr, tmp_current_position, rtc_branch_table_size(methodimpl));
 }
 
 void rtc_compile_lib(dj_infusion *infusion) {

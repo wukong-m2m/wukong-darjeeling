@@ -150,16 +150,16 @@ void rtc_stackcache_init() {
         RTC_STACKCACHE_MARK_DISABLED(i);
     }
 
-    // These are the registers we may use
-    uint8_t registers_we_can_use[RTC_NUMBER_OF_USABLE_REGS_PAIRS] = {
-            R4, R6, R8, R10, R12, R14, R16, // Call saved
-            R18, R20, R22, R24 // Call used
-    };
+    // // These are the registers we may use
+    // uint8_t registers_we_can_use[RTC_NUMBER_OF_USABLE_REGS_PAIRS] = {
+    //         R4, R6, R8, R10, R12, R14, R16, // Call saved
+    //         R18, R20, R22, R24 // Call used
+    // };
 
     // Depending on the defined number of actual registers to use, mark those AVAILABLE
     for (uint8_t i=0; i<RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE; i++) {
-        uint8_t reg = registers_we_can_use[i];
-        RTC_STACKCACHE_MARK_AVAILABLE(REG_TO_ARRAY_INDEX(reg));
+        // uint8_t reg = registers_we_can_use[i];
+        RTC_STACKCACHE_MARK_AVAILABLE(REG_TO_ARRAY_INDEX(R4+2*i));
     }
 }
 

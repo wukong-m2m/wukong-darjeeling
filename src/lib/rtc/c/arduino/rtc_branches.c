@@ -22,7 +22,7 @@ void emit_x_branchtag(uint16_t opcode, uint16_t target) {
 #define RTC_STARTADDRESS_BRTARGET_TABLE_2 (branch_target_table_start_ptr + branchTableSize/2)
 #define RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_1(branchtarget_id) (branch_target_table_start_ptr + 2*dj_di_getU16(RTC_STARTADDRESS_BRTARGET_TABLE_1 + 2*branchtarget_id))
 #define RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_2(branchtarget_id) (branch_target_table_start_ptr + 2*dj_di_getU16(RTC_STARTADDRESS_BRTARGET_TABLE_2 + 2*branchtarget_id))
-void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_pointer end_of_safe_region, uint16_t branchTableSize, dj_di_pointer end_of_method) {
+void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_pointer end_of_method, uint16_t branchTableSize) {
 // Let RTC trace know the next emitted code won't belong to the last JVM opcode anymore. Otherwise the branch patches would be assigned to the last instruction in the method (probably RET)
 #ifdef AVRORA
     avroraRTCTracePatchingBranchesOn();
@@ -37,7 +37,6 @@ void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_point
 
     // BT 1: original addresses, based on 3 word branch
     // BT 2: optimised addresses, based on as small a branch as possible
-    // initialise BT 2 with a copy of BT 1.
     // bool terminate = true
     // do
     //     int savings = 0
@@ -58,18 +57,13 @@ void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_point
 
     // initialise BT 2 with a copy of BT 1.
     uint16_t branch_target_count = branchTableSize/4;
-    wkreprog_open_raw(RTC_STARTADDRESS_BRTARGET_TABLE_2, end_of_safe_region);
-    for (uint16_t i = 0; i<branch_target_count; i++) {
-        emit_without_optimisation(dj_di_getU16(RTC_STARTADDRESS_BRTARGET_TABLE_1 + 2*i));
-    }
-    wkreprog_close();
 
     bool terminate = true;
     do {
         terminate = true;
         uint16_t next_branch_target_idx = 0;
         uint16_t savings = 0;
-        wkreprog_open_raw(RTC_STARTADDRESS_BRTARGET_TABLE_2, end_of_safe_region);
+        wkreprog_open_raw(RTC_STARTADDRESS_BRTARGET_TABLE_2, end_of_method);
     //     for each instruction
         uint16_t avr_pc = branch_target_table_start_ptr + branchTableSize;
     //                          until we've passed all branchtargets
@@ -134,7 +128,7 @@ void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_point
 
 
     // Scan for branch tags, and replace them with the proper instructions.
-    wkreprog_open_raw(branch_target_table_start_ptr, end_of_safe_region);
+    wkreprog_open_raw(branch_target_table_start_ptr, end_of_method);
     wkreprog_skip(branchTableSize);
 
     for (uint16_t avr_pc=branch_target_table_start_ptr+branchTableSize; avr_pc<end_of_method; avr_pc += 2) {
@@ -182,11 +176,12 @@ void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_point
                 } else {
                     // Doesn't fit in BR__ instruction, reverse the condition and branch over an unconditional RJMP or JMP.
                     bool useRJMP = target_offset_in_bytes >= -4096 && target_offset_in_bytes <= 4094;
+                    uint8_t offset = useRJMP ? 2 : 4;
                     switch (avr_instruction) {
-                        case OPCODE_BREQ: emit_BRNE(useRJMP ? 2 : 4); break;
-                        case OPCODE_BRNE: emit_BREQ(useRJMP ? 2 : 4); break;
-                        case OPCODE_BRLT: emit_BRGE(useRJMP ? 2 : 4); break;
-                        case OPCODE_BRGE: emit_BRLT(useRJMP ? 2 : 4); break;
+                        case OPCODE_BREQ: emit_BRNE(offset); break;
+                        case OPCODE_BRNE: emit_BREQ(offset); break;
+                        case OPCODE_BRLT: emit_BRGE(offset); break;
+                        case OPCODE_BRGE: emit_BRLT(offset); break;
                         default:
                             dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
                     }

@@ -242,16 +242,16 @@ void rtc_stackcache_init(rtc_translationstate *ts) {
         RTC_STACKCACHE_UPDATE_AGE(i);
     }
 
-    // These are the registers we may use
-    uint8_t registers_we_can_use[RTC_NUMBER_OF_USABLE_REGS_PAIRS] = {
-            R4, R6, R8, R10, R12, R14, R16, // Call saved
-            R18, R20, R22, R24 // Call used
-    };
+    // // These are the registers we may use
+    // uint8_t registers_we_can_use[RTC_NUMBER_OF_USABLE_REGS_PAIRS] = {
+    //         R4, R6, R8, R10, R12, R14, R16, // Call saved
+    //         R18, R20, R22, R24 // Call used
+    // };
 
     // Depending on the defined number of actual registers to use, mark those AVAILABLE
     for (uint8_t i=0; i<RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE; i++) {
-        uint8_t reg = registers_we_can_use[i];
-        RTC_STACKCACHE_MARK_AVAILABLE(REG_TO_ARRAY_INDEX(reg));
+        // uint8_t reg = registers_we_can_use[i];
+        RTC_STACKCACHE_MARK_AVAILABLE(REG_TO_ARRAY_INDEX(R4+2*i));
     }
 }
 
@@ -917,20 +917,6 @@ void rtc_markloop_handle_skipping_instruction_for_pinned_valuetag(uint8_t pinned
             jvm_operand_signed_word = (int16_t)(((uint16_t)jvm_operand_byte1 << 8) + jvm_operand_byte2);
         }
 
-        uint8_t c0, c1, c2;
-        if (jvm_operand_signed_word > 0) {
-            // Positive operand
-            c0 = -(jvm_operand_signed_word & 0xFF);
-            c1 = -((jvm_operand_signed_word >> 8) & 0xFF)-1;
-            c2 = -1;
-        } else {
-            // Negative operand
-            c0 = (-jvm_operand_signed_word) & 0xFF;
-            c1 = ((-jvm_operand_signed_word) >> 8) & 0xFF;
-            c2 = 0;
-        }
-
-
         if (jvm_operand_signed_word == 1) {
             emit_INC(pinned_idx_reg);
             emit_BRNE(2);
@@ -942,6 +928,19 @@ void rtc_markloop_handle_skipping_instruction_for_pinned_valuetag(uint8_t pinned
                 emit_INC(pinned_idx_h_reg+1);
             }
         } else {
+            uint8_t c0, c1, c2;
+            if (jvm_operand_signed_word > 0) {
+                // Positive operand
+                c0 = -(jvm_operand_signed_word & 0xFF);
+                c1 = -((jvm_operand_signed_word >> 8) & 0xFF)-1;
+                c2 = -1;
+            } else {
+                // Negative operand
+                c0 = (-jvm_operand_signed_word) & 0xFF;
+                c1 = ((-jvm_operand_signed_word) >> 8) & 0xFF;
+                c2 = 0;
+            }
+
             emit_MOVW(RZL, pinned_idx_reg);
             emit_SUBI(RZL, c0);
             emit_SBCI(RZH, c1);

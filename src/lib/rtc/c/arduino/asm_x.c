@@ -47,22 +47,9 @@ void emit_x_POP_REF(uint8_t base) {
 // Call saved: r1, r2-r17, r28:r29 (Y)
 void emit_x_prologue() {
     // prologue (is this the right way?)
-    emit_PUSH(R2);
-    emit_PUSH(R3);
-    emit_PUSH(R4);
-    emit_PUSH(R5);
-    emit_PUSH(R6);
-    emit_PUSH(R7);
-    emit_PUSH(R8);
-    emit_PUSH(R9);
-    emit_PUSH(R10);
-    emit_PUSH(R11);
-    emit_PUSH(R12);
-    emit_PUSH(R13);
-    emit_PUSH(R14);
-    emit_PUSH(R15);
-    emit_PUSH(R16);
-    emit_PUSH(R17);
+    for (int8_t i=0; i<=17-2; i++) { // PUSH R2-R17
+        emit_PUSH(R2+i);
+    }
     emit_PUSH(R28);
     emit_PUSH(R29); // Push Y
     emit_MOVW(R28, R24); // Pointer to locals in Y
@@ -74,22 +61,8 @@ void emit_x_epilogue() {
     // epilogue (is this the right way?)
     emit_POP(R29); // Pop Y
     emit_POP(R28);
-    emit_POP(R17);
-    emit_POP(R16);
-    emit_POP(R15);
-    emit_POP(R14);
-    emit_POP(R13);
-    emit_POP(R12);
-    emit_POP(R11);
-    emit_POP(R10);
-    emit_POP(R9);
-    emit_POP(R8);
-    emit_POP(R7);
-    emit_POP(R6);
-    emit_POP(R5);
-    emit_POP(R4);
-    emit_POP(R3);
-    emit_POP(R2);
-
+    for (int8_t i=17-2; i>=0; i--) { // POP R17-R2
+        emit_POP(R2+i);
+    }
     emit_RET();
 }
