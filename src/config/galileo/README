@@ -1,8 +1,8 @@
-Use "sudo ./install_service" to install the compiled VM as a linux server.
-It will be installed to /usr/local/darjeeling, and a service script will be created in /etc/init.d/darjeeling.sh.
+# Use "sudo ./install_service" to install the compiled VM as a linux server.
+# It will be installed to /usr/local/darjeeling, and a service script will be created in /etc/init.d/darjeeling.sh.
 
 
-To install mraa library on a 32-bit platform
+# To install mraa library on a 32-bit platform
 sudo apt-get install cmake
 git clone https://github.com/intel-iot-devkit/mraa.git
 cd mraa
@@ -13,7 +13,7 @@ make
 sudo make install
 
 
-In order to compile darjeeling for 32-bit Galileo or Edison on a 64-bit platform
+# In order to compile darjeeling for 32-bit Galileo or Edison on a 64-bit platform
 sudo apt-get install g++-4.8-multilib g++-multilib gcc-4.8-multilib gcc-multilib lib32gcc-4.8-dev cmake
 git clone https://github.com/intel-iot-devkit/mraa.git
 cd mraa
@@ -21,11 +21,24 @@ mkdir build
 cd build
 export CFLAGS=-m32
 export CXXFLAGS=-m32
-cmake .. -DBUILDSWIGNODE=OFF -DBUILDSWIGPYTHON=OFF -DBUILDARCH=i386
+cmake .. -DBUILDSWIGNODE=OFF -DBUILDSWIGPYTHON=OFF -DBUILDARCH=i386 
 make
 sudo make install
 
 
-To remove mraa library:
+# To remove mraa library:
 cd mraa
 sudo xargs rm < install_manifest.txt
+
+
+# To install openssl
+sudo apt-get install libssl-dev
+sudo apt-get install libssl1.0.0:i386
+cd ~
+# Go to http://packages.ubuntu.com/trusty/i386/libssl-dev/download
+# Download the latest libssl-dev_X.X.XX-1ubuntuX.XX_i386.deb via "security.ubuntu.com/ubuntu"
+dpkg -x libssl-dev_X.X.XX-1ubuntuX.XX_i386.deb libssl-dev
+cd /usr/lib/i386-linux-gnu/
+sudo cp ~/libssl-dev/usr/lib/i386-linux-gnu/* .
+cd ../../include/
+sudo cp -r ~/libssl-dev/usr/include/i386-linux-gnu .

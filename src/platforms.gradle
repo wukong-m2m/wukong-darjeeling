@@ -22,7 +22,26 @@ switch (djConfig.getAllPlatforms().last()) {
             linker.args "-m64"
         }
     break
-    case 'posix.galileo':
+    case 'posix.mraa.raspberrypi':
+        ext.djArchitecture='arm'
+        binaries.all {
+            cCompiler.args "-mcpu=cortex-a7"
+            cCompiler.args "-mfpu=neon-vfpv4"
+            cCompiler.args "-mfloat-abi=hard"
+            cCompiler.args "-I/usr/include/arm-linux-gnueabihf/"
+            cCompiler.args "-I/usr/lib/arm-linux-gnueabihf/mraa/include/"
+            linker.args "-mcpu=cortex-a7"
+            linker.args "-mfpu=neon-vfpv4"
+            linker.args "-mfloat-abi=hard"
+            linker.args "-L/usr/lib/arm-linux-gnueabihf/mraa/lib/arm-linux-gnueabihf/"
+            linker.args "-L/usr/lib/arm-linux-gnueabihf/"
+            linker.args "-Wl,-lmraa,-lcrypto,-lssl,-lm"
+        }
+        /* To know the arm-linux-gnueabihf-gcc's default include path
+            $ echo | arm-linux-gnueabihf-gcc -v -x c -E -
+        */
+    break
+    case 'posix.mraa.galileo':
         ext.djArchitecture='native'
         binaries.all {
             cCompiler.args "-march=i386"
@@ -30,9 +49,6 @@ switch (djConfig.getAllPlatforms().last()) {
             linker.args "-m32"
             linker.args "-Wl,-lmraa,-lcrypto,-lssl"
         }
-    break
-    case 'posix.yun':
-        ext.djArchitecture='mips'
     break
     case ~/^posix.*/:
         ext.djArchitecture='native'

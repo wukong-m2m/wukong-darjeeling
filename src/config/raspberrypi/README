@@ -1,0 +1,51 @@
+# In order to compile darjeeling for Raspberry Pi 2 B+ on an Ubuntu platform
+sudo apt-get install cmake
+git clone https://github.com/intel-iot-devkit/mraa.git
+cd mraa
+mkdir build
+cd build
+
+git clone https://github.com/raspberrypi/tools
+# Add "tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian" or "tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin" to your $PATH like "~/.bashrc"
+# echo "PATH=~/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin:$PATH" >> ~/.bashrc
+# source ~/.bashrc
+
+export CFLAGS="-mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard"
+export CXXFLAGS=$CFLAGS
+CC=arm-linux-gnueabihf-gcc CXX=arm-linux-gnueabihf-g++ cmake .. -DBUILDSWIGNODE=OFF -DBUILDSWIGPYTHON=OFF -DBUILDARCH=arm -DCMAKE_INSTALL_PREFIX:PATH=/usr/lib/arm-linux-gnueabihf/mraa
+CC=arm-linux-gnueabihf-gcc CXX=arm-linux-gnueabihf-g++ make
+sudo make install
+
+
+# To remove mraa library:
+cd mraa
+sudo xargs rm < install_manifest.txt
+
+
+# To install openssl
+cd ~
+
+# Go to https://launchpad.net/ubuntu/trusty/armhf/libssl-dev/
+# Get the latest libssl-dev_X.X.XX-XubuntuX.XX_armhf.deb 
+
+dpkg -x libssl-dev_X.X.XX-XubuntuX.XX_armhf.deb  libssl-dev
+cd ~/libssl-dev
+sudo cp -r usr/lib/arm-linux-gnueabihf /usr/lib/
+sudo cp -r usr/include/arm-linux-gnueabihf /usr/include/
+sudo cp -r usr/include/openssl /usr/include/arm-linux-gnueabihf
+
+# Go to https://launchpad.net/ubuntu/trusty/armhf/libssl1.0.0/
+# Get the latest libsslX.X.X_X.X.XX-XubuntuX.XX_armhf.deb 
+
+dpkg -x libsslX.X.X_X.X.XX-XubuntuX.XX_armhf.deb  libssl
+cd ~/libssl
+sudo cp -r usr/lib/arm-linux-gnueabihf /usr/lib/
+sudo cp -r lib/arm-linux-gnueabihf /lib/
+
+
+# Relevant parameters
+## For gcc 4.6 (the default compiler on rasbian)
+-march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=hard
+
+## For a Pi 1 (B+)
+-mcpu=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard

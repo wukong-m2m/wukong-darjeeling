@@ -1,3 +1,5 @@
+#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
+
 #include "debug.h"
 #include "native_wuclasses.h"
 #include <stdio.h>
@@ -54,9 +56,6 @@ void wuclass_buzzer_setup(wuobject_t *wuobject) {
     system("echo high > /sys/class/gpio/gpio214/direction");
     system("echo 1 > /sys/class/pwm/pwmchip0/pwm2/enable");
     #endif
-    #ifdef MRAA_LIBRARY
-    pwm = mraa_pwm_init(6);
-    #endif
 }
 
 void wuclass_buzzer_update(wuobject_t *wuobject) {
@@ -106,17 +105,6 @@ void wuclass_buzzer_update(wuobject_t *wuobject) {
       DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Buzzer): off\n");
     }
     #endif
-    #ifdef MRAA_LIBRARY
-    int32_t usecPeriod = nsecPeriod * 1000;
-    mraa_pwm_period_us(pwm, usecPeriod);
-    float dutyCycleValue = dutyCycle / 100.0;
-    mraa_pwm_write(pwm, dutyCycleValue);
-    if(onOff){
-      mraa_pwm_enable(pwm, 1);
-      DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Buzzer): on\n");
-    }else{
-      mraa_pwm_enable(pwm, 0);
-      DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Buzzer): off\n");
-    }
-    #endif
 }
+
+#endif

@@ -1,13 +1,8 @@
 <WuKong>
-    <!-- List sensor and actuator for individual Intel Edison Board-->
-    <!--  Node 2  -->
-    <!--WuClass name="Grove_LCD" appCanCreateInstances="false">
+    <WuClass name="Button" appCanCreateInstances="false">
     	<CreateInstance />
-    </WuClass-->
-    <!--  Node 3  -->
-    <!--WuClass name="Slider" appCanCreateInstances="false">
-    	<CreateInstance />
-    </WuClass-->
+    </WuClass>
+</WuKong>
 
 
 
@@ -114,4 +109,3 @@
     <!--<WuClass name="Cabinet" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>-->
-</WuKong>

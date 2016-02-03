@@ -1,15 +1,3 @@
-// sudo apt-get install libssl-dev
-// sudo apt-get install libssl1.0.0:i386
-// cd ~/Downloads
-// wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl-dev_1.0.1f-1ubuntu2.15_i386.deb
-// Extract the deb files
-// cd /usr/lib/i386-linux-gnu/
-// sudo cp ~/Downloads/libssl-dev_1.0.1f-1ubuntu2.15_i386/usr/lib/i386-linux-gnu/* .
-// cd ../../include/
-// sudo cp -r ~/Downloads/libssl-dev_1.0.1f-1ubuntu2.15_i386/usr/include/i386-linux-gnu .
-
-
-// Make sure that gcc with -lcrypto -lssl -m32
 #include "smartthings_utils.h"
 
 // Simple structure to keep track of the handle, and
