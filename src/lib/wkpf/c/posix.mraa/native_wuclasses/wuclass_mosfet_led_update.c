@@ -1,12 +1,12 @@
+#include "config.h"
+#ifdef MRAA_LIBRARY
+
 #include "debug.h"
 #include "native_wuclasses.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include "config.h"
-
-#ifdef MRAA_LIBRARY
 #include "MOSFET_cjq4435.h"
 
 void wuclass_mosfet_led_setup(wuobject_t *wuobject) {

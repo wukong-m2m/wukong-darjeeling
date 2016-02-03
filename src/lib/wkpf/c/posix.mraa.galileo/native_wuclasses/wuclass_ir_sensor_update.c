@@ -1,3 +1,5 @@
+#include "config.h"
+#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
 #include "debug.h"
 #include "native_wuclasses.h"
 #include <stdio.h>
@@ -11,8 +13,6 @@
 #include <sys/resource.h>
 #include <sys/syscall.h>
 #include <math.h>
-#include "config.h"
-#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
 
 void wuclass_ir_sensor_setup(wuobject_t *wuobject) {
 	system("echo -n 37 > /sys/class/gpio/unexport");

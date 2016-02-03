@@ -1,3 +1,6 @@
+#include "config.h"
+#ifdef MRAA_LIBRARY
+
 #include "debug.h"
 #include "native_wuclasses.h"
 #include <stdio.h>
@@ -11,9 +14,6 @@
 #include <sys/resource.h>
 #include <sys/syscall.h>
 #include <math.h>
-#include "config.h"
-
-#ifdef MRAA_LIBRARY
 #include <mraa.h>
 
 mraa_uart_context user_uart;

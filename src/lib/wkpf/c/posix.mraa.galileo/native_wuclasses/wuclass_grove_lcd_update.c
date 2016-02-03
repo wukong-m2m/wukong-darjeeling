@@ -1,9 +1,9 @@
+#include "config.h"
+#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
 #include <stdint.h>
 #include <stdio.h>
 #include "native_wuclasses.h"
 #include "../../posix.mraa/native_wuclasses/LCD_RGB_Suli.h"
-#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
-#include "config.h"
 
 void wuclass_grove_lcd_setup(wuobject_t *wuobject) {
     #ifdef INTEL_GALILEO_GEN1

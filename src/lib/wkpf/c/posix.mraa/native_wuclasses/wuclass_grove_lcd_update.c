@@ -1,9 +1,9 @@
+#include "config.h"
+#ifdef MRAA_LIBRARY
+
 #include <stdint.h>
 #include <stdio.h>
 #include "native_wuclasses.h"
-#include "config.h"
-
-#ifdef MRAA_LIBRARY
 #include "LCD_RGB_Suli.h"
 
 void wuclass_grove_lcd_setup(wuobject_t *wuobject) {

@@ -15,11 +15,12 @@ switch (djConfig.getAllPlatforms().last()) {
         ext.djMcu='atmega128'
         ext.djReprogramFlashPageAddress='0x1F800'
     break
-    case 'posix':
+    case 'posix.pc':
         ext.djArchitecture='native'
         binaries.all {
             cCompiler.args "-m64"
             linker.args "-m64"
+            linker.args "-Wl,-lcrypto,-lssl"
         }
     break
     case 'posix.mraa.raspberrypi':
@@ -35,7 +36,6 @@ switch (djConfig.getAllPlatforms().last()) {
             linker.args "-mfloat-abi=hard"
             linker.args "-L/usr/local/lib/arm-linux-gnueabihf/"
             linker.args "-L/usr/lib/arm-linux-gnueabihf/"
-
             linker.args "-Wl,-lmraa,-lcrypto,-lssl,-lm"
         }
         /* To know the arm-linux-gnueabihf-gcc's default include path

@@ -1,11 +1,11 @@
+#include "config.h"
+#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
+
 #include "debug.h"
 #include "native_wuclasses.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "config.h"
-
-#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
 #include "IO_utils.h"
 void wuclass_touch_sensor_setup(wuobject_t *wuobject) {
     #ifdef INTEL_GALILEO_GEN1

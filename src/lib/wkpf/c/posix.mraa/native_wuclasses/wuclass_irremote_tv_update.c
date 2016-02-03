@@ -1,11 +1,11 @@
+#include "config.h"
+#ifdef MRAA_LIBRARY
+
 #include "debug.h"
 #include "native_wuclasses.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "config.h"
-
-#ifdef MRAA_LIBRARY
 #include <mraa.h>
 
 mraa_gpio_context tv_onoff_in_gpio;  //pin 3

@@ -1,3 +1,6 @@
+#include "config.h"
+#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
+
 #include "debug.h"
 #include "native_wuclasses.h"
 #include <stdio.h>
@@ -13,8 +16,6 @@
 #include "fast_gpio_sc.h"
 #include <time.h>
 //#include "./arduino/wiring_digital.h"
-#include "config.h"
-#if defined(INTEL_GALILEO_GEN1) || defined(INTEL_GALILEO_GEN2) || defined(INTEL_EDISON)
 
 float pulseIn()
 {

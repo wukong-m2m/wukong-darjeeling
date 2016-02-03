@@ -1,12 +1,12 @@
+#include "config.h"
+#ifdef MRAA_LIBRARY
+
 #include "debug.h"
 #include "native_wuclasses.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "config.h"
 #include "GENERATEDwuclass_grove_mp3.h"
-
-#ifdef MRAA_LIBRARY
 #include "MP3_wt5001.h"
 
 void wuclass_grove_mp3_setup(wuobject_t *wuobject) {

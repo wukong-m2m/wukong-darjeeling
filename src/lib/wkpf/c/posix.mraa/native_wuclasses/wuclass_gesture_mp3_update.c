@@ -1,12 +1,12 @@
+#include "config.h"
+#ifdef MRAA_LIBRARY
+
 #include "debug.h"
 #include "native_wuclasses.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include "config.h"
-
-#ifdef MRAA_LIBRARY
 #include "MP3_wt5001.h"
 
 #define NONE        0
