@@ -69,7 +69,7 @@ void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_point
     //                          until we've passed all branchtargets
         while (next_branch_target_idx < branch_target_count) {
     //         if current address == next BT 1 address then
-            if (avr_pc == RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_1(next_branch_target_idx)) {
+            while (avr_pc == RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_1(next_branch_target_idx)) { // we need a while loop here in case there are multiple BRTARGETs with the same address. (ex: BRTARGET, MARKLOOP_END, BRTARGET, when we don't use the MARKLOOP information)
 
     //             if next BT 2 address != current address - savings then
                 if ((avr_pc - savings) != RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_2(next_branch_target_idx)) {
@@ -117,14 +117,14 @@ void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_point
         wkreprog_close();
     } while (!terminate);
 
-    // avroraPrintStr("-------BEFORE NOP OPT:");
-    // for (uint16_t i = 0; i<branch_target_count; i++) {
-    //     avroraPrintHex32(RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_1(i));
-    // }
-    // avroraPrintStr("-------AFTER NOP OPT:");
-    // for (uint16_t i = 0; i<branch_target_count; i++) {
-    //     avroraPrintHex32(RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_2(i));
-    // }
+    avroraPrintStr("-------BEFORE NOP OPT:");
+    for (uint16_t i = 0; i<branch_target_count; i++) {
+        avroraPrintHex32(RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_1(i));
+    }
+    avroraPrintStr("-------AFTER NOP OPT:");
+    for (uint16_t i = 0; i<branch_target_count; i++) {
+        avroraPrintHex32(RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_2(i));
+    }
 
 
     // Scan for branch tags, and replace them with the proper instructions.
