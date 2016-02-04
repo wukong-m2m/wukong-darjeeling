@@ -20,7 +20,7 @@ print "***************************************************\n"
 print "\n\n========================\nMaster DB info:\n========================"
 print "\n1.Gateway DB"
 
-db = MPTN.DBDict(os.path.join(os.path.abspath(wkpf), "master_gateway_info.sqlite"))
+db = MPTN.DBDict(os.path.join(os.path.abspath(master), "master_gateway_info.sqlite"))
 if len(db) == 0: print "None"
 else:
     # Gateway(id=167772166, tcp_address=('127.0.0.1', 9001), if_address=167772166, if_address_len=4, prefix=167772160, prefix_len=24,
@@ -33,10 +33,11 @@ else:
         is_id_gateway = True
 
 print "\n2.Node DB"
-db = MPTN.DBDict(os.path.join(os.path.abspath(wkpf), "master_node_info.sqlite"))
+db = MPTN.DBDict(os.path.join(os.path.abspath(master), "master_node_info.sqlite"))
 if len(db) == 0: print "None"
 else:
-    del db[to_del_node_id]
+    if to_del_node_id in db:
+        del db[to_del_node_id]
     to_be_deleted = []
     for (node_id, node) in db.iteritems():
         print "Node ID:", MPTN.ID_TO_STRING(int(node_id)), "IF_ADDR:", MPTN.ID_TO_STRING(node.if_address), "IS_GATEWAY:", node.is_gateway, "GATEWAY ID:", MPTN.ID_TO_STRING(node.gateway_id), "UUID:", map(ord, node.uuid)
@@ -76,11 +77,15 @@ db = MPTN.DBDict(os.path.join(os.path.abspath(gateway), "gtw_addr_uuid_table.sql
 if len(db) == 0: print "None"
 else:
     for (address, uuid) in db.iteritems():
-        print "Registered address and its UUID:", MPTN.ID_TO_STRING(int(address)), map(ord, uuid)
+        if int(address) == to_del_node_id:
+            del db[address]
+            break
+        else:
+            print "Registered address and its UUID:", MPTN.ID_TO_STRING(int(address)), map(ord, uuid)
 
 print "\n3.Settings DB"
 db = MPTN.DBDict(os.path.join(os.path.abspath(gateway), "gtw_settings_db.sqlite"))
-if len(db) == 0: print "None":
+if len(db) == 0: print "None"
 else:        
     for (key,value) in db.iteritems():
         print "The value of setting", key, "is", value
@@ -95,8 +100,8 @@ if CONFIG.TRANSPORT_INTERFACE_TYPE == 'udp':
         f.close()
         index = None
         for i, d in enumerate(devices):
-            # print d.host_id, d.ip, d.port
-            if d.host_id == to_del_node_id:
+            print d.host_id, d.ip, d.port
+            if d.host_id == (to_del_node_id & 0xff):
                 index = i
                 break
 
@@ -110,4 +115,4 @@ if CONFIG.TRANSPORT_INTERFACE_TYPE == 'udp':
         print e
 
 
-print "Done removeing %d\n\nPlease restart Master and/or Gateway..." % MPTN.ID_TO_STRING(node_id)
+print "Done removeing %s\n\nPlease restart Master and/or Gateway..." % MPTN.ID_TO_STRING(to_del_node_id)
