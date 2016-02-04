@@ -314,8 +314,11 @@ void routing_handle_message(wkcomm_address_t wkcomm_addr, uint8_t *payload, uint
         DEBUG_LOG(DBG_WKROUTING, "r_handle: FWD packet\n");
         if(msg_type == MPTN_MSGTYPE_FWDREQ)
         {
-            uint8_t buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+3]; // remove routing header from payload
+            uint8_t buffer[WKCOMM_MESSAGE_PAYLOAD_SIZE+3+1]; // remove routing header from payload
             length -= MPTN_PAYLOAD_BYTE_OFFSET;
+            if (length > WKCOMM_MESSAGE_PAYLOAD_SIZE+3){
+                length = WKCOMM_MESSAGE_PAYLOAD_SIZE+3;
+            }
             memcpy (buffer, payload+MPTN_PAYLOAD_BYTE_OFFSET, length);
             wkcomm_handle_message(src, buffer, length);    //send to application
         }
