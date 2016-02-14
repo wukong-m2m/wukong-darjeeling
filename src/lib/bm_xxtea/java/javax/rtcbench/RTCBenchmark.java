@@ -36,31 +36,33 @@ public class RTCBenchmark {
         short p, e;
         byte rounds;
         if (n > 1) {          /* Coding Part */
+            short n_minus_one = (short)(n-1);
             rounds = (byte)(6 + 52/n);
             sum = 0;
-            z = v[n-(short)1];
+            z = v[n_minus_one];
             do {
                 sum += DELTA;
                 e = (byte)((sum >>> 2) & 3);
-                for (p=0; p<n-1; p++) {
+                for (p=0; p<n_minus_one; p++) {
                     y = v[p+(short)1]; 
                     z = v[p] += (((z>>>5^y<<2) + (y>>>3^z<<4)) ^ ((sum^y) + (key[(p&(short)3)^e] ^ z)));
                 }
                 y = v[(short)0];
-                z = v[n-(short)1] += (((z>>>5^y<<2) + (y>>>3^z<<4)) ^ ((sum^y) + (key[(p&(short)3)^e] ^ z)));
+                z = v[n_minus_one] += (((z>>>5^y<<2) + (y>>>3^z<<4)) ^ ((sum^y) + (key[(p&(short)3)^e] ^ z)));
             } while (--rounds != 0);
         } else if (n < -1) {  /* Decoding Part */
             n = (byte)-n;
+            short n_minus_one = (short)(n-1);
             rounds = (byte)(6 + 52/n);
             sum = rounds*DELTA;
             y = v[(short)0];
             do {
                 e = (byte)((sum >>> 2) & 3);
-                for (p=(byte)(n-1); p>0; p--) {
+                for (p=(byte)n_minus_one; p>0; p--) {
                     z = v[p-(short)1];
                     y = v[p] -= (((z>>>5^y<<2) + (y>>>3^z<<4)) ^ ((sum^y) + (key[(p&(short)3)^e] ^ z)));
                 }
-                z = v[n-(short)1];
+                z = v[n_minus_one];
                 y = v[(short)0] -= (((z>>>5^y<<2) + (y>>>3^z<<4)) ^ ((sum^y) + (key[(p&(short)3)^e] ^ z)));
                 sum -= DELTA;
             } while (--rounds != 0);
