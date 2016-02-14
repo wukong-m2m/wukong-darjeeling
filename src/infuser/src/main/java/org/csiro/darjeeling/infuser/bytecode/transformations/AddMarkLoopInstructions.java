@@ -276,6 +276,19 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
             }
         }
 
+        InstructionHandle afterBranchHandle = null;
+        for (int i=0; i<instructions.size(); i++) {
+            if (instructions.get(i) == endBranchHandle) {
+                if (i+1 < instructions.size()) {
+                    afterBranchHandle = instructions.get(i+1);
+                } else {
+                    afterBranchHandle = endBranchHandle; // Not sure if this is ever needed, but the branch could be the last instruction in the method.
+                }
+                break;
+            }
+        }
+
+
         ArrayList<ValuetagCount> valuetagCountList = new ArrayList<ValuetagCount>();
         for (int valuetag : valuetagDict.keySet()) {
             int count = valuetagDict.get(valuetag);
@@ -283,7 +296,7 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
             if (isLiveAtInstruction(beginTargetHandle, valuetag)) {
                 flags += RTC_VALUETAG_NEEDS_LOAD;
             }
-            if (isLiveAtInstruction(beginTargetHandle, valuetag) && isModifiedInBlock(instructions, beginTargetHandle, endBranchHandle, valuetag)) {
+            if (isLiveAtInstruction(afterBranchHandle, valuetag) && isModifiedInBlock(instructions, beginTargetHandle, endBranchHandle, valuetag)) {
                 flags += RTC_VALUETAG_NEEDS_STORE;
             }
             // flags = RTC_VALUETAG_NEEDS_STORE + RTC_VALUETAG_NEEDS_LOAD;
