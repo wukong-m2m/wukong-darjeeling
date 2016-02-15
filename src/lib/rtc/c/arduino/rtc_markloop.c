@@ -255,6 +255,20 @@ void rtc_stackcache_init(rtc_translationstate *ts) {
     }
 }
 
+void rtc_stackcache_set_may_use_RZ() {
+    rtc_ts->may_use_RZ = true;
+}
+void rtc_stackcache_clear_may_use_RZ() {
+    rtc_ts->may_use_RZ = true;
+}
+bool rtc_stackcache_test_may_use_RZ() {
+    if (rtc_ts->may_use_RZ) {
+        rtc_ts->may_use_RZ = false;
+        return true;
+    }
+    return false;
+}
+
 void rtc_stackcache_next_instruction() {
     avroraRTCTraceStackCacheState(rtc_stackcache_state); // Store it here so we can see what's IN USE
     avroraRTCTraceStackCacheValuetags(rtc_stackcache_valuetags);
@@ -264,6 +278,7 @@ void rtc_stackcache_next_instruction() {
             RTC_STACKCACHE_MARK_AVAILABLE(idx);
         }
     }
+    rtc_stackcache_test_may_use_RZ(); // to clear the flag.
 }
 
 // VALUETAG functions
@@ -297,6 +312,32 @@ void rtc_poppedstackcache_clear_all_except_pinned_valuetags() {
             RTC_STACKCACHE_CLEAR_VALUETAG(idx);
         }
     }
+}
+
+void rtc_stackcache_mark_available_16bit(uint8_t* regs) {
+    uint8_t idx = REG_TO_ARRAY_INDEX(regs[0]);
+    if (!RTC_MARKLOOP_ISPINNED(idx) && regs[0] != RZ) {
+        RTC_STACKCACHE_MARK_AVAILABLE(idx);
+    }
+}
+void rtc_stackcache_mark_available_32bit(uint8_t* regs) {
+    uint8_t idx = REG_TO_ARRAY_INDEX(regs[0]);
+    if (!RTC_MARKLOOP_ISPINNED(idx) && regs[0] != RZ) {
+        RTC_STACKCACHE_MARK_AVAILABLE(idx);
+    }
+    idx = REG_TO_ARRAY_INDEX(regs[2]);
+    if (!RTC_MARKLOOP_ISPINNED(idx) && regs[2] != RZ) {
+        RTC_STACKCACHE_MARK_AVAILABLE(idx);
+    }
+}
+
+bool rtc_stackcache_stack_top_is_pinned() {
+    uint8_t depth = 0;
+    uint8_t idx;
+    do {
+        idx = rtc_get_stack_idx_at_depth(depth++);
+    } while (!RTC_STACKCACHE_IS_INT_STACK(idx));
+    return RTC_MARKLOOP_ISPINNED(idx);
 }
 
 // GETFREE
@@ -362,6 +403,11 @@ bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs) {
             return true;
         }
     }
+    if (rtc_stackcache_test_may_use_RZ()) {
+        regs[0] = RZL;
+        regs[1] = RZH;
+        return true;
+    }
     // No register available >= R16, get a free register using the normal way.
     rtc_stackcache_getfree_16bit(regs);
     // It's possible the previous function spilled a register that happens to
@@ -373,6 +419,12 @@ bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs) {
 //    if we're pushing from R24, copy it to a free register first (calls GETFREE internally)
 //    if the valuetag is set for the current instruction, record it
 void rtc_stackcache_push_pair(uint8_t reg_base, uint8_t which_stack, bool is_int_l) {
+    if (reg_base == RZ) {
+        uint8_t new_reg = rtc_stackcache_getfree_pair();
+        emit_MOVW(new_reg, reg_base);
+        reg_base = new_reg;
+    }
+
     uint8_t idx = REG_TO_ARRAY_INDEX(reg_base);
     if (RTC_STACKCACHE_IS_IN_USE(idx)
     || (RTC_STACKCACHE_IS_AVAILABLE(idx) && (RTC_STACKCACHE_GET_VALUETAG(idx) == rtc_ts->current_instruction_valuetag
@@ -460,7 +512,11 @@ void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack
             // For example, we may want to pop from the ref stack, while all regs are used to
             // cache int stack values. First spill from one stack, then restore from the other.
             if (target_idx == 0xFF) {
-                target_idx = rtc_stackcache_freeup_a_non_pinned_pair();
+                if (rtc_stackcache_test_may_use_RZ()) {
+                    target_idx = RZ;
+                } else {
+                    target_idx = rtc_stackcache_freeup_a_non_pinned_pair();
+                }
             }
 
             if (which_stack == RTC_STACKCACHE_INT_STACK_TYPE) {
@@ -509,7 +565,16 @@ void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack
                 // Move the value to a new register first.
                 // Example: LOAD 1, LOAD 2, SUB.
                 // The SUB will destroy the value loaded onto the stack by LOAD 1, which could be a pinned register.
-                uint8_t free_reg = rtc_stackcache_getfree_pair();
+                uint8_t free_reg;
+                if (rtc_stackcache_test_may_use_RZ()) {
+                    free_reg = rtc_stackcache_getfree_pair_but_only_if_we_wont_spill();
+                    if (free_reg == 0xFF) {
+                        free_reg = RZ;
+                    }
+                } else {
+                    free_reg = rtc_stackcache_getfree_pair();
+                }
+                // uint8_t free_reg = rtc_stackcache_getfree_pair();
                 emit_MOVW(free_reg, ARRAY_INDEX_TO_REG(target_idx));
                 target_idx = REG_TO_ARRAY_INDEX(free_reg);
             }

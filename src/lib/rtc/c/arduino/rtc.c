@@ -137,7 +137,8 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 #ifdef AOT_STRATEGY_POPPEDSTACKCACHE    
     rtc_stackcache_init(&ts);
 #endif
-#ifdef AOT_STRATEGY_MARKLOOP    
+#ifdef AOT_STRATEGY_MARKLOOP
+    ts.may_use_RZ = false;
     rtc_stackcache_init(&ts);
 #endif
 
