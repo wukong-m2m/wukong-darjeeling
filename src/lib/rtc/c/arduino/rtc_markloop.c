@@ -1143,7 +1143,7 @@ void rtc_markloop_emit_prologue() {
         i++;
 
         bool needs_load = ((valuetag & 0x0800) == 0x0800);
-        bool needs_store = ((valuetag & 0x0400) == 0x0400);
+        bool needs_store = ((valuetag & 0x0400) == 0x0400) || true;
         valuetag = valuetag & 0xF3FF;
 
         if (RTC_VALUETAG_IS_TYPE_LOCAL(valuetag)) {
