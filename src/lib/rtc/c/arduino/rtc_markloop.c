@@ -829,7 +829,7 @@ void rtc_stackcache_determine_valuetag_and_opcodetype(rtc_translationstate *ts) 
                 || next_opcode == JVM_SUSHR
                 || next_opcode == JVM_ISHL
                 || next_opcode == JVM_ISHR
-                || next_opcode == JVM_IUSHR) { // Somehow IUSHR has 16 bit operand but ISHR and ISHL have 32 bit.
+                || next_opcode == JVM_IUSHR) {
                 ts->do_CONST_SHIFT_optimisation = 1;
             }
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS_BY1
@@ -837,16 +837,16 @@ void rtc_stackcache_determine_valuetag_and_opcodetype(rtc_translationstate *ts) 
         case JVM_SCONST_3:
         case JVM_SCONST_4:
         case JVM_SCONST_5:
-#ifdef AOT_OPTIMISE_CONSTANT_SHIFTS_BY1_ALL
+#ifdef AOT_OPTIMISE_CONSTANT_SHIFTS_ALL
             if (next_opcode == JVM_SSHL
                 || next_opcode == JVM_SSHR
                 || next_opcode == JVM_SUSHR
                 || next_opcode == JVM_ISHL
                 || next_opcode == JVM_ISHR
-                || next_opcode == JVM_IUSHR) { // Somehow IUSHR has 16 bit operand but ISHR and ISHL have 32 bit.
-                ts->do_CONST_SHIFT_optimisation = opcode - JVM_SCONST_M1;
+                || next_opcode == JVM_IUSHR) {
+                ts->do_CONST_SHIFT_optimisation = opcode - JVM_SCONST_0;
             }
-#endif // AOT_OPTIMISE_CONSTANT_SHIFTS_BY1_ALL
+#endif // AOT_OPTIMISE_CONSTANT_SHIFTS_ALL
         case JVM_SCONST_0:
         case JVM_SCONST_M1:
             opcodetype = RTC_MARKLOOP_OPCODETYPE_CONST;
@@ -868,6 +868,22 @@ void rtc_stackcache_determine_valuetag_and_opcodetype(rtc_translationstate *ts) 
             opcodetype = RTC_MARKLOOP_OPCODETYPE_CONST;
             valuetag = RTC_VALUETAG_TYPE_CONSTANT + RTC_VALUETAG_DATATYPE_REF + 0;
         break;
+
+#ifdef AOT_OPTIMISE_CONSTANT_SHIFTS_ALL
+        case JVM_BSPUSH:
+            next_opcode = dj_di_getU8(ts->jvm_code_start + ts->pc + 2);
+            if (next_opcode == JVM_SSHL
+                || next_opcode == JVM_SSHR
+                || next_opcode == JVM_SUSHR
+                || next_opcode == JVM_ISHL
+                || next_opcode == JVM_ISHR
+                || next_opcode == JVM_IUSHR) {
+                ts->do_CONST_SHIFT_optimisation = jvm_operand_byte0;
+            }
+            opcodetype = RTC_MARKLOOP_OPCODETYPE_CONST;
+            valuetag = RTC_VALUETAG_TYPE_CONSTANT + RTC_VALUETAG_DATATYPE_INT + jvm_operand_byte0 + 1; // +1 because constants have a value tag of the constant value +1
+        break;
+#endif // AOT_OPTIMISE_CONSTANT_SHIFTS_ALL
 
         default:
             opcodetype = RTC_MARKLOOP_OPCODETYPE_UNKNOWN;
@@ -1053,9 +1069,9 @@ bool rtc_poppedstackcache_can_I_skip_this() {
     }
 
     if (instruction_type == RTC_MARKLOOP_OPCODETYPE_LOAD || instruction_type == RTC_MARKLOOP_OPCODETYPE_CONST) {
-        if (rtc_ts->do_CONST_SHIFT_optimisation) {
+        if (rtc_ts->do_CONST_SHIFT_optimisation != 0) {
             avroraRTCTraceStackCacheSkipInstruction(2);
-            return true; // Skip the CONST1 and let the next shift instruction shift by 1 bit.
+            return true; // Skip the CONST or BSPUSH and let the next shift instruction shift by 1 bit.
         }
 
         // Normal popped stack caching

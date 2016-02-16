@@ -753,34 +753,38 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         case JVM_SSHL:
         case JVM_SSHR:
         case JVM_SUSHR:
-            #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS_BY1
-                if (!(ts->do_CONST_SHIFT_optimisation)) {
+            #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS_BY1) || defined(AOT_OPTIMISE_CONSTANT_SHIFTS_ALL)
+                if (ts->do_CONST_SHIFT_optimisation == 0) {
                     rtc_stackcache_set_may_use_RZ();
                     rtc_stackcache_pop_destructive_16bit(operand_regs1);
                     rtc_stackcache_clear_may_use_RZ();
                 }
                 rtc_stackcache_pop_destructive_16bit(operand_regs2); // operand
-                if (!(ts->do_CONST_SHIFT_optimisation)) {
+                if (ts->do_CONST_SHIFT_optimisation == 0) {
                     emit_RJMP(4);
                 }
 
-                if (opcode == JVM_SSHL) {
-                    emit_LSL(operand_regs2[0]);
-                    emit_ROL(operand_regs2[1]);
-                } else if (opcode == JVM_SSHR) {
-                    emit_ASR(operand_regs2[1]);
-                    emit_ROR(operand_regs2[0]);
-                } else if (opcode == JVM_SUSHR) {
-                    emit_LSR(operand_regs2[1]);
-                    emit_ROR(operand_regs2[0]);
+                jvm_operand_byte0 = ts->do_CONST_SHIFT_optimisation > 0 ? ts->do_CONST_SHIFT_optimisation : 1;
+                while (jvm_operand_byte0-- > 0) {
+                    if (opcode == JVM_SSHL) {
+                        emit_LSL(operand_regs2[0]);
+                        emit_ROL(operand_regs2[1]);
+                    } else if (opcode == JVM_SSHR) {
+                        emit_ASR(operand_regs2[1]);
+                        emit_ROR(operand_regs2[0]);
+                    } else if (opcode == JVM_SUSHR) {
+                        emit_LSR(operand_regs2[1]);
+                        emit_ROR(operand_regs2[0]);
+                    }
                 }
-                if (!(ts->do_CONST_SHIFT_optimisation)) {
+
+                if (ts->do_CONST_SHIFT_optimisation == 0) {
                     emit_DEC(operand_regs1[0]);
                     emit_BRPL(-8);
                     rtc_stackcache_mark_available_16bit(operand_regs1);
                 } else {
                     // special case for shifting by 1 bit. -> optimise I/SCONST_1 followed by a shift, to a single shift.
-                    ts->do_CONST_SHIFT_optimisation = false;
+                    ts->do_CONST_SHIFT_optimisation = 0;
                 }
 
                 rtc_stackcache_push_16bit(operand_regs2);
@@ -893,34 +897,38 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         case JVM_ISHL:
         case JVM_ISHR:
         case JVM_IUSHR:
-            #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS_BY1
-                if (!(ts->do_CONST_SHIFT_optimisation)) {
+            #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS_BY1) || defined(AOT_OPTIMISE_CONSTANT_SHIFTS_ALL)
+                if (ts->do_CONST_SHIFT_optimisation == 0) {
                     rtc_stackcache_set_may_use_RZ();
                     rtc_stackcache_pop_destructive_16bit(operand_regs1);
                     rtc_stackcache_clear_may_use_RZ();
                 }
                 rtc_stackcache_pop_destructive_32bit(operand_regs2); // operand
-                if (!(ts->do_CONST_SHIFT_optimisation)) {
+                if (ts->do_CONST_SHIFT_optimisation == 0) {
                     emit_RJMP(8);
                 }
 
-                if (opcode == JVM_ISHL) {                
-                    emit_LSL(operand_regs2[0]);
-                    emit_ROL(operand_regs2[1]);
-                    emit_ROL(operand_regs2[2]);
-                    emit_ROL(operand_regs2[3]);
-                } else if (opcode == JVM_ISHR) {
-                    emit_ASR(operand_regs2[3]);
-                    emit_ROR(operand_regs2[2]);
-                    emit_ROR(operand_regs2[1]);
-                    emit_ROR(operand_regs2[0]);
-                } else if (opcode == JVM_IUSHR) {
-                    emit_LSR(operand_regs2[3]);
-                    emit_ROR(operand_regs2[2]);
-                    emit_ROR(operand_regs2[1]);
-                    emit_ROR(operand_regs2[0]);
-                }
-                if (!(ts->do_CONST_SHIFT_optimisation)) {
+                jvm_operand_byte0 = ts->do_CONST_SHIFT_optimisation > 0 ? ts->do_CONST_SHIFT_optimisation : 1;
+                do {
+                    if (opcode == JVM_ISHL) {                
+                        emit_LSL(operand_regs2[0]);
+                        emit_ROL(operand_regs2[1]);
+                        emit_ROL(operand_regs2[2]);
+                        emit_ROL(operand_regs2[3]);
+                    } else if (opcode == JVM_ISHR) {
+                        emit_ASR(operand_regs2[3]);
+                        emit_ROR(operand_regs2[2]);
+                        emit_ROR(operand_regs2[1]);
+                        emit_ROR(operand_regs2[0]);
+                    } else if (opcode == JVM_IUSHR) {
+                        emit_LSR(operand_regs2[3]);
+                        emit_ROR(operand_regs2[2]);
+                        emit_ROR(operand_regs2[1]);
+                        emit_ROR(operand_regs2[0]);
+                    }
+                } while (--jvm_operand_byte0 > 0);
+
+                if (ts->do_CONST_SHIFT_optimisation == 0) {
                     emit_DEC(operand_regs1[0]);
                     emit_BRPL(-12);
                     rtc_stackcache_mark_available_16bit(operand_regs1);
