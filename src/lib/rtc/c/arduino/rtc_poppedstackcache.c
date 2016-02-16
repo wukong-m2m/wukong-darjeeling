@@ -641,16 +641,16 @@ uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts, bool *instr
             return RTC_VALUETAG_TYPE_LOCAL + RTC_VALUETAG_DATATYPE_INT + opcode - JVM_ISTORE_0;
 
         case JVM_SCONST_1:
-#ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
+#ifdef AOT_OPTIMISE_CONSTANT_SHIFTS_BY1
             if (next_opcode == JVM_SSHL
                 || next_opcode == JVM_SSHR
                 || next_opcode == JVM_SUSHR
                 || next_opcode == JVM_ISHL
                 || next_opcode == JVM_ISHR
                 || next_opcode == JVM_IUSHR) { // Somehow IUSHR has 16 bit operand but ISHR and ISHL have 32 bit.
-                ts->do_CONST1_SHIFT_optimisation = true;
+                ts->do_CONST_SHIFT_optimisation = true;
             }
-#endif // AOT_OPTIMISE_CONSTANT_SHIFTS
+#endif // AOT_OPTIMISE_CONSTANT_SHIFTS_BY1
         case JVM_SCONST_M1:
         case JVM_SCONST_0:
         case JVM_SCONST_2:
@@ -697,7 +697,7 @@ bool rtc_poppedstackcache_can_I_skip_this() {
 
 
     if (instruction_produces_value_which_can_be_skipped) {
-        if (rtc_ts->do_CONST1_SHIFT_optimisation) {
+        if (rtc_ts->do_CONST_SHIFT_optimisation) {
             return true; // Skip the CONST1 and let the next shift instruction shift by 1 bit.
         }
 

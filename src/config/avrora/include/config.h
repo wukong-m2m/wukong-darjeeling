@@ -39,7 +39,8 @@
 #define ALIGN_16
 
 // #define ARRAYINDEX_32BIT
-#define AOT_OPTIMISE_CONSTANT_SHIFTS
+#define AOT_OPTIMISE_CONSTANT_SHIFTS_BY1
+// #define AOT_OPTIMISE_CONSTANT_SHIFTS_ALL
 
 /* Please see common/debug.h */
 // #define DARJEELING_DEBUG
