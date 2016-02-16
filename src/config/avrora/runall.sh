@@ -2,7 +2,7 @@
 alias gdj="gradle -b ../../build.gradle"
 
 # benchmarks=(sortX hsortX binsrchX)
-benchmarks=(bsort hsort fft xxtea rc5 md5 binsrch)
+benchmarks=(bsort16 hsort16 binsrch16 bsort32 hsort32 binsrch32 fft xxtea rc5 md5)
 
 gdj clean
 
