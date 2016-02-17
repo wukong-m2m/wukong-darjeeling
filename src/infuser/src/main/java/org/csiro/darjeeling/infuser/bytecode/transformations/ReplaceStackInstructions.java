@@ -60,6 +60,7 @@ public class ReplaceStackInstructions extends CodeBlockTransformation
 		for (InstructionHandle h : newHandles) {
 			h.setPreState(oldHandle.getPreState());
 			h.setPostState(oldHandle.getPostState());
+			h.getLiveVariables().merge(oldHandle.getLiveVariables());
 		}
 	}
 

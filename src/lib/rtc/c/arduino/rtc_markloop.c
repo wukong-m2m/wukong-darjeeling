@@ -943,10 +943,6 @@ void rtc_markloop_store_to_pinned_pair(uint8_t idx, uint8_t which_stack, bool is
     // Move the value to the pinned register
     emit_MOVW(ARRAY_INDEX_TO_REG(idx), operand_regs[0]);
 
-avroraPrintStr("sinterklaas");
-avroraPrintInt32(ARRAY_INDEX_TO_REG(idx));
-avroraPrintInt32(operand_regs[0]);
-avroraPrintHex32(is_int_l ? RTC_VALUETAG_TO_INT_L(valuetag) : valuetag);
     // And restore the valuetag for the pinned register
     RTC_STACKCACHE_SET_VALUETAG(idx, is_int_l ? RTC_VALUETAG_TO_INT_L(valuetag) : valuetag);
 }
@@ -1143,7 +1139,7 @@ void rtc_markloop_emit_prologue() {
         i++;
 
         bool needs_load = ((valuetag & 0x0800) == 0x0800);
-        bool needs_store = ((valuetag & 0x0400) == 0x0400) || true;
+        bool needs_store = ((valuetag & 0x0400) == 0x0400);
         valuetag = valuetag & 0xF3FF;
 
         if (RTC_VALUETAG_IS_TYPE_LOCAL(valuetag)) {
