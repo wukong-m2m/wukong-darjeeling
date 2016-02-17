@@ -765,7 +765,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 }
 
                 jvm_operand_byte0 = ts->do_CONST_SHIFT_optimisation > 0 ? ts->do_CONST_SHIFT_optimisation : 1;
-                while (jvm_operand_byte0-- > 0) {
+                while (jvm_operand_byte0 > 0) {
                     if (opcode == JVM_SSHL) {
                         emit_LSL(operand_regs2[0]);
                         emit_ROL(operand_regs2[1]);
@@ -776,6 +776,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                         emit_LSR(operand_regs2[1]);
                         emit_ROR(operand_regs2[0]);
                     }
+                    jvm_operand_byte0--;
                 }
 
                 if (ts->do_CONST_SHIFT_optimisation == 0) {
@@ -909,7 +910,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 }
 
                 jvm_operand_byte0 = ts->do_CONST_SHIFT_optimisation > 0 ? ts->do_CONST_SHIFT_optimisation : 1;
-                do {
+                while (jvm_operand_byte0 > 0) {
                     if (opcode == JVM_ISHL) {                
                         emit_LSL(operand_regs2[0]);
                         emit_ROL(operand_regs2[1]);
@@ -926,7 +927,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                         emit_ROR(operand_regs2[1]);
                         emit_ROR(operand_regs2[0]);
                     }
-                } while (--jvm_operand_byte0 > 0);
+                    jvm_operand_byte0--;
+                }
 
                 if (ts->do_CONST_SHIFT_optimisation == 0) {
                     emit_DEC(operand_regs1[0]);
@@ -934,7 +936,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                     rtc_stackcache_mark_available_16bit(operand_regs1);
                 } else  {
                     // special case for shifting by 1 bit. -> optimise I/SCONST_1 followed by a shift, to a single shift.
-                    ts->do_CONST_SHIFT_optimisation = false;
+                    ts->do_CONST_SHIFT_optimisation = 0;
                 }
 
                 rtc_stackcache_push_32bit(operand_regs2);
