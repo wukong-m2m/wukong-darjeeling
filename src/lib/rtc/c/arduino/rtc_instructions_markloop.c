@@ -765,6 +765,25 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 }
 
                 jvm_operand_byte0 = ts->do_CONST_SHIFT_optimisation > 0 ? ts->do_CONST_SHIFT_optimisation : 1;
+                #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS_ALL_GENERATE_MOVS)
+                while (jvm_operand_byte0 >= 8) {
+                    if (opcode == JVM_SSHL) {                
+                        emit_MOV(operand_regs2[1], operand_regs2[0]);
+                        emit_CLR(operand_regs2[0]);
+                    } else if (opcode == JVM_SSHR) {
+                        emit_CLR(RZL);
+                        emit_SBRC(operand_regs2[1], 7);
+                        emit_COM(RZL);
+                        emit_MOV(operand_regs2[0], operand_regs2[1]);
+                        emit_MOV(operand_regs2[1], RZL);
+                    } else if (opcode == JVM_SUSHR) {
+                        emit_MOV(operand_regs2[0], operand_regs2[1]);
+                        emit_CLR(operand_regs2[1]);
+                    }                    
+                    jvm_operand_byte0 -= 8;
+                }
+                #endif
+
                 while (jvm_operand_byte0 > 0) {
                     if (opcode == JVM_SSHL) {
                         emit_LSL(operand_regs2[0]);
@@ -910,6 +929,32 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
                 }
 
                 jvm_operand_byte0 = ts->do_CONST_SHIFT_optimisation > 0 ? ts->do_CONST_SHIFT_optimisation : 1;
+
+                #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS_ALL_GENERATE_MOVS)
+                while (jvm_operand_byte0 >= 8) {
+                    if (opcode == JVM_ISHL) {                
+                        emit_MOV(operand_regs2[3], operand_regs2[2]);
+                        emit_MOV(operand_regs2[2], operand_regs2[1]);
+                        emit_MOV(operand_regs2[1], operand_regs2[0]);
+                        emit_CLR(operand_regs2[0]);
+                    } else if (opcode == JVM_ISHR) {
+                        emit_CLR(RZL);
+                        emit_SBRC(operand_regs2[3], 7);
+                        emit_COM(RZL);
+                        emit_MOV(operand_regs2[0], operand_regs2[1]);
+                        emit_MOV(operand_regs2[1], operand_regs2[2]);
+                        emit_MOV(operand_regs2[2], operand_regs2[3]);
+                        emit_MOV(operand_regs2[3], RZL);
+                    } else if (opcode == JVM_IUSHR) {
+                        emit_MOV(operand_regs2[0], operand_regs2[1]);
+                        emit_MOV(operand_regs2[1], operand_regs2[2]);
+                        emit_MOV(operand_regs2[2], operand_regs2[3]);
+                        emit_CLR(operand_regs2[3]);
+                    }                    
+                    jvm_operand_byte0 -= 8;
+                }
+                #endif
+
                 while (jvm_operand_byte0 > 0) {
                     if (opcode == JVM_ISHL) {                
                         emit_LSL(operand_regs2[0]);

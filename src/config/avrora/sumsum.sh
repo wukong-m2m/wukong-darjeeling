@@ -11,8 +11,8 @@ summaries="$summaries "`ls results_markloop*/summary*`
 
 for summary in `echo $summaries`
 do
-    echo >> sumsum.txt
-    echo ${summary} >> sumsum.txt
+    splitfilename=("${(ws:/:)summary}")
+    echo ${splitfilename[1]} >> sumsum.txt
     head -n 1 ${summary} | tail -n 1 >> sumsum.txt
     if [ $# -eq 0 ]; then
         head -n 2 ${summary} | tail -n 1 >> sumsum.txt
