@@ -64,6 +64,9 @@ let COM                           = (0x9400, MASK_SINGLE_REG_OPERAND, "COM")
 // avr opcode CLI                   1001 0100 1111 1000
 let CLI                           = (0x94F8, MASK_NO_OPERANDS, "CLI")
 
+// avr opcode CLT                   1001 0100 1110 1000
+let CLT                           = (0x94E8, MASK_NO_OPERANDS, "CLT")
+
 // avr opcode CP                    0001 01rd dddd rrrr, with r,d=the registers to compare
 let CP                            = (0x1400, MASK_DOUBLE_REG_OPERAND, "CP")
 
@@ -275,7 +278,7 @@ let opcodeCategories =
      ("09) Bit shifts", [ ASR; ROR; LSR ]);
      ("10) Bit logic", [ AND; ANDI; EOR; OR; ORI ]);
      ("11) Subroutines", [ CALL; RCALL ]);
-     ("12) Others", [ BREAK; NOP; RET; COM; IJMP; IN; JMP; LDS; RJMP; STS; SET; SEI; CLI; OUT; IN; BLD; LPM; LPM_Z; LPM_ZINC ])] in
+     ("12) Others", [ BREAK; NOP; RET; COM; IJMP; IN; JMP; LDS; RJMP; STS; SET; SEI; CLI; CLT; OUT; IN; BLD; LPM; LPM_Z; LPM_ZINC ])] in
 let allOpcodes = opcodeCategories |> List.map snd |> List.concat
 let getOpcodeForInstruction inst text =
     match allOpcodes |> List.tryFind (fun opcode -> is opcode inst) with
