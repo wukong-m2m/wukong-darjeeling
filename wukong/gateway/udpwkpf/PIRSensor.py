@@ -32,7 +32,7 @@ if __name__ == "__main__":
             reactor.callLater(0.1, self.loop)
 
         def loop(self):
-            self.obj_pir_sensor.setProperty(0, self.m.current_value)
+            self.obj_pir_sensor.setProperty(0, self.obj_pir_sensor.cls.current_value)
             reactor.callLater(0.1, self.loop)
 
     if len(sys.argv) <= 2:
