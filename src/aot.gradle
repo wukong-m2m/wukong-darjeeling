@@ -41,10 +41,10 @@ tasks.whenTaskAdded { task ->
 
 
 if (!project.hasProperty('aotstrat')) {
-    project.ext.aotstrat = 'poppedstackcache'
+    project.ext.aotstrat = 'markloop'
 }
 if (!project.hasProperty('aotbm')) {
-    project.ext.aotbm = 'bsort'
+    project.ext.aotbm = 'bsort16'
 }
 if (!project.hasProperty('aotstackcachesize')) {
     project.ext.aotstackcachesize = '11'
