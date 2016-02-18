@@ -336,8 +336,8 @@ bool rtc_stackcache_stack_top_is_pinned() {
     uint8_t idx;
     do {
         idx = rtc_get_stack_idx_at_depth(depth++);
-    } while (!RTC_STACKCACHE_IS_INT_STACK(idx));
-    return RTC_MARKLOOP_ISPINNED(idx);
+    } while (idx != 0xFF && !RTC_STACKCACHE_IS_INT_STACK(idx));
+    return idx != 0xFF && RTC_MARKLOOP_ISPINNED(idx);
 }
 
 // GETFREE
