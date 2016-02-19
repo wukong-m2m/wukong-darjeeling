@@ -6,11 +6,17 @@ benchmarks=(bsort16 hsort16 binsrch16 bsort32 hsort32 binsrch32 fft xxtea rc5 md
 
 gdj clean
 
-# BASELINE (plus 16 bit array index)
+# BASELINE (plus 16 bit array index) different constant optimisation strategies
 for benchmark in ${benchmarks}
 do
-    gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=baseline -Paotconstshiftoptimisation=none
+    constshifts=(none by1 all_only_shift all_move_and_shift gcc_like)
+    for aotconstshiftoptimisation in ${constshifts}
+    do
+        gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=baseline -Paotconstshiftoptimisation=${aotconstshiftoptimisation}
+    done
 done
+
+## All others use default "gcc_like" constant shift optimisation
 
 # SIMPLE STACK CACHING
 for benchmark in ${benchmarks}
@@ -19,7 +25,7 @@ do
 	cachesizes=(5 11)
 	for aotstackcachesize in ${cachesizes}
 	do
-	    gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Paotstackcachesize=${aotstackcachesize} -Paotconstshiftoptimisation=none
+	    gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Paotstackcachesize=${aotstackcachesize}
 	done
 done
 
@@ -30,7 +36,7 @@ do
     cachesizes=(5 11)
     for aotstackcachesize in ${cachesizes}
     do
-        gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Paotstackcachesize=${aotstackcachesize} -Paotconstshiftoptimisation=none
+        gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Paotstackcachesize=${aotstackcachesize}
     done
 done
 
@@ -44,17 +50,6 @@ do
         gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=markloop -Paotstackcachesize=11 -Paotmarkloopregs=${aotmarkloopregs}
     done
 done
-
-# POPPED STACK CACHING + MARKLOOP: different constant optimisation strategies
-for benchmark in ${benchmarks}
-do
-    constshifts=(none by1 all_only_shift all_move_and_shift)
-    for aotconstshiftoptimisation in ${constshifts}
-    do
-        gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=markloop -Paotstackcachesize=11 -Paotmarkloopregs=7 -Paotconstshiftoptimisation=${aotconstshiftoptimisation}
-    done
-done
-
 
 for resultsdir in `ls | grep results_`
 do

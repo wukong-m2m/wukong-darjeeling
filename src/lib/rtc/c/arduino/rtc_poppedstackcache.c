@@ -584,7 +584,7 @@ void rtc_stackcache_flush_all_regs() {
 uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts, bool *instruction_produces_value_which_can_be_skipped) {
     uint8_t opcode = dj_di_getU8(ts->jvm_code_start + ts->pc);
     uint8_t jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ts->pc + 1);
-    #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS_BY1
+    #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
     uint8_t next_opcode = jvm_operand_byte0;
     #endif
 
@@ -649,16 +649,26 @@ uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts, bool *instr
                 || next_opcode == JVM_SUSHR
                 || next_opcode == JVM_ISHL
                 || next_opcode == JVM_ISHR
-                || next_opcode == JVM_IUSHR) { // Somehow IUSHR has 16 bit operand but ISHR and ISHL have 32 bit.
-                ts->do_CONST_SHIFT_optimisation = true;
+                || next_opcode == JVM_IUSHR) {
+                ts->do_CONST_SHIFT_optimisation = 1;
             }
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS_BY1
-        case JVM_SCONST_M1:
-        case JVM_SCONST_0:
         case JVM_SCONST_2:
         case JVM_SCONST_3:
         case JVM_SCONST_4:
         case JVM_SCONST_5:
+#if defined(AOT_OPTIMISE_CONSTANT_SHIFTS) && !defined(AOT_OPTIMISE_CONSTANT_SHIFTS_BY1)
+            if (next_opcode == JVM_SSHL
+                || next_opcode == JVM_SSHR
+                || next_opcode == JVM_SUSHR
+                || next_opcode == JVM_ISHL
+                || next_opcode == JVM_ISHR
+                || next_opcode == JVM_IUSHR) {
+                ts->do_CONST_SHIFT_optimisation = opcode - JVM_SCONST_0;
+            }
+#endif 
+        case JVM_SCONST_0:
+        case JVM_SCONST_M1:
             *instruction_produces_value_which_can_be_skipped = true;
             return RTC_VALUETAG_TYPE_CONSTANT + RTC_VALUETAG_DATATYPE_SHORT + opcode - JVM_SCONST_M1;
 
@@ -675,6 +685,21 @@ uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts, bool *instr
         case JVM_ACONST_NULL:
             *instruction_produces_value_which_can_be_skipped = true;
             return RTC_VALUETAG_TYPE_CONSTANT + RTC_VALUETAG_DATATYPE_REF + 0;
+
+#if defined(AOT_OPTIMISE_CONSTANT_SHIFTS) && !defined(AOT_OPTIMISE_CONSTANT_SHIFTS_BY1)
+        case JVM_BSPUSH:
+            next_opcode = dj_di_getU8(ts->jvm_code_start + ts->pc + 2);
+            if (next_opcode == JVM_SSHL
+                || next_opcode == JVM_SSHR
+                || next_opcode == JVM_SUSHR
+                || next_opcode == JVM_ISHL
+                || next_opcode == JVM_ISHR
+                || next_opcode == JVM_IUSHR) {
+                ts->do_CONST_SHIFT_optimisation = jvm_operand_byte0;
+            }
+            *instruction_produces_value_which_can_be_skipped = true;
+            return RTC_VALUETAG_TYPE_CONSTANT + RTC_VALUETAG_DATATYPE_INT + jvm_operand_byte0 + 1; // +1 because constants have a value tag of the constant value +1
+#endif
 
         default:
             return RTC_VALUETAG_UNUSED;
