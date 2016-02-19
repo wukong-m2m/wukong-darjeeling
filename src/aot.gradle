@@ -82,15 +82,41 @@ binaries.all {
         cCompiler.args "-D AOT_OPTIMISE_CONSTANT_SHIFTS_GCC_LIKE"
 }
 
-if (project.ext.aotstrat == 'markloop') {
-    project.ext.aotTraceResultsDirName = "results_${project.ext.aotstrat}_size${project.ext.aotstackcachesize}_pinned${project.ext.aotmarkloopregs}"
-} else if (project.ext.aotstrat == 'poppedstackcache') {
-    project.ext.aotTraceResultsDirName = "results_${project.ext.aotstrat}_size${project.ext.aotstackcachesize}"
-} else if (project.ext.aotstrat == 'simplestackcache') {
-    project.ext.aotTraceResultsDirName = "results_${project.ext.aotstrat}_size${project.ext.aotstackcachesize}"
-} else {
-    project.ext.aotTraceResultsDirName = "results_${project.ext.aotstrat}"
+def getOutputDirName() {
+    def outdirSTRAT='?'
+    if (project.ext.aotstrat == 'baseline')
+        outdirSTRAT='0BASE'
+    if (project.ext.aotstrat == 'simplestackcache')
+        outdirSTRAT='1SMPL'
+    if (project.ext.aotstrat == 'poppedstackcache')
+        outdirSTRAT='2POPD'
+    if (project.ext.aotstrat == 'markloop')
+        outdirSTRAT='3MARK'
+
+    def outdirCONSTSHIFT='?'
+    if (project.ext.aotconstshiftoptimisation == 'none')
+        outdirCONSTSHIFT=0
+    if (project.ext.aotconstshiftoptimisation == 'by1')
+        outdirCONSTSHIFT=1
+    if (project.ext.aotconstshiftoptimisation == 'all_only_shift')
+        outdirCONSTSHIFT=2
+    if (project.ext.aotconstshiftoptimisation == 'all_move_and_shift')
+        outdirCONSTSHIFT=3
+    if (project.ext.aotconstshiftoptimisation == 'gcc_like')
+        outdirCONSTSHIFT=4
+
+    def outdirREGS=sprintf('%02d', project.ext.aotstackcachesize.toInteger())
+    def outdirPINNED=project.ext.aotmarkloopregs
+
+    if (project.ext.aotstrat == 'baseline') {
+        return "results_${outdirSTRAT}_R___P__CS${outdirCONSTSHIFT}"
+    } else if (project.ext.aotstrat == 'simplestackcache') {
+        return "results_${outdirSTRAT}_R${outdirREGS}_P__CS${outdirCONSTSHIFT}"
+    } else if (project.ext.aotstrat == 'poppedstackcache') {
+        return "results_${outdirSTRAT}_R${outdirREGS}_P__CS${outdirCONSTSHIFT}"
+    } else {
+        return "results_${outdirSTRAT}_R${outdirREGS}_P${outdirPINNED}_CS${outdirCONSTSHIFT}"
+    }
 }
-if (project.ext.aotconstshiftoptimisation != 'gcc_like') {
-    project.ext.aotTraceResultsDirName = project.ext.aotTraceResultsDirName + "_CONSTSHIFT_" + project.ext.aotconstshiftoptimisation
-}
+
+project.ext.aotTraceResultsDirName = getOutputDirName()

@@ -106,7 +106,7 @@ let summariseResults resultsDirectory =
     let resultsSummary = resultsSummaryAsTupleLists |> flipTupleListsToStringList
     let resultLines = resultsSummary |> List.map stringListToString
 
-    let csvFilename = resultsDirectory + "/summary" + (resultsDirectory.Replace("./results","")) + ".csv"
+    let csvFilename = resultsDirectory + "/summary" + (resultsDirectory.Replace("./results","").Replace("results","")) + ".csv"
     File.WriteAllText (csvFilename, String.Join("\r\n", resultLines))
     Console.Error.WriteLine ("Wrote output to " + csvFilename)
 

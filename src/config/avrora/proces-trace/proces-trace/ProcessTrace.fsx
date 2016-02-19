@@ -66,7 +66,9 @@ let rec matchOptUnopt (optimisedAvr : AvrInstruction list) (unoptimisedAvr : (Av
     let isNOP x = AVR.is AVR.NOP (x.opcode)
     let isJMP x = AVR.is AVR.JMP (x.opcode)
     let isRJMP x = AVR.is AVR.RJMP (x.opcode)
-    let isBRANCH x = AVR.is AVR.BREQ (x.opcode)|| AVR.is AVR.BRGE (x.opcode)|| AVR.is AVR.BRLT (x.opcode)|| AVR.is AVR.BRNE (x.opcode)
+    let isBRANCH x = AVR.is AVR.BREQ (x.opcode) || AVR.is AVR.BRGE (x.opcode) || AVR.is AVR.BRLT (x.opcode) || AVR.is AVR.BRNE (x.opcode)
+    let isBRANCH_BY_BYTES x y = isBRANCH x && ((((x.opcode) &&& (0x03F8)) >>> 2) = y) // avr opcode BRxx 0000 00kk kkkk k000, with k the offset in WORDS (thus only shift right by 2, not 3, to get the number of bytes)
+
     let isMOV_MOVW_PUSH_POP x = isMOV x || isMOVW x || isAOT_PUSH x || isAOT_POP x
     match optimisedAvr, unoptimisedAvr with
     // Identical instructions: match and consume both
@@ -92,13 +94,13 @@ let rec matchOptUnopt (optimisedAvr : AvrInstruction list) (unoptimisedAvr : (Av
             | optBR :: optJMPRJMP :: optNoJMPRJMP :: optTail when isBRANCH(optBR) && (isJMP(optJMPRJMP) || isRJMP(optJMPRJMP)) && not (isJMP(optNoJMPRJMP) || isRJMP(optNoJMPRJMP)) && isBREAK(fst(unoptTail |> List.head))
                 -> (Some optBR, unoptBranchtag, jvmBranchtag)
                     :: matchOptUnopt (optJMPRJMP :: optNoJMPRJMP :: optTail) unoptTail
-            // Long conditional jump
-            | optBR :: optJMP :: optTail when isBRANCH(optBR) && isJMP(optJMP)
+            // Long conditional jump (branch by 2 or 4 bytes to jump over the next RJMP or JMP)
+            | optBR :: optJMP :: optTail when ((isBRANCH_BY_BYTES optBR 2) || (isBRANCH_BY_BYTES optBR 4)) && isJMP(optJMP)
                 -> (Some optBR, unoptBranchtag, jvmBranchtag)
                     :: (Some optJMP, unoptBranchtag, jvmBranchtag)
                     :: matchOptUnopt optTail unoptTail
-            // Mid range conditional jump
-            | optBR :: optRJMP :: optTail when isBRANCH(optBR) && isRJMP(optRJMP)
+            // Mid range conditional jump (branch by 2 or 4 bytes to jump over the next RJMP or JMP)
+            | optBR :: optRJMP :: optTail when ((isBRANCH_BY_BYTES optBR 2) || (isBRANCH_BY_BYTES optBR 4)) && isRJMP(optRJMP)
                 -> (Some optBR, unoptBranchtag, jvmBranchtag)
                     :: (Some optRJMP, unoptBranchtag, jvmBranchtag)
                     :: matchOptUnopt optTail unoptTail

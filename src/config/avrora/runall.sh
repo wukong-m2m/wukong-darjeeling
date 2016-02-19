@@ -6,10 +6,10 @@ benchmarks=(bsort16 hsort16 binsrch16 bsort32 hsort32 binsrch32 fft xxtea rc5 md
 
 gdj clean
 
-# BASELINE (plus 16 bit array index, improved shift by 1 bit, improved INC)
+# BASELINE (plus 16 bit array index)
 for benchmark in ${benchmarks}
 do
-    gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=baseline
+    gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=baseline -Paotconstshiftoptimisation=none
 done
 
 # SIMPLE STACK CACHING
@@ -19,7 +19,7 @@ do
 	cachesizes=(5 11)
 	for aotstackcachesize in ${cachesizes}
 	do
-	    gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Paotstackcachesize=${aotstackcachesize}
+	    gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Paotstackcachesize=${aotstackcachesize} -Paotconstshiftoptimisation=none
 	done
 done
 
@@ -30,15 +30,15 @@ do
     cachesizes=(5 11)
     for aotstackcachesize in ${cachesizes}
     do
-        gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Paotstackcachesize=${aotstackcachesize}
+        gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Paotstackcachesize=${aotstackcachesize} -Paotconstshiftoptimisation=none
     done
 done
 
-# POPPED STACK CACHING + MARKLOOP
+# MARKLOOP
 for benchmark in ${benchmarks}
 do
-    # markloopregs=(1 2 3 4 5 6 7)
-    markloopregs=(7)
+    markloopregs=(1 2 3 4 5 6 7)
+    # markloopregs=(7)
     for aotmarkloopregs in ${markloopregs}
     do
         gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=markloop -Paotstackcachesize=11 -Paotmarkloopregs=${aotmarkloopregs}
@@ -48,11 +48,10 @@ done
 # POPPED STACK CACHING + MARKLOOP: different constant optimisation strategies
 for benchmark in ${benchmarks}
 do
-    # constshifts=(none by1 all_only_shift all_move_and_shift gcc_like)
-    constshifts=(gcc_like)
+    constshifts=(none by1 all_only_shift all_move_and_shift)
     for aotconstshiftoptimisation in ${constshifts}
     do
-        gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=markloop -Paotstackcachesize=11 -Paotmarkloopregs=5 -Paotconstshiftoptimisation=${aotconstshiftoptimisation}
+        gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=markloop -Paotstackcachesize=11 -Paotmarkloopregs=7 -Paotconstshiftoptimisation=${aotconstshiftoptimisation}
     done
 done
 

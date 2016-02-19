@@ -584,7 +584,9 @@ void rtc_stackcache_flush_all_regs() {
 uint16_t rtc_stackcache_determine_valuetag(rtc_translationstate *ts, bool *instruction_produces_value_which_can_be_skipped) {
     uint8_t opcode = dj_di_getU8(ts->jvm_code_start + ts->pc);
     uint8_t jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ts->pc + 1);
+    #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS_BY1
     uint8_t next_opcode = jvm_operand_byte0;
+    #endif
 
     switch (opcode) {
         case JVM_ALOAD:
@@ -697,9 +699,11 @@ bool rtc_poppedstackcache_can_I_skip_this() {
 
 
     if (instruction_produces_value_which_can_be_skipped) {
+        #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS
         if (rtc_ts->do_CONST_SHIFT_optimisation) {
             return true; // Skip the CONST1 and let the next shift instruction shift by 1 bit.
         }
+        #endif
 
         // Check if there is an available register that contains the value we need (because it was loaded and the popped earlier in this basic block)
         idx = rtc_poppedstackcache_find_available_valuetag(rtc_ts->current_instruction_valuetag);

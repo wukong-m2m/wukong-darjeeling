@@ -935,11 +935,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 
                 rtc_stackcache_push_32bit(operand_regs2);
             #else
-            if (opcode == JVM_IUSHR) {
-                rtc_stackcache_pop_destructive_16bit(operand_regs1);
-            } else { // JVM_ISHL or JVM_ISHR
-                rtc_stackcache_pop_destructive_32bit(operand_regs1);
-            }
+            rtc_stackcache_pop_destructive_16bit(operand_regs1);
             rtc_stackcache_pop_destructive_32bit(operand_regs2);
 
             emit_RJMP(8);
