@@ -52,6 +52,17 @@ if (!project.hasProperty('aotstackcachesize')) {
 if (!project.hasProperty('aotmarkloopregs')) {
     project.ext.aotmarkloopregs = '7'
 }
+if (!project.hasProperty('aotconstshiftoptimisation')) {
+    project.ext.aotconstshiftoptimisation = 'gcc_like'
+} else {
+    if (project.ext.aotconstshiftoptimisation != 'none'
+     && project.ext.aotconstshiftoptimisation != 'by1'
+     && project.ext.aotconstshiftoptimisation != 'all_only_shift'
+     && project.ext.aotconstshiftoptimisation != 'all_move_and_shift'
+     && project.ext.aotconstshiftoptimisation != 'gcc_like') {
+    throw new InvalidUserDataException("Invalid const/shift optimisation:" + project.ext.aotconstshiftoptimisation)        
+    }
+}
 
 if (project.ext.aotstackcachesize.toInteger() > 11) {
     throw new InvalidUserDataException("Max size for stack cache is 11 words")
@@ -61,6 +72,14 @@ binaries.all {
     cCompiler.args "-D AOT_STRATEGY_${project.ext.aotstrat.toUpperCase()}"
     cCompiler.args "-D RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE=${project.ext.aotstackcachesize}"
     cCompiler.args "-D RTC_MARKLOOP_MAX_NUMBER_OF_IDX_TO_PIN=${project.ext.aotmarkloopregs}"
+    if (project.ext.aotconstshiftoptimisation == 'by1')
+        cCompiler.args "-D AOT_OPTIMISE_CONSTANT_SHIFTS_BY1"
+    if (project.ext.aotconstshiftoptimisation == 'all_only_shift')
+        cCompiler.args "-D AOT_OPTIMISE_CONSTANT_SHIFTS_ALL_ONLY_SHIFT"
+    if (project.ext.aotconstshiftoptimisation == 'all_move_and_shift')
+        cCompiler.args "-D AOT_OPTIMISE_CONSTANT_SHIFTS_ALL_MOVE_AND_SHIFT"
+    if (project.ext.aotconstshiftoptimisation == 'gcc_like')
+        cCompiler.args "-D AOT_OPTIMISE_CONSTANT_SHIFTS_GCC_LIKE"
 }
 
 if (project.ext.aotstrat == 'markloop') {
@@ -71,4 +90,7 @@ if (project.ext.aotstrat == 'markloop') {
     project.ext.aotTraceResultsDirName = "results_${project.ext.aotstrat}_size${project.ext.aotstackcachesize}"
 } else {
     project.ext.aotTraceResultsDirName = "results_${project.ext.aotstrat}"
+}
+if (project.ext.aotconstshiftoptimisation != 'gcc_like') {
+    project.ext.aotTraceResultsDirName = project.ext.aotTraceResultsDirName + "_CONSTSHIFT_" + project.ext.aotconstshiftoptimisation
 }
