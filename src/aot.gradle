@@ -52,6 +52,9 @@ if (!project.hasProperty('aotstackcachesize')) {
 if (!project.hasProperty('aotmarkloopregs')) {
     project.ext.aotmarkloopregs = '7'
 }
+if (!project.hasProperty('aot32bitindex')) {
+    project.ext.aot32bitindex = 'false'
+}
 if (!project.hasProperty('aotconstshiftoptimisation')) {
     project.ext.aotconstshiftoptimisation = 'gcc_like'
 } else {
@@ -72,6 +75,7 @@ binaries.all {
     cCompiler.args "-D AOT_STRATEGY_${project.ext.aotstrat.toUpperCase()}"
     cCompiler.args "-D RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE=${project.ext.aotstackcachesize}"
     cCompiler.args "-D RTC_MARKLOOP_MAX_NUMBER_OF_IDX_TO_PIN=${project.ext.aotmarkloopregs}"
+
     if (project.ext.aotconstshiftoptimisation == 'by1')
         cCompiler.args "-D AOT_OPTIMISE_CONSTANT_SHIFTS_BY1"
     if (project.ext.aotconstshiftoptimisation == 'all_only_shift')
@@ -80,6 +84,9 @@ binaries.all {
         cCompiler.args "-D AOT_OPTIMISE_CONSTANT_SHIFTS_ALL_MOVE_AND_SHIFT"
     if (project.ext.aotconstshiftoptimisation == 'gcc_like')
         cCompiler.args "-D AOT_OPTIMISE_CONSTANT_SHIFTS_GCC_LIKE"
+
+    if (project.ext.aot32bitindex == 'true')
+        cCompiler.args "-D ARRAYINDEX_32BIT"
 }
 
 def getOutputDirName() {
@@ -108,14 +115,19 @@ def getOutputDirName() {
     def outdirREGS=sprintf('%02d', project.ext.aotstackcachesize.toInteger())
     def outdirPINNED=project.ext.aotmarkloopregs
 
+    def outdir32bitindex=''
+    if (project.ext.aot32bitindex == 'true')
+        outdir32bitindex = '_32BITINDEX'
+
+
     if (project.ext.aotstrat == 'baseline') {
-        return "results_${outdirSTRAT}_R___P__CS${outdirCONSTSHIFT}"
+        return "results_${outdirSTRAT}_R___P__CS${outdirCONSTSHIFT}${outdir32bitindex}"
     } else if (project.ext.aotstrat == 'simplestackcache') {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P__CS${outdirCONSTSHIFT}"
+        return "results_${outdirSTRAT}_R${outdirREGS}_P__CS${outdirCONSTSHIFT}${outdir32bitindex}"
     } else if (project.ext.aotstrat == 'poppedstackcache') {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P__CS${outdirCONSTSHIFT}"
+        return "results_${outdirSTRAT}_R${outdirREGS}_P__CS${outdirCONSTSHIFT}${outdir32bitindex}"
     } else {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P${outdirPINNED}_CS${outdirCONSTSHIFT}"
+        return "results_${outdirSTRAT}_R${outdirREGS}_P${outdirPINNED}_CS${outdirCONSTSHIFT}${outdir32bitindex}"
     }
 }
 

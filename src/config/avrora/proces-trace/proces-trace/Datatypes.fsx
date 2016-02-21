@@ -78,6 +78,12 @@ type Results = {
     stopwatchCyclesAOT : int;
     stopwatchCyclesC : int;
     codesizeJava : int;
+    codesizeJavaBranchCount : int;
+    codesizeJavaBranchTargetCount : int;
+    codesizeJavaMarkloopCount : int;
+    codesizeJavaMarkloopTotalSize : int;
+    codesizeJavaWithoutBranchOverhead : int;
+    codesizeJavaWithoutBranchMarkloopOverhead : int;
     codesizeAOT : int;
     codesizeC : int;
     cyclesPush : ExecCounters;

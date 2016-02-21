@@ -299,7 +299,15 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress :
     let cyclesPerAvrOpcodeCategoryAOTJava = groupOpcodesInCategories AVR.getAllOpcodeCategories AVR.opcodeCategory cyclesPerAvrOpcodeAOTJava
     let lastInList x = x |> List.reduce (fun _ x -> x)
     let codesizeJava = methodImpl.JvmMethodSize
-    let codesizeAOT = methodImpl.AvrMethodSize
+    let codesizeJavaBranchCount = methodImpl.BranchCount
+    let codesizeJavaBranchTargetCount = methodImpl.BranchTargets |> Array.length
+    let codesizeJavaMarkloopCount = methodImpl.MarkloopCount
+    let codesizeJavaMarkloopTotalSize = methodImpl.MarkloopTotalSize
+    let codesizeJavaWithoutBranchOverhead = codesizeJava - (2*codesizeJavaBranchCount) - codesizeJavaBranchTargetCount
+    let codesizeJavaWithoutBranchMarkloopOverhead = codesizeJava - (2*codesizeJavaBranchCount) - codesizeJavaBranchTargetCount - codesizeJavaMarkloopTotalSize
+    let codesizeAOT =
+        let numberOfBranchTargets = methodImpl.BranchTargets |> Array.length
+        methodImpl.AvrMethodSize - (4*numberOfBranchTargets) // We currently keep the branch table at the head of the method, but actually we don't need it anymore after code generation, so it shouldn't count for code size.
     let codesizeC =
         let startAddress = (nativeCInstructions |> List.head |> fst).address
         let endAddress = (nativeCInstructions |> lastInList |> fst).address
@@ -318,6 +326,12 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress :
         stopwatchCyclesAOT = (getTimer "AOT")
         stopwatchCyclesC = (getTimer "C")
         codesizeJava = codesizeJava
+        codesizeJavaBranchCount = codesizeJavaBranchCount
+        codesizeJavaBranchTargetCount = codesizeJavaBranchTargetCount
+        codesizeJavaMarkloopCount = codesizeJavaMarkloopCount
+        codesizeJavaMarkloopTotalSize = codesizeJavaMarkloopTotalSize
+        codesizeJavaWithoutBranchOverhead = codesizeJavaWithoutBranchOverhead
+        codesizeJavaWithoutBranchMarkloopOverhead = codesizeJavaWithoutBranchMarkloopOverhead
         codesizeAOT = codesizeAOT
         codesizeC = codesizeC
         cyclesPush = cyclesPush
@@ -392,31 +406,37 @@ let resultsToString (results : Results) =
     seq {
         yield "------------------ " + results.benchmark + ": AOT " + testResultAOT + ", Java " + testResultJAVA + " ------------------"
         yield ""
-        yield String.Format ("--- STOPWATCHES Native C        {0,14}", results.stopwatchCyclesC)
-        yield String.Format ("                AOT             {0,14}", results.stopwatchCyclesAOT)
-        yield String.Format ("                JAVA            {0,14}", results.stopwatchCyclesJava)
-        yield String.Format ("                AOT/C           {0,14}", (cyclesToSlowdown results.stopwatchCyclesAOT results.stopwatchCyclesC))
-        yield String.Format ("                Java/C          {0,14}", (cyclesToSlowdown results.stopwatchCyclesJava results.stopwatchCyclesC))
-        yield String.Format ("                Java/AOT        {0,14}", (cyclesToSlowdown results.stopwatchCyclesJava results.stopwatchCyclesAOT))
+        yield String.Format ("--- STOPWATCHES Native C                       {0,14}", results.stopwatchCyclesC)
+        yield String.Format ("                AOT                            {0,14}", results.stopwatchCyclesAOT)
+        yield String.Format ("                JAVA                           {0,14}", results.stopwatchCyclesJava)
+        yield String.Format ("                AOT/C                          {0,14}", (cyclesToSlowdown results.stopwatchCyclesAOT results.stopwatchCyclesC))
+        yield String.Format ("                Java/C                         {0,14}", (cyclesToSlowdown results.stopwatchCyclesJava results.stopwatchCyclesC))
+        yield String.Format ("                Java/AOT                       {0,14}", (cyclesToSlowdown results.stopwatchCyclesJava results.stopwatchCyclesAOT))
         yield ""
-        yield String.Format ("--- CYCLE COUNT Native C        {0,14} (={1})", results.executedCyclesC, totalCyclesNativeC)
-        yield String.Format ("                    stopw/count {0,14}", (cyclesToSlowdown results.stopwatchCyclesC results.executedCyclesC))
-        yield String.Format ("                AOT             {0,14} (={1})", results.executedCyclesAOT, totalCyclesAOTJava)
-        yield String.Format ("                    stopw/count {0,14}", (cyclesToSlowdown results.stopwatchCyclesAOT results.executedCyclesAOT))
-        yield String.Format ("                push            {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesPush))
-        yield String.Format ("                pop             {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesPop))
-        yield String.Format ("                movw            {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesMovw))
-        yield String.Format ("                total           {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC (results.cyclesPush + results.cyclesPop + results.cyclesMovw)))
+        yield String.Format ("--- CYCLE COUNT Native C                       {0,14} (={1})", results.executedCyclesC, totalCyclesNativeC)
+        yield String.Format ("                    stopw/count                {0,14}", (cyclesToSlowdown results.stopwatchCyclesC results.executedCyclesC))
+        yield String.Format ("                AOT                            {0,14} (={1})", results.executedCyclesAOT, totalCyclesAOTJava)
+        yield String.Format ("                    stopw/count                {0,14}", (cyclesToSlowdown results.stopwatchCyclesAOT results.executedCyclesAOT))
+        yield String.Format ("                push                           {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesPush))
+        yield String.Format ("                pop                            {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesPop))
+        yield String.Format ("                movw                           {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesMovw))
+        yield String.Format ("                total                          {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC (results.cyclesPush + results.cyclesPop + results.cyclesMovw)))
         yield ""
-        yield String.Format ("--- STACK max                   {0,14}", (results.maxJvmStackInBytes))
-        yield String.Format ("          avg/executed jvm      {0,14:000.00}", results.avgJvmStackInBytes)
-        yield String.Format ("          avg change/exec jvm   {0,14:000.00}", results.avgJvmStackChangeInBytes)
+        yield String.Format ("--- STACK max                                  {0,14}", (results.maxJvmStackInBytes))
+        yield String.Format ("          avg/executed jvm                     {0,14:000.00}", results.avgJvmStackInBytes)
+        yield String.Format ("          avg change/exec jvm                  {0,14:000.00}", results.avgJvmStackChangeInBytes)
         yield ""
-        yield String.Format ("--- CODE SIZE   Native C        {0,14}", (results.codesizeC))
-        yield String.Format ("                AOT             {0,14}", (results.codesizeAOT))
-        yield String.Format ("                Java            {0,14}", (results.codesizeJava))
-        yield String.Format ("                AOT/C           {0,14}", (cyclesToSlowdown results.codesizeAOT results.codesizeC))
-        yield String.Format ("                AOT/Java        {0,14}", (cyclesToSlowdown results.codesizeAOT results.codesizeJava))
+        yield String.Format ("--- CODE SIZE   Native C                       {0,14}", (results.codesizeC))
+        yield String.Format ("                AOT                            {0,14}", (results.codesizeAOT))
+        yield String.Format ("                Java total                     {0,14}", (results.codesizeJava))
+        yield String.Format ("                     branch count              {0,14}", (results.codesizeJavaBranchCount))
+        yield String.Format ("                     branch target count       {0,14}", (results.codesizeJavaBranchTargetCount))
+        yield String.Format ("                     markloop count            {0,14}", (results.codesizeJavaMarkloopCount))
+        yield String.Format ("                     markloop size             {0,14}", (results.codesizeJavaMarkloopTotalSize))
+        yield String.Format ("                     total-branch overhead     {0,14}", (results.codesizeJavaWithoutBranchOverhead))        
+        yield String.Format ("                     total-br/mloop overhead   {0,14}", (results.codesizeJavaWithoutBranchMarkloopOverhead))        
+        yield String.Format ("                AOT/C                          {0,14}", (cyclesToSlowdown results.codesizeAOT results.codesizeC))
+        yield String.Format ("                AOT/Java                       {0,14}", (cyclesToSlowdown results.codesizeAOT results.codesizeJava))
         yield ""
         yield "--- SUMMED: PER JVM CATEGORY"
         yield categoryResultsToString totalCyclesAOTJava totalCyclesNativeC results.cyclesPerJvmOpcodeCategory

@@ -50,6 +50,8 @@ let resultToStringList (result : Results) =
         ("Native C"             , result.codesizeC.ToString());
         ("AOT"                  , result.codesizeAOT.ToString());
         ("Java"                 , result.codesizeJava.ToString());
+        ("  branch overhead"    , (result.codesizeJava - result.codesizeJavaWithoutBranchOverhead).ToString());
+        ("  markloop overhead"  , result.codesizeJavaMarkloopTotalSize.ToString());
         ("AOT/C"                , (cyclesToSlowdown result.codesizeAOT result.codesizeC));
         ("AOT/Java"             , (cyclesToSlowdown result.codesizeAOT result.codesizeJava));
         ]

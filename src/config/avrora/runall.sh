@@ -6,7 +6,17 @@ benchmarks=(bsort16 hsort16 binsrch16 bsort32 hsort32 binsrch32 fft xxtea rc5 md
 
 gdj clean
 
-# BASELINE (plus 16 bit array index) different constant optimisation strategies
+# # BASELINE
+# for benchmark in ${benchmarks}
+# do
+#     constshifts=(none by1 all_only_shift all_move_and_shift gcc_like)
+#     for aotconstshiftoptimisation in ${constshifts}
+#     do
+#         gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=baseline -Paotconstshiftoptimisation=none -Paot32bitindex=true
+#     done
+# done
+
+# BASELINE, plus 16 bit array index: different constant optimisation strategies
 for benchmark in ${benchmarks}
 do
     constshifts=(none by1 all_only_shift all_move_and_shift gcc_like)
