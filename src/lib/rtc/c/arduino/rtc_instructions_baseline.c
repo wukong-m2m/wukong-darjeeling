@@ -274,9 +274,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         case JVM_AALOAD:
 #ifdef ARRAYINDEX_32BIT
             emit_x_POP_32bit(R22);
-#else
-            emit_x_POP_16bit(R22);
-#endif
+
             // POP the array reference into Z.
             emit_x_POP_REF(RZ); // Z now pointer to the base of the array object.
 
@@ -295,6 +293,28 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             // Add (1/2/4)*the index to Z
             emit_ADD(RZL, R22);
             emit_ADC(RZH, R23);
+#else
+            emit_x_POP_16bit(R24);
+
+            // POP the array reference into Z.
+            emit_x_POP_REF(RZ); // Z now pointer to the base of the array object.
+
+            if (opcode==JVM_SALOAD || opcode==JVM_AALOAD) {
+                // Multiply the index by 2, since we're indexing 16 bit shorts.
+                emit_LSL(R24);
+                emit_ROL(R25);
+            } else if (opcode==JVM_IALOAD) {
+                // Multiply the index by 4, since we're indexing 16 bit shorts.
+                emit_LSL(R24);
+                emit_ROL(R25);
+                emit_LSL(R24);
+                emit_ROL(R25);
+            }
+
+            // Add (1/2/4)*the index to Z
+            emit_ADD(RZL, R24);
+            emit_ADC(RZH, R25);
+#endif
 
             if (opcode == JVM_AALOAD) {
                 // Add 4 to skip 2 bytes for array length and 2 bytes for array type.
