@@ -4,12 +4,12 @@ from udpwkpf import WuClass, Device
 from twisted.internet import reactor
 import mraa
 
-PIN_1 = 3 #trig
-PIN_2 = 4 #echo
+PIN_1 = 7 #trig
+PIN_2 = 8 #echo
 
 class Ultrasound_sensor(WuClass):
     def __init__(self):
-        self.ID = 1010
+        self.ID = 1011
         #trig
         self.trig = mraa.Gpio(PIN_1)
         self.trig.dir(mraa.DIR_OUT)
@@ -26,7 +26,7 @@ class Ultrasound_sensor(WuClass):
         self.centimeter = self.pulseIn()
 
         if self.centimeter >= 0:
-            print "cm:" + str(self.centimeter)
+            print "cm: {0:.3f}".format(self.centimeter)
         reactor.callLater(0.5,self.refresh)
 
     def pulseIn(self):
@@ -39,15 +39,15 @@ class Ultrasound_sensor(WuClass):
         time.sleep(0.002)
         self.trig.write(0)         
 
-    	count1 = 0
-        while self.echo.read() == 0 and count1 < 10000:
+        count1 = 0
+        while self.echo.read() == 0 and count1 < 5000:
             pulseOff = time.time()
             count1 += 1
-    	count2 = 0
-        while self.echo.read() == 1 and count2 < 10000:
+        count2 = 0
+        while self.echo.read() == 1 and count2 < 5000:
             pulseOn = time.time()
             count2 += 1
-        if pulseOn == -1 or pulseOff == -1 or count1 >= 10000 or count2 >= 10000:
+        if pulseOn == -1 or pulseOff == -1 or count1 >= 5000 or count2 >= 5000:
             return -1
         timeDifference = pulseOn - pulseOff
 
@@ -79,4 +79,3 @@ if len(sys.argv) <= 2:
 d = MyDevice(sys.argv[1],sys.argv[2])
 
 reactor.run()
-
