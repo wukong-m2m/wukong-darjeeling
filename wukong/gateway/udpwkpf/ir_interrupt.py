@@ -1,16 +1,16 @@
 import traceback
-import time,sys
+import time, sys 
 from udpwkpf import WuClass, Device
 from twisted.internet import reactor
-import pyupm_grove 
+import pyupm_rfr359f
 from math import log
 
-PIN = 0 #Analog pin 0
+PIN = 2 #digital pin D2
 
-class Temperature_sensor(WuClass):
+class IR_sensor(WuClass):
     def __init__(self):
         self.ID = 1010
-        self.temperature_sensor = pyupm_grove.GroveTemp(PIN)
+        self.ir_sensor = pyupm_rfr359f.RFR359F(PIN)
         reactor.callLater(0.5,self.refresh)
         print "temperature sensor init!"
 
@@ -18,8 +18,8 @@ class Temperature_sensor(WuClass):
         pass
 
     def refresh(self):
-        self.celsius = self.temperature_sensor.value()
-        print "WKPFUPDATE(Temperature): %d degrees Celsius" %self.celsius
+        self.detected = self.ir_sensor.objectDetected()
+        print "WKPFUPDATE(Detected): " + str(self.detected)
         reactor.callLater(0.5,self.refresh)
 
 class MyDevice(Device):
@@ -27,13 +27,13 @@ class MyDevice(Device):
         Device.__init__(self,addr,localaddr)
 
     def init(self):
-        m = Temperature_sensor()
+        m = IR_sensor()
         self.addClass(m,1)
-        self.obj_temperature_sensor = self.addObject(m.ID)
+        self.obj_ir = self.addObject(m.ID)
     
     def loop(self):
-        print "WKPFUPDATE(Temperature): %d degrees Celsius" %self.m.celsius
-        self.obj_temperature_sensor.setProperty(0, self.m.celsius)
+        print "WKPFUPDATE(Detected): " + str(self.detected)
+        self.obj_ir.setProperty(0, self.m.detected)
         reactor.callLater(0.5,self.loop)
 
 if len(sys.argv) <= 2:
