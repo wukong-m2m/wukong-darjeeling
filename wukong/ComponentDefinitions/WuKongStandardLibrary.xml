@@ -269,6 +269,11 @@
         <property name="gesture" access="readonly" datatype="short" default="0" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
     </WuClass>
+    <WuClass name="EEGServer" id="1912" virtual="false" type="hard">
+        <property name="output_short" access="readonly" datatype="short" default="0" />
+        <property name="output_boolean" access="readonly" datatype="boolean" default="false" />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
+    </WuClass>
 
 
     <!-- Actuators -->
@@ -326,8 +331,8 @@
         <property name="instrument" access="readwrite" datatype="short" default="1" />
     </WuClass>
     <WuClass name="Number" id="2014" virtual="false" type="hard">
-        <property name="input" access="readwrite" datatype="short" default="1" />
-        <property name="boolean_input" access="readwrite" datatype="boolean" default="false" />
+        <property name="input_short" access="readwrite" datatype="short" default="1" />
+        <property name="input_boolean" access="readwrite" datatype="boolean" default="false" />
     </WuClass>
 
 
