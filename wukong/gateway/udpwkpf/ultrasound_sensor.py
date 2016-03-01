@@ -6,28 +6,33 @@ import mraa
 
 PIN_1 = 7 #trig
 PIN_2 = 8 #echo
+REFRESH_RATE = 0.5 #sec
 
 class Ultrasound_sensor(WuClass):
-    def __init__(self):
+    def __init__(self,pin1,pin2):
         self.ID = 1011
         #trig
-        self.trig = mraa.Gpio(PIN_1)
+        self.trig = mraa.Gpio(pin1)
         self.trig.dir(mraa.DIR_OUT)
-
-        self.echo = mraa.Gpio(PIN_2)
+        #echo
+        self.echo = mraa.Gpio(pin2)
         self.echo.dir(mraa.DIR_IN)
-        reactor.callLater(0.5,self.refresh)
+        
+        self.refresh_rate = REFRESH_RATE
+        self.centimeter = 0
+        reactor.callLater(self.refresh_rate,self.refresh)
         print "Ultrasound sensor init!"
 
     def update(self,obj,pID,value):
         pass
 
     def refresh(self):
-        self.centimeter = self.pulseIn()
-
+        self.centimeter = int(self.pulseIn())
         if self.centimeter >= 0:
-            print "cm: {0:.3f}".format(self.centimeter)
-        reactor.callLater(0.5,self.refresh)
+            print "cm: %d" %(self.centimeter)
+        else :
+            print "no value this time"
+        reactor.callLater(self.refresh_rate,self.refresh)
 
     def pulseIn(self):
         pulseOn = -1
@@ -60,13 +65,14 @@ class MyDevice(Device):
         Device.__init__(self,addr,localaddr)
 
     def init(self):
-        m = Ultrasound_sensor()
+        m = Ultrasound_sensor(PIN_1,PIN_2)
         self.addClass(m,1)
         self.obj_ultrasound_sensor = self.addObject(m.ID)
+        reactor.callLater(0.1,self.loop)
     
     def loop(self):
-        self.obj_ultrasound_sensor.setProperty(0,self.m.centimeter)
-        print "Distance: " + str(self.m.centimeter)
+        self.obj_ultrasound_sensor.setProperty(0,self.obj_ultrasound_sensor.cls.centimeter)
+        #print "Distance: " + str(self.obj_ultrasound_sensor.cls.centimeter)
         reactor.callLater(0.1,self.loop)
 
 if len(sys.argv) <= 2:
