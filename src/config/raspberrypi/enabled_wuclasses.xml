@@ -1,19 +1,19 @@
 <WuKong>
-    <WuClass name="Button" appCanCreateInstances="false">
+    <!--WuClass name="Button" appCanCreateInstances="false">
     	<CreateInstance />
+    </WuClass-->
+    <WuClass name="Touch_Sensor" appCanCreateInstances="false">
+        <CreateInstance />
+    </WuClass>
+    <WuClass name="Light_Actuator" appCanCreateInstances="false">
+        <CreateInstance />
     </WuClass>
 </WuKong>
 
     <!--<WuClass name="Button" appCanCreateInstances="false">
     	<CreateInstance />
-    </WuClass>
-    <WuClass name="Touch_Sensor" appCanCreateInstances="false">
-    	<CreateInstance />
-    </WuClass>
-    <WuClass name="Light_Actuator" appCanCreateInstances="false">
-    	<CreateInstance />
-    </WuClass>
-    <WuClass name="Buzzer" appCanCreateInstances="false">
+    </WuClass-->
+    <!--WuClass name="Light_Actuator" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>
     <WuClass name="Slider" appCanCreateInstances="false">

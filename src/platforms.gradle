@@ -26,16 +26,18 @@ switch (djConfig.getAllPlatforms().last()) {
     case 'posix.mraa.raspberrypi':
         ext.djArchitecture='arm'
         binaries.all {
+            /* Unsupported by 201602 raspbian, will cause SEGFAULT
             cCompiler.args "-mcpu=cortex-a7"
             cCompiler.args "-mfpu=neon-vfpv4"
             cCompiler.args "-mfloat-abi=hard"
-            cCompiler.args "-I/usr/include/arm-linux-gnueabihf/"
-            cCompiler.args "-I/usr/local/include/"
             linker.args "-mcpu=cortex-a7"
             linker.args "-mfpu=neon-vfpv4"
             linker.args "-mfloat-abi=hard"
-            linker.args "-L/usr/local/lib/arm-linux-gnueabihf/"
-            linker.args "-L/usr/lib/arm-linux-gnueabihf/"
+            */
+            cCompiler.args "-I/usr/include/arm-linux-gnueabihf/" /* ssl */
+            cCompiler.args "-I/usr/local/include/" /* mraa */
+            linker.args "-L/usr/local/lib/arm-linux-gnueabihf/" /* mraa */
+            linker.args "-L/usr/lib/arm-linux-gnueabihf/" /* ssl */
             linker.args "-Wl,-lmraa,-lcrypto,-lssl,-lm"
         }
         /* To know the arm-linux-gnueabihf-gcc's default include path
