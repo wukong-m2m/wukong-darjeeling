@@ -561,6 +561,10 @@
       <property name="input" access="readwrite" datatype="short" default="0" />
       <property name="output" access="readwrite" datatype="short" default="0" />
     </WuClass>
+    /* Management PrClass */
+    <WuClass name="EnergyPolicyPrclass" id="10117" virtual="false" type="hard">
+    </WuClass>
+    /* Python Framework WuClass */
     <WuClass name="UIImage" id="11001" virtual="fasle" type="soft">
       <property name="picture" access="writeonly" datatype="short" default="0" />
     </WuClass>

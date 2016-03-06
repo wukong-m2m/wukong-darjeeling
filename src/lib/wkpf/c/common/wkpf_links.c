@@ -33,11 +33,13 @@ uint16_t wkpf_token_src_component[WKPF_MAX_NUM_OF_TOKENS] = {TOKEN_NO_COMPONENT}
 //        1 byte src port number
 //        2 byte little endian dest component id
 //        1 byte dest port number
-#define WKPF_LINK_ENTRY_SIZE                                6
+//        2 byte counter
+#define WKPF_LINK_ENTRY_SIZE                                8
 #define WKPF_LINK_SRC_COMPONENT_ID(i)                        (dj_di_getU16(wkpf_links_store + 2 + WKPF_LINK_ENTRY_SIZE*i))
 #define WKPF_LINK_SRC_PROPERTY(i)                            (dj_di_getU8(wkpf_links_store + 2 + WKPF_LINK_ENTRY_SIZE*i + 2))
 #define WKPF_LINK_DEST_COMPONENT_ID(i)                        (dj_di_getU16(wkpf_links_store + 2 + WKPF_LINK_ENTRY_SIZE*i + 3))
 #define WKPF_LINK_DEST_PROPERTY(i)                            (dj_di_getU8(wkpf_links_store + 2 + WKPF_LINK_ENTRY_SIZE*i + 5))
+#define WKPF_LINK_COUNTER(i)                                  (dj_di_getU16(wkpf_links_store + 2 + WKPF_LINK_ENTRY_SIZE*i + 6))
 // TODONR: refactor
 #define WKPF_LINK_DEST_WUCLASS_ID(i)                        (WKPF_COMPONENT_WUCLASS_ID(WKPF_LINK_DEST_COMPONENT_ID(i)))
 
@@ -194,6 +196,14 @@ bool wkpf_component_is_locked(uint16_t dest_component_id) {
     return false;
 }
 
+uint16_t wkpf_get_link_counter(uint16_t link_id) {
+    if (link_id < wkpf_number_of_links) {
+         return WKPF_LINK_COUNTER(link_id);
+    } else {
+         return -1;
+    }
+}
+
 bool wkpf_get_component_id(uint8_t port_number, uint16_t *component_id) {
     for(int i=0; i<wkpf_number_of_components; i++) {
         for(int j=0; j<WKPF_NUMBER_OF_ENDPOINTS(i); j++) {
@@ -242,7 +252,7 @@ uint8_t wkpf_pull_property(uint8_t port_number, uint8_t property_number) {
                 uint8_t src_endpoint_port = WKPF_COMPONENT_LEADER_ENDPOINT_PORT(src_component_id);
                 // Properties with local sources will be initialised eventually, so we only need to send a message
                 // to ask for initial values coming from remote nodes
-                return wkpf_send_request_property_init(src_endpoint_node_id, src_endpoint_port, src_property_number);      
+                return wkpf_send_request_property_init(src_endpoint_node_id, src_endpoint_port, src_property_number);
             }
         }
     }
@@ -254,12 +264,12 @@ uint8_t wkpf_propagate_property(wuobject_t *wuobject, uint8_t property_number, v
     uint16_t component_id;
     if (!wkpf_get_component_id(port_number, &component_id))
         return WKPF_OK; // WuObject isn't used in the application.
-    
+
     if (wkpf_component_is_locked(component_id) == true) {
         DEBUG_LOG(DBG_RELINK, "WKPF: propagate_property component %u is locked.token_id[0]:%u, [1]:%u\n", component_id,wkpf_token_id[0],wkpf_token_id[1]);
         return WKPF_LOCKED;
     }
-    
+
     wuobject_t *src_wuobject;
     uint8_t wkpf_error_code = 0;
 
@@ -292,13 +302,13 @@ uint8_t wkpf_propagate_property(wuobject_t *wuobject, uint8_t property_number, v
                 }
             } else if(dest_node_id == WUKONG_MONITOR_SERVER_ID) {
                 DEBUG_LOG(DBG_WKPF, "WKPF: Monitoring property (remote). (%x, %x)->(%x, %x, %x), value %x\n", port_number, property_number, dest_node_id, dest_port_number, dest_property_number, *((uint16_t *)value)); // TODONR: values other than 16 bit values
-			    if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_BOOLEAN)
+			         if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_BOOLEAN)
                     wkpf_error_code |= wkpf_send_monitor_property_boolean(WUKONG_MONITOR_SERVER_ID, source_wuclass_id, port_number, property_number, *((bool *)value));
-			    else if(WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_SHORT)
+			         else if(WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_SHORT)
                     wkpf_error_code |= wkpf_send_monitor_property_int16(WUKONG_MONITOR_SERVER_ID, source_wuclass_id, port_number, property_number, *((uint16_t *)value));
-			    else
-			        wkpf_error_code |= wkpf_send_monitor_property_refresh_rate(WUKONG_MONITOR_SERVER_ID, source_wuclass_id, port_number, property_number, *((uint16_t *)value));
-			} else {
+			         else
+			              wkpf_error_code |= wkpf_send_monitor_property_refresh_rate(WUKONG_MONITOR_SERVER_ID, source_wuclass_id, port_number, property_number, *((uint16_t *)value));
+			      } else {
                 // Remote
                 DEBUG_LOG(DBG_WKPF, "WKPF: propagate_property (remote). (%x, %x)->(%x, %x, %x), value %x\n", port_number, property_number, dest_node_id, dest_port_number, dest_property_number, *((uint16_t *)value)); // TODONR: values other than 16 bit values
                 if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_BOOLEAN)
@@ -307,6 +317,7 @@ uint8_t wkpf_propagate_property(wuobject_t *wuobject, uint8_t property_number, v
                     wkpf_error_code |= wkpf_send_set_property_int16(dest_node_id, dest_port_number, dest_property_number, dest_wuclass_id, *((uint16_t *)value), component_id);
                 else
                     wkpf_error_code |= wkpf_send_set_property_refresh_rate(dest_node_id, dest_port_number, dest_property_number, dest_wuclass_id, *((uint16_t *)value), component_id);
+                ++WKPF_LINK_COUNTER(i);
             }
             /*if (wkpf_error_code != WKPF_OK)*/
                 /*return wkpf_error_code;*/
@@ -545,12 +556,12 @@ void wkpf_update_initvalue_in_flash(wuobject_t *wuobject, uint8_t object_propert
             wkreprog_close();
             return;
         }
-        offset += value_size;        
+        offset += value_size;
     }
 }
 
 
-uint8_t wkpf_update_map_in_flash(uint16_t component_id, uint16_t orig_node_id, uint8_t orig_port_number, 
+uint8_t wkpf_update_map_in_flash(uint16_t component_id, uint16_t orig_node_id, uint8_t orig_port_number,
                                 uint16_t new_node_id, uint8_t new_port_number){
     // !!!!!!!!!!!!
     // Little endian only
@@ -558,7 +569,7 @@ uint8_t wkpf_update_map_in_flash(uint16_t component_id, uint16_t orig_node_id, u
     // !!!!!!!!!!!!
     int filenumber = -1;
     bool update = false;
-    
+
     //assumption here: wkcomm_address_t is defined as uint16_t
     wkcomm_address_t orig_node_id_addr = (wkcomm_address_t) orig_node_id;
     wkcomm_address_t new_node_id_addr = (wkcomm_address_t) new_node_id;
@@ -569,7 +580,7 @@ uint8_t wkpf_update_map_in_flash(uint16_t component_id, uint16_t orig_node_id, u
         }
     }
     for (int i=0; i<WKPF_NUMBER_OF_ENDPOINTS(component_id); i++) {
-        if (WKPF_COMPONENT_ENDPOINT_NODE_ID(component_id, i) == orig_node_id_addr 
+        if (WKPF_COMPONENT_ENDPOINT_NODE_ID(component_id, i) == orig_node_id_addr
                 && WKPF_COMPONENT_ENDPOINT_PORT(component_id, i) == orig_port_number){
             wkreprog_open(filenumber, WKPF_COMPONENT_ADDRESS(i) + 3 + 3*i);
             wkreprog_write(2, (uint8_t*)&new_node_id_addr);
@@ -586,7 +597,7 @@ uint8_t wkpf_update_map_in_flash(uint16_t component_id, uint16_t orig_node_id, u
     return WKPF_OK;
 }
 
-//for a link, substitute the content the same as orig_link with the content of new_link 
+//for a link, substitute the content the same as orig_link with the content of new_link
 uint8_t wkpf_update_link_in_flash(uint8_t* orig_link, uint8_t* new_link) {
     // !!!!!!!!!!!!
     // Little endian only
@@ -614,7 +625,7 @@ uint8_t wkpf_update_link_in_flash(uint8_t* orig_link, uint8_t* new_link) {
     for (int i=0; i<wkpf_number_of_links; i++) {
         DEBUG_LOG(DBG_RELINK, "link_table[%d]:%u:%u->%u:%u\n", i, WKPF_LINK_SRC_COMPONENT_ID(i), WKPF_LINK_SRC_PROPERTY(i), WKPF_LINK_DEST_COMPONENT_ID(i), WKPF_LINK_DEST_PROPERTY(i));
         if (WKPF_LINK_SRC_COMPONENT_ID(i) == ((*orig_link)<<8)+*(orig_link + 1)
-                && WKPF_LINK_SRC_PROPERTY(i) == *(uint8_t*)(orig_link + 2) 
+                && WKPF_LINK_SRC_PROPERTY(i) == *(uint8_t*)(orig_link + 2)
                 && WKPF_LINK_DEST_COMPONENT_ID(i) == ((*(orig_link + 3))<<8)+*(orig_link + 4)
                 && WKPF_LINK_DEST_PROPERTY(i) == *(uint8_t*)(orig_link + 5)){
             wkreprog_open(filenumber, offset);
@@ -637,7 +648,7 @@ uint8_t wkpf_update_link_in_flash(uint8_t* orig_link, uint8_t* new_link) {
     return WKPF_OK;
 }
 
-uint8_t wkpf_update_link(uint16_t orig_src_component_id, uint8_t orig_src_property_id, uint16_t orig_dest_component_id, uint8_t orig_dest_property_id, 
+uint8_t wkpf_update_link(uint16_t orig_src_component_id, uint8_t orig_src_property_id, uint16_t orig_dest_component_id, uint8_t orig_dest_property_id,
                          uint16_t new_src_component_id, uint8_t new_src_property_id, uint16_t new_dest_component_id, uint8_t new_dest_property_id) {
     uint8_t message_buffer[12];
     message_buffer[0] = (uint8_t)(orig_src_component_id >> 8);
@@ -646,22 +657,22 @@ uint8_t wkpf_update_link(uint16_t orig_src_component_id, uint8_t orig_src_proper
     message_buffer[3] = (uint8_t)(orig_dest_component_id >> 8);
     message_buffer[4] = (uint8_t)(orig_dest_component_id);
     message_buffer[5] = (uint8_t)(orig_dest_property_id);
-    
+
     message_buffer[6] = (uint8_t)(new_src_component_id >> 8);
     message_buffer[7] = (uint8_t)(new_src_component_id);
     message_buffer[8] = (uint8_t)(new_src_property_id);
     message_buffer[9] = (uint8_t)(new_dest_component_id >> 8);
     message_buffer[10] = (uint8_t)(new_dest_component_id);
     message_buffer[11] = (uint8_t)(new_dest_property_id);
-    DEBUG_LOG(DBG_RELINK, "target link to be updated upon wkpf_update_link %u:%u->%u:%u => %u:%u->%u:%u\n", 
+    DEBUG_LOG(DBG_RELINK, "target link to be updated upon wkpf_update_link %u:%u->%u:%u => %u:%u->%u:%u\n",
                         orig_src_component_id, orig_src_property_id, orig_dest_component_id, orig_dest_property_id,
                         new_src_component_id, new_src_property_id, new_dest_component_id, new_dest_property_id);
     uint8_t ret = wkpf_update_link_in_flash(message_buffer, message_buffer+6);
     return ret;
 }
 
-uint8_t wkpf_propagate_link_change(uint16_t orig_src_component_id, uint8_t orig_src_property_id, 
-                                uint16_t orig_dest_component_id, uint8_t orig_dest_property_id, uint16_t new_src_component_id, 
+uint8_t wkpf_propagate_link_change(uint16_t orig_src_component_id, uint8_t orig_src_property_id,
+                                uint16_t orig_dest_component_id, uint8_t orig_dest_property_id, uint16_t new_src_component_id,
                                 uint8_t new_src_property_id, uint16_t new_dest_component_id, uint8_t new_dest_property_id) {
     wkcomm_address_t self_node_id = wkcomm_get_node_id();
     for (int i=0; i<wkpf_number_of_links; i++) {
@@ -674,14 +685,14 @@ uint8_t wkpf_propagate_link_change(uint16_t orig_src_component_id, uint8_t orig_
             //adding the following statements will freeze all nodes, no idea why is that....
             //TODO: delete these statements
             //    DEBUG_LOG(DBG_RELINK, "Propagating linktable to %u\n", dest_node_id);
-            //    DEBUG_LOG(DBG_RELINK, "target link to be updated upon wkpf_propagate_link_change %u:%u->%u:%u => %u:%u->%u:%u\n", 
+            //    DEBUG_LOG(DBG_RELINK, "target link to be updated upon wkpf_propagate_link_change %u:%u->%u:%u => %u:%u->%u:%u\n",
             //                    orig_src_component_id, orig_src_property_id, orig_dest_component_id, orig_dest_property_id,
             //                        new_src_component_id, new_src_property_id, new_dest_component_id, new_dest_property_id);
-            //    wkpf_send_set_linktable(dest_node_id, src_comp_id, dest_comp_id, orig_src_component_id, orig_src_property_id, 
-                //                                orig_dest_component_id, orig_dest_property_id, new_src_component_id, 
+            //    wkpf_send_set_linktable(dest_node_id, src_comp_id, dest_comp_id, orig_src_component_id, orig_src_property_id,
+                //                                orig_dest_component_id, orig_dest_property_id, new_src_component_id,
             //                                    new_src_property_id, new_dest_component_id, new_dest_property_id);
             }
-            
+
         }
     }
     return WKPF_OK;
