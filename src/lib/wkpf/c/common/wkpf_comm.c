@@ -670,7 +670,7 @@ void wkpf_comm_handle_message(void *data) {
 			retval = wkpf_get_link_counter(link_id);
 			if (retval != - 1) {
 				payload[0] = link_id >> 8;
-				payload[1] = link_id
+				payload[1] = link_id;
 				payload[2] = retval >> 8;
 				payload[3] = retval;
 				response_cmd = WKPF_COMM_CMD_GET_LINK_COUNTER_R;
