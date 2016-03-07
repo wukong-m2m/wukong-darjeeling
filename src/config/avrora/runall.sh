@@ -2,31 +2,33 @@
 alias gdj="gradle -b ../../build.gradle"
 
 # benchmarks=(sortX hsortX binsrchX)
-benchmarks=(bsort16 hsort16 binsrch16 bsort32 hsort32 binsrch32 fft xxtea rc5 md5)
+# benchmarks=(bsort16 bsort32 hsort16 binsrch16 bsort32 hsort32 binsrch32 fft xxtea rc5 md5)
+benchmarks=(hsort16 binsrch16 bsort32 hsort32 binsrch32 fft xxtea rc5 md5)
 
 gdj clean
 
-# # BASELINE
+# # BASELINE, plus 16 bit array index: different constant optimisation strategies
 # for benchmark in ${benchmarks}
 # do
 #     constshifts=(none by1 all_only_shift all_move_and_shift gcc_like)
 #     for aotconstshiftoptimisation in ${constshifts}
 #     do
-#         gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=baseline -Paotconstshiftoptimisation=none -Paot32bitindex=true
+#         gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=baseline -Paotconstshiftoptimisation=${aotconstshiftoptimisation}
 #     done
 # done
 
-# BASELINE, plus 16 bit array index: different constant optimisation strategies
+## All others use default "gcc_like" constant shift optimisation
+
+# BASELINE
 for benchmark in ${benchmarks}
 do
-    constshifts=(none by1 all_only_shift all_move_and_shift gcc_like)
+    constshifts=(none gcc_like)
+    # constshifts=(none by1 all_only_shift all_move_and_shift gcc_like)
     for aotconstshiftoptimisation in ${constshifts}
     do
-        gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=baseline -Paotconstshiftoptimisation=${aotconstshiftoptimisation}
+        gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=baseline -Paotconstshiftoptimisation=${aotconstshiftoptimisation} # -Paot32bitindex=true
     done
 done
-
-## All others use default "gcc_like" constant shift optimisation
 
 # SIMPLE STACK CACHING
 for benchmark in ${benchmarks}
@@ -60,6 +62,17 @@ do
         gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=markloop -Paotstackcachesize=11 -Paotmarkloopregs=${aotmarkloopregs}
     done
 done
+
+# # CONST SHIFT
+# for benchmark in ${benchmarks}
+# do
+#     constshifts=(none gcc_like)
+#     for aotconstshiftoptimisation in ${constshifts}
+#     do
+#         gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotconstshiftoptimisation=${aotconstshiftoptimisation} # -Paot32bitindex=true
+#     done
+# done
+
 
 for resultsdir in `ls | grep results_`
 do

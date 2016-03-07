@@ -12,6 +12,7 @@ type ExecCounters = {
     cycles : int; }
     with
     static member (+) (x, y) = { executions = x.executions + y.executions ; cycles = x.cycles + y.cycles }
+    static member (-) (x, y) = { executions = x.executions - y.executions ; cycles = x.cycles - y.cycles }
     member this.average = if this.executions > 0
                           then float this.cycles / float this.executions
                           else 0.0
@@ -86,9 +87,16 @@ type Results = {
     codesizeJavaWithoutBranchMarkloopOverhead : int;
     codesizeAOT : int;
     codesizeC : int;
-    cyclesPush : ExecCounters;
-    cyclesPop : ExecCounters;
-    cyclesMovw : ExecCounters;
+    cyclesCTotal : int;
+    cyclesCPushPop : ExecCounters;
+    cyclesCMov : ExecCounters;
+    cyclesAOTTotal : int;
+    cyclesAOTPushPopInt : ExecCounters;
+    cyclesAOTPushPopRef : ExecCounters;
+    cyclesAOTMov : ExecCounters;
+    overheadTotalCycles : int;
+    overheadPushPopCycles : int;
+    overheadMovCycles : int;
     cyclesPerJvmOpcode : (string * string * ExecCounters) list;
     cyclesPerAvrOpcodeAOTJava : (string * string * ExecCounters) list;
     cyclesPerAvrOpcodeNativeC : (string * string * ExecCounters) list;

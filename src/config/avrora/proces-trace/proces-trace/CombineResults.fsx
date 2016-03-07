@@ -7,6 +7,29 @@ open System.Linq
 open Nessos.FsPickler
 open Datatypes
 
+
+
+
+let getLDDSTBytesJVM (result : Results) =
+    0
+let getLDDSTBytesFromAVRPerCategoryAOT (result : Results) =
+    let isAVRloadstore (cat : string) =
+        cat = "02) LD/ST rel to Y" || cat = "03) LD/ST rel to Z"
+    let avrPerCategory = result.cyclesPerAvrOpcodeCategoryAOTJava
+    let numberOfCycles = avrPerCategory |> List.filter (fun (cat, _) -> (isAVRloadstore cat))
+                                       |> List.map (fun (cat, cnt) -> cnt.executions)
+                                       |> List.fold (+) 0
+    numberOfCycles / 2
+
+let getLDDSTBytesFromAVRPerCategoryC (result : Results) =
+    let isAVRloadstore (cat : string) =
+        cat.Contains("LD/ST rel to")
+    let avrPerCategory = result.cyclesPerAvrOpcodeCategoryNativeC
+    let numberOfCycles = avrPerCategory |> List.filter (fun (cat, _) -> (isAVRloadstore cat))
+                                       |> List.map (fun (cat, cnt) -> cnt.executions)
+                                       |> List.fold (+) 0
+    numberOfCycles / 2
+
 let resultToStringList (result : Results) =
     let cyclesToPercentage totalCycles cycles =
         String.Format ("{0,5:0.0}", 100.0 * float cycles / float totalCycles)
@@ -18,6 +41,17 @@ let resultToStringList (result : Results) =
         String.Format ("{0:0}%", float (cycles1-cycles2) / float cycles2 * 100.0)
     let cyclesToOverhead2 cycles1 cycles2 =
         String.Format ("{0:0}%", float (cycles1-cycles2) / float cycles1 * 100.0)
+
+
+    // let overheadInCycles = result.stopwatchCyclesAOT-result.stopwatchCyclesC
+    // let overheadLoadStoreInCycles = ((getLDDSTBytesFromAVRPerCategoryAOT result)-(getLDDSTBytesFromAVRPerCategoryC result))*2
+    // let overheadPushPopInCycles =
+    //     let nativeCPushPopInCycles = (result.cyclesPerAvrOpcodeCategoryNativeC |> List.find (fun (cat, cnt) -> cat.StartsWith("04) Stack")) |> snd).cycles
+    //     result.cyclesPush.cycles + result.cyclesPop.cycles - nativeCPushPopInCycles
+    // let overheadMovwInCycles =
+    //     let nativeCMovInCycles = (result.cyclesPerAvrOpcodeCategoryNativeC |> List.find (fun (cat, cnt) -> cat.StartsWith("05) Register moves")) |> snd).cycles
+    //     result.cyclesMovw.cycles - nativeCMovInCycles
+
     let r1 =
         [
         ("BENCHMARK"            , result.benchmark);
@@ -36,10 +70,21 @@ let resultToStringList (result : Results) =
         ("CYCLE COUNTS"         , "");
         ("AOT method total"     , result.executedCyclesAOT.ToString());
         ("AOT stopw/count"      , (cyclesToSlowdown result.stopwatchCyclesAOT result.executedCyclesAOT));
-        ("PUSH"                 , (cyclesToAOTPercentage result.cyclesPush.cycles));
-        ("POP"                  , (cyclesToAOTPercentage result.cyclesPop.cycles));
-        ("MOVW"                 , (cyclesToAOTPercentage result.cyclesMovw.cycles));
-        ("PUSH+POP+MOVW"        , (cyclesToAOTPercentage (result.cyclesPush.cycles+result.cyclesPop.cycles+result.cyclesMovw.cycles)));
+        ("PUSH/POP Int"         , (cyclesToAOTPercentage result.cyclesPushPopInt.cycles));
+        ("PUSH/POP Ref"         , (cyclesToAOTPercentage result.cyclesPushPopRef.cycles));
+        ("MOV(W)"               , (cyclesToAOTPercentage result.cyclesMov.cycles));
+        ("PUSH/POP+MOV(W)"      , (cyclesToAOTPercentage (result.cyclesPushPopInt.cycles+result.cyclesPushPopRef.cycles+result.cyclesMov.cycles)));
+        (""                     , "");
+        (""                     , "");
+        ("MEMORY TRAFFIC"       , "");
+        ("Bytes LD/ST AOT"      , String.Format ("{0}", (getLDDSTBytesFromAVRPerCategoryAOT result)));
+        ("Bytes LD/ST C"        , String.Format ("{0}", (getLDDSTBytesFromAVRPerCategoryC result)));
+        (""                     , "");
+        ("OVERHEAD"             , "");
+        ("Total cyc"            , String.Format ("{0}", overheadInCycles));
+        ("Load/store"           , String.Format ("{0}", overheadLoadStoreInCycles));
+        ("Movw"                 , String.Format ("{0}", overheadMovwInCycles));
+        ("Push/pop"             , String.Format ("{0}", overheadPushPopInCycles));
         (""                     , "");
         ("STACK"                , "");
         ("max"                  , result.maxJvmStackInBytes.ToString());

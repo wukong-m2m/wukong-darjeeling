@@ -142,10 +142,19 @@ let addCyclesAndDebugData (jvmInstructions : JvmInstruction list) (countersForAd
               counters = resultsWithCycles |> List.map (fun r -> r.counters) |> List.fold (avrCountersToJvmCounters) ExecCounters.empty
               djDebugData = debugdata })
 
-let countPushPopMovw (results : ResultJava list) =
-    let isAOT_PUSH x = AVR.is AVR.PUSH (x.opcode) || AVR.is AVR.ST_XINC (x.opcode) // AOT uses 2 stacks
-    let isAOT_POP x = AVR.is AVR.POP (x.opcode) || AVR.is AVR.LD_DECX (x.opcode)
-    let isMOVW x = AVR.is AVR.MOVW (x.opcode)
+let countPushPopMovC (results : (AvrInstruction * ExecCounters) list) =
+    let isPUSHPOP x = AVR.is AVR.PUSH (x.opcode) || AVR.is AVR.POP (x.opcode)
+    let isMOV x = AVR.is AVR.MOV (x.opcode) || AVR.is AVR.MOVW (x.opcode)
+    let sumForOpcode predicate =
+        results |> List.filter (fun (avr, cnt) -> predicate avr)
+                |> List.map (fun (avr, cnt) -> cnt)
+                |> List.fold (+) ExecCounters.empty
+    (sumForOpcode isPUSHPOP, sumForOpcode isMOV)
+
+let countPushPopMovAOT (results : ResultJava list) =
+    let isPUSHPOPInt x = AVR.is AVR.PUSH (x.opcode) || AVR.is AVR.POP (x.opcode)
+    let isPUSHPOPRef x = AVR.is AVR.ST_XINC (x.opcode) || AVR.is AVR.LD_DECX (x.opcode)
+    let isMOV x = AVR.is AVR.MOV (x.opcode) || AVR.is AVR.MOVW (x.opcode)
     let sumForOpcode predicate =
         results |> List.map (fun r -> r.avr)
                 |> List.concat
@@ -155,7 +164,7 @@ let countPushPopMovw (results : ResultJava list) =
                                         | _
                                           -> ExecCounters.empty)
                 |> List.fold (+) ExecCounters.empty
-    (sumForOpcode isAOT_PUSH, sumForOpcode isAOT_POP, sumForOpcode isMOVW)
+    (sumForOpcode isPUSHPOPInt, sumForOpcode isPUSHPOPRef, sumForOpcode isMOV)
 
 let getTimersFromStdout (stdoutlog : string list) =
     let pattern = "timer number (10\d): (\d+) cycles"
@@ -252,7 +261,6 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress :
     let djdebugdata = parseDJDebug djdebuglines
     let mainResults = addCyclesAndDebugData (methodImpl.JavaInstructions |> Seq.map JvmInstructionFromXml |> Seq.toList) countersForAddress matchedResult djdebugdata
     let stopwatchTimers = getTimersFromStdout stdoutlog
-    let (cyclesPush, cyclesPop , cyclesMovw) = (countPushPopMovw mainResults)
 
     let groupFold keyFunc valueFunc foldFunc foldInitAcc x =
         x |> List.toSeq
@@ -294,6 +302,10 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress :
                                     | Some (cat, cnt) -> (cat, cnt)
                                     | None -> (cat, ExecCounters.empty))
 
+    let (cyclesCPushPop, cyclesCMov) = (countPushPopMovC nativeCInstructions)
+    let (cyclesAOTPushPopInt, cyclesAOTPushPopRef , cyclesAOTMov) = (countPushPopMovAOT mainResults)
+    let cyclesCTotal = nativeCInstructions |> Seq.toList |> List.sumBy (fun (inst,cnt) -> (cnt.cycles))
+    let cyclesAOTTotal = mainResults |> List.sumBy (fun r -> (r.counters.cycles))
     let cyclesPerJvmOpcodeCategory = groupOpcodesInCategories getAllJvmOpcodeCategories getCategoryForJvmOpcode cyclesPerJvmOpcode
     let cyclesPerAvrOpcodeCategoryNativeC = groupOpcodesInCategories AVR.getAllOpcodeCategories AVR.opcodeCategory cyclesPerAvrOpcodeNativeC
     let cyclesPerAvrOpcodeCategoryAOTJava = groupOpcodesInCategories AVR.getAllOpcodeCategories AVR.opcodeCategory cyclesPerAvrOpcodeAOTJava
@@ -334,9 +346,16 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress :
         codesizeJavaWithoutBranchMarkloopOverhead = codesizeJavaWithoutBranchMarkloopOverhead
         codesizeAOT = codesizeAOT
         codesizeC = codesizeC
-        cyclesPush = cyclesPush
-        cyclesPop = cyclesPop
-        cyclesMovw = cyclesMovw
+        cyclesCTotal = cyclesCTotal
+        cyclesCPushPop = cyclesCPushPop
+        cyclesCMov = cyclesCMov
+        cyclesAOTTotal = cyclesAOTTotal
+        cyclesAOTPushPopInt = cyclesAOTPushPopInt
+        cyclesAOTPushPopRef = cyclesAOTPushPopRef
+        cyclesAOTMov = cyclesAOTMov
+        overheadTotalCycles = cyclesAOTTotal - cyclesCTotal
+        overheadPushPopCycles = cyclesAOTPushPopInt.cycles + cyclesAOTPushPopRef.cycles - cyclesCPushPop.cycles
+        overheadMovCycles = cyclesAOTMov.cycles - cyclesCMov.cycles
         cyclesPerJvmOpcode = cyclesPerJvmOpcode |> List.map (fun (opc, cnt) -> (getCategoryForJvmOpcode opc, opc, cnt))
         cyclesPerAvrOpcodeAOTJava = cyclesPerAvrOpcodeAOTJava |> List.map (fun (opc, cnt) -> (AVR.opcodeCategory opc, AVR.opcodeName opc, cnt))
         cyclesPerAvrOpcodeNativeC = cyclesPerAvrOpcodeNativeC |> List.map (fun (opc, cnt) -> (AVR.opcodeCategory opc, AVR.opcodeName opc, cnt))
@@ -346,12 +365,17 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress :
     }
 
 let resultsToString (results : Results) =
-    let totalCyclesAOTJava = results.jvmInstructions |> List.sumBy (fun r -> (r.counters.cycles))
-    let totalCyclesNativeC = results.nativeCInstructions |> List.sumBy (fun (inst,cnt) -> (cnt.cycles))
+    let totalCyclesAOTJava = results.cyclesAOTTotal
+    let totalCyclesNativeC = results.cyclesCTotal
     let cyclesToSlowdown cycles1 cycles2 =
         String.Format ("{0:0.00}", float cycles1 / float cycles2)
     let stackToString stack =
         String.Join(",", stack |> List.map (fun el -> el.datatype |> StackDatatypeToString))
+    let overheadToStringVsNativeC totalCycles totalCyclesNativeC overheadCycles =
+        String.Format("cyc:{0,10}  {1,4:0.0}%  {2,7:0.0}%(NativeC)",
+                      overheadCycles,
+                      100.0 * float overheadCycles / float totalCycles,
+                      100.0 * float overheadCycles / float totalCyclesNativeC)
     let countersToString totalCycles (counters : ExecCounters) =
         String.Format("cyc:{0,10}  {1,4:0.0}%  exe:{2,8}  avg: {3,5:0.0}",
                       counters.cycles,
@@ -415,12 +439,19 @@ let resultsToString (results : Results) =
         yield ""
         yield String.Format ("--- CYCLE COUNT Native C                       {0,14} (={1})", results.executedCyclesC, totalCyclesNativeC)
         yield String.Format ("                    stopw/count                {0,14}", (cyclesToSlowdown results.stopwatchCyclesC results.executedCyclesC))
+        yield String.Format ("                push/pop int                   {0}", (countersToStringVsNativeC totalCyclesNativeC totalCyclesNativeC results.cyclesCPushPop))
+        yield String.Format ("                mov(w)                         {0}", (countersToStringVsNativeC totalCyclesNativeC totalCyclesNativeC results.cyclesCMov))
+        yield ""
         yield String.Format ("                AOT                            {0,14} (={1})", results.executedCyclesAOT, totalCyclesAOTJava)
         yield String.Format ("                    stopw/count                {0,14}", (cyclesToSlowdown results.stopwatchCyclesAOT results.executedCyclesAOT))
-        yield String.Format ("                push                           {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesPush))
-        yield String.Format ("                pop                            {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesPop))
-        yield String.Format ("                movw                           {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesMovw))
-        yield String.Format ("                total                          {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC (results.cyclesPush + results.cyclesPop + results.cyclesMovw)))
+        yield String.Format ("                push/pop int                   {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesAOTPushPopInt))
+        yield String.Format ("                push/pop ref                   {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesAOTPushPopRef))
+        yield String.Format ("                mov(w)                         {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesAOTMov))
+        yield String.Format ("                total                          {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC (results.cyclesAOTPushPopInt + results.cyclesAOTPushPopRef + results.cyclesAOTMov)))
+        yield ""
+        yield String.Format ("--- OVERHEAD Total                             {0,14}", (overheadToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.overheadTotalCycles))
+        yield String.Format ("             pushpop                           {0,14}", (overheadToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.overheadPushPopCycles))
+        yield String.Format ("             mov(w)                            {0,14}", (overheadToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.overheadMovCycles))
         yield ""
         yield String.Format ("--- STACK max                                  {0,14}", (results.maxJvmStackInBytes))
         yield String.Format ("          avg/executed jvm                     {0,14:000.00}", results.avgJvmStackInBytes)
