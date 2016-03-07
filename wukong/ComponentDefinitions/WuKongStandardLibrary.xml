@@ -551,7 +551,7 @@
     <WuClass name="LocalizationPrClass" id="10115" virtual="false" type="hard">
       <property name="signal" access="readwrite" datatype="short" default="0" />
       <property name="particleCount" access="readwrite" datatype="short" default="100" />
-      <property name="movNoise" access="readwrite" dataype="short" default="0" />
+      <property name="movNoise" access="readwrite" datatype="short" default="0" />
       <property name="rotNoise" access="readwrite" datatype="short" default="0" />
       <property name="senseNoise" access="readwrite" datatype="short" default="0" />
       <property name="maxr" access="readwrite" datatype="short" default="0" />

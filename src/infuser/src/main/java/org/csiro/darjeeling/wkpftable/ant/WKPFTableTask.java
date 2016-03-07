@@ -172,8 +172,8 @@ public class WKPFTableTask extends Task
 				links_bytes.add((byte)(Short.parseShort(link.getAttribute("toComponent")) / 256));
 				links_bytes.add(Byte.parseByte(link.getAttribute("toProperty")));
         // Add link counter
-				links_bytes.add(0);
-				links_bytes.add(0);
+				links_bytes.add((byte)0);
+				links_bytes.add((byte)0);
 			}
 		}
 		return links_bytes;
