@@ -300,7 +300,7 @@ uint8_t wkpf_propagate_property(wuobject_t *wuobject, uint8_t property_number, v
                     else
                         wkpf_error_code |= wkpf_external_write_property_refresh_rate(dest_wuobject, dest_property_number, *((uint16_t *)value));
                 }
-                WKPF_LINK_COUNTER(i);
+                WKPF_LINK_COUNTER(i) ++;
             } else if(dest_node_id == WUKONG_MONITOR_SERVER_ID) {
                 DEBUG_LOG(DBG_WKPF, "WKPF: Monitoring property (remote). (%x, %x)->(%x, %x, %x), value %x\n", port_number, property_number, dest_node_id, dest_port_number, dest_property_number, *((uint16_t *)value)); // TODONR: values other than 16 bit values
 			         if (WKPF_GET_PROPERTY_DATATYPE(src_wuobject->wuclass->properties[property_number]) == WKPF_PROPERTY_TYPE_BOOLEAN)
@@ -318,7 +318,7 @@ uint8_t wkpf_propagate_property(wuobject_t *wuobject, uint8_t property_number, v
                     wkpf_error_code |= wkpf_send_set_property_int16(dest_node_id, dest_port_number, dest_property_number, dest_wuclass_id, *((uint16_t *)value), component_id);
                 else
                     wkpf_error_code |= wkpf_send_set_property_refresh_rate(dest_node_id, dest_port_number, dest_property_number, dest_wuclass_id, *((uint16_t *)value), component_id);
-                WKPF_LINK_COUNTER(i);
+                WKPF_LINK_COUNTER(i) ++;
             }
             /*if (wkpf_error_code != WKPF_OK)*/
                 /*return wkpf_error_code;*/
