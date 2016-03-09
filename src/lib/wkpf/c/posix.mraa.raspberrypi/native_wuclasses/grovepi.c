@@ -84,7 +84,7 @@ int write_block(char cmd,char v1,char v2,char v3)
     dg=i2c_smbus_write_i2c_block_data(fd,1,4,w_buf);
 
 	if (dbg)
-		printf("wbk: %d\n",dg);
+		DEBUG_LOG(DBG_WKPFUPDATE, "wbk: %d\n",dg);
 
     // if (i2c_smbus_write_i2c_block_data(fd,1,4,w_buf) != 5)
     // {
@@ -115,11 +115,11 @@ char read_byte(void)
 {
     if (file_opened != 1) {
         DEBUG_LOG(DBG_WKPFUPDATE, "GrovePi not init\n");
-        return -1;
+        return 0;
     }
 	r_buf[0]=i2c_smbus_read_byte(fd);
 	if (dbg)
-		printf("rbt: %d\n",r_buf[0]);
+		DEBUG_LOG(DBG_WKPFUPDATE, "rbt: %d\n",r_buf[0]);
 	// if (read(fd, r_buf, reg_size) != reg_size) {
 		// DEBUG_LOG(DBG_WKPFUPDATE, "Unable to read from GrovePi\n");
 		// //exit(1);
@@ -140,7 +140,7 @@ char read_block(void)
     ret=i2c_smbus_read_i2c_block_data(fd,1,32,&r_buf[0]);
 	//&r_buf[0]=&ptr;
 	if(dbg)
-		printf("rbk: %d\n",ret);
+		DEBUG_LOG(DBG_WKPFUPDATE, "rbk: %d\n",ret);
 	// if (read(fd, r_buf, reg_size) != reg_size) {
 		// DEBUG_LOG(DBG_WKPFUPDATE, "Unable to read from GrovePi\n");
 		// //exit(1);

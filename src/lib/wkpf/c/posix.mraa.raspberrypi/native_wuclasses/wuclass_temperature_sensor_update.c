@@ -1,30 +1,26 @@
 #include "config.h"
-#ifdef MRAA_LIBRARY
+#ifdef GROVE_PI
 
 #include "debug.h"
 #include "native_wuclasses.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <fcntl.h>
-#include <sys/resource.h>
-#include <sys/syscall.h>
 #include <math.h>
-#include <mraa.h>
+#include "grovepi.h"
 
-mraa_aio_context adc_a2;
+#define TEMPERATURE_PIN 5
 
 void wuclass_temperature_sensor_setup(wuobject_t *wuobject) {
-    adc_a2 = mraa_aio_init(2);
+    if(init() == -1) {
+        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Temperature): init failed\n");
+        return;
+    }
 }
 
 void wuclass_temperature_sensor_update(wuobject_t *wuobject) {
     int16_t output = 0;
-    output = mraa_aio_read(adc_a2);
+    output = analogRead(TEMPERATURE_PIN);
     if(output == 0){
       DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Temperature): zero input\n");
     }else{

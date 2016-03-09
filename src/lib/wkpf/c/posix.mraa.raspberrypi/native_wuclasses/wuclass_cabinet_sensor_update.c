@@ -1,36 +1,39 @@
 #include "config.h"
-#ifdef MRAA_LIBRARY
+#ifdef GROVE_PI
 
 #include "debug.h"
 #include "native_wuclasses.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <mraa.h>
+#include "grovepi.h"
 
-mraa_gpio_context shoe_gpio[3];
-mraa_gpio_context light_gpio;
+#define SHOE0_PIN 2
+#define SHOE1_PIN 3
+#define SHOE2_PIN 4
+#define LIGHT_PIN 5
 
 void wuclass_cabinet_setup(wuobject_t *wuobject) {
-    shoe_gpio[0] = mraa_gpio_init(2);
-    mraa_gpio_dir(shoe_gpio[0], MRAA_GPIO_IN);
-    shoe_gpio[1] = mraa_gpio_init(3);
-    mraa_gpio_dir(shoe_gpio[1], MRAA_GPIO_IN);
-    shoe_gpio[2] = mraa_gpio_init(4);
-    mraa_gpio_dir(shoe_gpio[2], MRAA_GPIO_IN);
-    light_gpio = mraa_gpio_init(5);
-    mraa_gpio_dir(light_gpio, MRAA_GPIO_OUT);
-    mraa_gpio_write(light_gpio, 1);
+    if(init() == -1) {
+        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(cabinet): init failed\n");
+        return;
+    }
+    pinMode(SHOE0_PIN, 0);
+    pinMode(SHOE1_PIN, 0);
+    pinMode(SHOE2_PIN, 0);
+    pinMode(LIGHT_PIN, 1);
+    digitalWrite(LIGHT_PIN, 1);
 }
+
 
 void wuclass_cabinet_update(wuobject_t *wuobject) {
     static bool value[3];
     bool value_i[3];
-    value_i[0] = mraa_gpio_read(shoe_gpio[0]);
-    value_i[1] = mraa_gpio_read(shoe_gpio[1]);
-    value_i[2] = mraa_gpio_read(shoe_gpio[2]);
+    value_i[0] = digitalRead(SHOE0_PIN);
+    value_i[1] = digitalRead(SHOE1_PIN);
+    value_i[2] = digitalRead(SHOE2_PIN);
     if (value[0] != value_i[0] || value[1] != value_i[1] || value[2] != value_i[2]) {
-        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(cabinet): value: %d %d %d\n", value_i[0], value_i[1], value_i[2]); 
+        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(cabinet): value: %d %d %d\n", value_i[0], value_i[1], value_i[2]);
         value[0] = value_i[0];
         value[1] = value_i[1];
         value[2] = value_i[2];

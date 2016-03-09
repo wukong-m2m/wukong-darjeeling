@@ -1,26 +1,29 @@
 #include "config.h"
-#ifdef MRAA_LIBRARY
+#ifdef GROVE_PI
 
 #include "debug.h"
 #include "native_wuclasses.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <mraa.h>
+#include "grovepi.h"
 
-mraa_gpio_context pir_gpio;
+#define PIR_PIN 5
 
 void wuclass_pir_sensor_setup(wuobject_t *wuobject) {
-    pir_gpio = mraa_gpio_init(5);
-    mraa_gpio_dir(pir_gpio, MRAA_GPIO_IN);
+    if(init() == -1) {
+        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(PIR): init failed\n");
+        return;
+    }
+    pinMode(PIR_PIN, 0);
 }
 
 void wuclass_pir_sensor_update(wuobject_t *wuobject) {
     bool value;
     int value_i;
-    value_i = mraa_gpio_read(pir_gpio);
+    value_i = digitalRead(PIR_PIN);
     value = (value_i != 0);
-    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(PIR): Sensed binary value: %d\n", value_i); 
+    DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(PIR): Sensed binary value: %d\n", value_i);
     wkpf_internal_write_property_boolean(wuobject, WKPF_PROPERTY_PIR_SENSOR_CURRENT_VALUE, value);
 }
 #endif

@@ -1,27 +1,30 @@
 #include "config.h"
-#ifdef MRAA_LIBRARY
+#ifdef GROVE_PI
 
 #include "debug.h"
 #include "native_wuclasses.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <mraa.h>
+#include "grovepi.h"
 
-mraa_gpio_context la_gpio;
+#define LIGHT_ACTUATOR_PIN 7
 
 void wuclass_light_actuator_setup(wuobject_t *wuobject) {
-    la_gpio = mraa_gpio_init(7);
-    mraa_gpio_dir(la_gpio, MRAA_GPIO_OUT);
+    if(init() == -1) {
+        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Light): init failed\n");
+        return;
+    }
+    pinMode(LIGHT_ACTUATOR_PIN, 1);
 }
 
 void wuclass_light_actuator_update(wuobject_t *wuobject) {
     bool onOff;
     wkpf_internal_read_property_boolean(wuobject, WKPF_PROPERTY_LIGHT_ACTUATOR_ON_OFF, &onOff);
     if (onOff){
-      mraa_gpio_write(la_gpio, 1);
+      digitalWrite(LIGHT_ACTUATOR_PIN, 1);
     }else{
-      mraa_gpio_write(la_gpio, 0);
+      digitalWrite(LIGHT_ACTUATOR_PIN, 0);
     }
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Light): Sensed lightness: %x\n", onOff);
 }

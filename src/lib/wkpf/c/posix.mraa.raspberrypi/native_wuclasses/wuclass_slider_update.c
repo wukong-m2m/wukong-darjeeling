@@ -1,31 +1,25 @@
 #include "config.h"
-#ifdef MRAA_LIBRARY
+#ifdef GROVE_PI
 
 #include "debug.h"
 #include "native_wuclasses.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <fcntl.h>
-#include <sys/resource.h>
-#include <sys/syscall.h>
-#include <math.h>
-#include <mraa.h>
+#include "grovepi.h"
 
-mraa_aio_context adc_a0;
+#define SLIDER_PIN 0 // A0
 
 void wuclass_slider_setup(wuobject_t *wuobject) {
-    adc_a0 = mraa_aio_init(0);
-    DEBUG_LOG(true, "WKPFUPDATE(Slider): Slider\n");
+    if(init() == -1) {
+        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Slider): init failed\n");
+        return;
+    }
 }
 
 void wuclass_slider_update(wuobject_t *wuobject) {
     int16_t num=0;
-    num = mraa_aio_read(adc_a0);
+    num = analogRead(SLIDER_PIN);
     int16_t low;
     int16_t high;
     wkpf_internal_read_property_int16(wuobject, WKPF_PROPERTY_SLIDER_LOW_VALUE, &low);

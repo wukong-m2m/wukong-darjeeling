@@ -1,27 +1,30 @@
 #include "config.h"
-#ifdef MRAA_LIBRARY
+#ifdef GROVE_PI
 
 #include "debug.h"
 #include "native_wuclasses.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <mraa.h>
+#include "grovepi.h"
 
-mraa_gpio_context relay_gpio;
+#define RELAY_PIN 8
 
 void wuclass_relay_setup(wuobject_t *wuobject) {
-    relay_gpio = mraa_gpio_init(8);
-    mraa_gpio_dir(relay_gpio, MRAA_GPIO_OUT);
+    if(init() == -1) {
+        DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Relay): init failed\n");
+        return;
+    }
+    pinMode(RELAY_PIN, 1);
 }
 
 void wuclass_relay_update(wuobject_t *wuobject) {
     bool onOff;
     wkpf_internal_read_property_boolean(wuobject, WKPF_PROPERTY_RELAY_ON_OFF, &onOff);
     if (onOff){
-      mraa_gpio_write(relay_gpio, 1);
+      digitalWrite(RELAY_PIN, 1);
     }else{
-      mraa_gpio_write(relay_gpio, 0);
+      digitalWrite(RELAY_PIN, 0);
     }
 
     DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Relay): Sensed value: %x\n", onOff);
