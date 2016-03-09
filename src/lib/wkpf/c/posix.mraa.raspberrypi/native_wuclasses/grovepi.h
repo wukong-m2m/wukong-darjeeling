@@ -25,6 +25,10 @@
 #define aRead_cmd 	3
 #define aWrite_cmd 	4
 #define pMode_cmd	5
+
+#define INPUT 0
+#define OUTPUT 1
+
 //Initialize
 int init(void);
 //Write a register

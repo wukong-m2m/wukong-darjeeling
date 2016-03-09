@@ -15,7 +15,7 @@ void wuclass_phone_setup(wuobject_t *wuobject) {
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Phone): init failed\n");
         return;
     }
-    pinMode(PHONE_PIN, 0);
+    pinMode(PHONE_PIN, INPUT);
 }
 
 void wuclass_phone_update(wuobject_t *wuobject) {

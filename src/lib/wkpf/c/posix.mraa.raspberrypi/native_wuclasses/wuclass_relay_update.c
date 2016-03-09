@@ -15,7 +15,7 @@ void wuclass_relay_setup(wuobject_t *wuobject) {
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Relay): init failed\n");
         return;
     }
-    pinMode(RELAY_PIN, 1);
+    pinMode(RELAY_PIN, OUTPUT);
 }
 
 void wuclass_relay_update(wuobject_t *wuobject) {

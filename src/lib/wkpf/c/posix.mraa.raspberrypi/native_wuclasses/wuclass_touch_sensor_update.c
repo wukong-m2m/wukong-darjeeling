@@ -15,7 +15,7 @@ void wuclass_touch_sensor_setup(wuobject_t *wuobject) {
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Touch Sensor): init failed\n");
         return;
     }
-    pinMode(TOUCH_PIN, 0);
+    pinMode(TOUCH_PIN, INPUT);
 }
 
 void wuclass_touch_sensor_update(wuobject_t *wuobject) {

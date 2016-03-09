@@ -15,7 +15,7 @@ void wuclass_light_actuator_setup(wuobject_t *wuobject) {
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Light): init failed\n");
         return;
     }
-    pinMode(LIGHT_ACTUATOR_PIN, 1);
+    pinMode(LIGHT_ACTUATOR_PIN, OUTPUT);
 }
 
 void wuclass_light_actuator_update(wuobject_t *wuobject) {

@@ -15,7 +15,7 @@ void wuclass_magnetic_sensor_setup(wuobject_t *wuobject) {
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(Magnetic): init failed\n");
         return;
     }
-    pinMode(MAGNETIC_PIN, 0);
+    pinMode(MAGNETIC_PIN, INPUT);
 }
 
 void wuclass_magnetic_sensor_update(wuobject_t *wuobject) {

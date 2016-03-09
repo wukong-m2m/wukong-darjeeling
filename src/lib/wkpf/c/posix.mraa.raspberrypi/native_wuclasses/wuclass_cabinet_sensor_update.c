@@ -18,10 +18,10 @@ void wuclass_cabinet_setup(wuobject_t *wuobject) {
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(cabinet): init failed\n");
         return;
     }
-    pinMode(SHOE0_PIN, 0);
-    pinMode(SHOE1_PIN, 0);
-    pinMode(SHOE2_PIN, 0);
-    pinMode(LIGHT_PIN, 1);
+    pinMode(SHOE0_PIN, INPUT);
+    pinMode(SHOE1_PIN, INPUT);
+    pinMode(SHOE2_PIN, INPUT);
+    pinMode(LIGHT_PIN, OUTPUT);
     digitalWrite(LIGHT_PIN, 1);
 }
 

@@ -15,7 +15,7 @@ void wuclass_pir_sensor_setup(wuobject_t *wuobject) {
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(PIR): init failed\n");
         return;
     }
-    pinMode(PIR_PIN, 0);
+    pinMode(PIR_PIN, INPUT);
 }
 
 void wuclass_pir_sensor_update(wuobject_t *wuobject) {

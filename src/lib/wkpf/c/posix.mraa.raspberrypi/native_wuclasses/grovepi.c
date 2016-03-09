@@ -115,7 +115,7 @@ char read_byte(void)
 {
     if (file_opened != 1) {
         DEBUG_LOG(DBG_WKPFUPDATE, "GrovePi not init\n");
-        return 0;
+        return -1;
     }
 	r_buf[0]=i2c_smbus_read_byte(fd);
 	if (dbg)
@@ -175,6 +175,10 @@ int analogRead(int pin)
 //Write a digital value to a pin
 int digitalWrite(int pin,int value)
 {
+    if (file_opened != 1) {
+        DEBUG_LOG(DBG_WKPFUPDATE, "GrovePi not init\n");
+        return -1;
+    }
 	return write_block(dWrite_cmd,pin,value,0);
 }
 
@@ -184,12 +188,20 @@ int digitalWrite(int pin,int value)
 //	0:	input
 int pinMode(int pin,int mode)
 {
+    if (file_opened != 1) {
+        DEBUG_LOG(DBG_WKPFUPDATE, "GrovePi not init\n");
+        return -1;
+    }
 	return write_block(pMode_cmd,pin,mode,0);
 }
 
 //Read a digital value from a pin
 int digitalRead(int pin)
 {
+    if (file_opened != 1) {
+        DEBUG_LOG(DBG_WKPFUPDATE, "GrovePi not init\n");
+        return 0;
+    }
 	write_block(dRead_cmd,pin,0,0);
 	usleep(10000);
 	return read_byte();
@@ -198,5 +210,9 @@ int digitalRead(int pin)
 //Write a PWM value to a pin
 int analogWrite(int pin,int value)
 {
+    if (file_opened != 1) {
+        DEBUG_LOG(DBG_WKPFUPDATE, "GrovePi not init\n");
+        return -1;
+    }
 	return write_block(aWrite_cmd,pin,value,0);
 }

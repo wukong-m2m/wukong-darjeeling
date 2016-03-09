@@ -15,7 +15,7 @@ void wuclass_button_setup(wuobject_t *wuobject) {
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(NButton): init failed\n");
         return;
     }
-    pinMode(BUTTON_PIN, 0);
+    pinMode(BUTTON_PIN, INPUT);
 }
 
 void wuclass_button_update(wuobject_t *wuobject) {

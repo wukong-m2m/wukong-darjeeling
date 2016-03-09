@@ -17,9 +17,9 @@ void wuclass_irremote_tv_setup(wuobject_t *wuobject) {
         DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(IRremote TV): init failed\n");
         return;
     }
-    pinMode(TV_ONOFF_IN_PIN, 0);
-    pinMode(TV_ONOFF_OUT_PIN, 1);
-    pinMode(TV_MUTE_OUT_PIN, 1);
+    pinMode(TV_ONOFF_IN_PIN, INPUT);
+    pinMode(TV_ONOFF_OUT_PIN, OUTPUT);
+    pinMode(TV_MUTE_OUT_PIN, OUTPUT);
 }
 
 void wuclass_irremote_tv_update(wuobject_t *wuobject) {
