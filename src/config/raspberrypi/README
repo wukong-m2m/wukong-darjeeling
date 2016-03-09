@@ -26,7 +26,7 @@ sudo xargs rm < install_manifest.txt
 cd ~
 # Go to http://archive.raspbian.org/raspbian/pool/main/o/openssl/
 # First, know the version of libssl-dev on your RPi
-apt-cache show libssl-dev
+apt-cache show libssl-dev | grep [Vv]ersion
 
 # Get the latest libssl-dev_X.X.XX-XXXX_armhf.deb that matches the version on RPi
 

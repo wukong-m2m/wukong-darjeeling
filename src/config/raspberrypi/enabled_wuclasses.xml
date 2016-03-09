@@ -2,12 +2,12 @@
     <!--WuClass name="Button" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass-->
-    <WuClass name="Touch_Sensor" appCanCreateInstances="false">
+    <WuClass name="Button" appCanCreateInstances="false">
         <CreateInstance />
     </WuClass>
-    <WuClass name="Light_Actuator" appCanCreateInstances="false">
+   <!--  <WuClass name="Light_Actuator" appCanCreateInstances="false">
         <CreateInstance />
-    </WuClass>
+    </WuClass> -->
 </WuKong>
 
     <!--<WuClass name="Button" appCanCreateInstances="false">
@@ -31,7 +31,7 @@
     <WuClass name="Relay" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass>-->
- 
+
     <!-- 192.168.0.101 is galileoPHONE -->
     <!--<WuClass name="Cabinet" appCanCreateInstances="false">
     	<CreateInstance />
@@ -95,7 +95,7 @@
     <WuClass name="Sonos" appCanCreateInstances="false">
     	<CreateInstance />
     </WuClass> -->
-    
+
     <!-- 192.168.0.106 is edisonENTRANCE -->
     <!--<WuClass name="Cabinet" appCanCreateInstances="false">
     	<CreateInstance />
