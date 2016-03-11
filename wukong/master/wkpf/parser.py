@@ -12,6 +12,7 @@ class Parser:
     print 'Constructing basic types'
     WuTypeDef.create('short', 'short')
     WuTypeDef.create('boolean', 'boolean')
+    WuTypeDef.create('array', 'array')
     WuTypeDef.create('refresh_rate', 'refresh_rate')
 
     print 'Scanning types'

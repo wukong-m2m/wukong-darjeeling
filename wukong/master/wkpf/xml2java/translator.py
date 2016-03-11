@@ -121,7 +121,7 @@ def xmlparser():
     #   'xml': WuClass name in XML
     #   'id' : wuClass ID
     #   'prop' : wuClass' properties
-    #            {'jconst': java constant name, 'id' : property's ID, 'type' : u'short' or u'boolean' or enum's dict[enum's value] , 'access': 'rw' or 'ro' or 'wo'}
+    #            {'jconst': java constant name, 'id' : property's ID, 'type' : u'short' or u'boolean' or enum's dict[enum's value] or u'array', 'access': 'rw' or 'ro' or 'wo'}
     #   'vrtl' : true or false (whether wuClass is virtual or not)
     #   'soft' : true (soft) or false (hard)
     # }
@@ -158,6 +158,11 @@ def xmlparser():
                 prop_dflt_value = truefalse_dict[prop_dflt_value.lower()] # it becomes type boolean
             elif prop_type == u'refresh_rate':
                 prop_dflt_value = ('r', int(prop_dflt_value,0)) # it becomes type tuple
+            elif prop_type == u'array':
+                values = prop_dflt_value              
+                prop_dflt_value = []
+                for value in values:
+                  prop_dflt_value.append(int(value))
             else:
                 assert False, 'Error! property %s of unknown type %s in xml %s' % (prop_name, prop_type, path)
             tmp_dflt_list += [(prop_name, prop_dflt_value)]
@@ -210,7 +215,7 @@ def xmlparser():
     #   'cmpid': component's ID, 
     #   'class': WuClass's Name, 
     #   'classid': WuClasses's ID,
-    #   'defaults': a list of tuples [ ( property's name, property's default value(int or bool value) ) ]
+    #   'defaults': a list of tuples [ ( property's name, property's default value(int or bool value or list) ) ]
     # }
 
 def mapper(wuClasses_dict, components_dict, node_list, locationTree, queries):
@@ -283,6 +288,11 @@ def mapper(wuClasses_dict, components_dict, node_list, locationTree, queries):
                 if_stmts += set_prop_call % ("Short", cmpId, prop_name, prop_value)
             elif prop_type is tuple and prop_value[0] == 'r':
                 if_stmts += set_prop_call % ("RefreshRate", cmpId, prop_name, "(short)"+str(prop_value[1]))
+            elif prop_type is list:
+                tmp_str = ""
+                for value in prop_value:
+                  tmp_str += "%s," %str(value)
+                if_stmts += set_prop_call % ("Array", cmpId, prop_name, "(list)"+tmp_str) 
             else:
                 assert False, 'Error! property %s of unknown type %s' % (prop_name, prop_type)
 

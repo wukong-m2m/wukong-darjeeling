@@ -13,6 +13,7 @@ class WuClassLibraryParser:
     WuObjectFactory.createWuTypeDef('short', 'short')
     WuObjectFactory.createWuTypeDef('boolean', 'boolean')
     WuObjectFactory.createWuTypeDef('refresh_rate', 'refresh_rate')
+    WuObjectFactory.createWuTypeDef('array', 'array')
 
     for wuType in dom.getElementsByTagName('WuTypedef'):
       name = wuType.getAttribute('name')

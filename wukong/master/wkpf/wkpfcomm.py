@@ -17,6 +17,7 @@ WKCOMM_MESSAGE_PAYLOAD_SIZE=40
 WKPF_PROPERTY_TYPE_SHORT         = 0
 WKPF_PROPERTY_TYPE_BOOLEAN       = 1
 WKPF_PROPERTY_TYPE_REFRESH_RATE  = 2
+WKPF_PROPERTY_TYPE_ARRAY         = 3
 OBJECTS_IN_MESSAGE               = (WKCOMM_MESSAGE_PAYLOAD_SIZE-3)/4
 RETRY_TIMES                      = 1
 
@@ -496,6 +497,10 @@ class Communication:
         value = reply[9] != 0
       elif datatype == WKPF_PROPERTY_TYPE_SHORT or datatype == WKPF_PROPERTY_TYPE_REFRESH_RATE:
         value = (reply[9] <<8) + reply[10]
+      elif datatype == WKPF_PROPERTY_TYPE_ARRAY:
+        value = []
+        for count in xrange(9,39):
+          value.append(reply[count])
       else:
         value = None
       return (value, datatype, status)
@@ -520,6 +525,9 @@ class Communication:
 
       elif datatype == 'refresh_rate':
         datatype = WKPF_PROPERTY_TYPE_REFRESH_RATE
+      
+      elif datatype == 'array':
+        datatype = WKPF_PROPERTY_TYPE_ARRAY
 
       if datatype == WKPF_PROPERTY_TYPE_BOOLEAN:
         payload=[port, (wuclassid>>8)&0xFF,
@@ -537,6 +545,13 @@ class Communication:
         0, 0, 0, 0, 0]
         # the last 5 0s are sender and receiver component id. see wkpf_generate_piggyback_token() in wkpf_links.c
 
+      # no piggyback
+      elif datatype == WKPF_PROPERTY_TYPE_ARRAY:     
+        payload=[port, (wuclassid>>8)&0xFF,
+                    wuclassid&0xFF, property_number, datatype]
+        for count in xrange(0,30):
+          payload.append(value[count]&0xFF)
+        
 
       reply = self.agent.send(id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])
       # reply = self.zwave.send(wunode.id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])

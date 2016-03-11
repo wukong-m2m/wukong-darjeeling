@@ -90,6 +90,8 @@ public class {{ applicationName }} {
         WKPF.setPropertyShort(wuclassInstance{{ objectLst[0].getWuClassName() }}, WKPF.{{ property.getJavaConstName() }}, (short){{ property.getCurrentValue() }});
         {% elif property.getDataType() == 'refresh_rate' %}
         WKPF.setPropertyRefreshRate(wuclassInstance{{ objectLst[0].getWuClassName() }}, WKPF.{{ property.getJavaConstName() }}, (short){{ property.getCurrentValue() }});
+        {% elif property.getDataType() == 'array' %}
+        WKPF.setPropertyArray(wuclassInstance{{ objectLst[0].getWuClassName() }}, WKPF.{{ property.getJavaConstName() }}, (short){{ property.getCurrentValue() }});
         {% else %}
         WKPF.setPropertyShort(wuclassInstance{{ objectLst[0].getWuClassName() }}, WKPF.{{ property.getJavaConstName() }}, WKPF.{{ property.getWuType().getValueInJavaConstant(property.getCurrentValue()) }});
         {%- endif -%}
@@ -110,6 +112,8 @@ public class {{ applicationName }} {
         WKPF.setPropertyShort((short){{ objectLst[0].getInstanceIndex() }}, WKPF.{{ property.getJavaConstName() }}, (short){{ property.getCurrentValue() }});
         {% elif property.getDataType() == 'refresh_rate' %}
         WKPF.setPropertyRefreshRate((short){{ objectLst[0].getInstanceIndex() }}, WKPF.{{ property.getJavaConstName() }}, (short){{ property.getCurrentValue() }});
+        {% elif property.getDataType() == 'array' %}
+        WKPF.setPropertyArray((short){{ objectLst[0].getInstanceIndex() }}, WKPF.{{ property.getJavaConstName() }}, (short){{ property.getCurrentValue() }});
         {% else %}
         WKPF.setPropertyShort((short){{ objectLst[0].getInstanceIndex() }}, WKPF.{{ property.getJavaConstName() }}, WKPF.{{ property.getWuType().getValueInJavaConstant(property.getCurrentValue()) }});
         {%- endif -%}
