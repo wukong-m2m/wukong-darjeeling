@@ -338,6 +338,11 @@ class WKPF(DatagramProtocol):
         src_id = self.mptnaddr
         if type(val) == bool:
             p = struct.pack('14B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_BOOLEAN, val & 0xff, (src_cid >> 8)&0xff, src_cid&0xff, (dest_cid >> 8)&0xff, dest_cid&0xff, 0)
+        elif type(val) == list:
+            p = struct.pack('15B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, 
+                            (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_SHORT, 
+                            (val >> 8)&0xff, val & 0xff, 
+                            (src_cid >> 8)&0xff, src_cid&0xff, (dest_cid >> 8)&0xff, dest_cid&0xff, 0)
         else:
             p = struct.pack('15B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_SHORT, (val >> 8)&0xff, val & 0xff, (src_cid >> 8)&0xff, src_cid&0xff, (dest_cid >> 8)&0xff, dest_cid&0xff, 0)
 
