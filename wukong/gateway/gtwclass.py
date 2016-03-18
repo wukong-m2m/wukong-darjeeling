@@ -96,8 +96,8 @@ class Gateway(object):
     def _process_message(self, context, message):
         dest_id, src_id, msg_type, payload = MPTN.extract_packet_from_str(message)
 
-        # log_msg = MPTN.formatted_print(MPTN.split_packet_to_list(message))
-        # logger.debug("receives and processes message:\n%s" % log_msg)
+        log_msg = MPTN.formatted_print(MPTN.split_packet_to_list(message))
+        logger.debug("receives and processes message:\n%s" % log_msg)
 
         if dest_id is None:
             logger.error("processing message with header shorter than required %s" % MPTN.formatted_print(str(message)))

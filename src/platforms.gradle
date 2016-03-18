@@ -1,5 +1,10 @@
 // Set basic platform properties
 switch (djConfig.getAllPlatforms().last()) {
+    case 'arduino':
+        ext.djArchitecture='avr'
+        ext.djMcu='atmega2560'
+        ext.djReprogramFlashPageAddress='0x3F000'
+    break
     case 'arduino.wudevice':
         ext.djArchitecture='avr'
         ext.djMcu='atmega2560'

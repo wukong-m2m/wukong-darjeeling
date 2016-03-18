@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <stdio.h>
+#include <stdarg.h>
 extern "C" {
 	typedef unsigned char uint8;
 	typedef unsigned long uint32;
@@ -18,13 +20,19 @@ void avr_delay(unsigned long ms)
 {
 	delay(ms);
 }
-void avr_serialPrint(char * str)
+void avr_serialPrintf(const char *str, ...)
 {
-	Serial.print(str);
+	char buf[128]; // resulting string limited to 128 chars
+        va_list args;
+        va_start (args, str );
+        vsnprintf(buf, 128, str, args);
+        va_end (args);
+        Serial.print(buf);
 }
+
 void avr_serialWrite(uint8 value)
 {
-	Serial.print(value);
+	Serial.println(value);
 }
 void uart_write_byte(uint8 port, char c)
 {
