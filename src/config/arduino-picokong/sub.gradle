@@ -3,4 +3,5 @@ djConfig {
 	libraries = ['wkpf']
 	app = 'wkemptyapp'
 	appArchiveSize = 4096
+        buildStaticLibrary=true
 }

@@ -18,7 +18,7 @@ void avr_delay(unsigned long ms)
 {
 	delay(ms);
 }
-void avr_serialPrint(char * str)
+void avr_serialPrintf(char * str)
 {
 	Serial.print(str);
 }

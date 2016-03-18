@@ -65,8 +65,36 @@ wudevice.bootloader.lock_bits=0x0F
 
 wudevice.build.mcu=atmega2560
 wudevice.build.f_cpu=16000000L
-wudevice.build.board=wukong
+wudevice.build.board=wudevice
 wudevice.build.core=arduino
 wudevice.build.variant=mega
+
+
+picodevice.name=WuDevice(without VM)
+
+picodevice.vid.0=0x2341
+picodevice.pid.0=0x003f
+picodevice.vid.1=0x2341
+picodevice.pid.1=0x0044
+
+picodevice.upload.tool=avrdude
+picodevice.upload.protocol=wiring
+picodevice.upload.maximum_size=258048
+picodevice.upload.maximum_data_size=8192
+picodevice.upload.speed=115200
+
+picodevice.bootloader.tool=avrdude
+picodevice.bootloader.low_fuses=0xFF
+picodevice.bootloader.high_fuses=0xD8
+picodevice.bootloader.extended_fuses=0xFD
+picodevice.bootloader.file=stk500v2/stk500boot_v2_mega2560.hex
+picodevice.bootloader.unlock_bits=0x3F
+picodevice.bootloader.lock_bits=0x0F
+
+picodevice.build.mcu=atmega2560
+picodevice.build.f_cpu=16000000L
+picodevice.build.board=picodevice
+picodevice.build.core=arduino
+picodevice.build.variant=mega
 
 

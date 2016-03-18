@@ -31,12 +31,11 @@
 
 void dj_timer_init()
 {
-	avr_timerInit();
 }
 
 dj_time_t dj_timer_getTimeMillis()
 {
-	return (dj_time_t)avr_millis();
+	return avr_millis();
 }
 
 void dj_timer_delay(unsigned long msec)

@@ -205,6 +205,8 @@ void radio_zwave_init(void) {
     DEBUG_LOG(true, "Clearing leftovers\n");
     while (uart_available(ZWAVE_UART, 150)) {
        unsigned char ctest;
+           ctest++;
+           ctest--;
 	   ctest = uart_read_byte(ZWAVE_UART);
 	   DEBUG_LOG(true,"%02x, ",ctest);
     }

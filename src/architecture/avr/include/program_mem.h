@@ -23,7 +23,7 @@
 #define __program_mem_h
 
 #include <avr/pgmspace.h>
-#include <config.h>
+#include "config.h"
 
 typedef unsigned int dj_di_pointer;
 
