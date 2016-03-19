@@ -55,7 +55,6 @@ public class RTCBenchmark {
                 if (val_at_j>val_at_j_plus_one) {
                     numbers[j] = val_at_j_plus_one;
                     numbers[j_plus_one] = val_at_j;
-                    val_at_j_plus_one = val_at_j;
                 }
                 j_plus_one++;
             }
