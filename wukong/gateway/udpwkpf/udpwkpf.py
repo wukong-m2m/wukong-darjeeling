@@ -61,7 +61,7 @@ class WKPF(DatagramProtocol):
     DATATYPE_SHORT          = 0
     DATATYPE_BOOLEAN        = 1
     DATATYPE_REFRESH        = 2
-
+    DATATYPE_ARRAY          = 3
 
     WKCOMM_MESSAGE_PAYLOAD_SIZE=40
     OBJECTS_IN_MESSAGE               = (WKCOMM_MESSAGE_PAYLOAD_SIZE-3)/4
@@ -166,7 +166,7 @@ class WKPF(DatagramProtocol):
             self.state = 'INIT'
         elif self.state == 'INIT':
             dest_id, src_id, msg_type, payload = MPTN.extract_packet_from_str(data[11:])
-            print dest_id,src_id,msg_type, map(ord, payload)
+            #print dest_id,src_id,msg_type, map(ord, payload) #payload info
             if self.mptnaddr == 0:
                 self.mptnaddr = dest_id
                 self.save()
@@ -263,6 +263,8 @@ class WKPF(DatagramProtocol):
             dtype = ord(payload[4])
             if dtype == WKPF.DATATYPE_SHORT or dtype == WKPF.DATATYPE_REFRESH:
                 val = ord(payload[5])*256 + ord(payload[6])
+            if dtype == WKPF.DATATYPE_ARRAY:
+                val = map(lambda i:ord(i), payload[5:])
             else:
                 val = True if ord(payload[5]) else False
 
@@ -337,14 +339,15 @@ class WKPF(DatagramProtocol):
         # print "port=",port
         src_id = self.mptnaddr
         if type(val) == bool:
-            p = struct.pack('14B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_BOOLEAN, val & 0xff, (src_cid >> 8)&0xff, src_cid&0xff, (dest_cid >> 8)&0xff, dest_cid&0xff, 0)
+            p = struct.pack('9B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_BOOLEAN, val & 0xff)
         elif type(val) == list:
-            p = struct.pack('15B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, 
-                            (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_SHORT, 
-                            (val >> 8)&0xff, val & 0xff, 
-                            (src_cid >> 8)&0xff, src_cid&0xff, (dest_cid >> 8)&0xff, dest_cid&0xff, 0)
+            val = val + [0]*(30 - len(val))
+            p = struct.pack('38B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, 
+                            (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_ARRAY, 
+                            *val)
         else:
-            p = struct.pack('15B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_SHORT, (val >> 8)&0xff, val & 0xff, (src_cid >> 8)&0xff, src_cid&0xff, (dest_cid >> 8)&0xff, dest_cid&0xff, 0)
+            print "====int"
+            p = struct.pack('10B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_SHORT, (val >> 8)&0xff, val & 0xff)
 
         msg_type = MPTN.MPTN_MSGTYPE_FWDREQ
 
