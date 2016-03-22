@@ -36,7 +36,7 @@ class MyDevice(Device):
         print "get array: ", val
         if type(val) == list:
             print "array length: ", len(val)
-        reactor.callLater(0.1,self.loop)
+        reactor.callLater(0.5,self.loop)
 
 if len(sys.argv) <= 2:
         print 'python udpwkpf.py <ip> <ip:port>'

@@ -19,8 +19,9 @@ class Test(WuClass):
         pass
 
     def refresh(self):
-        self.array = [random.randint(0,100) for _ in xrange(5)]
-        print "array: " , self.array
+        ran = random.randint(1,30)
+        self.array = [random.randint(0,254) for _ in xrange(ran)]
+        print "array: " , self.array, "len: ", ran
         reactor.callLater(self.refresh_rate,self.refresh)
 
 class MyDevice(Device):

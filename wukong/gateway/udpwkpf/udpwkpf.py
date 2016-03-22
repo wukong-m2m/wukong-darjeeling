@@ -341,12 +341,12 @@ class WKPF(DatagramProtocol):
         if type(val) == bool:
             p = struct.pack('9B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_BOOLEAN, val & 0xff)
         elif type(val) == list:
-            val = val + [0]*(30 - len(val))
-            p = struct.pack('38B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, 
+            val_len = len(val)
+            val = val + [0]*(30 - val_len)
+            p = struct.pack('39B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, 
                             (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_ARRAY, 
-                            *val)
+                             val_len, *map(lambda x: x&0xff ,val))
         else:
-            print "====int"
             p = struct.pack('10B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_SHORT, (val >> 8)&0xff, val & 0xff)
 
         msg_type = MPTN.MPTN_MSGTYPE_FWDREQ
