@@ -1,0 +1,10 @@
+<application name="afa54364b36987596e0c1ce0d51d6e83">
+<page title="_first_">
+    <component type="Number" instanceId="110" x="137" y="196" w="120" h="92" name="block">
+        <group_size requirement="1" />
+        <reaction_time requirement="1" />
+        <signalProperty  />
+        <monitorProperty />
+    </component>
+</page>
+</application>

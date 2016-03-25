@@ -364,18 +364,18 @@ class WKPF(DatagramProtocol):
         return self.components[cid]
     def propagateProperty(self,port,pID,val):
         dirty_id = self.findComponentByPort(port)
-        print "propagateProperty dirty_id ", dirty_id
+        # print "propagateProperty dirty_id ", dirty_id
         if dirty_id == -1: return
         comp = self.getComponent(dirty_id)
-        print 'propagateProperty check propagate', self.links
+        # print 'propagateProperty check propagate', self.links
         for l in self.links:
             src_id,src_propertyID = l.split('.')
             src_id = int(src_id)
             src_propertyID = int(src_propertyID)
-            print 'propagateProperty check link', src_id,dirty_id,pID,src_propertyID
+            # print 'propagateProperty check link', src_id,dirty_id,pID,src_propertyID
             if src_id == dirty_id and pID == src_propertyID:
                 target_links = self.links[l]
-                print "propagateProperty target_links", target_links
+                # print "propagateProperty target_links", target_links
                 for target in target_links:
                     try:
                         # print "propagateProperty target", target
@@ -466,13 +466,12 @@ class WuObject:
     def getProperty(self,pID):
         return self.cls.getProperty(self.port,pID)
 
-# modified by iap
-class WuClass(object):
+class WuClass:
     def __init__(self):
         self.ID = 0
         self.wkpf = None
     def update(self,obj,pID,value):
-        print 'WuClass.update() was called'
+        pass
     def newObject(self):
         return WuObject(self)
     def setProperty(self,port,pID,val):
@@ -505,10 +504,7 @@ class WuClass(object):
                 ID = 0
                 self.names=[]
                 for p in cls.getElementsByTagName('property'):
-                    # modified by iap
-                    #obj.__dict__[p.attributes['name'].nodeValue] = ID
-                    setattr(obj,p.attributes['name'].nodeValue,ID)
-                    #print [p.attributes['name'].nodeValue,ID,obj.__dict__[p.attributes['name'].nodeValue]]
+                    obj.__dict__[p.attributes['name'].nodeValue] = ID
                     self.names.append(p.attributes['name'].nodeValue)
                     ID = ID + 1
                 self.propertyNumber = ID
@@ -564,6 +560,8 @@ class Device:
 
     def updateTheNextDirtyObject(self):
         for obj in self.objects:
+            #print obj.port
+            #print self.wkpf.properties
             for i in range(0,len(self.wkpf.properties[obj.port])):
                 p = self.wkpf.properties[obj.port][i]
                 if p['dirty'] == True:
@@ -586,14 +584,12 @@ class Device:
         cls = self.classes[ID]
         if cls:
             obj = cls.newObject()
-            print [obj,obj.cls]
             obj.port = len(self.objects)+1
             self.wkpf.addProperties(obj.port)
             self.objects.append(obj)
             return obj
         return None
-    ## modified by iap
-    def setProperty(self,port,pID, val):
-        self.wkpf.setProperty(port,pID,val)
-    def getProperty(port,self,pID):
+    def setProperty(self,pID, val):
+        self.wkpf.setProperty(pID,val)
+    def getProperty(self,pID):
         return self.wkpf.getProperty(port,pID)

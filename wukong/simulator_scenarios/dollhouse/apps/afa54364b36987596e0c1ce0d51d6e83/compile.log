@@ -1,0 +1,430 @@
+Preparing java library code...
+Generating java application...
+Compressing application code to bytecode format...
+
+BUILD FAILED
+
+Total time: 8.456 secs
+
+Error generating wkdeploy.dja! Backtrack is shown below:
+
+FAILURE: Build failed with an exception.
+
+* Where:
+Script '/mnt/home/iapyeh/wukong-darjeeling/src/taskdefs.gradle' line: 1
+
+* What went wrong:
+A problem occurred evaluating script.
+> taskdef class org.csiro.darjeeling.djarchive.ant.DJAddToArchiveTask cannot be found
+   using the classloader AntClassLoader[]
+
+* Try:
+Run with --stacktrace option to get the stack trace. Run with --info or --debug option to get more log output.
+
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+4840d2555bd5f0b995eb76723c6c9055
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+33fa00a66f2edf0d1c5697a9f8693ba8
+make_js_complete
+make manifest to /mnt/home/iapyeh/wukong-darjeeling/wukong/master/static/js/components_list.txt
+make_fbp_complete
+TCP server listens on ('0.0.0.0', 9010)
+304 GET / (192.168.56.1) 2.30ms
+304 GET /static/css/smoothness/jquery-ui-1.8.21.custom.css (192.168.56.1) 5.99ms
+304 GET /static/css/jquery.contextMenu.css (192.168.56.1) 0.93ms
+304 GET /static/css/application.css (192.168.56.1) 1.92ms
+304 GET /static/bootstrap/css/bootstrap.min.css (192.168.56.1) 1.66ms
+304 GET /static/css/jquery.treeview.css (192.168.56.1) 3.77ms
+304 GET /static/css/bootstrap-editable.css (192.168.56.1) 1.22ms
+304 GET /static/js/jquery-1.7.2.min.js (192.168.56.1) 0.99ms
+304 GET /static/js/jquery.blockUI.js (192.168.56.1) 1.22ms
+304 GET /static/js/jquery-ui-1.8.21.custom.min.js (192.168.56.1) 1.83ms
+304 GET /static/js/jquery-ui-disabler-1.0.0.min.js (192.168.56.1) 1.44ms
+304 GET /static/js/jquery.contextMenu.js (192.168.56.1) 1.46ms
+304 GET /static/js/underscore-min.js (192.168.56.1) 0.91ms
+304 GET /static/js/json2.js (192.168.56.1) 1.04ms
+304 GET /static/bootstrap/js/bootstrap.min.js (192.168.56.1) 0.87ms
+304 GET /static/js/bootstrap-editable.min.js (192.168.56.1) 1.16ms
+304 GET /static/js/jquery.treeview.js (192.168.56.1) 0.88ms
+304 GET /static/js/display_locationTree2.js (192.168.56.1) 0.96ms
+304 GET /static/js/hyutil.js (192.168.56.1) 0.80ms
+304 GET /static/js/application2.js (192.168.56.1) 1.28ms
+304 GET /static/images/background_tile-100x100.png (192.168.56.1) 1.11ms
+304 GET /static/images/wukong_logo.jpg (192.168.56.1) 0.92ms
+304 GET /static/images/wukong_logo50.png (192.168.56.1) 0.80ms
+updating applications:
+scanning 057676630fa6d2502f87b8f39e29dfe0:
+scanning afa54364b36987596e0c1ce0d51d6e83:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+200 POST /applications (192.168.56.1) 13.38ms
+200 GET /static/images/favicon-24x24.png (192.168.56.1) 1.30ms
+200 POST /applications/afa54364b36987596e0c1ce0d51d6e83 (192.168.56.1) 2.65ms
+200 GET /applications/afa54364b36987596e0c1ce0d51d6e83/deploy?vw=762&vh=387 (192.168.56.1) 8.17ms
+200 GET /applications/afa54364b36987596e0c1ce0d51d6e83/fbp/load?vh=387&vw=762 (192.168.56.1) 15.54ms
+200 GET /static/js/deployment2.js?_=1458274684300 (192.168.56.1) 1.34ms
+200 POST /applications/afa54364b36987596e0c1ce0d51d6e83 (192.168.56.1) 2.26ms
+200 POST /applications/afa54364b36987596e0c1ce0d51d6e83/fbp/load (192.168.56.1) 1.80ms
+404 GET /static/images/wuclass/If_Short.png (192.168.56.1) 2.54ms
+404 GET /static/images/wuclass/Xor_Gate.png (192.168.56.1) 1.20ms
+404 GET /static/images/wuclass/If_Boolean.png (192.168.56.1) 1.82ms
+404 GET /static/images/wuclass/Math_Op.png (192.168.56.1) 0.81ms
+404 GET /static/images/wuclass/Condition_Selector_Short.png (192.168.56.1) 1.33ms
+404 GET /static/images/wuclass/Condition_Selector_Boolean.png (192.168.56.1) 1.19ms
+404 GET /static/images/wuclass/Virtual_Slider.png (192.168.56.1) 0.89ms
+404 GET /static/images/wuclass/Server.png (192.168.56.1) 1.05ms
+404 GET /static/images/wuclass/GestureToColorControl.png (192.168.56.1) 0.95ms
+404 GET /static/images/wuclass/GestureToHangoutControl.png (192.168.56.1) 1.02ms
+404 GET /static/images/wuclass/Multiplexer.png (192.168.56.1) 1.35ms
+404 GET /static/images/wuclass/Equal.png (192.168.56.1) 2.12ms
+404 GET /static/images/wuclass/GestureSwitch.png (192.168.56.1) 0.85ms
+404 GET /static/images/wuclass/GestureToBrightnessControl.png (192.168.56.1) 1.07ms
+404 GET /static/images/wuclass/GestureToVideoControl.png (192.168.56.1) 1.08ms
+404 GET /static/images/wuclass/Temperature_Humidity_Sensor.png (192.168.56.1) 2.15ms
+404 GET /static/images/wuclass/Gh_Sensor.png (192.168.56.1) 1.21ms
+404 GET /static/images/wuclass/Pressure_Sensor_0.png (192.168.56.1) 1.21ms
+404 GET /static/images/wuclass/Ir_Sensor.png (192.168.56.1) 1.25ms
+404 GET /static/images/wuclass/Ultrasound_Sensor.png (192.168.56.1) 1.18ms
+404 GET /static/images/wuclass/Touch_Sensor.png (192.168.56.1) 0.88ms
+404 GET /static/images/wuclass/Makey_Gesture.png (192.168.56.1) 1.05ms
+404 GET /static/images/wuclass/Binary_TestSensor.png (192.168.56.1) 1.15ms
+404 GET /static/images/wuclass/Integer_TestSensor.png (192.168.56.1) 1.33ms
+404 GET /static/images/wuclass/User.png (192.168.56.1) 0.93ms
+404 GET /static/images/wuclass/Controller.png (192.168.56.1) 0.86ms
+404 GET /static/images/wuclass/Gesture.png (192.168.56.1) 1.75ms
+404 GET /static/images/wuclass/User_Aware.png (192.168.56.1) 0.66ms
+404 GET /static/images/wuclass/ICS_User.png (192.168.56.1) 1.27ms
+404 GET /static/images/wuclass/Smart_Mug.png (192.168.56.1) 1.87ms
+404 GET /static/images/wuclass/Cabinet.png (192.168.56.1) 0.81ms
+404 GET /static/images/wuclass/Phone.png (192.168.56.1) 0.72ms
+404 GET /static/images/wuclass/RealSense.png (192.168.56.1) 1.71ms
+404 GET /static/images/wuclass/LED.png (192.168.56.1) 0.66ms
+404 GET /static/images/wuclass/Sound.png (192.168.56.1) 0.81ms
+404 GET /static/images/wuclass/RGBLED.png (192.168.56.1) 0.70ms
+404 GET /static/images/wuclass/Dimmer.png (192.168.56.1) 0.81ms
+404 GET /static/images/wuclass/Plugin.png (192.168.56.1) 0.65ms
+404 GET /static/images/wuclass/Relay.png (192.168.56.1) 0.74ms
+404 GET /static/images/wuclass/Grove_LCD.png (192.168.56.1) 0.82ms
+404 GET /static/images/wuclass/Grove_MP3.png (192.168.56.1) 0.84ms
+404 GET /static/images/wuclass/MUSIC_LED.png (192.168.56.1) 0.77ms
+404 GET /static/images/wuclass/Gesture_MP3.png (192.168.56.1) 0.74ms
+404 GET /static/images/wuclass/Number.png (192.168.56.1) 0.71ms
+404 GET /static/images/wuclass/Philip_Hue_Bulb_Actuator.png (192.168.56.1) 0.94ms
+404 GET /static/images/wuclass/Philip_Hue_Bloom_Actuator.png (192.168.56.1) 0.93ms
+404 GET /static/images/wuclass/Philip_Hue_Go_Actuator.png (192.168.56.1) 0.87ms
+404 GET /static/images/wuclass/Philip_Hue_Strip_Actuator.png (192.168.56.1) 1.43ms
+404 GET /static/images/wuclass/MOSFET_Fan.png (192.168.56.1) 1.33ms
+404 GET /static/images/wuclass/Sonos.png (192.168.56.1) 1.09ms
+404 GET /static/images/wuclass/IRremote_TV.png (192.168.56.1) 0.74ms
+404 GET /static/images/wuclass/Philip_Hue_Bulb_Sensor.png (192.168.56.1) 0.84ms
+404 GET /static/images/wuclass/Philip_Hue_Bloom_Sensor.png (192.168.56.1) 0.96ms
+404 GET /static/images/wuclass/Philip_Hue_Go_Sensor.png (192.168.56.1) 1.09ms
+404 GET /static/images/wuclass/Philip_Hue_Strip_Sensor.png (192.168.56.1) 1.03ms
+404 GET /static/images/wuclass/ST_Switch.png (192.168.56.1) 0.89ms
+404 GET /static/images/wuclass/ST_Presence.png (192.168.56.1) 0.94ms
+404 GET /static/images/wuclass/NodeRED_OutputTo.png (192.168.56.1) 1.01ms
+404 GET /static/images/wuclass/Annotation.png (192.168.56.1) 1.02ms
+404 GET /static/images/wuclass/Debug_Inspector.png (192.168.56.1) 0.81ms
+404 GET /static/images/wuclass/Debug_Trigger.png (192.168.56.1) 2.15ms
+404 GET /static/images/wuclass/HangoutControl.png (192.168.56.1) 1.47ms
+404 GET /static/images/wuclass/VideoControl.png (192.168.56.1) 1.45ms
+404 GET /static/images/wuclass/MOSFET_LED.png (192.168.56.1) 0.96ms
+404 GET /static/images/wuclass/ICSDemoFloorlampPrClass.png (192.168.56.1) 0.55ms
+404 GET /static/images/wuclass/ICSDemoBloomPrClass.png (192.168.56.1) 0.80ms
+404 GET /static/images/wuclass/ICSDemoGoPrClass.png (192.168.56.1) 0.89ms
+404 GET /static/images/wuclass/ICSDemoStripPrClass.png (192.168.56.1) 1.46ms
+404 GET /static/images/wuclass/ICSDemoFanPrClass.png (192.168.56.1) 0.90ms
+404 GET /static/images/wuclass/ICSDemoAromaPrClass.png (192.168.56.1) 1.16ms
+404 GET /static/images/wuclass/ICSDemoMusicPrClass.png (192.168.56.1) 0.76ms
+404 GET /static/images/wuclass/ICSDemoTVPrClass.png (192.168.56.1) 1.35ms
+404 GET /static/images/wuclass/ICSDemoQPrClass.png (192.168.56.1) 0.85ms
+404 GET /static/images/wuclass/SwithPrClass.png (192.168.56.1) 0.92ms
+404 GET /static/images/wuclass/TimerPrClass.png (192.168.56.1) 0.76ms
+404 GET /static/images/wuclass/ICSDemoPrClass.png (192.168.56.1) 1.12ms
+404 GET /static/images/wuclass/WeatherPrClass.png (192.168.56.1) 0.94ms
+404 GET /static/images/wuclass/BufferEnabledPrClass.png (192.168.56.1) 0.82ms
+404 GET /static/images/wuclass/OccupanyDetection.png (192.168.56.1) 0.60ms
+404 GET /static/images/wuclass/SimpleInputPrClass.png (192.168.56.1) 0.97ms
+404 GET /static/images/wuclass/LocalizationPrClass.png (192.168.56.1) 0.55ms
+404 GET /static/images/wuclass/ActivityPrclass.png (192.168.56.1) 0.70ms
+404 GET /static/images/wuclass/UIImage.png (192.168.56.1) 1.38ms
+404 GET /static/images/wuclass/LocalizationLoadTester.png (192.168.56.1) 0.90ms
+404 GET /static/images/wuclass/UIButton.png (192.168.56.1) 0.94ms
+404 GET /static/images/wuclass/UINumber.png (192.168.56.1) 0.95ms
+404 GET /static/images/wuclass/Email.png (192.168.56.1) 0.68ms
+404 GET /static/images/wuclass/URL.png (192.168.56.1) 1.35ms
+404 GET /static/images/wuclass/UISlider.png (192.168.56.1) 0.67ms
+404 GET /static/images/wuclass/UIScene.png (192.168.56.1) 1.10ms
+404 GET /static/images/wuclass/NodeREDSignalSender.png (192.168.56.1) 0.86ms
+404 GET /static/images/wuclass/NodeREDSignalReceiver.png (192.168.56.1) 1.46ms
+304 GET / (192.168.56.1) 1.83ms
+304 GET /static/css/smoothness/jquery-ui-1.8.21.custom.css (192.168.56.1) 2.18ms
+304 GET /static/css/jquery.treeview.css (192.168.56.1) 2.60ms
+304 GET /static/css/bootstrap-editable.css (192.168.56.1) 1.62ms
+304 GET /static/bootstrap/css/bootstrap.min.css (192.168.56.1) 1.02ms
+304 GET /static/css/application.css (192.168.56.1) 1.67ms
+304 GET /static/css/jquery.contextMenu.css (192.168.56.1) 0.90ms
+304 GET /static/js/jquery-1.7.2.min.js (192.168.56.1) 1.56ms
+304 GET /static/js/jquery.blockUI.js (192.168.56.1) 0.96ms
+304 GET /static/js/jquery-ui-1.8.21.custom.min.js (192.168.56.1) 1.55ms
+304 GET /static/js/jquery-ui-disabler-1.0.0.min.js (192.168.56.1) 5.45ms
+304 GET /static/js/jquery.contextMenu.js (192.168.56.1) 1.66ms
+304 GET /static/js/underscore-min.js (192.168.56.1) 0.90ms
+304 GET /static/js/json2.js (192.168.56.1) 0.90ms
+304 GET /static/bootstrap/js/bootstrap.min.js (192.168.56.1) 1.70ms
+304 GET /static/js/bootstrap-editable.min.js (192.168.56.1) 1.70ms
+304 GET /static/js/jquery.treeview.js (192.168.56.1) 0.78ms
+304 GET /static/js/display_locationTree2.js (192.168.56.1) 1.06ms
+304 GET /static/js/hyutil.js (192.168.56.1) 0.84ms
+304 GET /static/js/application2.js (192.168.56.1) 1.42ms
+304 GET /static/images/wukong_logo50.png (192.168.56.1) 0.69ms
+304 GET /static/images/wukong_logo.jpg (192.168.56.1) 0.98ms
+updating applications:
+scanning 057676630fa6d2502f87b8f39e29dfe0:
+scanning afa54364b36987596e0c1ce0d51d6e83:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+200 POST /applications (192.168.56.1) 11.87ms
+200 GET /static/images/favicon-24x24.png (192.168.56.1) 1.15ms
+200 POST /applications/afa54364b36987596e0c1ce0d51d6e83 (192.168.56.1) 2.94ms
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+4840d2555bd5f0b995eb76723c6c9055
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+33fa00a66f2edf0d1c5697a9f8693ba8
+make_js_complete
+make manifest to /mnt/home/iapyeh/wukong-darjeeling/wukong/master/static/js/components_list.txt
+make_fbp_complete
+TCP server listens on ('0.0.0.0', 9010)
+304 GET / (192.168.56.1) 1.95ms
+304 GET /static/css/smoothness/jquery-ui-1.8.21.custom.css (192.168.56.1) 8.17ms
+304 GET /static/css/jquery.contextMenu.css (192.168.56.1) 1.14ms
+304 GET /static/css/application.css (192.168.56.1) 1.50ms
+304 GET /static/bootstrap/css/bootstrap.min.css (192.168.56.1) 1.84ms
+304 GET /static/css/jquery.treeview.css (192.168.56.1) 1.85ms
+304 GET /static/css/bootstrap-editable.css (192.168.56.1) 2.22ms
+304 GET /static/js/jquery-1.7.2.min.js (192.168.56.1) 1.20ms
+304 GET /static/js/jquery-ui-1.8.21.custom.min.js (192.168.56.1) 1.84ms
+304 GET /static/js/jquery-ui-disabler-1.0.0.min.js (192.168.56.1) 1.97ms
+304 GET /static/js/jquery.blockUI.js (192.168.56.1) 1.19ms
+304 GET /static/bootstrap/js/bootstrap.min.js (192.168.56.1) 0.94ms
+304 GET /static/js/bootstrap-editable.min.js (192.168.56.1) 1.92ms
+304 GET /static/js/jquery.contextMenu.js (192.168.56.1) 1.63ms
+304 GET /static/js/underscore-min.js (192.168.56.1) 0.75ms
+304 GET /static/js/json2.js (192.168.56.1) 1.11ms
+304 GET /static/js/jquery.treeview.js (192.168.56.1) 1.50ms
+304 GET /static/js/display_locationTree2.js (192.168.56.1) 0.81ms
+304 GET /static/js/hyutil.js (192.168.56.1) 0.80ms
+304 GET /static/js/application2.js (192.168.56.1) 1.02ms
+304 GET /static/images/wukong_logo50.png (192.168.56.1) 1.37ms
+304 GET /static/images/wukong_logo.jpg (192.168.56.1) 1.67ms
+updating applications:
+scanning 057676630fa6d2502f87b8f39e29dfe0:
+scanning afa54364b36987596e0c1ce0d51d6e83:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+200 POST /applications (192.168.56.1) 20.02ms
+200 GET /static/images/favicon-24x24.png (192.168.56.1) 2.78ms
+200 POST /applications/afa54364b36987596e0c1ce0d51d6e83 (192.168.56.1) 2.74ms
+200 GET /applications/afa54364b36987596e0c1ce0d51d6e83/deploy?vw=889&vh=476 (192.168.56.1) 6.58ms
+200 GET /applications/afa54364b36987596e0c1ce0d51d6e83/fbp/load?vh=476&vw=889 (192.168.56.1) 17.66ms
+200 GET /static/js/deployment2.js?_=1458274844899 (192.168.56.1) 0.91ms
+200 POST /applications/afa54364b36987596e0c1ce0d51d6e83 (192.168.56.1) 4.10ms
+200 POST /applications/afa54364b36987596e0c1ce0d51d6e83/fbp/load (192.168.56.1) 0.67ms
+404 GET /static/images/wuclass/Xor_Gate.png (192.168.56.1) 3.01ms
+404 GET /static/images/wuclass/If_Boolean.png (192.168.56.1) 1.24ms
+404 GET /static/images/wuclass/If_Short.png (192.168.56.1) 0.78ms
+404 GET /static/images/wuclass/Condition_Selector_Short.png (192.168.56.1) 0.81ms
+404 GET /static/images/wuclass/Virtual_Slider.png (192.168.56.1) 1.13ms
+404 GET /static/images/wuclass/Math_Op.png (192.168.56.1) 1.06ms
+404 GET /static/images/wuclass/Condition_Selector_Boolean.png (192.168.56.1) 1.53ms
+404 GET /static/images/wuclass/Equal.png (192.168.56.1) 1.54ms
+404 GET /static/images/wuclass/Server.png (192.168.56.1) 1.06ms
+404 GET /static/images/wuclass/Multiplexer.png (192.168.56.1) 1.06ms
+404 GET /static/images/wuclass/GestureToHangoutControl.png (192.168.56.1) 2.98ms
+404 GET /static/images/wuclass/GestureToVideoControl.png (192.168.56.1) 2.09ms
+404 GET /static/images/wuclass/Temperature_Humidity_Sensor.png (192.168.56.1) 0.90ms
+404 GET /static/images/wuclass/GestureSwitch.png (192.168.56.1) 1.63ms
+404 GET /static/images/wuclass/GestureToBrightnessControl.png (192.168.56.1) 0.75ms
+404 GET /static/images/wuclass/GestureToColorControl.png (192.168.56.1) 1.12ms
+404 GET /static/images/wuclass/Pressure_Sensor_0.png (192.168.56.1) 1.46ms
+404 GET /static/images/wuclass/Gh_Sensor.png (192.168.56.1) 1.21ms
+404 GET /static/images/wuclass/Ir_Sensor.png (192.168.56.1) 1.40ms
+404 GET /static/images/wuclass/Ultrasound_Sensor.png (192.168.56.1) 1.38ms
+404 GET /static/images/wuclass/Makey_Gesture.png (192.168.56.1) 0.95ms
+404 GET /static/images/wuclass/Touch_Sensor.png (192.168.56.1) 1.26ms
+404 GET /static/images/wuclass/Binary_TestSensor.png (192.168.56.1) 1.02ms
+404 GET /static/images/wuclass/Integer_TestSensor.png (192.168.56.1) 1.33ms
+404 GET /static/images/wuclass/User.png (192.168.56.1) 0.83ms
+404 GET /static/images/wuclass/Controller.png (192.168.56.1) 0.82ms
+404 GET /static/images/wuclass/Gesture.png (192.168.56.1) 1.09ms
+404 GET /static/images/wuclass/User_Aware.png (192.168.56.1) 1.21ms
+404 GET /static/images/wuclass/ICS_User.png (192.168.56.1) 0.90ms
+404 GET /static/images/wuclass/Smart_Mug.png (192.168.56.1) 1.86ms
+404 GET /static/images/wuclass/Cabinet.png (192.168.56.1) 1.32ms
+404 GET /static/images/wuclass/Phone.png (192.168.56.1) 0.69ms
+404 GET /static/images/wuclass/RealSense.png (192.168.56.1) 0.84ms
+404 GET /static/images/wuclass/LED.png (192.168.56.1) 1.18ms
+404 GET /static/images/wuclass/Sound.png (192.168.56.1) 0.75ms
+404 GET /static/images/wuclass/RGBLED.png (192.168.56.1) 0.92ms
+404 GET /static/images/wuclass/Dimmer.png (192.168.56.1) 1.01ms
+404 GET /static/images/wuclass/Plugin.png (192.168.56.1) 1.16ms
+404 GET /static/images/wuclass/Relay.png (192.168.56.1) 1.17ms
+404 GET /static/images/wuclass/Grove_LCD.png (192.168.56.1) 1.03ms
+404 GET /static/images/wuclass/Gesture_MP3.png (192.168.56.1) 1.54ms
+404 GET /static/images/wuclass/MUSIC_LED.png (192.168.56.1) 0.84ms
+404 GET /static/images/wuclass/Grove_MP3.png (192.168.56.1) 1.07ms
+404 GET /static/images/wuclass/Number.png (192.168.56.1) 1.05ms
+404 GET /static/images/wuclass/Philip_Hue_Bulb_Actuator.png (192.168.56.1) 2.00ms
+404 GET /static/images/wuclass/Philip_Hue_Bloom_Actuator.png (192.168.56.1) 0.99ms
+404 GET /static/images/wuclass/Philip_Hue_Go_Actuator.png (192.168.56.1) 0.97ms
+404 GET /static/images/wuclass/Philip_Hue_Strip_Actuator.png (192.168.56.1) 0.94ms
+404 GET /static/images/wuclass/MOSFET_Fan.png (192.168.56.1) 1.04ms
+404 GET /static/images/wuclass/Sonos.png (192.168.56.1) 1.24ms
+404 GET /static/images/wuclass/IRremote_TV.png (192.168.56.1) 2.11ms
+404 GET /static/images/wuclass/Philip_Hue_Bulb_Sensor.png (192.168.56.1) 0.89ms
+404 GET /static/images/wuclass/Philip_Hue_Bloom_Sensor.png (192.168.56.1) 3.04ms
+404 GET /static/images/wuclass/Philip_Hue_Go_Sensor.png (192.168.56.1) 1.02ms
+404 GET /static/images/wuclass/Philip_Hue_Strip_Sensor.png (192.168.56.1) 0.87ms
+404 GET /static/images/wuclass/ST_Switch.png (192.168.56.1) 1.26ms
+404 GET /static/images/wuclass/ST_Presence.png (192.168.56.1) 1.47ms
+404 GET /static/images/wuclass/NodeRED_OutputTo.png (192.168.56.1) 0.97ms
+404 GET /static/images/wuclass/Annotation.png (192.168.56.1) 0.80ms
+404 GET /static/images/wuclass/Debug_Inspector.png (192.168.56.1) 1.12ms
+404 GET /static/images/wuclass/Debug_Trigger.png (192.168.56.1) 6.06ms
+404 GET /static/images/wuclass/HangoutControl.png (192.168.56.1) 6.16ms
+404 GET /static/images/wuclass/VideoControl.png (192.168.56.1) 1.93ms
+404 GET /static/images/wuclass/MOSFET_LED.png (192.168.56.1) 1.16ms
+404 GET /static/images/wuclass/ICSDemoFloorlampPrClass.png (192.168.56.1) 1.23ms
+404 GET /static/images/wuclass/ICSDemoBloomPrClass.png (192.168.56.1) 4.39ms
+404 GET /static/images/wuclass/ICSDemoGoPrClass.png (192.168.56.1) 3.14ms
+404 GET /static/images/wuclass/ICSDemoStripPrClass.png (192.168.56.1) 3.10ms
+404 GET /static/images/wuclass/ICSDemoFanPrClass.png (192.168.56.1) 2.59ms
+404 GET /static/images/wuclass/ICSDemoAromaPrClass.png (192.168.56.1) 1.10ms
+404 GET /static/images/wuclass/ICSDemoMusicPrClass.png (192.168.56.1) 2.85ms
+404 GET /static/images/wuclass/ICSDemoTVPrClass.png (192.168.56.1) 1.08ms
+404 GET /static/images/wuclass/ICSDemoQPrClass.png (192.168.56.1) 0.96ms
+404 GET /static/images/wuclass/SwithPrClass.png (192.168.56.1) 1.73ms
+404 GET /static/images/wuclass/TimerPrClass.png (192.168.56.1) 2.48ms
+404 GET /static/images/wuclass/ICSDemoPrClass.png (192.168.56.1) 1.43ms
+404 GET /static/images/wuclass/WeatherPrClass.png (192.168.56.1) 1.53ms
+404 GET /static/images/wuclass/BufferEnabledPrClass.png (192.168.56.1) 1.04ms
+404 GET /static/images/wuclass/OccupanyDetection.png (192.168.56.1) 5.74ms
+404 GET /static/images/wuclass/SimpleInputPrClass.png (192.168.56.1) 1.59ms
+404 GET /static/images/wuclass/LocalizationPrClass.png (192.168.56.1) 1.02ms
+404 GET /static/images/wuclass/ActivityPrclass.png (192.168.56.1) 1.38ms
+404 GET /static/images/wuclass/UIImage.png (192.168.56.1) 1.74ms
+404 GET /static/images/wuclass/LocalizationLoadTester.png (192.168.56.1) 0.92ms
+404 GET /static/images/wuclass/UIButton.png (192.168.56.1) 1.10ms
+404 GET /static/images/wuclass/UINumber.png (192.168.56.1) 1.87ms
+404 GET /static/images/wuclass/Email.png (192.168.56.1) 1.48ms
+404 GET /static/images/wuclass/URL.png (192.168.56.1) 1.30ms
+404 GET /static/images/wuclass/UISlider.png (192.168.56.1) 0.61ms
+404 GET /static/images/wuclass/UIScene.png (192.168.56.1) 2.36ms
+404 GET /static/images/wuclass/NodeREDSignalSender.png (192.168.56.1) 0.95ms
+404 GET /static/images/wuclass/NodeREDSignalReceiver.png (192.168.56.1) 1.09ms
+304 GET / (192.168.56.1) 4.12ms
+304 GET /static/css/jquery.contextMenu.css (192.168.56.1) 1.59ms
+304 GET /static/css/smoothness/jquery-ui-1.8.21.custom.css (192.168.56.1) 1.70ms
+304 GET /static/css/bootstrap-editable.css (192.168.56.1) 0.75ms
+304 GET /static/css/jquery.treeview.css (192.168.56.1) 2.13ms
+304 GET /static/css/application.css (192.168.56.1) 1.26ms
+304 GET /static/bootstrap/css/bootstrap.min.css (192.168.56.1) 1.04ms
+304 GET /static/js/jquery-1.7.2.min.js (192.168.56.1) 1.11ms
+304 GET /static/js/jquery-ui-1.8.21.custom.min.js (192.168.56.1) 1.65ms
+304 GET /static/js/jquery.blockUI.js (192.168.56.1) 1.17ms
+304 GET /static/bootstrap/js/bootstrap.min.js (192.168.56.1) 1.35ms
+304 GET /static/js/jquery-ui-disabler-1.0.0.min.js (192.168.56.1) 1.26ms
+304 GET /static/js/jquery.contextMenu.js (192.168.56.1) 0.94ms
+304 GET /static/js/underscore-min.js (192.168.56.1) 1.13ms
+304 GET /static/js/json2.js (192.168.56.1) 2.21ms
+304 GET /static/js/bootstrap-editable.min.js (192.168.56.1) 0.90ms
+304 GET /static/js/jquery.treeview.js (192.168.56.1) 0.50ms
+304 GET /static/js/display_locationTree2.js (192.168.56.1) 0.74ms
+304 GET /static/js/hyutil.js (192.168.56.1) 0.81ms
+304 GET /static/js/application2.js (192.168.56.1) 0.96ms
+304 GET /static/images/wukong_logo50.png (192.168.56.1) 1.56ms
+304 GET /static/images/wukong_logo.jpg (192.168.56.1) 1.29ms
+updating applications:
+scanning 057676630fa6d2502f87b8f39e29dfe0:
+scanning afa54364b36987596e0c1ce0d51d6e83:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+200 POST /applications (192.168.56.1) 17.09ms
+200 GET /static/images/favicon-24x24.png (192.168.56.1) 4.09ms
+200 POST /applications/afa54364b36987596e0c1ce0d51d6e83 (192.168.56.1) 2.24ms
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+4840d2555bd5f0b995eb76723c6c9055
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+33fa00a66f2edf0d1c5697a9f8693ba8
+make_js_complete
+make manifest to /mnt/home/iapyeh/wukong-darjeeling/wukong/master/static/js/components_list.txt
+make_fbp_complete
+TCP server listens on ('0.0.0.0', 9010)
+304 GET / (192.168.56.1) 3.84ms
+304 GET /static/css/smoothness/jquery-ui-1.8.21.custom.css (192.168.56.1) 7.48ms
+304 GET /static/bootstrap/css/bootstrap.min.css (192.168.56.1) 2.32ms
+304 GET /static/css/jquery.contextMenu.css (192.168.56.1) 0.98ms
+304 GET /static/css/application.css (192.168.56.1) 1.59ms
+304 GET /static/js/jquery-ui-1.8.21.custom.min.js (192.168.56.1) 1.47ms
+304 GET /static/css/jquery.treeview.css (192.168.56.1) 0.83ms
+304 GET /static/css/bootstrap-editable.css (192.168.56.1) 1.89ms
+304 GET /static/js/jquery-1.7.2.min.js (192.168.56.1) 1.54ms
+304 GET /static/js/underscore-min.js (192.168.56.1) 1.25ms
+304 GET /static/js/jquery-ui-disabler-1.0.0.min.js (192.168.56.1) 1.82ms
+304 GET /static/js/jquery.contextMenu.js (192.168.56.1) 0.82ms
+304 GET /static/js/bootstrap-editable.min.js (192.168.56.1) 1.25ms
+304 GET /static/js/jquery.treeview.js (192.168.56.1) 1.12ms
+304 GET /static/js/display_locationTree2.js (192.168.56.1) 0.80ms
+304 GET /static/js/json2.js (192.168.56.1) 1.67ms
+304 GET /static/js/jquery.blockUI.js (192.168.56.1) 1.27ms
+304 GET /static/bootstrap/js/bootstrap.min.js (192.168.56.1) 1.12ms
+304 GET /static/js/hyutil.js (192.168.56.1) 1.10ms
+304 GET /static/js/application2.js (192.168.56.1) 0.81ms
+304 GET /static/images/wukong_logo50.png (192.168.56.1) 1.26ms
+304 GET /static/images/wukong_logo.jpg (192.168.56.1) 0.79ms
+updating applications:
+scanning 057676630fa6d2502f87b8f39e29dfe0:
+scanning afa54364b36987596e0c1ce0d51d6e83:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+200 POST /applications (192.168.56.1) 25.50ms
+200 GET /static/images/favicon-24x24.png (192.168.56.1) 2.88ms
+200 POST /applications/afa54364b36987596e0c1ce0d51d6e83 (192.168.56.1) 3.42ms
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+4840d2555bd5f0b995eb76723c6c9055
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+33fa00a66f2edf0d1c5697a9f8693ba8
+make_js_complete
+make manifest to /mnt/home/iapyeh/wukong-darjeeling/wukong/master/static/js/components_list.txt
+make_fbp_complete
+TCP server listens on ('0.0.0.0', 9010)
+304 GET / (192.168.56.1) 2.69ms
+304 GET /static/css/smoothness/jquery-ui-1.8.21.custom.css (192.168.56.1) 8.11ms
+304 GET /static/css/jquery.contextMenu.css (192.168.56.1) 1.09ms
+304 GET /static/css/application.css (192.168.56.1) 0.65ms
+304 GET /static/bootstrap/css/bootstrap.min.css (192.168.56.1) 1.83ms
+304 GET /static/css/jquery.treeview.css (192.168.56.1) 0.85ms
+304 GET /static/css/bootstrap-editable.css (192.168.56.1) 1.69ms
+304 GET /static/js/jquery-1.7.2.min.js (192.168.56.1) 0.99ms
+304 GET /static/js/jquery.blockUI.js (192.168.56.1) 1.22ms
+304 GET /static/js/jquery-ui-1.8.21.custom.min.js (192.168.56.1) 2.74ms
+304 GET /static/js/jquery-ui-disabler-1.0.0.min.js (192.168.56.1) 1.24ms
+304 GET /static/js/jquery.contextMenu.js (192.168.56.1) 1.50ms
+304 GET /static/js/underscore-min.js (192.168.56.1) 10.38ms
+304 GET /static/js/json2.js (192.168.56.1) 3.43ms
+304 GET /static/bootstrap/js/bootstrap.min.js (192.168.56.1) 2.09ms
+304 GET /static/js/bootstrap-editable.min.js (192.168.56.1) 1.04ms
+304 GET /static/js/jquery.treeview.js (192.168.56.1) 1.24ms
+304 GET /static/js/display_locationTree2.js (192.168.56.1) 2.24ms
+304 GET /static/js/hyutil.js (192.168.56.1) 2.11ms
+304 GET /static/js/application2.js (192.168.56.1) 1.27ms
+304 GET /static/images/wukong_logo50.png (192.168.56.1) 1.25ms
+304 GET /static/images/wukong_logo.jpg (192.168.56.1) 0.81ms
+updating applications:
+scanning 057676630fa6d2502f87b8f39e29dfe0:
+scanning afa54364b36987596e0c1ce0d51d6e83:
+scanning 4840d2555bd5f0b995eb76723c6c9055:
+scanning 33fa00a66f2edf0d1c5697a9f8693ba8:
+200 POST /applications (192.168.56.1) 24.62ms
+200 GET /static/images/favicon-24x24.png (192.168.56.1) 2.71ms
+200 POST /applications/afa54364b36987596e0c1ce0d51d6e83 (192.168.56.1) 3.67ms
