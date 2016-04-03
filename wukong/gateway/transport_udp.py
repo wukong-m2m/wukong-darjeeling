@@ -319,7 +319,7 @@ class UDPTransport(Transport):
                 ret = "%s" % self._mode[1]
                 if self.last_host_id != 0:
                     tmp_node_id = self._prefix | self.last_host_id
-                    ret = ret + " found node: %d (ID is %s or %d)" % (self.last_host_id, MPTN.ID_TO_STRING(tmp_node_id), tmp_node_id)
+                    ret = ret + "\nfound node: %d (ID is %s or %d)" % (self.last_host_id, MPTN.ID_TO_STRING(tmp_node_id), tmp_node_id)
 
         logger.info("polled. " + ret)
         return ret
