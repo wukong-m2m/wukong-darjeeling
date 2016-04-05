@@ -563,6 +563,7 @@
     </WuClass>
     /* Management PrClass */
     <WuClass name="EnergyPolicyPrclass" id="10117" virtual="false" type="hard">
+      <property name="input" access="readwrite" datatype="short" default="0" />
     </WuClass>
     /* Python Framework WuClass */
     <WuClass name="UIImage" id="11001" virtual="fasle" type="soft">

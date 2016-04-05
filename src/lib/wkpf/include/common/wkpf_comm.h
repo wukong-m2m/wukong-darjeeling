@@ -62,7 +62,7 @@ extern void wkpf_comm_handle_message(void *msg); // Will be called with a pointe
 #define WKPF_COMM_CMD_GET_LINK_COUNTER            0xB0
 #define WKPF_COMM_CMD_GET_LINK_COUNTER_R          0xB1
 #define WUKONG_MONITOR_PROPERTY                   0xB5
-#define WUKONG_MONITOR_SERVER_ID				  1
+#define WUKONG_MONITOR_SERVER_ID				          1
 
 #define DEVICE_NATIVE_ZWAVE_SWITCH1 64
 #define DEVICE_NATIVE_ZWAVE_SWITCH2 65

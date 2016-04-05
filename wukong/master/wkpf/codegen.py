@@ -77,7 +77,7 @@ class WuProperty:
         return "WuProperty %s (id=%s, wutype=%s access=%s current_value=%s)" % (self._name, self._id, self._wutype, self._access, str(self._current_value))
 
     def getName(self):
-        return self._name 
+        return self._name
 
     def getWuClassName(self):
         return self._class_name
@@ -172,7 +172,7 @@ class WuClass:
             if property.getName() == name:
                 return property
         return None
-            
+
     def getJavaGenClassName(self):
         return "GENERATEDVirtual" + Convert.to_java(self._name) + "WuObject"
 
@@ -311,7 +311,7 @@ class WuObject:
 
     def getPortNumber(self):
         return self._portNumber
-    
+
     def setPortNumber(self, portNumber):
         self._portNumber = portNumber
 
@@ -356,9 +356,10 @@ class CodeGen:
           for i, prop in enumerate(wuclass.getElementsByTagName('property')):
               propType = prop.getAttribute('datatype')
               propName = prop.getAttribute('name')
-
+              print propType
+              print propName
               wuclassProperties.append(WuProperty(wuclassName, propName, i, wuTypedefs[propType], prop.getAttribute('access')) )
-              #wuclassProperties[propName] = WuProperty(wuclassName, propName, i, wuTypedefs[propType], prop.getAttribute('access')) 
+              #wuclassProperties[propName] = WuProperty(wuclassName, propName, i, wuTypedefs[propType], prop.getAttribute('access'))
           privateCData = wuclass.getAttribute('privateCData')
           wuClasses.append(WuClass(wuclassName, wuclassId, wuclassProperties, True if wuclass.getAttribute('virtual').lower() == 'true' else False, True if wuclass.getAttribute('type').lower() == 'soft' else False, privateCData))
         logger.info("==================End of WuClasses=====================")
@@ -436,7 +437,7 @@ class CodeGen:
                         wkpf_get_wuobject_by_port(%d, &wuobject);
                         ''' % (wuclass.getCName(), portCnt, portCnt))
                 for instance_property_element in instance_properties:
-                    print 
+                    print
                     instance_property = wuclass.getPropertyByName(instance_property_element.getAttribute('name'))
                     instance_property_type = instance_property.getWuType()
                     if instance_property_type.getDataType() != 'short' and not instance_property_type.isEnumTypedef():
@@ -506,10 +507,10 @@ class CodeGen:
 
             public class GENERATEDWKPF {
         ''')
-        
+
         # Parsing to WukongVM.h for Arduino IDE
-        global_arduinoIDE_wuclass_native_impl_lines.append("wuclass_t classes[] = {")   
-     
+        global_arduinoIDE_wuclass_native_impl_lines.append("wuclass_t classes[] = {")
+
         # Parsing to WuKong Profile Framework Component Library header
         for wutype in wutypedefs.values():
           # Generate global header typedef definition for VM
@@ -652,12 +653,12 @@ class CodeGen:
             %s
             }
           };
-          ''' % (wuClass.getCName(), 
+          ''' % (wuClass.getCName(),
                 wuClass.getCConstName(),
                 wuClass.getCSetupName(),
                 wuClass.getCUpdateName(),
                 len(wuClass.getProperties()),
-                "sizeof(%s)" % (wuClass.getPrivateCData()) if wuClass.hasPrivateCData() else "0", 
+                "sizeof(%s)" % (wuClass.getPrivateCData()) if wuClass.hasPrivateCData() else "0",
                 wuclass_native_impl_properties_lines))
 
           global_arduinoIDE_wuclass_native_impl_lines.append(
@@ -676,8 +677,8 @@ class CodeGen:
           },
           ''' % (wuClass.getCConstName(),
                 len(wuClass.getProperties()),
-                "sizeof(%s)" % (wuClass.getPrivateCData()) if wuClass.hasPrivateCData() else "0", 
-                wuclass_native_impl_properties_lines))  
+                "sizeof(%s)" % (wuClass.getPrivateCData()) if wuClass.hasPrivateCData() else "0",
+                wuclass_native_impl_properties_lines))
 
           #wuclass_native_impl_lines.append('''
           ##endif
@@ -697,7 +698,7 @@ class CodeGen:
 
           if java_virtualclasses_dir and wuClass.isVirtual():
             wuclass_virtual_super_path = os.path.join(java_virtualclasses_dir, wuClass.getJavaGenClassName() + '.java')
-            wuclass_virtual_super = open(wuclass_virtual_super_path, 'w') 
+            wuclass_virtual_super = open(wuclass_virtual_super_path, 'w')
             wuclass_virtual_super.writelines(wuclass_virtual_super_lines)
             wuclass_virtual_super.close()
 
