@@ -335,7 +335,7 @@ class CodeGen:
         wutypedefs_dom = dom.getElementsByTagName("WuTypedef")
 
         logger.info("==================Begin TypeDefs=====================")
-        wuTypedefs = {'short': WuType('short', 'short'), 'boolean': WuType('boolean', 'boolean'), 'refresh_rate': WuType('refresh_rate', 'refresh_rate'), 'array':WuType('array','array')}
+        wuTypedefs = {'short': WuType('short', 'short'), 'boolean': WuType('boolean', 'boolean'), 'refresh_rate': WuType('refresh_rate', 'refresh_rate'), 'array':WuType('array','array'), 'string':WuType('string','string')}
         for wutypedef in wutypedefs_dom:
           logger.info("Parsing wutype %s" % (wutypedef.getAttribute('name')))
           if wutypedef.getAttribute('type').lower() == 'enum':

@@ -62,6 +62,7 @@ class WKPF(DatagramProtocol):
     DATATYPE_BOOLEAN        = 1
     DATATYPE_REFRESH        = 2
     DATATYPE_ARRAY          = 3
+    DATATYPE_STRING         = 4
 
     WKCOMM_MESSAGE_PAYLOAD_SIZE=40
     OBJECTS_IN_MESSAGE               = (WKCOMM_MESSAGE_PAYLOAD_SIZE-3)/4
@@ -263,8 +264,10 @@ class WKPF(DatagramProtocol):
             dtype = ord(payload[4])
             if dtype == WKPF.DATATYPE_SHORT or dtype == WKPF.DATATYPE_REFRESH:
                 val = ord(payload[5])*256 + ord(payload[6])
-            if dtype == WKPF.DATATYPE_ARRAY:
-                val = map(lambda i:ord(i), payload[5:])
+            elif dtype == WKPF.DATATYPE_ARRAY:
+                val = map(ord, payload[5:])
+            elif dtype == WKPF.DATATYPE_STRING:
+                val = payload[5:]
             else:
                 val = True if ord(payload[5]) else False
 
@@ -343,9 +346,14 @@ class WKPF(DatagramProtocol):
         elif type(val) == list:
             val_len = len(val)
             val = val + [0]*(30 - val_len)
-            p = struct.pack('39B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, 
-                            (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_ARRAY, 
-                             val_len, *map(lambda x: x&0xff ,val))
+            if type(val[0]) == int:
+                p = struct.pack('39B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, 
+                                (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_ARRAY, 
+                                 val_len, *map(lambda x: x&0xff ,val))
+            else:
+                p = struct.pack('39B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, 
+                                (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_STRING, 
+                                 val_len, *map(lambda x: x&0xff ,val))
         else:
             p = struct.pack('10B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_SHORT, (val >> 8)&0xff, val & 0xff)
 

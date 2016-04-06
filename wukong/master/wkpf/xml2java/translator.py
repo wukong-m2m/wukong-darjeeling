@@ -160,6 +160,8 @@ def xmlparser():
                 prop_dflt_value = ('r', int(prop_dflt_value,0)) # it becomes type tuple
             elif prop_type == u'array':    #it becomes type list
                 prop_dflt_value = map(int,prop_dflt_value)
+            elif prop_type == u'string':
+                prop_dflt_value = map(ord,prop_dflt_value)
             else:
                 assert False, 'Error! property %s of unknown type %s in xml %s' % (prop_name, prop_type, path)
             tmp_dflt_list += [(prop_name, prop_dflt_value)]

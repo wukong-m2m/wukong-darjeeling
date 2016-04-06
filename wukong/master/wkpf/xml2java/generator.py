@@ -119,7 +119,7 @@ class Generator:
 
         # TODO: this should be in a higher level place somewhere.
         # TODO: is 'int' really a datatype? It was used in application2.java so keeping it here for now. should check if it can go later.
-        datatype_sizes = {'boolean': 1, 'int': 2, 'short': 2, 'refresh_rate': 2, 'array':30}
+        datatype_sizes = {'boolean': 1, 'int': 2, 'short': 2, 'refresh_rate': 2, 'array':30, 'string':30}
 
         # Generate the link table and component map xml
         root = ElementTree.Element('wkpftables')
@@ -195,7 +195,7 @@ class Generator:
                 else: # Enum
                     initvalue.attrib['valueSize'] = '2'
                     
-                if property.wutype.wutype == 'short' or property.wutype.wutype == 'int' or property.wutype.wutype == 'refresh_rate' or property.wutype.wutype == 'array':
+                if property.wutype.wutype == 'short' or property.wutype.wutype == 'int' or property.wutype.wutype == 'refresh_rate' or property.wutype.wutype == 'array', property.wutype == 'string':
                     initvalue.attrib['value'] = str(property.value)
                 elif property.wutype.wutype == 'boolean':
                     initvalue.attrib['value'] = '1' if property.value == 'true'else '0'

@@ -1362,6 +1362,9 @@ class SetValue(tornado.web.RequestHandler):
     elif data_type == '3':
         value = string.split('-')
         comm.setProperty(int(node_id), int(port_id), int(wuclass_id), int(property_num), 'array', value)
+    elif data_type == '4':
+        value = string.split('-')
+        comm.setProperty(int(node_id), int(port_id), int(wuclass_id), int(property_num), 'string', value)
 
 class Progression(tornado.web.RequestHandler):
   def post(self):

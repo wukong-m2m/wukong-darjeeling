@@ -18,6 +18,7 @@ WKPF_PROPERTY_TYPE_SHORT         = 0
 WKPF_PROPERTY_TYPE_BOOLEAN       = 1
 WKPF_PROPERTY_TYPE_REFRESH_RATE  = 2
 WKPF_PROPERTY_TYPE_ARRAY         = 3
+WKPF_PROPERTY_TYPE_STRING        = 4
 OBJECTS_IN_MESSAGE               = (WKCOMM_MESSAGE_PAYLOAD_SIZE-3)/4
 RETRY_TIMES                      = 1
 
@@ -499,6 +500,8 @@ class Communication:
         value = (reply[9] <<8) + reply[10]
       elif datatype == WKPF_PROPERTY_TYPE_ARRAY:
         value = reply[9:39]
+      elif datatype == WKPF_PROPERTY_TYPE_STRING:
+        value = reply[9:39]
       else:
         value = None
       return (value, datatype, status)
@@ -527,6 +530,9 @@ class Communication:
       elif datatype == 'array':
         datatype = WKPF_PROPERTY_TYPE_ARRAY
 
+      elif datatype == 'string':
+        datatype = WKPF_PROPERTY_TYPE_STRING
+
       # no piggyback
       if datatype == WKPF_PROPERTY_TYPE_BOOLEAN:
         payload=[port, (wuclassid>>8)&0xFF,
@@ -541,6 +547,12 @@ class Communication:
         payload=[port, (wuclassid>>8)&0xFF,
                     wuclassid&0xFF, property_number, datatype]
         payload.extend(map(lambda x: int(x)&0xff ,value))
+        payload = payload + [0]*(35 - len(payload))
+
+      elif datatype == WKPF_PROPERTY_TYPE_STRING:
+        payload=[port, (wuclassid>>8)&0xFF,
+                    wuclassid&0xFF, property_number, datatype]
+        payload.extend(map(lambda x: ord(x)&0xff ,value))
         payload = payload + [0]*(35 - len(payload))
 
       reply = self.agent.send(id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])
