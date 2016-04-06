@@ -335,7 +335,6 @@
         <property name="input_boolean" access="readwrite" datatype="boolean" default="false" />
     </WuClass>
 
-
     <WuClass name="Philip_Hue_Bulb_Actuator" id="2015" virtual="false" type="hard">
         <property name="ip_high" access="writeonly" datatype="short" default="0"/>
         <property name="ip_low" access="writeonly" datatype="short" default="0"/>
@@ -468,6 +467,9 @@
         <property name="brightness" access="readwrite" datatype="short" default="1" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="50"  />
     </WuClass>
+    <WuClass name="Intel_Sound" id="2037" virtual="false" type="hard">
+        <property name="on_off" access="writeonly" datatype="boolean"  />
+    </WuClass>
 
 
 
@@ -566,28 +568,28 @@
       <property name="input" access="readwrite" datatype="short" default="0" />
       <property name="output" access="readwrite" datatype="short" default="0" />
     </WuClass>
-    <WuClass name="UIImage" id="11001" virtual="fasle" type="soft">
+    <WuClass name="UIImage" id="11001" virtual="false" type="soft">
       <property name="picture" access="writeonly" datatype="short" default="0" />
     </WuClass>
     <WuClass name="LocalizationLoadTester" id="20115" virtual="false" type="hard">
       <property name="response" access="readwrite" datatype="short" default="0" />
       <property name="location" access="readwrite" datatype="short" default="0" />
     </WuClass>
-    <WuClass name="UIButton" id="11002" virtual="fasle" type="soft">
-      <property name="click" access="writeonly" datatype="short" default="0" />
+    <WuClass name="UIButton" id="11002" virtual="false" type="soft">
+      <property name="click" access="readwrite" datatype="short" default="0" />
       <property name="device" access="readwrite" datatype="short" default="0" />
       <property name="port" access="readwrite" datatype="short" default="0" />
     </WuClass>
 
-    <WuClass name="UINumber" id="11003" virtual="fasle" type="soft">
+    <WuClass name="UINumber" id="11003" virtual="false" type="soft">
       <property name="number" access="writeonly" datatype="short" default="0" />
       <property name="device" access="readwrite" datatype="short" default="0" />
       <property name="port" access="readwrite" datatype="short" default="0" />
     </WuClass>
-    <WuClass name="Email" id="11004" virtual="fasle" type="soft">
+    <WuClass name="Email" id="11004" virtual="false" type="soft">
       <property name="send" access="writeonly" datatype="short" default="0" />
     </WuClass>
-    <WuClass name="URL" id="11005" virtual="fasle" type="soft">
+    <WuClass name="URL" id="11005" virtual="false" type="soft">
       <property name="input" access="readonly" datatype="short" default="0" />
     </WuClass>
     <WuClass name="UISlider" id="11006" virtual="false" type="soft">
