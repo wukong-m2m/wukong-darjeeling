@@ -1361,9 +1361,11 @@ class SetValue(tornado.web.RequestHandler):
         comm.setProperty(int(node_id), int(port_id), int(wuclass_id), int(property_num), 'short', int(value[0]))
     elif data_type == '3':
         value = string.split('-')
+        value.insert(0,len(value))
         comm.setProperty(int(node_id), int(port_id), int(wuclass_id), int(property_num), 'array', value)
     elif data_type == '4':
-        value = string.split('-')
+        value = list(string)
+        value.insert(0,len(value))
         comm.setProperty(int(node_id), int(port_id), int(wuclass_id), int(property_num), 'string', value)
 
 class Progression(tornado.web.RequestHandler):
@@ -1644,7 +1646,7 @@ wukong = tornado.web.Application([
   (r"/monitoring_planar",Monitoring_Planar),
   (r"/getvalue",GetValue),
   (r"/getvalue_array",GetValue_array),
-  (r"/refresh/([0-9]*)/([0-9]*)/([0-9]*)/([0-9]*)/([0-9]*)/([0-9\-]*)", SetValue),
+  (r"/refresh/([0-9]*)/([0-9]*)/([0-9]*)/([0-9]*)/([0-9]*)/([0-9a-zA-Z\-]*)", SetValue),
   (r"/configuration", Progression),
   (r"/getRefresh/([0-9]*)/([0-9]*)/([0-9]*)", GetRefresh),
   (r"/nowUser/([0-9]*)", NowUser),

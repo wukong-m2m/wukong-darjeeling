@@ -267,7 +267,9 @@ class WKPF(DatagramProtocol):
             elif dtype == WKPF.DATATYPE_ARRAY:
                 val = map(ord, payload[5:])
             elif dtype == WKPF.DATATYPE_STRING:
-                val = payload[5:]
+                tmp = map(ord, payload[5:])
+                val = [tmp[0]]
+                val.extend(map(chr,tmp[1:]))
             else:
                 val = True if ord(payload[5]) else False
 
@@ -345,15 +347,16 @@ class WKPF(DatagramProtocol):
             p = struct.pack('9B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_BOOLEAN, val & 0xff)
         elif type(val) == list:
             val_len = len(val)
-            val = val + [0]*(30 - val_len)
             if type(val[0]) == int:
+                val = val + [0]*(30 - val_len)
                 p = struct.pack('39B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, 
                                 (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_ARRAY, 
                                  val_len, *map(lambda x: x&0xff ,val))
             else:
+                val = val + ['0']*(30 - val_len)
                 p = struct.pack('39B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, 
                                 (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_STRING, 
-                                 val_len, *map(lambda x: x&0xff ,val))
+                                 val_len, *map(lambda x: ord(x)&0xff ,val))
         else:
             p = struct.pack('10B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_SHORT, (val >> 8)&0xff, val & 0xff)
 

@@ -550,9 +550,10 @@ class Communication:
         payload = payload + [0]*(35 - len(payload))
 
       elif datatype == WKPF_PROPERTY_TYPE_STRING:
+
         payload=[port, (wuclassid>>8)&0xFF,
-                    wuclassid&0xFF, property_number, datatype]
-        payload.extend(map(lambda x: ord(x)&0xff ,value))
+                    wuclassid&0xFF, property_number, datatype,value[0]]
+        payload.extend(map(lambda x: ord(x)&0xff ,value[1:]))
         payload = payload + [0]*(35 - len(payload))
 
       reply = self.agent.send(id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])
