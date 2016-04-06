@@ -13,6 +13,8 @@ class Parser:
     WuTypeDef.create('short', 'short')
     WuTypeDef.create('boolean', 'boolean')
     WuTypeDef.create('refresh_rate', 'refresh_rate')
+    WuTypeDef.create('array', 'array')
+    WuTypeDef.create('string', 'string')
 
     print 'Scanning types'
     for wuType in dom.getElementsByTagName('WuTypedef'):

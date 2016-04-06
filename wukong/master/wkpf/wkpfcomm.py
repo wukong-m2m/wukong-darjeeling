@@ -17,6 +17,8 @@ WKCOMM_MESSAGE_PAYLOAD_SIZE=40
 WKPF_PROPERTY_TYPE_SHORT         = 0
 WKPF_PROPERTY_TYPE_BOOLEAN       = 1
 WKPF_PROPERTY_TYPE_REFRESH_RATE  = 2
+WKPF_PROPERTY_TYPE_ARRAY         = 3
+WKPF_PROPERTY_TYPE_STRING        = 4
 OBJECTS_IN_MESSAGE               = (WKCOMM_MESSAGE_PAYLOAD_SIZE-3)/4
 RETRY_TIMES                      = 1
 
@@ -496,6 +498,10 @@ class Communication:
         value = reply[9] != 0
       elif datatype == WKPF_PROPERTY_TYPE_SHORT or datatype == WKPF_PROPERTY_TYPE_REFRESH_RATE:
         value = (reply[9] <<8) + reply[10]
+      elif datatype == WKPF_PROPERTY_TYPE_ARRAY:
+        value = reply[9:39]
+      elif datatype == WKPF_PROPERTY_TYPE_STRING:
+        value = reply[9:39]
       else:
         value = None
       return (value, datatype, status)
@@ -520,23 +526,35 @@ class Communication:
 
       elif datatype == 'refresh_rate':
         datatype = WKPF_PROPERTY_TYPE_REFRESH_RATE
+      
+      elif datatype == 'array':
+        datatype = WKPF_PROPERTY_TYPE_ARRAY
 
+      elif datatype == 'string':
+        datatype = WKPF_PROPERTY_TYPE_STRING
+
+      # no piggyback
       if datatype == WKPF_PROPERTY_TYPE_BOOLEAN:
         payload=[port, (wuclassid>>8)&0xFF,
-                    wuclassid&0xFF, property_number, datatype, 1 if value else 0,
-        0, 0, 0, 0, 0]
-        # the last 5 0s are sender and receiver component id. set them to 0 to bypass property locking check.
-        #Property locking check checks if the desired id and property is still the desired component in case of link change.
-        #see wkpf_generate_piggyback_token() in wkpf_links.c
-
+                    wuclassid&0xFF, property_number, datatype, 1 if value else 0]
 
       elif datatype == WKPF_PROPERTY_TYPE_SHORT or datatype == WKPF_PROPERTY_TYPE_REFRESH_RATE:
         payload=[port, (wuclassid>>8)&0xFF,
                     wuclassid&0xFF, property_number, datatype, (value>>8)&0xFF,
-                    value&0xFF,
-        0, 0, 0, 0, 0]
-        # the last 5 0s are sender and receiver component id. see wkpf_generate_piggyback_token() in wkpf_links.c
+                    value&0xFF]
 
+      elif datatype == WKPF_PROPERTY_TYPE_ARRAY:
+        payload=[port, (wuclassid>>8)&0xFF,
+                    wuclassid&0xFF, property_number, datatype]
+        payload.extend(map(lambda x: int(x)&0xff ,value))
+        payload = payload + [0]*(35 - len(payload))
+
+      elif datatype == WKPF_PROPERTY_TYPE_STRING:
+
+        payload=[port, (wuclassid>>8)&0xFF,
+                    wuclassid&0xFF, property_number, datatype,value[0]]
+        payload.extend(map(lambda x: ord(x)&0xff ,value[1:]))
+        payload = payload + [0]*(35 - len(payload))
 
       reply = self.agent.send(id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])
       # reply = self.zwave.send(wunode.id, pynvc.WKPF_WRITE_PROPERTY, payload, [pynvc.WKPF_WRITE_PROPERTY_R, pynvc.WKPF_ERROR_R])

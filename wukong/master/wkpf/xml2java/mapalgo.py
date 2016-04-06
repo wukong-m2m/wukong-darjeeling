@@ -11,7 +11,7 @@
 #   'xml': WuClass name in XML
 #   'id' : wuClass ID
 #   'prop' : wuClass' properties
-#            {'jconst': java constant name, 'id' : property's ID, 'type' : u'short' or u'boolean' or enum's dict[enum's value] , 'access': 'rw' or 'ro' or 'wo'}
+#            {'jconst': java constant name, 'id' : property's ID, 'type' : u'short' or u'boolean' or enum's dict[enum's value] or u'array' , 'access': 'rw' or 'ro' or 'wo'}
 #   'vrtl' : true or false (whether wuClass is virtual or not)
 #   'soft' : true (soft) or false (hard)
 # }

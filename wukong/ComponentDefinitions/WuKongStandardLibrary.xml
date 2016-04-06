@@ -602,4 +602,13 @@
       <property name="port" access="readwrite" datatype="short" default="0" />
     </WuClass>
 
+#array test
+    <WuClass name="array_test" id="20001" virtual="false" type="hard">
+      <property name="array" access="readwrite" datatype="array" default="0" />
+    </WuClass>
+    <WuClass name="string_test" id="20002" virtual="false" type="hard">
+      <property name="string" access="readwrite" datatype="string" default="0" />
+    </WuClass>
+
+
 </WuKong>

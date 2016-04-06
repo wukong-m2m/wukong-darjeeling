@@ -17,6 +17,10 @@ class SensorData:
             type = payload[5]
             if type == 1: #boolean
                 value = payload[6]
+            elif type == 3: #array
+                value = [] 
+                for count in xrange(6,36,2):
+                    value.append( (payload[count]<<8) + payload[count] )
             else:
                 value = (payload[6] << 8) + payload[7]
 
