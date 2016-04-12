@@ -47,6 +47,7 @@ class Gateway(object):
             from monitorservice import MonitorService
             self._monitor_service = MonitorService()
             self._spawn_handlers.append(self._monitor_service.serve_monitor)
+            gateway_application_handlers[0x96] = self._monitor_service.handle_monitor_message
             gateway_application_handlers[MPTN.WKPF_COMMAND_MONITOR] = self._monitor_service.handle_monitor_message
 
         # Initialize ID service
