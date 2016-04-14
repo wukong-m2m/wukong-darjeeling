@@ -46,7 +46,7 @@ function init()
         $('#content').html('<H1>Please wait, the node editor is loading now...</H1>');
         $.get('/testrtt', function(data) {
             if (data.status == '1') {
-                alert(data.mesg);
+                myAlert(data.mesg);
             }
             else {
                 $('#content').html(data.testrtt);
@@ -192,18 +192,19 @@ function application_fill()
     });
 
     $('#appadd').click(function() {
-        app_name = prompt('Please enter the application name:', 'New Application')
-        if(app_name != '' && app_name != null) {
-          $.post('/applications/new', {app_name: app_name}, function(data) {
-            if (data.status == '1') {
-                alert(data.mesg);
+        app_name = myPrompt('Create New Application:', {placeholder:'name of this application'},function(app_name){
+            if(app_name != '' && app_name != null) {
+              $.post('/applications/new', {app_name: app_name}, function(data) {
+                if (data.status == '1') {
+                    myAlert(data.mesg);
+                }
+                else {
+                    console.log(data);
+                    application_fill();
+                }
+              });
             }
-            else {
-                console.log(data);
-                application_fill();
-            }
-          });
-        }
+        })
     });
     $('#appupload').click(function() {
         var viewportSize = getViewportSize()
@@ -238,7 +239,7 @@ function application_fill()
             var r = new FileReader();
             var uploadError = function(msg){
                 dialog.parentNode.removeChild(dialog)
-                alert(msg)
+                myAlert('Upload Failure',msg)
             }
             r.onload = function(){
                 var content = r.result
@@ -250,7 +251,7 @@ function application_fill()
                 content = content.replace(/<app_name>.+<\/app_name>/,'<disabled>1</disabled>')
                 $.post('/applications/new', {app_name: app_name,xml:content}, function(data) {
                     if (data.status == '1') {
-                        alert(data.mesg);
+                        myAlert('Upload Failure',data.mesg);
                     }
                     else {
                         application_fill();
@@ -314,20 +315,22 @@ function application_fillList(r)
                     break;
                 }
             }
-            var yes = confirm('Are you sure to delete '+app.app_name+'?')
-            if (!yes) return
-            var app_id = $(this).data('app_id');
-            $.ajax({
-                type: 'delete',
-                url: '/applications/' + app_id,
-                success: function(data) {
-                    if (data.status == 1) {
-                        alert(data.mesg);
-                    }
+            var self = this
+            var yes = myConfirm('Confirm Deletion','Are you sure to delete '+app.app_name+'?',function(yes){
+                if (!yes) return;
+                var app_id = $(self).data('app_id');
+                $.ajax({
+                    type: 'delete',
+                    url: '/applications/' + app_id,
+                    success: function(data) {
+                        if (data.status == 1) {
+                            myAlert('Deletion Failure',data.mesg);
+                        }
 
-                    application_fill();
-                }
-            });
+                        application_fill();
+                    }
+                });
+            })
         }
 
     var nameHandler = function() {
@@ -341,7 +344,7 @@ function application_fillList(r)
             });
             $.post('/applications/' + app_id, function(data) {
                 if (data.status == 1) {
-                    alert(data.mesg);
+                    myAlert('Application Error',data.mesg);
                     application_fill();
                 } else {
                     //topbar = data.topbar;
@@ -349,7 +352,7 @@ function application_fillList(r)
                     var querystring = '?vw='+viewport.width+'&vh='+viewport.height
                     $.get('/applications/' + app_id + '/deploy'+querystring, function(data) {
                         if (data.status == 1) {
-                            alert(data.mesg);
+                            myAlert('Depoly Failure',data.mesg);
                             application_fill();
                         } else {
                             // injecting script to create application interface
@@ -594,3 +597,112 @@ function showNodeRedFrame(show){
     }
 }
 
+/* HY:(2016/1/1)
+ * Customized alert,prompt and confirm to replace browser defaults.
+ * By the caution about their problme reported by YC.
+ */
+function moveDialogToCenter(){
+    var viewportSize = getViewportSize()
+    var dialogRect = dialog.getBoundingClientRect()
+    dialog.style.left = Math.round((viewportSize.width-dialogRect.width)/2)+'px'
+    dialog.style.top =  Math.round((viewportSize.height-dialogRect.height)/2)+'px'
+}
+function myAlert(title,mesg,callback,options){
+    var dialog = document.getElementById('dialog')
+    dialog.querySelector('.title').style.display='block';
+    dialog.querySelector('.title').innerHTML = title
+    dialog.querySelector('.content').innerHTML = mesg
+    var buttons = []
+    var extraButtonNames = []
+    if (options && options.buttons){
+        for (var i in options.buttons){
+            var btn = options.buttons[i]
+            buttons.push('<button name="'+btn.name+'" class="'+(btn.className || '')+'">'+btn.title+'</button>')
+            extraButtonNames.push('button[name="'+btn.name+'"]')
+        }
+    }
+    else{
+        buttons.push('<button name="ok" class="ok my-button-blue">OK</button>')
+    }
+    dialog.querySelector('.buttons').innerHTML = buttons.join('')
+    dialog.querySelector('.x').onclick= function(){
+        dialog.style.display='none'
+        if (callback) callback(null)
+    }
+    dialog.querySelector('.ok').onclick= function(){
+        dialog.style.display='none'
+        if (callback) callback(null)
+    }
+    if (extraButtonNames.length){
+        dialog.querySelectorAll(extraButtonNames.join(',')).forEach(function(ele){
+            ele.onclick = function(){
+                dialog.style.display='none'
+                if (callback) callback(ele.getAttribute('name'))
+            }
+        })
+    }
+    dialog.style.display = 'block'
+    dialog.style.height = '150px'
+    dialog.style.opacity = 1;
+
+    moveDialogToCenter()
+}
+function myPrompt(title,options,callback){
+    var dialog = document.getElementById('dialog')
+    dialog.querySelector('.title').innerHTML = title;
+    dialog.querySelector('.content').innerHTML = '<input style="width:100%;height:40px;font-size:1.5em">'
+    var input = dialog.querySelector('.content input')
+    if (options.placeholder) input.setAttribute('placeholder',options.placeholder)
+    if (options.value) input.value = options.value
+    var buttons = [
+        '<button class="ok my-button-blue">OK</button>',
+        '<button class="cancel">Cancel</button>',
+        ]
+    dialog.querySelector('.buttons').innerHTML = buttons.join('')
+    dialog.querySelector('.x').onclick = function(){
+            dialog.style.display='none'
+            callback(null)
+    }
+    dialog.querySelector('.cancel').onclick = function(){
+            dialog.style.display='none'
+            callback(null)
+    }
+    dialog.querySelector('.ok').onclick = function(){
+        dialog.style.display='none'
+        var text = dialog.querySelector('input').value
+        callback(text)
+    }
+    dialog.style.display = 'block'
+    dialog.style.height = '150px'
+
+    moveDialogToCenter()
+}
+function myConfirm(title,content,callback,blueCancelButton){
+    var dialog = document.getElementById('dialog')
+    dialog.querySelector('.title').innerHTML = title;
+    dialog.querySelector('.content').innerHTML = content
+
+    var input = dialog.querySelector('.content input')
+    var buttons = [
+        '<button class="ok'+(blueCancelButton ? '' : ' my-button-blue')+'">YES</button>',
+        '<button class="cancel'+(blueCancelButton ? ' my-button-blue':'')+'">Cancel</button>',
+        ]
+    dialog.querySelector('.buttons').innerHTML = buttons.join('')
+    dialog.querySelector('.x').onclick = function(){
+            dialog.style.display='none'
+            callback(null)
+    }
+    dialog.querySelector('.cancel').onclick = function(){
+            dialog.style.display='none'
+            callback(null)
+    }
+    dialog.querySelector('.ok').onclick = function(){
+        dialog.style.display='none'
+        callback(true)
+    }
+    dialog.style.display = 'block'
+    dialog.style.height = '150px'
+
+    moveDialogToCenter()
+
+}

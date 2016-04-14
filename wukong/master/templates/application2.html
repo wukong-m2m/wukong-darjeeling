@@ -69,15 +69,7 @@
   text-align: center;
   white-space: nowrap;
 }
-.my-button-blue{
-  background: -moz-linear-gradient(top, #4d90fe, #4787ed);
-  background: -ms-linear-gradient(top, #4d90fe, #4787ed);
-  background: -o-linear-gradient(top, #4d90fe, #4787ed);
-  background: -webkit-linear-gradient(top, #4d90fe, #4787ed);
-  background: linear-gradient(top, #4d90fe, #4787ed);
-  border: 1px solid #3079ed;
-  color: #fff;
-}
+
 /* app store related */
 .modal-dialog{
   display:none;
@@ -93,7 +85,6 @@
   color: #000;
   padding: 15px 21px;
 }
-
 .modal-dialog-content{
     width:100%;
     height:100%;
@@ -105,14 +96,14 @@
     text-align:center;
     width:100%;
 }
-#loading{
+#loading,#dialog{
   display:none;
   position:absolute;
   height:100px;
   text-align:center;
   top:50px;
   left:0px;
-  background-color:rgba(255,255,255,0.85);
+  background-color:rgba(255,255,255,0.95);
   z-index:199;
 }
 #loading div{
@@ -120,6 +111,69 @@
   background-image: url('data:image/gif;base64,R0lGODlhEAALAPQAAP///wAAANra2tDQ0Orq6gYGBgAAAC4uLoKCgmBgYLq6uiIiIkpKSoqKimRkZL6+viYmJgQEBE5OTubm5tjY2PT09Dg4ONzc3PLy8ra2tqCgoMrKyu7u7gAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCwAAACwAAAAAEAALAAAFLSAgjmRpnqSgCuLKAq5AEIM4zDVw03ve27ifDgfkEYe04kDIDC5zrtYKRa2WQgAh+QQJCwAAACwAAAAAEAALAAAFJGBhGAVgnqhpHIeRvsDawqns0qeN5+y967tYLyicBYE7EYkYAgAh+QQJCwAAACwAAAAAEAALAAAFNiAgjothLOOIJAkiGgxjpGKiKMkbz7SN6zIawJcDwIK9W/HISxGBzdHTuBNOmcJVCyoUlk7CEAAh+QQJCwAAACwAAAAAEAALAAAFNSAgjqQIRRFUAo3jNGIkSdHqPI8Tz3V55zuaDacDyIQ+YrBH+hWPzJFzOQQaeavWi7oqnVIhACH5BAkLAAAALAAAAAAQAAsAAAUyICCOZGme1rJY5kRRk7hI0mJSVUXJtF3iOl7tltsBZsNfUegjAY3I5sgFY55KqdX1GgIAIfkECQsAAAAsAAAAABAACwAABTcgII5kaZ4kcV2EqLJipmnZhWGXaOOitm2aXQ4g7P2Ct2ER4AMul00kj5g0Al8tADY2y6C+4FIIACH5BAkLAAAALAAAAAAQAAsAAAUvICCOZGme5ERRk6iy7qpyHCVStA3gNa/7txxwlwv2isSacYUc+l4tADQGQ1mvpBAAIfkECQsAAAAsAAAAABAACwAABS8gII5kaZ7kRFGTqLLuqnIcJVK0DeA1r/u3HHCXC/aKxJpxhRz6Xi0ANAZDWa+kEAA7AAAAAAAAAAAA');
   background-repeat:no-repeat;
   background-position:center;
+}
+.modal-dialog button+button{
+  margin-left:5px;
+}
+.modal-dialog .title{
+  border-bottom:solid 1px #909090;
+  font-weight:bold;
+  margin-bottom:5px;
+  margin-top:0px;
+}
+.modal-dialog .content{
+  background-color:white;
+  background:none;
+}
+
+.modal-dialog button{
+  min-width:60px;
+      -webkit-border-radius: 2px;
+      -moz-border-radius: 2px;
+      border-radius: 2px;
+      background-color: #f5f5f5;
+      background-image: -webkit-linear-gradient(top,#f5f5f5,#f1f1f1);
+      background-image: -moz-linear-gradient(top,#f5f5f5,#f1f1f1);
+      background-image: -ms-linear-gradient(top,#f5f5f5,#f1f1f1);
+      background-image: -o-linear-gradient(top,#f5f5f5,#f1f1f1);
+      background-image: linear-gradient(top,#f5f5f5,#f1f1f1);
+      border: 1px solid #dcdcdc;
+      border: 1px solid rgba(0,0,0,0.1);
+      color: #333;
+      cursor: default;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: bold;
+      height: 29px;
+      line-height: 27px;
+      margin:0;
+      min-width: 72px;
+      outline: 0;
+      padding: 0 8px;
+}
+.modal-dialog .buttons{
+  width:100%;
+  text-align:center;
+  bottom:10px;
+  position:absolute;
+  left:5px;
+}
+.modal-dialog .x{
+  font-weight: bold;
+  text-align: right;
+  margin-top: -5px;
+  margin-right: -5px;
+  color: #a0a0a0;
+  cursor:pointer;
+}
+.my-button-blue{
+  background: -moz-linear-gradient(top, #4d90fe, #4787ed) !important;
+  background: -ms-linear-gradient(top, #4d90fe, #4787ed) !important;
+  background: -o-linear-gradient(top, #4d90fe, #4787ed) !important;
+  background: -webkit-linear-gradient(top, #4d90fe, #4787ed) !important;
+  background: linear-gradient(top, #4d90fe, #4787ed) !important;
+  border: 1px solid #3079ed !important;
+  color: #fff !important;
 }
 </style>
 <script language="javascript" author="HY">
@@ -148,6 +202,7 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
         {% if not connected %}
         <div class="alert">
+          <div class="close" onclick="this.parentNode.style.display='none'">x</div>
           <h4>It appears that you have not connected to a zwave gateway</h4>
           <p>Please connect a zwave gateway to the master and restart.</p>
         </div>
@@ -160,6 +215,20 @@ document.addEventListener('DOMContentLoaded', function () {
             <h1><label id="loading-text"></label></h1>
           </div>
         </div>
+
+        <!-- used by myConfirm,myAlert,myPrompt-->
+        <div id="dialog" class="modal-dialog">
+          <div>
+            <div class="x">x</div>
+            <p class="title"></p>
+            <p class="content"></p>
+            <div class="buttons">
+                <button class="yes i18n">Delete</button>
+                <button class="cancel i18n">Cancel</button>
+            </div>
+          </div>
+        </div>
+
     <div id="node-red-frame" style="display:none;overflow:hidden;width:0px;height:0px;position:absolute;left:0;top:0">
         <div id="" style="padding-top:0px;position:absolute;height:42px;top:0;left:175px">
             <a href="#" onclick="showNodeRedFrame(false)">
