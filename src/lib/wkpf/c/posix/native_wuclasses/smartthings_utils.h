@@ -1,5 +1,9 @@
 #ifndef SMARTTHINGS_UTILS_H
 #define SMARTTHINGS_UTILS_H
+
+#include "config.h"
+#if defined(SMARTTHINGS)
+
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -21,4 +25,6 @@
 
 extern int getStatus (char *message, int msg_len, char *app_id, char *access_token,
   char *dev_id, char *status, int status_len);
+#endif
+
 #endif

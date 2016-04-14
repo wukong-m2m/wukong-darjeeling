@@ -1,3 +1,6 @@
+#include "config.h"
+#if defined(SMARTTHINGS)
+
 #include "smartthings_utils.h"
 
 // Simple structure to keep track of the handle, and
@@ -225,3 +228,4 @@ int getStatus (char *message, int msg_len, char *app_id, char *access_token,
   memset(status, 65, status_len);
   return -106;
 }
+#endif

@@ -1,3 +1,6 @@
+#include "config.h"
+#if defined(SMARTTHINGS)
+
 #include "debug.h"
 #include "native_wuclasses.h"
 #include <stdio.h>
@@ -23,7 +26,7 @@ void wuclass_st_switch_update(wuobject_t *wuobject)
     static uint32_t currenttime, lasttime;
     uint16_t loop_rate = 500;
     currenttime = dj_timer_getTimeMillis();
-    
+
     if (currenttime - lasttime > loop_rate){
         char message[MESSAGE_SIZE] = {0}, status[BUF_SIZE] = {0};
         strcpy(status, retrived_status_name);
@@ -49,3 +52,4 @@ void wuclass_st_switch_update(wuobject_t *wuobject)
         lasttime = currenttime;
     }
 }
+#endif
