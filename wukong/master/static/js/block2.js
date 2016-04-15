@@ -210,7 +210,7 @@ Block.restore=function(a) {
     n.reaction_time = a.reaction_time;
     n.sigProper = a.sigProper;
     n.monitorProper = a.monitorProper;
-    
+
     if (n.type=='NodeRED_InputFrom'){
         //kick off the refreshing
         n.getSignal('message').refreshValue()
@@ -218,12 +218,12 @@ Block.restore=function(a) {
     else if (n.type=='NodeRED_OutputTo'){
         //kick off the refreshing
         n.getAction('message').repeatAction()
-    }    
+    }
     else if (n.type=='Debug_Trigger'){
         //kick off the refreshing
         n.getSignal('timestamp').refreshTimestamp()
     }
-    
+
     // Call the restore of the derived class in the future
     return n;
 }
@@ -346,7 +346,7 @@ Block.prototype.draw=function() {
         $signal.data('block_id', this.id);
         if(this.monitorProper[i] != undefined) {
             $signal.addClass("monitor_enable");
-        }        
+        }
         $signal.on('click', clickHandler);
     }
     // implement "Edit in Node-RED"
@@ -668,7 +668,7 @@ Block.prototype.enableContextMenu=function(b) {
             if (action == 'link') {
                 if (Block.linkStart != null) {
                     if (Block.linkStart == self) {
-                        alert("Can not link to myself");
+                        top.myAlert('Link Failure',"Can not link to myself");
                         return;
                     }
                     new Link(Block.linkStart,"on",self,"on");
@@ -766,12 +766,12 @@ Block.prototype.renderPropertyEditForm = function(){
         tags.push('<div class="Debug_Inspector_Content" style="width:90%;height:85%;overflow-y:auto"><div>')
         tags.push('</div></div>')
         editForm.innerHTML = tags.join('')
-        
+
         var action = this.getAction('content')
         var lastValues = []
         var c = editForm.querySelector('.Debug_Inspector_Content')
         var showValue = function(){
-            var value 
+            var value
             var tags = []
             for (var i=0,s;s=action.connectedSignals[i];i++){
                 var svalue;

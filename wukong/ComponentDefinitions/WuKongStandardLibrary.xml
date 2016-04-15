@@ -604,7 +604,7 @@
       <property name="port" access="readwrite" datatype="short" default="0" />
     </WuClass>
 
-#array test
+    <!-- array test -->
     <WuClass name="array_test" id="20001" virtual="false" type="hard">
       <property name="array" access="readwrite" datatype="array" default="0" />
     </WuClass>
@@ -612,5 +612,17 @@
       <property name="string" access="readwrite" datatype="string" default="0" />
     </WuClass>
 
-
+    <!-- Node-RED -->
+    <WuClass name="NodeREDSignalSender" id="21001" virtual="true" type="soft">
+        <property name="topic" access="readwrite" datatype="short"  />
+        <property name="boolean-siganl" access="writeonly" datatype="boolean" default="false"/>
+        <property name="integer-siganl" access="writeonly" datatype="short" default="0"/>
+        <property name="string-signal"  access="writeonly" datatype="short" default="1"/>
+    </WuClass>
+    <WuClass name="NodeREDSignalReceiver" id="21002" virtual="true" type="soft">
+        <property name="topic" access="readwrite" datatype="short"  />
+        <property name="boolean-siganl" access="readonly" datatype="boolean" default="false"/>
+        <property name="integer-siganl" access="readonly" datatype="short" default="0"/>
+        <property name="string-signal"  access="readonly" datatype="short" default="1"/>
+    </WuClass>
 </WuKong>

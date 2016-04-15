@@ -1,7 +1,13 @@
 #ifndef STCONFIG_H
 #define STCONFIG_H
+
+#include "config.h"
+#if defined(SMARTTHINGS)
+
 #define APP_ID ""
-#define SWITCH_DEV_ID "" 
+#define SWITCH_DEV_ID ""
 #define PRESENCE_DEV_ID ""
 #define ACCESS_TOKEN ""
+
+#endif
 #endif

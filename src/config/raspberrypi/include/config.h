@@ -72,5 +72,6 @@
 // GPIO:
 // #define MRAA_LIBRARY
 #define GROVE_PI
+// #define SMARTTHINGS
 
 #endif

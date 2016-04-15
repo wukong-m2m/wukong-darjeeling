@@ -125,28 +125,28 @@ function fbp2Init(){
 
 function FBP_deletePage()
 {
-    var yes = confirm('Are you sure ?')
-    if (!yes) return;
-    var name='';
-    var i=0;
+    var yes = top.myConfirm('Delete Page','Are you sure ?',function(yes){
+        if (!yes) return;
+        var name='';
+        var i=0;
 
-    $.each(g_pages,function(k,v) {
-        i = i + 1;
-        if (name == '' && k != g_current_page)
-            name = k;
-    });
-    if (i > 1) {
-        g_disable_page_update = true;
-        delete g_pages[g_current_page];
-        g_current_page = name;
-        FBP_initPage();
-        FBP_renderPage(g_pages[g_current_page]);
-        g_disable_page_update = false;
+        $.each(g_pages,function(k,v) {
+            i = i + 1;
+            if (name == '' && k != g_current_page)
+                name = k;
+        });
+        if (i > 1) {
+            g_disable_page_update = true;
+            delete g_pages[g_current_page];
+            g_current_page = name;
+            FBP_initPage();
+            FBP_renderPage(g_pages[g_current_page]);
+            g_disable_page_update = false;
 
-        if (i==2) document.getElementById('deletePageBtn').setAttribute('disabled',1)
-    }
+            if (i==2) document.getElementById('deletePageBtn').setAttribute('disabled',1)
+        }
 
-
+    })
 }
 
 function FBP_editComponent()
@@ -344,7 +344,7 @@ function FBP_addBlock(type){
     var size = getViewportSize()
     var offset = getViewportOffset()
     block.setPosition(size.width/4,size.height/4)
-    
+
     if (block.type=='Annotation') Block.setCurrent(block)
     else if (block.type=='NodeRED_InputFrom'){
         //kick off the refreshing
@@ -362,66 +362,68 @@ function FBP_addBlock(type){
 
 function FBP_deleteBlock()
 {
-    var yes = confirm('Are you sure?')
-    if (!yes) return;
-    if (g_selected_line) {
-        var lines=[];
-        for(i=0;i<g_lines.length;i++) {
-            if (g_lines[i] != g_selected_line) {
-                lines.push(g_lines[i]);
+    var yes = top.myConfirm('Delete Block','Are you sure?',function(yes){
+        if (!yes) return;
+        if (g_selected_line) {
+            var lines=[];
+            for(i=0;i<g_lines.length;i++) {
+                if (g_lines[i] != g_selected_line) {
+                    lines.push(g_lines[i]);
+                }
+            }
+            g_lines = lines;
+            FBP_refreshLines();
+            g_selected_line = null;
+            return;
+        }
+        if (!Block.current) return;
+        for(i=0;i<g_nodes.length;i++) {
+            if (g_nodes[i].id == Block.current.id) {
+                g_nodes.splice(i,1);
+                break;
             }
         }
-        g_lines = lines;
+        var new_lines = [];
+        for(i=0;i<g_lines.length;i++) {
+            if ((g_lines[i].source.id != Block.current.id)&&
+                (g_lines[i].dest.id != Block.current.id)) {
+                new_lines.push(g_lines[i]);
+            }
+        }
+        g_lines = new_lines;
         FBP_refreshLines();
-        g_selected_line = null;
-        return;
-    }
-    if (!Block.current) return;
-    for(i=0;i<g_nodes.length;i++) {
-        if (g_nodes[i].id == Block.current.id) {
-            g_nodes.splice(i,1);
-            break;
-        }
-    }
-    var new_lines = [];
-    for(i=0;i<g_lines.length;i++) {
-        if ((g_lines[i].source.id != Block.current.id)&&
-            (g_lines[i].dest.id != Block.current.id)) {
-            new_lines.push(g_lines[i]);
-        }
-    }
-    g_lines = new_lines;
-    FBP_refreshLines();
-    Block.current.div.remove();
-    Block.current = null;
-    top.notifyApplicationContentTainted(true)
+        Block.current.div.remove();
+        Block.current = null;
+        top.notifyApplicationContentTainted(true)
+    })
 }
 function FBP_deleteLink(){
     if (!g_selected_line) return;
-    var yes = confirm('Are you sure?')
-    if (!yes) return;
-     
-    var signal = g_selected_line.source.getSignal(g_selected_line.signal)
-    var action = g_selected_line.dest.getAction(g_selected_line.action)
-    if (signal && action) signal.disconnect(action)
-    else {console.log(['Warning: signal or action not existed to delete',signal,action])}
-    
-    var new_lines = [];
-    for(i=0;i<g_lines.length;i++) {
-        if (g_lines[i] !== g_selected_line) new_lines.push(g_lines[i]);
-        /*
-        if ((g_lines[i].source.id != Block.current.id)&&
-            (g_lines[i].dest.id != Block.current.id)) {
-            new_lines.push(g_lines[i]);
+    var yes = top.myConfirm('Delete Link','Are you sure?',function(yes){
+        if (!yes) return;
+
+        var signal = g_selected_line.source.getSignal(g_selected_line.signal)
+        var action = g_selected_line.dest.getAction(g_selected_line.action)
+        if (signal && action) signal.disconnect(action)
+        else {console.log(['Warning: signal or action not existed to delete',signal,action])}
+
+        var new_lines = [];
+        for(i=0;i<g_lines.length;i++) {
+            if (g_lines[i] !== g_selected_line) new_lines.push(g_lines[i]);
+            /*
+            if ((g_lines[i].source.id != Block.current.id)&&
+                (g_lines[i].dest.id != Block.current.id)) {
+                new_lines.push(g_lines[i]);
+            }
+            */
         }
-        */
-    }
-    g_selected_line = null;
-    g_lines = new_lines;
-    FBP_refreshLines();
-    document.getElementById('blockPropEditForm').innerHTML = ''
-    sidebarActiveTab('t1')
-    top.notifyApplicationContentTainted(true)
+        g_selected_line = null;
+        g_lines = new_lines;
+        FBP_refreshLines();
+        document.getElementById('blockPropEditForm').innerHTML = ''
+        sidebarActiveTab('t1')
+        top.notifyApplicationContentTainted(true)
+    })
 }
 function FBP_refreshLines()
 {
@@ -507,7 +509,7 @@ function FBP_link_cleanup ($target,_lastHit){
 function FBP_link(evt)
 {
     if (!Block.current) {
-        alert("select a source first");
+        top.myAlert("select a source first");
         return;
     }
     var $target = $(evt.currentTarget)
@@ -612,7 +614,7 @@ function FBP_save_meta_or_content(callback){
     if (top._AppContentTainted_) FBP_save(function(success){
         if (success && !top._AppMetaTainted_){
             if (callback) setTimeout(function(){callback()},1)
-            else alert('Saving Succeed')
+            else top.myAlert('Save Application','Success')
         }
     })
     if (top._AppMetaTainted_){
@@ -626,12 +628,12 @@ function FBP_save_meta_or_content(callback){
                 //console.log(data)
                 if (data.status==1){
                     if (callback) setTimeout(function(){callback()},1)
-                    else alert('Fail to save:'+data.mesg)
+                    else top.myAlert('Save Application','Failed:'+data.mesg)
                 }
                 else{
                     top.notifyApplicationMetaTainted(false)
                     if (callback) setTimeout(function(){callback()},1)
-                    else alert('Succeed')
+                    else top.myAlert('Rename Application','Success')
                 }
             }
         })
@@ -930,7 +932,7 @@ function FBP_addPage(){
             'Add': function() {
                 var page = $('#dianewpage_name').val();
                 if (g_pages.hasOwnProperty(page)) {
-                    alert('page title is duplicated');
+                    top.myAlert('Add Page','Page title is duplicated');
                     return;
                 }
                 FBP_updatePage();
@@ -989,7 +991,7 @@ function FBP_loadFromServer(id)
         url:'/applications/'+id+'/fbp/load',
         type: 'POST',
         error: function(msg) {
-            alert(msg)
+            top.myAlert('Load FBP Error',msg)
         },
         success: function(r) {
             g_current_page = null;
@@ -1160,7 +1162,7 @@ function Signal(name,datatype)
     this.datatype = datatype;
     this.defaultValue = '';
     //the owner device, will be assigned later
-    this.parent = null 
+    this.parent = null
     this.value = ''
     this.connectedActions = []
 }
@@ -1244,7 +1246,7 @@ Action.prototype = {
         this.refreshValueToServer(function(){
             setTimeout(function(){
                 self.repeatAction()
-            },1000)  
+            },1000)
         })
     },
     refreshValueToServer:function(callback){
@@ -1253,7 +1255,7 @@ Action.prototype = {
             if (s.value) dataobj.push(s.value)
         }
         if (dataobj.length==1) dataobj = dataobj[0]
-        
+
         var samevalue = true
         if (typeof(dataobj)=='object' && typeof(this.lastValue2Server)=='object'){
             for (var k in dataobj){
@@ -1281,7 +1283,7 @@ Action.prototype = {
         }).done(function(data){
             if (callback) callback(data)
         })
-    }       
+    }
 }
 
 
@@ -1388,7 +1390,7 @@ function FBP_uploadBlock(){
                     object = JSON.parse(e.target.result)
                 }
                 catch(e){
-                    alert('Format Error')
+                    top.myAlert('Upload FBP Failure','Format Error')
                 }
             }
             reader.readAsText(this.files[0]);
@@ -1471,7 +1473,7 @@ function FBP_deploy_do(){
             top.stop_polling()
         })
         if (data.status == 1) {
-            alert(data.mesg);
+            top.myAlert('Deploy Failure',data.mesg);
         } else {
             // Print deploy status to #deploy-progress
             // Starts a new polling to deploy-progress
@@ -1503,7 +1505,7 @@ function FBP_map_do(){
         FBP_openDepolymentDialog()
         // Already an object
         if (data.status == 1) {
-            alert(data.mesg);
+            top.myAlert('Map Failure',data.mesg);
         } else {
             $('#deployment .modal-dialog-content').html('Mapping Progress:<div id="mapping-progress"></div>Mapping Results:<div id="mapping_results"><table style="width:100%"></table></div>')
             var $table = $('#mapping_results table');
@@ -1592,7 +1594,7 @@ function FBP_submit2AppstoreDialog(){
             var author = $dialog.find('form .submit-app-author').val()
             //var desc = $dialog.find('form .submit-app-desc').val()
             //var iconInput = $dialog.find('form .submit-app-icon')[0]
-            if (name=='' || author=='') {alert('App name and author are required');return}
+            if (name=='' || author=='') {top.myAlert('Submit App Failure','App name and author are required');return}
             var url = '/applications/'+currentApplication.id+'/fbp/submit2appstore'
             $.ajax({
                 url:url,
@@ -1602,7 +1604,7 @@ function FBP_submit2AppstoreDialog(){
                 contentType: false
             }).done(function(){
                 $dialog.css({'display':'none'})
-                alert('Submit ok')
+                top.myAlert('Submit App Success','Submitting has completed')
             })
         })
     })
