@@ -189,3 +189,35 @@ if (buildStaticLibrary) {
     defaultTasks 'darjeeling'
 }
 
+
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath "net.rdrei.android.buildtimetracker:gradle-plugin:0.5.+"
+  }
+}
+
+apply plugin: "build-time-tracker"
+
+buildtimetracker {
+  reporters {
+    csv {
+      output "build/times.csv"
+      append true
+      header false
+    }
+
+    summary {
+      ordered false
+      threshold 50
+      barstyle "unicode"
+    }
+
+    csvSummary {
+      csv "build/times.csv"
+    }
+  }
+}

@@ -18,6 +18,9 @@
 #define IS_REF_PUSH(x)          (((x) & 0xFE0F) == OPCODE_ST_XINC)
 #define IS_REF_POP(x)           (((x) & 0xFE0F) == OPCODE_LD_DECX)
 #define IS_MOV(x)               (((x) & 0xFC00) == OPCODE_MOV)
+#define IS_MOVW(x)              (((x) & 0xFC00) == OPCODE_MOVW)
+
+#define IS_ANY_PUSH_POP_MOV(x)  (IS_INT_PUSH(x) || IS_REF_PUSH(x) || IS_INT_POP(x) || IS_REF_POP(x) || IS_MOV(x) || IS_MOVW(x))
 
 // 0000 000d dddd 0000
 #define GET_1REG_OPERAND(x)		(((x) & 0x01F0) >> 4)
@@ -173,6 +176,13 @@ bool rtc_maybe_optimise_push_pop(uint16_t *push_finger, uint16_t *pop_finger, ui
             return false;
         }
 
+        // #ifndef AOT_SIMPLE_OPTIMISER
+        // if (!IS_ANY_PUSH_POP_MOV(check_reg_write_finger_instr)) {
+        //     return false;
+        // }
+        // #endif
+
+
         check_reg_write_finger += rtc_is_double_word_instruction(check_reg_write_finger_instr) ? 2 : 1;
     }
 
@@ -195,6 +205,7 @@ bool rtc_maybe_optimise_push_pop(uint16_t *push_finger, uint16_t *pop_finger, ui
 // MAKE SURE THIS ONLY GETS CALLED WITH A SINGLE BASIC BLOCK IN THE BUFFER
 void rtc_optimise(uint16_t *buffer, uint16_t **code_end) {
     bool found;
+
 
     do {
         found = false;

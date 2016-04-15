@@ -90,13 +90,16 @@ type Results = {
     cyclesCTotal : int;
     cyclesCPushPop : ExecCounters;
     cyclesCMov : ExecCounters;
+    cyclesCLoadStore : ExecCounters;
     cyclesAOTTotal : int;
     cyclesAOTPushPopInt : ExecCounters;
     cyclesAOTPushPopRef : ExecCounters;
+    cyclesAOTLoadStore : ExecCounters;
     cyclesAOTMov : ExecCounters;
     overheadTotalCycles : int;
-    overheadPushPopCycles : int;
-    overheadMovCycles : int;
+    overheadPushPop : ExecCounters;
+    overheadMov : ExecCounters;
+    overheadLoadStore : ExecCounters;
     cyclesPerJvmOpcode : (string * string * ExecCounters) list;
     cyclesPerAvrOpcodeAOTJava : (string * string * ExecCounters) list;
     cyclesPerAvrOpcodeNativeC : (string * string * ExecCounters) list;

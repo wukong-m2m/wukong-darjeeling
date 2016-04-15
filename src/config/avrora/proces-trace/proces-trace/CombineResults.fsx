@@ -35,6 +35,8 @@ let resultToStringList (result : Results) =
         String.Format ("{0,5:0.0}", 100.0 * float cycles / float totalCycles)
     let cyclesToAOTPercentage = cyclesToPercentage result.executedCyclesAOT
     let cyclesToCPercentage = cyclesToPercentage result.executedCyclesC
+    let executedInstructionsJVM = result.cyclesPerJvmOpcodeCategory |> List.map (fun (cat, cnt) -> cnt.executions) |> List.reduce (+)
+    let executionsToPercentage = cyclesToPercentage executedInstructionsJVM
     let cyclesToSlowdown cycles1 cycles2 =
         String.Format ("{0:0.00}", float cycles1 / float cycles2)
     let cyclesToOverhead1 cycles1 cycles2 =
@@ -68,23 +70,26 @@ let resultToStringList (result : Results) =
         ("Java/AOT"             , (cyclesToSlowdown result.stopwatchCyclesJava result.stopwatchCyclesAOT));
         (""                     , "");
         ("CYCLE COUNTS"         , "");
-        ("AOT method total"     , result.executedCyclesAOT.ToString());
-        ("AOT stopw/count"      , (cyclesToSlowdown result.stopwatchCyclesAOT result.executedCyclesAOT));
-        ("PUSH/POP Int"         , (cyclesToAOTPercentage result.cyclesPushPopInt.cycles));
-        ("PUSH/POP Ref"         , (cyclesToAOTPercentage result.cyclesPushPopRef.cycles));
-        ("MOV(W)"               , (cyclesToAOTPercentage result.cyclesMov.cycles));
-        ("PUSH/POP+MOV(W)"      , (cyclesToAOTPercentage (result.cyclesPushPopInt.cycles+result.cyclesPushPopRef.cycles+result.cyclesMov.cycles)));
+        ("Native C total"       , String.Format("{0}", result.cyclesCTotal));
+        ("         push/pop"    , String.Format("{0}", result.cyclesCPushPop.cycles));
+        ("         mov(w)"      , String.Format("{0}", result.cyclesCMov.cycles));
+        ("         load/store"  , String.Format("{0}", result.cyclesCLoadStore.cycles));
+        ("AOT      total"       , String.Format("{0}", result.cyclesAOTTotal));
+        ("         stopw/count" , (cyclesToSlowdown result.stopwatchCyclesAOT result.cyclesAOTTotal));
+        ("         push/pop"    , String.Format("{0}", result.cyclesAOTPushPopInt.cycles+result.cyclesAOTPushPopRef.cycles));
+        ("         mov(w)"      , String.Format("{0}", result.cyclesAOTMov.cycles));
+        ("         load/store"  , String.Format("{0}", result.cyclesAOTLoadStore.cycles));
         (""                     , "");
+        ("OVERHEAD (%C)"        , "");
+        ("   push/pop"          , (cyclesToPercentage result.cyclesCTotal result.overheadPushPop.cycles));
+        ("   mov(w)"            , (cyclesToPercentage result.cyclesCTotal result.overheadMov.cycles));
+        ("   load/store"        , (cyclesToPercentage result.cyclesCTotal result.overheadLoadStore.cycles));
+        ("   other"             , (cyclesToPercentage result.cyclesCTotal (result.overheadTotalCycles - result.overheadPushPop.cycles - result.overheadMov.cycles - result.overheadLoadStore.cycles)));
+        ("   total"             , (cyclesToPercentage result.cyclesCTotal result.overheadTotalCycles));
         (""                     , "");
         ("MEMORY TRAFFIC"       , "");
         ("Bytes LD/ST AOT"      , String.Format ("{0}", (getLDDSTBytesFromAVRPerCategoryAOT result)));
         ("Bytes LD/ST C"        , String.Format ("{0}", (getLDDSTBytesFromAVRPerCategoryC result)));
-        (""                     , "");
-        ("OVERHEAD"             , "");
-        ("Total cyc"            , String.Format ("{0}", overheadInCycles));
-        ("Load/store"           , String.Format ("{0}", overheadLoadStoreInCycles));
-        ("Movw"                 , String.Format ("{0}", overheadMovwInCycles));
-        ("Push/pop"             , String.Format ("{0}", overheadPushPopInCycles));
         (""                     , "");
         ("STACK"                , "");
         ("max"                  , result.maxJvmStackInBytes.ToString());
@@ -97,22 +102,27 @@ let resultToStringList (result : Results) =
         ("Java"                 , result.codesizeJava.ToString());
         ("  branch overhead"    , (result.codesizeJava - result.codesizeJavaWithoutBranchOverhead).ToString());
         ("  markloop overhead"  , result.codesizeJavaMarkloopTotalSize.ToString());
+        ("  Java ex. overhead"  , result.codesizeJavaWithoutBranchMarkloopOverhead.ToString());
         ("AOT/C"                , (cyclesToSlowdown result.codesizeAOT result.codesizeC));
         ("AOT/Java"             , (cyclesToSlowdown result.codesizeAOT result.codesizeJava));
         ]
     let r2 = 
         (""                     , "")
+        :: ("JVM EXE (not cyc!)", "")
+        :: (result.cyclesPerJvmOpcodeCategory |> List.map (fun (cat, cnt) -> (cat, (executionsToPercentage cnt.executions))))
+    let r3 = 
+        (""                     , "")
         :: ("JVM (%C)"          , "")
         :: (result.cyclesPerJvmOpcodeCategory |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
-    let r3 = 
+    let r4 = 
         (""                     , "")
         :: ("AVR Java AOT (%C)" , "")
         :: (result.cyclesPerAvrOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
-    let r4 = 
+    let r5 = 
         (""                     , "")
         :: ("AVR Native C"      , "")
         :: (result.cyclesPerAvrOpcodeCategoryNativeC |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
-    List.concat [ r1; r2; r3; r4 ]
+    List.concat [ r1; r2; r3; r4; r5 ]
 
 let flipTupleListsToStringList (benchmarks : (string * string) list list) =
     // Initialise the accumulator as a list of lists containing only the key names
@@ -145,7 +155,7 @@ let summariseResults resultsDirectory =
     let results =
         resultsXmlStrings
             |> List.map (fun xml -> xmlSerializer.UnPickleOfString<Results> xml)
-            |> List.sortBy (fun r -> let sortorder = ["bsort16"; "bsort32"; "hsort16"; "hsort32"; "binsrch16"; "binsrch32"; "fft"; "rc5"; "xxtea"; "md5"; "sortX"; "hsortX"; "binsrchX"] in
+            |> List.sortBy (fun r -> let sortorder = ["bsort16"; "bsort32"; "hsort16"; "hsort32"; "binsrch16"; "binsrch32"; "fft"; "xxtea"; "md5"; "rc5"; "sortX"; "hsortX"; "binsrchX"] in
                                      match sortorder |> List.tryFindIndex ((=) r.benchmark) with
                                      | Some (index) -> index
                                      | None -> 100)

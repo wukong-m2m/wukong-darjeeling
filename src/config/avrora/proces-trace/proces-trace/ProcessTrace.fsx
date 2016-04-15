@@ -35,8 +35,8 @@ let AvrInstructionFromXml (xml : RtcdataXml.AvrInstruction) =
     }
 
 let jvmOpcodeCategories = 
-    [("01) Ref stack ld/st", ["JVM_ALOAD"; "JVM_ALOAD_0"; "JVM_ALOAD_1"; "JVM_ALOAD_2"; "JVM_ALOAD_3"; "JVM_ASTORE"; "JVM_ASTORE_0"; "JVM_ASTORE_1"; "JVM_ASTORE_2"; "JVM_ASTORE_3"; "JVM_GETFIELD_A"; "JVM_PUTFIELD_A"; "JVM_GETSTATIC_A"; "JVM_PUTSTATIC_A"]);
-     ("02) Int stack ld/st", ["JVM_SLOAD"; "JVM_SLOAD_0"; "JVM_SLOAD_1"; "JVM_SLOAD_2"; "JVM_SLOAD_3"; "JVM_ILOAD"; "JVM_ILOAD_0"; "JVM_ILOAD_1"; "JVM_ILOAD_2"; "JVM_ILOAD_3"; "JVM_SSTORE"; "JVM_SSTORE_0"; "JVM_SSTORE_1"; "JVM_SSTORE_2"; "JVM_SSTORE_3"; "JVM_ISTORE"; "JVM_ISTORE_0"; "JVM_ISTORE_1"; "JVM_ISTORE_2"; "JVM_ISTORE_3"; "JVM_IPOP"; "JVM_IPOP2"; "JVM_IDUP"; "JVM_IDUP2"; "JVM_IDUP_X"; "JVM_APOP"; "JVM_ADUP"; "JVM_GETFIELD_B"; "JVM_GETFIELD_C"; "JVM_GETFIELD_S"; "JVM_GETFIELD_I"; "JVM_PUTFIELD_B"; "JVM_PUTFIELD_C"; "JVM_PUTFIELD_S"; "JVM_PUTFIELD_I"; "JVM_GETSTATIC_B"; "JVM_GETSTATIC_C"; "JVM_GETSTATIC_S"; "JVM_GETSTATIC_I"; "JVM_PUTSTATIC_B"; "JVM_PUTSTATIC_C"; "JVM_PUTSTATIC_S"; "JVM_PUTSTATIC_I"]);
+    [("01) Ref stack ld/st", ["JVM_ALOAD"; "JVM_ALOAD_0"; "JVM_ALOAD_1"; "JVM_ALOAD_2"; "JVM_ALOAD_3"; "JVM_ASTORE"; "JVM_ASTORE_0"; "JVM_ASTORE_1"; "JVM_ASTORE_2"; "JVM_ASTORE_3"; "JVM_GETFIELD_A"; "JVM_PUTFIELD_A"; "JVM_GETSTATIC_A"; "JVM_PUTSTATIC_A"; "JVM_APOP"; "JVM_ADUP"]);
+     ("02) Int stack ld/st", ["JVM_SLOAD"; "JVM_SLOAD_0"; "JVM_SLOAD_1"; "JVM_SLOAD_2"; "JVM_SLOAD_3"; "JVM_ILOAD"; "JVM_ILOAD_0"; "JVM_ILOAD_1"; "JVM_ILOAD_2"; "JVM_ILOAD_3"; "JVM_SSTORE"; "JVM_SSTORE_0"; "JVM_SSTORE_1"; "JVM_SSTORE_2"; "JVM_SSTORE_3"; "JVM_ISTORE"; "JVM_ISTORE_0"; "JVM_ISTORE_1"; "JVM_ISTORE_2"; "JVM_ISTORE_3"; "JVM_IPOP"; "JVM_IPOP2"; "JVM_IDUP"; "JVM_IDUP2"; "JVM_IDUP_X"; "JVM_GETFIELD_B"; "JVM_GETFIELD_C"; "JVM_GETFIELD_S"; "JVM_GETFIELD_I"; "JVM_PUTFIELD_B"; "JVM_PUTFIELD_C"; "JVM_PUTFIELD_S"; "JVM_PUTFIELD_I"; "JVM_GETSTATIC_B"; "JVM_GETSTATIC_C"; "JVM_GETSTATIC_S"; "JVM_GETSTATIC_I"; "JVM_PUTSTATIC_B"; "JVM_PUTSTATIC_C"; "JVM_PUTSTATIC_S"; "JVM_PUTSTATIC_I"]);
      ("03) Constant load", ["JVM_SCONST_M1"; "JVM_SCONST_0"; "JVM_SCONST_1"; "JVM_SCONST_2"; "JVM_SCONST_3"; "JVM_SCONST_4"; "JVM_SCONST_5"; "JVM_ICONST_M1"; "JVM_ICONST_0"; "JVM_ICONST_1"; "JVM_ICONST_2"; "JVM_ICONST_3"; "JVM_ICONST_4"; "JVM_ICONST_5"; "JVM_ACONST_NULL"; "JVM_BSPUSH"; "JVM_BIPUSH"; "JVM_SSPUSH"; "JVM_SIPUSH"; "JVM_IIPUSH"; "JVM_LDS"]);
      ("04) Array ld/st", ["JVM_BALOAD"; "JVM_CALOAD"; "JVM_SALOAD"; "JVM_IALOAD"; "JVM_AALOAD"; "JVM_BASTORE"; "JVM_CASTORE"; "JVM_SASTORE"; "JVM_IASTORE"; "JVM_AASTORE"]);
      ("05) Branches", ["JVM_SIFEQ"; "JVM_SIFNE"; "JVM_SIFLT"; "JVM_SIFGE"; "JVM_SIFGT"; "JVM_SIFLE"; "JVM_IIFEQ"; "JVM_IIFNE"; "JVM_IIFLT"; "JVM_IIFGE"; "JVM_IIFGT"; "JVM_IIFLE"; "JVM_IFNULL"; "JVM_IFNONNULL"; "JVM_IF_SCMPEQ"; "JVM_IF_SCMPNE"; "JVM_IF_SCMPLT"; "JVM_IF_SCMPGE"; "JVM_IF_SCMPGT"; "JVM_IF_SCMPLE"; "JVM_IF_ICMPEQ"; "JVM_IF_ICMPNE"; "JVM_IF_ICMPLT"; "JVM_IF_ICMPGE"; "JVM_IF_ICMPGT"; "JVM_IF_ICMPLE"; "JVM_IF_ACMPEQ"; "JVM_IF_ACMPNE"; "JVM_GOTO"; "JVM_TABLESWITCH"; "JVM_LOOKUPSWITCH"; "JVM_BRTARGET"; "JVM_MARKLOOP" ]);
@@ -301,14 +301,24 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress :
             |> List.map (fun cat -> match categoriesPresent |> List.tryFind (fun (cat2, _) -> cat = cat2) with
                                     | Some (cat, cnt) -> (cat, cnt)
                                     | None -> (cat, ExecCounters.empty))
+    let sumCategoryCounters (categories : string list, allCategories : (string * ExecCounters) list) =
+      allCategories |> List.filter (fun (cat,cnt) -> categories.Contains(cat))
+                    |> List.map snd
+                    |> List.fold (+) ExecCounters.empty
 
-    let (cyclesCPushPop, cyclesCMov) = (countPushPopMovC nativeCInstructions)
-    let (cyclesAOTPushPopInt, cyclesAOTPushPopRef , cyclesAOTMov) = (countPushPopMovAOT mainResults)
-    let cyclesCTotal = nativeCInstructions |> Seq.toList |> List.sumBy (fun (inst,cnt) -> (cnt.cycles))
-    let cyclesAOTTotal = mainResults |> List.sumBy (fun r -> (r.counters.cycles))
     let cyclesPerJvmOpcodeCategory = groupOpcodesInCategories getAllJvmOpcodeCategories getCategoryForJvmOpcode cyclesPerJvmOpcode
     let cyclesPerAvrOpcodeCategoryNativeC = groupOpcodesInCategories AVR.getAllOpcodeCategories AVR.opcodeCategory cyclesPerAvrOpcodeNativeC
     let cyclesPerAvrOpcodeCategoryAOTJava = groupOpcodesInCategories AVR.getAllOpcodeCategories AVR.opcodeCategory cyclesPerAvrOpcodeAOTJava
+    let cyclesCTotal = nativeCInstructions |> Seq.toList |> List.sumBy (fun (inst,cnt) -> (cnt.cycles))
+    let cyclesAOTTotal = mainResults |> List.sumBy (fun r -> (r.counters.cycles))
+    let (cyclesCPushPop, cyclesCMov) = (countPushPopMovC nativeCInstructions)
+    let (cyclesAOTPushPopInt, cyclesAOTPushPopRef, cyclesAOTMov) = (countPushPopMovAOT mainResults)
+    let cyclesCLoadStore = cyclesPerAvrOpcodeCategoryNativeC |> List.filter (fun (cat,cnt) -> cat.Contains("LD/ST rel to"))
+                                                             |> List.map snd
+                                                             |> List.fold (+) ExecCounters.empty
+    let cyclesAOTLoadStore = cyclesPerAvrOpcodeCategoryAOTJava |> List.filter (fun (cat,cnt) -> cat.Contains("LD/ST rel to") && not (cat.Contains("LD/ST rel to X")))
+                                                               |> List.map snd
+                                                               |> List.fold (+) ExecCounters.empty
     let lastInList x = x |> List.reduce (fun _ x -> x)
     let codesizeJava = methodImpl.JvmMethodSize
     let codesizeJavaBranchCount = methodImpl.BranchCount
@@ -349,13 +359,16 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress :
         cyclesCTotal = cyclesCTotal
         cyclesCPushPop = cyclesCPushPop
         cyclesCMov = cyclesCMov
+        cyclesCLoadStore = cyclesCLoadStore
         cyclesAOTTotal = cyclesAOTTotal
         cyclesAOTPushPopInt = cyclesAOTPushPopInt
         cyclesAOTPushPopRef = cyclesAOTPushPopRef
         cyclesAOTMov = cyclesAOTMov
+        cyclesAOTLoadStore = cyclesAOTLoadStore
         overheadTotalCycles = cyclesAOTTotal - cyclesCTotal
-        overheadPushPopCycles = cyclesAOTPushPopInt.cycles + cyclesAOTPushPopRef.cycles - cyclesCPushPop.cycles
-        overheadMovCycles = cyclesAOTMov.cycles - cyclesCMov.cycles
+        overheadPushPop = cyclesAOTPushPopInt + cyclesAOTPushPopRef - cyclesCPushPop
+        overheadMov = cyclesAOTMov - cyclesCMov
+        overheadLoadStore = cyclesAOTLoadStore - cyclesCLoadStore
         cyclesPerJvmOpcode = cyclesPerJvmOpcode |> List.map (fun (opc, cnt) -> (getCategoryForJvmOpcode opc, opc, cnt))
         cyclesPerAvrOpcodeAOTJava = cyclesPerAvrOpcodeAOTJava |> List.map (fun (opc, cnt) -> (AVR.opcodeCategory opc, AVR.opcodeName opc, cnt))
         cyclesPerAvrOpcodeNativeC = cyclesPerAvrOpcodeNativeC |> List.map (fun (opc, cnt) -> (AVR.opcodeCategory opc, AVR.opcodeName opc, cnt))
@@ -441,17 +454,19 @@ let resultsToString (results : Results) =
         yield String.Format ("                    stopw/count                {0,14}", (cyclesToSlowdown results.stopwatchCyclesC results.executedCyclesC))
         yield String.Format ("                push/pop int                   {0}", (countersToStringVsNativeC totalCyclesNativeC totalCyclesNativeC results.cyclesCPushPop))
         yield String.Format ("                mov(w)                         {0}", (countersToStringVsNativeC totalCyclesNativeC totalCyclesNativeC results.cyclesCMov))
+        yield String.Format ("                load/store                     {0}", (countersToStringVsNativeC totalCyclesNativeC totalCyclesNativeC results.cyclesCLoadStore))
         yield ""
         yield String.Format ("                AOT                            {0,14} (={1})", results.executedCyclesAOT, totalCyclesAOTJava)
         yield String.Format ("                    stopw/count                {0,14}", (cyclesToSlowdown results.stopwatchCyclesAOT results.executedCyclesAOT))
         yield String.Format ("                push/pop int                   {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesAOTPushPopInt))
         yield String.Format ("                push/pop ref                   {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesAOTPushPopRef))
         yield String.Format ("                mov(w)                         {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.cyclesAOTMov))
-        yield String.Format ("                total                          {0}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC (results.cyclesAOTPushPopInt + results.cyclesAOTPushPopRef + results.cyclesAOTMov)))
+        yield String.Format ("                load/store                     {0}", (countersToStringVsNativeC totalCyclesNativeC totalCyclesNativeC results.cyclesAOTLoadStore))
         yield ""
         yield String.Format ("--- OVERHEAD Total                             {0,14}", (overheadToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.overheadTotalCycles))
-        yield String.Format ("             pushpop                           {0,14}", (overheadToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.overheadPushPopCycles))
-        yield String.Format ("             mov(w)                            {0,14}", (overheadToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.overheadMovCycles))
+        yield String.Format ("             pushpop                           {0,14}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.overheadPushPop))
+        yield String.Format ("             mov(w)                            {0,14}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.overheadMov))
+        yield String.Format ("             load/store                        {0,14}", (countersToStringVsNativeC totalCyclesAOTJava totalCyclesNativeC results.overheadLoadStore))
         yield ""
         yield String.Format ("--- STACK max                                  {0,14}", (results.maxJvmStackInBytes))
         yield String.Format ("          avg/executed jvm                     {0,14:000.00}", results.avgJvmStackInBytes)
