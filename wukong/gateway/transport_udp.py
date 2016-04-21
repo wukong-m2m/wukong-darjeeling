@@ -139,7 +139,7 @@ class UDPTransport(Transport):
                 address, port = self.getDeviceAddress(host_id)
                 if address == 0: return None
 
-                header = chr(0xaa) + chr(0x55) + chr(host_id) + struct.pack('<I', address) + struct.pack('<H', port) + chr(raw_type) + chr(len(payload))
+                header = chr(0xaa) + chr(0x55) + chr(host_id) + struct.pack('<I', self._ip) + struct.pack('<H', self._port) + chr(raw_type) + chr(len(payload))
                 message = "".join(map(chr, payload))
                 logger.info("sending %d bytes %s to %s, port %d" % (len(message), map(ord, message), MPTN.ID_TO_STRING(address),port))
                 sock = socket.socket(socket.AF_INET, # Internet
@@ -262,7 +262,7 @@ class UDPTransport(Transport):
                         logger.debug("device deleted %s %s %s" % (str(host_id),str(ip),str(port)))
                         self.last_host_id = 0
                         return
-        
+
         elif found:
             for d in self.devices:
                 if d.host_id == host_id:
