@@ -26,7 +26,7 @@
 #include <stdbool.h>
 
 // Allocate 4k heap for the VM
-#define HEAPSIZE 2048
+#define HEAPSIZE 4096
 
 // 'Time slices' are 32 instructions
 #define RUNSIZE 32

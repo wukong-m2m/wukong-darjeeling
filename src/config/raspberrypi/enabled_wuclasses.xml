@@ -5,9 +5,9 @@
     <WuClass name="Button" appCanCreateInstances="false">
         <CreateInstance />
     </WuClass>
-   <!--  <WuClass name="Light_Actuator" appCanCreateInstances="false">
+    <WuClass name="Light_Actuator" appCanCreateInstances="false">
         <CreateInstance />
-    </WuClass> -->
+    </WuClass>
 </WuKong>
 
     <!--<WuClass name="Button" appCanCreateInstances="false">

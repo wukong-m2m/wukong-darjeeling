@@ -29,6 +29,7 @@ bool wkreprog_impl_open(uint16_t start_write_position) {
 	fp = fopen(posix_app_infusion_filename, "rb+");
 	if (fp== NULL) {
 		printf("Error in opening file to write infusion to...\n");
+		return false;
 	}
 	fseek(fp, start_write_position, SEEK_SET);
 	in_memory_pointer = (void *)di_app_archive + start_write_position;

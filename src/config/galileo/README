@@ -19,10 +19,8 @@ git clone https://github.com/intel-iot-devkit/mraa.git
 cd mraa
 mkdir build
 cd build
-export CFLAGS=-m32
-export CXXFLAGS=-m32
-cmake .. -DBUILDSWIGNODE=OFF -DBUILDSWIGPYTHON=OFF -DBUILDARCH=i386 
-make
+CFLAGS=-m32 CXXFLAGS=-m32 cmake .. -DBUILDSWIGNODE=OFF -DBUILDSWIGPYTHON=OFF -DBUILDARCH=i386
+CFLAGS=-m32 CXXFLAGS=-m32 make
 sudo make install
 
 
