@@ -1,15 +1,16 @@
 from twisted.internet import reactor
 from udpwkpf import WuClass, Device
 import sys
-import mraa
+from udpwkpf_io_interface import *
+
+Touch_Sensor_Pin = 4
 
 class TouchSensor(WuClass):
     def __init__(self):
         self.ID = 1015
         self.current_value = 0
-        self.refreshRate = 0.1
-        self.IO = mraa.Gpio(5)
-        self.IO.dir(mraa.DIR_IN)
+        self.refreshRate = 0.5
+        self.IO = pin_mode(Touch_Sensor_Pin, PIN_TYPE_DIGITAL, PIN_MODE_INPUT)
         reactor.callLater(self.refreshRate, self.refresh)
 
     def update(self,obj,pID,val):
@@ -17,9 +18,13 @@ class TouchSensor(WuClass):
             self.refreshRate = val/1000.0
 
     def refresh(self):
-        self.current_value = self.IO.read()
-        reactor.callLater(self.refreshRate, self.refresh)
-
+        try:
+            self.current_value = digital_read(self.IO)
+            reactor.callLater(self.refreshRate, self.refresh)
+            print "Touchsensor value: %d" % self.current_value
+        except IOError:
+            print "Error"
+            reactor.callLater(self.refreshRate, self.refresh)
 
 if __name__ == "__main__":
     class MyDevice(Device):

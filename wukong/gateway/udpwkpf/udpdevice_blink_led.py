@@ -1,40 +1,40 @@
+from twisted.internet import reactor
 from udpwkpf import WuClass, Device
 import sys
-import mraa
+from udpwkpf_io_interface import *
 
-from twisted.protocols import basic
-from twisted.internet import reactor, protocol
+Light_Actuator_Pin = 13 
+Button_Pin = 5 
 
 if __name__ == "__main__":
     class Button(WuClass):
         def __init__(self):
             self.ID = 1012
-        
+
         def setup(self, obj, pin):
-            button_gpio = mraa.Gpio(pin)
+            button_gpio = pin_mode(pin, PIN_TYPE_DIGITAL, PIN_MODE_INPUT)
             print "Button init success"
-            reactor.callLater(0.1, self.refresh, obj, pin, button_gpio)
+            reactor.callLater(0.5, self.refresh, obj, pin, button_gpio)
 
         def refresh(self, obj, pin, button_gpio):
-            current_value = button_gpio.read()
+            current_value = digital_read(button_gpio)
             obj.setProperty(0, current_value)
             print "Button pin: ", pin, ", value: ", current_value
-            reactor.callLater(0.1, self.refresh, obj, pin, button_gpio)
-            
+            reactor.callLater(0.5, self.refresh, obj, pin, button_gpio)
+
     class Light_Actuator(WuClass):
         def __init__(self, pin):
             self.ID = 2001
-            self.light_actuator_gpio = mraa.Gpio(pin)
-            self.light_actuator_gpio.dir(mraa.DIR_OUT)
+            self.light_actuator_gpio = pin_mode(pin, PIN_TYPE_DIGITAL, PIN_MODE_OUTPUT)
             print "Light Actuator init success"
 
         def update(self,obj,pID,val):
             if pID == 0:
                 if val == True:
-                    self.light_actuator_gpio.write(1)
+                    digital_write(self.light_actuator_gpio, 1)
                     print "Light Actuator On"
                 else:
-                    self.light_actuator_gpio.write(0)
+                    digital_write(self.light_actuator_gpio, 0)
                     print "Light Actuator Off"
             else:
                 print "Light Actuator garbage"
@@ -44,12 +44,10 @@ if __name__ == "__main__":
             Device.__init__(self,addr,localaddr)
 
         def init(self):
-            Light_Actuator_Pin = 13
             m1 = Light_Actuator(Light_Actuator_Pin)
             self.addClass(m1,0)
             self.obj_light_actuator = self.addObject(m1.ID)
 
-            Button_Pin = 5
             m2 = Button()
             self.addClass(m2,0)
             self.obj_button = self.addObject(m2.ID)
@@ -65,3 +63,4 @@ if __name__ == "__main__":
 
     d = MyDevice(sys.argv[1],sys.argv[2])
     reactor.run()
+    device_cleanup()

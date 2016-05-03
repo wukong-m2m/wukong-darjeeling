@@ -1,9 +1,9 @@
 from udpwkpf import WuClass, Device
 import sys
-import mraa
+from udpwkpf_io_interface import *
+from twisted.internet import reactor
 
-from twisted.protocols import basic
-from twisted.internet import reactor, protocol
+Slider_Pin = 0
 
 if __name__ == "__main__":
     class Slider(WuClass):
@@ -11,26 +11,29 @@ if __name__ == "__main__":
             self.ID = 1006
         
         def setup(self, obj, pin):
-            slider_aio = mraa.Aio(pin)
+            slider_aio = pin_mode(pin, PIN_TYPE_ANALOG)
             print "Slider init success"
-            reactor.callLater(0.1, self.refresh, obj, pin, slider_aio)
+            reactor.callLater(0.5, self.refresh, obj, pin, slider_aio)
 
         def refresh(self, obj, pin, slider_aio):
-            current_value = slider_aio.read() / 4
-            obj.setProperty(2, current_value)
-            print "Slider pin: ", pin, ", value: ", current_value
-            reactor.callLater(0.1, self.refresh, obj, pin, slider_aio)
+            try:
+                current_value = analog_read(slider_aio)/4 #4 is divisor value which depends on the slider.
+                obj.setProperty(2, current_value)
+                print "Slider analog pin: ", pin, ", value: ", current_value
+                reactor.callLater(0.5, self.refresh, obj, pin, slider_aio)
+            except IOError:
+                print ("Error")
+                reactor.callLater(0.5, self.refresh, obj, pin, slider_aio)
             
     class MyDevice(Device):
         def __init__(self,addr,localaddr):
             Device.__init__(self,addr,localaddr)
 
         def init(self):
-
             cls = Slider()
             self.addClass(cls,0)
             self.obj_slider = self.addObject(cls.ID)
-            self.obj_slider.cls.setup(self.obj_slider, 0)
+            self.obj_slider.cls.setup(self.obj_slider, Slider_Pin)
 
     if len(sys.argv) <= 2:
         print 'python udpwkpf.py <ip> <port>'

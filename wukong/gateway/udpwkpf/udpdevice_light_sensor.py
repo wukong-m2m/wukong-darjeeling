@@ -1,9 +1,9 @@
 from udpwkpf import WuClass, Device
 import sys
-import mraa
+from udpwkpf_io_interface import *
+from twisted.internet import reactor
 
-from twisted.protocols import basic
-from twisted.internet import reactor, protocol
+Light_Sensor_Pin = 1
 
 if __name__ == "__main__":
     class Light_Sensor(WuClass):
@@ -11,26 +11,29 @@ if __name__ == "__main__":
             self.ID = 1001
         
         def setup(self, obj, pin):
-            light_sensor_aio = mraa.Aio(pin)
+            light_sensor_aio = pin_mode(pin, PIN_TYPE_ANALOG)
             print "Light sensor init success"
-            reactor.callLater(0.1, self.refresh, obj, pin, light_sensor_aio)
+            reactor.callLater(0.5, self.refresh, obj, pin, light_sensor_aio)
 
         def refresh(self, obj, pin, light_sensor_aio):
-            current_value = light_sensor_aio.read() / 4
-            obj.setProperty(2, current_value)
-            print "Light sensor pin: ", pin, ", value: ", current_value
-            reactor.callLater(0.1, self.refresh, obj, pin, light_sensor_aio)
-            
+            try:
+                current_value = analog_read(light_sensor_aio)/4 # 4 is divisor value which depends on the light sensor
+                obj.setProperty(0, current_value)
+                print "Light sensor analog pin: ", pin, ", value: ", current_value
+                reactor.callLater(0.5, self.refresh, obj, pin, light_sensor_aio)
+            except IOError:
+                print ("Error")
+                reactor.callLater(0.5, self.refresh, obj, pin, light_sensor_aio)
+  
     class MyDevice(Device):
         def __init__(self,addr,localaddr):
             Device.__init__(self,addr,localaddr)
 
         def init(self):
-
             cls = Light_Sensor()
             self.addClass(cls,0)
             self.obj_light_sensor = self.addObject(cls.ID)
-            self.obj_light_sensor.cls.setup(self.obj_light_senosr, 0)
+            self.obj_light_sensor.cls.setup(self.obj_light_sensor, Light_Sensor_Pin)
 
     if len(sys.argv) <= 2:
         print 'python udpwkpf.py <ip> <port>'

@@ -2,9 +2,9 @@ import traceback
 import time,sys
 from udpwkpf import WuClass, Device
 from twisted.internet import reactor
-import mraa
+from udpwkpf_io_interface import *
 
-PIN = 3 # depends on which analog port
+PIN = 2 # depends on which analog port
 REFRESH_RATE = 0.5
 
 class Sound_sensor(WuClass):
@@ -12,7 +12,7 @@ class Sound_sensor(WuClass):
         self.ID = 1014
         self.refresh_rate = REFRESH_RATE
         self.current_value = 0 
-        self.sound_sensor_aio = mraa.Aio(pin)
+        self.sound_sensor_aio = pin_mode(pin, PIN_TYPE_ANALOG)
         reactor.callLater(self.refresh_rate,self.refresh)
         print "Sound sensor init!"
 
@@ -20,27 +20,29 @@ class Sound_sensor(WuClass):
         pass
 
     def refresh(self):
-        self.current_value = self.sound_sensor_aio.read()
-        print "WKPFUPDATE(Sound_Sensor): raw value " + str(self.current_value)
-
-        #should convert under fomula for differnet companies' sensor
-        self.current_value = int(((self.current_value/4095.0)*255));
-        reactor.callLater(self.refresh_rate,self.refresh)
+        try:
+            self.current_value = analog_read(self.sound_sensor_aio)
+            #should convert under fomula for differnet companies' sensor
+            self.current_value = int(((self.current_value/4095.0)*255));
+            reactor.callLater(self.refresh_rate,self.refresh)
+        except IOError:
+            print ("Error")
+            reactor.callLater(self.refresh_rate,self.refresh)
 
 class MyDevice(Device):
     def __init__(self,addr,localaddr):
         Device.__init__(self,addr,localaddr)
 
     def init(self):
-        m = Sound_sensor(PIN)
-        self.addClass(m,1)
-        self.obj_sound_sensor = self.addObject(m.ID)
-        reactor.callLater(0.1,self.loop)
+        self.m = Sound_sensor(PIN)
+        self.addClass(self.m,1)
+        self.obj_sound_sensor = self.addObject(self.m.ID)
+        reactor.callLater(0.5,self.loop)
     
     def loop(self):
         self.obj_sound_sensor.setProperty(0,self.obj_sound_sensor.cls.current_value)
-        #print "WKPFUPDATE(Sound_Sensor): output " + str(self.m.current_value)
-        reactor.callLater(0.1,self.loop)
+        print "Sound sensor analog pin: %d, value: %d" % (PIN, self.m.current_value)
+        reactor.callLater(0.5,self.loop)
 
 
 if len(sys.argv) <= 2:

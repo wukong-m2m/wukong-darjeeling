@@ -2,17 +2,16 @@ import traceback
 import time,sys
 from udpwkpf import WuClass, Device
 from twisted.internet import reactor
-import pyupm_grove 
 from math import log
+from udpwkpf_io_interface import *
 
-PIN = 0 #Analog pin 0
+PIN = 3 #Analog pin 0
 REFRESH_RATE = 0.5 
 
 class Temperature_sensor(WuClass):
     def __init__(self,pin):
         self.ID = 1013
         self.refresh_rate = REFRESH_RATE
-        self.temperature_sensor = pyupm_grove.GroveTemp(pin)
         reactor.callLater(self.refresh_rate,self.refresh)
         self.celsius = 0
         print "temperature sensor init!"
@@ -21,10 +20,14 @@ class Temperature_sensor(WuClass):
         pass
 
     def refresh(self):
-        self.celsius = self.temperature_sensor.value()
-        print "WKPFUPDATE(Temperature): %d degrees Celsius" %self.celsius
-        reactor.callLater(self.refresh_rate,self.refresh)
-
+        try:
+            self.celsius = temp_read(PIN)
+            print "WKPFUPDATE(Temperature): %d degrees Celsius" %self.celsius
+            reactor.callLater(self.refresh_rate,self.refresh)
+        except IOError:
+            print ("Error")
+            reactor.callLater(self.refresh_rate,self.refresh)
+          
 class MyDevice(Device):
     def __init__(self,addr,localaddr):
         Device.__init__(self,addr,localaddr)
@@ -33,12 +36,12 @@ class MyDevice(Device):
         m = Temperature_sensor(PIN)
         self.addClass(m,1)
         self.obj_temperature_sensor = self.addObject(m.ID)
-        reactor.callLater(0.1,self.loop)
+        reactor.callLater(0.5,self.loop)
     
     def loop(self):
-        #print "WKPFUPDATE(Temperature): %d degrees Celsius" %self.m.celsius
+        #print "WKPFUPDATE(Temperature): %d degrees Celsius" % self.m.celsius
         self.obj_temperature_sensor.setProperty(0, self.obj_temperature_sensor.cls.celsius)
-        reactor.callLater(0.1,self.loop)
+        reactor.callLater(0.5,self.loop)
 
 if len(sys.argv) <= 2:
         print 'python udpwkpf.py <ip> <port>'

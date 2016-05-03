@@ -1,15 +1,16 @@
 from twisted.internet import reactor
 from udpwkpf import WuClass, Device
 import sys
-import mraa
+from udpwkpf_io_interface import *
+
+Button_Pin = 5
 
 class Button(WuClass):
     def __init__(self):
         self.ID = 1012
         self.current_value = 0
         self.refreshRate = 0.1
-        self.IO = mraa.Gpio(5)
-        self.IO.dir(mraa.DIR_IN)
+        self.IO = pin_mode(Button_Pin, PIN_TYPE_DIGITAL, PIN_MODE_INPUT)
         reactor.callLater(self.refreshRate, self.refresh)
 
     def update(self,obj,pID,val):
@@ -17,9 +18,13 @@ class Button(WuClass):
             self.refreshRate = val/1000.0
 
     def refresh(self):
-        self.current_value = self.IO.read()
-        reactor.callLater(self.refreshRate, self.refresh)
-
+        try:
+            self.current_value = digital_read(self.IO)
+            reactor.callLater(self.refreshRate, self.refresh)
+            print "Button value: %d" % self.current_value
+        except IOError:
+            print "Error"
+            reactor.callLater(self.refreshRate, self.refresh)
 
 if __name__ == "__main__":
     class MyDevice(Device):
@@ -29,11 +34,11 @@ if __name__ == "__main__":
             m = Button()
             self.addClass(m,0)
             self.obj_button = self.addObject(m.ID)
-            reactor.callLater(0.1, self.loop)
+            reactor.callLater(0.5, self.loop)
 
         def loop(self):
             self.obj_button.setProperty(0, self.obj_button.cls.current_value)
-            reactor.callLater(0.1, self.loop)
+            reactor.callLater(0.5, self.loop)
 
     if len(sys.argv) <= 2:
         print 'python udpwkpf.py <ip> <port>'
@@ -44,4 +49,4 @@ if __name__ == "__main__":
 
     d = MyDevice(sys.argv[1],sys.argv[2])
     reactor.run()
-
+    device_cleanup()
