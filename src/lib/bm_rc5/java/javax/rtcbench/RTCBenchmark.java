@@ -147,7 +147,7 @@ public class RTCBenchmark {
     {
         return rtcbenchmark_measure_java_performance(pt, ct, skey_rounds, skey_K);
     }
-    private static int rtcbenchmark_measure_java_performance(final byte[] pt, byte[] ct, int skey_rounds, int[] skey_K)
+    public static int rtcbenchmark_measure_java_performance(final byte[] pt, byte[] ct, int skey_rounds, int[] skey_K)
     {
         Stopwatch.resetAndStart();
 

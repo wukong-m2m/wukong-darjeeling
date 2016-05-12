@@ -2,7 +2,7 @@ apply plugin: DjSourceSetPlugin
 
 buildscript {
     repositories {
-        flatDir dirs: '/Users/niels/src/proguard5.2.1/lib/'
+        flatDir dirs: '/Users/niels/src/proguard5.2.1/lib'
     }
     dependencies {
         classpath ':proguard:'
@@ -129,15 +129,61 @@ class DjSourceSet {
             outjars outputOptimisedJar
             dontwarn
             dontusemixedcaseclassnames
-            keep 'public class * { public *;  private *; }'
+            dontobfuscate
+            optimizations '!code/allocation/variable' // This is necessary because if two variables have non-overlapping live ranges, proguard may decide to put them in the same slot. This is fine for normal Java, but can cause errors in the infuser (probably when one variable is int and the other a short or byte)
+            if(this.name.startsWith('bm_')) {
+                keep 'class javax.rtcbench.RTCBenchmark { public static native void test_native(); }'
+                keepclassmembers 'class * { public static boolean test_java(); }'
+                keepclassmembers 'class * { public static <fields>; }'
+                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(short[]); }'
+                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(int[]); }'
+                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(short[]); }'
+                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(short[]); }'
+                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(int[]); }'
+                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(short[]); }'
+                keepclassmembers 'class * { public static short rtcbenchmark_measure_java_performance(); }'
+                keepclassmembers 'class * { public static short rtcbenchmark_measure_java_performance(byte[], byte[], short, boolean); }'
+                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(short[]); }'
+                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(int[]); }'
+                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(short[]); }'
+                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(byte[], byte[]); }'
+                keepclassmembers 'class * { public static int rtcbenchmark_measure_java_performance(byte[], byte[], int, int[]); }'
+                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(); }'
+                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(int[], int[]); }'                
+            } else {
+                // Don't optimise the libraries for now since it's giving some trouble and we may replace them
+                keep 'class * { public *; private *; }'
+            }
         }
         def proguard_unjar_task = project.tasks.create(name: 'proguard_unjar_'+this.name, type: Copy) {
             dependsOn(proguard_task)
+            def outputUnoptimisedDisassembly = "${this.project.buildDir}/${this.name}_unoptimised.txt"
+            def outputOptimisedDisassembly = "${this.project.buildDir}/${this.name}_optimised.txt"
             inputs.file outputOptimisedJar
             outputs.dir outputOptimisedClassesDir
+            outputs.file new File(outputOptimisedDisassembly)
+            outputs.file new File(outputUnoptimisedDisassembly)
 
             from project.zipTree(outputOptimisedJar)
             into outputOptimisedClassesDir
+
+            doLast {
+                def optimisedBenchmarkClass = outputOptimisedClassesDir.toString() + "/javax/rtcbench/RTCBenchmark.class"
+                def unoptimisedBenchmarkClass = outputClassesDir.toString() + "/javax/rtcbench/RTCBenchmark.class"
+                if ((new File(optimisedBenchmarkClass)).exists()) {
+                    println "**************************** DIT IS DE BENCHMARK"
+                    project.exec {
+                        executable 'javap'
+                        args '-c', '-p', unoptimisedBenchmarkClass
+                        standardOutput = new FileOutputStream(outputUnoptimisedDisassembly)
+                    } 
+                    project.exec {
+                        executable 'javap'
+                        args '-c', '-p', optimisedBenchmarkClass
+                        standardOutput = new FileOutputStream(outputOptimisedDisassembly)
+                    } 
+                }
+            }
         }
         def infusion_task = project.tasks.create(name: this.getInfusionTaskName()) {
             def infusionClassesSourceDir
