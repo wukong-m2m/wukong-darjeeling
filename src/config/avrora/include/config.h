@@ -30,7 +30,7 @@
 #include "/Users/niels/src/avrora/src/avrora/monitors/AvroraTimer.h"
 #include "/Users/niels/src/avrora/src/avrora/monitors/AvroraRTC.h"
 
-#define HEAPSIZE 2048
+#define HEAPSIZE 2148
 
 // 'Time slices' are 128 instructions
 #define RUNSIZE 128

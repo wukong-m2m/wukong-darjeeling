@@ -31,12 +31,11 @@ public class RTCBenchmark {
 
         int toFind = numbers[0] - 1;
 
-        for (short i=0; i<1000; i++) {
+        short mid=0;
+        for (int i=0; i<1000; i++) {
             short low = 0;
             short high = (short)(numbers.length - 1);
-            short mid;
             while (low <= high) {
-                // mid = (low + high) / 2;
                 mid = (short)((short)(low + high) >>> 1); // This is usually much faster than / 2. Any optimising compiler should know this.
 
                 int number_mid;
@@ -60,5 +59,6 @@ public class RTCBenchmark {
         }
 
         Stopwatch.measure();
+        numbers[0]=mid; // This is just here to prevent proguard from optimising away the whole method
     }
 }

@@ -200,24 +200,24 @@ buildscript {
   }
 }
 
-apply plugin: "build-time-tracker"
+// apply plugin: "build-time-tracker"
 
-buildtimetracker {
-  reporters {
-    csv {
-      output "build/times.csv"
-      append true
-      header false
-    }
+// buildtimetracker {
+//   reporters {
+//     csv {
+//       output "build/times.csv"
+//       append true
+//       header false
+//     }
 
-    summary {
-      ordered false
-      threshold 50
-      barstyle "unicode"
-    }
+//     summary {
+//       ordered false
+//       threshold 50
+//       barstyle "unicode"
+//     }
 
-    csvSummary {
-      csv "build/times.csv"
-    }
-  }
-}
+//     csvSummary {
+//       csv "build/times.csv"
+//     }
+//   }
+// }

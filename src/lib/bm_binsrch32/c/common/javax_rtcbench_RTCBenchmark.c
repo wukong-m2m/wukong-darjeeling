@@ -17,10 +17,10 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t 
 
     int32_t toFind = numbers[NUMNUMBERS-1] + 1;
 
+    uint16_t mid=0;
     for (uint16_t i=0; i<1000; i++) {
         uint16_t low = 0;
         uint16_t high = NUMNUMBERS - 1;
-        uint16_t mid;
         while (low <= high) {
             mid = ((uint16_t)(low + high)) >> 1;
             int32_t number_mid;
@@ -35,6 +35,7 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t 
     }
 
     javax_darjeeling_Stopwatch_void_measure();
+    numbers[0]=mid; // This is just here to prevent proguard from optimising away the whole method
 }
 
 void javax_rtcbench_RTCBenchmark_void_test_native() {

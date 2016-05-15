@@ -121,6 +121,7 @@ class DjSourceSet {
             }
         }
         def proguard_task = project.tasks.create(name: 'proguard_'+this.name, type: proguard.gradle.ProGuardTask) {
+            System.setProperty('maximum.inlined.code.length', '80')
             dependsOn(jar_task)
             inputs.file outputJar
             outputs.file outputOptimisedJar
@@ -135,21 +136,21 @@ class DjSourceSet {
                 keep 'class javax.rtcbench.RTCBenchmark { public static native void test_native(); }'
                 keepclassmembers 'class * { public static boolean test_java(); }'
                 keepclassmembers 'class * { public static <fields>; }'
-                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(short[]); }'
-                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(int[]); }'
-                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(short[]); }'
-                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(short[]); }'
-                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(int[]); }'
-                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(short[]); }'
+                keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(short[]); }'
+                keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(int[]); }'
+                keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(short[]); }'
+                keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(short[]); }'
+                keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(int[]); }'
+                keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(short[]); }'
                 keepclassmembers 'class * { public static short rtcbenchmark_measure_java_performance(); }'
                 keepclassmembers 'class * { public static short rtcbenchmark_measure_java_performance(byte[], byte[], short, boolean); }'
-                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(short[]); }'
-                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(int[]); }'
-                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(short[]); }'
-                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(byte[], byte[]); }'
-                keepclassmembers 'class * { public static int rtcbenchmark_measure_java_performance(byte[], byte[], int, int[]); }'
-                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(); }'
-                keepclassmembers 'class * { public static void rtcbenchmark_measure_java_performance(int[], int[]); }'                
+                keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(short[]); }'
+                keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(int[]); }'
+                keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(short[]); }'
+                keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(byte[], byte[]); }'
+                keepclassmembers 'class * { public static int   rtcbenchmark_measure_java_performance(byte[], byte[], int, int[]); }'
+                keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(); }'
+                keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(int[], int[]); }'                
             } else {
                 // Don't optimise the libraries for now since it's giving some trouble and we may replace them
                 keep 'class * { public *; private *; }'
@@ -187,7 +188,7 @@ class DjSourceSet {
         }
         def infusion_task = project.tasks.create(name: this.getInfusionTaskName()) {
             def infusionClassesSourceDir
-            if (!project.hasProperty('proguard')) {
+            if (project.hasProperty('no-proguard')) {
                 dependsOn(javac_task)
                 infusionClassesSourceDir = outputClassesDir
             } else {
