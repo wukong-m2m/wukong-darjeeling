@@ -8,6 +8,7 @@ if __name__ == "__main__":
 
     class Threshold(WuClass):
         def __init__(self):
+            WuClass.__init__(self)
             self.loadClass('Threshold')
             print "Threshold init success"
         def update(self,obj,pID,val):

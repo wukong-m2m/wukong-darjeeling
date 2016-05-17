@@ -9,6 +9,7 @@ from twisted.internet.protocol import DatagramProtocol, ClientCreator, Reconnect
 import cjson
 import traceback
 import xml.dom.minidom
+import time
 
 lib_path = "/../../ComponentDefinitions/WuKongStandardLibrary.xml"
 
@@ -64,6 +65,15 @@ class WKPF(DatagramProtocol):
     DATATYPE_ARRAY          = 3
     DATATYPE_STRING         = 4
 
+    DATATYPE_ThresholdOperator = 10
+    DATATYPE_LogicalOperator   = 11
+    DATATYPE_MathOperator      = 12
+    DATATYPE_Pin               = 13
+
+    WK_PROPERTY_ACCESS_READONLY  = 1<<7
+    WK_PROPERTY_ACCESS_WRITEONLY = 1<<6
+    WK_PROPERTY_ACCESS_READWRITE = (WK_PROPERTY_ACCESS_READONLY+WK_PROPERTY_ACCESS_WRITEONLY)
+
     WKCOMM_MESSAGE_PAYLOAD_SIZE=40
     OBJECTS_IN_MESSAGE               = (WKCOMM_MESSAGE_PAYLOAD_SIZE-3)/4
 
@@ -103,7 +113,7 @@ class WKPF(DatagramProtocol):
             self.links=o['links']
             self.mptnaddr = o['mptnaddr']
             try:
-                self.properties = o['properties']
+                self.properties = o['props']
             except:
                 pass
             f.close()
@@ -312,6 +322,8 @@ class WKPF(DatagramProtocol):
             else:
                 self.links['%d.%d'%(src_id,s_pID)]= [[dest_id,d_pID]]
     def addProperties(self,port,n=7):
+        if self.properties[port] != []:
+            return
         props = []
         for i in range(0,n): props.append({'value':0,'dirty':False})
         self.properties[port] = props
@@ -453,6 +465,7 @@ class WKPF(DatagramProtocol):
                 self.device.checkObject(clsid, port)
 
             self.components.append(com)
+
     def initObjects(self):
         for i in range(0,len(self.components)):
             com = self.components[i]
@@ -461,7 +474,6 @@ class WKPF(DatagramProtocol):
                 addr = p[0]
                 port = p[1]
                 self.device.checkObject(int(com['ID']), port)
-
 
     def send(self,dest_id,payload):
         src_id = self.mptnaddr
@@ -477,6 +489,8 @@ class WuObject:
     def __init__(self,cls):
         self.cls = cls
         self.port = 0
+        self.refresh_rate = 0
+        self.next_scheduled_update = 0
     def getID(self):
         return self.cls.ID
     def setProperty(self,pID,val):
@@ -489,6 +503,9 @@ class WuClass:
     def __init__(self):
         self.ID = 0
         self.wkpf = None
+        self.propertyNumber = 0
+        self.props_datatype_and_access = [] # this follows the definition of properties[] in wuclass_t 
+        self.defaultProps = []              # this is default value list
     def update(self,obj,pID,value):
         pass
     def newObject(self):
@@ -509,7 +526,33 @@ class WuClass:
                 return int(cls.attributes['id'].nodeValue)
         print "Can not find class ID for ", name
         return -1
-
+    def unicode_to_int(self, key):
+        datatype      = {'short':WKPF.DATATYPE_SHORT,
+                         'boolean':WKPF.DATATYPE_BOOLEAN,
+                         'refresh_rate':WKPF.DATATYPE_REFRESH,
+                         'array':WKPF.DATATYPE_ARRAY,
+                         'string':WKPF.DATATYPE_STRING}
+        datatype_enum = {'ThresholdOperator':WKPF.DATATYPE_ThresholdOperator,
+                         'LogicalOperator':WKPF.DATATYPE_LogicalOperator,
+                         'MathOperator':WKPF.DATATYPE_MathOperator,
+                         'Pin':WKPF.DATATYPE_Pin}
+        access        = {'readonly':WKPF.WK_PROPERTY_ACCESS_READONLY,
+                         'writeonly':WKPF.WK_PROPERTY_ACCESS_WRITEONLY,
+                         'readwrite':WKPF.WK_PROPERTY_ACCESS_READWRITE}
+        if key in datatype:
+            return datatype[key]
+        elif key in datatype_enum:
+            return datatype_enum[key]
+        elif key in access:
+            return access[key]
+        else:
+            raise NotImplementedError
+    def WKPF_IS_READONLY_PROPERTY(self, typeAndAccess):
+        return ((~typeAndAccess) & WKPF.WK_PROPERTY_ACCESS_WRITEONLY)
+    def WKPF_IS_WRITEONLY_PROPERTY(self, typeAndAccess):
+        return ((~typeAndAccess) & WKPF.WK_PROPERTY_ACCESS_READONLY)   
+    def WKPF_GET_PROPERTY_DATATYPE(self, typeAndAccess):
+        return ((typeAndAccess) & ~WKPF.WK_PROPERTY_ACCESS_READWRITE)
     def loadClass(self,name):
         for p in sys.path:
             path = p+lib_path
@@ -520,13 +563,19 @@ class WuClass:
         for cls in dom.getElementsByTagName("WuClass"):
             if cls.attributes['name'].nodeValue == name:
                 self.ID = int(cls.attributes['id'].nodeValue)
-                ID = 0
+                pID_count = 0
                 self.names=[]
                 for p in cls.getElementsByTagName('property'):
-                    obj.__dict__[p.attributes['name'].nodeValue] = ID
+                    # create a props_datatype_and_access list
+                    datatype_unicode = p.attributes['datatype'].nodeValue
+                    access_unicode   = p.attributes['access'].nodeValue
+                    x = self.unicode_to_int(datatype_unicode) + self.unicode_to_int(access_unicode)
+                    self.props_datatype_and_access.append(x) 
+                    # count property number
+                    obj.__dict__[p.attributes['name'].nodeValue] = pID_count
                     self.names.append(p.attributes['name'].nodeValue)
-                    ID = ID + 1
-                self.propertyNumber = ID
+                    pID_count = pID_count + 1
+                self.propertyNumber = pID_count
                 return
         print "Can not find class ID for ", name
         self.propertyNumber = 0
@@ -538,7 +587,6 @@ class WuClass:
             return self.names[ID]
         except:
             return '%d' % ID
-
 
 class Device:
     FLAG_APP_CAN_CREATE_INSTANCE = 2
@@ -554,6 +602,7 @@ class Device:
         self.init()
         self.wkpf.initObjects()
         reactor.callLater(1,self.updateTheNextDirtyObject)
+        reactor.callLater(1,self.updateRefreshRateObject)
         pass
     def getLocation(self):
         return self.wkpf.location
@@ -565,22 +614,44 @@ class Device:
                 break;
             i = i + 1
         if i == len(self.objects):
+            # If i == len(self.objects), it means that device only has this wuclass and doesn't have wuobject.
+            # This will happen as we only use addWuClass function and doesn't use addWuObject function in the python device
+            # Afrer we deploy the FBP with this wuclass, the wuobject will be created here.
             # print 'add object class %d at port %d' % (clsid,port)
             try:
-                cls = self.classes[clsid]
-                if cls:
-                    obj = cls.newObject()
-                    obj.port = port
-                    self.wkpf.addProperties(obj.port)
-                    self.objects.append(obj)
+                if clsid in self.classes:
+                    cls = self.classes[clsid]
+                    if cls:
+                        obj = cls.newObject()
+                        obj.port = port
+                        self.wkpf.addProperties(obj.port)
+                        self.objects.append(obj)
             except:
                 traceback.print_exc()
                 print "Can not find class %d" % clsid
 
-    def updateTheNextDirtyObject(self):
+    def wkpf_schedule_next_update_for_wuobject(self, obj):
+        for i in range(int(obj.cls.propertyNumber)):
+            if obj.cls.WKPF_GET_PROPERTY_DATATYPE(obj.cls.props_datatype_and_access[i]) == WKPF.DATATYPE_REFRESH:
+                p = self.wkpf.properties[obj.port][i]
+                obj.refresh_rate = p['value']  
+                if obj.refresh_rate == 0:
+                    obj.next_scheduled_update = 0
+                else:
+                    obj.next_scheduled_update = obj.refresh_rate + int(round(time.time() *1000))
+                return 
+
+    def updateRefreshRateObject(self):
         for obj in self.objects:
             #print obj.port
             #print self.wkpf.properties
+            if obj.refresh_rate > 0 and obj.next_scheduled_update < int(round(time.time() *1000)):
+                self.wkpf_schedule_next_update_for_wuobject(obj)
+                obj.cls.update(obj, None, None)
+        reactor.callLater(0.3, self.updateRefreshRateObject)       
+
+    def updateTheNextDirtyObject(self):
+        for obj in self.objects:
             for i in range(0,len(self.wkpf.properties[obj.port])):
                 p = self.wkpf.properties[obj.port][i]
                 if p['dirty'] == True:
@@ -606,6 +677,7 @@ class Device:
             obj.port = len(self.objects)+1
             self.wkpf.addProperties(obj.port)
             self.objects.append(obj)
+            self.wkpf_schedule_next_update_for_wuobject(obj)
             return obj
         return None
     def setProperty(self,pID, val):

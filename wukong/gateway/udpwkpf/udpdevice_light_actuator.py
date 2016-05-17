@@ -8,11 +8,11 @@ Light_Actuator_Pin = 7
 if __name__ == "__main__":
     class Light_Actuator(WuClass):
         def __init__(self, pin):
-            self.ID = 2001
+            WuClass.__init__(self)
+            self.loadClass('Light_Actuator')
             self.light_actuator_gpio = pin_mode(pin, PIN_TYPE_DIGITAL, PIN_MODE_OUTPUT)
-            print "Light Actuator init success"
 
-        def update(self,obj,pID,val):
+        def update(self,obj,pID=None,val=None):
             try:
                 if pID == 0:
                     if val == True:
@@ -21,8 +21,6 @@ if __name__ == "__main__":
                     else:
                         digital_write(self.light_actuator_gpio, 0)
                         print "Light Actuator Off"
-                else:
-                    print "Light Actuator garbage"
             except IOError:
                 print ("Error")
 
