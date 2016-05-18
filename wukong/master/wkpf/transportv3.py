@@ -27,6 +27,7 @@ import mptnUtils as MPTN
 import ipaddress
 from gevent.lock import RLock
 import json
+import base64
 import hashlib
 import traceback
 
@@ -425,7 +426,7 @@ class RPCAgent(TransportAgent):
             gateway_stub = self._get_client_rpc_stub(gateway.id, gateway.tcp_address)
             try:
                 ret_str = gateway_stub.poll()
-                ret_str = ("Gateway %s tcp_addr=%s " % (MPTN.ID_TO_STRING(gateway.id), str(gateway.tcp_address))) + ret_str
+                ret_str = ("Gateway %s(%d) tcp_addr=%s " % (MPTN.ID_TO_STRING(gateway.id), gateway.id, str(gateway.tcp_address))) + ret_str
                 ret.append(ret_str)
             except Exception as e:
                 logger.error("RPC poll fails with gateway ID=%s 0x%X addr=%s; error=%s\n%s" % (MPTN.ID_TO_STRING(gateway.id), gateway.id,
@@ -769,13 +770,14 @@ class IDService:
     def __init__(self):
         self._is_joinable = False
         self._global_lock = RLock()
-        self._nodes_db = MPTN.DBDict("master_node_info.sqlite")
-        self._gateways_db = MPTN.DBDict("master_gateway_info.sqlite")
+        self._nodes_db = MPTN.DBDict("table_master_node_info.json")
+        self._gateways_db = MPTN.DBDict("table_master_gateway_info.json")
         self._init_lookup()
 
     def _init_lookup(self):
         with self._global_lock:
             self._nodes_lookup = {int(key):value for (key,value) in self._nodes_db.iteritems()}
+            print self._nodes_lookup
             self._uuids_lookup = {node.uuid:node_id for (node_id, node) in self._nodes_lookup.iteritems()}
             self._gateways_lookup = {int(key):value for (key,value) in self._gateways_db.iteritems()}
             self._update_nexthop_hash()
@@ -858,14 +860,14 @@ class IDService:
         self._gateways_db[gateway_id] = gateway
         self._gateways_lookup[gateway_id] = gateway
         self._update_nexthop_hash()
-        self._nexthop_lookup[gateway.network] = MPTN.NextHop(id=gateway_id,tcp_address=gateway.tcp_address)
+        self._nexthop_lookup[MPTN.ID_NETWORK_FROM_STRING(gateway.network)] = MPTN.NextHop(id=gateway_id,tcp_address=gateway.tcp_address)
 
     def _del_old_gateway(self, gateway_id):
         self._gateways_db.pop(gateway_id)
         gateway = self._gateways_lookup.pop(gateway_id)
         self._update_nexthop_hash()
         try:
-            self._nexthop_lookup.pop(gateway.network)
+            self._nexthop_lookup.pop(MPTN.ID_NETWORK_FROM_STRING(gateway.network))
         except Exception as e:
             logger.error("_del_old_gateway gateway_id %s %X occurs error:%s\n%s" % (MPTN.ID_TO_STRING(gateway_id), gateway_id, str(e), traceback.format_exc()))
 
@@ -910,7 +912,7 @@ class IDService:
                     return ERROR_ID
 
                 gateway = self.get_gateway(gateway_id)
-                if not MPTN.IS_ID_IN_NETWORK(to_check_id, gateway.network):
+                if not MPTN.IS_ID_IN_NETWORK(to_check_id, MPTN.ID_NETWORK_FROM_STRING(gateway.network)):
                     logger.error("IDREQ to-check ID %s 0x%X is not in gateway(ID %s 0x%X)'s network" % (MPTN.ID_TO_STRING(to_check_id), to_check_id, MPTN.ID_TO_STRING(gateway_id), gateway_id))
                     return ERROR_ID
 
@@ -1021,7 +1023,7 @@ class IDService:
                 gateway = Gateway(id=new_id, tcp_address=(ip, port),
                     if_address=if_addr, if_address_len=if_addr_len,
                     prefix=prefix, prefix_len=prefix_len,
-                    network=network, network_size=network_size,
+                    network=str(network), network_size=network_size,
                     netmask=netmask, hostmask=hostmask,
                     uuid=uuid)
 
@@ -1036,7 +1038,7 @@ class IDService:
         discovered_nodes_set = Set(discovered_nodes)
         to_remove_nodes = list(non_gtw_nodes_set - discovered_nodes_set)
         if len(to_remove_nodes) == 0: return
-        
+
         for to_remove_node_id in to_remove_nodes:
             logger.debug("=============Remove not found existed node %X %s" % (to_remove_node_id, MPTN.ID_TO_STRING(to_remove_node_id)))
             self._del_old_node(to_remove_node_id, self._nodes_lookup[to_remove_node_id].uuid)
@@ -1072,13 +1074,13 @@ class IDService:
         # port = int(m.group(4))
         # uuid = m.group(5)
 
-        payload = json.loads(payload)
-        if_addr = payload["IFADDR"]
-        if_addr_len = payload["IFADDRLEN"]
-        if_netmask = payload["IFNETMASK"]
-        port = payload["PORT"]
         try:
-            uuid = struct.pack("!%dB"%MPTN.GWIDREQ_PAYLOAD_LEN, *payload["UUID"])
+            payload = json.loads(payload)
+            if_addr = payload["IFADDR"]
+            if_addr_len = payload["IFADDRLEN"]
+            if_netmask = payload["IFNETMASK"]
+            port = payload["PORT"]
+            uuid = base64.b64encode(struct.pack("!%dB"%MPTN.GWIDREQ_PAYLOAD_LEN, *payload["UUID"]))
         except Exception as e:
             logger.error("GWIDREQ payload should be a json 'IFADDR':int, 'IFADDRLEN':int, 'IFNETMASK':int, 'PORT':int, 'UUID':list with 16 unsigned chars; error=%s\n%s" % (str(e), traceback.format_exc()))
             MPTN.socket_send(context, MPTN.MPTN_MAX_ID, message)
@@ -1107,7 +1109,8 @@ class IDService:
             MPTN.socket_send(context, MPTN.MPTN_MAX_ID, message)
             return
 
-        new_id = self._alloc_node_id(to_check_id, gateway_id, payload)
+        uuid = base64.b64encode(payload)
+        new_id = self._alloc_node_id(to_check_id, gateway_id, uuid)
         msg_type = MPTN.MPTN_MSGTYPE_IDACK if new_id != MPTN.MPTN_MAX_ID else MPTN.MPTN_MSGTYPE_IDNAK
         message = MPTN.create_packet_to_str(new_id, MPTN.MASTER_ID, msg_type, None)
         context.id = new_id

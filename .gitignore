@@ -39,3 +39,4 @@ wukong/tools/testrtt/testrtt
 gtwconfig.py
 stconfig.h
 udpwkpf-*.json
+table_*.json

@@ -17,7 +17,7 @@ logger = logging
 
 from gevent import socket
 import struct
-import pickle
+import json
 
 # UDP packet format
 # BYTE 0-1: Magic number 0xAA 0x55
@@ -44,8 +44,8 @@ class UDPDevice(object):
         self.host_id = host_id
         self.ip = ip
         self.port = port
-        self.wuclasses=[]
-        self.wuobjects=[]
+        # self.wuclasses=[]
+        # self.wuobjects=[]
 
 class UDPTransport(Transport):
     def __init__(self, dev_address, name):
@@ -53,7 +53,7 @@ class UDPTransport(Transport):
         self.enterLearnMode = False
         self.last_host_id = 0
 
-        self._device_filename = "devices.pkl"
+        self._device_filename = "table_udp_devices.json"
         self.devices=[]
         self._devices_lookup = {}
         self.loadDevice()
@@ -206,17 +206,6 @@ class UDPTransport(Transport):
         if t != 2:
             return
 
-        # refresh the values in the IP table ???
-        # found = False
-        # for d in self.devices:
-        #     if d.host_id == host_id:
-        #         d.ip = ip
-        #         d.port = port
-        #         found = True
-        #         self.last_host_id = d.host_id
-        #         self._mode = MPTN.STOP_MODE
-        #         self.send_raw(self.last_host_id,[self.last_host_id],raw_type=2)
-        #         break
         found = (host_id in self._devices_lookup)
 
         if self.enterLearnMode:
@@ -246,9 +235,19 @@ class UDPTransport(Transport):
                         self.saveDevice()
                         self.last_host_id = newid
                         self.stop()
-                        logger.debug("device added %s %s %s" % (str(newid),str(ip),str(port)))
+                        logger.debug("device added %s %s %s" % (str(newid),str(MPTN.ID_TO_STRING(ip)),str(port)))
                         break
 
+            elif found and self._mode == MPTN.ADD_MODE:
+                for d in self.devices:
+                    if d.host_id == host_id:
+                        logger.debug("device updated for %s from %s:%s to %s:%s" % (str(host_id),str(MPTN.ID_TO_STRING(d.ip)),str(d.port),str(MPTN.ID_TO_STRING(ip)),str(port)))
+                        d.ip = ip
+                        d.port = port
+                        self.saveDevice()
+                        self.last_host_id = d.host_id
+                        self.stop()
+                        break
 
             elif found and self._mode == MPTN.DEL_MODE:
                 for i in xrange(len(self.devices)):
@@ -259,37 +258,40 @@ class UDPTransport(Transport):
                         self.saveDevice()
                         self.last_host_id = host_id
                         self.stop()
-                        logger.debug("device deleted %s %s %s" % (str(host_id),str(ip),str(port)))
+                        logger.debug("device deleted %s %s %s" % (str(host_id),str(MPTN.ID_TO_STRING(ip)),str(port)))
                         self.last_host_id = 0
                         return
 
-        elif found:
+            self.send_raw(self.last_host_id,[self.last_host_id],raw_type=2)
+            return
+
+        elif found: # STOP mode
             for d in self.devices:
                 if d.host_id == host_id:
-                    logger.debug("device updated for %s from %s %s to %s %s" % (str(host_id),str(d.ip),str(d.port),str(ip),str(port)))
-                    d.ip = ip
-                    d.port = port
-                    self.saveDevice()
-                    self.last_host_id = d.host_id
-                    self.stop()
-                    break
+                    if d.ip == ip and d.port == port:
+                        logger.debug("device rechecked for %s %s:%s" % (str(host_id),str(MPTN.ID_TO_STRING(d.ip)),str(d.port)))
+                        self.last_host_id = 0
+                        self.send_raw(d.host_id,[d.host_id],raw_type=2)
+                    return
 
-        self.send_raw(self.last_host_id,[self.last_host_id],raw_type=2)
+        logger.error("device %s (%s:%s) not allowed to change/add in STOP mode." % (str(host_id),str(MPTN.ID_TO_STRING(ip)),str(port)))
         return
 
     def saveDevice(self):
-        f = open(self._device_filename,'w')
-        pickle.dump(self.devices,f)
+        save_devices = [item.__dict__ for item in self.devices]
+        with open(self._device_filename,'w') as f:
+            json.dump(save_devices, f, sort_keys=True,indent=2)
         f.close()
         self.updateDeviceLookup()
 
     def loadDevice(self):
-        try:
-            f = open(self._device_filename)
-            self.devices = pickle.load(f)
-            f.close()
-        except:
-            pass
+        with open(self._device_filename,'w+') as f:
+            try:
+                load_devices = json.load(f)
+            except:
+                load_devices = []
+                json.dump([], f, sort_keys=True,indent=2)
+        self.devices = [UDPDevice(item["host_id"],item["ip"],item["port"]) for item in load_devices]
         self.updateDeviceLookup()
 
     def updateDeviceLookup(self):
@@ -305,7 +307,7 @@ class UDPTransport(Transport):
             return ret
 
         with self._global_lock:
-            for i in range(len(self.devices)):
+            for i in xrange(len(self.devices)):
                 ret.append(self.devices[i].host_id)
 
         return ret

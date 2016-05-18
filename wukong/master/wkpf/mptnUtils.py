@@ -343,7 +343,7 @@ def socket_send(context, dest_id, message, expect_reply=False):
         return None
 
     if context is not None and context.direction == ONLY_FROM_TCP_SERVER and context.id == dest_id:
-        logger.debug("socket_send reuses socket since context ID is the same as dest_id %s" % str(dest_id))
+        # logger.debug("socket_send reuses socket since context ID is the same as dest_id %s" % str(dest_id))
         next_hop_id = dest_id
         address = context.address
         sock = context.socket
@@ -351,7 +351,7 @@ def socket_send(context, dest_id, message, expect_reply=False):
 
     else:
         next_hop = find_nexthop_for_id(dest_id)
-        logger.debug("socket_send next_hop is %s" % str(next_hop))
+        # logger.debug("socket_send next_hop is %s" % str(next_hop))
         if next_hop is None:
             logger.error("socket_send next hop for dest ID %s 0x%X cannot be found"%(ID_TO_STRING(dest_id), dest_id))
             return None
@@ -363,7 +363,7 @@ def socket_send(context, dest_id, message, expect_reply=False):
         nonce = os.urandom(MPTN_TCP_NONCE_SIZE)
 
     if sock is None:
-        logger.debug("socket_send no socket found for ID %s"%ID_TO_STRING(next_hop_id))
+        # logger.debug("socket_send no socket found for ID %s"%ID_TO_STRING(next_hop_id))
         sock = reconnect(address)
         if sock is None:
             # logger.error("socket_send cannot re-setup socket for next_hop_id=%s addr=%s msg is\n%s" % (ID_TO_STRING(next_hop_id), str(address), formatted_print(split_packet_to_list(message))))
@@ -382,7 +382,7 @@ def socket_send(context, dest_id, message, expect_reply=False):
         ConnectionManager.init().add_peer(address, Peer(socket=sock, id=next_hop_id, address=address))
         gevent.sleep(0)
 
-    logger.debug("socket_send message %s to ID %s" % (str(message), ID_TO_STRING(next_hop_id)))
+    # logger.debug("socket_send message %s to ID %s" % (str(message), ID_TO_STRING(next_hop_id)))
     size = 0
     try:
         sock.send(nonce)
@@ -411,80 +411,200 @@ def socket_send(context, dest_id, message, expect_reply=False):
 
     return callback.get()
 
-'''
-DBDict class: a DB on disk with a dictionary interface
-From mail.python.org/pipermail/python-list
-'''
+# '''
+# DBDict class: a DB on disk with a dictionary interface
+# From mail.python.org/pipermail/python-list
+# '''
 
-try:
-   import cPickle as pickle
-except:
-   import pickle
+# try:
+#    import cPickle as pickle
+# except:
+#    import pickle
+
+# import os, os.path
+# import UserDict
+# import sqlite3
+
+# def to_db_type(value):
+#     """
+#     If value's type is supported natively in SQLite, return value.
+#     Otherwise, return a pickled representation.
+#     """
+#     if value is None or isinstance(value, (int, long, float, basestring)):
+#         return value
+#     else:
+#         return buffer(pickle.dumps(value))
+
+# def from_db_type(value):
+#     """
+#     Converts a value from the database to a Python object.
+#     """
+#     if isinstance(value, buffer):
+#         return pickle.loads(str(value))
+#     else:
+#         return value
+
+# class DBDict(UserDict.DictMixin):
+#     """
+#     Shelf implementation using an SQLite3 database.
+#     """
+#     def __init__(self, filename):
+#         if not os.path.isfile(filename):
+#             self._database = sqlite3.connect(filename)
+#             self._database.execute("CREATE TABLE IF NOT EXISTS Shelf "
+#                                "(Key TEXT PRIMARY KEY NOT NULL, Value BLOB)")
+#         else:
+#             self._database = sqlite3.connect(filename)
+#         self._database.text_factory = str
+#         self._open = True
+
+#     def __del__(self):
+#         self.close()
+
+#     def __getitem__(self, key):
+#         row = self._database.execute("SELECT Value FROM Shelf WHERE Key=?",[key]).fetchone()
+#         if row:
+#             return from_db_type(row[0])
+#         else:
+#             raise KeyError(key)
+
+#     def __setitem__(self, key, value):
+#         self._database.execute("INSERT OR REPLACE INTO Shelf VALUES (?, ?)",[key, to_db_type(value)])
+#         self._database.commit()
+
+#     def __delitem__(self, key):
+#         if not self._database.execute("SELECT Key FROM Shelf WHERE Key=?",[key]).fetchone():
+#             raise KeyError(key)
+#         self._database.execute("DELETE FROM Shelf WHERE Key=?", [key])
+#         self._database.commit()
+
+#     def keys(self):
+#         """Return a list of keys in the shelf."""
+#         return [row[0] for row in self._database.execute("SELECT Key FROM Shelf")]
+
+#     def close(self):
+#         """Commit changes and close the file."""
+#         if self._database is not None:
+#             self._database.commit()
+#             self._database.close()
+#             self._database = None
+
+'''
+DBDict class: a Json file on disk with a dictionary interface
+Note that Json only has string keys
+'''
 
 import os, os.path
 import UserDict
-import sqlite3
+import json
+
+
+# http://stackoverflow.com/questions/956867/how-to-get-string-objects-instead-of-unicode-ones-from-json-in-python
+def _json_load_byteified(file_handle):
+    return _byteify(
+        json.load(file_handle, object_hook=_byteify),
+        ignore_dicts=True
+    )
+
+def _json_loads_byteified(json_text):
+    return _byteify(
+        json.loads(json_text, object_hook=_byteify),
+        ignore_dicts=True
+    )
+
+def _byteify(data, ignore_dicts = False):
+    # if this is a unicode string, return its string representation
+    if isinstance(data, unicode):
+        return data.encode('utf-8')
+    # if this is a list of values, return list of byteified values
+    if isinstance(data, list):
+        return [ _byteify(item, ignore_dicts=True) for item in data ]
+    # if this is a dictionary, return dictionary of byteified keys and values
+    # but only if we haven't already byteified it
+    if isinstance(data, dict) and not ignore_dicts:
+        return {
+            _byteify(key, ignore_dicts=True): _byteify(value, ignore_dicts=True)
+            for key, value in data.iteritems()
+        }
+    # if it's anything else, return it in its original form
+    return data
 
 def to_db_type(value):
-    """
-    If value's type is supported natively in SQLite, return value.
-    Otherwise, return a pickled representation.
-    """
     if value is None or isinstance(value, (int, long, float, basestring)):
         return value
+
+    elif isinstance(value, list):
+        return [ to_db_type(item) for item in value ]
+
+    elif isinstance(value, tuple):
+        if type(value) is not tuple: # namedtuple
+            d = value._asdict()
+            d["__type_namedtuple__"] = value.__class__.__name__
+            return to_db_type(d)
+
+        else: # tuple
+            l = [ to_db_type(item) for item in value ]
+            l.append("__type_tuple__")
+            return l
+
+    elif isinstance(value, dict):
+        return { k: to_db_type(v) for k, v in value.iteritems() }
+
     else:
-        return buffer(pickle.dumps(value))
+        return to_db_type(value.__dict__)
 
 def from_db_type(value):
-    """
-    Converts a value from the database to a Python object.
-    """
-    if isinstance(value, buffer):
-        return pickle.loads(str(value))
+    if isinstance(value, dict):
+        if "__type_namedtuple__" in value:
+            class_name = value.pop("__type_namedtuple__")
+            value = { k: from_db_type(v) for k, v in value.iteritems() }
+            return collections.namedtuple(class_name, value.keys())(**value)
+        else:
+            return { k: from_db_type(v) for k, v in value.iteritems() }
+
+    elif isinstance(value, list):
+        if value[-1] == "__type_tuple__":
+            value.pop()
+            return tuple([ from_db_type(item) for item in value ])
+        else:
+            return [ from_db_type(item) for item in value ]
+
     else:
         return value
 
 class DBDict(UserDict.DictMixin):
-    """
-    Shelf implementation using an SQLite3 database.
-    """
     def __init__(self, filename):
         if not os.path.isfile(filename):
-            self._database = sqlite3.connect(filename)
-            self._database.execute("CREATE TABLE IF NOT EXISTS Shelf "
-                               "(Key TEXT PRIMARY KEY NOT NULL, Value BLOB)")
-        else:
-            self._database = sqlite3.connect(filename)
-        self._database.text_factory = str
-        self._open = True
+            with open(filename, "w") as f:
+                json.dump({}, f, sort_keys=True,indent=2)
+
+        self._filename = filename
 
     def __del__(self):
-        self.close()
+        del self._lookup
 
     def __getitem__(self, key):
-        row = self._database.execute("SELECT Value FROM Shelf WHERE Key=?",[key]).fetchone()
-        if row:
-            return from_db_type(row[0])
-        else:
-            raise KeyError(key)
+        return self.__getdict__()[str(key)]
 
     def __setitem__(self, key, value):
-        self._database.execute("INSERT OR REPLACE INTO Shelf VALUES (?, ?)",[key, to_db_type(value)])
-        self._database.commit()
+        lookup = self.__getdict__()
+        lookup[str(key)] = value
+        self.__setdict__(lookup)
 
     def __delitem__(self, key):
-        if not self._database.execute("SELECT Key FROM Shelf WHERE Key=?",[key]).fetchone():
-            raise KeyError(key)
-        self._database.execute("DELETE FROM Shelf WHERE Key=?", [key])
-        self._database.commit()
+        lookup = self.__getdict__()
+        del lookup[str(key)]
+        self.__setdict__(lookup)
+
+    def __getdict__(self):
+        with open(self._filename, "r") as f:
+            obj = _json_load_byteified(f)
+        return {key:from_db_type(value) for (key,value) in obj.iteritems()}
+
+    def __setdict__(self, lookup):
+        with open(self._filename, 'w') as f:
+            json.dump({key:to_db_type(value) for (key,value) in lookup.iteritems()}, f, sort_keys=True,indent=2)
 
     def keys(self):
-        """Return a list of keys in the shelf."""
-        return [row[0] for row in self._database.execute("SELECT Key FROM Shelf")]
-
-    def close(self):
-        """Commit changes and close the file."""
-        if self._database is not None:
-            self._database.commit()
-            self._database.close()
-            self._database = None
+        lookup = self.__getdict__()
+        return lookup.keys()

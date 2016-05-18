@@ -23,6 +23,7 @@ import struct
 from datetime import datetime
 import uuid
 import json
+import base64
 import hashlib
 from sets import Set
 import traceback
@@ -39,13 +40,13 @@ class IDService(object):
         self._transport_if_send = transport_if_send
 
         # _nexthop_db: key = "MPTN ID/NETMASK" STRING, value = next hop's tcp_address tuple ("IP" STRING, PORT INT)
-        self._nexthop_db = DBDict("gtw_nexthop_table.sqlite")
+        self._nexthop_db = DBDict("table_gtw_nexthop.json")
         self._init_nexthop_lookup()
 
         # _addr_db: key = address, value = UUID (such as MAC address)
-        self._addr_db = DBDict("gtw_addr_uuid_table.sqlite")
+        self._addr_db = DBDict("table_gtw_addr_uuid.json")
 
-        self._settings_db = DBDict("gtw_settings_db.sqlite")
+        self._settings_db = DBDict("table_gtw_settings.json")
         self._init_settings_db(autonet_mac_addr)
 
         if CONFIG.UNITTEST_MODE: self._id_req_queue = Queue()
@@ -173,7 +174,7 @@ class IDService(object):
     def _alloc_address(self, address, uuid):
         assert isinstance(address, (int, long)), "_alloc_address %s must be integer instead of %s" % (str(address), type(address))
         assert MPTN.IS_ID_IN_NETWORK(address, self._network), "_alloc_address %s cannot excede network %s" % (MPTN.ID_TO_STRING(address), str(self._network))
-        self._addr_db[address] = uuid
+        self._addr_db[address] = base64.b64encode(uuid)
 
     def _dealloc_address(self, address):
         if self.is_address_valid(address):
@@ -240,7 +241,7 @@ class IDService(object):
         discovered_nodes_set = Set(map(lambda x: self._id_prefix | x, discovered_nodes))
         to_remove_nodes = list(addr_db_set - discovered_nodes_set)
         if len(to_remove_nodes) == 0: return
-        
+
         for to_remove_node_addr in to_remove_nodes:
             logger.debug("=============Remove not found existed node 0x%X" % (to_remove_node_addr))
             del self._addr_db[to_remove_node_addr]
