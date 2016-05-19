@@ -21,7 +21,7 @@ def HSV_2_RGB(HSV):
     # Make hue 0-5
     region = H // 43;
     # Find remainder part, make it from 0-255
-    remainder = (H - (region * 43)) * 6; 
+    remainder = (H - (region * 43)) * 6;
     # Calculate temp vars, doing integer multiplication
     P = (V * (255 - S)) >> 8;
     Q = (V * (255 - ((S * remainder) >> 8))) >> 8;
@@ -32,34 +32,35 @@ def HSV_2_RGB(HSV):
         G = T
         B = P
     elif region == 1:
-        R = Q; 
-        G = V; 
+        R = Q;
+        G = V;
         B = P;
     elif region == 2:
-        R = P; 
-        G = V; 
+        R = P;
+        G = V;
         B = T;
     elif region == 3:
-        R = P; 
-        G = Q; 
+        R = P;
+        G = Q;
         B = V;
     elif region == 4:
-        R = T; 
-        G = P; 
+        R = T;
+        G = P;
         B = V;
-    else: 
-        R = V; 
-        G = P; 
+    else:
+        R = V;
+        G = P;
         B = Q;
 
     return (R, G, B)
 
 if __name__ == "__main__":
-            
+
     class Grove_LCD(WuClass):
         def __init__(self):
-            self.ID = 2010
-	    self.myLcd=lcd.Jhd1313m1(0,0x3E,0x62)
+            WuClass.__init__(self)
+            self.loadClass('Grove_LCD')
+            self.myLcd=lcd.Jhd1313m1(0,0x3E,0x62)
             print "LCD Actuator init success"
 
         def update(self,obj,pID,val):
@@ -78,17 +79,18 @@ if __name__ == "__main__":
             Device.__init__(self,addr,localaddr)
 
         def init(self):
-			
+
             self.m1 = Grove_LCD()
             self.addClass(self.m1,0)
             self.obj_grove_lcd = self.addObject(self.m1.ID)
-				
+
 
     if len(sys.argv) <= 2:
-        print 'python udpwkpf.py <ip> <port>'
-        print '      <ip>: IP of the interface'
-        print '      <port>: The unique port number in the interface'
-        print ' ex. python udpwkpf.py <gateway IP> <local IP>:3000'
+        print 'python %s <gip> <dip>:<port>' % sys.argv[0]
+        print '      <gip>: IP addrees of gateway'
+        print '      <dip>: IP address of Python device'
+        print '      <port>: An unique port number'
+        print ' ex. python %s 192.168.4.7 127.0.0.1:3000' % sys.argv[0]
         sys.exit(-1)
 
     d = MyDevice(sys.argv[1],sys.argv[2])

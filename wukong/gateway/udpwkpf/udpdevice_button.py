@@ -23,17 +23,18 @@ if __name__ == "__main__":
     class MyDevice(Device):
         def __init__(self,addr,localaddr):
             Device.__init__(self,addr,localaddr)
-            
+
         def init(self):
             m = Button()
             self.addClass(m,0)
             self.obj_button = self.addObject(m.ID)
 
     if len(sys.argv) <= 2:
-        print 'python udpwkpf.py <ip> <port>'
-        print '      <ip>: IP of the interface'
-        print '      <port>: The unique port number in the interface'
-        print ' ex. python udpwkpf.py 127.0.0.1 3000'
+        print 'python %s <gip> <dip>:<port>' % sys.argv[0]
+        print '      <gip>: IP addrees of gateway'
+        print '      <dip>: IP address of Python device'
+        print '      <port>: An unique port number'
+        print ' ex. python %s 192.168.4.7 127.0.0.1:3000' % sys.argv[0]
         sys.exit(-1)
 
     d = MyDevice(sys.argv[1],sys.argv[2])

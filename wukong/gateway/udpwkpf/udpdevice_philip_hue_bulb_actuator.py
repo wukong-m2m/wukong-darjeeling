@@ -5,31 +5,31 @@ from StringIO import StringIO
 
 from udpwkpf import WuClass, Device
 import sys
-import mraa
 
 import socket, struct
 import time
-import philip_hue_utils; HWC = philip_hue_utils.hue_web_client 
-import philip_hue_utils; HC = philip_hue_utils.hue_calculation 
+import philip_hue_utils; HWC = philip_hue_utils.hue_web_client
+import philip_hue_utils; HC = philip_hue_utils.hue_calculation
 
 if __name__ == "__main__":
     class Gamma():
         def __init__(self):
             self.gamma = -1
-            self.x = -1    
-            self.y = -1    
+            self.x = -1
+            self.y = -1
             self.bri = -1
             self.message = ""
 
     class Philip_Hue_Bulb_Actuator(WuClass):
         def __init__(self):
-            self.ID = 2015
+            WuClass.__init__(self)
+            self.loadClass('Philip_Hue_Bulb_Actuator')
             self.lasttime = int(round(time.time() * 1000))
             self.loop_rate = 500
             self.gamma = Gamma()
             print "Hue Bulb Actuator init success"
 
-        def update(self,obj,pID,val):
+        def update(self,obj,pID=None,val=None):
             debug_name = "Philip_Hue_Bulb_Actuator"
             user = "newdeveloper"
             ip = ((int)(obj.getProperty(0)) & 0xffff) << 16
@@ -43,7 +43,7 @@ if __name__ == "__main__":
             hwc = HWC(ip, user, index, self.gamma)
 
             currenttime = int(round(time.time() * 1000))
-            
+
             if (currenttime - self.lasttime > self.loop_rate):
                 if(self.gamma.gamma < 0):
                     hwc.get_gamma()
@@ -63,7 +63,7 @@ if __name__ == "__main__":
                     command = ("{\"on\":true, \"xy\":[%.2f,%.2f], \"bri\":%d}" % (self.gamma.x, self.gamma.y, (int)(self.gamma.bri*255)))
                 else:
                     command = ("{\"on\":false}")
-            
+
                 time.sleep(0.05)
                 print "\n_____%s_____PUT command:%s\n" % (debug_name, command)
 
@@ -81,10 +81,11 @@ if __name__ == "__main__":
             self.obj_philip = self.addObject(self.m.ID)
 
     if len(sys.argv) <= 2:
-        print 'python udpwkpf.py <ip> <port>'
-        print '      <ip>: IP of the interface'
-        print '      <port>: The unique port number in the interface'
-        print ' ex. python udpdevice*.py <gateway IP> <locolhost>:<port>'
+        print 'python %s <gip> <dip>:<port>' % sys.argv[0]
+        print '      <gip>: IP addrees of gateway'
+        print '      <dip>: IP address of Python device'
+        print '      <port>: An unique port number'
+        print ' ex. python %s 192.168.4.7 127.0.0.1:3000' % sys.argv[0]
         sys.exit(-1)
 
     d = MyDevice(sys.argv[1],sys.argv[2])

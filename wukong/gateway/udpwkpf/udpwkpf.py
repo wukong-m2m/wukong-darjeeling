@@ -9,6 +9,7 @@ from twisted.internet.protocol import DatagramProtocol, ClientCreator, Reconnect
 import cjson
 import traceback
 import xml.dom.minidom
+from xml.dom.minidom import parseString
 import time
 
 lib_path = "/../../ComponentDefinitions/WuKongStandardLibrary.xml"
@@ -321,12 +322,13 @@ class WKPF(DatagramProtocol):
                 self.links['%d.%d'%(src_id,s_pID)].append([dest_id,d_pID])
             else:
                 self.links['%d.%d'%(src_id,s_pID)]= [[dest_id,d_pID]]
-    def addProperties(self,port,n=7):
+    def addProperties(self,port,cls,n=7):
         if self.properties[port] != []:
             return
-        props = []
-        for i in range(0,n): props.append({'value':0,'dirty':False})
-        self.properties[port] = props
+        self.properties[port] = cls.defaultProps
+        # props = []
+        # for i in range(0,n): props.append({'value':0,'dirty':False})
+        # self.properties[port] = props
     def checkDirty(self,port,pID):
         for i in range(self.last_dirty_ptr,len(self.properties)):
             if self.properties[self.last_dirty_ptr]['dirty']:
@@ -359,15 +361,15 @@ class WKPF(DatagramProtocol):
         elif type(val) == list:
             val_len = len(val)
             val = val + [0]*(30 - val_len)
-            p = struct.pack('39B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, 
-                            (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_ARRAY, 
+            p = struct.pack('39B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port,
+                            (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_ARRAY,
                              val_len, *map(lambda x: x&0xff ,val))
         elif type(val) == str:
             val_len = len(val)
             val = list(val)
             val = val + ['0']*(30 - val_len)
-            p = struct.pack('39B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, 
-                            (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_STRING, 
+            p = struct.pack('39B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port,
+                            (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_STRING,
                              val_len, *map(lambda x: ord(x)&0xff ,val))
         else:
             p = struct.pack('10B', WKPF.WRITE_PROPERTY, self.seq & 0xff, (self.seq >> 8) & 0xff, port, (cls >> 8) & 0xff, cls & 0xff, pID, WKPF.DATATYPE_SHORT, (val >> 8)&0xff, val & 0xff)
@@ -504,7 +506,7 @@ class WuClass:
         self.ID = 0
         self.wkpf = None
         self.propertyNumber = 0
-        self.props_datatype_and_access = [] # this follows the definition of properties[] in wuclass_t 
+        self.props_datatype_and_access = [] # this follows the definition of properties[] in wuclass_t
         self.defaultProps = []              # this is default value list
     def update(self,obj,pID,value):
         pass
@@ -547,10 +549,29 @@ class WuClass:
             return access[key]
         else:
             raise NotImplementedError
+    def getWuTypedefEnum(self, name):
+        for p in sys.path:
+            path = p+lib_path
+            if os.path.isfile(path):
+                break
+        component_string = open(path).read()
+        dom = parseString(component_string)
+        wutypedefs_dom = dom.getElementsByTagName("WuTypedef")
+        wuTypedefs = {}
+        for wutypedef in wutypedefs_dom:
+                wuTypedefs[wutypedef.getAttribute('name')] = tuple([element.getAttribute('value') for element in wutypedef.getElementsByTagName('enum')])
+        enum_val_tuple = wuTypedefs[name]
+        enum_val_dict = {}
+        for i in range(len(enum_val_tuple)):
+            enum_val_dict[str(enum_val_tuple[i])] = i
+            # print enum_val_dict
+        return enum_val_dict
+    def addDefaultProperties(self, DefaultVal):
+        self.defaultProps.append({'value':DefaultVal,'dirty':False})
     def WKPF_IS_READONLY_PROPERTY(self, typeAndAccess):
         return ((~typeAndAccess) & WKPF.WK_PROPERTY_ACCESS_WRITEONLY)
     def WKPF_IS_WRITEONLY_PROPERTY(self, typeAndAccess):
-        return ((~typeAndAccess) & WKPF.WK_PROPERTY_ACCESS_READONLY)   
+        return ((~typeAndAccess) & WKPF.WK_PROPERTY_ACCESS_READONLY)
     def WKPF_GET_PROPERTY_DATATYPE(self, typeAndAccess):
         return ((typeAndAccess) & ~WKPF.WK_PROPERTY_ACCESS_READWRITE)
     def loadClass(self,name):
@@ -570,7 +591,30 @@ class WuClass:
                     datatype_unicode = p.attributes['datatype'].nodeValue
                     access_unicode   = p.attributes['access'].nodeValue
                     x = self.unicode_to_int(datatype_unicode) + self.unicode_to_int(access_unicode)
-                    self.props_datatype_and_access.append(x) 
+                    self.props_datatype_and_access.append(x)
+                    # create a defaultProps list to store default value of standardlibrary.xml
+
+                    try:
+                        default_unicode = p.attributes['default'].nodeValue
+                        if self.WKPF_GET_PROPERTY_DATATYPE(x) == WKPF.DATATYPE_BOOLEAN:
+                            if default_unicode == 'false':
+                                self.addDefaultProperties(False)
+                            elif default_unicode == 'true':
+                                self.addDefaultProperties(True)
+                            else:
+                                self.addDefaultProperties(bool(default_unicode))
+                        elif self.WKPF_GET_PROPERTY_DATATYPE(x) == WKPF.DATATYPE_SHORT or self.WKPF_GET_PROPERTY_DATATYPE(x) == WKPF.DATATYPE_REFRESH:
+                            self.addDefaultProperties(int(default_unicode))
+                        elif self.WKPF_GET_PROPERTY_DATATYPE(x) == WKPF.DATATYPE_ThresholdOperator or self.WKPF_GET_PROPERTY_DATATYPE(x) == WKPF.DATATYPE_LogicalOperator or self.WKPF_GET_PROPERTY_DATATYPE(x) == WKPF.DATATYPE_MathOperator or self.WKPF_GET_PROPERTY_DATATYPE(x) == WKPF.DATATYPE_Pin:
+                            enum_val_dict = self.getWuTypedefEnum(datatype_unicode)
+                            enum_val      = enum_val_dict[str(default_unicode).upper()]
+                            self.addDefaultProperties(enum_val)
+                        else:
+                            raise NotImplementedError
+                    except Exception as e: # if default is not defined, it will fall into here
+                        self.addDefaultProperties(0)
+                        # print e
+
                     # count property number
                     obj.__dict__[p.attributes['name'].nodeValue] = pID_count
                     self.names.append(p.attributes['name'].nodeValue)
@@ -624,7 +668,7 @@ class Device:
                     if cls:
                         obj = cls.newObject()
                         obj.port = port
-                        self.wkpf.addProperties(obj.port)
+                        self.wkpf.addProperties(obj.port, obj.cls)
                         self.objects.append(obj)
             except:
                 traceback.print_exc()
@@ -634,12 +678,12 @@ class Device:
         for i in range(int(obj.cls.propertyNumber)):
             if obj.cls.WKPF_GET_PROPERTY_DATATYPE(obj.cls.props_datatype_and_access[i]) == WKPF.DATATYPE_REFRESH:
                 p = self.wkpf.properties[obj.port][i]
-                obj.refresh_rate = p['value']  
+                obj.refresh_rate = p['value']
                 if obj.refresh_rate == 0:
                     obj.next_scheduled_update = 0
                 else:
                     obj.next_scheduled_update = obj.refresh_rate + int(round(time.time() *1000))
-                return 
+                return
 
     def updateRefreshRateObject(self):
         for obj in self.objects:
@@ -648,7 +692,7 @@ class Device:
             if obj.refresh_rate > 0 and obj.next_scheduled_update < int(round(time.time() *1000)):
                 self.wkpf_schedule_next_update_for_wuobject(obj)
                 obj.cls.update(obj, None, None)
-        reactor.callLater(0.3, self.updateRefreshRateObject)       
+        reactor.callLater(0, self.updateRefreshRateObject)
 
     def updateTheNextDirtyObject(self):
         for obj in self.objects:
@@ -675,7 +719,7 @@ class Device:
         if cls:
             obj = cls.newObject()
             obj.port = len(self.objects)+1
-            self.wkpf.addProperties(obj.port)
+            self.wkpf.addProperties(obj.port, obj.cls)
             self.objects.append(obj)
             self.wkpf_schedule_next_update_for_wuobject(obj)
             return obj

@@ -1,45 +1,41 @@
 from twisted.internet import reactor
 from udpwkpf import WuClass, Device
 import sys
-import mraa
+from udpwkpf_io_interface import *
+
+Magnetic_Pin = 5
 
 class MagneticSensor(WuClass):
     def __init__(self):
-        self.ID = 1007
-        self.current_value = 0
-        self.refreshRate = 0.1
-        self.IO = mraa.Gpio(5)
-        self.IO.dir(mraa.DIR_IN)
-        reactor.callLater(self.refreshRate, self.refresh)
+        WuClass.__init__(self)
+        self.loadClass('Magnetic_Sensor')
+        self.IO = pin_mode(Magnetic_Pin, PIN_TYPE_DIGITAL, PIN_MODE_INPUT)
 
-    def update(self,obj,pID,val):
-        if pID == 1:
-            self.refreshRate = val/1000.0
-
-    def refresh(self):
-        self.current_value = self.IO.read()
-        reactor.callLater(self.refreshRate, self.refresh)
+    def update(self,obj,pID=None,val=None):
+        try:
+            current_value = digital_read(self.IO)
+            print "Magnetic value: %d" % current_value
+            obj.setProperty(0, current_value)
+        except IOError:
+            print "Error"
 
 
 if __name__ == "__main__":
     class MyDevice(Device):
         def __init__(self,addr,localaddr):
             Device.__init__(self,addr,localaddr)
+
         def init(self):
             m = MagneticSensor()
             self.addClass(m,0)
             self.obj_magnetic_sensor = self.addObject(m.ID)
-            reactor.callLater(0.1, self.loop)
-
-        def loop(self):
-            self.obj_magnetic_sensor.setProperty(0, self.obj_magnetic_sensor.cls.current_value)
-            reactor.callLater(0.1, self.loop)
 
     if len(sys.argv) <= 2:
-        print 'python udpwkpf.py <ip> <port>'
-        print '      <ip>: IP of the interface'
-        print '      <port>: The unique port number in the interface'
-        print ' ex. python udpwkpf.py 127.0.0.1 3000'
+        print 'python %s <gip> <dip>:<port>' % sys.argv[0]
+        print '      <gip>: IP addrees of gateway'
+        print '      <dip>: IP address of Python device'
+        print '      <port>: An unique port number'
+        print ' ex. python %s 192.168.4.7 127.0.0.1:3000' % sys.argv[0]
         sys.exit(-1)
 
     d = MyDevice(sys.argv[1],sys.argv[2])

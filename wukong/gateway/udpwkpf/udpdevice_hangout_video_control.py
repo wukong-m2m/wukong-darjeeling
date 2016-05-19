@@ -24,7 +24,8 @@ if __name__ == "__main__":
     #         pass
     class Number(WuClass):
         def __init__(self):
-            self.ID = 2014
+            WuClass.__init__(self)
+            self.loadClass('Number')
         def update(self,obj,pID,val):
             if pID == 0 or pID == 1:
                 print "NUMBER got", val
@@ -33,9 +34,9 @@ if __name__ == "__main__":
 
     class HangoutControl(WuClass):
         def __init__(self):
-            self.ID = 2034
+            WuClass.__init__(self)
+            self.loadClass('HangoutControl')
             self.hc = HC()
-
         def update(self,obj,pID,val):
             if pID == 0:
                 self.hc.update(val, obj.getProperty(1))
@@ -44,7 +45,8 @@ if __name__ == "__main__":
 
     class VideoControl(WuClass):
         def __init__(self):
-            self.ID = 2035
+            WuClass.__init__(self)
+            self.loadClass('VideoControl')
             self.vc = VC()
         def update(self,obj,pID,val):
             if pID == 0:
@@ -87,11 +89,12 @@ if __name__ == "__main__":
             self.obj_hc = self.addObject(m.ID)
 
     if len(sys.argv) <= 2:
-            print 'python udpwkpf.py <ip> <port>'
-            print '      <ip>: IP of the interface'
-            print '      <port>: The unique port number in the interface'
-            print ' ex. python udpwkpf.py 127.0.0.1 3000'
-            sys.exit(-1)
+        print 'python %s <gip> <dip>:<port>' % sys.argv[0]
+        print '      <gip>: IP addrees of gateway'
+        print '      <dip>: IP address of Python device'
+        print '      <port>: An unique port number'
+        print ' ex. python %s 192.168.4.7 127.0.0.1:3000' % sys.argv[0]
+        sys.exit(-1)
 
     d = MyDevice(sys.argv[1],sys.argv[2])
     reactor.run()

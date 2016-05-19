@@ -7,24 +7,17 @@ Touch_Sensor_Pin = 4
 
 class TouchSensor(WuClass):
     def __init__(self):
-        self.ID = 1015
-        self.current_value = 0
-        self.refreshRate = 0.5
+        WuClass.__init__(self)
+        self.loadClass('Touch_Sensor')
         self.IO = pin_mode(Touch_Sensor_Pin, PIN_TYPE_DIGITAL, PIN_MODE_INPUT)
-        reactor.callLater(self.refreshRate, self.refresh)
 
-    def update(self,obj,pID,val):
-        if pID == 1:
-            self.refreshRate = val/1000.0
-
-    def refresh(self):
+    def update(self,obj,pID=None,val=None):
         try:
-            self.current_value = digital_read(self.IO)
-            reactor.callLater(self.refreshRate, self.refresh)
+            current_value = digital_read(self.IO)
+            obj.setProperty(0, current_value)
             print "Touchsensor value: %d" % self.current_value
         except IOError:
             print "Error"
-            reactor.callLater(self.refreshRate, self.refresh)
 
 if __name__ == "__main__":
     class MyDevice(Device):
@@ -34,17 +27,13 @@ if __name__ == "__main__":
             m = TouchSensor()
             self.addClass(m,0)
             self.obj_touch_sensor = self.addObject(m.ID)
-            reactor.callLater(0.1, self.loop)
-
-        def loop(self):
-            self.obj_touch_sensor.setProperty(0, self.obj_touch_sensor.cls.current_value)
-            reactor.callLater(0.1, self.loop)
 
     if len(sys.argv) <= 2:
-        print 'python udpwkpf.py <ip> <port>'
-        print '      <ip>: IP of the interface'
-        print '      <port>: The unique port number in the interface'
-        print ' ex. python udpwkpf.py 127.0.0.1 3000'
+        print 'python %s <gip> <dip>:<port>' % sys.argv[0]
+        print '      <gip>: IP addrees of gateway'
+        print '      <dip>: IP address of Python device'
+        print '      <port>: An unique port number'
+        print ' ex. python %s 192.168.4.7 127.0.0.1:3000' % sys.argv[0]
         sys.exit(-1)
 
     d = MyDevice(sys.argv[1],sys.argv[2])

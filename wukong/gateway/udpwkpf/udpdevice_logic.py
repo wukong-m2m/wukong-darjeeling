@@ -10,43 +10,50 @@ global site
 if __name__ == "__main__":
     class UIButton(WuClass):
         def __init__(self):
+            WuClass.__init__(self)
             self.loadClass('UIButton')
-        def udpate(self,obj,pID,val):
+        def update(self,obj,pID=None,val=None):
             pass
         def init(self):
             pass
 
     class Threshold(WuClass):
         def __init__(self):
+            WuClass.__init__(self)
             self.loadClass('Threshold')
-        def udpate(self,obj,pID,val):
-            if pID == self.value:
-                op = obj.getProperty(self.operator)
+        def update(self,obj,pID,val):
+            if pID == 2:
+                op = obj.getProperty(0)
                 if op == 0:
-                    if val < obj.getProperty(self.threshold):
-                        obj.setProperty(self.output,true)
+                    if val < obj.getProperty(1):
+                        obj.setProperty(3,True)
+                        print "value %d < threshold %d: True" % (val, obj.getProperty(1))
                     else:
-                        obj.setProperty(self.output,false)
+                        obj.setProperty(3,False)
+                        print "value %d < threshold %d: False" % (val, obj.getProperty(1))
                 elif op == 1:
-                    if val > obj.getProperty(self.threshold):
-                        obj.setProperty(self.output,true)
+                    if val > obj.getProperty(1):
+                        obj.setProperty(3,True)
+                        print "value %d > threshold %d: True" % (val, obj.getProperty(1))
                     else:
-                        obj.setProperty(self.output,false)
+                        obj.setProperty(3,False)
+                        print "value %d > threshold %d: False" % (val, obj.getProperty(1))
                 elif op == 2:
-                    if val <= obj.getProperty(self.threshold):
-                        obj.setProperty(self.output,true)
+                    if val <= obj.getProperty(1):
+                        obj.setProperty(3,True)
+                        print "value %d <= threshold %d: True" % (val, obj.getProperty(1))
                     else:
-                        obj.setProperty(self.output,false)
+                        obj.setProperty(3,False)
+                        print "value %d <= threshold %d: False" % (val, obj.getProperty(1))
                 elif op == 3:
-                    if val >= obj.getProperty(self.threshold):
-                        obj.setProperty(self.output,true)
+                    if val >= obj.getProperty(1):
+                        obj.setProperty(3,True)
+                        print "value %d >= threshold %d: True" % (val, obj.getProperty(1))
                     else:
-                        obj.setProperty(self.output,false)
+                        obj.setProperty(3,False)
+                        print "value %d >= threshold %d: False" % (val, obj.getProperty(1))
                 else:
                     print "Error: unknown operator %d" % op
-            pass
-        def init(self):
-            pass
 
     class ShowAll(resource.Resource):
         isLeaf = True
@@ -92,16 +99,17 @@ if __name__ == "__main__":
             Device.__init__(self,addr,localaddr)
         def init(self):
             m1 = Threshold()
-            self.addClass(m1,self.FLAG_APP_CAN_CREATE_INSTANCE| self.FLAG_VIRTUAL)
+            self.addClass(m1,self.FLAG_VIRTUAL)
+            self.addObject(m1.ID)
             m2 = UIButton()
             self.addClass(m2,self.FLAG_APP_CAN_CREATE_INSTANCE| self.FLAG_VIRTUAL)
 
     if len(sys.argv) <= 2:
-        print 'python udpwkpf.py <ip> <port>'
-        print '      <ip>: IP of the interface'
-        print '      <port>: The unique port number in the interface'
-        print ' ex. python <filename> <gateway ip> <local ip>:<any given port number>'
-        print ' ex. python udpdevice_eeg_server.py 192.168.4.7 127.0.0.1:3000'
+        print 'python %s <gip> <dip>:<port>' % sys.argv[0]
+        print '      <gip>: IP addrees of gateway'
+        print '      <dip>: IP address of Python device'
+        print '      <port>: An unique port number'
+        print ' ex. python %s 192.168.4.7 127.0.0.1:3000' % sys.argv[0]
         sys.exit(-1)
 
     d = MyDevice(sys.argv[1],sys.argv[2])

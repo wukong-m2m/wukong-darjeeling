@@ -8,23 +8,18 @@ Light_Sensor_Pin = 1
 if __name__ == "__main__":
     class Light_Sensor(WuClass):
         def __init__(self):
-            self.ID = 1001
-        
-        def setup(self, obj, pin):
-            light_sensor_aio = pin_mode(pin, PIN_TYPE_ANALOG)
-            print "Light sensor init success"
-            reactor.callLater(0.5, self.refresh, obj, pin, light_sensor_aio)
+            WuClass.__init__(self)
+            self.loadClass('Light_Sensor')
+            self.light_sensor_aio = pin_mode(Light_Sensor_Pin, PIN_TYPE_ANALOG)
 
-        def refresh(self, obj, pin, light_sensor_aio):
+        def update(self,obj,pID=None,val=None):
             try:
-                current_value = analog_read(light_sensor_aio)/4 # 4 is divisor value which depends on the light sensor
+                current_value = analog_read(self.light_sensor_aio)/4 # 4 is divisor value which depends on the light sensor
                 obj.setProperty(0, current_value)
-                print "Light sensor analog pin: ", pin, ", value: ", current_value
-                reactor.callLater(0.5, self.refresh, obj, pin, light_sensor_aio)
+                print "Light sensor analog pin: ", Light_Sensor_Pin, ", value: ", current_value
             except IOError:
                 print ("Error")
-                reactor.callLater(0.5, self.refresh, obj, pin, light_sensor_aio)
-  
+
     class MyDevice(Device):
         def __init__(self,addr,localaddr):
             Device.__init__(self,addr,localaddr)
@@ -33,14 +28,13 @@ if __name__ == "__main__":
             cls = Light_Sensor()
             self.addClass(cls,0)
             self.obj_light_sensor = self.addObject(cls.ID)
-            self.obj_light_sensor.cls.setup(self.obj_light_sensor, Light_Sensor_Pin)
 
     if len(sys.argv) <= 2:
-        print 'python udpwkpf.py <ip> <port>'
-        print '      <ip>: IP of the interface'
-        print '      <port>: The unique port number in the interface'
-        print ' ex. python <filename> <gateway ip> <local ip>:<any given port number>'
-        print ' ex. python udpdevice_grove_kit_sample.py 192.168.4.7 127.0.0.1:3000'
+        print 'python %s <gip> <dip>:<port>' % sys.argv[0]
+        print '      <gip>: IP addrees of gateway'
+        print '      <dip>: IP address of Python device'
+        print '      <port>: An unique port number'
+        print ' ex. python %s 192.168.4.7 127.0.0.1:3000' % sys.argv[0]
         sys.exit(-1)
 
     d = MyDevice(sys.argv[1],sys.argv[2])
