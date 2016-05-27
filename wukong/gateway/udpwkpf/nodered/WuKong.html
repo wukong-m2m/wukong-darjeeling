@@ -1,7 +1,7 @@
 <script type="text/x-red" data-template-name="WuKong Subscriber">
     <div class="form-row">
-        <label for="node-input-topic"><i class="fa fa-tag"></i> <span data-i18n="common.label.topic"></span></label>
-        <input type="text" id="node-input-topic" placeholder="WuKong Topic to subscribe">
+        <label for="node-input-subject"><i class="fa fa-tag"></i> <span data-i18n="common.label.subject"></span></label>
+        <input type="text" id="node-input-subject" placeholder="WuKong Subject to subscribe">
     </div>
     <div class="form-row">
         <label for="node-input-server"><i class="fa fa-globe"></i> <span data-i18n="tcpin.label.server"></span></label>
@@ -60,7 +60,7 @@
             out: {value:"time",required:true},
             splitc: {value:"0",required:true},
             name: {value:""},
-            topic:{value:"0"}
+            subject:{value:"0"}
         },
         inputs:1,
         outputs:1,
@@ -77,8 +77,8 @@
 
 <script type="text/x-red" data-template-name="WuKong Publisher">
     <div class="form-row">
-        <label for="node-input-topic"><i class="fa fa-tag"></i> <span data-i18n="common.label.topic"></span></label>
-        <input type="text" id="node-input-topic" placeholder="WuKong Topic to publish">
+        <label for="node-input-subject"><i class="fa fa-tag"></i> <span data-i18n="common.label.subject"></span></label>
+        <input type="text" id="node-input-subject" placeholder="WuKong Subject to publish">
     </div>
     <div class="form-row">
         <label for="node-input-publishing_property"><i class="fa fa-tag"></i> <span>Property</span></label>
@@ -131,7 +131,7 @@
             base64: {value:false,required:true},
             end: {value:false,required:true},
             name: {value:""},
-            topic:{value:"0"},
+            subject:{value:"0"},
             publishing_property:{value:""}
         },
         inputs:1,

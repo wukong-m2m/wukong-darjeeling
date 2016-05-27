@@ -27,7 +27,7 @@ module.exports = function(RED) {
         this.port = Number(n.port);
         this.out = n.out;
         this.splitc = n.splitc;
-        this.topic = n.topic;
+        this.subject = n.subject;
 
         if (this.out != "char") { this.splitc = Number(this.splitc); }
         else { this.splitc = this.splitc.replace("\\n",0x0A).replace("\\r",0x0D).replace("\\t",0x09).replace("\\e",0x1B).replace("\\f",0x0C).replace("\\0",0x00); } // jshint ignore:line
@@ -205,10 +205,10 @@ module.exports = function(RED) {
          *
          */
         this.generateSubscriptionMessage = function(){
-            if ((!node.topic) || (node.topic == '0')) return null;
+            if ((!node.subject) || (node.subject == '0')) return null;
             var boundary = '||'
             return boundary+JSON.stringify({
-                topic:parseInt(node.topic),
+                subject:''+node.subject,
                 type:'*',
                 value:'*',
                 subscribe:1,
@@ -228,7 +228,7 @@ module.exports = function(RED) {
         this.name = n.name;
         this.closing = false;
         this.connected = false;
-        this.topic = n.topic;
+        this.subject = n.subject;
         this.publishing_property = n.publishing_property;
         var node = this;
 
@@ -283,7 +283,7 @@ module.exports = function(RED) {
                     */
                     var boundary = '||';
                     var message = {
-                        topic:parseInt(node.topic),
+                        subject:''+node.subject,
                         type:'',
                         value:'',
                     }
