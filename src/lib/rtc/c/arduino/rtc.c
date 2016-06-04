@@ -106,6 +106,7 @@ void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t 
 void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 avroraPrintInt32(dj_di_methodImplementation_getLength(methodimpl));
 avroraPrintStr("RTC METHOD START");
+avroraStartRTCCompileTimer();
     // Buffer to hold the code we're building (want to keep this on the stack so it doesn't take up space at runtime)
     uint16_t codebuffer[RTC_CODEBUFFER_SIZE];
     emit_init(codebuffer); // Tell emit where the buffer is
@@ -158,6 +159,7 @@ avroraPrintStr("RTC METHOD START");
     // All branchtarget addresses should be known now.
     // Scan for branch tags, and replace them with the proper instructions.
     rtc_patch_branches(branch_target_table_start_ptr, tmp_current_position, rtc_branch_table_size(methodimpl));
+avroraStopRTCCompileTimer();
 avroraPrintStr("RTC METHOD DONE");
 }
 

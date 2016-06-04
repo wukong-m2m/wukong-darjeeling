@@ -405,6 +405,7 @@ void dj_mem_compact()
 
 void dj_mem_gc()
 {
+    avroraStartGarbageCollectionTimer();
 	DEBUG_LOG(DBG_DARJEELING | DBG_DARJEELING_GC, "GC start\n");
 
 	dj_mem_mark();
@@ -412,6 +413,7 @@ void dj_mem_gc()
 	dj_hook_call(dj_mem_postGCHook, NULL);
 
 	DEBUG_LOG(DBG_DARJEELING | DBG_DARJEELING_GC, "GC done\n");
+    avroraStopGarbageCollectionTimer();
 }
 
 bool dj_mem_isHeapPointer(void *ptr) {

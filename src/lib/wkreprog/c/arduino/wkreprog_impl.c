@@ -43,6 +43,7 @@ bool wkreprog_impl_open_app_archive(uint16_t start_write_position) {
 // Open reprogramming at any position in flash
 // If end_of_safe_region is set, the VM will panic when writing outside of this region.
 bool wkreprog_impl_open_raw(uint16_t start_write_position, uint16_t end_of_safe_region) {
+avroraStartReprogTimer();
 	DEBUG_LOG(DBG_WKREPROG, "AVR: Start writing to flash at address %p.\n", start_write_position);
 
 	// Set the position to start writing at start_write_position
@@ -55,6 +56,7 @@ bool wkreprog_impl_open_raw(uint16_t start_write_position, uint16_t end_of_safe_
 		avr_flash_pagebuffer[i] = dj_di_getU8(avr_flash_pageaddress+i);
 	avr_flash_end_of_safe_region = end_of_safe_region;
 
+avroraStopReprogTimer();
 	return true;
 }
 
@@ -71,6 +73,7 @@ void avr_flash_program_page_if_not_modified(uint32_t page, uint8_t *buf) {
 
 
 void wkreprog_impl_write(uint8_t size, uint8_t* data, bool skip) {
+avroraStartReprogTimer();
 	// TODONR: Check if the size fits in the allocated space for app archive
 	if (avr_flash_pageaddress == 0)
 		return;
@@ -101,9 +104,11 @@ void wkreprog_impl_write(uint8_t size, uint8_t* data, bool skip) {
 		size -= bytes_on_this_page;
 		data += bytes_on_this_page;
 	}
+avroraStopReprogTimer();
 }
 
 void wkreprog_impl_close() {
+avroraStartReprogTimer();
 	DEBUG_LOG(DBG_WKREPROG, "AVR: Closing flash file.\n");
 	if (avr_flash_buf_len != 0) { // If there's any data remaining, write it to flash.
 		// Fill the remaining of the buffer with the old data currently in the file
@@ -114,6 +119,7 @@ void wkreprog_impl_close() {
 		avr_flash_program_page_if_not_modified(avr_flash_pageaddress, avr_flash_pagebuffer);
 	}
 	avr_flash_pageaddress = 0;
+avroraStopReprogTimer();
 }
 
 void wkreprog_impl_reboot() {
