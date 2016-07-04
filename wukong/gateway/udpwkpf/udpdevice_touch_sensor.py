@@ -3,7 +3,7 @@ from udpwkpf import WuClass, Device
 import sys
 from udpwkpf_io_interface import *
 
-Touch_Sensor_Pin = 4
+Touch_Sensor_Pin = 7
 
 class TouchSensor(WuClass):
     def __init__(self):

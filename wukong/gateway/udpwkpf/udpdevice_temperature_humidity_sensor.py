@@ -6,7 +6,7 @@ from math import log
 from udpwkpf_io_interface import *
 
 Data_Pin = 15
-Clk_Pin  = 7
+Clk_Pin  = 13
 
 class Temperature_Humidity_Sensor(WuClass):
     def __init__(self):
