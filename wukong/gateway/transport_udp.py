@@ -284,7 +284,7 @@ class UDPTransport(Transport):
         self.updateDeviceLookup()
 
     def loadDevice(self):
-        with open(self._device_filename,'r+') as f:
+        with open(self._device_filename,'w+') as f:
             try:
                 load_devices = json.load(f)
             except Exception as e:

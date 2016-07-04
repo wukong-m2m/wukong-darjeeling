@@ -1,11 +1,13 @@
 from twisted.internet import reactor
 from udpwkpf import WuClass, Device
-import sys
-import mraa
+import sys, time
 from twisted.protocols import basic
 from twisted.internet import reactor, protocol
 
-import pyupm_i2clcd as lcd
+from udpwkpf_io_interface import *
+
+HIGH = 1
+LOW  = 0
 
 def HSV_2_RGB(HSV):
     # copy from http://web.mit.edu/storborg/Public/hsvtorgb.c
@@ -60,19 +62,42 @@ if __name__ == "__main__":
         def __init__(self):
             WuClass.__init__(self)
             self.loadClass('Grove_LCD')
-            self.myLcd=lcd.Jhd1313m1(0,0x3E,0x62)
+            self.myLcd = grove_lcd(0x3E, 0x62)
             print "LCD Actuator init success"
+            self.state = LOW
+            self.previous = LOW
+            self.time = 0
+            self.debounce = 200
+            self.cleanup = True
 
         def update(self,obj,pID,val):
-            display_value = obj.getProperty(0)
-            hue = obj.getProperty(1)
-            saturation = obj.getProperty(2)
-            value = obj.getProperty(3)
-            red, green, blue = HSV_2_RGB((hue, saturation, value))
-            self.myLcd.setColor( red, green, blue)
-            self.myLcd.setCursor(0,0)
-            self.myLcd.write(str(display_value))
-            print "display value: %d" % display_value
+            on_off = obj.getProperty(0)
+            currentTime = int(time.time() * 100)
+            if (on_off == HIGH and self.previous == LOW and currentTime - self.time > self.debounce):
+                if (self.state == HIGH):
+                    self.state = LOW
+                    self.cleanup = False
+                else:
+                    self.state = HIGH
+                self.time = currentTime
+            if self.state:
+                display_value = obj.getProperty(1)
+                bri = obj.getProperty(2)
+                hue = obj.getProperty(3)
+                saturation = obj.getProperty(4)
+                value = obj.getProperty(5)
+ 
+                red, green, blue = [int((x / 255.0) * bri) for x in HSV_2_RGB((hue, saturation, value))]
+                grove_set_color(self.myLcd, red, green, blue)
+                grove_set_text(self.myLcd, str(display_value))
+                print "display value: %d" % display_value
+            else:
+                if not self.cleanup:
+                    grove_set_color(self.myLcd, 0, 0, 0)
+                    grove_clear(self.myLcd)
+                    print "clear display"
+                    self.cleanup = True
+            self.previous = on_off
 
     class MyDevice(Device):
         def __init__(self,addr,localaddr):

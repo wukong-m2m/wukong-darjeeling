@@ -2,55 +2,43 @@ import traceback
 import time,sys
 from udpwkpf import WuClass, Device
 from twisted.internet import reactor
-import mraa
+from udpwkpf_io_interface import *
 
-PIN_1 = 7 #trig
-PIN_2 = 8 #echo
-REFRESH_RATE = 0.5 #sec
+Trig_Pin = 11
+Echo_Pin = 12
 
 class Ultrasound_sensor(WuClass):
-    def __init__(self,pin1,pin2):
+    def __init__(self):
         WuClass.__init__(self)
-        self.ID = 1011
-        #trig
-        self.trig = mraa.Gpio(pin1)
-        self.trig.dir(mraa.DIR_OUT)
-        #echo
-        self.echo = mraa.Gpio(pin2)
-        self.echo.dir(mraa.DIR_IN)
-
-        self.refresh_rate = REFRESH_RATE
-        self.centimeter = 0
-        reactor.callLater(self.refresh_rate,self.refresh)
+        self.loadClass('Ultrasound_Sensor')
         print "Ultrasound sensor init!"
 
-    def update(self,obj,pID,value):
-        pass
+    def update(self,obj,pID=None,val=None):
+        trig_gpio = pin_mode(Trig_Pin, PIN_TYPE_DIGITAL, PIN_MODE_OUTPUT)
+        digital_write(trig_gpio, 0)
+        time.sleep(0.005)
+        digital_write(trig_gpio, 1)
+        time.sleep(0.002)
+        digital_write(trig_gpio, 0)
 
-    def refresh(self):
-        self.centimeter = int(self.pulseIn())
-        if self.centimeter >= 0:
-            print "cm: %d" %(self.centimeter)
+        echo_gpio = pin_mode(Echo_Pin, PIN_TYPE_DIGITAL, PIN_MODE_INPUT)
+        centimeter = int(self.pulseIn(echo_gpio))
+        if centimeter >= 0:
+            obj.setProperty(0, centimeter)
+            print "cm: %d" % centimeter
         else :
             print "no value this time"
-        reactor.callLater(self.refresh_rate,self.refresh)
 
-    def pulseIn(self):
+    def pulseIn(self, echo_gpio):
         pulseOn = -1
         pulseOff = -1
 
-        self.trig.write(0)
-        time.sleep(0.005)
-        self.trig.write(1)
-        time.sleep(0.002)
-        self.trig.write(0)
-
         count1 = 0
-        while self.echo.read() == 0 and count1 < 5000:
+        while digital_read(echo_gpio) == 0 and count1 < 5000:
             pulseOff = time.time()
             count1 += 1
         count2 = 0
-        while self.echo.read() == 1 and count2 < 5000:
+        while digital_read(echo_gpio) == 1 and count2 < 5000:
             pulseOn = time.time()
             count2 += 1
         if pulseOn == -1 or pulseOff == -1 or count1 >= 5000 or count2 >= 5000:
@@ -66,15 +54,9 @@ class MyDevice(Device):
         Device.__init__(self,addr,localaddr)
 
     def init(self):
-        m = Ultrasound_sensor(PIN_1,PIN_2)
-        self.addClass(m,1)
+        m = Ultrasound_sensor()
+        self.addClass(m, 0)
         self.obj_ultrasound_sensor = self.addObject(m.ID)
-        reactor.callLater(0.1,self.loop)
-
-    def loop(self):
-        self.obj_ultrasound_sensor.setProperty(0,self.obj_ultrasound_sensor.cls.centimeter)
-        #print "Distance: " + str(self.obj_ultrasound_sensor.cls.centimeter)
-        reactor.callLater(0.1,self.loop)
 
 if len(sys.argv) <= 2:
         print 'python %s <gip> <dip>:<port>' % sys.argv[0]
@@ -87,3 +69,4 @@ if len(sys.argv) <= 2:
 d = MyDevice(sys.argv[1],sys.argv[2])
 
 reactor.run()
+device_cleanup()
