@@ -241,6 +241,7 @@ class IDService(object):
         discovered_nodes_set = Set(map(lambda x: self._id_prefix | x, discovered_nodes))
         to_remove_nodes = list(addr_db_set - discovered_nodes_set)
         if len(to_remove_nodes) == 0: return
+        # logger.debug("==== address set " + str(addr_db_set) + " ==== discovered nodes "+ str(discovered_nodes_set) + "==== nodes to be removed " + str(to_remove_nodes))
 
         for to_remove_node_addr in to_remove_nodes:
             logger.debug("=============Remove not found existed node 0x%X" % (to_remove_node_addr))

@@ -281,16 +281,16 @@ class UDPTransport(Transport):
         save_devices = [item.__dict__ for item in self.devices]
         with open(self._device_filename,'w') as f:
             json.dump(save_devices, f, sort_keys=True,indent=2)
-        f.close()
         self.updateDeviceLookup()
 
     def loadDevice(self):
-        with open(self._device_filename,'w+') as f:
+        with open(self._device_filename,'r+') as f:
             try:
                 load_devices = json.load(f)
-            except:
+            except Exception as e:
+                logger.error("loadDevice: %s, %s", str(e), traceback.format_exc())
                 load_devices = []
-                json.dump([], f, sort_keys=True,indent=2)
+                json.dump(load_devices, f, sort_keys=True,indent=2)
         self.devices = [UDPDevice(item["host_id"],item["ip"],item["port"]) for item in load_devices]
         self.updateDeviceLookup()
 
