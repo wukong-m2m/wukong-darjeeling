@@ -7,7 +7,7 @@ except:
 
 import gevent
 from gevent.lock import RLock
-import sys
+import sys, os
 import gtwconfig as CONFIG
 import mptnUtils as MPTN
 from transport_abstract import Transport
@@ -56,6 +56,9 @@ class UDPTransport(Transport):
         self._device_filename = "table_udp_devices.json"
         self.devices=[]
         self._devices_lookup = {}
+        if not os.path.isfile(self._device_filename):
+            with open(self._device_filename, "w") as f:
+                json.dump([], f, sort_keys=True,indent=2)
         self.loadDevice()
 
         try:
@@ -284,7 +287,7 @@ class UDPTransport(Transport):
         self.updateDeviceLookup()
 
     def loadDevice(self):
-        with open(self._device_filename,'w+') as f:
+        with open(self._device_filename,'r+') as f:
             try:
                 load_devices = json.load(f)
             except Exception as e:

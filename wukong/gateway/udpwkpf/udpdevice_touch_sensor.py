@@ -15,7 +15,7 @@ class TouchSensor(WuClass):
         try:
             current_value = digital_read(self.IO)
             obj.setProperty(0, current_value)
-            print "Touchsensor value: %d" % self.current_value
+            print "Touchsensor value: %d" % current_value
         except IOError:
             print "Error"
 
