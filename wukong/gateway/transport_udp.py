@@ -7,7 +7,7 @@ except:
 
 import gevent
 from gevent.lock import RLock
-import sys
+import sys, os
 import gtwconfig as CONFIG
 import mptnUtils as MPTN
 from transport_abstract import Transport
