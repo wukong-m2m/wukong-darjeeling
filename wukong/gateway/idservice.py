@@ -173,7 +173,7 @@ class IDService(object):
 
     def _alloc_address(self, address, uuid):
         assert isinstance(address, (int, long)), "_alloc_address %s must be integer instead of %s" % (str(address), type(address))
-        assert MPTN.IS_ID_IN_NETWORK(address, self._network), "_alloc_address %s cannot excede network %s" % (MPTN.ID_TO_STRING(address), str(self._network))
+        # assert MPTN.IS_ID_IN_NETWORK(address | self._id_prefix, self._network), "_alloc_address %s cannot excede network %s" % (MPTN.ID_TO_STRING(address), str(self._network))
         self._addr_db[address] = base64.b64encode(uuid)
 
     def _dealloc_address(self, address):
