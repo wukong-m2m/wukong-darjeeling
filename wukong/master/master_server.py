@@ -10,6 +10,7 @@ import sys
 reload(sys)  # Reload does the trick!
 sys.setdefaultencoding('UTF8')
 from gevent import monkey; monkey.patch_all()
+import json
 import gevent
 import serial
 import platform
@@ -24,6 +25,8 @@ from threading import Thread
 import traceback
 import StringIO
 import shutil, errno
+import urllib
+import urlparse
 import datetime
 import glob
 import copy
@@ -139,7 +142,7 @@ def delete_and_remap_application(i):
         'name': component.type,
         'msg' : component.message,
         'instances': []
-      }  
+      }
 
       for wuobj in component.instances:
         wuobj_hash = {
@@ -167,7 +170,7 @@ def delete_and_remap_application(i):
         wkpf.globals.applications[i].deploy_with_discovery(platforms)
 
         content_type = 'application/json'
- 
+
     shutil.rmtree(wkpf.globals.applications[i].dir)
     wkpf.globals.applications.pop(i)
     return True
@@ -417,7 +420,7 @@ class new_application(tornado.web.RequestHandler):
       # copy base for the new application
       logging.info('creating application... "%s"' % (app_name))
       copyAnything(BASE_DIR, os.path.join(APP_DIR, app_id))
-      
+
       # default to be disabled
       app = WuApplication(id=app_id, app_name=app_name, dir=os.path.join(APP_DIR, app_id),disabled=True)
       logging.info('app constructor')
@@ -637,6 +640,21 @@ class deploy_application(tornado.web.RequestHandler):
       self.write({
         'status':0,
         'version': wkpf.globals.applications[app_ind].version})
+
+class remap_application(tornado.web.RequestHandler):
+    def post(self, app_id):
+        app_ind = getAppIndex(app_id)
+        if app_ind == None:
+            self.content_type = 'application/json'
+            self.write({'status':1, 'mesg': 'Cannot find the application'})
+        else:
+            params = json.loads(self.request.body)
+            predicts = params['predicts']
+            # TODO add predict to mapper
+            self.content_type = 'application/json'
+            self.write({
+                'status':0,
+                'version': wkpf.globals.applications[app_ind].version})
 
 class map_application(tornado.web.RequestHandler):
   def post(self, app_id):
@@ -1434,7 +1452,7 @@ class Submit2AppStore(tornado.web.RequestHandler):
       xml = xml[:insert_pos]+'<app_name>'+name+'</app_name>'+xml[insert_pos:]
       xmlfd.write(xml)
       xmlfd.close()
-      
+
       #
       # save icon to the same name
       #
@@ -1473,7 +1491,7 @@ class RemoveAppFromStore(tornado.web.RequestHandler):
       nameprefix = self.get_argument('nameprefix', default=None, strip=False)
       static_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "static"))
       appstore_path = os.path.join(static_path,'appstore')
-      
+
       self.content_type = 'application/json'
       try:
           csv_path = os.path.join(appstore_path,'application_xmls.js')
@@ -1481,7 +1499,7 @@ class RemoveAppFromStore(tornado.web.RequestHandler):
              fd = open(csv_path,'rb')
              lines = fd.readlines()
              fd.close()
-             
+
              appname = xmlname = author = desc = None
              for i in range(len(lines)):
                 if lines[i].find('\t'+nameprefix+'\t') > 0:
@@ -1500,7 +1518,7 @@ class RemoveAppFromStore(tornado.web.RequestHandler):
                  xmlpath = os.path.join(appstore_path,xmlname+'.xml')
                  if os.path.exists(xmlpath):
                      os.unlink(xmlpath)
-      
+
                  iconpath = os.path.join(appstore_path,xmlname+'.png')
                  if os.path.exists(iconpath):
                      os.unlink(iconpath)
@@ -1611,6 +1629,7 @@ wukong = tornado.web.Application([
   (r"/applications/new", new_application),
   (r"/applications/([a-fA-F\d]{32})", application),
   (r"/applications/([a-fA-F\d]{32})/rename", rename_application),
+  (r"/applications/([a-fA-F\d]{32})/remap", remap_application),
   (r"/applications/([a-fA-F\d]{32})/disable", disable_application),
   (r"/applications/([a-fA-F\d]{32})/reset", reset_application),
   (r"/applications/([a-fA-F\d]{32})/properties", properties_application),
@@ -1653,7 +1672,7 @@ wukong = tornado.web.Application([
   (r"/user", UserAware),
   (r"/nodered/inputfrom", NodeRedInputFrom),
   (r"/nodered/outputto", NodeRedOutputTo),
-  (r"/nodered/read", ReadMessageToNodeRed)  
+  (r"/nodered/read", ReadMessageToNodeRed)
 ], IP, **settings)
 
 logging.info("Starting up...")
