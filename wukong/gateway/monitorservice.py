@@ -15,7 +15,6 @@ import json
 import ast
 import datetime
 import time
-from pserverclient import ProgressionServerClient
 import color_logging, logging
 logger = logging
 import gtwconfig as config
@@ -28,7 +27,7 @@ class UserData:
         self.message['From']='Wukong'
         self.send = False
         self.cnt = 0
-    
+
     def addData(self, sensorData):
         wuclass_id = sensorData.wuclass_id
         property_num = sensorData.property_num
@@ -61,7 +60,7 @@ class ContextData:
         self.message = {}
         self.message['From']='Wukong'
         self.send = False
-    
+
     def addData(self, sensorData):
         wuclass_id = sensorData.wuclass_id
         property_num = sensorData.property_num
@@ -90,7 +89,7 @@ class ContextData:
     def reset(self):
         self.message = {}
         self.message['From']='Wukong'
-        self.send = False        
+        self.send = False
 
 class SensorData:
     def __init__(self, node_id, wuclass_id, port, property_num, value, timestamp):
@@ -128,9 +127,10 @@ class SensorData:
         return 'Wudevice' + self.node_id + '.Wuclass' + wuclass_id + '.Port' + port
 
 class MonitorService(object):
-    def __init__(self):
+    def __init__(self, progressionService):
         try:
             self._mongodb_client = MongoClient(config.MONGODB_URL)
+            self._progression_service = progressionService
         except:
             print "MongoDB instance " + url + " can't be connected."
             print "Please install the mongDB, pymongo module."
@@ -143,8 +143,7 @@ class MonitorService(object):
             print "Graphite instance on " + config.GRAPHITE_IP + ":" + config.GRAPHITE_PORT + " can't be connected";
             print "Please install the txCarbonClient module."
         print "Graphite Client init"
-        
-        self._pserver_client = ProgressionServerClient() if config.ENABLE_PROGRESSION else None
+
         self._task = Queue()
         if config.ENABLE_CONTEXT:
             self.xmpp_wait = False
@@ -166,9 +165,11 @@ class MonitorService(object):
     def serve_monitor(self):
         while True:
             try:
-                context, message = self._task.get(timeout=1)
+                context, mptn = self._task.get(timeout=1)
+                dest_id, src_id, msg_type, payload = MPTN.extract_packet_from_str(mptn)
+                message = payload[1:]
             except Empty:
-        	if config.ENABLE_CONTEXT: 
+        	if config.ENABLE_CONTEXT:
 		    if self.xmpp_wait:
                         self.xmpp_wait = False
                         if self.xmpp_user.send:
@@ -191,7 +192,7 @@ class MonitorService(object):
                     self._mongodb_client.wukong.readings.insert(ast.literal_eval(data_collection.toDocument()))
 
                 if config.ENABLE_PROGRESSION:
-                    self._pserver_client.send(data_collection.node_id, data_collection.port, data_collection.value)
+                    self._progression_service.send(mptn)
                 if config.ENABLE_GRAPHITE:
                     self._graphite_client.publish_metric(config.SYSTEM_NAME + "." + data_collection.graphite_key(), data_collection.value)
                 if config.ENABLE_CONTEXT:
@@ -207,7 +208,7 @@ class MonitorService(object):
             print 'input: '+text
             try:
                 input_data = json.loads(text)
-                if input_data['From'] == 'CE': 
+                if input_data['From'] == 'CE':
                     iq = xmpp.Iq(typ='set', to='pubsub.'+config.XMPP_SERVER, xmlns=xmpp.NS_CLIENT)
                     iq.pubsub = iq.addChild(name='pubsub', namespace=xmpp.NS_PUBSUB)
                     iq.pubsub.publish = iq.pubsub.addChild(name='publish', attrs={'node': 'nooneknow'})
@@ -263,4 +264,3 @@ class MonitorService(object):
             except Exception, e:
                 print str(e)
                 return
-

@@ -45,7 +45,16 @@ class Gateway(object):
         # Initialize Monitor Service
         if CONFIG.ENABLE_MONITOR:
             from monitorservice import MonitorService
-            self._monitor_service = MonitorService()
+            if config.ENABLE_PROGRESSION:
+                from progressionservice import ProgressionService
+                self._progression_service = ProgressionService()
+                self._spawn_handlers.append(self._progression_service.serve_progression)
+                self._monitor_service = MonitorService(self._progression_service)
+
+                gateway_application_handlers.update(self._progression_service.get_handlers())
+            else:
+                self._monitor_service = MonitorService(None)
+
             self._spawn_handlers.append(self._monitor_service.serve_monitor)
             gateway_application_handlers[0x96] = self._monitor_service.handle_monitor_message
             gateway_application_handlers[MPTN.WKPF_COMMAND_MONITOR] = self._monitor_service.handle_monitor_message
