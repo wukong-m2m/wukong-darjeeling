@@ -31,7 +31,7 @@ class DjSourceSet {
     final String name
     String basedir
     Task cGenerateCodeTask = null
-    List<DjSourceSet> cDependencies 
+    List<DjSourceSet> cDependencies
     List<DjSourceSet> javaDependencies
 
     DjSourceSet(String name) {
@@ -203,7 +203,7 @@ class DjSourceSet {
                 // main sourceset depends on the sourceset we just created
                 sources.main.lib ( sources[this.name] )
             }
-        }   
+        }
     }
 }
 
@@ -297,6 +297,7 @@ class DjAppSourceSet extends DjSourceSet {
         project.tasks.createAppArchive.addPart("${outputBase}.wkpf_linktable", project.ant.djarchive_type_wkpf_linktable, generateWkpfTables)
         project.tasks.createAppArchive.addPart("${outputBase}.wkpf_componentmap", project.ant.djarchive_type_wkpf_componentmap, generateWkpfTables)
         project.tasks.createAppArchive.addPart("${outputBase}.wkpf_initvalues", project.ant.djarchive_type_wkpf_initvalues, generateWkpfTables)
+        project.tasks.createAppArchive.addPart("${outputBase}.wkpf_appid", project.ant.djarchive_type_wkpf_appid, generateWkpfTables)
+
     }
 }
-

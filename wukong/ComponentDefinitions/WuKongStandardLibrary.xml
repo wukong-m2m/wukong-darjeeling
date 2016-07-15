@@ -591,7 +591,7 @@
       <property name="occupany" access="readonly" datatype="boolean" default="0"/>
     </WuClass>
     <WuClass name="FaultTolerantPolicyPrClass" id="10119" virtual="false" type="soft">
-      <property name="hearBeat" access="readwrite" datatype="byte" default="0" />
+      <property name="hearBeat" access="readwrite" datatype="boolean" default="0" />
     </WuClass>
     <WuClass name="EnergyPolicyPrClass" id="10117" virtual="false" type="soft">
       <property name="input" access="readwrite" datatype="short" default="0" />

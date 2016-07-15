@@ -22,11 +22,11 @@ class Generator:
         Generator.generateTablesXML(name, changesets)
         print '[generator] generate Java App'
         Generator.generateJavaApplication(name, changesets)
-        
+
     @staticmethod
     def generateJavaApplication(name, changesets):
         # i is the number to be transform into byte array, n is the number of bytes to use (little endian)
-        def bytestring(i, n): 
+        def bytestring(i, n):
             return ['(byte)' + str(ord(b)) for b in pack("H", i)][:n]
 
         def nodeinjava(node):
@@ -35,7 +35,7 @@ class Generator:
         def wuobjectinjava(wuobject):
             return ', '.join([str(wuobject.wunode().id),
                             str(wuobject.port_number)])
-            
+
         def linkinjava(link):
             return ', '.join(bytestring(link.from_component_index, 2)
                     + bytestring(link.from_property_id, 1)
@@ -124,10 +124,12 @@ class Generator:
         # Generate the link table and component map xml
         root = ElementTree.Element('wkpftables')
         tree = ElementTree.ElementTree(root)
+        appId = ElementTree.SubElement(root, 'appId')
         links = ElementTree.SubElement(root, 'links')
         components = ElementTree.SubElement(root, 'components')
         initvalues = ElementTree.SubElement(root, 'initvalues')
-        
+        appId.attrib['name'] = name
+
         for link in changesets.links:
             #print str(link.from_component.deployid) +"to"+str(link.to_component.deployid)
             #special handler for multiplexer
@@ -142,18 +144,18 @@ class Generator:
                 if "current_src" not in link.to_component.properties.keys():
                     link.to_component.properties["current_src"] = str(link.to_component.properties[link.to_property.name])
                 #if both src and dest are filled, add an initial link for later change
-                if  "current_dest" in link.from_component.properties.keys(): 
+                if  "current_dest" in link.from_component.properties.keys():
                     link_element = ElementTree.SubElement(links, 'link')
                     link_element.attrib['fromComponent'] = str(int(link.to_component.properties["current_src"])//100)
                     link_element.attrib['fromProperty'] = str(int(link.to_component.properties["current_src"])%100)
                     link_element.attrib['toComponent'] = str(int(link.to_component.properties["current_dest"])//100)
                     link_element.attrib['toProperty'] = str(int(link.to_component.properties["current_dest"])%100)
                 continue        #ignore code for normal wuclasses other than "multiplexer"
-            elif link.from_component.type == 'Multiplexer'  and link.from_property_name == 'output': 
+            elif link.from_component.type == 'Multiplexer'  and link.from_property_name == 'output':
                 link.from_component.properties[link.to_property.name] = str(link.to_component.deployid * 100 + link.to_property.id)
                 link.from_component.properties["current_dest"] = str(link.from_component.properties[link.to_property.name])
                 #if both src and dest are filled, add an initial link for later change(happen only once)
-                if "current_src" in link.from_component.properties.keys():   
+                if "current_src" in link.from_component.properties.keys():
                     link_element = ElementTree.SubElement(links, 'link')
                     link_element.attrib['fromComponent'] = str(int(link.from_component.properties["current_src"])//100)
                     link_element.attrib['fromProperty'] = str(int(link.from_component.properties["current_src"])%100)
@@ -161,7 +163,7 @@ class Generator:
                     link_element.attrib['toProperty'] = str(int(link.from_component.properties["current_dest"])%100)
                 continue        #ignore code for normal wuclasses other than "multiplexer"
             #end of multiplexer handler
-            
+
             link_element = ElementTree.SubElement(links, 'link')
             link_element.attrib['fromComponent'] = str(link.from_component.deployid)
             link_element.attrib['fromProperty'] = str(link.from_property.id)
@@ -180,13 +182,13 @@ class Generator:
             if len(component.instances) == 0:
                 raise IndexError('No instances for component of type ' + component.type)
             wuobject = component.instances[0]
-            for property in [p for p in generateProperties(wuobject.properties.values(), component) if p.value != '']:                
+            for property in [p for p in generateProperties(wuobject.properties.values(), component) if p.value != '']:
                 if (Generator.isLinkDestination(component.deployid, property.id, changesets)):
                     if component.type != 'Multiplexer':
                         # This property is the destination for a link, so we shouldn't generate an entry in the init value table
                         # The framework will get the initial value from the source component instead.
                         continue
-                
+
                 initvalue = ElementTree.SubElement(initvalues, 'initvalue')
                 initvalue.attrib['componentId'] = str(component.deployid)
                 initvalue.attrib['propertyNumber'] = str(property.id)

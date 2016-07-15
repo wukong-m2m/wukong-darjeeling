@@ -1,23 +1,23 @@
 /*
  * WKPFTableTask.java
- * 
+ *
  * Copyright (c) 2008-2010 CSIRO, Delft University of Technology.
- * 
+ *
  * This file is part of Darjeeling.
- * 
+ *
  * Darjeeling is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
  * by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Darjeeling is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Darjeeling.  If not, see <http://www.gnu.org/licenses/>.
- */ 
+ */
 
 package org.csiro.darjeeling.wkpftable.ant;
 
@@ -27,6 +27,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -43,7 +44,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 
 /**
- * 
+ *
  * Ant task that converts a text file containing the WuKong link table and component map to a
  * binary file in the format wkpf_links.c expects.
  */
@@ -51,18 +52,18 @@ public class WKPFTableTask extends Task
 {
 	// Number of output values per line
 	private final static int LINESIZE = 16;
-	
+
 	// Source, destination files and output array name.
 	private String src, dest;
 	// Desired size of the array. Defaults to the size of the archive if 0. Error if !=0 but < archive size.
 	private int arraysize;
 
-	// Keyword list. 
+	// Keyword list.
 	private ArrayList<String> keywords = new ArrayList<String>();
-	
-	// If true, the array will be made constant using the 'const' keyword. 
+
+	// If true, the array will be made constant using the 'const' keyword.
 	private boolean constKeyword = true;
-	
+
 	/**
 	 * Ant execute entry point.
 	 */
@@ -88,20 +89,22 @@ public class WKPFTableTask extends Task
 			doc.getDocumentElement().normalize();
 			//ArrayList<Integer> component_list = getComponentList(doc);
 			ArrayList<Long> component_list = getComponentList(doc);
-			
+
 			PrintWriter pw = new PrintWriter(dest + ".component_list");
 			for (int i = 0; i < component_list.size(); i++) {
 				//Integer node_id = component_list.get(i);
 				Long node_id = component_list.get(i);
 				pw.println(node_id);
-				
+
 				writeFile(dest + ".wkpf_linktable" + node_id, makeLinkTable(doc));
 				writeFile(dest + ".wkpf_componentmap" + node_id, makeComponentMap(doc, node_id));
 				writeFile(dest + ".wkpf_initvalues" + node_id, makeInitValues(doc));
+				writeFile(dest + ".wkpf_appid" + node_id, makeAppId(doc));
 			}
 			writeFile(dest + ".wkpf_linktable", makeLinkTable(doc));
 			writeFile(dest + ".wkpf_componentmap", makeComponentMap(doc, -1L));
 			writeFile(dest + ".wkpf_initvalues", makeInitValues(doc));
+			writeFile(dest + ".wkpf_appid", makeAppId(doc));
 			pw.close();
 		} catch (FileNotFoundException fnfex) {
 			throw new org.apache.tools.ant.BuildException("File not found: " + src);
@@ -114,11 +117,11 @@ public class WKPFTableTask extends Task
 
 
 	}
-	
+
 	//private ArrayList<Integer> getComponentList(Document doc) {
 	private ArrayList<Long> getComponentList(Document doc) {
 		NodeList components = ((Element)doc.getElementsByTagName("components").item(0)).getElementsByTagName("component");
-		
+
 		//ArrayList<Integer> component_list = new ArrayList<Integer>();
 		ArrayList<Long> component_list = new ArrayList<Long>();
 		for (int i=0; i<components.getLength(); i++) {
@@ -136,7 +139,7 @@ public class WKPFTableTask extends Task
 			}
 		}
 		return component_list;
-		
+
 	}
 
 	private void writeFile(String filename, ArrayList<Byte> data) {
@@ -150,6 +153,16 @@ public class WKPFTableTask extends Task
 		}
 	}
 
+	private ArrayList<Byte> makeAppId(Document doc) {
+		String appId = ((Element)doc.getElementsByTagName("appId").item(0)).getAttribute("name");
+		ArrayList<Byte> id_bytes = new ArrayList<Byte>();
+		byte[] bytes = appId.getBytes(Charset.forName("UTF-8"));
+		for (int i = 0; i < bytes.length; i++) {
+			id_bytes.add(bytes[i]);
+		}
+
+		return id_bytes;
+	}
 
 	private ArrayList<Byte> makeLinkTable(Document doc) {
 		NodeList links = ((Element)doc.getElementsByTagName("links").item(0)).getElementsByTagName("link");
@@ -269,7 +282,7 @@ public class WKPFTableTask extends Task
 
 		return initvalues_bytes;
 	}
-	
+
 	/**
 	 * Sets the source file name.
 	 * @param src source file name

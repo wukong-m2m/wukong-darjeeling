@@ -20,3 +20,4 @@ ant.djarchive_type_wkpf_linktable = 2
 ant.djarchive_type_wkpf_componentmap = 3
 ant.djarchive_type_wkpf_initvalues = 4
 ant.djarchive_type_ecocast_capsule_buffer = 5
+ant.djarchive_type_wkpf_appid = 6
