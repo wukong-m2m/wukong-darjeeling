@@ -83,7 +83,7 @@ def sortCandidates(wuObjects):
 #    )], links=[], heartbeatgroups=[])
 #############################
 
-def firstCandidate(logger, changesets, routingTable, locTree, flag = None):
+def firstCandidate(logger, changesets, routingTable, locTree, predicts=[], flag = None):
     set_wukong_status('Mapping')
     logger.clearMappingStatus() # clear previous mapping status
 
@@ -111,7 +111,7 @@ def firstCandidate(logger, changesets, routingTable, locTree, flag = None):
         except:
             #no mapping result
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            msg = 'Cannot find match for location query "'+ component.location+'" of wuclass "'+ component.type+ '".' 
+            msg = 'Cannot find match for location query "'+ component.location+'" of wuclass "'+ component.type+ '".'
             logger.warnMappingStatus(msg)
             set_wukong_status(msg)
             component.message = msg
@@ -124,7 +124,7 @@ def firstCandidate(logger, changesets, routingTable, locTree, flag = None):
             wuclassdef = WuObjectFactory.wuclassdefsbyname[component.type]
             node = locTree.getNodeInfoById(candidate)
             available_wuobjects = [wuobject for wuobject in node.wuobjects.values() if wuobject.wuclassdef.id == wuclassdef.id]
-            
+
             has_wuclass = wuclassdef.id in node.wuclasses.keys()
             wuobj_found = False
             for avail_wuobj in available_wuobjects:
@@ -137,7 +137,7 @@ def firstCandidate(logger, changesets, routingTable, locTree, flag = None):
                     avail_wuobj.mapped = True
                     wubj_found = True
                     break
-                    
+
             if has_wuclass and (not wuobj_found):    # create a new wuobject from existing wuclasses published from node
                 sensorNode = locTree.sensor_dict[node.id]
                 sensorNode.initPortList(forceInit = False)
@@ -146,9 +146,9 @@ def firstCandidate(logger, changesets, routingTable, locTree, flag = None):
                 wuobject.created = True
                 wuobject.mapped = True
                 component.instances.append(wuobject)
-                  
+
             elif (not wuobj_found) and node.type != 'native' and node.type != 'picokong' and node.type != 'virtualdevice' and node.id != 1 and wuclassdef.virtual==True:
-                # create a new virtual wuobject where the node 
+                # create a new virtual wuobject where the node
                 # doesn't have the wuclass for it
                 sensorNode = locTree.sensor_dict[node.id]
                 sensorNode.initPortList(forceInit = False)
@@ -157,7 +157,7 @@ def firstCandidate(logger, changesets, routingTable, locTree, flag = None):
                 wuobject.created = True
                 wuobject.mapped = True
                 component.instances.append(wuobject)
-                
+
         if len(component.instances) < component.group_size:
             msg = 'There is not enough candidates wuobjects from %r for component %s' % (candidates, component.type)
             set_wukong_status(msg)
@@ -165,7 +165,7 @@ def firstCandidate(logger, changesets, routingTable, locTree, flag = None):
             component.message = msg
             mapping_result = False
             continue
-        
+
         #this is ignoring ordering of policies, eg. location policy, should be fixed or replaced by other algorithm later--- Sen
         component.instances = sorted(component.instances, key=lambda wuObject: wuObject.virtual, reverse=False)
         # limit to min candidate if possible
@@ -176,7 +176,7 @@ def firstCandidate(logger, changesets, routingTable, locTree, flag = None):
             inst.wunode.port_list.remove(inst.port_number)
             WuObjectFactory.remove(inst.wunode, inst.port_number)
           inst.mapped = False
-            
+
         print ("mapped node id",[inst.wunode.id for inst in component.instances])
 
     # Done looping components
@@ -227,7 +227,7 @@ def Compare_changesets (new_changesets, old_changesets):
     for new_l in new_changesets.links:
         flag = 0
         for old_l in old_changesets.links:
-            if new_l.from_component.location == old_l.from_component.location and new_l.to_component.location == old_l.to_component.location and new_l.from_component.type == old_l.from_component.type and new_l.to_component.type == old_l.to_component.type:  
+            if new_l.from_component.location == old_l.from_component.location and new_l.to_component.location == old_l.to_component.location and new_l.from_component.type == old_l.from_component.type and new_l.to_component.type == old_l.to_component.type:
                 same.links.append(new_l)
                 old_changesets.links.remove(old_l)
                 flag = 1
@@ -312,11 +312,11 @@ def least_changed(logger, changesets, routingTable, locTree):
     else:
         mapping_result = firstCandidate(logger, changesets, routingTable, locTree)
         return mapping_result
- 
-    same, diff, extra_component, extra_links,conflict = Compare_changesets(changesets, past_changesets) 
+
+    same, diff, extra_component, extra_links,conflict = Compare_changesets(changesets, past_changesets)
     print "same: ", same, "\ndiff: ", diff, "\nextra link:", extra_links, "\nextra component:",extra_component
     #past_changesets = uninstall(past_changesets, locTree)
-    
+
     if diff.components != []:
         if conflict:
             print "wuobject conflict!"
@@ -331,7 +331,7 @@ def least_changed(logger, changesets, routingTable, locTree):
             del changesets.components[:]
             del changesets.links[:]
             del changesets.heartbeatgroups[:]
-            #add 
+            #add
             for tmp in diff.components:
                 changesets.components.append(tmp)
             for tmp in diff.links:
@@ -340,7 +340,7 @@ def least_changed(logger, changesets, routingTable, locTree):
                 changesets.heartbeatgroups.append(tmp)
 
             changesets.deployIDs.append(1)
-            #add extra links & component in changesets 
+            #add extra links & component in changesets
             if extra_component != []:
                 for tmp in extra_component:
                     if tmp not in changesets.components:
@@ -376,7 +376,7 @@ def least_changed(logger, changesets, routingTable, locTree):
 
             #dump_changesets(past_changesets)
             save_map("changesets.tmp",past_changesets)
-            
+
             #link count
             for link in same.links:
                 share_policy().link_count(link)
@@ -387,7 +387,7 @@ def least_changed(logger, changesets, routingTable, locTree):
     dump_changesets(changesets)
     return mapping_result
 
-#return True if object can be shared 
+#return True if object can be shared
 class share_policy(object):
     def __init__(self):
         try:
@@ -463,7 +463,7 @@ def dump_changesets(changesets):
     for link in changesets.links:
         print "from location:" , link.from_component.location, "memory location", link.from_component, "to location:", link.to_component.location, "memory location", link.to_component
         print "from type:", link.from_component.type, "to type:", link.to_component.type
-  #      component = link.to_component 
+  #      component = link.to_component
    #     print "location: ",component.location, "type:", component.type
 #   print "index:", component.index , "reaction-time", component.reaction_time, "group_size:" , component.group_size, "application_hashed_name" , component.application_hashed_name
         #########print "instances port number:",component.instances[0].port_number,"property cache", "vurtual",component.instances[0].virtual,"properties", component.instances[0].properties, "map",component.instances[0].mapped, "wunode", component.instances[0].wunode
@@ -505,7 +505,7 @@ def delete_application(logger, changesets, routingTable, locTree):
             else: #still used
                 remap.links.append(del_l)
         else: #have not shared
-            changesets.links.remove(del_l) 
+            changesets.links.remove(del_l)
             for old_l in past_changesets.links:
                 if (old_l.from_component.location + old_l.from_component.type + old_l.to_component.location + old_l.to_component.type) == tmp_str:
                     past_changesets.links.remove(old_l)
@@ -533,7 +533,7 @@ def delete_application(logger, changesets, routingTable, locTree):
     #find out links & update links' component
     for link in past_changesets.links:
         for location_tuple in tmp:
-            if link.from_component.location == location_tuple[0]: 
+            if link.from_component.location == location_tuple[0]:
                 if link not in remap.links:
                     remap.links.append(link)
 		if link.from_component.type == location_tuple[1]:
@@ -550,20 +550,19 @@ def delete_application(logger, changesets, routingTable, locTree):
             remap.components.append(link.from_component)
         if link.to_component not in remap.components:
             remap.components.append(link.to_component)
-                    
+
     #clear
     del changesets.components[:]
     del changesets.links[:]
     del changesets.heartbeatgroups[:]
-    #add 
+    #add
     for tmp in remap.components:
         changesets.components.append(tmp)
     for tmp in remap.links:
         changesets.links.append(tmp)
     for tmp in remap.heartbeatgroups:
         changesets.heartbeatgroups.append(tmp)
-    
+
     save_map("changesets.tmp",past_changesets)
     save_map("shared_links.tmp",shared_links)
     return True
-

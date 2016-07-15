@@ -648,13 +648,18 @@ class remap_application(tornado.web.RequestHandler):
             self.content_type = 'application/json'
             self.write({'status':1, 'mesg': 'Cannot find the application'})
         else:
+            platforms = ['avr_mega2560']
             params = json.loads(self.request.body)
             predicts = params['predicts']
-            # TODO add predict to mapper
+            mapping_result = wkpf.globals.applications[app_ind].map(wkpf.globals.location_tree, [])
+            wkpf.globals.set_active_application_index(app_ind)
+            wusignal.signal_deploy(platforms)
+
             self.content_type = 'application/json'
             self.write({
                 'status':0,
                 'version': wkpf.globals.applications[app_ind].version})
+
 
 class map_application(tornado.web.RequestHandler):
   def post(self, app_id):
