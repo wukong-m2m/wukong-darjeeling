@@ -159,7 +159,8 @@ def firstCandidate(logger, changesets, routingTable, locTree, predicts=[], flag 
                 component.instances.append(wuobject)
 
         if len(component.instances) < component.replica:
-            msg = 'There is not enough candidates wuobjects from %r for component %s' % (candidates, component.type)
+            msg = 'There is not enough replica wuobjects from %r for component %s' % (candidates, component.type)
+            msg += ' %d is found, but %d is needed' % (len(component.instances), int(component.replica))
             set_wukong_status(msg)
             logger.warnMappingStatus(msg)
             component.message = msg
