@@ -683,6 +683,7 @@ class map_application(tornado.web.RequestHandler):
           'instanceId': component.index,
           'location': component.location,
           'group_size': component.group_size,
+          'replica' : component.replica,
           'name': component.type,
           'msg' : component.message,
           'instances': []

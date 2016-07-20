@@ -294,12 +294,13 @@ class WuApplicationNew:
                     self.changesets.links.append(wuLinkMap[hash_value])
 
 class WuComponent:
- 
-  def __init__(self, component_index, location, group_size, reaction_time,
+
+  def __init__(self, component_index, location, group_size, replica, reaction_time,
           type, application_hashed_name, properties=None):
     self.index = component_index
     self.location = location
     self.group_size = group_size # int
+    self.replica = replica
     self.reaction_time = reaction_time # float
     self.type = type # wuclass name
     self.application_hashed_name = application_hashed_name
@@ -310,7 +311,7 @@ class WuComponent:
     self.instances = [] # WuObjects allocated on various Nodes after mapping
     self.message = ""
     self.heartbeatgroups = []
-    
+
 class WuLink:
   def __init__(self, from_component, from_property_name,
           to_component, to_property_name):
@@ -324,7 +325,7 @@ class WuLink:
 
 ########### in db #####################
 class WuObjectFactory:
- 
+
   wutypedefs = {}
   wuclassdefsbyid = {}
   wuclassdefsbyname = {}
@@ -338,7 +339,7 @@ class WuObjectFactory:
   def removeWuObject(cls,wunode, port_number):
     del wunode.wuobjects[port_number]
     return True
-  
+
   @classmethod
   def createWuPropertyDef(cls, id, name, wutype_name, default_value,  access, wuclassdef):
     wutype = None
@@ -349,19 +350,19 @@ class WuObjectFactory:
     wuprop = WuPropertyDef(id, name, wutype, default_value,  access, wuclassdef)
     wuclassdef.properties[name]=wuprop
     return wuprop
-    
+
   @classmethod
   def createWuTypeDef(cls, name, type,values=None):
     cls.wutypedefs[name] = WuTypeDef(name,type,values)
     return cls.wutypedefs[name]
   @classmethod
   def createWuClassDef(cls, id, name, virtual, type, properties = None):
-    cls.wuclassdefsbyid[id] = WuClassDef( id, name, virtual, type, properties) 
+    cls.wuclassdefsbyid[id] = WuClassDef( id, name, virtual, type, properties)
     cls.wuclassdefsbyname[name] = cls.wuclassdefsbyid[id]
     return cls.wuclassdefsbyname[name]
 
 class WuClassDef:
-  
+
   # Maintaining an ordered list for save function
   #properties, a dictionary of name:wupropertydef
   def __init__(self, id, name, virtual, type, properties = None):
@@ -372,7 +373,7 @@ class WuClassDef:
     self.properties = properties    #dictionary of wuproperties
     if self.properties == None:
       self.properties = {}
-  
+
   def createWuProperty(self, name,
         default_value, wutype, access, wuclassdef):
     self.properties[name] = WuPropertyDef(id, name, default_value, wutype, access, self)
@@ -380,7 +381,7 @@ class WuClassDef:
 
 class WuPropertyDef:
 
-  def __init__(self,  id, name,wutype, 
+  def __init__(self,  id, name,wutype,
       default_value,  access, wuclassdef):
     self.id = id
     self.name = name
@@ -399,12 +400,12 @@ class WuTypeDef:
       self.values = values
       if self.values == None:
         self.values = []
-      
+
 
 
 # Network info
 class WuNode:
-  
+
   node_dict = {}
   locations = {}
 
@@ -415,7 +416,7 @@ class WuNode:
 	    self.location = WuNode.locations[id]
 	except:
 	    self.location = 'WuKong'
-    else:	    
+    else:
         self.location = location
     self.wuclasses = wuclassdefs  #wuclasses[id]
     self.wuobjects = wuobj    #wuobjects[port]
@@ -426,8 +427,8 @@ class WuNode:
     self.energy = energy
     self.type = type
     WuNode.node_dict[id] = self
-  
-  def dump(self):   
+
+  def dump(self):
     stri = ''
     stri += "id:"+str(self.id)+'\n'
     stri += "location:"+ self.location+'\n'
@@ -446,7 +447,7 @@ class WuNode:
     return WuNode.node_dict.values()
 
   @classmethod
-  def dumpXML(cls):   
+  def dumpXML(cls):
     root = ElementTree.Element('Nodes')
     for id, node in cls.node_dict.items():
         node_element = ElementTree.SubElement(root, 'Node')
@@ -455,14 +456,14 @@ class WuNode:
         location_element = ElementTree.SubElement(node_element, "Location")
         location_element.attrib['length'] = str(len(node.location))
         location_element.attrib['content'] = str(node.location)
-        
+
         wuclasslist_element = ElementTree.SubElement(node_element,"WuClassList")
         wuclasslist_element.attrib['length'] = str(len(node.wuclasses))
         for wuclassid, wuclass in  node.wuclasses.items():
             wuclass_element = ElementTree.SubElement(wuclasslist_element,"WuCLass")
             wuclass_element.attrib['id'] = str(wuclassid)
             wuclass_element.attrib['virtual'] = str(wuclass.virtual)
-        
+
         wuobjectlist_element = ElementTree.SubElement(node_element,"WuObjectList")
         for port, wuobject in  node.wuobjects.items():
             wuobject_element = ElementTree.SubElement(wuobjectlist_element,"WuObject")
@@ -484,10 +485,10 @@ class WuNode:
     if id in cls.node_dict.keys():
       return cls.node_dict[id]
     return None
-  
+
   @classmethod
   def saveNodes(cls, filename="../LocalData/nodes.xml"):#for debug now, will expand to support reconstructing nodes from the dump ---- Sen
-      
+
     fin = open(filename,"w")
     fin.write( WuNode.dumpXML())
     fin.close()
@@ -511,7 +512,7 @@ class WuNode:
       except Exception:
           print (filename,'does not exist, initial list is empty!')
           return cls.node_dict.values()
-      
+
       nodes = nodedom.getElementsByTagName("Node")
       for node_ele in nodes:
           nodeid = int(node_ele.getAttribute("id"))
@@ -522,14 +523,14 @@ class WuNode:
           node = WuNode(nodeid, location, wuclasses, wuobjects,type=nodetype) #note: wuclasses, pass by reference, change in original list is also change in node
           if node_ele.hasChildNodes():
               for prop_ele in node_ele.childNodes:
-                  if prop_ele.nodeType != prop_ele.ELEMENT_NODE:    
+                  if prop_ele.nodeType != prop_ele.ELEMENT_NODE:
                       continue
                   if prop_ele.tagName == "Location":
                       node.location = prop_ele.getAttribute("content")
 		      WuNode.locations[nodeid] = node.location
                   if prop_ele.tagName == "WuClassList":
                       for wuclass_ele in prop_ele.childNodes:
-                          if wuclass_ele.nodeType != wuclass_ele.ELEMENT_NODE:    
+                          if wuclass_ele.nodeType != wuclass_ele.ELEMENT_NODE:
                               continue
                           wuclass_id = int(wuclass_ele.getAttribute("id"), 0)
                           virtual = True if wuclass_ele.getAttribute("virtual").lower()=="true" else False
@@ -544,7 +545,7 @@ class WuNode:
                           wuclasses[wuclass_id] = wuclassdef
                   if prop_ele.tagName == "WuObjectList":
                       for wuobj in prop_ele.childNodes:
-                          if wuobj.nodeType != wuobj.ELEMENT_NODE:    
+                          if wuobj.nodeType != wuobj.ELEMENT_NODE:
                               continue
                           port_number = int(wuobj.getAttribute("port"), 0)
                           wuclass_id = int(wuobj.getAttribute("id"), 0)
@@ -557,7 +558,7 @@ class WuNode:
                               return
                           wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number, virtual)
         #                  for wuprop in wuobj.childNodes:
-         #                       if wuobj.nodeType != wuobj.ELEMENT_NODE:    
+         #                       if wuobj.nodeType != wuobj.ELEMENT_NODE:
           #                          continue
            #                     prop_name = wuprop.getAttribute("name")
             #                    prop_value = int(wuprop.getAttribute("value"),0)
@@ -565,8 +566,8 @@ class WuNode:
 
       #add the virtual nodes
       cls.node_dict = dict(cls.node_dict.items() + WuSystem.getVirtualNodes().items())
-      return cls.node_dict.values()                              
-      
+      return cls.node_dict.values()
+
   def isResponding(self):
     return len(self.wuclasses) > 0 or len(self.wuobjects) > 0
 
@@ -593,7 +594,7 @@ class WuObject:
       new_wuprop = copy.deepcopy(wuprop)
       new_wuprop.value = prop_value
       self.properties[prop_name] = new_wuprop
-      
-  
+
+
   def getPropertyByName(self, name):
     return property_values[name]

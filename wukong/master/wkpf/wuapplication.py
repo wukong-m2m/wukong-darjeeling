@@ -201,6 +201,11 @@ class WuApplication:
           else:
             location = '/'+LOCATION_ROOT
 
+          if componentTag.getElementsByTagName('replica'):
+            replica = componentTag.getElementsByTagName('replica')[0].getAttribute('requirement')
+          else:
+            replica = 1
+
           if componentTag.getElementsByTagName('group_size'):
             group_size = int(componentTag.getElementsByTagName('group_size')[0].getAttribute('requirement'))
           else:
@@ -235,14 +240,14 @@ class WuApplication:
             #wucomponent already appears in other pages, merge property requirement, suppose location etc are the same
             self.wuComponents[index].properties = dict(self.wuComponents[index].properties.items() + properties.items())
           else:
-            component = WuComponent(index, location, group_size, reaction_time, type, application_hashed_name, properties)
+            component = WuComponent(index, location, group_size, replica, reaction_time, type, application_hashed_name, properties)
             componentInstanceMap[componentTag.getAttribute('instanceId')] = component
             self.wuComponents[componentTag.getAttribute('instanceId')] = component
             self.changesets.components.append(component)
             self.instanceIds.append(index)
 
       # add server as component in node 0
-      component = WuComponent(1, '/'+LOCATION_ROOT, 1, 2.0, 'Server', 0, {})
+      component = WuComponent(1, '/'+LOCATION_ROOT, 1, 1, 2.0, 'Server', 0, {})
       componentInstanceMap[0] = component
       self.wuComponents[0] = component
       self.changesets.components.append(component)
