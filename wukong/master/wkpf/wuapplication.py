@@ -202,7 +202,7 @@ class WuApplication:
             location = '/'+LOCATION_ROOT
 
           if componentTag.getElementsByTagName('replica'):
-            replica = componentTag.getElementsByTagName('replica')[0].getAttribute('requirement')
+            replica = int(componentTag.getElementsByTagName('replica')[0].getAttribute('requirement'))
           else:
             replica = 1
 
