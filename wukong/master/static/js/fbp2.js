@@ -856,6 +856,13 @@ function FBP_parseXMLPage(comps)
         if (loc.length > 0) {
             meta.location = loc.attr("requirement").replace('&amp;','&').replace('&tilde;','~');
         }
+
+        replica = c.find("replica");
+        if (replica.length > 0) {
+          meta.replica = replica.attr("requirement");
+        } else {
+          meta.replica = 1;
+        }
         //console.log(c.find("group_size").attr("requirement"));
         group_size = c.find("group_size");
         if (group_size.length > 0) {
@@ -1126,6 +1133,9 @@ function FBP_toXML(gnodes,glines)
             }
             if (source.group_size && source.group_size != '') {
                 xml = xml + '        <group_size requirement="'+source.group_size+'" />\n';
+            }
+            if (source.replica && source.replica != '') {
+                xml = xml + '        <replica requirement="'+source.replica+'" />\n';
             }
             if (source.reaction_time && source.reaction_time != '') {
                 xml = xml + '        <reaction_time requirement="'+source.reaction_time+'" />\n';

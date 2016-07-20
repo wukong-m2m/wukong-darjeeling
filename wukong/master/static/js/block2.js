@@ -76,6 +76,7 @@ Block.prototype.init=function() {
 //  this.setPosition(Math.floor((Math.random()*100)),Math.floor((Math.random()*50)));
 //  this.setSize(120,100);
     this.setLocation('')
+    this.replica = 1;
     this.group_size = 1;
     this.reaction_time = 1;
     this.signals=[];
@@ -130,6 +131,7 @@ Block.copyData=function(dest,src) {
     dest.location = src.location;
     dest.group_size = src.group_size;
     dest.reaction_time = src.reaction_time;
+    dest.replica = src.replica;
     dest.signals = src.signals;
     dest.monitor = src.monitor;
     dest.sigProper = src.signals;
@@ -173,6 +175,7 @@ Block.prototype.serialize=function(obj) {
     obj.h = size[1];
     obj.type = this.type;
     obj.location = this.location;
+    obj.replica = this.replica;
     obj.group_size = this.group_size;
     obj.reaction_time = this.reaction_time;
     obj.signals = this.sigProper;
@@ -206,6 +209,7 @@ Block.restore=function(a) {
     //HY:assign name
     n.name = a.name || a.type
     n.setLocation(a.location);
+    n.replica = a.replica;
     n.group_size = a.group_size;
     n.reaction_time = a.reaction_time;
     n.sigProper = a.sigProper;
@@ -807,6 +811,7 @@ Block.prototype.renderPropertyEditForm = function(){
     tags.push('<div><button target="tr" class="foldHandler rotate90">⫸</button><table class="form">')
     tags.push('<tr><th>Location:</th><td><input name="location_path" value="'+this.location_path+'" id="location_path"><button id="chooseTreeNode">Tree Node</button></td></tr>')
     tags.push('<tr><th>Function:</th><td><input name="location_func" value="'+this.location_func+'" id="location_func"><button id="showLocationPolicyEditor">Location Policy Editor</button></td></tr>')
+    tags.push('<tr><th>Replica:</th><td><input name="replica" value="'+ this.replica+'" id="replica"></td></tr>')
     tags.push('</table></div>')
     tags.push('<div><button target="tr" class="foldHandler rotate90">⫸</button><table class="form">')
     var slots = this.slots;
@@ -891,8 +896,9 @@ Block.prototype.renderPropertyEditForm = function(){
                 self.location = self.location_path+'#'+self.location_func
             }
             else if (name=='name') {
-                document.querySelector('.block-name[blockid="'+self.id+'"]').innerText = self.name
+                document.querySelector('.block-name[blockid="'+self.id+'"]').innerText = self.name;
             }
+
         }
         top.notifyApplicationContentTainted(true)
     })
@@ -969,7 +975,7 @@ Block.prototype.renderPropertyEditForm = function(){
     })
 }
 
-Block.prototype.renderAnnotationPropertyEditForm = function(){
+  Block.prototype.renderAnnotationPropertyEditForm = function(){
     var self = this
     var tags = ['<table class="form">']
     tags.push('<tr><td><textarea style="width:85%;height:150px">')
