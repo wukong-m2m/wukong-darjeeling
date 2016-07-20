@@ -28,9 +28,13 @@ uint8_t wkpf_process_initvalues_list(dj_di_pointer initvalues);
 // if there's no initvalue, this function won't create an entry,
 // so it's a noop in that case)
 void wkpf_update_initvalue_in_flash(wuobject_t *wuobject, uint8_t object_property_number);
-uint8_t wkpf_update_link(uint16_t orig_src_component_id, uint8_t orig_src_property_id, uint16_t orig_dest_component_id, uint8_t orig_dest_property_id, 
+uint8_t wkpf_update_link(uint16_t orig_src_component_id, uint8_t orig_src_property_id, uint16_t orig_dest_component_id, uint8_t orig_dest_property_id,
                                   uint16_t new_src_component_id, uint8_t new_src_property_id, uint16_t new_dest_component_id, uint8_t new_dest_property_id);
-uint8_t wkpf_propagate_link_change( uint16_t orig_src_component_id, uint8_t orig_src_property_id, 
-                                                                uint16_t orig_dest_component_id, uint8_t orig_dest_property_id, uint16_t new_src_component_id, 
+uint8_t wkpf_propagate_link_change( uint16_t orig_src_component_id, uint8_t orig_src_property_id,
+                                                                uint16_t orig_dest_component_id, uint8_t orig_dest_property_id, uint16_t new_src_component_id,
                                                                 uint8_t new_src_property_id, uint16_t new_dest_component_id, uint8_t new_dest_property_id);
+uint8_t wkpf_update_map_in_flash(uint16_t component_id, uint32_t orig_node_id, uint8_t orig_port_number,
+                                uint32_t new_node_id, uint8_t new_port_number);
+
+
 #endif // WKPF_LINKSH
