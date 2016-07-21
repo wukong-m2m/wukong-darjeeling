@@ -50,6 +50,7 @@ extern uint8_t wkpf_get_property_status(wuobject_t *wuobject, uint8_t property_n
 extern uint8_t wkpf_property_needs_initialisation_push(wuobject_t *wuobject, uint8_t property_number);
 extern uint8_t wkpf_update_map_in_flash(uint16_t component_id, uint32_t orig_node_id, uint8_t orig_port_number, uint32_t new_node_id, uint8_t new_port_number);
 extern uint8_t wkpf_update_link_in_flash(uint8_t* orig_link, uint8_t* new_link);
+extern uint16_t wkpf_get_link_counter(uint16_t link_id);
 
 extern bool wkpf_property_status_is_dirty(uint8_t status);
 extern void wkpf_propagating_dirty_property_failed(wuobject_property_t *property);
