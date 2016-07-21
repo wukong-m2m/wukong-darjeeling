@@ -105,6 +105,8 @@ uint16_t wkpf_add_link_counter(uint16_t link_id) {
     if (link_id < wkpf_number_of_links && link_id < MAX_LINK_NUMBER) {
         link_counter[link_id]++;
     }
+
+    return link_counter[link_id];
 }
 
 //src_node is the first component who wants to set a lock created by component_id
@@ -595,7 +597,7 @@ uint8_t wkpf_update_map_in_flash(uint16_t component_id, uint32_t orig_node_id, u
         if (WKPF_COMPONENT_ENDPOINT_NODE_ID(component_id, i) == orig_node_id_addr
                 && WKPF_COMPONENT_ENDPOINT_PORT(component_id, i) == orig_port_number){
             wkreprog_open(filenumber, WKPF_COMPONENT_ADDRESS(i) + 3 + 5 * i);
-            wkreprog_write(4, (uint32_t*)&new_node_id_addr);
+            wkreprog_write(4, (uint8_t*)&new_node_id_addr);
             wkreprog_write(1, &new_port_number);
             wkreprog_close();
             update = true;

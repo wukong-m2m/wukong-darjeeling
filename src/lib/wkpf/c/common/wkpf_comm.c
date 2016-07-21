@@ -592,7 +592,7 @@ void wkpf_comm_handle_message(void *data) {
 		}
 		break;
 		case WKPF_COMM_CMD_CHANGE_MAP: {
-			DEBUG_LOG("Received change component map request\n");
+			DEBUG_LOG(DBG_WKCOMM, "Received change component map request\n");
 			uint16_t component_id;
 			uint32_t orig_node, new_node; // Id is 32 bit for MPTN now
 			uint8_t orig_port, new_port;
@@ -615,7 +615,7 @@ void wkpf_comm_handle_message(void *data) {
 				response_cmd = WKPF_COMM_CMD_ERROR_R;
 				response_size = 1;
 			} else {
-				DEBUG_LOG("Successully change component map\n");
+				DEBUG_LOG(DBG_WKCOMM, "Successully change component map\n");
 				payload[0] = retval;
 				response_size = 1;
 				response_cmd = WKPF_COMM_CMD_CHANGE_MAP_R;
@@ -677,7 +677,7 @@ void wkpf_comm_handle_message(void *data) {
 			retval = wkpf_get_link_counter(link_id);
 			if (retval != - 1) {
 				payload[0] = link_id >> 8;
-				payload[1] = link_id
+				payload[1] = link_id;
 				payload[2] = retval >> 8;
 				payload[3] = retval;
 				response_cmd = WKPF_COMM_CMD_GET_LINK_COUNTER_R;
@@ -690,7 +690,7 @@ void wkpf_comm_handle_message(void *data) {
 		}
 		break;
 		case WKPF_COMM_CMD_GET_DEVICE_STATUS: {
-			DEBUG_LOG("Received get device status\n");
+			DEBUG_LOG(DBG_WKCOMM, "Received get device status\n");
 			payload[0] = WKPF_OK;
 			response_cmd = WKPF_COMM_CMD_GET_DEVICE_STATUS_R;
 			response_size = 1;
