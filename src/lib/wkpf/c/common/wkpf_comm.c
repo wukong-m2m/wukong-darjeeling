@@ -674,7 +674,7 @@ void wkpf_comm_handle_message(void *data) {
 			uint16_t link_id;
 			link_id = (uint16_t)(payload[0]);
 			link_id = (uint16_t)(link_id<<8) + (uint16_t)(payload[1]);
-			retval = wkpf_get_link_counter(link_id);
+			uint16_t retval = wkpf_get_link_counter(link_id);
 			if (retval != - 1) {
 				payload[0] = link_id >> 8;
 				payload[1] = link_id;
