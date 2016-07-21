@@ -215,8 +215,9 @@ def firstCandidate(logger, changesets, routingTable, locTree, predicts=[], flag 
         save_map("changesets.tmp",changesets)
         changesets.deployIDs.append(1)
         for component in changesets.components:
-            if component.instances[0].wunode.id not in changesets.deployIDs:
-                changesets.deployIDs.append(component.instances[0].wunode.id)
+            for endpoint in component.instances:
+                if endpoint.wunode.id not in changesets.deployIDs:
+                    changesets.deployIDs.append(endpoint.wunode.id)
     return mapping_result
 
 def Compare_changesets (new_changesets, old_changesets):
