@@ -607,8 +607,8 @@ class WuClass:
                             self.addDefaultProperties(int(default_unicode))
                         elif self.WKPF_GET_PROPERTY_DATATYPE(x) == WKPF.DATATYPE_ARRAY:
                             self.addDefaultProperties([int(default_unicode)])
-                        #elif self.WKPF_GET_PROPERTY_DATATYPE(x) == WKPF.DATATYPE_STRING:
-                        #    self.addDefaultProperties(str(default_unicode))
+                        elif self.WKPF_GET_PROPERTY_DATATYPE(x) == WKPF.DATATYPE_STRING:
+                            self.addDefaultProperties(str(default_unicode))
                         elif self.WKPF_GET_PROPERTY_DATATYPE(x) == WKPF.DATATYPE_ThresholdOperator or self.WKPF_GET_PROPERTY_DATATYPE(x) == WKPF.DATATYPE_LogicalOperator or self.WKPF_GET_PROPERTY_DATATYPE(x) == WKPF.DATATYPE_MathOperator or self.WKPF_GET_PROPERTY_DATATYPE(x) == WKPF.DATATYPE_Pin:
                             enum_val_dict = self.getWuTypedefEnum(datatype_unicode)
                             enum_val      = enum_val_dict[str(default_unicode).upper()]
