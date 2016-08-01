@@ -173,7 +173,7 @@ class IDService(object):
 
     def _alloc_address(self, address, uuid):
         assert isinstance(address, (int, long)), "_alloc_address %s must be integer instead of %s" % (str(address), type(address))
-        assert MPTN.IS_ID_IN_NETWORK(address, self._network), "_alloc_address %s cannot excede network %s" % (MPTN.ID_TO_STRING(address), str(self._network))
+        # assert MPTN.IS_ID_IN_NETWORK(address | self._id_prefix, self._network), "_alloc_address %s cannot excede network %s" % (MPTN.ID_TO_STRING(address), str(self._network))
         self._addr_db[address] = base64.b64encode(uuid)
 
     def _dealloc_address(self, address):
@@ -241,6 +241,7 @@ class IDService(object):
         discovered_nodes_set = Set(map(lambda x: self._id_prefix | x, discovered_nodes))
         to_remove_nodes = list(addr_db_set - discovered_nodes_set)
         if len(to_remove_nodes) == 0: return
+        # logger.debug("==== address set " + str(addr_db_set) + " ==== discovered nodes "+ str(discovered_nodes_set) + "==== nodes to be removed " + str(to_remove_nodes))
 
         for to_remove_node_addr in to_remove_nodes:
             logger.debug("=============Remove not found existed node 0x%X" % (to_remove_node_addr))

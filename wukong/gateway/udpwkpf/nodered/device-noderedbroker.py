@@ -1,3 +1,10 @@
+#
+#
+# 2016/4/25
+# Change:
+#   1. replace "Topic" with "Subject"
+#   2. Set the type of Subject to be string, (Topic is integer)
+#
 import sys,os,time,cjson,traceback,weakref
 sys.path.insert(0,os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
 from udpwkpf import WuClass,Device
@@ -37,16 +44,16 @@ class MessageQueue(object):
         now = time.time()
         item_tobe_remove = []
         for item in self.queue:
-            
-            topic = item['payload']['topic']
-            
+
+            subject = item['payload']['subject']
+
             if now - item['ts'] > self._message_ttl:
                 item_tobe_remove.append(item)
                 continue
                 debug('drop out message ',item['payload'])
 
             try:
-                listeners = self.listeners[topic]
+                listeners = self.listeners[subject]
             except KeyError:
                 listeners = []
 
@@ -55,7 +62,7 @@ class MessageQueue(object):
                     listener(item)
                 except:
                     debug('NodeRedBroker Listener Error:%s' % traceback.format_exc())
-            
+
             item_tobe_remove.append(item)
             debug('cleanup out message',item['payload'])
 
@@ -65,20 +72,20 @@ class MessageQueue(object):
         debug('%s message removed' % len(item_tobe_remove),', queue length',len(self.queue),',listener length',len(self.listeners))
         self._timer = None
 
-    def addListener(self,topic,_callable):
+    def addListener(self,subject,_callable):
         try:
-            self.listeners[topic].append(_callable)
+            self.listeners[subject].append(_callable)
         except KeyError:
-            self.listeners[topic] = [_callable]
+            self.listeners[subject] = [_callable]
     def removeListener(self,_callable):
-        remove_topic = False
-        for topic,callables in self.listeners.iteritems():
+        remove_subject = False
+        for subject,callables in self.listeners.iteritems():
             if _callable in callables:
                 callables.remove(_callable)
-                remove_topic = len(callables)==0
+                remove_subject = len(callables)==0
                 break
-        if remove_topic:
-            del self.listeners[topic]
+        if remove_subject:
+            del self.listeners[subject]
         debug('after removed listetners:%s' % len(self.listeners))
 global message_out_queue
 message_out_queue = MessageQueue()
@@ -94,9 +101,9 @@ class NodeREDSignalSender(WuClass):
         debug('NodeREDSignalSender update',[obj,pID,val])
         if pID==0:
             #
-            # This is setting the topic, doesn't need to send to remote, 
+            # This is setting the subject, doesn't need to send to remote,
             #
-            setattr(obj,'topic',val)
+            setattr(obj,'subject',str(val))
         else:
             global message_out_queue
             message_out_queue.addMessage(self.createMessage(obj,pID,val))
@@ -114,7 +121,7 @@ class NodeREDSignalSender(WuClass):
         }
         message = {
             'payload':{
-                'topic':getattr(obj,'topic'),
+                'subject':getattr(obj,'subject'),
                 'type':signalType[pID],
                 'value':val
             },
@@ -130,17 +137,17 @@ class NodeREDSignalReceiver(WuClass):
     subscribers = weakref.WeakSet()
     def __init__(self):
         WuClass.__init__(self)
-        self.topic = 0 ## default topic
+        self.subject = '0' ## default subject
         self.loadClass('NodeREDSignalReceiver')
     def update(self,obj,pID,val):
         debug('NodeREDSignalReceiver update',[obj,pID,val])
-        WuClass.update(self,obj,pID,val)
+        #WuClass.update(self,obj,pID,val)
         if pID==0:
             #
-            # This call want to set the topic of the object
+            # This call want to set the subject of the object
             #
-            setattr(obj,'topic',val)
-            
+            setattr(obj,'subject',str(val))
+
             if not obj in NodeREDSignalReceiver.subscribers:
                 NodeREDSignalReceiver.subscribers.add(obj)
             return
@@ -158,12 +165,12 @@ class NodeREDSignalReceiver(WuClass):
             'short':2,
             'string':3,
         }
-        
+
         #
-        # convert the topic to integer, currently the integer topic is supported only
+        # convert the subject to string
         #
-        topic = int(obj['topic'])
-        
+        subject = str(obj['subject'])
+
         pID = signalIndexOfType.get(obj['type'],None)
         if pID is None:
             pID = signalIndexOfType['string']
@@ -173,11 +180,11 @@ class NodeREDSignalReceiver(WuClass):
         #
         # notify subscribers
         #
-        debug('dispatching topic:%s property index:%s value:%s ' % (topic,pID,value))
+        debug('dispatching subject:%s property index:%s value:%s ' % (subject,pID,value))
         for subscriber in cls.subscribers:
-            if subscriber.topic == topic:
+            if subscriber.subject == subject:
                 subscriber.setProperty(pID,value)
-        return 
+        return
 
 class NodeREDBroker(Device):
     def __init__(self,gtwip,selfip):
@@ -200,7 +207,7 @@ class WuKongNodeREDProtocol(Protocol):
     def __init__(self):
         self.last_message_out_ts = 0
         self.last_message_in_ts = 0
-        self.subscribed_topic = None
+        self.subscribed_subject = None
         self.data = ''
     def dataReceived(self, data):
         #self.transport.write(data)
@@ -213,18 +220,18 @@ class WuKongNodeREDProtocol(Protocol):
                 try:
                     obj = cjson.decode(chunk)
                     debug('message in %s' % obj)
-                    
-                    if obj.has_key('subscribe') and ((self.subscribed_topic is None) or (self.subscribed_topic !=obj['subscribe'])):
+
+                    if obj.has_key('subscribe') and ((self.subscribed_subject is None) or (self.subscribed_subject !=obj['subscribe'])):
                         #
-                        # This is a request to subscribe some topic
+                        # This is a request to subscribe some subject
                         #
                         global message_out_queue
-                        debug('subscribe topic %s' % obj['topic'])
-                        if self.subscribed_topic is not None:
+                        debug('subscribe subject %s' % obj['subject'])
+                        if self.subscribed_subject is not None:
                             message_out_queue.removeListener(self.onMessageUpdated)
-                        self.subscribed_topic = obj['topic']
-                        message_out_queue.addListener(obj['topic'],self.onMessageUpdated)
-                    elif obj.has_key('topic'):
+                        self.subscribed_subject = int(obj['subject'])
+                        message_out_queue.addListener(obj['subject'],self.onMessageUpdated)
+                    elif obj.has_key('subject'):
                         #
                         # This is an input data
                         #
@@ -235,7 +242,7 @@ class WuKongNodeREDProtocol(Protocol):
                         #
                         debug('Message Unhandled:%s' % obj)
                     #
-                    # drop the content of the residue (un-handled chunk) buffer 
+                    # drop the content of the residue (un-handled chunk) buffer
                     # if we can succeed to parse a chunk.
                     # this is kind of cleanup, mostly the newline might be cleaned
                     #
@@ -263,7 +270,7 @@ class WuKongNodeREDProtocol(Protocol):
             self.transport.write(content)
             self.last_message_out_ts = item['ts']
             debug('sending %s' % content)
-        
+
 
 class WuKongNodeREDProtocolFactory(Factory):
     def __init__(self,device):
@@ -280,12 +287,12 @@ def startServerForNodeRED(noderedBroker,port=5101):
 #
 global noderedBroker
 def main(gtwip,selfip,options):
-    
+
     global noderedBroker
     noderedBroker = NodeREDBroker(gtwip,selfip)
-    
+
     startServerForNodeRED(noderedBroker,port=5101)
-   
+
     if options.simulator:
         reactor.callLater(1.5,simulator)
 
@@ -320,42 +327,42 @@ def simulator():
     import random
     global noderedBroker
     debug("Simulator is running")
-    
-    # create a wuobject 
+
+    # create a wuobject
     #NodeREDSignalSender_cls = noderedBroker.classes[21001]
     #NodeREDSignalReceiver_cls = noderedBroker.classes[21002]
-    
+
     # 2 sender
     noderedBroker.addObject(21001)
     noderedBroker.addObject(21001)
     # 1 receiver
     noderedBroker.addObject(21002)
-    
-    TOPIC_PROPERTY = 0
+
+    SUBJECT_PROPERTY = 0
     BOOLEAN_SIGNAL_PROPERTY = 1
     INTEGER_SINGAL_PROPERTY = 2
     STRING_SIGNAL_PROPERTY = 3
 
     SIGNAL_SENDER = 1
-    SIGNAL_SENDER1_TOPIC_VALUE = 1
-    SIGNAL_SENDER2_TOPIC_VALUE = 3
+    SIGNAL_SENDER1_SUBJECT_VALUE = 'A-Subject'
+    SIGNAL_SENDER2_SUBJECT_VALUE = 'C-Subject'
 
     SIGNAL_RECEIVER = 2
-    SIGNAL_RECEIVER_TOPIC_VALUE = 2
+    SIGNAL_RECEIVER_SUBJECT_VALUE = 'B-Subject'
 
     # does not work, because wkpf.components is empty []
     #noderedBroker.setProperty(SIGNAL_SENDER,TOPIC_PROPERTY,SIGNAL_SENDER_TOPIC_VALUE)
     #noderedBroker.setProperty(SIGNAL_RECEIVER,TOPIC_PROPERTY,SIGNAL_RECEIVER_TOPIC_VALUE)
 
-    # set topic
+    # set subject
     signal_sender1_object = noderedBroker.objects[0]
-    signal_sender1_object.cls.update(signal_sender1_object,TOPIC_PROPERTY,SIGNAL_SENDER1_TOPIC_VALUE)
+    signal_sender1_object.cls.update(signal_sender1_object,SUBJECT_PROPERTY,SIGNAL_SENDER1_SUBJECT_VALUE)
 
     signal_sender2_object = noderedBroker.objects[1]
-    signal_sender2_object.cls.update(signal_sender2_object,TOPIC_PROPERTY,SIGNAL_SENDER2_TOPIC_VALUE)
+    signal_sender2_object.cls.update(signal_sender2_object,SUBJECT_PROPERTY,SIGNAL_SENDER2_SUBJECT_VALUE)
 
     def send_signal():
-        v = random.randint(0,100)%3
+        v = 0 # random.randint(0,100)%3
         def send1():
             signal_sender1_object = noderedBroker.objects[0]
             value = random.randint(0,100)
@@ -372,12 +379,12 @@ def simulator():
             send1()
             send2()
         reactor.callLater(3,send_signal)
-    
+
     reactor.callLater(1,send_signal)
-    
+
     def receiving_signal():
         signal_receiver_object = noderedBroker.objects[2]
-        signal_receiver_object.cls.update(signal_receiver_object,TOPIC_PROPERTY,SIGNAL_RECEIVER_TOPIC_VALUE)
+        signal_receiver_object.cls.update(signal_receiver_object,SUBJECT_PROPERTY,SIGNAL_RECEIVER_SUBJECT_VALUE)
 
     receiving_signal()
 

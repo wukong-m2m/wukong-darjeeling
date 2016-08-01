@@ -3,7 +3,7 @@ from udpwkpf import WuClass, Device
 import sys
 from udpwkpf_io_interface import *
 
-Button_Pin = 5
+Button_Pin = 7
 
 class Button(WuClass):
     def __init__(self):

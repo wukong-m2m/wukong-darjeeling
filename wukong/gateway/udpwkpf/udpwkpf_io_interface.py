@@ -9,14 +9,17 @@ PIN_TYPE_I2C     = 2
 PIN_MODE_INPUT   = 0
 PIN_MODE_OUTPUT  = 1
 
-device_type = DEVICE_TYPE_MRAA
+device_type = DEVICE_TYPE_RPI
 
 if device_type == DEVICE_TYPE_MRAA:
     import mraa
     import pyupm_grove
+    import pyupm_i2clcd as lcd
 elif device_type == DEVICE_TYPE_RPI:
     import RPi.GPIO as GPIO
     GPIO.setmode(GPIO.BOARD)
+    import grove_rgb_lcd as lcd
+    from Sht1x import Sht1x
 elif device_type == DEVICE_TYPE_GPI:
     import grovepi
 else:
@@ -105,6 +108,63 @@ def analog_read(pin_obj):
 
     elif device_type == DEVICE_TYPE_GPI:
         return grovepi.analogRead(pin_obj)
+
+def grove_lcd(text_addr, rgb_addr):
+    if device_type == DEVICE_TYPE_MRAA:
+        return lcd.Jhd1313m1(0,text_addr,rgb_addr)
+    elif device_type == DEVICE_TYPE_RPI:
+        return lcd
+    elif device_type == DEVICE_TYPE_GPI:
+        raise NotImplementedError
+
+def grove_set_color(lcd, red, green, blue):
+    if device_type == DEVICE_TYPE_MRAA:
+        lcd.setColor(red, green, blue)
+    elif device_type == DEVICE_TYPE_RPI:
+        lcd.setRGB(red, green, blue)
+    elif device_type == DEVICE_TYPE_GPI:
+        raise NotImplementedError
+
+def grove_set_text(lcd, text):
+    if device_type == DEVICE_TYPE_MRAA:
+         lcd.setCursor(0,0)
+         lcd.write(str(text))
+    elif device_type == DEVICE_TYPE_RPI:
+         lcd.setText(str(text))
+    elif device_type == DEVICE_TYPE_GPI:
+        raise NotImplementedError
+
+def grove_clear(lcd):
+    if device_type == DEVICE_TYPE_MRAA:
+         lcd.clear()
+    elif device_type == DEVICE_TYPE_RPI:
+         lcd.textCommand(0x01)
+    elif device_type == DEVICE_TYPE_GPI:
+        raise NotImplementedError
+
+def sht1x(dataPin, clkPin):
+    if device_type == DEVICE_TYPE_MRAA:
+        raise NotImplementedError
+    elif device_type == DEVICE_TYPE_RPI:
+        return Sht1x(dataPin, clkPin, Sht1x.GPIO_BOARD)
+    elif device_type == DEVICE_TYPE_GPI:
+        raise NotImplementedError
+
+def sht1x_read_temperature(temp_humid_obj):
+    if device_type == DEVICE_TYPE_MRAA:
+        raise NotImplementedError
+    elif device_type == DEVICE_TYPE_RPI:
+        return temp_humid_obj.read_temperature_C()
+    elif device_type == DEVICE_TYPE_GPI:
+        raise NotImplementedError
+    
+def sht1x_read_humidity(temp_humid_obj):
+    if device_type == DEVICE_TYPE_MRAA:
+        raise NotImplementedError
+    elif device_type == DEVICE_TYPE_RPI: 
+        return temp_humid_obj.read_humidity()
+    elif device_type == DEVICE_TYPE_GPI:
+        raise NotImplementedError
 
 def analog_write(pin_obj, val):
     if device_type == DEVICE_TYPE_MRAA:

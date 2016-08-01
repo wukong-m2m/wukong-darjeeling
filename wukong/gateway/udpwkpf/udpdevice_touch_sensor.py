@@ -3,7 +3,7 @@ from udpwkpf import WuClass, Device
 import sys
 from udpwkpf_io_interface import *
 
-Touch_Sensor_Pin = 4
+Touch_Sensor_Pin = 7
 
 class TouchSensor(WuClass):
     def __init__(self):
@@ -15,7 +15,7 @@ class TouchSensor(WuClass):
         try:
             current_value = digital_read(self.IO)
             obj.setProperty(0, current_value)
-            print "Touchsensor value: %d" % self.current_value
+            print "Touchsensor value: %d" % current_value
         except IOError:
             print "Error"
 
