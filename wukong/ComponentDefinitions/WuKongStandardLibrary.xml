@@ -208,6 +208,10 @@
         <property name="mode" access="readwrite" datatype="boolean" default="false"  />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
     </WuClass>
+    <WuClass name="PM25" id="1017" virtual="false" type="hard">
+        <property name="value" access="readonly" datatype="short"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="1000"  />
+    </WuClass>
 
 
 
@@ -272,6 +276,15 @@
     <WuClass name="EEGServer" id="1912" virtual="false" type="hard">
         <property name="output_short" access="readonly" datatype="short" default="0" />
         <property name="output_boolean" access="readonly" datatype="boolean" default="false" />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
+    </WuClass>
+    <WuClass name="Obd2" id="1913" virtual="false" type="hard">
+        <property name="air_flow" access="readonly" datatype="short" default="0" />
+        <property name="coolant_temp" access="readonly" datatype="short" default="0" />
+        <property name="RPM" access="readonly" datatype="short" default="0" />
+        <property name="speed" access="readonly" datatype="short" default="0" />
+        <property name="IAT_temp" access="readonly" datatype="short" default="0" />
+        <property name="Throttle" access="readonly" datatype="short" default="0" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
     </WuClass>
 
