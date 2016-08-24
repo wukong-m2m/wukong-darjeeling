@@ -139,6 +139,14 @@
         <property name="volume_increase" access="readwrite" datatype="boolean" default="false"/>
         <property name="volume_decrease" access="readwrite" datatype="boolean" default="false"/>
     </WuClass>
+    <WuClass name="Fire_Agent" id="18" virtual="true" type="soft">
+        <property name="left_danger_in" access="writeonly" datatype="boolean" default="false"  />
+        <property name="right_danger_in" access="writeonly" datatype="boolean" default="false"  />
+        <property name="local_danger_in" access="writeonly" datatype="boolean" default="false"  />
+        <property name="left_danger_out" access="readonly" datatype="boolean" default="false"  />
+        <property name="right_danger_out" access="readonly" datatype="boolean" default="false"  />
+        <property name="pattern" access="readonly" datatype="short" default="0"  />
+    </WuClass>
 
     <!-- Sensors -->
     <WuClass name="Light_Sensor" id="1001" virtual="false" type="hard">
@@ -208,8 +216,14 @@
         <property name="mode" access="readwrite" datatype="boolean" default="false"  />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
     </WuClass>
-
-
+    <WuClass name="Counter" id="1017" virtual="false" type="hard">
+        <property name="index" access="readwrite" datatype="short" default="0"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
+    </WuClass>
+    <WuClass name="Smoke_Sensor" id="1018" virtual="false" type="hard">
+        <property name="alarm" access="readwrite" datatype="boolean" default="false"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
+    </WuClass>
 
     <WuClass name="Binary_TestSensor" id="1901" virtual="false" type="hard">
         <property name="current_value" access="readwrite" datatype="boolean"  />
@@ -474,6 +488,9 @@
     </WuClass>
     <WuClass name="Intel_Sound" id="2037" virtual="false" type="hard">
         <property name="on_off" access="writeonly" datatype="boolean"  />
+    </WuClass>
+    <WuClass name="Pattern" id="2038" virtual="false" type="hard">
+        <property name="index" access="writeonly" datatype="short"  />
     </WuClass>
 
 
