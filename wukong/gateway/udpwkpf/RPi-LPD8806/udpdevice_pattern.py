@@ -15,7 +15,7 @@ class TurnOnLED(object):
         turn_right = [[],[7],[0,6,8],[1,5,9],[2,4,10],[3,11]]
         turn_left  = [[],[4],[3,5,11],[2,6,10],[1,7,9],[0,8]]
         stay       = [[0,3,5,6,8,11]]
-        self.pattern = [save, turn_right, turn_left, stay]
+        self.pattern = [save, turn_left, turn_right, stay]
         self.lock = threading.Lock()        
     def show(self, e, index, r, g, b, step, maxLevel):
         print "Index %d waiting for a lock" % (index)
