@@ -3,7 +3,7 @@ from udpwkpf import WuClass, Device
 import sys, time
 from udpwkpf_io_interface import *
 
-Counter_Pin = 7
+Counter_Pin = 3
 HIGH = 1
 LOW  = 0
 

@@ -491,6 +491,7 @@
     </WuClass>
     <WuClass name="Pattern" id="2038" virtual="false" type="hard">
         <property name="index" access="writeonly" datatype="short"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="50"  />
     </WuClass>
     <WuClass name="AWS_Daemon" id="2039" virtual="false" type="hard">
         <property name="selfID" access="readwrite" datatype="short" default="1" />
