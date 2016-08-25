@@ -92,23 +92,24 @@ class Pattern(WuClass):
             led.set(self.pattern[4][count][i], Color(0, 0, 0, 0))
           led.update()
 
-class MyDevice(Device):
-    def __init__(self,addr,localaddr):
-        Device.__init__(self,addr,localaddr)
+if __name__ == "__main__":
+    class MyDevice(Device):
+        def __init__(self,addr,localaddr):
+            Device.__init__(self,addr,localaddr)
 
-    def init(self):
-        m = Pattern()
-        self.addClass(m,1)
-        self.obj_test = self.addObject(m.ID)
+        def init(self):
+            m = Pattern()
+            self.addClass(m,1)
+            self.obj_test = self.addObject(m.ID)
     
-if len(sys.argv) <= 2:
+    if len(sys.argv) <= 2:
         print 'python udpwkpf.py <ip> <ip:port>'
         print '      <ip>: IP of the interface'
         print '      <port>: The unique port number in the interface'
         print ' ex. python udpwkpf.py 127.0.0.1 3000'
         sys.exit(-1)
 
-d = MyDevice(sys.argv[1],sys.argv[2])
+    d = MyDevice(sys.argv[1],sys.argv[2])
 
-reactor.run()
+    reactor.run()
 
