@@ -9,6 +9,7 @@ import time
 import udpdevice_pattern_no_thread
 import udpdevice_fire_agent
 import udpdevice_smoke_sensor
+import udpdevice_counter
 
 class MyDevice(Device):
     def __init__(self,addr,localaddr):
@@ -24,7 +25,10 @@ class MyDevice(Device):
         m3 = udpdevice_smoke_sensor.Smoke_Sensor()
         self.addClass(m3,0)
         self.obj_smoke_sensor = self.addObject(m3.ID)
-    
+        m4 = udpdevice_counter.Counter()
+        self.addClass(m4,0)
+        self.obj_counter = self.addObject(m4.ID)
+
 if len(sys.argv) <= 2:
         print 'python udpwkpf.py <ip> <ip:port>'
         print '      <ip>: IP of the interface'

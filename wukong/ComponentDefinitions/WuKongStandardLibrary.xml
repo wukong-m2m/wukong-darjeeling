@@ -599,7 +599,7 @@
       <property name="location" access="readwrite" datatype="short" default="0" />
     </WuClass>
     <WuClass name="UIButton" id="11002" virtual="false" type="soft">
-      <property name="click" access="readwrite" datatype="short" default="0" />
+      <property name="click" access="readwrite" datatype="boolean" default="false" />
       <property name="device" access="readwrite" datatype="short" default="0" />
       <property name="port" access="readwrite" datatype="short" default="0" />
     </WuClass>
