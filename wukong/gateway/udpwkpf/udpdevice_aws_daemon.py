@@ -12,7 +12,7 @@ if __name__ == "__main__":
         def __init__(self):
             WuClass.__init__(self)
             self.loadClass('AWS_Daemon')
-            self.setup = False
+            self.id = 0
             self.myMQTTClient = AWSIoTMQTTClient("WKworkshop1231")
             self.myMQTTClient.configureEndpoint("a1trumz0n7avwt.iot.us-west-2.amazonaws.com", 8883)
             self.myMQTTClient.configureCredentials("AWS/root.crt", "AWS/private.key", "AWS/cert.crt")
@@ -43,8 +43,7 @@ if __name__ == "__main__":
             self.Callback(client, userdata, message, 2)
 
         def update(self,obj,pID=None,val=None):
-            if self.setup == False:
-                self.setup = True
+            if self.id != (int)(obj.getProperty(0)):
                 self.id = (int)(obj.getProperty(0))
                 self.obj = obj
                 print self.id
