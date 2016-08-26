@@ -12,9 +12,25 @@ class Counter(WuClass):
         WuClass.__init__(self)
         self.loadClass('Counter')
         self.IO = pin_mode(Counter_Pin, PIN_TYPE_DIGITAL, PIN_MODE_INPUT)
+        self.count = 0
+        self.previous = LOW
+        self.time = 0
+        self.debounce = 100
 
     def update(self,obj,pID=None,val=None):
-        current_value = digital_read(self.IO)
+        try:
+            current_value = digital_read(self.IO)
+            currentTime = int(time.time() * 100)
+            if (current_value == HIGH and self.previous == LOW and currentTime - self.time > self.debounce):
+              self.count = (self.count + 1) % 5
+              obj.setProperty(0, self.count)
+              print "Output index: %d" % self.count
+              self.time = currentTime
+            else:
+              pass
+            self.previous = current_value
+        except IOError:
+            print "Error"
 
 if __name__ == "__main__":
     class MyDevice(Device):
