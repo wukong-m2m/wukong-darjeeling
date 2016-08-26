@@ -47,17 +47,17 @@ if __name__ == "__main__":
                 self.id = (int)(obj.getProperty(0))
                 self.obj = obj
                 print self.id
-                self.myMQTTClient.subscribe('Device'+str(self.id)+'_L_Recv', 1, self.LCallback)
-                self.myMQTTClient.subscribe('Device'+str(self.id)+'_R_Recv', 1, self.RCallback)
+                self.myMQTTClient.subscribe('Device/'+str(self.id)+'/L/Recv', 1, self.LCallback)
+                self.myMQTTClient.subscribe('Device/'+str(self.id)+'/R/Recv', 1, self.RCallback)
             
             if pID == 3:
                 print pID
                 mess = json.dumps({'fire': val})
-                self.myMQTTClient.publish('Device'+str(self.id-1)+'_R_Recv', mess, 0)
+                self.myMQTTClient.publish('Device/'+str(self.id-1)+'/R/Recv', mess, 0)
             if pID == 4:
                 print pID
                 mess = json.dumps({'fire': val})
-                self.myMQTTClient.publish('Device'+str(self.id+1)+'_L_Recv', mess, 0)
+                self.myMQTTClient.publish('Device/'+str(self.id+1)+'/L/Recv', mess, 0)
 
     class MyDevice(Device):
         def __init__(self,addr,localaddr):
