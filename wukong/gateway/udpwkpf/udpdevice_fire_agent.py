@@ -13,6 +13,33 @@ class Fire_Agent(WuClass):
           left_in = obj.getProperty(0)
           right_in = obj.getProperty(1)
           local_in = obj.getProperty(2)
+          if local_in == True:
+              obj.setProperty(3, True)
+              obj.setProperty(4, True)
+              obj.setProperty(5, 3) #show stay_pattern
+              print "Local alarm. Show stay pattern."
+          elif left_in == True:
+              if right_in == True:
+                  obj.setProperty(3, True)
+                  obj.setProperty(4, True)
+                  obj.setProperty(5, 3) #show stay_pattern
+                  print "No way to escape. Show stay pattern"
+              else:
+                  obj.setProperty(3, True)
+                  obj.setProperty(4, False)
+                  obj.setProperty(5, 2) #show right_pattern
+                  print "Left alarm. Show right pattern"
+          else:
+              if right_in == True:
+                  obj.setProperty(3, False)
+                  obj.setProperty(4, True)
+                  obj.setProperty(5, 1) #show left_pattern
+                  print "Right alarm. Show left pattern"
+              else:
+                  obj.setProperty(3, False)
+                  obj.setProperty(4, False)
+                  obj.setProperty(5, 0) #show safe_pattern
+                  print "No alarm. Show safe pattern"
  
 if __name__ == "__main__":
     class MyDevice(Device):
