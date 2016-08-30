@@ -53,11 +53,11 @@ class Pattern(WuClass):
 	  print "Pattern 0 start"
         elif index == 1:
 	  pattern_slice = self.pattern[index][self.count]
-	  self.show(pattern_slice, 255, 0, 0, step, maxLevel)
+	  self.show(pattern_slice, 255, 127, 39, step, maxLevel)
 	  print "Pattern 1 start"
         elif index == 2:
 	  pattern_slice = self.pattern[index][self.count]
-	  self.show(pattern_slice, 255, 0, 0, step, maxLevel)
+	  self.show(pattern_slice, 0, 162, 232, step, maxLevel)
 	  print "Pattern 2 start"
         elif index == 3:
 	  pattern_slice = self.pattern[index][self.count]
