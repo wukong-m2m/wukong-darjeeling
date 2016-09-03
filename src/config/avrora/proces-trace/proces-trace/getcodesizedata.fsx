@@ -88,7 +88,7 @@ let getResults configuration benchmark =
                           |> List.collect (fun jvm -> jvm.avr)
                           |> List.map (fun avr -> avr.opt)
                           |> List.choose id
-                          |> List.map (fun avr -> (instructionCategoryC avr, (if avr.opcode<=0xFFFF then 2 else 4)))
+                          |> List.map (fun avr -> (instructionCategoryAOT avr, (if avr.opcode<=0xFFFF then 2 else 4)))
     let groupedInstructionsAOT = groupFold fst snd (+) 0 instructionsAOT
 
     let tryFindCategory groupedInstructions cat =
