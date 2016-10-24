@@ -286,7 +286,12 @@ class WKPF(DatagramProtocol):
             p=struct.pack('7B',WKPF.WRITE_PROPERTY_R,seq&255, (seq>>8)&255, port, (cID>>8)&0xff, cID&0xff, pID)
             self.send(src_id,p)
             # print "before WRITE_PROPERTY setProperty"
-            self.setProperty(port,pID, val)
+            if pID == 100:
+                obj = self.findObjectByPort(port)
+                print "change enable of obj:", port, "from:", obj.enable, "to:", val
+                obj.enable = val
+            else:
+                self.setProperty(port,pID, val)
         pass
     def parseTables(self):
         i = 0
@@ -383,6 +388,12 @@ class WKPF(DatagramProtocol):
         # print 'remote get is not implemented yet'
         pass
 
+    def findObjectByPort(self, port):
+        for i in range(0,len(self.device.objects)):
+            o = self.device.objects[i]
+            if o.port == port:
+                return o
+        return -1
     def findComponentByPort(self, port):
         for i in range(0,len(self.components)):
             c = self.components[i]
@@ -493,6 +504,7 @@ class WuObject:
         self.port = 0
         self.refresh_rate = 0
         self.next_scheduled_update = 0
+        self.enable = True
     def getID(self):
         return self.cls.ID
     def setProperty(self,pID,val):
@@ -691,7 +703,8 @@ class Device:
             #print self.wkpf.properties
             if obj.refresh_rate > 0 and obj.next_scheduled_update < int(round(time.time() *1000)):
                 self.wkpf_schedule_next_update_for_wuobject(obj)
-                obj.cls.update(obj, None, None)
+                if obj.enable:
+                    obj.cls.update(obj, None, None)
         reactor.callLater(0, self.updateRefreshRateObject)
 
     def updateTheNextDirtyObject(self):
@@ -701,7 +714,8 @@ class Device:
                 if p['dirty'] == True:
                     p['dirty'] = False
                     try:
-                        obj.cls.update(obj,i,p['value'])
+                        if obj.enable:
+                            obj.cls.update(obj,i,p['value'])
                     except:
                         traceback.print_exc()
                         pass
