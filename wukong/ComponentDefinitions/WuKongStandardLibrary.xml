@@ -139,6 +139,13 @@
         <property name="volume_increase" access="readwrite" datatype="boolean" default="false"/>
         <property name="volume_decrease" access="readwrite" datatype="boolean" default="false"/>
     </WuClass>
+    <WuClass name="FT" id="18" virtual="true" type="soft" forcePropagate="true">
+        <property name="hb_gp_in" access="writeonly" datatype="short" default="0"  />
+        <property name="hb_p_in" access="writeonly" datatype="short" default="0"  />
+        <property name="hb" access="readonly" datatype="short" default="0"  />
+        <property name="active" access="readonly" datatype="boolean" default="false"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
+    </WuClass>
 
     <!-- Sensors -->
     <WuClass name="Light_Sensor" id="1001" virtual="false" type="hard">

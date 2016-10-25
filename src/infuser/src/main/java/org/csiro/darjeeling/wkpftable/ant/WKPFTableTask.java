@@ -214,7 +214,16 @@ public class WKPFTableTask extends Task
 				//Integer newNode = Integer.parseInt(newendpoint.getAttribute("node"));
 				Long newNode = Long.parseLong(newendpoint.getAttribute("node"));
 				if (node_id == -1L || newNode == node_id) {
-					component_map_bytes.add((byte)endpoints.getLength()); // Number of endpoints
+                                        int endpoints_length = endpoints.getLength() & 0x7F; //Number of endpoints
+                                        int mask;
+                                        boolean forcePropagate = Boolean.parseBoolean(component.getAttribute("forcePropagate")); 
+                                        //forcePropagate is a wulcasss attribute to force data propagation wether it is dirty or not
+                                        if (forcePropagate){
+                                                mask = 1 << 7;
+                                        }else{
+                                                mask = 0;
+                                        }
+					component_map_bytes.add((byte)(endpoints_length | mask)); // Number of endpoints + forcePropagate flag
 					component_map_bytes.add((byte)(Short.parseShort(component.getAttribute("wuclassId")) % 256));
 					component_map_bytes.add((byte)(Short.parseShort(component.getAttribute("wuclassId")) / 256));
 					for (int j=0; j<endpoints.getLength(); j++) {

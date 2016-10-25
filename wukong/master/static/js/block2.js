@@ -77,6 +77,7 @@ Block.prototype.init=function() {
 //  this.setSize(120,100);
     this.setLocation('')
     this.replica = 1;
+    this.ft_group_size = 0;
     this.group_size = 1;
     this.reaction_time = 1;
     this.signals=[];
@@ -132,6 +133,7 @@ Block.copyData=function(dest,src) {
     dest.group_size = src.group_size;
     dest.reaction_time = src.reaction_time;
     dest.replica = src.replica;
+    dest.ft_group_size = src.ft_group_size;
     dest.signals = src.signals;
     dest.monitor = src.monitor;
     dest.sigProper = src.signals;
@@ -176,6 +178,7 @@ Block.prototype.serialize=function(obj) {
     obj.type = this.type;
     obj.location = this.location;
     obj.replica = this.replica;
+    obj.ft_group_size = this.ft_group_size;
     obj.group_size = this.group_size;
     obj.reaction_time = this.reaction_time;
     obj.signals = this.sigProper;
@@ -210,6 +213,7 @@ Block.restore=function(a) {
     n.name = a.name || a.type
     n.setLocation(a.location);
     n.replica = a.replica;
+    n.ft_group_size = a.ft_group_size;
     n.group_size = a.group_size;
     n.reaction_time = a.reaction_time;
     n.sigProper = a.sigProper;
@@ -807,11 +811,13 @@ Block.prototype.renderPropertyEditForm = function(){
 
     var tags = ['<table class="form">']
     tags.push('<tr><th>Name:</th><td>'+formElementFactory({field:'name',editable:true},this)+'</td></tr>')
+    tags.push('<tr><th>InstanceId:</th><td>'+ this.id +'</td></tr>')
     tags.push('</table>')
     tags.push('<div><button target="tr" class="foldHandler rotate90">⫸</button><table class="form">')
     tags.push('<tr><th>Location:</th><td><input name="location_path" value="'+this.location_path+'" id="location_path"><button id="chooseTreeNode">Tree Node</button></td></tr>')
     tags.push('<tr><th>Function:</th><td><input name="location_func" value="'+this.location_func+'" id="location_func"><button id="showLocationPolicyEditor">Location Policy Editor</button></td></tr>')
     tags.push('<tr><th>Replica:</th><td><input name="replica" value="'+ this.replica+'" id="replica"></td></tr>')
+    tags.push('<tr><th>FT_Group_Size:</th><td><input name="ft_group_size" value="'+ this.ft_group_size+'" id="ft_group_size"></td></tr>')
     tags.push('</table></div>')
     tags.push('<div><button target="tr" class="foldHandler rotate90">⫸</button><table class="form">')
     var slots = this.slots;

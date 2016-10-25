@@ -863,6 +863,12 @@ function FBP_parseXMLPage(comps)
         } else {
           meta.replica = 1;
         }
+        ft_group_size = c.find("ft_group_size");
+        if (ft_group_size.length > 0) {
+          meta.ft_group_size = ft_group_size.attr("requirement");
+        } else {
+          meta.ft_group_size = 0;
+        }
         //console.log(c.find("group_size").attr("requirement"));
         group_size = c.find("group_size");
         if (group_size.length > 0) {
@@ -1101,6 +1107,12 @@ function FBP_toXML(gnodes,glines)
         if (source.group_size && source.group_size != '') {
             xml = xml + '        <group_size requirement="'+source.group_size+'" />\n';
         }
+        if (source.replica && source.replica != '') {
+            xml = xml + '        <replica requirement="'+source.replica+'" />\n';
+        }
+        if (source.ft_group_size && source.ft_group_size != '') {
+            xml = xml + '        <ft_group_size requirement="'+source.ft_group_size+'" />\n';
+        }
         if (source.reaction_time && source.reaction_time != '') {
             xml = xml + '        <reaction_time requirement="'+source.reaction_time+'" />\n';
         }
@@ -1136,6 +1148,9 @@ function FBP_toXML(gnodes,glines)
             }
             if (source.replica && source.replica != '') {
                 xml = xml + '        <replica requirement="'+source.replica+'" />\n';
+            }
+            if (source.ft_group_size && source.ft_group_size != '') {
+                xml = xml + '        <ft_group_size requirement="'+source.ft_group_size+'" />\n';
             }
             if (source.reaction_time && source.reaction_time != '') {
                 xml = xml + '        <reaction_time requirement="'+source.reaction_time+'" />\n';

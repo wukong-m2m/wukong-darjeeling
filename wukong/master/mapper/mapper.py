@@ -76,7 +76,7 @@ def sortCandidates(wuObjects):
 ##########changeset example #######
 #ChangeSets(components=[
 #    WuComponent(
-#      {'index': 0, 'reaction_time': 1.0, 'group_size': 1, 'application_hashed_name': u'f92ea1839dc16d7396db358365da7066', 'heartbeatgroups': [], 'instances': [
+#      {'index': 0, 'reaction_time': 1.0, 'group_size': 1, 'ft_group_size: 0', 'application_hashed_name': u'f92ea1839dc16d7396db358365da7066', 'heartbeatgroups': [], 'instances': [
 #    WuObject(
 #      {'node_identity': 1, 'wuproperty_cache': [], 'wuclassdef_identity': 11, 'virtual': 0, 'port_number': 0, 'identity': 1}
 #    )], 'location': 'WuKong', 'properties': {}, 'type': u'Light_Sensor'}
@@ -119,44 +119,8 @@ def firstCandidate(logger, changesets, routingTable, locTree, predicts=[], flag 
             mapping_result = False
             continue
             #candidates = locTree.root.getAllAliveNodeIds()
-        # construct wuobjects, instances of component
-        for candidate in candidates:
-            wuclassdef = WuObjectFactory.wuclassdefsbyname[component.type]
-            node = locTree.getNodeInfoById(candidate)
-            available_wuobjects = [wuobject for wuobject in node.wuobjects.values() if wuobject.wuclassdef.id == wuclassdef.id]
 
-            has_wuclass = wuclassdef.id in node.wuclasses.keys()
-            wuobj_found = False
-            for avail_wuobj in available_wuobjects:
-                print avail_wuobj , "avail_wuobj"
-                # use existing native wuobject, caution given to obj mapped due to previous candidates
-                if not avail_wuobj.virtual and not avail_wuobj.mapped:
-                    print avail_wuobj.virtual, avail_wuobj.mapped
-                    print "using native at", node.id
-                    component.instances.append(avail_wuobj)
-                    avail_wuobj.mapped = True
-                    wubj_found = True
-                    break
-
-            if has_wuclass and (not wuobj_found):    # create a new wuobject from existing wuclasses published from node
-                sensorNode = locTree.sensor_dict[node.id]
-                sensorNode.initPortList(forceInit = False)
-                port_number = sensorNode.reserveNextPort()
-                wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number,False)
-                wuobject.created = True
-                wuobject.mapped = True
-                component.instances.append(wuobject)
-
-            elif (not wuobj_found) and node.type != 'native' and node.type != 'picokong' and node.type != 'virtualdevice' and node.id != 1 and wuclassdef.virtual==True:
-                # create a new virtual wuobject where the node
-                # doesn't have the wuclass for it
-                sensorNode = locTree.sensor_dict[node.id]
-                sensorNode.initPortList(forceInit = False)
-                port_number = sensorNode.reserveNextPort()
-                wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number, True)
-                wuobject.created = True
-                wuobject.mapped = True
-                component.instances.append(wuobject)
+        wuobjectMapping(component, locTree, candidates)
 
         if len(component.instances) < component.replica:
             msg = 'There is not enough replica wuobjects from %r for component %s' % (candidates, component.type)
@@ -218,6 +182,150 @@ def firstCandidate(logger, changesets, routingTable, locTree, predicts=[], flag 
             for endpoint in component.instances:
                 if endpoint.wunode.id not in changesets.deployIDs:
                     changesets.deployIDs.append(endpoint.wunode.id)
+    return mapping_result
+
+# construct wuobjects, instances of component
+def wuobjectMapping(component, locTree, candidates):
+    for candidate in candidates:
+        wuclassdef = WuObjectFactory.wuclassdefsbyname[component.type]
+        node = locTree.getNodeInfoById(candidate)
+        available_wuobjects = [wuobject for wuobject in node.wuobjects.values() if wuobject.wuclassdef.id == wuclassdef.id]
+
+        has_wuclass = wuclassdef.id in node.wuclasses.keys()
+        wuobj_found = False
+        for avail_wuobj in available_wuobjects:
+            # use existing native wuobject, caution given to obj mapped due to previous candidates
+            if not avail_wuobj.virtual and not avail_wuobj.mapped:
+                component.instances.append(avail_wuobj)
+                avail_wuobj.mapped = True
+                wuobj_found = True
+                break
+
+        if has_wuclass and (not wuobj_found):    # create a new wuobject from existing wuclasses published from node
+            sensorNode = locTree.sensor_dict[node.id]
+            sensorNode.initPortList(forceInit = False)
+            port_number = sensorNode.reserveNextPort()
+            wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number,False)
+            wuobject.created = True
+            wuobject.mapped = True
+            component.instances.append(wuobject)
+
+        elif (not wuobj_found) and node.type != 'native' and node.type != 'picokong' and node.type != 'virtualdevice' and node.id != 1 and wuclassdef.virtual==True:
+            # create a new virtual wuobject where the node
+            # doesn't have the wuclass for it
+            sensorNode = locTree.sensor_dict[node.id]
+            sensorNode.initPortList(forceInit = False)
+            port_number = sensorNode.reserveNextPort()
+            wuobject = WuObjectFactory.createWuObject(wuclassdef, node, port_number, True)
+            wuobject.created = True
+            wuobject.mapped = True
+            component.instances.append(wuobject)
+
+def forcedCandidate(logger, changesets, routingTable, locTree, predicts=[], flag = None):
+    set_wukong_status('Mapping')
+    logger.clearMappingStatus() # clear previous mapping status
+
+    #input: nodes, WuObjects, WuLinks, WuClassDefsm, wuObjects is a list of wuobject list corresponding to group mapping
+    #output: assign node id to WuObjects
+    mapping_result = True
+    #clear all "mapped" tags in every node before mapping
+    if flag == None:
+        for nodeid in WuNode.node_dict:
+            node = locTree.getNodeInfoById(nodeid)
+            if node != None:
+                for wuobj in node.wuobjects.values():
+                    wuobj.mapped = False
+     
+    # find which component has assigned instanceId. The pattern of such component is as /wukong/location@instanceId.
+    index_instanceId_dict  = {}
+    instanceId_nodeId_dict= {}
+    regularMapping = []
+    forcedMapping  = []
+    for index in range(changesets.components.__len__()):
+        component_instanceId = changesets.components[index].index
+        component_location = changesets.components[index].location 
+        if '@' in component_location:
+            forcedMapping.append(index)
+        else:
+            regularMapping.append(index)
+            index_instanceId_dict[index] = component_instanceId
+
+    # construct and filter candidates for every component on the FBP (could be the same wuclass but with different policy)
+    for index in regularMapping:
+        component = changesets.components[index] 
+        # filter by location
+        locParser = LocationParser(locTree)
+        msg = ''
+        try:
+            candidates, rating = locParser.parse(component.location)
+        except:
+            #no mapping result
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            msg = 'Cannot find match for location query "'+ component.location+'" of wuclass "'+ component.type+ '".'
+            logger.warnMappingStatus(msg)
+            set_wukong_status(msg)
+            component.message = msg
+            candidates, rating = [], []
+            mapping_result = False
+            continue
+        wuobjectMapping(component, locTree, candidates)
+        if len(component.instances) < component.replica:
+            msg = 'There is not enough replica wuobjects from %r for component %s' % (candidates, component.type)
+            msg += ' %d is found, but %d is needed' % (len(component.instances), int(component.replica))
+            set_wukong_status(msg)
+            logger.warnMappingStatus(msg)
+            component.message = msg
+            mapping_result = False
+            continue
+
+        instanceId = index_instanceId_dict[index]
+        instanceId_nodeId_dict[instanceId] = component.instances[0].wunode.id
+
+        #this is ignoring ordering of policies, eg. location policy, should be fixed or replaced by other algorithm later--- Sen
+        component.instances = sorted(component.instances, key=lambda wuObject: wuObject.virtual, reverse=False)
+        # limit to min candidate if possible
+        # here is a bug if there are not enough elements in instances list   ---Sen
+        component.instances = component.instances[:component.replica]
+        for inst in component.instances[component.replica:]:     #roll back unused virtual wuclasses created in previous step
+          if inst.created:
+            inst.wunode.port_list.remove(inst.port_number)
+            WuObjectFactory.remove(inst.wunode, inst.port_number)
+          inst.mapped = False
+
+        print ("mapped node id",[inst.wunode.id for inst in component.instances])
+
+    # Done looping components
+ 
+    for index in forcedMapping:
+        component = changesets.components[index] 
+        to_instanceId = component.location[component.location.find('@')+1:component.location.find('#')]
+        try:
+            to_nodeId = instanceId_nodeId_dict[to_instanceId]
+            candidates = []
+            candidates.append(to_nodeId)
+        except:
+            #assigned wrong instanceId
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            msg = 'assigned non-existing instanceId: ' + to_instanceId + ' to ' + component.type
+            logger.warnMappingStatus(msg)
+            set_wukong_status(msg)
+            component.message = msg
+            candidates, rating = [], []
+            mapping_result = False
+            continue
+        wuobjectMapping(component, locTree, candidates)
+    
+    set_wukong_status('')
+    print "forcedCandidate mapping_result: ",mapping_result
+
+    if flag == None and mapping_result:
+        save_map("changesets.tmp",changesets)
+        changesets.deployIDs.append(1)
+        for component in changesets.components:
+            for endpoint in component.instances:
+                if endpoint.wunode.id not in changesets.deployIDs:
+                    changesets.deployIDs.append(endpoint.wunode.id)
+    print "changesets.deployIDs: ", changesets.deployIDs
     return mapping_result
 
 def Compare_changesets (new_changesets, old_changesets):

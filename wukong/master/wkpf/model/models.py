@@ -295,13 +295,14 @@ class WuApplicationNew:
 
 class WuComponent:
 
-  def __init__(self, component_index, location, group_size, replica, reaction_time,
+  def __init__(self, component_index, location, group_size, replica, reaction_time, ft_group_size,
           type, application_hashed_name, properties=None):
     self.index = component_index
     self.location = location
     self.group_size = group_size # int
     self.replica = replica
     self.reaction_time = reaction_time # float
+    self.ft_group_size = ft_group_size # int
     self.type = type # wuclass name
     self.application_hashed_name = application_hashed_name
     self.properties = properties  #properties without default values
@@ -356,8 +357,8 @@ class WuObjectFactory:
     cls.wutypedefs[name] = WuTypeDef(name,type,values)
     return cls.wutypedefs[name]
   @classmethod
-  def createWuClassDef(cls, id, name, virtual, type, properties = None):
-    cls.wuclassdefsbyid[id] = WuClassDef( id, name, virtual, type, properties)
+  def createWuClassDef(cls, id, name, virtual, type, properties = None, forcePropagate = "false"):
+    cls.wuclassdefsbyid[id] = WuClassDef( id, name, virtual, type, properties, forcePropagate)
     cls.wuclassdefsbyname[name] = cls.wuclassdefsbyid[id]
     return cls.wuclassdefsbyname[name]
 
@@ -365,7 +366,7 @@ class WuClassDef:
 
   # Maintaining an ordered list for save function
   #properties, a dictionary of name:wupropertydef
-  def __init__(self, id, name, virtual, type, properties = None):
+  def __init__(self, id, name, virtual, type, properties = None, forcePropagate = "false"):
     self.id = id
     self.name = name
     self.virtual = virtual
@@ -373,10 +374,11 @@ class WuClassDef:
     self.properties = properties    #dictionary of wuproperties
     if self.properties == None:
       self.properties = {}
+    self.forcePropagate = forcePropagate
 
-  def createWuProperty(self, name,
-        default_value, wutype, access, wuclassdef):
-    self.properties[name] = WuPropertyDef(id, name, default_value, wutype, access, self)
+  def createWuProperty(self, id, name,
+        default_value, wutype, access, wuclassdef, forcePropagate):
+    self.properties[name] = WuPropertyDef(id, name, wutype, default_value, access, wuclassdef, forcePropagate)
     return self.wuproperties[name]
 
 class WuPropertyDef:
@@ -389,7 +391,6 @@ class WuPropertyDef:
     self.wutype = wutype
     self.access = access
     self.wuclassdef = wuclassdef
-
 
 class WuTypeDef:
 

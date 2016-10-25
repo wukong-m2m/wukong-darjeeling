@@ -345,10 +345,13 @@ class WKPF(DatagramProtocol):
         return self.properties[port][pID]['value']
 
     def setProperty(self,port,pID,val):
+        id = self.findComponentByPort(port)
+        if id == -1: return
+        comp = self.getComponent(id)
         # print 'setProperty',port,pID,val
         # print "\t",self.properties
         try:
-            if self.properties[port][pID]['value'] != val:
+            if self.properties[port][pID]['value'] != val or comp['forcePropagate']:
                 self.properties[port][pID]['value'] = val
                 self.properties[port][pID]['dirty'] = True
                 self.propagateProperty(port,pID,val)
@@ -466,10 +469,14 @@ class WKPF(DatagramProtocol):
 
         for i in range(0,n_item):
             addr = data[2+i*2]+data[2+i*2+1]*256
-            n_endpoints = data[addr]
+            mask = 0x80 # the most significant bit is a flag for forcePropagation
+            forcePropagate = False
+            if (data[addr] & mask) >> 7:
+                forcePropagate = True
+            n_endpoints = data[addr] & 0x7F
             clsid = data[addr+1]+data[addr+2]*256
             # print 'component class ID %d' % clsid
-            com = {'ID':clsid, 'ports': []}
+            com = {'ID':clsid, 'ports': [], 'forcePropagate':forcePropagate}
             for j in range(0,n_endpoints):
                 mptnaddr = (data[addr+3+j*5+3]<<24) | (data[addr+3+j*5+2]<<16) | (data[addr+3+j*5+1]<<8) | (data[addr+3+j*5])
                 port = data[addr+3+j*5+4]
@@ -682,6 +689,7 @@ class Device:
                         obj.port = port
                         self.wkpf.addProperties(obj.port, obj.cls)
                         self.objects.append(obj)
+                        self.wkpf_schedule_next_update_for_wuobject(obj)
             except:
                 traceback.print_exc()
                 print "Can not find class %d" % clsid
@@ -705,7 +713,7 @@ class Device:
                 self.wkpf_schedule_next_update_for_wuobject(obj)
                 if obj.enable:
                     obj.cls.update(obj, None, None)
-        reactor.callLater(0, self.updateRefreshRateObject)
+        reactor.callLater(0.01, self.updateRefreshRateObject)
 
     def updateTheNextDirtyObject(self):
         for obj in self.objects:

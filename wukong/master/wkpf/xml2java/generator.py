@@ -174,6 +174,7 @@ class Generator:
             component_element.attrib['id'] = str(component.deployid)
             component_wuclass = WuObjectFactory.wuclassdefsbyname[component.type]
             component_element.attrib['wuclassId'] = str(component_wuclass.id)
+            component_element.attrib['forcePropagate'] = str(component_wuclass.forcePropagate)
             for endpoint in component.instances:
                 endpoint_element = ElementTree.SubElement(component_element, 'endpoint')
                 endpoint_element.attrib['node'] = str(endpoint.wunode.id)

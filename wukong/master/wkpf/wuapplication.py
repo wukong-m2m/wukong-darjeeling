@@ -7,6 +7,7 @@ import sys, os, traceback, time, re, copy
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from model.models import WuClassDef, WuComponent, WuLink
 from mapper.mapper import firstCandidate
+from mapper.mapper import forcedCandidate
 from model.locationTree import *
 from model.locationParser import *
 from xml.dom.minidom import parse, parseString
@@ -184,6 +185,8 @@ class WuApplication:
       components = self.applicationDom.getElementsByTagName('component')
       self.instanceIds = []
 
+      self.ft_group_instanceIds = {}
+
       # parse application XML to generate WuClasses, WuObjects and WuLinks
       for componentTag in components:
           # make sure application component is found in wuClassDef component list
@@ -194,7 +197,7 @@ class WuApplication:
             logging.error('unknown types for component found while parsing application')
             return #TODO: need to handle this
 
-          type = componentTag.getAttribute('type')
+          fbp_type = componentTag.getAttribute('type')
 
           if componentTag.getElementsByTagName('location'):
             location = componentTag.getElementsByTagName('location')[0].getAttribute('requirement')
@@ -216,6 +219,11 @@ class WuApplication:
           else:
             reaction_time = 2.0
 
+          if componentTag.getElementsByTagName('ft_group_size'):
+            ft_group_size = int(componentTag.getElementsByTagName('ft_group_size')[0].getAttribute('requirement'))
+          else:
+            ft_group_size = 0
+
           properties = {}
           # set default output property values for components in application
           for propertyTag in componentTag.getElementsByTagName('actionProperty'):
@@ -236,22 +244,53 @@ class WuApplication:
               self.monitorProperties[index][attr.name] = attr.value.strip()
 
           if index in self.instanceIds:
-
             #wucomponent already appears in other pages, merge property requirement, suppose location etc are the same
             self.wuComponents[index].properties = dict(self.wuComponents[index].properties.items() + properties.items())
           else:
-            component = WuComponent(index, location, group_size, replica, reaction_time, type, application_hashed_name, properties)
+            component = WuComponent(index, location, group_size, replica, reaction_time, ft_group_size, fbp_type, application_hashed_name, properties)
             componentInstanceMap[componentTag.getAttribute('instanceId')] = component
             self.wuComponents[componentTag.getAttribute('instanceId')] = component
             self.changesets.components.append(component)
-            self.instanceIds.append(index)
+            self.instanceIds.append(int(index))
 
       # add server as component in node 0
-      component = WuComponent(1, '/'+LOCATION_ROOT, 1, 1, 2.0, 'Server', 0, {})
+      component = WuComponent(1, '/'+LOCATION_ROOT, 1, 1, 2.0, 0, 'Server', 0, {})
       componentInstanceMap[0] = component
       self.wuComponents[0] = component
       self.changesets.components.append(component)
       self.instanceIds.append(0)
+  
+      duplicatedComponents = []
+      ftComponents = []
+      for componentInstance in self.changesets.components:
+          componentInstanceId = componentInstance.index
+          ft_group_size = componentInstance.ft_group_size
+          # add duplicated components to attain FT capability
+          new_instanceIds = []
+          for index in range(1, ft_group_size):
+              new_instanceIds.append(max(self.instanceIds) + index)
+              component = WuComponent(new_instanceIds[-1], componentInstance.location, componentInstance.group_size, componentInstance.replica, componentInstance.reaction_time, componentInstance.ft_group_size, componentInstance.type, componentInstance.application_hashed_name, componentInstance.properties) 
+              componentInstanceMap[new_instanceIds[-1]] = component
+              self.wuComponents[new_instanceIds[-1]] = component
+              duplicatedComponents.append(component)
+              self.instanceIds.append(new_instanceIds[-1])
+          new_instanceIds.insert(0, componentInstanceId)
+          self.ft_group_instanceIds[componentInstanceId] = new_instanceIds
+          # add FT component for each duplicated component
+          for index in range(1, ft_group_size+1):
+              new_ft_instanceId = max(self.instanceIds) + index
+              ft_location = str(componentInstance.location) + '@' + str(componentInstanceId) + '#'
+              component = WuComponent(new_ft_instanceId, ft_location, componentInstance.group_size, componentInstance.replica, componentInstance.reaction_time, 0, 'FT', componentInstance.application_hashed_name, componentInstance.properties) 
+              componentInstanceMap[new_ft_instanceId] = component
+              self.wuComponents[new_ft_instanceId] = component
+              ftComponents.append(component)
+              self.instanceIds.append(new_ft_instanceId)
+      
+      for i in range(duplicatedComponents.__len__()):
+          self.changesets.components.append(duplicatedComponents[i])
+      for i in range(ftComponents.__len__()):
+          self.changesets.components.append(ftComponents[i])
+
       #assumption: at most 99 properties for each instance, at most 999 instances
       #store hashed result of links to avoid duplicated links: (fromInstanceId*100+fromProperty)*100000+toInstanceId*100+toProperty
       linkSet = []
@@ -262,17 +301,47 @@ class WuApplication:
           from_component = componentInstanceMap[from_component_id]
           from_property_name = linkTag.getAttribute('fromProperty').lower()
           from_property_id = WuObjectFactory.wuclassdefsbyname[from_component.type].properties[from_property_name].id
+          from_component_ft_group_size = from_component.ft_group_size
           to_component_id = linkTag.getAttribute('toInstanceId')
           to_component = componentInstanceMap[to_component_id]
           to_property_name =  linkTag.getAttribute('toProperty').lower()
           to_property_id = WuObjectFactory.wuclassdefsbyname[to_component.type].properties[to_property_name].id
+          to_component_ft_group_size = to_component.ft_group_size 
 
-          hash_value = (int(from_component_id)*100+int(from_property_id))*100000+int(to_component_id)*100+int(to_property_id)
-          if hash_value not in wuLinkMap.keys():
-            link = WuLink(from_component, from_property_name,
-                    to_component, to_property_name)
-            wuLinkMap[hash_value] = link
-          self.changesets.links.append(wuLinkMap[hash_value])
+          # add link according to FBP app.xml
+          if from_component_ft_group_size == 0 and to_component_ft_group_size == 0:
+              hash_value = (int(from_component_id)*100+int(from_property_id))*100000+int(to_component_id)*100+int(to_property_id)
+              if hash_value not in wuLinkMap.keys():
+                  link = WuLink(from_component, from_property_name, to_component, to_property_name)
+                  wuLinkMap[hash_value] = link
+              self.changesets.links.append(wuLinkMap[hash_value])
+          # add link for duplicated components
+          elif from_component_ft_group_size > 0 and to_component_ft_group_size == 0:
+              for duplicated_from_component_id in self.ft_group_instanceIds[from_component_id]:
+                  from_component = componentInstanceMap[duplicated_from_component_id]
+                  hash_value = (int(duplicated_from_component_id)*100+int(from_property_id))*100000+int(to_component_id)*100+int(to_property_id)
+                  if hash_value not in wuLinkMap.keys():
+                      link = WuLink(from_component, from_property_name, to_component, to_property_name)
+                      wuLinkMap[hash_value] = link
+                  self.changesets.links.append(wuLinkMap[hash_value])
+          elif from_component_ft_group_size == 0 and to_component_ft_group_size > 0:
+              for duplicated_to_component_id in self.ft_group_instanceIds[to_component_id]:
+                  to_component = componentInstanceMap[duplicated_to_component_id]
+                  hash_value = (int(from_component_id)*100+int(from_property_id))*100000+int(duplicated_to_component_id)*100+int(to_property_id)
+                  if hash_value not in wuLinkMap.keys():
+                      link = WuLink(from_component, from_property_name, to_component, to_property_name)
+                      wuLinkMap[hash_value] = link
+                  self.changesets.links.append(wuLinkMap[hash_value])
+          elif from_component_ft_group_size > 0 and to_component_ft_group_size > 0:
+              for duplicated_from_component_id in self.ft_group_instanceIds[from_component_id]:
+                  from_component = componentInstanceMap[duplicated_from_component_id]
+                  for duplicated_to_component_id in self.ft_group_instanceIds[to_component_id]:
+                      to_component = componentInstanceMap[duplicated_to_component_id]
+                      hash_value = (int(duplicated_from_component_id)*100+int(from_property_id))*100000+int(duplicated_to_component_id)*100+int(to_property_id)
+                      if hash_value not in wuLinkMap.keys():
+                          link = WuLink(from_component, from_property_name, to_component, to_property_name)
+                          wuLinkMap[hash_value] = link
+                      self.changesets.links.append(wuLinkMap[hash_value])
 
       #add monitoring related links
       if(MONITORING == 'true'):
@@ -284,6 +353,19 @@ class WuApplication:
                       wuLinkMap[hash_value] = link
                   self.changesets.links.append(wuLinkMap[hash_value])
 
+      # add link for ft components
+      for ftComponent in ftComponents:
+          from_component = ftComponent
+          from_component_id = ftComponent.index
+          from_property_id = WuObjectFactory.wuclassdefsbyname[from_component.type].properties["active"].id
+          to_component_id = from_component.location[from_component.location.find('@')+1:from_component.location.find('#')]
+          to_component = componentInstanceMap[to_component_id]
+          to_property_id = WuObjectFactory.wuclassdefsbyname[to_component.type].properties["enable"].id
+          hash_value = (int(from_component_id)*100+int(from_property_id))*100000+int(to_component_id)*100+int(to_property_id)
+          if hash_value not in wuLinkMap.keys():
+              link = WuLink(from_component, 'active', to_component, 'enable')
+              wuLinkMap[hash_value] = link
+          self.changesets.links.append(wuLinkMap[hash_value])
 
   def cleanAndCopyJava(self):
     # clean up the directory
@@ -316,10 +398,12 @@ class WuApplication:
       mapper.mapper.dump_changesets(self.changesets)
       Generator.generate(self.name, self.changesets)
 
-  def mapping(self, locTree, routingTable, predicts=[], mapFunc=mapper.mapper.firstCandidate):
+  def mapping(self, locTree, routingTable, predicts=[], mapFunc=mapper.mapper.forcedCandidate):
       #input: nodes, WuObjects, WuLinks, WuClassDefs
       #output: assign node id to WuObjects
       # TODO: mapping results for generating the appropriate instiantiation for different nodes
+      logging.info("Mapping Start")
+      logging.info(self.changesets)
 
       return mapFunc(self, self.changesets, routingTable, locTree, predicts)
 

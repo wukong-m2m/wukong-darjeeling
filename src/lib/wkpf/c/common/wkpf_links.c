@@ -56,7 +56,7 @@ uint16_t link_counter[MAX_LINK_NUMBER];
 //            4 byte node address
 //            1 byte port number
 #define WKPF_COMPONENT_ADDRESS(i)                            ((dj_di_pointer)(wkpf_component_map_store + dj_di_getU16(wkpf_component_map_store + 2 + 2*i)))
-#define WKPF_NUMBER_OF_ENDPOINTS(i)                            (dj_di_getU8(WKPF_COMPONENT_ADDRESS(i)))
+#define WKPF_NUMBER_OF_ENDPOINTS(i)                            (dj_di_getU8(WKPF_COMPONENT_ADDRESS(i)) & 0x7F)
 #define WKPF_COMPONENT_WUCLASS_ID(i)                        (dj_di_getU16(WKPF_COMPONENT_ADDRESS(i) + 1))
 #define WKPF_COMPONENT_ENDPOINT_NODE_ID(i, j)                (dj_di_getU32(WKPF_COMPONENT_ADDRESS(i) + 3 + 5*j))
 #define WKPF_COMPONENT_ENDPOINT_PORT(i, j)                    (dj_di_getU8(WKPF_COMPONENT_ADDRESS(i) + 3 + 5*j + 4))
