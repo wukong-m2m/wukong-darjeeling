@@ -286,12 +286,7 @@ class WKPF(DatagramProtocol):
             p=struct.pack('7B',WKPF.WRITE_PROPERTY_R,seq&255, (seq>>8)&255, port, (cID>>8)&0xff, cID&0xff, pID)
             self.send(src_id,p)
             # print "before WRITE_PROPERTY setProperty"
-            if pID == 100:
-                obj = self.findObjectByPort(port)
-                print "change enable of obj:", port, "from:", obj.enable, "to:", val
-                obj.enable = val
-            else:
-                self.setProperty(port,pID, val)
+            self.setProperty(port,pID, val)
         pass
     def parseTables(self):
         i = 0
@@ -345,6 +340,11 @@ class WKPF(DatagramProtocol):
         return self.properties[port][pID]['value']
 
     def setProperty(self,port,pID,val):
+        if pID == 100:
+            obj = self.findObjectByPort(port)
+            print "change enable of obj:", port, "from:", obj.enable, "to:", val
+            obj.enable = val
+            return
         id = self.findComponentByPort(port)
         if id == -1: return
         comp = self.getComponent(id)
