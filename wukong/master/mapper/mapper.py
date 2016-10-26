@@ -221,6 +221,9 @@ def wuobjectMapping(component, locTree, candidates):
             wuobject.mapped = True
             component.instances.append(wuobject)
 
+        if len(component.instances) >= component.replica:
+            return
+
 def forcedCandidate(logger, changesets, routingTable, locTree, predicts=[], flag = None):
     set_wukong_status('Mapping')
     logger.clearMappingStatus() # clear previous mapping status
@@ -279,7 +282,7 @@ def forcedCandidate(logger, changesets, routingTable, locTree, predicts=[], flag
             continue
 
         instanceId = index_instanceId_dict[index]
-        instanceId_nodeId_dict[instanceId] = component.instances[0].wunode.id
+        instanceId_nodeId_dict[str(instanceId)] = component.instances[0].wunode.id
 
         #this is ignoring ordering of policies, eg. location policy, should be fixed or replaced by other algorithm later--- Sen
         component.instances = sorted(component.instances, key=lambda wuObject: wuObject.virtual, reverse=False)
@@ -325,7 +328,6 @@ def forcedCandidate(logger, changesets, routingTable, locTree, predicts=[], flag
             for endpoint in component.instances:
                 if endpoint.wunode.id not in changesets.deployIDs:
                     changesets.deployIDs.append(endpoint.wunode.id)
-    print "changesets.deployIDs: ", changesets.deployIDs
     return mapping_result
 
 def Compare_changesets (new_changesets, old_changesets):
