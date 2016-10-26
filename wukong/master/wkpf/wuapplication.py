@@ -279,6 +279,7 @@ class WuApplication:
           new_instanceIds.insert(0, componentInstanceId)
           self.ft_group_instanceIds[componentInstanceId] = new_instanceIds
           # add FT component for each duplicated component
+          ftChain = []
           for i in range(ft_group_size):
               new_ft_instanceId = max(self.instanceIds) + 1
               to_instanceId = self.ft_group_instanceIds[componentInstanceId][i]
@@ -286,13 +287,15 @@ class WuApplication:
               component = WuComponent(new_ft_instanceId, ft_location, componentInstance.group_size, componentInstance.replica, componentInstance.reaction_time, 0, 'FT', componentInstance.application_hashed_name, componentInstance.properties) 
               componentInstanceMap[str(new_ft_instanceId)] = component
               self.wuComponents[new_ft_instanceId] = component
-              ftComponents.append(component)
+              ftChain.append(component)
               self.instanceIds.append(new_ft_instanceId)
-      
+          ftComponents.append(ftChain)      
+
       for i in range(duplicatedComponents.__len__()):
           self.changesets.components.append(duplicatedComponents[i])
-      for i in range(ftComponents.__len__()):
-          self.changesets.components.append(ftComponents[i])
+      for ftChain in ftComponents:
+          for i in range(ftChain.__len__()):
+              self.changesets.components.append(ftChain[i])
 
       #assumption: at most 99 properties for each instance, at most 999 instances
       #store hashed result of links to avoid duplicated links: (fromInstanceId*100+fromProperty)*100000+toInstanceId*100+toProperty
@@ -357,23 +360,21 @@ class WuApplication:
                   self.changesets.links.append(wuLinkMap[hash_value])
 
       # add link from the active property of ft components to the enable proerty of their designated components
-      for ftComponent in ftComponents:
-          from_component = ftComponent
-          from_component_id = from_component.index
-          from_property_id = WuObjectFactory.wuclassdefsbyname[from_component.type].properties["active"].id
-          to_component_id = from_component.location[from_component.location.find('@')+1:from_component.location.find('#')]
-          to_component = componentInstanceMap[str(to_component_id)]
-          to_property_id = WuObjectFactory.wuclassdefsbyname[to_component.type].properties["enable"].id
-          hash_value = (int(from_component_id)*100+int(from_property_id))*100000+int(to_component_id)*100+int(to_property_id)
-          if hash_value not in wuLinkMap.keys():
-              link = WuLink(from_component, 'active', to_component, 'enable')
-              wuLinkMap[hash_value] = link
-          self.changesets.links.append(wuLinkMap[hash_value])
+      for ftChain in ftComponents:
+          for ftComponent in ftChain:
+              from_component = ftComponent
+              from_component_id = from_component.index
+              from_property_id = WuObjectFactory.wuclassdefsbyname[from_component.type].properties["active"].id
+              to_component_id = from_component.location[from_component.location.find('@')+1:from_component.location.find('#')]
+              to_component = componentInstanceMap[str(to_component_id)]
+              to_property_id = WuObjectFactory.wuclassdefsbyname[to_component.type].properties["enable"].id
+              hash_value = (int(from_component_id)*100+int(from_property_id))*100000+int(to_component_id)*100+int(to_property_id)
+              if hash_value not in wuLinkMap.keys():
+                  link = WuLink(from_component, 'active', to_component, 'enable')
+                  wuLinkMap[hash_value] = link
+              self.changesets.links.append(wuLinkMap[hash_value])
  
       # add link between ft components to form a monitoring chain
-      ftLen = len(ftComponents)
-      if ftLen < 2:
-          return
       ftMonitorUnitLen = self.ftMonitorUnitLen # this variable is used to change the number of resilience
       try: 
           assert (ftMonitorUnitLen >= 2)
@@ -381,11 +382,15 @@ class WuApplication:
           logging.error('minimal ftMonitorUnitLen should be 2')
           ftMonitorUnitLen = 2
       ftGroupUnits = []
-      for subUnitLen in range(2, ftMonitorUnitLen+1):
-          ftGroupNum = ftLen - (subUnitLen -1)
-          for i in range(ftGroupNum):
-              group = ftComponents[i:i+subUnitLen]
-              ftGroupUnits.append(group)
+      for ftChain in ftComponents: 
+          ftLen = len(ftChain)
+          if ftLen < 2:
+              continue
+          for subUnitLen in range(2, ftMonitorUnitLen+1):
+              ftGroupNum = ftLen - (subUnitLen -1)
+              for i in range(ftGroupNum):
+                  group = ftChain[i:i+subUnitLen]
+                  ftGroupUnits.append(group)
       print "ftGroupUnits: ", ftGroupUnits
       for unit in ftGroupUnits:
           from_component = unit[0]
