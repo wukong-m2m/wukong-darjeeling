@@ -199,7 +199,7 @@ class patternSuggestor(object):
                     if ledstripIndex == 101: # 101 is used to indicate that there is no led placed on this coordinate.
                         continue
                     safty = self.map[self.floorIndex][x][y]   
-                    level = (safty / 100.0)**3
+                    level = (safty / 100.0)
                     #print 'coordinate: ', x, y, 'index: ', ledstripIndex, 'safty: ', safty
                     led.set(ledstripIndex, Color(255, 0, 0, level))
             led.update()
@@ -284,14 +284,14 @@ p=patternSuggestor(LEFTTOP)
 p.initMap(sys.argv[1])
 p.addFire(0,2,2)
 p.recalMap()
-#print 'map: ', p.map[0]
+#print 'map: ', p.map[1]
 p.updateSafty()
 path1 = p.findPath(0,5,2)
 p.updateEvacuation(path1)
 while True:
     time.sleep(1)
     p.updateEvacuation()
-print 'path1: ', path1
+#print 'path1: ', path1
 #p.removeFire(1, 4, 2)
 #p.recalMap()
 #p.updateSafty()
