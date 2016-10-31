@@ -1,0 +1,2020 @@
+<?xml version="1.0" encoding="utf-16"?>
+<FsPickler version="1.4.0.0" type="FSI_0001.Datatypes+Results">
+  <value>
+    <benchmark>binsrch16</benchmark>
+    <jvmInstructions flags="sequence">
+      <elem>
+        <jvm>
+          <index>0</index>
+          <text>Method preamble</text>
+        </jvm>
+        <avr flags="sequence">
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37423</opcode>
+              <text>push r2</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21084</address>
+                <opcode>37423</opcode>
+                <text>push r2</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37439</opcode>
+              <text>push r3</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21086</address>
+                <opcode>37439</opcode>
+                <text>push r3</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37455</opcode>
+              <text>push r4</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21088</address>
+                <opcode>37455</opcode>
+                <text>push r4</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37471</opcode>
+              <text>push r5</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21090</address>
+                <opcode>37471</opcode>
+                <text>push r5</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37487</opcode>
+              <text>push r6</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21092</address>
+                <opcode>37487</opcode>
+                <text>push r6</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37503</opcode>
+              <text>push r7</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21094</address>
+                <opcode>37503</opcode>
+                <text>push r7</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37519</opcode>
+              <text>push r8</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21096</address>
+                <opcode>37519</opcode>
+                <text>push r8</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37535</opcode>
+              <text>push r9</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21098</address>
+                <opcode>37535</opcode>
+                <text>push r9</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37551</opcode>
+              <text>push r10</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21100</address>
+                <opcode>37551</opcode>
+                <text>push r10</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37567</opcode>
+              <text>push r11</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21102</address>
+                <opcode>37567</opcode>
+                <text>push r11</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37583</opcode>
+              <text>push r12</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21104</address>
+                <opcode>37583</opcode>
+                <text>push r12</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37599</opcode>
+              <text>push r13</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21106</address>
+                <opcode>37599</opcode>
+                <text>push r13</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37615</opcode>
+              <text>push r14</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21108</address>
+                <opcode>37615</opcode>
+                <text>push r14</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37631</opcode>
+              <text>push r15</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21110</address>
+                <opcode>37631</opcode>
+                <text>push r15</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37647</opcode>
+              <text>push r16</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21112</address>
+                <opcode>37647</opcode>
+                <text>push r16</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37663</opcode>
+              <text>push r17</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21114</address>
+                <opcode>37663</opcode>
+                <text>push r17</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37839</opcode>
+              <text>push r28</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21116</address>
+                <opcode>37839</opcode>
+                <text>push r28</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37855</opcode>
+              <text>push r29</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21118</address>
+                <opcode>37855</opcode>
+                <text>push r29</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>492</opcode>
+              <text>movw r28, r24</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21120</address>
+                <opcode>492</opcode>
+                <text>movw r28, r24</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>1</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>475</opcode>
+              <text>movw r26, r22</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21122</address>
+                <opcode>475</opcode>
+                <text>movw r26, r22</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>1</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>282</opcode>
+              <text>movw r2, r20</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21124</address>
+                <opcode>282</opcode>
+                <text>movw r2, r20</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>1</cycles>
+            </counters>
+          </elem>
+        </avr>
+        <counters>
+          <executions>1</executions>
+          <cycles>39</cycles>
+        </counters>
+        <djDebugData>
+          <byteOffset>0</byteOffset>
+          <instOffset>0</instOffset>
+          <text></text>
+          <stackBefore flags="sequence" />
+          <stackAfter flags="cached" id="6" />
+        </djDebugData>
+      </elem>
+      <elem>
+        <jvm>
+          <index>1</index>
+          <text>JVM_INVOKESTATIC OPERANDS NOT AVAILABLE IN CURRENT TRACER</text>
+        </jvm>
+        <avr flags="sequence">
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37407</opcode>
+              <text>push r1</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21126</address>
+                <opcode>37407</opcode>
+                <text>push r1</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>6132096</opcode>
+              <text>lds r24, 93</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21128</address>
+                <opcode>6132096</opcode>
+                <text>lds r24, 93</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>6197648</opcode>
+              <text>lds r25, 94</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21132</address>
+                <opcode>6197648</opcode>
+                <text>lds r25, 94</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>192516992</opcode>
+              <text>sts 2937, r24</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21136</address>
+                <opcode>192516992</opcode>
+                <text>sts 2937, r24</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>192582544</opcode>
+              <text>sts 2938, r25</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21140</address>
+                <opcode>192582544</opcode>
+                <text>sts 2938, r25</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>53248</opcode>
+              <text>rcall 0</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21144</address>
+                <opcode>53248</opcode>
+                <text>rcall 0</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>3</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>53248</opcode>
+              <text>rcall 0</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21146</address>
+                <opcode>53248</opcode>
+                <text>rcall 0</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>3</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>53248</opcode>
+              <text>rcall 0</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21148</address>
+                <opcode>53248</opcode>
+                <text>rcall 0</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>3</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>53248</opcode>
+              <text>rcall 0</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21150</address>
+                <opcode>53248</opcode>
+                <text>rcall 0</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>3</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>192254880</opcode>
+              <text>sts 2933, r26</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21152</address>
+                <opcode>192254880</opcode>
+                <text>sts 2933, r26</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>192320432</opcode>
+              <text>sts 2934, r27</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21156</address>
+                <opcode>192320432</opcode>
+                <text>sts 2934, r27</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>57474</opcode>
+              <text>ldi r24, 2</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21160</address>
+                <opcode>57474</opcode>
+                <text>ldi r24, 2</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>1</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>57502</opcode>
+              <text>ldi r25, 14</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21162</address>
+                <opcode>57502</opcode>
+                <text>ldi r25, 14</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>1</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37823</opcode>
+              <text>push r27</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21164</address>
+                <opcode>37823</opcode>
+                <text>push r27</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37807</opcode>
+              <text>push r26</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21166</address>
+                <opcode>37807</opcode>
+                <text>push r26</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>-1966631922</opcode>
+              <text>call 35527</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21168</address>
+                <opcode>-1966631922</opcode>
+                <text>call 35527</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>430</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37295</opcode>
+              <text>pop r26</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21172</address>
+                <opcode>37295</opcode>
+                <text>pop r26</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37311</opcode>
+              <text>pop r27</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21174</address>
+                <opcode>37311</opcode>
+                <text>pop r27</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>192385472</opcode>
+              <text>lds r28, 2935</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21176</address>
+                <opcode>192385472</opcode>
+                <text>lds r28, 2935</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>192451024</opcode>
+              <text>lds r29, 2936</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21180</address>
+                <opcode>192451024</opcode>
+                <text>lds r29, 2936</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>192254368</opcode>
+              <text>lds r26, 2933</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21184</address>
+                <opcode>192254368</opcode>
+                <text>lds r26, 2933</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>192319920</opcode>
+              <text>lds r27, 2934</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21188</address>
+                <opcode>192319920</opcode>
+                <text>lds r27, 2934</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>192516480</opcode>
+              <text>lds r24, 2937</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21192</address>
+                <opcode>192516480</opcode>
+                <text>lds r24, 2937</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>192582032</opcode>
+              <text>lds r25, 2938</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21196</address>
+                <opcode>192582032</opcode>
+                <text>lds r25, 2938</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>6132608</opcode>
+              <text>sts 93, r24</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21200</address>
+                <opcode>6132608</opcode>
+                <text>sts 93, r24</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>6198160</opcode>
+              <text>sts 94, r25</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21204</address>
+                <opcode>6198160</opcode>
+                <text>sts 94, r25</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>37279</opcode>
+              <text>pop r25</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21208</address>
+                <opcode>37279</opcode>
+                <text>pop r25</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+        </avr>
+        <counters>
+          <executions>1</executions>
+          <cycles>484</cycles>
+        </counters>
+        <djDebugData>
+          <byteOffset>0</byteOffset>
+          <instOffset>0</instOffset>
+          <text>invokestatic(darjeeling3,7)[resetAndStart ()V]</text>
+          <stackBefore flags="cached" id="6" />
+          <stackAfter flags="cached" id="6" />
+        </djDebugData>
+      </elem>
+      <elem>
+        <jvm>
+          <index>2</index>
+          <text>JVM_ALOAD_0</text>
+        </jvm>
+        <avr flags="sequence">
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>32840</opcode>
+              <text>ld r4, Y</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21210</address>
+                <opcode>32840</opcode>
+                <text>ld r4, Y</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+          <elem>
+            <unopt>
+              <address>0</address>
+              <opcode>32857</opcode>
+              <text>ldd r5, Y+1</text>
+            </unopt>
+            <opt>
+              <Some>
+                <address>21212</address>
+                <opcode>32857</opcode>
+                <text>ldd r5, Y+1</text>
+              </Some>
+            </opt>
+            <counters>
+              <executions>1</executions>
+              <cycles>2</cycles>
+            </counters>
+          </elem>
+        </avr>
+        <counters>
+          <executions>1</executions>
+          <cycles>4</cycles>
+        </counters>
+        <djDebugData>
+          <byteOffset>3</byteOffset>
+          <instOffset>1</instOffset>
+          <text>aload(0)</text>
+          <stackBefore flags="cached" id="6" />
+          <stackAfter flags="sequence">
+            <elem>
+              <origin>0</origin>
+              <datatype>
+                <Case>Ref</Case>
+              </datatype>
+            </elem>
+          </stackAfter>
+        </djDebugData>
+      </elem>
+    </jvmInstructions>
+    <nativeCInstructions flags="sequence">
+      <elem>
+        <Item1>
+          <address>54522</address>
+          <opcode>37647</opcode>
+          <text>push	r16</text>
+        </Item1>
+        <Item2>
+          <executions>1</executions>
+          <cycles>2</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>
+          <address>54524</address>
+          <opcode>37663</opcode>
+          <text>push	r17</text>
+        </Item1>
+        <Item2>
+          <executions>1</executions>
+          <cycles>2</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>
+          <address>54634</address>
+          <opcode>37135</opcode>
+          <text>pop	r16</text>
+        </Item1>
+        <Item2>
+          <executions>1</executions>
+          <cycles>2</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>
+          <address>54636</address>
+          <opcode>1856934924</opcode>
+          <text>jmp	0xdd5c	; 0xdd5c &amp;lt;javax_darjeeling_Stopwatch_void_measure&amp;gt;</text>
+        </Item1>
+        <Item2>
+          <executions>1</executions>
+          <cycles>3</cycles>
+        </Item2>
+      </elem>
+    </nativeCInstructions>
+    <passedTestJava>true</passedTestJava>
+    <passedTestAOT>true</passedTestAOT>
+    <stopwatchCyclesJava>33795462</stopwatchCyclesJava>
+    <stopwatchCyclesAOT>288033</stopwatchCyclesAOT>
+    <stopwatchCyclesC>188329</stopwatchCyclesC>
+    <codesizeJava>117</codesizeJava>
+    <codesizeJavaBranchCount>7</codesizeJavaBranchCount>
+    <codesizeJavaBranchTargetCount>6</codesizeJavaBranchTargetCount>
+    <codesizeJavaMarkloopCount>2</codesizeJavaMarkloopCount>
+    <codesizeJavaMarkloopTotalSize>17</codesizeJavaMarkloopTotalSize>
+    <codesizeJavaWithoutBranchOverhead>97</codesizeJavaWithoutBranchOverhead>
+    <codesizeJavaWithoutBranchMarkloopOverhead>80</codesizeJavaWithoutBranchMarkloopOverhead>
+    <codesizeAOT>442</codesizeAOT>
+    <codesizeC>116</codesizeC>
+    <cyclesCTotal>186045</cyclesCTotal>
+    <cyclesCPushPop>
+      <executions>8</executions>
+      <cycles>16</cycles>
+    </cyclesCPushPop>
+    <cyclesCMov>
+      <executions>28002</executions>
+      <cycles>28002</cycles>
+    </cyclesCMov>
+    <cyclesCLoadStore>
+      <executions>14002</executions>
+      <cycles>28004</cycles>
+    </cyclesCLoadStore>
+    <cyclesAOTTotal>285099</cyclesAOTTotal>
+    <cyclesAOTPushPopInt>
+      <executions>48</executions>
+      <cycles>96</cycles>
+    </cyclesAOTPushPopInt>
+    <cyclesAOTPushPopRef>
+      <executions>0</executions>
+      <cycles>0</cycles>
+    </cyclesAOTPushPopRef>
+    <cyclesAOTLoadStore>
+      <executions>32016</executions>
+      <cycles>64032</cycles>
+    </cyclesAOTLoadStore>
+    <cyclesAOTMov>
+      <executions>43004</executions>
+      <cycles>43004</cycles>
+    </cyclesAOTMov>
+    <overheadTotalCycles>99054</overheadTotalCycles>
+    <overheadPushPop>
+      <executions>40</executions>
+      <cycles>80</cycles>
+    </overheadPushPop>
+    <overheadMov>
+      <executions>15002</executions>
+      <cycles>15002</cycles>
+    </overheadMov>
+    <overheadLoadStore>
+      <executions>18014</executions>
+      <cycles>36028</cycles>
+    </overheadLoadStore>
+    <cyclesPerJvmOpcode flags="sequence">
+      <elem>
+        <Item1>01) Ref stack ld/st</Item1>
+        <Item2>JVM_ALOAD_0</Item2>
+        <Item3>
+          <executions>1001</executions>
+          <cycles>4004</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>02) Int stack ld/st</Item1>
+        <Item2>JVM_IDUP</Item2>
+        <Item3>
+          <executions>6000</executions>
+          <cycles>6000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>02) Int stack ld/st</Item1>
+        <Item2>JVM_SLOAD</Item2>
+        <Item3>
+          <executions>0</executions>
+          <cycles>0</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>02) Int stack ld/st</Item1>
+        <Item2>JVM_SLOAD_0</Item2>
+        <Item3>
+          <executions>0</executions>
+          <cycles>0</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>02) Int stack ld/st</Item1>
+        <Item2>JVM_SLOAD_1</Item2>
+        <Item3>
+          <executions>1001</executions>
+          <cycles>4004</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>02) Int stack ld/st</Item1>
+        <Item2>JVM_SLOAD_2</Item2>
+        <Item3>
+          <executions>0</executions>
+          <cycles>0</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>02) Int stack ld/st</Item1>
+        <Item2>JVM_SLOAD_3</Item2>
+        <Item3>
+          <executions>0</executions>
+          <cycles>0</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>02) Int stack ld/st</Item1>
+        <Item2>JVM_SSTORE</Item2>
+        <Item3>
+          <executions>12000</executions>
+          <cycles>12000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>02) Int stack ld/st</Item1>
+        <Item2>JVM_SSTORE_0</Item2>
+        <Item3>
+          <executions>1</executions>
+          <cycles>4</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>02) Int stack ld/st</Item1>
+        <Item2>JVM_SSTORE_1</Item2>
+        <Item3>
+          <executions>1</executions>
+          <cycles>4</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>02) Int stack ld/st</Item1>
+        <Item2>JVM_SSTORE_2</Item2>
+        <Item3>
+          <executions>1000</executions>
+          <cycles>4000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>02) Int stack ld/st</Item1>
+        <Item2>JVM_SSTORE_3</Item2>
+        <Item3>
+          <executions>7000</executions>
+          <cycles>10000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>03) Constant load</Item1>
+        <Item2>JVM_SCONST_0</Item2>
+        <Item3>
+          <executions>1001</executions>
+          <cycles>2002</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>03) Constant load</Item1>
+        <Item2>JVM_SCONST_1</Item2>
+        <Item3>
+          <executions>7001</executions>
+          <cycles>14002</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>03) Constant load</Item1>
+        <Item2>JVM_SSPUSH</Item2>
+        <Item3>
+          <executions>1001</executions>
+          <cycles>2002</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>04) Array ld/st</Item1>
+        <Item2>JVM_SALOAD</Item2>
+        <Item3>
+          <executions>6001</executions>
+          <cycles>66011</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>05) Branches</Item1>
+        <Item2>JVM_BRTARGET</Item2>
+        <Item3>
+          <executions>0</executions>
+          <cycles>0</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>05) Branches</Item1>
+        <Item2>JVM_GOTO</Item2>
+        <Item3>
+          <executions>7000</executions>
+          <cycles>14000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>05) Branches</Item1>
+        <Item2>JVM_IF_SCMPGE</Item2>
+        <Item3>
+          <executions>7001</executions>
+          <cycles>28005</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>05) Branches</Item1>
+        <Item2>JVM_IF_SCMPGT</Item2>
+        <Item3>
+          <executions>7000</executions>
+          <cycles>22000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>05) Branches</Item1>
+        <Item2>JVM_IF_SCMPLE</Item2>
+        <Item3>
+          <executions>6000</executions>
+          <cycles>18000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>06) Math</Item1>
+        <Item2>JVM_SADD</Item2>
+        <Item3>
+          <executions>6000</executions>
+          <cycles>18000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>06) Math</Item1>
+        <Item2>JVM_SINC</Item2>
+        <Item3>
+          <executions>1000</executions>
+          <cycles>7012</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>06) Math</Item1>
+        <Item2>JVM_SSUB</Item2>
+        <Item3>
+          <executions>7001</executions>
+          <cycles>20002</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>07) Bit shifts</Item1>
+        <Item2>JVM_SUSHR</Item2>
+        <Item3>
+          <executions>6000</executions>
+          <cycles>12000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>10) Markloop</Item1>
+        <Item2>JVM_MARKLOOP_END</Item2>
+        <Item3>
+          <executions>0</executions>
+          <cycles>0</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>10) Markloop</Item1>
+        <Item2>JVM_MARKLOOP_START</Item2>
+        <Item3>
+          <executions>1000</executions>
+          <cycles>16000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>11) Others</Item1>
+        <Item2>JVM_ARRAYLENGTH</Item2>
+        <Item3>
+          <executions>1000</executions>
+          <cycles>5000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>11) Others</Item1>
+        <Item2>JVM_INVOKESTATIC</Item2>
+        <Item3>
+          <executions>2</executions>
+          <cycles>968</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>11) Others</Item1>
+        <Item2>JVM_RETURN</Item2>
+        <Item3>
+          <executions>1</executions>
+          <cycles>40</cycles>
+        </Item3>
+      </elem>
+    </cyclesPerJvmOpcode>
+    <cyclesPerAvrOpcodeAOTJava flags="sequence">
+      <elem>
+        <Item1>02) LD/ST rel to Y</Item1>
+        <Item2>LDD_Y</Item2>
+        <Item3>
+          <executions>11006</executions>
+          <cycles>22012</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>02) LD/ST rel to Y</Item1>
+        <Item2>LD_Y</Item2>
+        <Item3>
+          <executions>2001</executions>
+          <cycles>4002</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>02) LD/ST rel to Y</Item1>
+        <Item2>STD_Y</Item2>
+        <Item3>
+          <executions>5007</executions>
+          <cycles>10014</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>03) LD/ST rel to Z</Item1>
+        <Item2>LD_Z</Item2>
+        <Item3>
+          <executions>7001</executions>
+          <cycles>14002</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>03) LD/ST rel to Z</Item1>
+        <Item2>LD_ZINC</Item2>
+        <Item3>
+          <executions>7001</executions>
+          <cycles>14002</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>04) Stack push/pop</Item1>
+        <Item2>POP</Item2>
+        <Item3>
+          <executions>24</executions>
+          <cycles>48</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>04) Stack push/pop</Item1>
+        <Item2>PUSH</Item2>
+        <Item3>
+          <executions>24</executions>
+          <cycles>48</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>05) Register moves</Item1>
+        <Item2>MOVW</Item2>
+        <Item3>
+          <executions>43004</executions>
+          <cycles>43004</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>06) Constant load</Item1>
+        <Item2>LDI</Item2>
+        <Item3>
+          <executions>9007</executions>
+          <cycles>9007</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>07) Comp./branches</Item1>
+        <Item2>BRGE</Item2>
+        <Item3>
+          <executions>12000</executions>
+          <cycles>18000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>07) Comp./branches</Item1>
+        <Item2>BRLT</Item2>
+        <Item3>
+          <executions>8001</executions>
+          <cycles>10001</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>07) Comp./branches</Item1>
+        <Item2>BRNE</Item2>
+        <Item3>
+          <executions>1000</executions>
+          <cycles>1997</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>07) Comp./branches</Item1>
+        <Item2>CP</Item2>
+        <Item3>
+          <executions>20001</executions>
+          <cycles>20001</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>07) Comp./branches</Item1>
+        <Item2>CPC</Item2>
+        <Item3>
+          <executions>20001</executions>
+          <cycles>20001</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>08) Math</Item1>
+        <Item2>ADC</Item2>
+        <Item3>
+          <executions>18002</executions>
+          <cycles>18002</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>08) Math</Item1>
+        <Item2>ADD</Item2>
+        <Item3>
+          <executions>18002</executions>
+          <cycles>18002</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>08) Math</Item1>
+        <Item2>ADIW</Item2>
+        <Item3>
+          <executions>6001</executions>
+          <cycles>12002</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>08) Math</Item1>
+        <Item2>INC</Item2>
+        <Item3>
+          <executions>1003</executions>
+          <cycles>1003</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>08) Math</Item1>
+        <Item2>SBC</Item2>
+        <Item3>
+          <executions>7001</executions>
+          <cycles>7001</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>08) Math</Item1>
+        <Item2>SUB</Item2>
+        <Item3>
+          <executions>7001</executions>
+          <cycles>7001</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>09) Bit shifts</Item1>
+        <Item2>LSR</Item2>
+        <Item3>
+          <executions>6000</executions>
+          <cycles>6000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>09) Bit shifts</Item1>
+        <Item2>ROR</Item2>
+        <Item3>
+          <executions>6000</executions>
+          <cycles>6000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>10) Bit logic</Item1>
+        <Item2>EOR</Item2>
+        <Item3>
+          <executions>9003</executions>
+          <cycles>9003</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>11) Subroutines</Item1>
+        <Item2>CALL</Item2>
+        <Item3>
+          <executions>2</executions>
+          <cycles>860</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>11) Subroutines</Item1>
+        <Item2>RCALL</Item2>
+        <Item3>
+          <executions>8</executions>
+          <cycles>24</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>12) Others</Item1>
+        <Item2>LDS</Item2>
+        <Item3>
+          <executions>16</executions>
+          <cycles>32</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>12) Others</Item1>
+        <Item2>RET</Item2>
+        <Item3>
+          <executions>1</executions>
+          <cycles>4</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>12) Others</Item1>
+        <Item2>RJMP</Item2>
+        <Item3>
+          <executions>7001</executions>
+          <cycles>14002</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>12) Others</Item1>
+        <Item2>STS</Item2>
+        <Item3>
+          <executions>12</executions>
+          <cycles>24</cycles>
+        </Item3>
+      </elem>
+    </cyclesPerAvrOpcodeAOTJava>
+    <cyclesPerAvrOpcodeNativeC flags="sequence">
+      <elem>
+        <Item1>03) LD/ST rel to Z</Item1>
+        <Item2>LDD_Z</Item2>
+        <Item3>
+          <executions>1</executions>
+          <cycles>2</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>03) LD/ST rel to Z</Item1>
+        <Item2>LD_Z</Item2>
+        <Item3>
+          <executions>7001</executions>
+          <cycles>14002</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>03) LD/ST rel to Z</Item1>
+        <Item2>LD_ZINC</Item2>
+        <Item3>
+          <executions>7000</executions>
+          <cycles>14000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>04) Stack push/pop</Item1>
+        <Item2>POP</Item2>
+        <Item3>
+          <executions>4</executions>
+          <cycles>8</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>04) Stack push/pop</Item1>
+        <Item2>PUSH</Item2>
+        <Item3>
+          <executions>4</executions>
+          <cycles>8</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>05) Register moves</Item1>
+        <Item2>MOV</Item2>
+        <Item3>
+          <executions>7000</executions>
+          <cycles>7000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>05) Register moves</Item1>
+        <Item2>MOVW</Item2>
+        <Item3>
+          <executions>21002</executions>
+          <cycles>21002</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>06) Constant load</Item1>
+        <Item2>LDI</Item2>
+        <Item3>
+          <executions>4002</executions>
+          <cycles>4002</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>07) Comp./branches</Item1>
+        <Item2>BRCC</Item2>
+        <Item3>
+          <executions>0</executions>
+          <cycles>0</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>07) Comp./branches</Item1>
+        <Item2>BRCS</Item2>
+        <Item3>
+          <executions>7000</executions>
+          <cycles>8000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>07) Comp./branches</Item1>
+        <Item2>BRGE</Item2>
+        <Item3>
+          <executions>0</executions>
+          <cycles>0</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>07) Comp./branches</Item1>
+        <Item2>BRLT</Item2>
+        <Item3>
+          <executions>7000</executions>
+          <cycles>14000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>07) Comp./branches</Item1>
+        <Item2>BRNE</Item2>
+        <Item3>
+          <executions>1000</executions>
+          <cycles>1999</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>07) Comp./branches</Item1>
+        <Item2>CP</Item2>
+        <Item3>
+          <executions>14000</executions>
+          <cycles>14000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>07) Comp./branches</Item1>
+        <Item2>CPC</Item2>
+        <Item3>
+          <executions>14000</executions>
+          <cycles>14000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>08) Math</Item1>
+        <Item2>ADC</Item2>
+        <Item3>
+          <executions>21000</executions>
+          <cycles>21000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>08) Math</Item1>
+        <Item2>ADD</Item2>
+        <Item3>
+          <executions>21000</executions>
+          <cycles>21000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>08) Math</Item1>
+        <Item2>ADIW</Item2>
+        <Item3>
+          <executions>1</executions>
+          <cycles>2</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>08) Math</Item1>
+        <Item2>SBC</Item2>
+        <Item3>
+          <executions>0</executions>
+          <cycles>0</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>08) Math</Item1>
+        <Item2>SBCI</Item2>
+        <Item3>
+          <executions>7001</executions>
+          <cycles>7001</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>08) Math</Item1>
+        <Item2>SBIW</Item2>
+        <Item3>
+          <executions>1000</executions>
+          <cycles>2000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>08) Math</Item1>
+        <Item2>SUBI</Item2>
+        <Item3>
+          <executions>7001</executions>
+          <cycles>7001</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>09) Bit shifts</Item1>
+        <Item2>LSR</Item2>
+        <Item3>
+          <executions>7000</executions>
+          <cycles>7000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>09) Bit shifts</Item1>
+        <Item2>ROR</Item2>
+        <Item3>
+          <executions>7000</executions>
+          <cycles>7000</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>11) Subroutines</Item1>
+        <Item2>CALL</Item2>
+        <Item3>
+          <executions>1</executions>
+          <cycles>15</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>12) Others</Item1>
+        <Item2>JMP</Item2>
+        <Item3>
+          <executions>1</executions>
+          <cycles>3</cycles>
+        </Item3>
+      </elem>
+      <elem>
+        <Item1>12) Others</Item1>
+        <Item2>RJMP</Item2>
+        <Item3>
+          <executions>1000</executions>
+          <cycles>2000</cycles>
+        </Item3>
+      </elem>
+    </cyclesPerAvrOpcodeNativeC>
+    <cyclesPerJvmOpcodeCategory flags="sequence">
+      <elem>
+        <Item1>01) Ref stack ld/st</Item1>
+        <Item2>
+          <executions>1001</executions>
+          <cycles>4004</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>02) Int stack ld/st</Item1>
+        <Item2>
+          <executions>27003</executions>
+          <cycles>36012</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>03) Constant load</Item1>
+        <Item2>
+          <executions>9003</executions>
+          <cycles>18006</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>04) Array ld/st</Item1>
+        <Item2>
+          <executions>6001</executions>
+          <cycles>66011</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>05) Branches</Item1>
+        <Item2>
+          <executions>27001</executions>
+          <cycles>82005</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>06) Math</Item1>
+        <Item2>
+          <executions>14001</executions>
+          <cycles>45014</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>07) Bit shifts</Item1>
+        <Item2>
+          <executions>6000</executions>
+          <cycles>12000</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>08) Bit logic</Item1>
+        <Item2>
+          <executions>0</executions>
+          <cycles>0</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>09) Conversions</Item1>
+        <Item2>
+          <executions>0</executions>
+          <cycles>0</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>10) Markloop</Item1>
+        <Item2>
+          <executions>1000</executions>
+          <cycles>16000</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>11) Others</Item1>
+        <Item2>
+          <executions>1003</executions>
+          <cycles>6008</cycles>
+        </Item2>
+      </elem>
+    </cyclesPerJvmOpcodeCategory>
+    <cyclesPerAvrOpcodeCategoryAOTJava flags="sequence">
+      <elem>
+        <Item1>01) LD/ST rel to X</Item1>
+        <Item2>
+          <executions>0</executions>
+          <cycles>0</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>02) LD/ST rel to Y</Item1>
+        <Item2>
+          <executions>18014</executions>
+          <cycles>36028</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>03) LD/ST rel to Z</Item1>
+        <Item2>
+          <executions>14002</executions>
+          <cycles>28004</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>04) Stack push/pop</Item1>
+        <Item2>
+          <executions>48</executions>
+          <cycles>96</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>05) Register moves</Item1>
+        <Item2>
+          <executions>43004</executions>
+          <cycles>43004</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>06) Constant load</Item1>
+        <Item2>
+          <executions>9007</executions>
+          <cycles>9007</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>07) Comp./branches</Item1>
+        <Item2>
+          <executions>61003</executions>
+          <cycles>70000</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>08) Math</Item1>
+        <Item2>
+          <executions>57010</executions>
+          <cycles>63011</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>09) Bit shifts</Item1>
+        <Item2>
+          <executions>12000</executions>
+          <cycles>12000</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>10) Bit logic</Item1>
+        <Item2>
+          <executions>9003</executions>
+          <cycles>9003</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>11) Subroutines</Item1>
+        <Item2>
+          <executions>10</executions>
+          <cycles>884</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>12) Others</Item1>
+        <Item2>
+          <executions>7030</executions>
+          <cycles>14062</cycles>
+        </Item2>
+      </elem>
+    </cyclesPerAvrOpcodeCategoryAOTJava>
+    <cyclesPerAvrOpcodeCategoryNativeC flags="sequence">
+      <elem>
+        <Item1>01) LD/ST rel to X</Item1>
+        <Item2>
+          <executions>0</executions>
+          <cycles>0</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>02) LD/ST rel to Y</Item1>
+        <Item2>
+          <executions>0</executions>
+          <cycles>0</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>03) LD/ST rel to Z</Item1>
+        <Item2>
+          <executions>14002</executions>
+          <cycles>28004</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>04) Stack push/pop</Item1>
+        <Item2>
+          <executions>8</executions>
+          <cycles>16</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>05) Register moves</Item1>
+        <Item2>
+          <executions>28002</executions>
+          <cycles>28002</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>06) Constant load</Item1>
+        <Item2>
+          <executions>4002</executions>
+          <cycles>4002</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>07) Comp./branches</Item1>
+        <Item2>
+          <executions>43000</executions>
+          <cycles>51999</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>08) Math</Item1>
+        <Item2>
+          <executions>57003</executions>
+          <cycles>58004</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>09) Bit shifts</Item1>
+        <Item2>
+          <executions>14000</executions>
+          <cycles>14000</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>10) Bit logic</Item1>
+        <Item2>
+          <executions>0</executions>
+          <cycles>0</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>11) Subroutines</Item1>
+        <Item2>
+          <executions>1</executions>
+          <cycles>15</cycles>
+        </Item2>
+      </elem>
+      <elem>
+        <Item1>12) Others</Item1>
+        <Item2>
+          <executions>1001</executions>
+          <cycles>2003</cycles>
+        </Item2>
+      </elem>
+    </cyclesPerAvrOpcodeCategoryNativeC>
+  </value>
+</FsPickler>

@@ -1,9 +1,24 @@
 ﻿<Properties StartupItem="proces-trace/proces-trace.fsproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="proces-trace/CombineResults.fsx">
+  <MonoDevelop.Ide.Workbench ActiveDocument="proces-trace/getcodesizedata.fsx">
     <Files>
-      <File FileName="proces-trace/CombineResults.fsx" Line="25" Column="104" />
+      <File FileName="proces-trace/CombineResults.fsx" Line="25" Column="40" />
+      <File FileName="proces-trace/ProcessTrace.fsx" Line="527" Column="53" />
+      <File FileName="proces-trace/AVR.fsx" Line="282" Column="1" />
+      <File FileName="proces-trace/getcodesizedata.fsx" Line="1" Column="1" />
+      <File FileName="proces-trace/Datatypes.fsx" Line="1" Column="1" />
     </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="proces-trace" expanded="True">
+            <Node name="proces-trace" expanded="True">
+              <Node name="getcodesizedata.fsx" selected="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
