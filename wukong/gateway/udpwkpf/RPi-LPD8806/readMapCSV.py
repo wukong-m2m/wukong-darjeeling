@@ -259,8 +259,6 @@ class patternSuggestor(object):
             if self.count >= len(self.path):
                 self.count = 0
             self.setPathLED(self.path[self.count])
-            self.setPathLED(self.path[(self.count-1)%len(self.path)])
-            self.setPathLED(self.path[(self.count-2)%len(self.path)])
             self.count += 1
         elif location == STAIR:
             self.updateSafty()
@@ -288,7 +286,7 @@ p.addFire(0,2,2)
 p.recalMap()
 #print 'map: ', p.map[0]
 p.updateSafty()
-path1 = p.findPath(0,4,2)
+path1 = p.findPath(0,5,2)
 p.updateEvacuation(path1)
 while True:
     time.sleep(1)
