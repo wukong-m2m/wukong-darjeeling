@@ -10,9 +10,9 @@ STAIR                  = 1
 location = FLOOR # FLOOR or STAIR
 
 #direction
-LEFT                   = 0
+LEFT                   = -1
 RIGHT                  = 1
-STATIC                 = 2
+STATIC                 = None
 
 #FLOOR
 LEFTTOP                = 0
@@ -41,7 +41,7 @@ csv.register_dialect(
         quoting = csv.QUOTE_MINIMAL)
 
 class patternSuggestor(object):
-    def __init__(self, floorIndex=None, stairIndex=None):
+    def __init__(self, index):
         self.map = []
         self.dist = []
         self.stairs = []
@@ -51,10 +51,12 @@ class patternSuggestor(object):
         self.fires = []
         self.ledfloorMap = []
         self.lastPath = []
-        self.floorIndex = floorIndex
-        self.stairIndex = stairIndex
+        self.floorIndex = index
+        self.stairIndex = index
         self.count = 0
         self.lastCount = 0
+        self.path = []
+        self.direction = None
       
     def initMap(self, filename):
         with open(filename, 'rb') as csvfile:
@@ -205,35 +207,12 @@ class patternSuggestor(object):
             safty = self.stairs[self.stairIndex][-1]
             level = safty / 100.0
             #print 'stairIndex: ', self.stairIndex, 'safty: ', safty
-            ledstripLen = len(self.stairs[self.stairIndex])
+            ledstripLen = len(self.ledstairMap[self.stairIndex])
             for ledstripIndex in range(ledstripLen):
                 led.set(ledstripIndex, Color(255, 0, 0, level))
             led.update()
         else:
             raise NotImplementedError
-
-    def removeLastPath(self, path):
-        for point in self.lastPath:
-            if point not in path:
-                x = point[1]
-                y = point[2]
-                safty = self.map[self.floorIndex][x][y] 
-                level = safty / 100.0
-                ledstripIndex = self.ledfloorMap[self.floorIndex][x][y]
-                #print 'coordinate: ', x, y, 'index: ', ledstripIndex, 'safty: ', safty
-                led.set(ledstripIndex, Color(255, 0, 0, level))
-        led.update()
-
-    def removeCurrentPath(self, path):
-        for point in path:
-            x = point[1]
-            y = point[2]
-            safty = self.map[self.floorIndex][x][y] 
-            level = safty / 100.0
-            ledstripIndex = self.ledfloorMap[self.floorIndex][x][y]
-            #print 'coordinate: ', x, y, 'index: ', ledstripIndex, 'safty: ', safty
-            led.set(ledstripIndex, Color(255, 0, 0, level))
-        led.update()
 
     def findDirection(self, path):
         if location == FLOOR:
@@ -257,70 +236,53 @@ class patternSuggestor(object):
         else:
             raise NotImplementedError
 
-    def updateEvacuation(self, path):
+    def setPathLED(self, point):
+        x = point[1]
+        y = point[2]
+        ledstripIndex = self.ledfloorMap[self.floorIndex][x][y]
+        level = 0.5
+        led.set(ledstripIndex, Color(0, 255, 0, level))
+        led.update()
+        
+    def updateEvacuation(self, path = None):
         if location == FLOOR:
-            self.removeLastPath(path)
-            currentPath = []
-            for point in path:
-                if point[0] == self.floorIndex:
-                    currentPath.append(point)
-            if currentPath == []:
-               self.updateSafty()
-            else:
-                if (self.count % len(currentPath)) == 0:
-                    self.removeCurrentPath(currentPath)
-                currentPoint = currentPath[self.count%len(currentPath)]
-                x = currentPoint[1]
-                y = currentPoint[2]
-                ledstripIndex = self.ledfloorMap[self.floorIndex][x][y]
-                level = 0.5
-                #print 'coordinate: ', x, y, 'index: ', ledstripIndex
-                led.set(ledstripIndex, Color(0, 255, 0, level))
-                led.update()
-                self.count += 1
-                self.lastPath = currentPath
+            self.updateSafty()
+            if path:
+               self.path = []
+               self.count = 0
+               for point in path:
+                   if point[0] == self.floorIndex:
+                       self.path.append(point)
+            if len(self.path) == 0:
+                print "No Path!!"
+                return
+            if self.count >= len(self.path):
+                self.count = 0
+            self.setPathLED(self.path[self.count])
+            self.setPathLED(self.path[(self.count-1)%len(self.path)])
+            self.setPathLED(self.path[(self.count-2)%len(self.path)])
+            self.count += 1
         elif location == STAIR:
-            direction = self.findDirection(path)
-            tempMap = self.ledstairMap[self.stairIndex]
-            tempLen = len(tempMap)
-            if direction == LEFT:
-                print 'direction is left'
-                # restore last point
-                lasttempIndex = tempLen - (self.lastCount % tempLen)
-                lastledstripIndex = tempMap[(lasttempIndex-1)]
-                safty = self.stairs[self.stairIndex][-1]
-                level = safty / 100.0
-                led.set(lastledstripIndex, Color(255, 0, 0, level))
-                # update current point
-                tempIndex = tempLen - (self.count % tempLen)
-                ledstripIndex = tempMap[(tempIndex-1)]
+            self.updateSafty()
+            if path:
+                self.direction = self.findDirection(path)
+            if self.direction:
+                tempMap = self.ledstairMap[self.stairIndex]
+                tempLen = len(tempMap)
+                self.count %= tempLen
+                index = tempMap[self.count]
                 level = 0.5
-                led.set(ledstripIndex, Color(0, 255, 0, level))
+                led.set(index, Color(0, 255, 0, level))
                 led.update()
-            elif direction == RIGHT: 
-                print 'direction is right'
-                # restore last point
-                lasttempIndex = self.lastCount % tempLen
-                lastledstripIndex = tempMap[lasttempIndex]
-                safty = self.stairs[self.stairIndex][-1]
-                level = safty / 100.0
-                led.set(lastledstripIndex, Color(255, 0, 0, level))
-                # update current point
-                tempIndex = self.count % tempLen
-                ledstripIndex = tempMap[tempIndex]
-                level = 0.5
-                led.set(ledstripIndex, Color(0, 255, 0, level))
-                led.update()
+                self.count += self.direction
             else:
                 print 'direction is static'
                 self.updateSafty()
-            self.lastCount = self.count
-            self.count += 1
         else:
             raise NotImplementedError
 
-p=patternSuggestor(LEFTTOP, None)
-#p=patternSuggestor(None, LEFTMIDDLE2RIGHTTOP)
+p=patternSuggestor(LEFTTOP)
+#p=patternSuggestor(LEFTTOP2RIGHTTOP)
 p.initMap(sys.argv[1])
 p.addFire(0,2,2)
 p.recalMap()
@@ -328,6 +290,9 @@ p.recalMap()
 p.updateSafty()
 path1 = p.findPath(0,4,2)
 p.updateEvacuation(path1)
+while True:
+    time.sleep(1)
+    p.updateEvacuation()
 print 'path1: ', path1
 #p.removeFire(1, 4, 2)
 #p.recalMap()
