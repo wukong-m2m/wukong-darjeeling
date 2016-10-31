@@ -139,7 +139,15 @@
         <property name="volume_increase" access="readwrite" datatype="boolean" default="false"/>
         <property name="volume_decrease" access="readwrite" datatype="boolean" default="false"/>
     </WuClass>
-    <WuClass name="FT" id="18" virtual="true" type="soft" forcePropagate="true">
+    <WuClass name="Fire_Agent" id="18" virtual="true" type="soft">
+        <property name="left_danger_in" access="writeonly" datatype="boolean" default="false"  />
+        <property name="right_danger_in" access="writeonly" datatype="boolean" default="false"  />
+        <property name="local_danger_in" access="writeonly" datatype="boolean" default="false"  />
+        <property name="left_danger_out" access="readonly" datatype="boolean" default="false"  />
+        <property name="right_danger_out" access="readonly" datatype="boolean" default="false"  />
+        <property name="pattern" access="readonly" datatype="short" default="0"  />
+    </WuClass>
+    <WuClass name="FT" id="19" virtual="true" type="soft" forcePropagate="true">
         <property name="hb_gp_in" access="writeonly" datatype="short" default="0"  />
         <property name="hb_p_in" access="writeonly" datatype="short" default="0"  />
         <property name="hb" access="readonly" datatype="short" default="0"  />
@@ -215,8 +223,14 @@
         <property name="mode" access="readwrite" datatype="boolean" default="false"  />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
     </WuClass>
-
-
+    <WuClass name="Counter" id="1017" virtual="false" type="hard">
+        <property name="index" access="readwrite" datatype="short" default="0"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
+    </WuClass>
+    <WuClass name="Smoke_Sensor" id="1018" virtual="false" type="hard">
+        <property name="alarm" access="readwrite" datatype="boolean" default="false"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
+    </WuClass>
 
     <WuClass name="Binary_TestSensor" id="1901" virtual="false" type="hard">
         <property name="current_value" access="readwrite" datatype="boolean"  />
@@ -482,6 +496,18 @@
     <WuClass name="Intel_Sound" id="2037" virtual="false" type="hard">
         <property name="on_off" access="writeonly" datatype="boolean"  />
     </WuClass>
+    <WuClass name="Pattern" id="2038" virtual="false" type="hard">
+        <property name="index" access="writeonly" datatype="short"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="50"  />
+    </WuClass>
+    <WuClass name="AWS_Daemon" id="2039" virtual="false" type="hard">
+        <property name="selfID" access="readwrite" datatype="short" default="0" />
+        <property name="left_recv" access="readwrite" datatype="boolean" default="false"/>
+        <property name="right_recv" access="readwrite" datatype="boolean" default="false"/>
+        <property name="left_signal" access="readwrite" datatype="boolean" default="false"/>
+        <property name="right_signal" access="readwrite" datatype="boolean" default="false"/>
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="50"  />
+    </WuClass>
 
 
 
@@ -580,7 +606,7 @@
       <property name="location" access="readwrite" datatype="short" default="0" />
     </WuClass>
     <WuClass name="UIButton" id="11002" virtual="false" type="soft">
-      <property name="click" access="readwrite" datatype="short" default="0" />
+      <property name="click" access="readwrite" datatype="boolean" default="false" />
       <property name="device" access="readwrite" datatype="short" default="0" />
       <property name="port" access="readwrite" datatype="short" default="0" />
     </WuClass>

@@ -15,11 +15,15 @@ if device_type == DEVICE_TYPE_MRAA:
     import mraa
     import pyupm_grove
     import pyupm_i2clcd as lcd
+    import pyupm_lpd8806
 elif device_type == DEVICE_TYPE_RPI:
     import RPi.GPIO as GPIO
     GPIO.setmode(GPIO.BOARD)
     import grove_rgb_lcd as lcd
     from Sht1x import Sht1x
+    import sys
+    sys.path.append("./RPi-LPD8806")
+    from bootstrap import *
 elif device_type == DEVICE_TYPE_GPI:
     import grovepi
 else:
