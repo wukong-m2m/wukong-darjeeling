@@ -167,17 +167,11 @@ let countPushPopMovAOT (results : ResultJava list) =
     (sumForOpcode isPUSHPOPInt, sumForOpcode isPUSHPOPRef, sumForOpcode isMOV)
 
 let getTimersFromStdout (stdoutlog : string list) =
-    let pattern = "timer number (10\d): (\d+) cycles"
+    let pattern = "Timer (\w+) ran (\d+) times for a total of (\d+) cycles."
     stdoutlog |> List.map (fun line -> Regex.Match(line, pattern))
               |> List.filter (fun regexmatch -> regexmatch.Success)
-              |> List.map (fun regexmatch -> (regexmatch.Groups.[1].Value, Int32.Parse(regexmatch.Groups.[2].Value)))
-              |> List.map (fun (timer, cycles) ->
-                                match timer with
-                                | "101" -> ("C", cycles)
-                                | "102" -> ("AOT", cycles)
-                                | "103" -> ("Java", cycles)
-                                | _ -> ("", cycles))
-              |> List.sortBy (fun (timer, cycles) -> match timer with "C" -> 1 | "AOT" -> 2 | "Java" -> 3 | _ -> 4)
+              |> List.map (fun regexmatch -> (regexmatch.Groups.[1].Value, Int32.Parse(regexmatch.Groups.[3].Value)))
+              |> List.sortBy (fun (timer, cycles) -> match timer with "NATIVE" -> 1 | "AOT" -> 2 | "JAVA" -> 3 | _ -> 4)
 
 let getNativeInstructionsFromObjdump (objdumpOutput : string list) (countersForAddress : int -> ExecCounters) =
     let startIndex = objdumpOutput |> List.findIndex (fun line -> Regex.IsMatch(line, "^[0-9a-fA-F]+ <rtcbenchmark_measure_native_performance(\.constprop\.\d*)?>:$"))
@@ -344,9 +338,9 @@ let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddress :
         nativeCInstructions = nativeCInstructions |> Seq.toList
         passedTestJava = stdoutlog |> List.exists (fun line -> line.Contains("JAVA OK."))
         passedTestAOT = stdoutlog |> List.exists (fun line -> line.Contains("RTC OK."))
-        stopwatchCyclesJava = (getTimer "Java")
+        stopwatchCyclesJava = (getTimer "JAVA")
         stopwatchCyclesAOT = (getTimer "AOT")
-        stopwatchCyclesC = (getTimer "C")
+        stopwatchCyclesC = (getTimer "NATIVE")
         codesizeJava = codesizeJava
         codesizeJavaBranchCount = codesizeJavaBranchCount
         codesizeJavaBranchTargetCount = codesizeJavaBranchTargetCount
