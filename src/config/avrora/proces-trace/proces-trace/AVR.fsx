@@ -289,8 +289,14 @@ let opcodeCategory opcode =
     match opcodeCategories |> List.tryFind (fun (cat, opcodes) -> opcodes |> List.exists ((=) opcode)) with
     | Some(cat, _) -> cat
     | None -> "13) ????"
+
 let opcodeName (opcode, mask, name) =
     name
+
+let instructionSize inst =
+    let opcode = getOpcodeForInstruction inst (inst.ToString())
+    if (opcode = CALL || opcode = JMP || opcode = LDS || opcode = STS) then 4 else 2
+
 let getAllOpcodeCategories =
     opcodeCategories |> List.map (fun (cat, opcodes) -> cat)
 

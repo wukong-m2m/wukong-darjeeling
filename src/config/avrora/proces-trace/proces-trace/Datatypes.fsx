@@ -1,22 +1,30 @@
+#load "Helpers.fsx"
+#load "AVR.fsx"
+#load "JVM.fsx"
+
+open Helpers
+
 type AvrInstruction = {
-    address : int;
-    opcode : int;
-    text : string; }
+    address : int
+    opcode : int
+    text : string }
 
 type JvmInstruction = {
     index : int
     text : string }
 
 type ExecCounters = {
-    executions : int;
-    cycles : int; }
+    executions : int
+    cycles : int
+    count : int
+    size : int }
     with
-    static member (+) (x, y) = { executions = x.executions + y.executions ; cycles = x.cycles + y.cycles }
-    static member (-) (x, y) = { executions = x.executions - y.executions ; cycles = x.cycles - y.cycles }
+    static member (+) (x, y) = { executions = x.executions + y.executions ; cycles = x.cycles + y.cycles ; count = x.count + y.count ; size = x.size + y.size }
+    static member (-) (x, y) = { executions = x.executions - y.executions ; cycles = x.cycles - y.cycles ; count = x.count - y.count ; size = x.size - y.size }
     member this.average = if this.executions > 0
                           then float this.cycles / float this.executions
                           else 0.0
-    static member empty = { executions = 0; cycles = 0 }
+    static member empty = { executions = 0; cycles = 0; count = 0; size = 0 }
 
 type ResultAvr = {
     unopt : AvrInstruction;
@@ -63,21 +71,50 @@ type DJDebugData = {
     member this.stackSizeBefore = this.stackBefore |> List.map (fun x -> x.datatype) |> List.sumBy StackDatatypeToSize
     member this.stackSizeAfter = this.stackAfter |> List.map (fun x -> x.datatype) |> List.sumBy StackDatatypeToSize
 
-type ResultJava = {
+type ProcessedJvmInstruction = {
     jvm : JvmInstruction;
     avr : ResultAvr list;
     counters : ExecCounters;
     djDebugData : DJDebugData; }
 
-type Results = {
+let sumCyclesCategoryCounters = 
+  (fun (cyclesPerAvrOpcodeCategory) (catTest : string -> bool) -> cyclesPerAvrOpcodeCategory |> List.filter (fun (cat,cnt) -> (catTest cat))
+                                                                                             |> List.map snd
+                                                                                             |> List.fold (+) ExecCounters.empty)
+
+let groupOpcodesInCategoriesCycles (allCategories : string list) (results : (string * string * ExecCounters) list) =
+    let categoriesPresent =
+        results
+            |> List.map (fun (cat, opcode, cnt) -> (cat, cnt))
+            |> groupFold fst snd (+) ExecCounters.empty
+    allCategories
+        |> List.sort
+        |> List.map (fun cat -> match categoriesPresent |> List.tryFind (fun (cat2, _) -> cat = cat2) with
+                                | Some (cat, cnt) -> (cat, cnt)
+                                | None -> (cat, ExecCounters.empty))
+
+let groupOpcodesInCategoriesBytes (allCategories : string list) (results : (string * string * int) list) =
+    let categoriesPresent =
+        results
+            |> List.map (fun (cat, opcode, cnt) -> (cat, cnt))
+            |> groupFold fst snd (+) 0
+    allCategories
+        |> List.sort
+        |> List.map (fun cat -> match categoriesPresent |> List.tryFind (fun (cat2, _) -> cat = cat2) with
+                                | Some (cat, cnt) -> (cat, cnt)
+                                | None -> (cat, 0))
+
+type SimulationResults = {
     benchmark : string;
-    jvmInstructions : ResultJava list;
+    jvmInstructions : ProcessedJvmInstruction list;
     nativeCInstructions : (AvrInstruction*ExecCounters) list
     passedTestJava : bool;
     passedTestAOT : bool;
-    stopwatchCyclesJava : int;
-    stopwatchCyclesAOT : int;
-    stopwatchCyclesC : int;
+
+    countersPerJvmOpcodeAOTJava : (string * string * ExecCounters) list;
+    countersPerAvrOpcodeAOTJava : (string * string * ExecCounters) list;
+    countersPerAvrOpcodeNativeC : (string * string * ExecCounters) list;
+
     codesizeJava : int;
     codesizeJavaBranchCount : int;
     codesizeJavaBranchTargetCount : int;
@@ -87,37 +124,46 @@ type Results = {
     codesizeJavaWithoutBranchMarkloopOverhead : int;
     codesizeAOT : int;
     codesizeC : int;
-    cyclesCTotal : int;
-    cyclesCPushPop : ExecCounters;
-    cyclesCMov : ExecCounters;
-    cyclesCLoadStore : ExecCounters;
-    cyclesAOTTotal : int;
-    cyclesAOTPushPopInt : ExecCounters;
-    cyclesAOTPushPopRef : ExecCounters;
-    cyclesAOTLoadStore : ExecCounters;
-    cyclesAOTMov : ExecCounters;
-    overheadTotalCycles : int;
-    overheadPushPop : ExecCounters;
-    overheadMov : ExecCounters;
-    overheadLoadStore : ExecCounters;
-    cyclesPerJvmOpcode : (string * string * ExecCounters) list;
-    cyclesPerAvrOpcodeAOTJava : (string * string * ExecCounters) list;
-    cyclesPerAvrOpcodeNativeC : (string * string * ExecCounters) list;
-    cyclesPerJvmOpcodeCategory : (string * ExecCounters) list;
-    cyclesPerAvrOpcodeCategoryAOTJava : (string * ExecCounters) list;
-    cyclesPerAvrOpcodeCategoryNativeC : (string * ExecCounters) list; }
+
+    cyclesStopwatchJava : int;
+    cyclesStopwatchAOT : int;
+    cyclesStopwatchC : int; }
     with
-    member this.executedCyclesAOT = this.cyclesPerJvmOpcodeCategory |> List.sumBy (fun (cat, cnt) -> cnt.cycles);
-    member this.executedCyclesC = this.cyclesPerAvrOpcodeCategoryNativeC |> List.sumBy (fun (cat, cnt) -> cnt.cycles);
-    member this.maxJvmStackInBytes =
+    member this.countersPerJvmOpcodeCategoryAOTJava = groupOpcodesInCategoriesCycles JVM.getAllJvmOpcodeCategories this.countersPerJvmOpcodeAOTJava
+    member this.countersPerAvrOpcodeCategoryNativeC = groupOpcodesInCategoriesCycles AVR.getAllOpcodeCategories    this.countersPerAvrOpcodeNativeC
+    member this.countersPerAvrOpcodeCategoryAOTJava = groupOpcodesInCategoriesCycles AVR.getAllOpcodeCategories    this.countersPerAvrOpcodeAOTJava
+
+    member this.countersCLoadStore        = sumCyclesCategoryCounters this.countersPerAvrOpcodeCategoryNativeC (fun (cat) -> cat.Contains("LD/ST rel to"))
+    member this.countersCPushPop          = sumCyclesCategoryCounters this.countersPerAvrOpcodeCategoryNativeC (fun (cat) -> cat.Contains("Stack push/pop"))
+    member this.countersCMov              = sumCyclesCategoryCounters this.countersPerAvrOpcodeCategoryNativeC (fun (cat) -> cat.Contains("Register moves"))
+    member this.countersCOthers           = sumCyclesCategoryCounters this.countersPerAvrOpcodeCategoryNativeC (fun (cat) -> not (cat.Contains("LD/ST rel to")) && not (cat.Contains("Stack push/pop")) && not (cat.Contains("Register moves")))
+    member this.countersCTotal            = this.countersCPushPop + this.countersCMov + this.countersCLoadStore + this.countersCOthers;
+
+    member this.countersAOTLoadStore      = sumCyclesCategoryCounters this.countersPerAvrOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("LD/ST rel to") && not (cat.Contains("LD/ST rel to X")))
+    member this.countersAOTPushPopInt     = sumCyclesCategoryCounters this.countersPerAvrOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Stack push/pop"))
+    member this.countersAOTPushPopRef     = sumCyclesCategoryCounters this.countersPerAvrOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("LD/ST rel to X"))
+    member this.countersAOTPushPop        = this.countersAOTPushPopInt + this.countersAOTPushPopRef
+    member this.countersAOTMov            = sumCyclesCategoryCounters this.countersPerAvrOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Register moves"))
+    member this.countersAOTOthers         = sumCyclesCategoryCounters this.countersPerAvrOpcodeCategoryAOTJava (fun (cat) -> not (cat.Contains("LD/ST rel to")) && not (cat.Contains("Stack push/pop")) && not (cat.Contains("Register moves")))
+    member this.countersAOTTotal          = this.countersAOTPushPop + this.countersAOTMov + this.countersAOTLoadStore + this.countersAOTOthers;
+
+    member this.countersOverheadLoadStore = this.countersAOTLoadStore - this.countersCLoadStore;
+    member this.countersOverheadPushPop   = this.countersAOTPushPop - this.countersCPushPop;
+    member this.countersOverheadMov       = this.countersAOTMov - this.countersCMov;
+    member this.countersOverheadOthers    = this.countersAOTOthers - this.countersCOthers;
+    member this.countersOverheadTotal     = this.countersAOTTotal - this.countersCTotal;
+
+    member this.executedCyclesAOT         = this.countersPerAvrOpcodeCategoryAOTJava |> List.sumBy (fun (cat, cnt) -> cnt.cycles);
+    member this.executedCyclesC           = this.countersPerAvrOpcodeCategoryNativeC |> List.sumBy (fun (cat, cnt) -> cnt.cycles);
+    member this.maxJvmStackInBytes        =
         this.jvmInstructions
         |> List.map (fun jvm -> jvm.djDebugData.stackSizeBefore)
         |> List.max;
-    member this.avgJvmStackInBytes =
+    member this.avgJvmStackInBytes        =
         this.jvmInstructions 
         |> List.fold (fun (accCnt, accSum) jvm -> (accCnt+jvm.counters.executions, accSum+(jvm.counters.executions*jvm.djDebugData.stackSizeBefore))) (0, 0)
         |> (fun (cnt, sum) -> float sum / float cnt)
-    member this.avgJvmStackChangeInBytes =
+    member this.avgJvmStackChangeInBytes  =
         this.jvmInstructions 
         |> List.map (fun jvm -> (jvm.counters.executions, jvm.counters.executions * (abs (jvm.djDebugData.stackSizeBefore - jvm.djDebugData.stackSizeAfter))))
         |> List.fold (fun (accCnt, accSum) (jvmCnt, jvmSum) -> (accCnt+jvmCnt, accSum+jvmSum)) (0, 0)
