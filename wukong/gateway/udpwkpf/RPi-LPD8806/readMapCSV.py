@@ -7,12 +7,12 @@ from bootstrap import *
 FLOOR                  = 0
 STAIR                  = 1
 
-location = FLOOR # FLOOR or STAIR
+location = STAIR # FLOOR or STAIR
 
 #direction
 LEFT                   = -1
 RIGHT                  = 1
-STATIC                 = None
+STATIC                 = 0
 
 #FLOOR
 LEFTTOP                = 0
@@ -290,7 +290,7 @@ class patternSuggestor(object):
         else:
             raise NotImplementedError
 
-p=patternSuggestor(LEFTTOP)
+p=patternSuggestor(RIGHTMIDDLE2BOTTOM)
 #p=patternSuggestor(LEFTTOP2RIGHTTOP)
 p.initMap(sys.argv[1])
 p.addFire(0,2,2)
