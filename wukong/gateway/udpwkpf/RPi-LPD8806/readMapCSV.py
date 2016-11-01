@@ -4,6 +4,7 @@ import copy
 import time
 from bootstrap import *
 
+LED_GRID               = 4
 FLOOR                  = 0
 STAIR                  = 1
 
@@ -269,9 +270,9 @@ class patternSuggestor(object):
                 print "No Path!!"
                 return
             for x in xrange(len(self.paths)):
-                if self.counts[x] >= len(self.paths[x]):
-                    self.counts[x] = 0
-                self.setPathLED(self.paths[x][self.counts[x]])
+                self.counts[x] %= LED_GRID
+                for i in xrange(self.counts[x], len(self.paths[x]), LED_GRID):
+                    self.setPathLED(self.paths[x][i])
                 self.counts[x] += 1
         elif location == STAIR:
             self.updateSafty()
