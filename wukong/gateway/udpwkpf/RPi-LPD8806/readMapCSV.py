@@ -54,8 +54,9 @@ class patternSuggestor(object):
         self.floorIndex = index
         self.stairIndex = index
         self.count = 0
-        self.lastCount = 0
         self.path = []
+        self.paths = []
+        self.counts = []
         self.direction = None
       
     def initMap(self, filename):
@@ -191,6 +192,23 @@ class patternSuggestor(object):
         path = [startPoint]
         self.reversePath(startPoint[0], startPoint[1], startPoint[2], path)
         return path[::-1]
+    
+    def setPathList(self, paths):
+        if location == FLOOR:
+           self.paths = []
+           self.counts = []
+           for path in paths:
+               newPath = []
+               for point in path:
+                   if point[0] == self.floorIndex:
+                       newPath.append(point)
+               if len(newPath) > 0:
+                   self.paths.append(newPath)
+                   self.counts.append(0)
+        elif location == STAIR:
+            self.direction = 0
+            for path in paths:
+                self.direction |= self.findDirection(path)
 
     def updateSafty(self):
         if location == FLOOR:
@@ -244,26 +262,20 @@ class patternSuggestor(object):
         led.set(ledstripIndex, Color(0, 255, 0, level))
         led.update()
         
-    def updateEvacuation(self, path = None):
+    def updateEvacuation(self):
         if location == FLOOR:
             self.updateSafty()
-            if path:
-               self.path = []
-               self.count = 0
-               for point in path:
-                   if point[0] == self.floorIndex:
-                       self.path.append(point)
-            if len(self.path) == 0:
+            if len(self.paths) == 0:
                 print "No Path!!"
                 return
-            if self.count >= len(self.path):
-                self.count = 0
-            self.setPathLED(self.path[self.count])
-            self.count += 1
+            for x in xrange(len(self.paths)):
+                if self.counts[x] >= len(self.paths[x]):
+                    self.counts[x] = 0
+                print x, self.counts[x]
+                self.setPathLED(self.paths[x][self.counts[x]])
+                self.counts[x] += 1
         elif location == STAIR:
             self.updateSafty()
-            if path:
-                self.direction = self.findDirection(path)
             if self.direction:
                 tempMap = self.ledstairMap[self.stairIndex]
                 tempLen = len(tempMap)
@@ -287,7 +299,9 @@ p.recalMap()
 #print 'map: ', p.map[1]
 p.updateSafty()
 path1 = p.findPath(0,5,2)
-p.updateEvacuation(path1)
+path2 = p.findPath(0,2,4)
+p.setPathList([path1, path2])
+print p.paths
 while True:
     time.sleep(1)
     p.updateEvacuation()
