@@ -271,7 +271,6 @@ class patternSuggestor(object):
             for x in xrange(len(self.paths)):
                 if self.counts[x] >= len(self.paths[x]):
                     self.counts[x] = 0
-                print x, self.counts[x]
                 self.setPathLED(self.paths[x][self.counts[x]])
                 self.counts[x] += 1
         elif location == STAIR:
@@ -301,7 +300,6 @@ p.updateSafty()
 path1 = p.findPath(0,5,2)
 path2 = p.findPath(0,2,4)
 p.setPathList([path1, path2])
-print p.paths
 while True:
     time.sleep(1)
     p.updateEvacuation()
