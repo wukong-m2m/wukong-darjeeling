@@ -297,8 +297,10 @@ let resultsToString (results : SimulationResults) =
     let stackToString stack =
         String.Join(",", stack |> List.map (fun el -> el.datatype |> StackDatatypeToString))
 
+    let countersHeaderString = "cycles                    exec   avg | bytes"
     let countersToString totalCycles totalBytes (counters : ExecCounters) =
-        String.Format("cyc:{0,8} {1,5:0.0}% {2,5:0.0}%C exe:{3,8}  avg:{4,5:0.0} byt:{5,5} {6,5:0.0}% {7,5:0.0}%C",
+        // String.Format("cyc:{0,8} {1,5:0.0}% {2,5:0.0}%C exe:{3,8}  avg:{4,5:0.0} byt:{5,5} {6,5:0.0}% {7,5:0.0}%C",
+        String.Format("{0,8} {1,5:0.0}% {2,5:0.0}%C {3,8} {4,5:0.0} | {5,5} {6,5:0.0}% {7,5:0.0}%C",
                       counters.cycles,
                       100.0 * float (counters.cycles) / float totalCycles,
                       100.0 * float (counters.cycles) / float totalCyclesNativeC,
@@ -321,11 +323,11 @@ let resultsToString (results : SimulationResults) =
             | Some (x : AvrInstruction)
                 -> String.Format("0x{0,6:X6}: {1,-15}", x.address, x.text)
             | None -> "" in
-        avrResults |> List.map (fun r -> String.Format("        {0,-15} -> {1,-36} {2,8} {3,14}\r\n",
+        avrResults |> List.map (fun r -> String.Format("        {0,-15} -> {1,-30} {2,10} {3,23}\r\n",
                                                       r.unopt.text,
                                                       avrInstOption2Text r.opt,
-                                                      r.counters.executions,
-                                                      r.counters.cycles))
+                                                      r.counters.cycles,
+                                                      r.counters.executions))
                    |> List.fold (+) ""
 
     let nativeCInstructionToString ((inst, counters) : AvrInstruction*ExecCounters) =
@@ -333,7 +335,7 @@ let resultsToString (results : SimulationResults) =
     let opcodeResultsToString totalCycles totalBytes opcodeResults =
             opcodeResults
             |> List.map (fun (category, opcode, counters)
-                             ->  String.Format("{0,-20}{1,-20} total {2}\r\n",
+                             ->  String.Format("{0,-20}{1,-20} {2}\r\n",
                                                category,
                                                opcode,
                                                (countersToString totalCycles totalBytes counters)))
@@ -341,7 +343,7 @@ let resultsToString (results : SimulationResults) =
     let categoryResultsToString totalCycles totalBytes categoryResults =
             categoryResults
             |> List.map (fun (category, counters)
-                             -> String.Format("{0,-40} total {1}\r\n",
+                             -> String.Format("{0,-40} {1}\r\n",
                                               category,
                                               (countersToString totalCycles totalBytes counters)))
             |> List.fold (+) ""
@@ -349,79 +351,86 @@ let resultsToString (results : SimulationResults) =
     let testResultAOT = if results.passedTestAOT then "PASSED" else "FAILED"
     let testResultJAVA = if results.passedTestJava then "PASSED" else "FAILED"
     seq {
-        yield "================== " + results.benchmark + ": AOT " + testResultAOT + ", Java " + testResultJAVA + " =================="
-        yield String.Format ("--- STACK max                               {0,14}", (results.maxJvmStackInBytes))
-        yield String.Format ("          avg/executed jvm                  {0,14:000.00}", results.avgJvmStackInBytes)
-        yield String.Format ("          avg change/exec jvm               {0,14:000.00}", results.avgJvmStackChangeInBytes)
-        yield "============================ STOPWATCHES ============================="
-        yield String.Format ("--- STOPWATCHES Native C                    {0,14}", results.cyclesStopwatchC)
-        yield String.Format ("                AOT                         {0,14}", results.cyclesStopwatchAOT)
-        yield String.Format ("                JAVA                        {0,14}", results.cyclesStopwatchJava)
-        yield String.Format ("                AOT/C                       {0,14}", (cyclesToSlowdown results.cyclesStopwatchAOT results.cyclesStopwatchC))
-        yield String.Format ("                Java/C                      {0,14}", (cyclesToSlowdown results.cyclesStopwatchJava results.cyclesStopwatchC))
-        yield String.Format ("                Java/AOT                    {0,14}", (cyclesToSlowdown results.cyclesStopwatchJava results.cyclesStopwatchAOT))
-        yield "============================ MAIN COUNTERS ==========================="
-        yield String.Format ("--- NAT.C    Cycles                         {0,12} (stopwatch {1}, ratio {2})", results.executedCyclesC, results.cyclesStopwatchC, (cyclesToSlowdown results.cyclesStopwatchC results.executedCyclesC))
-        yield String.Format ("             Bytes                          {0,12} (address range {1}, ratio {2}) (off by 2 expected for methods ending in JMP)", totalBytesNativeC, results.codesizeC, (cyclesToSlowdown results.codesizeC totalBytesNativeC))
-        yield String.Format ("             Total                          {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCTotal))
-        yield String.Format ("              load/store                    {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCLoadStore))
-        yield String.Format ("              push/pop int                  {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCPushPop))
-        yield String.Format ("              mov(w)                        {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCMov))
-        yield String.Format ("              others                        {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCOthers))
+        yield "================== " + results.benchmark + ": AOT " + testResultAOT + ", Java " + testResultJAVA + " ================== "
+            + "============================ CODE SIZE ==============================="
+
+
+        yield String.Format ("--- STACK max                               {0,14}             ", (results.maxJvmStackInBytes))
+            + String.Format ("--- CODE SIZE   Native C                    {0,14}", (results.codesizeC))
+        yield String.Format ("          avg/executed jvm                  {0,14:000.00}             ", results.avgJvmStackInBytes)
+            + String.Format ("                AOT                         {0,14}", (results.codesizeAOT))
+        yield String.Format ("          avg change/exec jvm               {0,14:000.00}             ", results.avgJvmStackChangeInBytes)
+            + String.Format ("                Java total                  {0,14}", (results.codesizeJava))
+        yield "============================ STOPWATCHES ============================= "
+            + String.Format ("                     branch count           {0,14}", (results.codesizeJavaBranchCount))
+        yield String.Format ("--- STOPWATCHES Native C                    {0,14}             ", results.cyclesStopwatchC)
+            + String.Format ("                     branch target count    {0,14}", (results.codesizeJavaBranchTargetCount))
+        yield String.Format ("                AOT                         {0,14}             ", results.cyclesStopwatchAOT)
+            + String.Format ("                     markloop count         {0,14}", (results.codesizeJavaMarkloopCount))
+        yield String.Format ("                JAVA                        {0,14}             ", results.cyclesStopwatchJava)
+            + String.Format ("                     markloop size          {0,14}", (results.codesizeJavaMarkloopTotalSize))
+        yield String.Format ("                AOT/C                       {0,14}             ", (cyclesToSlowdown results.cyclesStopwatchAOT results.cyclesStopwatchC))
+            + String.Format ("                     total-branch overhead  {0,14}", (results.codesizeJavaWithoutBranchOverhead))        
+        yield String.Format ("                Java/C                      {0,14}             ", (cyclesToSlowdown results.cyclesStopwatchJava results.cyclesStopwatchC))
+            + String.Format ("                     total-br/mloop overh.  {0,14}", (results.codesizeJavaWithoutBranchMarkloopOverhead))        
+        yield String.Format ("                Java/AOT                    {0,14}             ", (cyclesToSlowdown results.cyclesStopwatchJava results.cyclesStopwatchAOT))
+            + String.Format ("                AOT/C                       {0,14}", (cyclesToSlowdown results.codesizeAOT results.codesizeC))
+        yield "                                                                       "
+            + String.Format ("                AOT/Java                    {0,14}", (cyclesToSlowdown results.codesizeAOT results.codesizeJava))
+        yield "=============================================================== MAIN COUNTERS ==============================================================="
+        yield String.Format ("--- NAT.C    Cycles                      {0,12} (stopwatch {1}, ratio {2}) (difference probably caused by interrupts)", results.executedCyclesC, results.cyclesStopwatchC, (cyclesToSlowdown results.cyclesStopwatchC results.executedCyclesC))
+        yield String.Format ("             Bytes                       {0,12} (address range {1}, ratio {2}) (off by 2 expected for methods ending in JMP)", totalBytesNativeC, results.codesizeC, (cyclesToSlowdown results.codesizeC totalBytesNativeC))
+        yield "                                           " + countersHeaderString
+        yield String.Format ("             Total                       {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCTotal))
+        yield String.Format ("              load/store                 {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCLoadStore))
+        yield String.Format ("              push/pop int               {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCPushPop))
+        yield String.Format ("              mov(w)                     {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCMov))
+        yield String.Format ("              others                     {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCOthers))
         yield ""
-        yield String.Format ("--- AOT      Cycles                         {0,12} (stopwatch {1}, ratio {2})", results.executedCyclesAOT, results.cyclesStopwatchAOT, (cyclesToSlowdown results.cyclesStopwatchAOT results.executedCyclesAOT))
-        yield String.Format ("             Bytes                          {0,12} (methodImpl.AvrMethodSize {1}, ratio {2})", totalBytesAOTJava, results.codesizeAOT, (cyclesToSlowdown results.codesizeAOT totalBytesAOTJava))
-        yield String.Format ("             Total                          {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTTotal))
-        yield String.Format ("              load/store                    {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTLoadStore))
-        yield String.Format ("              push/pop int                  {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTPushPopInt))
-        yield String.Format ("              push/pop ref                  {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTPushPopRef))
-        yield String.Format ("              mov(w)                        {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTMov))
-        yield String.Format ("              others                        {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTOthers))
+        yield String.Format ("--- AOT      Cycles                      {0,12} (stopwatch {1}, ratio {2}) (difference probably caused by interrupts)", results.executedCyclesAOT, results.cyclesStopwatchAOT, (cyclesToSlowdown results.cyclesStopwatchAOT results.executedCyclesAOT))
+        yield String.Format ("             Bytes                       {0,12} (methodImpl.AvrMethodSize {1}, ratio {2})", totalBytesAOTJava, results.codesizeAOT, (cyclesToSlowdown results.codesizeAOT totalBytesAOTJava))
+        yield "                                           " + countersHeaderString
+        yield String.Format ("             Total                       {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTTotal))
+        yield String.Format ("              load/store                 {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTLoadStore))
+        yield String.Format ("              push/pop int               {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTPushPopInt))
+        yield String.Format ("              push/pop ref               {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTPushPopRef))
+        yield String.Format ("              mov(w)                     {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTMov))
+        yield String.Format ("              others                     {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTOthers))
         yield ""
-        yield String.Format ("--- OVERHEAD Total                          {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadTotal))
-        yield String.Format ("              load/store                    {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadLoadStore))
-        yield String.Format ("              pushpop                       {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadPushPop))
-        yield String.Format ("              mov(w)                        {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadMov))
-        yield String.Format ("              others                        {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadOthers))
-        yield "============================ CODE SIZE ==============================="
-        yield String.Format ("--- CODE SIZE   Native C                    {0,14}", (results.codesizeC))
-        yield String.Format ("                AOT                         {0,14}", (results.codesizeAOT))
-        yield String.Format ("                Java total                  {0,14}", (results.codesizeJava))
-        yield String.Format ("                     branch count           {0,14}", (results.codesizeJavaBranchCount))
-        yield String.Format ("                     branch target count    {0,14}", (results.codesizeJavaBranchTargetCount))
-        yield String.Format ("                     markloop count         {0,14}", (results.codesizeJavaMarkloopCount))
-        yield String.Format ("                     markloop size          {0,14}", (results.codesizeJavaMarkloopTotalSize))
-        yield String.Format ("                     total-branch overhead  {0,14}", (results.codesizeJavaWithoutBranchOverhead))        
-        yield String.Format ("                     total-br/mloop overh.  {0,14}", (results.codesizeJavaWithoutBranchMarkloopOverhead))        
-        yield String.Format ("                AOT/C                       {0,14}", (cyclesToSlowdown results.codesizeAOT results.codesizeC))
-        yield String.Format ("                AOT/Java                    {0,14}", (cyclesToSlowdown results.codesizeAOT results.codesizeJava))
-        yield "============================ DETAILED COUNTERS ======================="
-        yield "--- SUMMED: PER JVM CATEGORY"
-        yield categoryResultsToString totalCyclesAOTJava totalCyclesNativeC results.countersPerJvmOpcodeCategoryAOTJava
+        yield "                                           " + countersHeaderString
+        yield String.Format ("--- OVERHEAD Total                       {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadTotal))
+        yield String.Format ("              load/store                 {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadLoadStore))
+        yield String.Format ("              pushpop                    {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadPushPop))
+        yield String.Format ("              mov(w)                     {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadMov))
+        yield String.Format ("              others                     {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadOthers))
+        yield "=============================================================== DETAILED COUNTERS ==========================================================="
+        yield "--- SUMMED: PER JVM CATEGORY               " + countersHeaderString
+        yield categoryResultsToString totalCyclesAOTJava totalBytesAOTJava results.countersPerJvmOpcodeCategoryAOTJava
         yield ""
-        yield "--- SUMMED: PER AVR CATEGORY (Java AOT)"
-        yield categoryResultsToString totalCyclesAOTJava totalCyclesNativeC results.countersPerAvrOpcodeCategoryAOTJava
+        yield "--- SUMMED: PER AVR CATEGORY (Java AOT)    " + countersHeaderString
+        yield categoryResultsToString totalCyclesAOTJava totalBytesAOTJava results.countersPerAvrOpcodeCategoryAOTJava
         yield ""
-        yield "--- SUMMED: PER AVR CATEGORY (NATIVE C)"
-        yield categoryResultsToString totalCyclesNativeC totalCyclesNativeC results.countersPerAvrOpcodeCategoryNativeC
+        yield "--- SUMMED: PER AVR CATEGORY (NATIVE C)    " + countersHeaderString
+        yield categoryResultsToString totalCyclesNativeC totalBytesNativeC results.countersPerAvrOpcodeCategoryNativeC
         yield ""
-        yield "--- SUMMED: PER JVM OPCODE"
-        yield opcodeResultsToString totalCyclesAOTJava totalCyclesNativeC results.countersPerJvmOpcodeAOTJava
+        yield "--- SUMMED: PER JVM OPCODE                 " + countersHeaderString
+        yield opcodeResultsToString totalCyclesAOTJava totalBytesAOTJava results.countersPerJvmOpcodeAOTJava
         yield ""
-        yield "--- SUMMED: PER AVR OPCODE (Java AOT)"
-        yield opcodeResultsToString totalCyclesAOTJava totalCyclesNativeC results.countersPerAvrOpcodeAOTJava
+        yield "--- SUMMED: PER AVR OPCODE (Java AOT)      " + countersHeaderString
+        yield opcodeResultsToString totalCyclesAOTJava totalBytesAOTJava results.countersPerAvrOpcodeAOTJava
         yield ""
-        yield "--- SUMMED: PER AVR OPCODE (NATIVE C)"
-        yield opcodeResultsToString totalCyclesNativeC totalCyclesNativeC results.countersPerAvrOpcodeNativeC
+        yield "--- SUMMED: PER AVR OPCODE (NATIVE C)      " + countersHeaderString
+        yield opcodeResultsToString totalCyclesNativeC totalBytesNativeC results.countersPerAvrOpcodeNativeC
         yield ""
-        yield "============================ LISTINGS ================================"
+        yield "=============================================================== LISTINGS ===================================================================="
         yield ""
-        yield "--- LISTING: NATIVE C AVR\r\n"
+        yield "--- LISTING: NATIVE C AVR"
+        yield "            " + countersHeaderString
         yield results.nativeCInstructions
                 |> List.map nativeCInstructionToString
                 |> List.fold (+) ""
         yield ""
-        yield "--- LISTING: ONLY JVM"
+        yield "--- LISTING: ONLY JVM                                         " + countersHeaderString
         yield results.jvmInstructions
                 |> List.map resultJavaListingToString
                 |> List.fold (+) ""
@@ -429,7 +438,7 @@ let resultsToString (results : SimulationResults) =
         yield "--- LISTING: JVM LOOPS"
         yield (getLoops results)
         yield ""
-        yield "--- LISTING: ONLY OPTIMISED AVR"
+        yield "--- LISTING: ONLY OPTIMISED AVR                               " + countersHeaderString
         yield results.jvmInstructions
                 |> List.map (fun r -> (r |> resultJavaListingToString) + (r.avr |> List.filter (fun avr -> avr.opt.IsSome) |> resultsAvrToString))
                 |> List.fold (+) ""
@@ -440,14 +449,15 @@ let resultsToString (results : SimulationResults) =
                 |> List.fold (+) ""
     } |> Seq.fold (fun acc x -> acc + "\r\n" + x) ""
 
-let main(args : string[]) =
-    let benchmark = (Array.get args 1)
-    let builddir = (Array.get args 2)
-    let outputfilename = (Array.get args 3)
+let ProcessTrace(resultsdir : string) =
+    let benchmark = (Path.GetFileName(resultsdir))
+    let dih = DarjeelingInfusionHeaderXml.Load(String.Format("{0}/bm_{1}.dih", resultsdir, benchmark))
+    let rtcdata = RtcdataXml.Load(String.Format("{0}/rtcdata.xml", resultsdir))
+    let profilerdata = ProfilerdataXml.Load(String.Format("{0}/profilerdata.xml", resultsdir)).Instructions |> Seq.toList
+    let stdoutlog = System.IO.File.ReadLines(String.Format("{0}/stdoutlog.txt", resultsdir)) |> Seq.toList
+    let disasm = System.IO.File.ReadLines(String.Format("{0}/darjeeling.S", resultsdir)) |> Seq.toList
+    let djdebuglines = System.IO.File.ReadLines(String.Format("{0}/jlib_bm_{1}.debug", resultsdir, benchmark)) |> Seq.toList
 
-    let dih = DarjeelingInfusionHeaderXml.Load(String.Format("{0}/infusion-bm_{1}/bm_{1}.dih", builddir, benchmark))
-    let rtcdata = RtcdataXml.Load(String.Format("{0}/rtcdata.xml", builddir))
-    let profilerdata = ProfilerdataXml.Load(String.Format("{0}/profilerdata.xml", builddir)).Instructions |> Seq.toList
     let profilerdataPerAddress = profilerdata |> List.map (fun x -> (Convert.ToInt32(x.Address.Trim(), 16), x))
     let countersForAddressAndInst address inst =
         match profilerdataPerAddress |> List.tryFind (fun (address2,inst) -> address = address2) with
@@ -459,13 +469,10 @@ let main(args : string[]) =
                 count = 1
                 size = AVR.instructionSize inst
             }
-    let stdoutlog = System.IO.File.ReadLines(String.Format("{0}/stdoutlog.txt", builddir)) |> Seq.toList
-    let disasm = System.IO.File.ReadLines(String.Format("{0}/darjeeling.S", builddir)) |> Seq.toList
-    let djdebuglines = System.IO.File.ReadLines(String.Format("{0}/infusion-bm_{1}/jlib_bm_{1}.debug", builddir, benchmark)) |> Seq.toList
     let results = processTrace benchmark dih rtcdata countersForAddressAndInst stdoutlog disasm djdebuglines
 
-    let txtFilename = outputfilename + ".txt"
-    let xmlFilename = outputfilename + ".xml"
+    let txtFilename = resultsdir + ".txt"
+    let xmlFilename = resultsdir + ".xml"
 
     File.WriteAllText (txtFilename, (resultsToString results))
     Console.Error.WriteLine ("Wrote output to " + txtFilename)
@@ -473,14 +480,25 @@ let main(args : string[]) =
     let xmlSerializer = FsPickler.CreateXmlSerializer(indent = true)
     File.WriteAllText (xmlFilename, (xmlSerializer.PickleToString results))
     Console.Error.WriteLine ("Wrote output to " + xmlFilename)
+
+let ProcessResultsBaseDir (directory) =
+    let subdirectories = (Directory.GetDirectories(directory))
+    subdirectories |> Array.iter ProcessTrace
+
+let main(args : string[]) =
+    Console.Error.WriteLine ("START" + (DateTime.Now.ToString()))
+    let arg = (Array.get args 1)
+    match arg with
+    | "all" -> 
+        let directory = (Array.get args 2)
+        let subdirectories = (Directory.GetDirectories(directory))
+        subdirectories |> Array.filter (fun d -> (Path.GetFileName(d).StartsWith("results_")))
+                       |> Array.iter ProcessResultsBaseDir
+    | resultsbasedir -> ProcessResultsBaseDir resultsbasedir
+    Console.Error.WriteLine ("STOP" + (DateTime.Now.ToString()))
     1
 
 main(fsi.CommandLineArgs)
-// main([|
-//         "sortO"
-//         "/Users/niels/src/rtc/src/build/avrora"
-//         "/Users/niels/src/rtc/src/config/avrora/tmpoutput"
-//      |])
 
 
 

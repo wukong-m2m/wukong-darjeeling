@@ -7,36 +7,33 @@ open System.Linq
 open Nessos.FsPickler
 open Datatypes
 
-
-
-
-let getLDDSTBytesJVM (result : Results) =
+let getLDDSTBytesJVM (result : SimulationResults) =
     0
-let getLDDSTBytesFromAVRPerCategoryAOT (result : Results) =
+let getLDDSTBytesFromAVRPerCategoryAOT (result : SimulationResults) =
     let isAVRloadstore (cat : string) =
         cat = "02) LD/ST rel to Y" || cat = "03) LD/ST rel to Z"
-    let avrPerCategory = result.cyclesPerAvrOpcodeCategoryAOTJava
+    let avrPerCategory = result.countersPerAvrOpcodeCategoryAOTJava
     let numberOfCycles = avrPerCategory |> List.filter (fun (cat, _) -> (isAVRloadstore cat))
                                        |> List.map (fun (cat, cnt) -> cnt.executions)
                                        |> List.fold (+) 0
     numberOfCycles / 2
 
-let getLDDSTBytesFromAVRPerCategoryC (result : Results) =
+let getLDDSTBytesFromAVRPerCategoryC (result : SimulationResults) =
     let isAVRloadstore (cat : string) =
         cat.Contains("LD/ST rel to")
-    let avrPerCategory = result.cyclesPerAvrOpcodeCategoryNativeC
+    let avrPerCategory = result.countersPerAvrOpcodeCategoryNativeC
     let numberOfCycles = avrPerCategory |> List.filter (fun (cat, _) -> (isAVRloadstore cat))
                                        |> List.map (fun (cat, cnt) -> cnt.executions)
                                        |> List.fold (+) 0
     numberOfCycles / 2
 
-let resultToStringList (result : Results) =
-    let cyclesToPercentage totalCycles cycles =
+let resultToStringList (result : SimulationResults) =
+    let toPercentage totalCycles cycles =
         String.Format ("{0,5:0.0}", 100.0 * float cycles / float totalCycles)
-    let cyclesToAOTPercentage = cyclesToPercentage result.executedCyclesAOT
-    let cyclesToCPercentage = cyclesToPercentage result.executedCyclesC
-    let executedInstructionsJVM = result.cyclesPerJvmOpcodeCategory |> List.map (fun (cat, cnt) -> cnt.executions) |> List.reduce (+)
-    let executionsToPercentage = cyclesToPercentage executedInstructionsJVM
+    let cyclesToCPercentage = toPercentage result.countersCTotal.cycles
+    let bytesToCPercentage = toPercentage result.countersCTotal.size
+    let executedInstructionsJVM = result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> cnt.executions) |> List.reduce (+)
+    let executionsToPercentage = toPercentage executedInstructionsJVM
     let cyclesToSlowdown cycles1 cycles2 =
         String.Format ("{0:0.00}", float cycles1 / float cycles2)
     let cyclesToOverhead1 cycles1 cycles2 =
@@ -45,13 +42,13 @@ let resultToStringList (result : Results) =
         String.Format ("{0:0}%", float (cycles1-cycles2) / float cycles1 * 100.0)
 
 
-    // let overheadInCycles = result.stopwatchCyclesAOT-result.stopwatchCyclesC
+    // let overheadInCycles = result.cyclesStopwatchAOT-result.cyclesStopwatchC
     // let overheadLoadStoreInCycles = ((getLDDSTBytesFromAVRPerCategoryAOT result)-(getLDDSTBytesFromAVRPerCategoryC result))*2
     // let overheadPushPopInCycles =
-    //     let nativeCPushPopInCycles = (result.cyclesPerAvrOpcodeCategoryNativeC |> List.find (fun (cat, cnt) -> cat.StartsWith("04) Stack")) |> snd).cycles
+    //     let nativeCPushPopInCycles = (result.countersPerAvrOpcodeCategoryNativeC |> List.find (fun (cat, cnt) -> cat.StartsWith("04) Stack")) |> snd).cycles
     //     result.cyclesPush.cycles + result.cyclesPop.cycles - nativeCPushPopInCycles
     // let overheadMovwInCycles =
-    //     let nativeCMovInCycles = (result.cyclesPerAvrOpcodeCategoryNativeC |> List.find (fun (cat, cnt) -> cat.StartsWith("05) Register moves")) |> snd).cycles
+    //     let nativeCMovInCycles = (result.countersPerAvrOpcodeCategoryNativeC |> List.find (fun (cat, cnt) -> cat.StartsWith("05) Register moves")) |> snd).cycles
     //     result.cyclesMovw.cycles - nativeCMovInCycles
 
     let r1 =
@@ -59,33 +56,43 @@ let resultToStringList (result : Results) =
         ("BENCHMARK"            , result.benchmark);
         ("Test"                 , if result.passedTestAOT then "PASSED" else "FAILED");
         (""                     , "");        
+        ("PERF OVERHEAD"        , "cyc (%C)");
+        ("   total"             , (cyclesToCPercentage result.countersOverheadTotal.cycles));
+        ("   load/store"        , (cyclesToCPercentage result.countersOverheadLoadStore.cycles));
+        ("   push/pop"          , (cyclesToCPercentage result.countersOverheadPushPop.cycles));
+        ("   mov(w)"            , (cyclesToCPercentage result.countersOverheadMov.cycles));
+        ("   other"             , (cyclesToCPercentage result.countersOverheadOthers.cycles));
+        (""                     , "");
+        ("SIZE OVERHEAD"        , "byt (%C)");
+        ("   total"             , (bytesToCPercentage result.countersOverheadTotal.size));
+        ("   load/store"        , (bytesToCPercentage result.countersOverheadLoadStore.size));
+        ("   push/pop"          , (bytesToCPercentage result.countersOverheadPushPop.size));
+        ("   mov(w)"            , (bytesToCPercentage result.countersOverheadMov.size));
+        ("   other"             , (bytesToCPercentage result.countersOverheadOthers.size));
+        (""                     , "");
         ("STOPWATCHES"          , "");
-        ("Native C"             , result.stopwatchCyclesC.ToString());
-        ("AOT"                  , result.stopwatchCyclesAOT.ToString());
-        ("Java"                 , result.stopwatchCyclesJava.ToString());
-        ("AOT/C"                , (cyclesToSlowdown result.stopwatchCyclesAOT result.stopwatchCyclesC));
-        ("AOT overhead (%C)"    , (cyclesToOverhead1 result.stopwatchCyclesAOT result.stopwatchCyclesC));
-        ("AOT overhead (%AOT)"  , (cyclesToOverhead2 result.stopwatchCyclesAOT result.stopwatchCyclesC));
-        ("Java/C"               , (cyclesToSlowdown result.stopwatchCyclesJava result.stopwatchCyclesC));
-        ("Java/AOT"             , (cyclesToSlowdown result.stopwatchCyclesJava result.stopwatchCyclesAOT));
+        ("Native C"             , result.cyclesStopwatchC.ToString());
+        ("AOT"                  , result.cyclesStopwatchAOT.ToString());
+        ("Java"                 , result.cyclesStopwatchJava.ToString());
+        ("AOT/C"                , (cyclesToSlowdown result.cyclesStopwatchAOT result.cyclesStopwatchC));
+        ("AOT overhead (%C)"    , (cyclesToOverhead1 result.cyclesStopwatchAOT result.cyclesStopwatchC));
+        ("AOT overhead (%AOT)"  , (cyclesToOverhead2 result.cyclesStopwatchAOT result.cyclesStopwatchC));
+        ("Java/C"               , (cyclesToSlowdown result.cyclesStopwatchJava result.cyclesStopwatchC));
+        ("Java/AOT"             , (cyclesToSlowdown result.cyclesStopwatchJava result.cyclesStopwatchAOT));
         (""                     , "");
         ("CYCLE COUNTS"         , "");
-        ("Native C total"       , String.Format("{0}", result.cyclesCTotal));
-        ("         push/pop"    , String.Format("{0}", result.cyclesCPushPop.cycles));
-        ("         mov(w)"      , String.Format("{0}", result.cyclesCMov.cycles));
-        ("         load/store"  , String.Format("{0}", result.cyclesCLoadStore.cycles));
-        ("AOT      total"       , String.Format("{0}", result.cyclesAOTTotal));
-        ("         stopw/count" , (cyclesToSlowdown result.stopwatchCyclesAOT result.cyclesAOTTotal));
-        ("         push/pop"    , String.Format("{0}", result.cyclesAOTPushPopInt.cycles+result.cyclesAOTPushPopRef.cycles));
-        ("         mov(w)"      , String.Format("{0}", result.cyclesAOTMov.cycles));
-        ("         load/store"  , String.Format("{0}", result.cyclesAOTLoadStore.cycles));
+        ("Native C total"       , String.Format("{0}", result.countersCTotal.cycles));
+        ("         load/store"  , String.Format("{0}", result.countersCLoadStore.cycles));
+        ("         push/pop"    , String.Format("{0}", result.countersCPushPop.cycles));
+        ("         mov(w)"      , String.Format("{0}", result.countersCMov.cycles));
+        ("         others"      , String.Format("{0}", result.countersCOthers.cycles));
+        ("AOT      total"       , String.Format("{0}", result.countersAOTTotal.cycles));
+        ("         load/store"  , String.Format("{0}", result.countersAOTLoadStore.cycles));
+        ("         push/pop"    , String.Format("{0}", result.countersAOTPushPop.cycles));
+        ("         mov(w)"      , String.Format("{0}", result.countersAOTMov.cycles));
+        ("         others"      , String.Format("{0}", result.countersAOTOthers.cycles));
         (""                     , "");
-        ("OVERHEAD (%C)"        , "");
-        ("   push/pop"          , (cyclesToPercentage result.cyclesCTotal result.overheadPushPop.cycles));
-        ("   mov(w)"            , (cyclesToPercentage result.cyclesCTotal result.overheadMov.cycles));
-        ("   load/store"        , (cyclesToPercentage result.cyclesCTotal result.overheadLoadStore.cycles));
-        ("   other"             , (cyclesToPercentage result.cyclesCTotal (result.overheadTotalCycles - result.overheadPushPop.cycles - result.overheadMov.cycles - result.overheadLoadStore.cycles)));
-        ("   total"             , (cyclesToPercentage result.cyclesCTotal result.overheadTotalCycles));
+        ("         stopw/count" , (cyclesToSlowdown result.cyclesStopwatchAOT result.countersAOTTotal.cycles));
         (""                     , "");
         ("MEMORY TRAFFIC"       , "");
         ("Bytes LD/ST AOT"      , String.Format ("{0}", (getLDDSTBytesFromAVRPerCategoryAOT result)));
@@ -108,20 +115,34 @@ let resultToStringList (result : Results) =
         ]
     let r2 = 
         (""                     , "")
-        :: ("JVM EXE (not cyc!)", "")
-        :: (result.cyclesPerJvmOpcodeCategory |> List.map (fun (cat, cnt) -> (cat, (executionsToPercentage cnt.executions))))
+        :: ("PERF AOT per JVM"  , "exe")
+        :: (result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (executionsToPercentage cnt.executions))))
     let r3 = 
         (""                     , "")
-        :: ("JVM (%C)"          , "")
-        :: (result.cyclesPerJvmOpcodeCategory |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
+        :: ("PERF AOT per JVM"  , "cyc (%C)")
+        :: (result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
     let r4 = 
         (""                     , "")
-        :: ("AVR Java AOT (%C)" , "")
-        :: (result.cyclesPerAvrOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
+        :: ("PERF AOT per AVR"  , "cyc (%C)")
+        :: (result.countersPerAvrOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
     let r5 = 
         (""                     , "")
-        :: ("AVR Native C"      , "")
-        :: (result.cyclesPerAvrOpcodeCategoryNativeC |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
+        :: ("PERF Native C"     , "cyc (%C)")
+        :: (result.countersPerAvrOpcodeCategoryNativeC |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
+
+    let r3 = 
+        (""                     , "")
+        :: ("SIZE AOT per JVM"  , "byt (%C)")
+        :: (result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (bytesToCPercentage cnt.size))))
+    let r4 = 
+        (""                     , "")
+        :: ("SIZE AOT per AVR"  , "byt (%C)")
+        :: (result.countersPerAvrOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (bytesToCPercentage cnt.size))))
+    let r5 = 
+        (""                     , "")
+        :: ("SIZE Native C"     , "byt (%C)")
+        :: (result.countersPerAvrOpcodeCategoryNativeC |> List.map (fun (cat, cnt) -> (cat, (bytesToCPercentage cnt.size))))
+
     List.concat [ r1; r2; r3; r4; r5 ]
 
 let flipTupleListsToStringList (benchmarks : (string * string) list list) =
@@ -154,7 +175,7 @@ let summariseResults resultsDirectory =
     let resultsXmlStrings = resultFiles |> List.map (fun filename -> File.ReadAllText(filename))
     let results =
         resultsXmlStrings
-            |> List.map (fun xml -> xmlSerializer.UnPickleOfString<Results> xml)
+            |> List.map (fun xml -> xmlSerializer.UnPickleOfString<SimulationResults> xml)
             |> List.sortBy (fun r -> let sortorder = ["bsort16"; "bsort32"; "hsort16"; "hsort32"; "binsrch16"; "binsrch32"; "fft"; "xxtea"; "md5"; "rc5"; "sortX"; "hsortX"; "binsrchX"] in
                                      match sortorder |> List.tryFindIndex ((=) r.benchmark) with
                                      | Some (index) -> index
@@ -163,17 +184,23 @@ let summariseResults resultsDirectory =
     let resultsSummary = resultsSummaryAsTupleLists |> flipTupleListsToStringList
     let resultLines = resultsSummary |> List.map stringListToString
 
-    let csvFilename = resultsDirectory + "/summary" + (resultsDirectory.Replace("./results","").Replace("results","")) + ".csv"
-    File.WriteAllText (csvFilename, String.Join("\r\n", resultLines))
-    Console.Error.WriteLine ("Wrote output to " + csvFilename)
+    let summaryFilename = if (resultsDirectory.StartsWith("/"))
+                          then resultsDirectory + "/summary" + (Path.GetFileName(resultsDirectory).Replace("results",""))
+                          else resultsDirectory + "/summary" + (resultsDirectory.Replace("results",""))
+    File.WriteAllText (summaryFilename, String.Join("\r\n", resultLines))
+    Console.Error.WriteLine ("Wrote output to " + summaryFilename)
 
 let main(args : string[]) =
-    if (args.Count() >= 2)
-    then
-        summariseResults (Array.get args 1)
-        1
-    else
-        0
+    Console.Error.WriteLine ("START" + (DateTime.Now.ToString()))
+    let arg = (Array.get args 1)
+    match arg with
+    | "all" -> 
+        let directory = (Array.get args 2)
+        let subdirectories = (Directory.GetDirectories(directory))
+        subdirectories |> Array.filter (fun d -> (Path.GetFileName(d).StartsWith("results_")))
+                       |> Array.iter summariseResults
+    | resultsbasedir -> summariseResults resultsbasedir
+    Console.Error.WriteLine ("STOP" + (DateTime.Now.ToString()))
+    1
 
 main(fsi.CommandLineArgs)
-//summariseResults "/Users/niels/src/rtc/src/config/avrora/results"

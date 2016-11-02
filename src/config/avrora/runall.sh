@@ -2,7 +2,8 @@
 alias gdj="gradle -b ../../build.gradle"
 
 # benchmarks=(sortX hsortX binsrchX)
-benchmarks=(bsort16 bsort32 hsort16 binsrch16 bsort32 hsort32 binsrch32 fft xxtea rc5 md5)
+# benchmarks=(bsort16 bsort32 hsort16 hsort32 binsrch16 binsrch32 fft xxtea rc5 md5)
+benchmarks=(bsort32 hsort32 binsrch32 fft xxtea rc5 md5)
 
 gdj clean
 
@@ -12,22 +13,22 @@ gdj clean
 #     constshifts=(none by1 all_only_shift all_move_and_shift gcc_like)
 #     for aotconstshiftoptimisation in ${constshifts}
 #     do
-#         gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=baseline -Paotconstshiftoptimisation=${aotconstshiftoptimisation}
+#         gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline -Paotconstshiftoptimisation=${aotconstshiftoptimisation}
 #     done
 # done
 
 ## All others use default "gcc_like" constant shift optimisation
 
-# # BASELINE
-# for benchmark in ${benchmarks}
-# do
-#     constshifts=(none gcc_like)
-#     # constshifts=(none by1 all_only_shift all_move_and_shift gcc_like)
-#     for aotconstshiftoptimisation in ${constshifts}
-#     do
-#         gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=baseline -Paotconstshiftoptimisation=${aotconstshiftoptimisation} # -Paot32bitindex=true
-#     done
-# done
+# BASELINE
+for benchmark in ${benchmarks}
+do
+    constshifts=(none gcc_like)
+    # constshifts=(none by1 all_only_shift all_move_and_shift gcc_like)
+    for aotconstshiftoptimisation in ${constshifts}
+    do
+        gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline -Paotconstshiftoptimisation=${aotconstshiftoptimisation} # -Paot32bitindex=true
+    done
+done
 
 # # SIMPLE STACK CACHING
 # for benchmark in ${benchmarks}
@@ -36,7 +37,7 @@ gdj clean
 # 	cachesizes=(5 11)
 # 	for aotstackcachesize in ${cachesizes}
 # 	do
-# 	    gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Paotstackcachesize=${aotstackcachesize}
+# 	    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Paotstackcachesize=${aotstackcachesize}
 # 	done
 # done
 
@@ -47,7 +48,7 @@ gdj clean
 #     cachesizes=(5 11)
 #     for aotstackcachesize in ${cachesizes}
 #     do
-#         gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Paotstackcachesize=${aotstackcachesize}
+#         gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Paotstackcachesize=${aotstackcachesize}
 #     done
 # done
 
@@ -58,7 +59,7 @@ do
     markloopregs=(7)
     for aotmarkloopregs in ${markloopregs}
     do
-        gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotstrat=markloop -Paotstackcachesize=11 -Paotmarkloopregs=${aotmarkloopregs}
+        gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop -Paotstackcachesize=11 -Paotmarkloopregs=${aotmarkloopregs}
     done
 done
 
@@ -68,15 +69,11 @@ done
 #     constshifts=(none gcc_like)
 #     for aotconstshiftoptimisation in ${constshifts}
 #     do
-#         gdj avrora_analyse_trace -Paotbm=${benchmark} -Paotconstshiftoptimisation=${aotconstshiftoptimisation} # -Paot32bitindex=true
+#         gdj avrora_store_trace -Paotbm=${benchmark} -Paotconstshiftoptimisation=${aotconstshiftoptimisation} # -Paot32bitindex=true
 #     done
 # done
 
-
-for resultsdir in `ls | grep results_`
-do
-	fsharpi --exec proces-trace/proces-trace/CombineResults.fsx "./${resultsdir}"
-done
+./analyseall.sh
 
 
 

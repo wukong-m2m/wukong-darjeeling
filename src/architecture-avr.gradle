@@ -170,6 +170,7 @@ task avrora_if_necessary(dependsOn: darjeeling) {
     ext.rtcdataFile = "${buildDir}/rtcdata.xml"
     ext.profiledataFile = "${buildDir}/profilerdata.xml"
     ext.stdoutlogFile = "${buildDir}/stdoutlog.txt"
+
     def avroraJar = '/Users/niels/src/avrora/jars/avrora-beta-1.7.117.jar'
 
     outputs.file rtcdataFile
@@ -198,7 +199,7 @@ task avrora_if_necessary(dependsOn: darjeeling) {
 }
 
 task disassemble(type:Exec, dependsOn: darjeeling) {
-    def disasmFile = "${buildDir}/darjeeling.S"
+    ext.disasmFile = "${buildDir}/darjeeling.S"
 
     inputs.file architectureSpecificAssemble.djTargetElfFile
     outputs.file disasmFile
@@ -211,29 +212,23 @@ task disassemble(type:Exec, dependsOn: darjeeling) {
     }
 }
 
-task avrora_analyse_trace(type:Exec, dependsOn: [avrora_if_necessary, disassemble]) {
-    def fsxScript = "${project.rootDir}/config/${djConfigname}/proces-trace/proces-trace/ProcessTrace.fsx"
-    def dihFile = "${buildDir}/infusion-bm_${project.ext.aotbm}/bm_${project.ext.aotbm}.dih"
-    def analysedTraceOutputDir = new File("${project.rootDir}/config/${djConfigname}/${project.ext.aotTraceResultsDirName}")
-    def analysedTraceOutput = "${analysedTraceOutputDir}/${project.ext.aotbm}"
 
-    inputs.file fsxScript
-    inputs.file dihFile
-    inputs.file avrora_if_necessary.rtcdataFile
-    inputs.file avrora_if_necessary.profiledataFile
-    inputs.file avrora_if_necessary.stdoutlogFile
-    inputs.dir "${project.rootDir}/config/${djConfigname}/proces-trace/proces-trace/"
-    outputs.file analysedTraceOutput+".xml"
-    outputs.file analysedTraceOutput+".txt"
+task avrora_store_trace(type:Copy, dependsOn: [avrora_if_necessary, disassemble]) {
+    from file("${buildDir}/infusion-bm_${project.ext.aotbm}/bm_${project.ext.aotbm}.dih")
+    from file("${buildDir}/infusion-bm_${project.ext.aotbm}/jlib_bm_${project.ext.aotbm}.debug")
+    from file(avrora_if_necessary.rtcdataFile)
+    from file(avrora_if_necessary.profiledataFile)
+    from file(avrora_if_necessary.stdoutlogFile)
+    from file(disassemble.disasmFile)
+    into file("${project.rootDir}/config/${djConfigname}/${project.ext.aotTraceResultsDirName}/${project.ext.aotbm}")
+}
 
-    doFirst {
-        if (!analysedTraceOutputDir.exists()) {
-            analysedTraceOutputDir.mkdirs()
-        }
-    }
+task avrora_analyse_trace(type:Exec, dependsOn: [avrora_store_trace]) {
+    def fsxScript = "${project.rootDir}/config/${djConfigname}/proces-trace/proces-trace/ProcessTraces.fsx"
+    def tracesOutputDir = new File("${project.rootDir}/config/${djConfigname}/${project.ext.aotTraceResultsDirName}")
 
     executable "fsharpi"
-    args '--exec', fsxScript, aotbm, buildDir, analysedTraceOutput
+    args '--exec', fsxScript, tracesOutputDir
 }
 
 task avrora_rtcdata_toscreen(dependsOn: darjeeling) << {

@@ -153,8 +153,8 @@ type SimulationResults = {
     member this.countersOverheadOthers    = this.countersAOTOthers - this.countersCOthers;
     member this.countersOverheadTotal     = this.countersAOTTotal - this.countersCTotal;
 
-    member this.executedCyclesAOT         = this.countersPerAvrOpcodeCategoryAOTJava |> List.sumBy (fun (cat, cnt) -> cnt.cycles);
-    member this.executedCyclesC           = this.countersPerAvrOpcodeCategoryNativeC |> List.sumBy (fun (cat, cnt) -> cnt.cycles);
+    member this.executedCyclesAOT         = this.countersAOTTotal.cycles
+    member this.executedCyclesC           = this.countersCTotal.cycles
     member this.maxJvmStackInBytes        =
         this.jvmInstructions
         |> List.map (fun jvm -> jvm.djDebugData.stackSizeBefore)
