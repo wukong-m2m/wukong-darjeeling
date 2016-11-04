@@ -475,9 +475,11 @@ let ProcessTrace(resultsdir : string) =
     File.WriteAllText (xmlFilename, (xmlSerializer.PickleToString results))
     Console.Error.WriteLine ("Wrote output to " + xmlFilename)
 
-let ProcessResultsBaseDir (directory) =
+let ProcessResultsDir (directory) =
     let subdirectories = (Directory.GetDirectories(directory))
-    subdirectories |> Array.iter ProcessTrace
+    match subdirectories |> Array.length with
+    | 0 -> ProcessTrace directory
+    | _ -> subdirectories |> Array.iter ProcessTrace
 
 let main(args : string[]) =
     Console.Error.WriteLine ("START " + (DateTime.Now.ToString()))
@@ -487,8 +489,8 @@ let main(args : string[]) =
         let directory = (Array.get args 2)
         let subdirectories = (Directory.GetDirectories(directory))
         subdirectories |> Array.filter (fun d -> (Path.GetFileName(d).StartsWith("results_")))
-                       |> Array.iter ProcessResultsBaseDir
-    | resultsbasedir -> ProcessResultsBaseDir resultsbasedir
+                       |> Array.iter ProcessResultsDir
+    | resultsbasedir -> ProcessResultsDir resultsbasedir
     Console.Error.WriteLine ("STOP " + (DateTime.Now.ToString()))
     1
 

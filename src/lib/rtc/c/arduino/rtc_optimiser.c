@@ -20,8 +20,6 @@
 #define IS_MOV(x)               (((x) & 0xFC00) == OPCODE_MOV)
 #define IS_MOVW(x)              (((x) & 0xFC00) == OPCODE_MOVW)
 
-#define IS_ANY_PUSH_POP_MOV(x)  (IS_INT_PUSH(x) || IS_REF_PUSH(x) || IS_INT_POP(x) || IS_REF_POP(x) || IS_MOV(x) || IS_MOVW(x))
-
 // 0000 000d dddd 0000
 #define GET_1REG_OPERAND(x)		(((x) & 0x01F0) >> 4)
 #define GET_DEST_REG_OPERAND(x)	(((x) & 0x01F0) >> 4)
@@ -173,7 +171,7 @@ bool rtc_maybe_optimise_push_pop(uint16_t *push_finger, uint16_t *pop_finger, ui
         uint16_t check_reg_write_finger_instr = *check_reg_write_finger;
 
         #if defined (AOT_STRATEGY_BASELINE)
-        if (!IS_ANY_PUSH_POP_MOV(check_reg_write_finger_instr)) {
+        if (!(IS_MOV(check_reg_write_finger_instr) || IS_MOVW(check_reg_write_finger_instr))) {
             return false;
         }
         #elif defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)
