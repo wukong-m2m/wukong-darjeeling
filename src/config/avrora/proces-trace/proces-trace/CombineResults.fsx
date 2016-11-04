@@ -160,6 +160,25 @@ let flipTupleListsToStringList (benchmarks : (string * string) list list) =
     let wrongOrder = (addValues acc benchmarks)
     wrongOrder |> List.map (fun x -> x |> List.rev)
 
+let addAverages (benchmarks : string list list) =
+    benchmarks |> List.map (fun row ->
+        match row with
+        | [] -> []
+        | "BENCHMARK" :: tail
+            -> List.append row [""; "average"]
+        | _ :: tail
+            -> let numericValues = tail |> List.map (fun value ->
+                                                        let success, res = Double.TryParse (value.Replace("%",""))
+                                                        match success with
+                                                        | true -> Some res
+                                                        | false -> None)
+                                        |> List.choose id
+               let average = match numericValues with
+                             | [] -> ""
+                             | _  -> ((numericValues |> List.average).ToString("F1"))
+               List.append row [""; average]
+        )
+
 let stringListToString (list : string list) =
     match list with
     | head :: tail
@@ -182,7 +201,8 @@ let summariseResults resultsDirectory =
                                      | None -> 100)
     let resultsSummaryAsTupleLists = results |> List.map resultToStringList
     let resultsSummary = resultsSummaryAsTupleLists |> flipTupleListsToStringList
-    let resultLines = resultsSummary |> List.map stringListToString
+    let resultsSummaryWithAvg = resultsSummary |> addAverages
+    let resultLines = resultsSummaryWithAvg |> List.map stringListToString
 
     let summaryFilename = if (resultsDirectory.StartsWith("/"))
                           then resultsDirectory + "/summary" + (Path.GetFileName(resultsDirectory).Replace("results",""))
@@ -191,7 +211,7 @@ let summariseResults resultsDirectory =
     Console.Error.WriteLine ("Wrote output to " + summaryFilename)
 
 let main(args : string[]) =
-    Console.Error.WriteLine ("START" + (DateTime.Now.ToString()))
+    Console.Error.WriteLine ("START " + (DateTime.Now.ToString()))
     let arg = (Array.get args 1)
     match arg with
     | "all" -> 
@@ -200,7 +220,7 @@ let main(args : string[]) =
         subdirectories |> Array.filter (fun d -> (Path.GetFileName(d).StartsWith("results_")))
                        |> Array.iter summariseResults
     | resultsbasedir -> summariseResults resultsbasedir
-    Console.Error.WriteLine ("STOP" + (DateTime.Now.ToString()))
+    Console.Error.WriteLine ("STOP " + (DateTime.Now.ToString()))
     1
 
 main(fsi.CommandLineArgs)

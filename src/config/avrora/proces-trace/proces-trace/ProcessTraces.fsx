@@ -318,17 +318,16 @@ let resultsToString (results : SimulationResults) =
                       result.djDebugData.stackSizeAfter,
                       stackToString result.djDebugData.stackAfter)
 
-    let resultsAvrToString (avrResults : ResultAvr list) =
+    let resultsAvrToString (avr : ResultAvr) =
         let avrInstOption2Text = function
             | Some (x : AvrInstruction)
                 -> String.Format("0x{0,6:X6}: {1,-15}", x.address, x.text)
             | None -> "" in
-        avrResults |> List.map (fun r -> String.Format("        {0,-15} -> {1,-30} {2,10} {3,23}",
-                                                      r.unopt.text,
-                                                      avrInstOption2Text r.opt,
-                                                      r.counters.cycles,
-                                                      r.counters.executions))
-                   |> List.fold (+) ""
+        String.Format("        {0,-15} -> {1,-30} {2,10} {3,23}",
+                                                      avr.unopt.text,
+                                                      avrInstOption2Text avr.opt,
+                                                      avr.counters.cycles,
+                                                      avr.counters.executions)
 
     let nativeCInstructionToString ((inst, counters) : AvrInstruction*ExecCounters) =
         String.Format("0x{0,6:X6}: {1}    {2}", inst.address, (countersToString totalCyclesNativeC totalBytesNativeC counters), inst.text)
@@ -351,7 +350,7 @@ let resultsToString (results : SimulationResults) =
     let sb = new Text.StringBuilder(10000000)
     let addLn s =
       sb.AppendLine(s) |> ignore
-    addLn ("================== " + results.benchmark + ": AOT " + testResultAOT + ", Java " + testResultJAVA + " ====================== ============================ CODE SIZE ===============================")
+    addLn ("================== " + results.benchmark + ": AOT " + testResultAOT + ", Java " + testResultJAVA + " ================== ============================ CODE SIZE ===============================")
     addLn (String.Format ("--- STACK max                               {0,14}             --- CODE SIZE   Native C                    {1,14}", results.maxJvmStackInBytes, results.codesizeC))
     addLn (String.Format ("          avg/executed jvm                  {0,14:000.00}                             AOT                         {1,14}", results.avgJvmStackInBytes, results.codesizeAOT))
     addLn (String.Format ("          avg change/exec jvm               {0,14:000.00}                             Java total                  {1,14}", results.avgJvmStackChangeInBytes, results.codesizeJava))
@@ -432,12 +431,14 @@ let resultsToString (results : SimulationResults) =
     addLn ("")
     addLn ("--- LISTING: ONLY OPTIMISED AVR                               " + countersHeaderString)
     results.jvmInstructions
-      |> List.map (fun r -> (r |> resultJavaListingToString) + (r.avr |> List.filter (fun avr -> avr.opt.IsSome) |> resultsAvrToString))
+      |> List.map (fun r -> (r |> resultJavaListingToString) :: (r.avr |> List.filter (fun avr -> avr.opt.IsSome) |> List.map resultsAvrToString))
+      |> List.concat
       |> List.iter addLn
     addLn ("")
     addLn ("--- LISTING: COMPLETE LISTING")
     results.jvmInstructions
-      |> List.map (fun r -> (r |> resultJavaListingToString) + (r.avr |> resultsAvrToString))
+      |> List.map (fun r -> (r |> resultJavaListingToString) :: (r.avr |> List.map resultsAvrToString))
+      |> List.concat
       |> List.iter addLn
     let result = (sb.ToString())
     result
@@ -479,7 +480,7 @@ let ProcessResultsBaseDir (directory) =
     subdirectories |> Array.iter ProcessTrace
 
 let main(args : string[]) =
-    Console.Error.WriteLine ("START" + (DateTime.Now.ToString()))
+    Console.Error.WriteLine ("START " + (DateTime.Now.ToString()))
     let arg = (Array.get args 1)
     match arg with
     | "all" -> 
@@ -488,7 +489,7 @@ let main(args : string[]) =
         subdirectories |> Array.filter (fun d -> (Path.GetFileName(d).StartsWith("results_")))
                        |> Array.iter ProcessResultsBaseDir
     | resultsbasedir -> ProcessResultsBaseDir resultsbasedir
-    Console.Error.WriteLine ("STOP" + (DateTime.Now.ToString()))
+    Console.Error.WriteLine ("STOP " + (DateTime.Now.ToString()))
     1
 
 main(fsi.CommandLineArgs)
