@@ -1,4 +1,4 @@
-#ifdef AOT_STRATEGY_BASELINE
+#if defined (AOT_STRATEGY_BASELINE)  || defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)
 
 #include "types.h"
 #include "array.h"
@@ -1646,4 +1646,4 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
     ts->pc++;
 }
 
-#endif // AOT_STRATEGY_BASELINE
+#endif // defined (AOT_STRATEGY_BASELINE)  || defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)

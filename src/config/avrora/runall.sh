@@ -22,35 +22,36 @@ gdj clean
 # BASELINE
 for benchmark in ${benchmarks}
 do
-    constshifts=(none gcc_like)
-    # constshifts=(none by1 all_only_shift all_move_and_shift gcc_like)
-    for aotconstshiftoptimisation in ${constshifts}
-    do
-        gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline -Paotconstshiftoptimisation=${aotconstshiftoptimisation} # -Paot32bitindex=true
-    done
+    gdj avrora_store_trace     -Paotbm=${benchmark} -Paotstrat=baseline         -Paotstackcachesize=0                    -Paotmarkloopregs=0                  -Paotconstshiftoptimisation=none
 done
 
-# # SIMPLE STACK CACHING
-# for benchmark in ${benchmarks}
-# do
-# 	# cachesizes=(5 6 7 8 9 10 11)
-# 	cachesizes=(5 11)
-# 	for aotstackcachesize in ${cachesizes}
-# 	do
-# 	    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Paotstackcachesize=${aotstackcachesize}
-# 	done
-# done
+# IMPROVED PEEPHOLE OPTIMISER
+for benchmark in ${benchmarks}
+do
+  gdj avrora_store_trace       -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Paotstackcachesize=0                    -Paotmarkloopregs=0                  -Paotconstshiftoptimisation=none
+done
 
-# # POPPED STACK CACHING
-# for benchmark in ${benchmarks}
-# do
-#     # cachesizes=(5 6 7 8 9 10 11)
-#     cachesizes=(5 11)
-#     for aotstackcachesize in ${cachesizes}
-#     do
-#         gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Paotstackcachesize=${aotstackcachesize}
-#     done
-# done
+# SIMPLE STACK CACHING
+for benchmark in ${benchmarks}
+do
+	# cachesizes=(5 6 7 8 9 10 11)
+	cachesizes=(5 11)
+	for aotstackcachesize in ${cachesizes}
+	do
+	    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Paotstackcachesize=${aotstackcachesize} -Paotmarkloopregs=0                  -Paotconstshiftoptimisation=none
+	done
+done
+
+# POPPED STACK CACHING
+for benchmark in ${benchmarks}
+do
+    # cachesizes=(5 6 7 8 9 10 11)
+    cachesizes=(5 11)
+    for aotstackcachesize in ${cachesizes}
+    do
+        gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Paotstackcachesize=${aotstackcachesize} -Paotmarkloopregs=0                  -Paotconstshiftoptimisation=none
+    done
+done
 
 # MARKLOOP
 for benchmark in ${benchmarks}
@@ -59,19 +60,20 @@ do
     markloopregs=(7)
     for aotmarkloopregs in ${markloopregs}
     do
-        gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop -Paotstackcachesize=11 -Paotmarkloopregs=${aotmarkloopregs}
+        gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Paotstackcachesize=11                   -Paotmarkloopregs=${aotmarkloopregs} -Paotconstshiftoptimisation=none
     done
 done
 
-# # CONST SHIFT
-# for benchmark in ${benchmarks}
-# do
-#     constshifts=(none gcc_like)
-#     for aotconstshiftoptimisation in ${constshifts}
-#     do
-#         gdj avrora_store_trace -Paotbm=${benchmark} -Paotconstshiftoptimisation=${aotconstshiftoptimisation} # -Paot32bitindex=true
-#     done
-# done
+# CONST SHIFT
+for benchmark in ${benchmarks}
+do
+    constshifts=(none gcc_like)
+    # constshifts=(none by1 all_only_shift all_move_and_shift gcc_like)
+    for aotconstshiftoptimisation in ${constshifts}
+    do
+        gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Paotstackcachesize=11                   -Paotmarkloopregs=7                  -Paotconstshiftoptimisation=${aotconstshiftoptimisation} # -Paot32bitindex=true
+    done
+done
 
 ./analyseall.sh
 

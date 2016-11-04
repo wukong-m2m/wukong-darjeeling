@@ -2,7 +2,7 @@
 #include "panic.h"
 #include "asm.h"
 
-#ifdef AOT_STRATEGY_BASELINE
+#if defined (AOT_STRATEGY_BASELINE)  || defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)
 // LEAVING THE OLD COMMENT HERE JUST AS ILLUSTRATION OF WHAT WENT WRONG:
     // ST_XINC and LD_DECX are basically single operand opcodes just like PUSH/POP,
     // so the same optimisation code will work for both stacks as long as we respect
@@ -171,16 +171,19 @@ bool rtc_maybe_optimise_push_pop(uint16_t *push_finger, uint16_t *pop_finger, ui
     uint16_t *check_reg_write_finger = push_finger+1;
     while (check_reg_write_finger < pop_finger) {
         uint16_t check_reg_write_finger_instr = *check_reg_write_finger;
+
+        #if defined (AOT_STRATEGY_BASELINE)
+        if (!IS_ANY_PUSH_POP_MOV(check_reg_write_finger_instr)) {
+            return false;
+        }
+        #elif defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)
         if (rtc_instruction_uses_target_reg(check_reg_write_finger_instr, pop_reg)) {
             // Some instruction inbetween the PUSH and POP writes to the target register, so we can't remove them or change them to a MOV.
             return false;
         }
-
-        // #ifndef AOT_SIMPLE_OPTIMISER
-        // if (!IS_ANY_PUSH_POP_MOV(check_reg_write_finger_instr)) {
-        //     return false;
-        // }
-        // #endif
+        #else
+        we should never get here
+        #endif
 
 
         check_reg_write_finger += rtc_is_double_word_instruction(check_reg_write_finger_instr) ? 2 : 1;
@@ -313,4 +316,4 @@ void rtc_optimise(uint16_t *buffer, uint16_t **code_end) {
         }
     } while (found);
 }
-#endif
+#endif // defined (AOT_STRATEGY_BASELINE)  || defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)

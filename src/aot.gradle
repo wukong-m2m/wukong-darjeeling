@@ -39,12 +39,12 @@ tasks.whenTaskAdded { task ->
     }
 }
 
-
+// DEFAULTS
 if (!project.hasProperty('aotstrat')) {
     project.ext.aotstrat = 'markloop'
 }
 if (!project.hasProperty('aotbm')) {
-    project.ext.aotbm = 'bsort16'
+    project.ext.aotbm = 'bsort32'
 }
 if (!project.hasProperty('aotstackcachesize')) {
     project.ext.aotstackcachesize = '11'
@@ -93,12 +93,14 @@ def getOutputDirName() {
     def outdirSTRAT='?'
     if (project.ext.aotstrat == 'baseline')
         outdirSTRAT='0BASE'
+    if (project.ext.aotstrat == 'improvedpeephole')
+        outdirSTRAT='1PEEP'
     if (project.ext.aotstrat == 'simplestackcache')
-        outdirSTRAT='1SMPL'
+        outdirSTRAT='2SMPL'
     if (project.ext.aotstrat == 'poppedstackcache')
-        outdirSTRAT='2POPD'
+        outdirSTRAT='3POPD'
     if (project.ext.aotstrat == 'markloop')
-        outdirSTRAT='3MARK'
+        outdirSTRAT='4MARK'
 
     def outdirCONSTSHIFT='?'
     if (project.ext.aotconstshiftoptimisation == 'none')
@@ -121,6 +123,8 @@ def getOutputDirName() {
 
 
     if (project.ext.aotstrat == 'baseline') {
+        return "results_${outdirSTRAT}_R___P__CS${outdirCONSTSHIFT}${outdir32bitindex}"
+    } else if (project.ext.aotstrat == 'improvedpeephole') {
         return "results_${outdirSTRAT}_R___P__CS${outdirCONSTSHIFT}${outdir32bitindex}"
     } else if (project.ext.aotstrat == 'simplestackcache') {
         return "results_${outdirSTRAT}_R${outdirREGS}_P__CS${outdirCONSTSHIFT}${outdir32bitindex}"
