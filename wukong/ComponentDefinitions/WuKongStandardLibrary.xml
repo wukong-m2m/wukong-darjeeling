@@ -154,6 +154,12 @@
         <property name="active" access="readonly" datatype="boolean" default="false"  />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
     </WuClass>
+    <WuClass name="Fire_Detector" id="20" virtual="true" type="soft">
+        <property name="input" access="writeonly" datatype="boolean" default="false"  />
+        <property name="floor" access="writeonly" datatype="short" default="0"  />
+        <property name="x" access="writeonly" datatype="short" default="0"  />
+        <property name="y" access="readonly" datatype="short" default="0"  />
+    </WuClass>
 
     <!-- Sensors -->
     <WuClass name="Light_Sensor" id="1001" virtual="false" type="hard">
@@ -506,6 +512,10 @@
         <property name="right_recv" access="readwrite" datatype="boolean" default="false"/>
         <property name="left_signal" access="readwrite" datatype="boolean" default="false"/>
         <property name="right_signal" access="readwrite" datatype="boolean" default="false"/>
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="50"  />
+    </WuClass>
+    <WuClass name="Path_LED" id="2040" virtual="false" type="hard">
+        <property name="floor" access="readwrite" datatype="short" default="0" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="50"  />
     </WuClass>
 

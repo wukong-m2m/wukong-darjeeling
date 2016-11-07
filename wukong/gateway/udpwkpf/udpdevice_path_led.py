@@ -1,48 +1,32 @@
-import csv
+from twisted.web.client import FileBodyProducer
+from twisted.protocols import basic
+from twisted.internet import reactor
+from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
+
+from udpwkpf import WuClass, Device
 import sys
-import copy
-import time
-from bootstrap import *
+import json
 
-LED_GRID               = 4
-FLOOR                  = 0
-STAIR                  = 1
+HOUSELAYOUT = 'dollhouse.csv'
 
-location = FLOOR # FLOOR or STAIR
-
-#direction
 LEFT                   = -1
 RIGHT                  = 1
 STATIC                 = 0
 
-#FLOOR
-LEFTTOP                = 0
-LEFTMIDDLE             = 1
-LEFTBOTTOM             = 2
-RIGHTTOP               = 3
-RIGHTMIDDLE            = 4
-RIGHTBOTTOM            = 5
-
-#STAIR
-LEFTTOP2MIDDLE         = 0
-LEFTMIDDLE2BOTTOM      = 1
-RIGHTTOP2MIDDLE        = 2
-RIGHTMIDDLE2BOTTOM     = 3
-LEFTMIDDLE2RIGHTTOP    = 4
-LEFTBOTTOM2RIGHTMIDDLE = 5
-LEFTTOP2RIGHTTOP       = 6
-
-csv.register_dialect(
-        'mydialect',
-        delimiter = ',',
-        quotechar = '"',
-        doublequote = True,
-        skipinitialspace = True,
-        lineterminator = '\r\n',
-        quoting = csv.QUOTE_MINIMAL)
-
-class patternSuggestor(object):
-    def __init__(self, index):
+class Path_LED(WuClass):
+    def __init__(self):
+        WuClass.__init__(self)
+        self.loadClass('Path_LED')
+        self.id = 0
+        self.myMQTTClient = AWSIoTMQTTClient("")
+        self.myMQTTClient.configureEndpoint("a1trumz0n7avwt.iot.us-west-2.amazonaws.com", 8883)
+        self.myMQTTClient.configureCredentials("AWS/root.crt", "AWS/private.key", "AWS/cert.crt")
+        self.myMQTTClient.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
+        self.myMQTTClient.configureDrainingFrequency(2)  # Draining: 2 Hz
+        self.myMQTTClient.configureConnectDisconnectTimeout(10)  # 10 sec
+        self.myMQTTClient.configureMQTTOperationTimeout(5)  # 5 sec
+        self.myMQTTClient.connect()
+        print "aws init success"
         self.map = []
         self.dist = []
         self.stairs = []
@@ -52,20 +36,22 @@ class patternSuggestor(object):
         self.fires = []
         self.ledfloorMap = []
         self.lastPath = []
-        self.floorIndex = index
-        self.stairIndex = index
+        self.index = 0
         self.count = 0
         self.path = []
         self.paths = []
         self.counts = []
-        self.direction = None
-      
-    def initMap(self, filename):
-        with open(filename, 'rb') as csvfile:
+        self.direction = 0
+        self.nFloor = 0
+        self.initMap()
+        self.myMQTTClient.subscribe('fireMessage', 1, self.Callback)
+
+    def initMap(self):
+        with open(HOUSELAYOUT, 'rb') as csvfile:
             csv.reader(csvfile, dialect='mydialect')
             nextline = next(csvfile).split(',')
             nFloor, nStair = int(nextline[1]), int(nextline[2])
-
+            self.nFloor = nFloor
             for i in xrange(nFloor):
                 floor = []
                 nextline = next(csvfile).split(',')
@@ -90,12 +76,24 @@ class patternSuggestor(object):
                     if index != '' and index != '\n':
                         stripIndex.append(int(index))
                 self.ledstairMap.append(stripIndex)
-                
+
     def addFire(self, f, i, j):
         self.fires.append((f, i, j))
 
     def removeFire(self, f, i, j):
         self.fires.remove((f, i, j))
+
+    def Callback(self, client, userdata, message, pID):
+        print("Received a new message: ")
+        print(message.payload)
+        print("from topic: ")
+        print(message.topic)
+        print("--------------\n\n")
+        try:
+            data = json.loads(message.payload)
+            print data
+        except ValueError, e:
+            print 'not JSON'
 
     def recalMap(self):
         for floor in xrange(len(self.map)):
@@ -195,38 +193,37 @@ class patternSuggestor(object):
         return path[::-1]
     
     def setPathList(self, paths):
-        if location == FLOOR:
+        if self.index < self.nFloor:
            self.paths = []
            self.counts = []
            for path in paths:
                newPath = []
                for point in path:
-                   if point[0] == self.floorIndex:
+                   if point[0] == self.index:
                        newPath.append(point)
                if len(newPath) > 0:
                    self.paths.append(newPath)
                    self.counts.append(0)
-        elif location == STAIR:
+        else:
             self.direction = 0
             for path in paths:
                 self.direction |= self.findDirection(path)
 
     def updateSafty(self):
-        if location == FLOOR:
-            for x, row in enumerate(self.ledfloorMap[self.floorIndex]):
+        if self.index < self.nFloor:
+            for x, row in enumerate(self.ledfloorMap[self.index]):
                 for y, ledstripIndex in enumerate(row):
                     if ledstripIndex == 101: # 101 is used to indicate that there is no led placed on this coordinate.
                         continue
-                    safty = self.map[self.floorIndex][x][y]   
+                    safty = self.map[self.index][x][y]   
                     level = (safty / 100.0)
-                    #print 'coordinate: ', x, y, 'index: ', ledstripIndex, 'safty: ', safty
                     led.set(ledstripIndex, Color(255, 0, 0, level))
             led.update()
-        elif location == STAIR:
-            safty = self.stairs[self.stairIndex][-1]
+        else:
+            i = self.index - self.nFloor
+            safty = self.stairs[i][-1]
             level = safty / 100.0
-            #print 'stairIndex: ', self.stairIndex, 'safty: ', safty
-            ledstripLen = len(self.ledstairMap[self.stairIndex])
+            ledstripLen = len(self.ledstairMap[i])
             for ledstripIndex in range(ledstripLen):
                 led.set(ledstripIndex, Color(255, 0, 0, level))
             led.update()
@@ -234,12 +231,13 @@ class patternSuggestor(object):
             raise NotImplementedError
 
     def findDirection(self, path):
-        if location == FLOOR:
+        if self.index < self.nFloor:
             pass
-        elif location == STAIR:
-            leftStairEntry = self.leftStairEntries[self.stairIndex]
+        else:
+            i = self.index - self.nFloor
+            leftStairEntry = self.leftStairEntries[i]
             lf, lx, ly = leftStairEntry
-            rightStairEntry = self.rightStairEntries[self.stairIndex]
+            rightStairEntry = self.rightStairEntries[i]
             rf, rx, ry = rightStairEntry
             leftSafty = self.map[lf][lx][ly] 
             rightSafty = self.map[rf][rx][ry]
@@ -258,13 +256,13 @@ class patternSuggestor(object):
     def setPathLED(self, point):
         x = point[1]
         y = point[2]
-        ledstripIndex = self.ledfloorMap[self.floorIndex][x][y]
+        ledstripIndex = self.ledfloorMap[self.index][x][y]
         level = 0.5
         led.set(ledstripIndex, Color(0, 255, 0, level))
         led.update()
         
     def updateEvacuation(self):
-        if location == FLOOR:
+        if self.index < self.nFloor:
             self.updateSafty()
             if len(self.paths) == 0:
                 print "No Path!!"
@@ -274,10 +272,11 @@ class patternSuggestor(object):
                 for i in xrange(self.counts[x], len(self.paths[x]), LED_GRID):
                     self.setPathLED(self.paths[x][i])
                 self.counts[x] += 1
-        elif location == STAIR:
+        else:
+            i = self.index - self.nFloor
             self.updateSafty()
             if self.direction:
-                tempMap = self.ledstairMap[self.stairIndex]
+                tempMap = self.ledstairMap[i]
                 tempLen = len(tempMap)
                 self.count %= tempLen
                 index = tempMap[self.count]
@@ -291,20 +290,31 @@ class patternSuggestor(object):
         else:
             raise NotImplementedError
 
-p=patternSuggestor(LEFTTOP)
-#p=patternSuggestor(LEFTTOP2RIGHTTOP)
-p.initMap(sys.argv[1])
-p.addFire(0,2,2)
-p.recalMap()
-#print 'map: ', p.map[1]
-p.updateSafty()
-path1 = p.findPath(0,5,2)
-path2 = p.findPath(0,2,4)
-p.setPathList([path1, path2])
-while True:
-    time.sleep(1)
-    p.updateEvacuation()
-#print 'path1: ', path1
-#p.removeFire(1, 4, 2)
-#p.recalMap()
-#p.updateSafty()
+    def update(self,obj,pID=None,val=None):
+        if pID == 0:
+            self.index = val
+        if len(self.fires):
+            p.updateEvacuation()
+        else:
+            led.all_off()
+
+if __name__ == "__main__":
+    class MyDevice(Device):
+        def __init__(self,addr,localaddr):
+            Device.__init__(self,addr,localaddr)
+
+        def init(self):
+            self.m = Path_LED()
+            self.addClass(self.m,0)
+            self.addObject(self.m.ID)
+
+    if len(sys.argv) <= 2:
+        print 'python %s <gip> <dip>:<port>' % sys.argv[0]
+        print '      <gip>: IP addrees of gateway'
+        print '      <dip>: IP address of Python device'
+        print '      <port>: An unique port number'
+        print ' ex. python %s 192.168.4.7 127.0.0.1:3000' % sys.argv[0]
+        sys.exit(-1)
+
+    d = MyDevice(sys.argv[1],sys.argv[2])
+    reactor.run()
