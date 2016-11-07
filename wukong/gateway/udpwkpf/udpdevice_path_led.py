@@ -6,9 +6,20 @@ from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 from udpwkpf import WuClass, Device
 import sys
 import json
+import csv
+import copy
+from udpwkpf_io_interface import *
+csv.register_dialect(
+        'mydialect',
+        delimiter = ',',
+        quotechar = '"',
+        doublequote = True,
+        skipinitialspace = True,
+        lineterminator = '\r\n',
+        quoting = csv.QUOTE_MINIMAL)
+HOUSELAYOUT = 'dollhouseMap.csv'
 
-HOUSELAYOUT = 'dollhouse.csv'
-
+LED_GRID               = 4
 LEFT                   = -1
 RIGHT                  = 1
 STATIC                 = 0
@@ -38,13 +49,43 @@ class Path_LED(WuClass):
         self.lastPath = []
         self.index = 0
         self.count = 0
-        self.path = []
+        self.humans = []
         self.paths = []
         self.counts = []
         self.direction = 0
         self.nFloor = 0
         self.initMap()
         self.myMQTTClient.subscribe('fireMessage', 1, self.Callback)
+
+    def Callback(self, client, userdata, message):
+        print("Received a new message: ")
+        print(message.payload)
+        print("from topic: ")
+        print(message.topic)
+        print("--------------\n\n")
+        try:
+            data = json.loads(message.payload)
+            print data
+            if 'fire' in data.keys():
+                if data['fire']:
+                    self.addFire(data['floor'], data['x'], data['y'])
+                    self.recalMap()
+                else:
+                    self.removeFire(data['floor'], data['x'], data['y'])
+                    self.recalMap()
+                self.calPath()
+            if 'human' in data.keys():
+                if data['human']:
+                    self.humans.append((data['floor'], data['x'], data['y']))
+                    self.calPath()
+                else:
+                    i = self.humans.index((data['floor'], data['x'], data['y']))
+                    self.humans.pop(i)
+                    if len(self.paths) > i:
+                        self.paths.pop(i)
+                        self.counts.pop(i)
+        except ValueError, e:
+            print 'not JSON'
 
     def initMap(self):
         with open(HOUSELAYOUT, 'rb') as csvfile:
@@ -82,18 +123,6 @@ class Path_LED(WuClass):
 
     def removeFire(self, f, i, j):
         self.fires.remove((f, i, j))
-
-    def Callback(self, client, userdata, message, pID):
-        print("Received a new message: ")
-        print(message.payload)
-        print("from topic: ")
-        print(message.topic)
-        print("--------------\n\n")
-        try:
-            data = json.loads(message.payload)
-            print data
-        except ValueError, e:
-            print 'not JSON'
 
     def recalMap(self):
         for floor in xrange(len(self.map)):
@@ -192,21 +221,22 @@ class Path_LED(WuClass):
         self.reversePath(startPoint[0], startPoint[1], startPoint[2], path)
         return path[::-1]
     
-    def setPathList(self, paths):
+    def calPath(self):
         if self.index < self.nFloor:
-           self.paths = []
-           self.counts = []
-           for path in paths:
-               newPath = []
-               for point in path:
-                   if point[0] == self.index:
-                       newPath.append(point)
-               if len(newPath) > 0:
-                   self.paths.append(newPath)
-                   self.counts.append(0)
+            self.paths = []
+            self.counts = []
+            for point in self.humans:
+                path = self.findPath(point[0], point[1], point[2])
+                newPath = []
+                for point in path:
+                    if point[0] == self.index:
+                        newPath.append(point)
+                self.paths.append(newPath)
+                self.counts.append(0)
         else:
             self.direction = 0
-            for path in paths:
+            for point in self.humans:
+                path = self.findPath(point[0], point[1], point[2])
                 self.direction |= self.findDirection(path)
 
     def updateSafty(self):
@@ -227,8 +257,6 @@ class Path_LED(WuClass):
             for ledstripIndex in range(ledstripLen):
                 led.set(ledstripIndex, Color(255, 0, 0, level))
             led.update()
-        else:
-            raise NotImplementedError
 
     def findDirection(self, path):
         if self.index < self.nFloor:
@@ -250,8 +278,6 @@ class Path_LED(WuClass):
                     return LEFT
             else:
                 return STATIC
-        else:
-            raise NotImplementedError
 
     def setPathLED(self, point):
         x = point[1]
@@ -265,7 +291,6 @@ class Path_LED(WuClass):
         if self.index < self.nFloor:
             self.updateSafty()
             if len(self.paths) == 0:
-                print "No Path!!"
                 return
             for x in xrange(len(self.paths)):
                 self.counts[x] %= LED_GRID
@@ -287,16 +312,15 @@ class Path_LED(WuClass):
             else:
                 print 'direction is static'
                 self.updateSafty()
-        else:
-            raise NotImplementedError
 
     def update(self,obj,pID=None,val=None):
         if pID == 0:
             self.index = val
         if len(self.fires):
-            p.updateEvacuation()
+            self.updateEvacuation()
         else:
-            led.all_off()
+            pass
+            #led.all_off()
 
 if __name__ == "__main__":
     class MyDevice(Device):

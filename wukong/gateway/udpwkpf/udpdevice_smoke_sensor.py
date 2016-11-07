@@ -3,7 +3,7 @@ from udpwkpf import WuClass, Device
 import sys
 from udpwkpf_io_interface import *
 
-Smoke_Pin = 12
+Smoke_Pin = 4
 
 class Smoke_Sensor(WuClass):
     def __init__(self):
@@ -14,6 +14,7 @@ class Smoke_Sensor(WuClass):
     def update(self,obj,pID=None,val=None):
         try:
             current_value = digital_read(self.IO)
+            print current_value
             if current_value == 1:
                 obj.setProperty(0, False)
                 print "No Alarm"
