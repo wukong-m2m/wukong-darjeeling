@@ -156,9 +156,9 @@
     </WuClass>
     <WuClass name="Fire_Detector" id="20" virtual="true" type="soft">
         <property name="input" access="writeonly" datatype="boolean" default="false"  />
-        <property name="floor" access="writeonly" datatype="short" default="0"  />
-        <property name="x" access="writeonly" datatype="short" default="0"  />
-        <property name="y" access="readonly" datatype="short" default="0"  />
+        <property name="floor" access="readwrite" datatype="short" default="0"  />
+        <property name="x" access="readwrite" datatype="short" default="0"  />
+        <property name="y" access="readwrite" datatype="short" default="0"  />
     </WuClass>
 
     <!-- Sensors -->
