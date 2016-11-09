@@ -519,6 +519,8 @@ class WuObject:
         self.cls.setProperty(self.port,pID,val)
     def getProperty(self,pID):
         return self.cls.getProperty(self.port,pID)
+    def getLocation(self):
+        return self.cls.wkpf.location
 
 class WuClass:
     def __init__(self):
