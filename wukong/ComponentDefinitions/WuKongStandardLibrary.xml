@@ -140,11 +140,8 @@
         <property name="volume_decrease" access="readwrite" datatype="boolean" default="false"/>
     </WuClass>
     <WuClass name="Fire_Agent" id="18" virtual="true" type="soft">
-        <property name="left_danger_in" access="writeonly" datatype="boolean" default="false"  />
-        <property name="right_danger_in" access="writeonly" datatype="boolean" default="false"  />
-        <property name="local_danger_in" access="writeonly" datatype="boolean" default="false"  />
-        <property name="left_danger_out" access="readonly" datatype="boolean" default="false"  />
-        <property name="right_danger_out" access="readonly" datatype="boolean" default="false"  />
+        <property name="location" access="writeonly" datatype="short" default="0"  />
+        <property name="message" access="writeonly" datatype="short" default="0"  />
         <property name="pattern" access="readonly" datatype="short" default="0"  />
     </WuClass>
     <WuClass name="FT" id="19" virtual="true" type="soft" forcePropagate="true">
@@ -235,6 +232,10 @@
     </WuClass>
     <WuClass name="Smoke_Sensor" id="1018" virtual="false" type="hard">
         <property name="alarm" access="readwrite" datatype="boolean" default="false"  />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
+    </WuClass>
+    <WuClass name="Location_Sensor" id="1007" virtual="false" type="hard">
+        <property name="output" access="readonly" datatype="boolean" default="false"/>
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100" />
     </WuClass>
 
@@ -517,6 +518,16 @@
     <WuClass name="Path_LED" id="2040" virtual="false" type="hard">
         <property name="floor" access="readwrite" datatype="short" default="0" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="50"  />
+    </WuClass>
+    <WuClass name="AWS_Subscriber" id="2041" virtual="false" type="hard">
+        <property name="topic" access="readwrite" datatype="short" default="0" />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="500"  />
+    </WuClass>
+    <WuClass name="AWS_Publisher" id="2042" virtual="false" type="hard">
+        <property name="topic" access="readwrite" datatype="short" default="0" />
+        <property name="location" access="readwrite" datatype="short" default="0" />
+        <property name="value" access="readwrite" datatype="short" default="0" />
+        <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
     </WuClass>
 
 

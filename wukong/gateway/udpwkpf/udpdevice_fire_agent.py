@@ -8,39 +8,23 @@ class Fire_Agent(WuClass):
         WuClass.__init__(self)
         self.loadClass('Fire_Agent')
         print "Fire Agent init success"
+        self.loc = 0
+        self.states = [0,0,0,0,0,0]
     def update(self,obj,pID,val):
-        if pID == 0 or pID == 1 or pID == 2:
-          left_in = obj.getProperty(0)
-          right_in = obj.getProperty(1)
-          local_in = obj.getProperty(2)
-          if local_in == True:
-              obj.setProperty(3, True)
-              obj.setProperty(4, True)
-              obj.setProperty(5, 3) #show stay_pattern
-              print "Local alarm. Show stay pattern."
-          elif left_in == True:
-              if right_in == True:
-                  obj.setProperty(3, True)
-                  obj.setProperty(4, True)
-                  obj.setProperty(5, 3) #show stay_pattern
-                  print "No way to escape. Show stay pattern"
-              else:
-                  obj.setProperty(3, True)
-                  obj.setProperty(4, False)
-                  obj.setProperty(5, 2) #show right_pattern
-                  print "Left alarm. Show right pattern"
-          else:
-              if right_in == True:
-                  obj.setProperty(3, False)
-                  obj.setProperty(4, True)
-                  obj.setProperty(5, 1) #show left_pattern
-                  print "Right alarm. Show left pattern"
-              else:
-                  obj.setProperty(3, False)
-                  obj.setProperty(4, False)
-                  obj.setProperty(5, 0) #show safe_pattern
-                  print "No alarm. Show safe pattern"
- 
+        self.loc = (int)(obj.getProperty(0))
+        newState = (int)(obj.getProperty(1))
+        if newState/10 > 0:
+            self.states[newState/10] = newState%10
+        if self.loc:
+            if self.states[self.loc] or self.state[self.loc-1] and self.state[self.loc+1]:
+                obj.setProperty(2, 1)
+            elif self.states[self.loc+1] or self.state[self.loc+2]:
+                obj.setProperty(2, 2)
+            elif self.states[self.loc-1] or self.state[self.loc-2]:
+                obj.setProperty(2, 3)
+            else:
+                obj.setProperty(2, 0)
+
 if __name__ == "__main__":
     class MyDevice(Device):
         def __init__(self,addr,localaddr):
