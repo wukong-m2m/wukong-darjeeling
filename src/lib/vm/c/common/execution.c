@@ -923,8 +923,11 @@ typedef int32_t  (*native_32bit_method_function_t)(uint16_t rtc_frame_locals_sta
  * case of a virtual call the object the method belongs to is on the stack and
  * should be handled as an additional parameter. Should be either 1 or 0.
  */
+// #define avroraCallMethodTimerMark(x) avroraTimerMark(x)
+#define avroraCallMethodTimerMark(x) 
 void callMethod(dj_global_id methodImplId, int virtualCall)
 {
+avroraCallMethodTimerMark(10);
 	dj_frame *frame;
 	bool isReturnReference=false;
 	int oldNumRefStack, numRefStack;
@@ -944,7 +947,9 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 	// get a pointer in program space to the method implementation block
 	// from the method's global id
 	dj_di_pointer methodImpl;
+avroraCallMethodTimerMark(11);
 	methodImpl = dj_global_id_getMethodImplementation(methodImplId);
+avroraCallMethodTimerMark(12);
 
 	// check if the method is a native methods
 	if ((dj_di_methodImplementation_getFlags(methodImpl) & FLAGS_NATIVE) != 0)
@@ -1025,12 +1030,17 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 		}
 
 	} else {
+avroraCallMethodTimerMark(13);
 		// Java method. May or may not be RTC compiled
 
 		// create new frame for the function
 		frame = dj_frame_create(methodImplId);
 
+avroraCallMethodTimerMark(14);
+
 		dj_exec_passParameters(frame, methodImplId);
+
+avroraCallMethodTimerMark(15);
 
 		// not enough space on the heap to allocate the frame
 		if (frame == NULL) {
@@ -1038,35 +1048,53 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 			return;
 		}
 
+avroraCallMethodTimerMark(16);
+
 		// save current state of the frame
 		dj_exec_saveLocalState(dj_exec_getCurrentThread()->frameStack);
+
+avroraCallMethodTimerMark(17);
 
 		// push the new frame on the frame stack
 		dj_thread_pushFrame(dj_exec_getCurrentThread(), frame);
 
+avroraCallMethodTimerMark(18);
+
 		// switch in newly created frame
 		dj_exec_loadLocalState(frame);
+
+avroraCallMethodTimerMark(19);
 
 		if (handler != NULL && dj_exec_use_rtc) {
 			// RTC compiled method
 			// execute it directly
 
+avroraCallMethodTimerMark(20);
 			uint16_t rtc_frame_locals_start = (uint16_t)dj_frame_getLocalReferenceVariables(frame); // Will be stored in Y by the function prologue
+avroraCallMethodTimerMark(21);
 			uint16_t rtc_ref_stack_start = (uint16_t)dj_frame_getReferenceStackBase(frame); // Will be stored in X by the function prologue
+avroraCallMethodTimerMark(22);
 			uint16_t rtc_statics_start = (uint16_t)methodImplId.infusion->staticReferenceFields; // Will be stored in R2 by the function prologue
+avroraCallMethodTimerMark(23);
 
 			int16_t ret16;
 			int32_t ret32;
 			ref_t retref;
 			uint8_t rettype = dj_di_methodImplementation_getReturnType(methodImpl);
 			DEBUG_LOG(DBG_RTC, "[rtc] starting rtc compiled method %i at %p with return type %i\n", methodImplId.entity_id, handler, rettype);
+avroraCallMethodTimerMark(24);
 			switch (rettype) {
 				case JTID_VOID:
 					AVRORATRACE_ENABLE();
+avroraCallMethodTimerMark(25);
 					((native_void_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
+avroraCallMethodTimerMark(26);
 					AVRORATRACE_DISABLE();
+avroraCallMethodTimerMark(27);
 					returnFromMethod();
+avroraCallMethodTimerMark(28);
 					DEBUG_LOG(DBG_RTC, "[rtc] void call returned (void)\n");
+avroraCallMethodTimerMark(29);
 					break;
 				case JTID_BOOLEAN:
 				case JTID_CHAR:
@@ -1112,6 +1140,7 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 			DEBUG_LOG(DBG_DARJEELING, "Invoke done\n");
 	#endif
 	}
+avroraCallMethodTimerMark(30);
 }
 
 /**
