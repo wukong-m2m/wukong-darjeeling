@@ -7,8 +7,6 @@
 #define output_high(port, pin) port |= (1<<pin)
 #define input_get(port, pin) ((port & (1 << pin)) != 0)
 
-#define DEBOUNCE_THREASHOLD 500
-
 void wuclass_binary_sensor_setup(wuobject_t *wuobject) {
   DEBUG_LOG(DBG_WKPFUPDATE, "WKPFUPDATE(BinarySensor): setup\n");
   set_input(DDRE, 3);
