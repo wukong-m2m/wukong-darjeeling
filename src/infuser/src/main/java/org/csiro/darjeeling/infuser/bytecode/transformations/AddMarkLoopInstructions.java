@@ -305,11 +305,11 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
         Collections.sort(valuetagCountList, Collections.reverseOrder());
 
         ArrayList<Integer> valuetagList = new ArrayList<Integer>();
-        System.err.println("MARKLOOP_START valuetags: ");
+        // System.err.println("MARKLOOP_START valuetags: ");
         for (ValuetagCount c : valuetagCountList) {
             valuetagList.add(c.valuetag);
-            System.err.println("Valuetag: " + valuetagToString(c.valuetag));
-            System.err.println("Count: " + c.count);
+            // System.err.println("Valuetag: " + valuetagToString(c.valuetag));
+            // System.err.println("Count: " + c.count);
         }
 
         InstructionHandle markLoopHandle;
