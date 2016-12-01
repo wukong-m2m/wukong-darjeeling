@@ -209,6 +209,7 @@
 // MOVW                                 0000 0001 dddd rrrr, with d=dest register/2, r=source register/2
 #define OPCODE_MOVW                     0x0100
 #define asm_MOVW(destreg, srcreg)       asm_MOVW(destreg, srcreg)
+#define asm_const_MOVW(destreg, srcreg) (((OPCODE_MOVW) + (((destreg)/2) << 4) + makeSourceRegister((srcreg)/2)))
 #define emit_MOVW(destreg, srcreg)      emit_MOVW(destreg, srcreg)
 
 // MUL                                  1001 11rd dddd rrrr, with d=dest register, r=source register
@@ -226,10 +227,12 @@
 // PUSH                                 1001 001d dddd 1111, with d=source register
 #define OPCODE_PUSH                     0x920F
 #define emit_PUSH(reg)                  emit_opcodeWithSingleRegOperand(OPCODE_PUSH, reg)
+#define asm_const_PUSH(reg)             (((OPCODE_PUSH) + ((reg) << 4)))
 
 // POP                                  1001 000d dddd 1111
 #define OPCODE_POP                      0x900F
 #define emit_POP(reg)                   emit_opcodeWithSingleRegOperand(OPCODE_POP, reg)
+#define asm_const_POP(reg)              (((OPCODE_POP) + ((reg) << 4)))
 
 // RCALL                                1101 kkkk kkkk kkkk, with k relative in words, not bytes. PC <- PC + k + 1
 #define OPCODE_RCALL                    0xD000
