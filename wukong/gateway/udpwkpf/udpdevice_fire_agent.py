@@ -25,14 +25,14 @@ class Fire_Agent(WuClass):
                   obj.setProperty(5, 3) #show stay_pattern
                   print "No way to escape. Show stay pattern"
               else:
-                  obj.setProperty(3, True)
-                  obj.setProperty(4, False)
+                  obj.setProperty(3, False)
+                  obj.setProperty(4, True)
                   obj.setProperty(5, 2) #show right_pattern
                   print "Left alarm. Show right pattern"
           else:
               if right_in == True:
-                  obj.setProperty(3, False)
-                  obj.setProperty(4, True)
+                  obj.setProperty(3, True)
+                  obj.setProperty(4, False)
                   obj.setProperty(5, 1) #show left_pattern
                   print "Right alarm. Show left pattern"
               else:
