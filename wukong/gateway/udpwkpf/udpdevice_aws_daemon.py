@@ -13,7 +13,7 @@ if __name__ == "__main__":
             WuClass.__init__(self)
             self.loadClass('AWS_Daemon')
             self.id = 0
-            self.myMQTTClient = AWSIoTMQTTClient("WKworkshop1231")
+            self.myMQTTClient = AWSIoTMQTTClient("")
             self.myMQTTClient.configureEndpoint("a1trumz0n7avwt.iot.us-west-2.amazonaws.com", 8883)
             self.myMQTTClient.configureCredentials("AWS/root.crt", "AWS/private.key", "AWS/cert.crt")
             self.myMQTTClient.configureOfflinePublishQueueing(-1)  # Infinite offline Publish queueing
