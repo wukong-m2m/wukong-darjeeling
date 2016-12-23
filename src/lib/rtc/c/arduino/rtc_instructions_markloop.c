@@ -1268,14 +1268,17 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             // clear the valuetags for all call-used registers, since the value may be gone after the function call returns
             rtc_poppedstackcache_clear_all_callused_valuetags();
 
+            emit_LDI(R24, jvm_operand_byte0); // infusion id
+            emit_LDI(R25, jvm_operand_byte1); // entity id
+
             // set intStack to SP
             emit_PUSH(ZERO_REG); // NOTE: THE DVM STACK IS A 16 BIT POINTER, SP IS 8 BIT. 
                                         // BOTH POINT TO THE NEXT free SLOT, BUT SINCE THEY GROW down THIS MEANS THE DVM POINTER SHOULD POINT TO TWO BYTES BELOW THE LAST VALUE,
                                         // WHILE CURRENTLY THE NATIVE SP POINTS TO THE BYTE DIRECTLY BELOW IT. RESERVE AN EXTRA BYTE TO FIX THIS.
-            emit_2_LDS(R24, SPaddress_L); // Load SP into R24:R25
-            emit_2_LDS(R25, SPaddress_H); // Load SP into R24:R25
-            emit_2_STS((uint16_t)&(intStack), R24); // Store SP into intStack
-            emit_2_STS((uint16_t)&(intStack)+1, R25); // Store SP into intStack
+            emit_2_LDS(R22, SPaddress_L); // Load SP into R22:R23
+            emit_2_LDS(R23, SPaddress_H); // Load SP into R22:R23
+            emit_2_STS((uint16_t)&(intStack), R22); // Store SP into intStack
+            emit_2_STS((uint16_t)&(intStack)+1, R23); // Store SP into intStack
 
             // Reserve 8 bytes of space on the stack, in case the returned int is large than passed ints
             // TODO: make this more efficient by looking up the method, and seeing if the return type is int,
@@ -1292,8 +1295,6 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
             emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
 
-            emit_LDI(R24, jvm_operand_byte0); // infusion id
-            emit_LDI(R25, jvm_operand_byte1); // entity id
             if        (opcode == JVM_INVOKEVIRTUAL
                     || opcode == JVM_INVOKEINTERFACE) {
                 emit_LDI(R22, jvm_operand_byte2); // nr_ref_args
@@ -1313,11 +1314,11 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 
 
             // get SP from intStack
-            emit_2_LDS(R24, (uint16_t)&(intStack)); // Load intStack into R24:R25
-            emit_2_LDS(R25, (uint16_t)&(intStack)+1); // Load intStack into R24:R25
-            emit_2_STS(SPaddress_L, R24); // Store R24:25 into SP
-            emit_2_STS(SPaddress_H, R25); // Store R24:25 into SP
-            emit_POP(R25); // JUST POP AND DISCARD TO CLEAR THE BYTE WE RESERVED IN THE FIRST LINE FOR INVOKESTATIC. SEE COMMENT ABOVE.
+            emit_2_LDS(R22, (uint16_t)&(intStack)); // Load intStack into R22:R23
+            emit_2_LDS(R23, (uint16_t)&(intStack)+1); // Load intStack into R22:R23
+            emit_2_STS(SPaddress_L, R22); // Store R22:25 into SP
+            emit_2_STS(SPaddress_H, R23); // Store R22:25 into SP
+            emit_POP(R23); // JUST POP AND DISCARD TO CLEAR THE BYTE WE RESERVED IN THE FIRST LINE FOR INVOKESTATIC. SEE COMMENT ABOVE.
         break;
         case JVM_NEW:
             rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
