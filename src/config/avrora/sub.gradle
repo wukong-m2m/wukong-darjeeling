@@ -7,3 +7,6 @@ djConfig {
 if (!project.hasProperty('rtcbenchmark')) {
 	project.ext.rtcbenchmark = 'bm_sortO'
 }
+binaries.all {
+    // linker.args "-Wl,-T${project.rootDir}/config/${djConfigname}/ld.lnk"
+}
