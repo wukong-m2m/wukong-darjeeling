@@ -82,10 +82,10 @@ static dj_vm *vm;
 static uint16_t pc;
 static dj_di_pointer code;
 
-int16_t *intStack;
-ref_t *refStack;
+int16_t __attribute__((section (".intStackSection"))) *intStack;
+ref_t   __attribute__((section (".refStackSection"))) *refStack;
+ref_t   __attribute__((section (".localReferenceVariablesSection"))) *localReferenceVariables;
 
-ref_t *localReferenceVariables;
 static int16_t *localIntegerVariables;
 
 static ref_t this;

@@ -8,5 +8,10 @@ if (!project.hasProperty('rtcbenchmark')) {
 	project.ext.rtcbenchmark = 'bm_sortO'
 }
 binaries.all {
-    // linker.args "-Wl,-T${project.rootDir}/config/${djConfigname}/ld.lnk"
+    // These addresses must match the linker script! 
+    // .data starts at 0x100 and these three sections all contain 1 16-bit variable.
+    cCompiler.args "-DINTSTACKADDRESS=0x100"
+    cCompiler.args "-DREFSTACKADDRESS=0x102"
+    cCompiler.args "-DLOCALREFERENCEVARIABLESADDRESS=0x104"
+    linker.args "-Wl,-T${project.rootDir}/config/${djConfigname}/ld.lnk"
 }

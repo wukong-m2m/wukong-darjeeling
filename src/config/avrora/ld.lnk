@@ -156,6 +156,9 @@ SECTIONS
   .data          :
   {
      PROVIDE (__data_start = .) ;
+    *(.intStackSection)
+    *(.refStackSection)
+    *(.localReferenceVariablesSection)
     *(.data)
      *(.data*)
     *(.rodata)  /* We need to include .rodata here if gcc is used */
