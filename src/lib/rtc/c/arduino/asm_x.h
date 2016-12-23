@@ -16,5 +16,7 @@ void emit_x_PUSH_16bit(uint8_t base);
 void emit_x_PUSH_REF(uint8_t base);
 void emit_x_prologue();
 void emit_x_epilogue();
+void emit_x_preinvoke();
+void emit_x_postinvoke();
 
 #endif // ASM_X_H

@@ -237,6 +237,7 @@
 // RCALL                                1101 kkkk kkkk kkkk, with k relative in words, not bytes. PC <- PC + k + 1
 #define OPCODE_RCALL                    0xD000
 #define emit_RCALL(offset)              emit(OPCODE_RCALL + offset)
+#define asm_const_RCALL(offset)         (OPCODE_RCALL + offset)
 
 // RET                                  1001 0101 0000 1000
 #define OPCODE_RET                      0x9508
