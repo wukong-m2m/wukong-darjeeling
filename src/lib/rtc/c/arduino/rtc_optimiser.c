@@ -54,7 +54,34 @@ void rtc_optimise_drop_2_instructions(uint16_t *first_instr, uint16_t **code_end
 	*code_end -= 2;
 }
 
-bool rtc_instruction_uses_target_reg(uint16_t instruction, uint16_t target_reg) {
+
+bool rtc_instruction_fails_for_baseline_pushpop_optimisation(uint16_t instruction, uint16_t target_reg) {
+    const uint16_t TWO_REG_OPERAND_MASK = 0xFC00;
+    const uint16_t MOVW_MASK            = 0xFF00;
+
+    if (       (instruction & TWO_REG_OPERAND_MASK) == OPCODE_MOV          // 0010 11rd dddd rrrr
+        )
+    {
+        return GET_DEST_REG_OPERAND(instruction) == target_reg
+            || GET_SRC_REG_OPERAND(instruction) == target_reg;
+    }
+
+    if (       (instruction & MOVW_MASK)            == OPCODE_MOVW         // 0000 0001 dddd rrrr, with d=dest register/2, r=source register/2
+        )
+    {
+        // This will write both to the dest register, and the one after that.
+        // The four bits in the instruction are the four most significant bits,
+        // and both matching registers are written to, so we clear the lowest
+        // bit on target_reg.
+        return ((instruction & 0x00F0) >> 3) == (target_reg & 0x001E) // dest
+               || ((instruction & 0x000F) << 1) == (target_reg & 0x001E); // src
+    }
+
+    return true;
+}
+
+
+bool rtc_instruction_fails_for_improved_pushpop_optimisation(uint16_t instruction, uint16_t target_reg) {
 	const uint16_t TWO_REG_OPERAND_MASK = 0xFC00;
     const uint16_t ONE_REG_OPERAND_MASK = 0xFE0F;
     const uint16_t LDD_MASK             = 0xD200;
@@ -171,11 +198,11 @@ bool rtc_maybe_optimise_push_pop(uint16_t *push_finger, uint16_t *pop_finger, ui
         uint16_t check_reg_write_finger_instr = *check_reg_write_finger;
 
         #if defined (AOT_STRATEGY_BASELINE)
-        if (!(IS_MOV(check_reg_write_finger_instr) || IS_MOVW(check_reg_write_finger_instr))) {
+        if (rtc_instruction_fails_for_baseline_pushpop_optimisation(check_reg_write_finger_instr, pop_reg)) {
             return false;
         }
         #elif defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)
-        if (rtc_instruction_uses_target_reg(check_reg_write_finger_instr, pop_reg)) {
+        if (rtc_instruction_fails_for_improved_pushpop_optimisation(check_reg_write_finger_instr, pop_reg)) {
             // Some instruction inbetween the PUSH and POP writes to the target register, so we can't remove them or change them to a MOV.
             return false;
         }
