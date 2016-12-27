@@ -35,7 +35,7 @@ done
 for benchmark in ${benchmarks}
 do
 	# cachesizes=(5 6 7 8 9 10 11)
-	cachesizes=(5 11)
+	cachesizes=(11)
 	for aotstackcachesize in ${cachesizes}
 	do
 	    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Paotstackcachesize=${aotstackcachesize} -Paotmarkloopregs=0                  -Paotconstshiftoptimisation=none
@@ -46,7 +46,7 @@ done
 for benchmark in ${benchmarks}
 do
     # cachesizes=(5 6 7 8 9 10 11)
-    cachesizes=(5 11)
+    cachesizes=(11)
     for aotstackcachesize in ${cachesizes}
     do
         gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Paotstackcachesize=${aotstackcachesize} -Paotmarkloopregs=0                  -Paotconstshiftoptimisation=none
@@ -72,6 +72,16 @@ do
     for aotconstshiftoptimisation in ${constshifts}
     do
         gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Paotstackcachesize=11                   -Paotmarkloopregs=7                  -Paotconstshiftoptimisation=${aotconstshiftoptimisation} # -Paot32bitindex=true
+    done
+done
+
+# MARKLOOP+CONST SHIFT FOR DIFF NUMBERS OF PINNED REGISTERS
+for benchmark in ${benchmarks}
+do
+    markloopregs=(1 2 3 4 5 6 7)
+    for aotmarkloopregs in ${markloopregs}
+    do
+        gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Paotstackcachesize=11                   -Paotmarkloopregs=${aotmarkloopregs} -Paotconstshiftoptimisation=gcc_like
     done
 done
 
