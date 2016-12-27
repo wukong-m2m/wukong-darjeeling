@@ -85,7 +85,19 @@ const uint16_t PROGMEM emit_x_prologue_code[] =
   asm_const_PUSH(R18),
   OPCODE_RET };
 void emit_x_prologue() {
+#ifdef OPTIMISE_Os_PROLOGUE_EPILOGUE
     emit_2_CALL(((uint16_t)emit_x_prologue_code)/2);
+#else // OPTIMISE_Os_PROLOGUE_EPILOGUE
+    // prologue (is this the right way?)
+    for (int8_t i=0; i<=17-2; i++) { // PUSH R2-R17
+      emit_PUSH(R2+i);
+    }
+    emit_PUSH(R28);
+    emit_PUSH(R29); // Push Y
+    emit_MOVW(R28, R24); // Pointer to locals in Y
+    emit_MOVW(R26, R22); // Pointer to ref stack in X
+    emit_MOVW(R2, R20); // Pointer to static in R2 (will be MOVWed to R30 when necessary)
+#endif // OPTIMISE_Os_PROLOGUE_EPILOGUE
 }
 
 // Call saved: r1, r2-r17, r28:r29 (Y)
@@ -116,8 +128,18 @@ const uint16_t PROGMEM emit_x_epilogue_code[] =
   asm_const_PUSH(R18),
   OPCODE_RET };
 void emit_x_epilogue() {
+#ifdef OPTIMISE_Os_PROLOGUE_EPILOGUE
     emit_2_CALL(((uint16_t)emit_x_epilogue_code)/2);
     emit_RET();
+#else // OPTIMISE_Os_PROLOGUE_EPILOGUE
+    // epilogue (is this the right way?)
+    emit_POP(R29); // Pop Y
+    emit_POP(R28);
+    for (int8_t i=17-2; i>=0; i--) { // POP R17-R2
+      emit_POP(R2+i);
+    }
+    emit_RET();
+#endif // OPTIMISE_Os_PROLOGUE_EPILOGUE
 }
 
 // This needs to be a #define to calculate the instruction at compile time.

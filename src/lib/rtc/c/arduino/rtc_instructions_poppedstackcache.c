@@ -7,9 +7,11 @@
 #include "infusion.h"
 #include "program_mem.h"
 #include "wkreprog.h"
+#include "execution.h"
 #include "rtc.h"
 #include "rtc_branches.h"
 #include "rtc_complex_instructions.h"
+#include "rtc_instructions_common.h"
 #include "asm.h"
 #include "rtc_poppedstackcache.h"
 
@@ -18,10 +20,6 @@
 extern void __divmodhi4(void);
 extern void __mulsi3(void);
 extern void __divmodsi4(void);
-// the stack pointers used by execution.c
-extern int16_t *intStack;
-extern ref_t *refStack;
-extern ref_t *localReferenceVariables;
 
 void rtc_translate_single_instruction(rtc_translationstate *ts) {
     dj_infusion *target_infusion;
@@ -1259,62 +1257,12 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         case JVM_INVOKESPECIAL:
         case JVM_INVOKESTATIC:
         case JVM_INVOKEINTERFACE:
-
             // clear the stack cache, so all stack elements are in memory, not in registers
             rtc_stackcache_flush_all_regs();
             // clear the valuetags for all call-used registers, since the value may be gone after the function call returns
             rtc_poppedstackcache_clear_all_callused_valuetags();
 
-            // set intStack to SP
-            emit_PUSH(ZERO_REG); // NOTE: THE DVM STACK IS A 16 BIT POINTER, SP IS 8 BIT. 
-                                        // BOTH POINT TO THE NEXT free SLOT, BUT SINCE THEY GROW down THIS MEANS THE DVM POINTER SHOULD POINT TO TWO BYTES BELOW THE LAST VALUE,
-                                        // WHILE CURRENTLY THE NATIVE SP POINTS TO THE BYTE DIRECTLY BELOW IT. RESERVE AN EXTRA BYTE TO FIX THIS.
-            emit_2_LDS(RZL, SPaddress_L); // Load SP into RZ
-            emit_2_LDS(RZH, SPaddress_H); // Load SP into RZ
-            emit_2_STS((uint16_t)&(intStack), RZL); // Store SP into intStack
-            emit_2_STS((uint16_t)&(intStack)+1, RZH); // Store SP into intStack
-
-            // Reserve 8 bytes of space on the stack, in case the returned int is large than passed ints
-            // TODO: make this more efficient by looking up the method, and seeing if the return type is int,
-            //       and if so, if the size of the return type is larger than the integers passed. Then only
-            //       reserve the space that's needed.
-            //       This is for the worst case, where no ints are passed, so there's no space reserved, and
-            //       a 64 bit long is returned.
-            emit_RCALL(0); // RCALL to offset 0 does nothing, except reserving 2 bytes on the stack. cheaper than two useless pushes.
-            emit_RCALL(0);
-            emit_RCALL(0);
-            emit_RCALL(0);
-
-            // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
-            emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
-            emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
-
-            emit_LDI(R24, jvm_operand_byte0); // infusion id
-            emit_LDI(R25, jvm_operand_byte1); // entity id
-            if        (opcode == JVM_INVOKEVIRTUAL
-                    || opcode == JVM_INVOKEINTERFACE) {
-                emit_LDI(R22, jvm_operand_byte2); // nr_ref_args
-                emit_x_CALL((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE);
-            } else if (opcode == JVM_INVOKESPECIAL) {
-                emit_x_CALL((uint16_t)&RTC_INVOKESPECIAL);
-            } else if (opcode == JVM_INVOKESTATIC) {
-                emit_x_CALL((uint16_t)&RTC_INVOKESTATIC);
-            }
-
-            // Post possible GC: need to reset Y to the start of the stack frame's local references (the frame may have moved, so the old value may not be correct)
-            emit_2_LDS(RYL, (uint16_t)&(localReferenceVariables)); // Load localReferenceVariables into Y
-            emit_2_LDS(RYH, (uint16_t)&(localReferenceVariables)+1); // Load localReferenceVariables into Y
-            // Post possible GC: need to restore X to refStack which may have changed either because of GC or because of passed/returned references
-            emit_2_LDS(RXL, (uint16_t)&(refStack)); // Load refStack into X
-            emit_2_LDS(RXH, (uint16_t)&(refStack)+1); // Load refStack into X
-
-
-            // get SP from intStack
-            emit_2_LDS(RZL, (uint16_t)&(intStack)); // Load intStack into RZ
-            emit_2_LDS(RZH, (uint16_t)&(intStack)+1); // Load intStack into RZ
-            emit_2_STS(SPaddress_L, RZL); // Store RZ into SP
-            emit_2_STS(SPaddress_H, RZH); // Store RZ into SP
-            emit_POP(RZH); // JUST POP AND DISCARD TO CLEAR THE BYTE WE RESERVED IN THE FIRST LINE FOR INVOKESTATIC. SEE COMMENT ABOVE.
+            rtc_common_translate_invoke(opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
         break;
         case JVM_NEW:
             rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
