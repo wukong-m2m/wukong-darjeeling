@@ -53,7 +53,7 @@ do
     done
 done
 
-# MARKLOOP
+# MARK LOOPS
 for benchmark in ${benchmarks}
 do
     # markloopregs=(1 2 3 4 5 6 7)
