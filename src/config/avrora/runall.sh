@@ -7,6 +7,7 @@ benchmarks=(bsort32 hsort32 binsrch32 fft xxtea rc5 md5)
 
 gdj clean
 
+# test
 # # BASELINE, plus 16 bit array index: different constant optimisation strategies
 # for benchmark in ${benchmarks}
 # do
