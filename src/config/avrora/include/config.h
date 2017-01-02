@@ -25,10 +25,10 @@
 
 #define AVRORA
 #include <stdint.h>
-#include "/Users/niels/src/avrora/src/avrora/monitors/AvroraTrace.h"
-#include "/Users/niels/src/avrora/src/avrora/monitors/AvroraPrint.h"
-#include "/Users/niels/src/avrora/src/avrora/monitors/AvroraTimer.h"
-#include "/Users/niels/src/avrora/src/avrora/monitors/AvroraRTC.h"
+#include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraTrace.h"
+#include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraPrint.h"
+#include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraTimer.h"
+#include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraRTC.h"
 
 #define HEAPSIZE 2148
 
