@@ -78,21 +78,28 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 		{
 			// Look for any rtcbench or rtctest1
 			dj_di_pointer name = dj_di_header_getInfusionName(finger->header);
-			if ((      dj_di_getU8(name+0)=='b'
-					&& dj_di_getU8(name+1)=='m'
-					&& dj_di_getU8(name+2)=='_' // A AOT benchmark library
-				) || (
-				       dj_di_getU8(name+0)=='r'
-					&& dj_di_getU8(name+1)=='t'
-					&& dj_di_getU8(name+2)=='c'
-					&& dj_di_getU8(name+3)=='t'
-					&& dj_di_getU8(name+4)=='e'
-					&& dj_di_getU8(name+5)=='s'
-					&& dj_di_getU8(name+6)=='t'
-					&& dj_di_getU8(name+7)=='1'
-				)) {
+
+			if (0) {
+				// RTC everything
 				rtc_compile_lib(finger);
-				break;
+			} else {
+				// Only the benchmark
+				if ((      dj_di_getU8(name+0)=='b'
+						&& dj_di_getU8(name+1)=='m'
+						&& dj_di_getU8(name+2)=='_' // A AOT benchmark library
+					) || (
+					       dj_di_getU8(name+0)=='r'
+						&& dj_di_getU8(name+1)=='t'
+						&& dj_di_getU8(name+2)=='c'
+						&& dj_di_getU8(name+3)=='t'
+						&& dj_di_getU8(name+4)=='e'
+						&& dj_di_getU8(name+5)=='s'
+						&& dj_di_getU8(name+6)=='t'
+						&& dj_di_getU8(name+7)=='1'
+					)) {
+					rtc_compile_lib(finger);
+					break;
+				}
 			}
 			finger = finger->next;
 		}

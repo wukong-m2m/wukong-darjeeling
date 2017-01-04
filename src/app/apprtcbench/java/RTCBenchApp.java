@@ -50,16 +50,6 @@ public class RTCBenchApp
 		RTCBenchmark.test_native();
 		System.out.println("native done.\r\n");
 
-		Stopwatch.setTimerNumber((byte)102);
-		System.out.println("rtc:");
-		RTC.useRTC(true);
-		if (RTCBenchmark.test_java()) {
-			System.out.println("RTC OK.\r\n");
-		} else {
-			System.out.println("RTC FAILED.\r\n");			
-		}
-
-
 		Stopwatch.setTimerNumber((byte)103);
 		System.out.println("java:");
 		RTC.useRTC(false);
@@ -67,6 +57,15 @@ public class RTCBenchApp
 			System.out.println("JAVA OK.\r\n");
 		} else {
 			System.out.println("JAVA FAILED.\r\n");			
+		}
+
+		Stopwatch.setTimerNumber((byte)102);
+		System.out.println("rtc:");
+		RTC.useRTC(true);
+		if (RTCBenchmark.test_java()) {
+			System.out.println("RTC OK.\r\n");
+		} else {
+			System.out.println("RTC FAILED.\r\n");			
 		}
 
 		System.out.println("FINISHED BENCHMARK: " + RTCBenchmark.name);
