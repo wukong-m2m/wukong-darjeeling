@@ -79,6 +79,12 @@ avroraStartReprogTimer();
 		return;
 	DEBUG_LOG(DBG_WKREPROG, "AVR: Received %d bytes to flash to page 0x%x.\n", size, avr_flash_pageaddress);
 	DEBUG_LOG(DBG_WKREPROG, "AVR: Buffer already contains %d bytes.\n", avr_flash_buf_len);
+	DEBUG_LOG(DBG_WKREPROG, "AVR: Writing to 0x%x: ", avr_flash_pageaddress+avr_flash_buf_len);
+	for (uint8_t i=0; i<size; i++) {
+		DEBUG_LOG(DBG_WKREPROG, " %x", data[i]);
+	}
+	DEBUG_LOG(DBG_WKREPROG, "\n");
+
 
 	if ((avr_flash_pageaddress + avr_flash_buf_len + size) > avr_flash_end_of_safe_region) {
 		dj_panic(DJ_PANIC_REPROGRAM_OUTSIDE_REGION);

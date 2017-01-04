@@ -80,6 +80,8 @@ void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_point
                 emit_without_optimisation((avr_pc - savings - branch_target_table_start_ptr)/2); // Store offset in words
     //                 next BT ++
                 next_branch_target_idx++;
+                if (next_branch_target_idx == branch_target_count) // Start of table 2 may point to this avr_pc, so stop when we're scrolling out of table 1.
+                    break;
             }
 
     //         if current address is a branch then
@@ -117,14 +119,14 @@ void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_point
         wkreprog_close();
     } while (!terminate);
 
-    avroraPrintStr("-------BEFORE NOP OPT:");
-    for (uint16_t i = 0; i<branch_target_count; i++) {
-        avroraPrintHex32(RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_1(i));
-    }
-    avroraPrintStr("-------AFTER NOP OPT:");
-    for (uint16_t i = 0; i<branch_target_count; i++) {
-        avroraPrintHex32(RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_2(i));
-    }
+    // avroraPrintStr("-------BEFORE NOP OPT:");
+    // for (uint16_t i = 0; i<branch_target_count; i++) {
+    //     avroraPrintHex32(RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_1(i));
+    // }
+    // avroraPrintStr("-------AFTER NOP OPT:");
+    // for (uint16_t i = 0; i<branch_target_count; i++) {
+    //     avroraPrintHex32(RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_2(i));
+    // }
 
 
     // Scan for branch tags, and replace them with the proper instructions.

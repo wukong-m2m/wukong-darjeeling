@@ -42,19 +42,21 @@ void emit_without_optimisation(uint16_t word) {
 }
 
 void emit_flush_to_flash() {
-    // Try to optimise the code currently in the buffer. This may affect rtc_codebuffer_position if we're able to compact the code.
-    rtc_optimise(rtc_codebuffer, &rtc_codebuffer_position);
+    if (rtc_codebuffer != rtc_codebuffer_position) {
+        // Try to optimise the code currently in the buffer. This may affect rtc_codebuffer_position if we're able to compact the code.
+        rtc_optimise(rtc_codebuffer, &rtc_codebuffer_position);
 
-    uint8_t *instructiondata = (uint8_t *)rtc_codebuffer;
-    uint16_t count = rtc_codebuffer_position - rtc_codebuffer;
+        uint8_t *instructiondata = (uint8_t *)rtc_codebuffer;
+        uint16_t count = rtc_codebuffer_position - rtc_codebuffer;
 #ifdef DARJEELING_DEBUG
-    for (int i=0; i<count; i++) {
-        DEBUG_LOG(DBG_RTCTRACE, "[rtc]    %x  (%x %x)\n", rtc_codebuffer[i], instructiondata[i*2], instructiondata[i*2+1]);
-    }
+        for (int i=0; i<count; i++) {
+            DEBUG_LOG(DBG_RTCTRACE, "[rtc]    %x  (%x %x)\n", rtc_codebuffer[i], instructiondata[i*2], instructiondata[i*2+1]);
+        }
 #endif // DARJEELING_DEBUG
-    // Write to flash buffer
-    wkreprog_write(2*count, instructiondata);
-    // Buffer is now empty
-    rtc_codebuffer_position = rtc_codebuffer;
+        // Write to flash buffer
+        wkreprog_write(2*count, instructiondata);
+        // Buffer is now empty
+        rtc_codebuffer_position = rtc_codebuffer;
+    }
 }
 
