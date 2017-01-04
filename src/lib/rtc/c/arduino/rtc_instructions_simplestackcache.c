@@ -1426,17 +1426,18 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         case JVM_CHECKCAST:
             ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
-            // TODO: optimise this. CHECKCAST should only peek.
+            // ADUP first, CHECKCAST should only peek
             rtc_stackcache_pop_ref(operand_regs1);
+            rtc_stackcache_getfree_ref(operand_regs2);
+            emit_MOVW(operand_regs2[0], operand_regs1[0]);
             rtc_stackcache_push_ref(operand_regs1);
-            rtc_stackcache_push_ref(operand_regs1);
+            rtc_stackcache_push_ref(operand_regs2);
 
             // THIS WILL BREAK IF GC RUNS, BUT IT COULD ONLY RUN IF AN EXCEPTION IS THROWN, WHICH MEANS WE CRASH ANYWAY
             rtc_stackcache_clear_call_used_regs_before_native_function_call();
             rtc_stackcache_pop_ref_into_fixed_reg(R22); // reference to the object
             emit_LDI(R24, jvm_operand_byte0); // infusion id
             emit_LDI(R25, jvm_operand_byte1); // entity id
-
 
             emit_x_CALL((uint16_t)&RTC_CHECKCAST);
         break;

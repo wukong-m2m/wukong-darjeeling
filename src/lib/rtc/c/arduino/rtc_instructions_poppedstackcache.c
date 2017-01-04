@@ -1340,18 +1340,20 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             rtc_stackcache_push_16bit(operand_regs1);
         break;
         case JVM_CHECKCAST:
-            // TODO: optimise this. CHECKCAST should only peek.
+            // ADUP first, CHECKCAST should only peek
             rtc_stackcache_pop_nondestructive_ref(operand_regs1);
+            rtc_stackcache_getfree_ref(operand_regs2);
+            emit_MOVW(operand_regs2[0], operand_regs1[0]);
             rtc_stackcache_push_ref(operand_regs1);
-            rtc_stackcache_push_ref(operand_regs1);
+            rtc_stackcache_push_ref(operand_regs2);
+            rtc_poppedstackcache_set_valuetag(operand_regs2, rtc_poppedstackcache_get_valuetag(operand_regs1)); // Copy the valuetag
 
-            // THIS WILL BREAK IF GC RUNS, BUT IT COULD ONLY RUN IF AN EXCEPTION IS THROWN, WHICH MEANS WE CRASH ANYWAY
             rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
             rtc_stackcache_pop_destructive_ref_into_fixed_reg(R22); // reference to the object
             emit_LDI(R24, jvm_operand_byte0); // infusion id
             emit_LDI(R25, jvm_operand_byte1); // entity id
 
-
+            // THIS WILL BREAK IF GC RUNS, BUT IT COULD ONLY RUN IF AN EXCEPTION IS THROWN, WHICH MEANS WE CRASH ANYWAY
             emit_x_CALL((uint16_t)&RTC_CHECKCAST);
         break;
         case JVM_INSTANCEOF:
