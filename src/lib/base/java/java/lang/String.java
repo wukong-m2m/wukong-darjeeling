@@ -456,38 +456,38 @@ public final class String
 		return false;
 	}
 
-	/**
-	 * Compares this <code>String</code> to another <code>String</code>,
-	 * ignoring case considerations. Two strings are considered equal ignoring
-	 * case if they are of the same length, and corresponding characters in the
-	 * two strings are equal ignoring case.
-	 * <p>
-	 * Two characters <code>c1</code> and <code>c2</code> are considered the
-	 * same, ignoring case if at least one of the following is true:
-	 * <ul>
-	 * <li>The two characters are the same (as compared by the <code>==</code>
-	 * operator).
-	 * <li>Applying the method {@link java.lang.Character#toUpperCase(char)} to
-	 * each character produces the same result.
-	 * <li>Applying the method {@link java.lang.Character#toLowerCase(char)} to
-	 * each character produces the same result.
-	 * </ul>
-	 * 
-	 * @param anotherString
-	 *            the <code>String</code> to compare this <code>String</code>
-	 *            against.
-	 * @return <code>true</code> if the argument is not <code>null</code> and
-	 *         the <code>String</code>s are equal, ignoring case;
-	 *         <code>false</code> otherwise.
-	 * @see #equals(Object)
-	 * @see java.lang.Character#toLowerCase(char)
-	 * @see java.lang.Character#toUpperCase(char)
-	 */
-	public boolean equalsIgnoreCase(String anotherString)
-	{
-		return (anotherString != null) && (anotherString.count == count)
-				&& regionMatches(true, 0, anotherString, 0, count);
-	}
+	// /**
+	//  * Compares this <code>String</code> to another <code>String</code>,
+	//  * ignoring case considerations. Two strings are considered equal ignoring
+	//  * case if they are of the same length, and corresponding characters in the
+	//  * two strings are equal ignoring case.
+	//  * <p>
+	//  * Two characters <code>c1</code> and <code>c2</code> are considered the
+	//  * same, ignoring case if at least one of the following is true:
+	//  * <ul>
+	//  * <li>The two characters are the same (as compared by the <code>==</code>
+	//  * operator).
+	//  * <li>Applying the method {@link java.lang.Character#toUpperCase(char)} to
+	//  * each character produces the same result.
+	//  * <li>Applying the method {@link java.lang.Character#toLowerCase(char)} to
+	//  * each character produces the same result.
+	//  * </ul>
+	//  * 
+	//  * @param anotherString
+	//  *            the <code>String</code> to compare this <code>String</code>
+	//  *            against.
+	//  * @return <code>true</code> if the argument is not <code>null</code> and
+	//  *         the <code>String</code>s are equal, ignoring case;
+	//  *         <code>false</code> otherwise.
+	//  * @see #equals(Object)
+	//  * @see java.lang.Character#toLowerCase(char)
+	//  * @see java.lang.Character#toUpperCase(char)
+	//  */
+	// public boolean equalsIgnoreCase(String anotherString)
+	// {
+	// 	return (anotherString != null) && (anotherString.count == count)
+	// 			&& regionMatches(true, 0, anotherString, 0, count);
+	// }
 
 	/**
 	 * Compares two strings lexicographically. The comparison is based on the
@@ -541,7 +541,7 @@ public final class String
 	{
 		int len1 = count;
 		int len2 = anotherString.count;
-		int n = Math.min(len1, len2);
+		int n = len1<len2 ? len1 : len2; // Math.min(len1, len2);
 		char v1[] = value;
 		char v2[] = anotherString.value;
 		int i = offset;
@@ -659,27 +659,27 @@ public final class String
 			{
 				continue;
 			}
-			if (ignoreCase)
-			{
-				// If characters don't match but case may be ignored,
-				// try converting both characters to uppercase.
-				// If the results match, then the comparison scan should
-				// continue.
-				char u1 = Character.toUpperCase(c1);
-				char u2 = Character.toUpperCase(c2);
-				if (u1 == u2)
-				{
-					continue;
-				}
-				// Unfortunately, conversion to uppercase does not work properly
-				// for the Georgian alphabet, which has strange rules about case
-				// conversion. So we need to make one last check before
-				// exiting.
-				if (Character.toLowerCase(u1) == Character.toLowerCase(u2))
-				{
-					continue;
-				}
-			}
+			// if (ignoreCase)
+			// {
+			// 	// If characters don't match but case may be ignored,
+			// 	// try converting both characters to uppercase.
+			// 	// If the results match, then the comparison scan should
+			// 	// continue.
+			// 	char u1 = Character.toUpperCase(c1);
+			// 	char u2 = Character.toUpperCase(c2);
+			// 	if (u1 == u2)
+			// 	{
+			// 		continue;
+			// 	}
+			// 	// Unfortunately, conversion to uppercase does not work properly
+			// 	// for the Georgian alphabet, which has strange rules about case
+			// 	// conversion. So we need to make one last check before
+			// 	// exiting.
+			// 	if (Character.toLowerCase(u1) == Character.toLowerCase(u2))
+			// 	{
+			// 		continue;
+			// 	}
+			// }
 			return false;
 		}
 		return true;
@@ -1234,75 +1234,75 @@ public final class String
 		return this;
 	}
 
-	/**
-	 * Converts all of the characters in this <code>String</code> to lower case.
-	 * 
-	 * @return the String, converted to lowercase.
-	 * @see Character#toLowerCase
-	 * @see String#toUpperCase
-	 */
-	public String toLowerCase()
-	{
-		int i;
+	// /**
+	//  * Converts all of the characters in this <code>String</code> to lower case.
+	//  * 
+	//  * @return the String, converted to lowercase.
+	//  * @see Character#toLowerCase
+	//  * @see String#toUpperCase
+	//  */
+	// public String toLowerCase()
+	// {
+	// 	int i;
 
-		scan:
-		{
-			for (i = 0; i < count; i++)
-			{
-				char c = value[offset + i];
-				if (c != Character.toLowerCase(c))
-				{
-					break scan;
-				}
-			}
-			return this;
-		}
+	// 	scan:
+	// 	{
+	// 		for (i = 0; i < count; i++)
+	// 		{
+	// 			char c = value[offset + i];
+	// 			if (c != Character.toLowerCase(c))
+	// 			{
+	// 				break scan;
+	// 			}
+	// 		}
+	// 		return this;
+	// 	}
 
-		char buf[] = new char[count];
+	// 	char buf[] = new char[count];
 
-		System.arraycopy(value, offset, buf, 0, i);
+	// 	System.arraycopy(value, offset, buf, 0, i);
 
-		for (; i < count; i++)
-		{
-			buf[i] = Character.toLowerCase(value[offset + i]);
-		}
-		return new String(0, count, buf);
-	}
+	// 	for (; i < count; i++)
+	// 	{
+	// 		buf[i] = Character.toLowerCase(value[offset + i]);
+	// 	}
+	// 	return new String(0, count, buf);
+	// }
 
-	/**
-	 * Converts all of the characters in this <code>String</code> to upper case.
-	 * 
-	 * @return the String, converted to uppercase.
-	 * @see Character#toLowerCase
-	 * @see String#toUpperCase
-	 */
-	public String toUpperCase()
-	{
-		int i;
+	// *
+	//  * Converts all of the characters in this <code>String</code> to upper case.
+	//  * 
+	//  * @return the String, converted to uppercase.
+	//  * @see Character#toLowerCase
+	//  * @see String#toUpperCase
+	 
+	// public String toUpperCase()
+	// {
+	// 	int i;
 
-		scan:
-		{
-			for (i = 0; i < count; i++)
-			{
-				char c = value[offset + i];
-				if (c != Character.toUpperCase(c))
-				{
-					break scan;
-				}
-			}
-			return this;
-		}
+	// 	scan:
+	// 	{
+	// 		for (i = 0; i < count; i++)
+	// 		{
+	// 			char c = value[offset + i];
+	// 			if (c != Character.toUpperCase(c))
+	// 			{
+	// 				break scan;
+	// 			}
+	// 		}
+	// 		return this;
+	// 	}
 
-		char buf[] = new char[count];
+	// 	char buf[] = new char[count];
 
-		System.arraycopy(value, offset, buf, 0, i);
+	// 	System.arraycopy(value, offset, buf, 0, i);
 
-		for (; i < count; i++)
-		{
-			buf[i] = Character.toUpperCase(value[offset + i]);
-		}
-		return new String(0, count, buf);
-	}
+	// 	for (; i < count; i++)
+	// 	{
+	// 		buf[i] = Character.toUpperCase(value[offset + i]);
+	// 	}
+	// 	return new String(0, count, buf);
+	// }
 
 	/**
 	 * Removes white space from both ends of this string.
@@ -1478,22 +1478,22 @@ public final class String
 		return Integer.toString(i, 10);
 	}
 
-	/**
-	 * Returns the string representation of the <code>long</code> argument.
-	 * <p>
-	 * The representation is exactly the one returned by the
-	 * <code>Long.toString</code> method of one argument.
-	 * 
-	 * @param l
-	 *            a <code>long</code>.
-	 * @return a newly allocated string containing a string representation of
-	 *         the <code>long</code> argument.
-	 * @see java.lang.Long#toString(long)
-	 */
-	public static String valueOf(long l)
-	{
-		return Long.toString(l, 10);
-	}
+	// /**
+	//  * Returns the string representation of the <code>long</code> argument.
+	//  * <p>
+	//  * The representation is exactly the one returned by the
+	//  * <code>Long.toString</code> method of one argument.
+	//  * 
+	//  * @param l
+	//  *            a <code>long</code>.
+	//  * @return a newly allocated string containing a string representation of
+	//  *         the <code>long</code> argument.
+	//  * @see java.lang.Long#toString(long)
+	//  */
+	// public static String valueOf(long l)
+	// {
+	// 	return Long.toString(l, 10);
+	// }
 
 	/**
 	 * Returns the string representation of the <code>float</code> argument.

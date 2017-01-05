@@ -179,9 +179,11 @@ public final class StringBuilder {
      */
     private void expandCapacity(int minimumCapacity) {
         int newCapacity = (value.length + 1) * 2;
-        if (newCapacity < 0) {
-            newCapacity = Integer.MAX_VALUE;
-        } else if (minimumCapacity > newCapacity) {
+        // This would never happen on a sensor node since we would be out of memory long before hitting Interger.MAX_VALUE (which I've just removed to save memory)
+        // if (newCapacity < 0) {
+        //     newCapacity = Integer.MAX_VALUE;
+        // } else
+        if (minimumCapacity > newCapacity) {
             newCapacity = minimumCapacity;
         }
 
@@ -540,9 +542,9 @@ public final class StringBuilder {
      * @see     java.lang.String#valueOf(long)
      * @see     java.lang.StringBuffer#append(java.lang.String)
      */
-    public StringBuilder append(long l) {
-        return append(String.valueOf(l));
-    }
+    // public StringBuilder append(long l) {
+    //     return append(String.valueOf(l));
+    // }
 
     /**
      * Appends the string representation of the <code>float</code>
@@ -875,9 +877,9 @@ public final class StringBuilder {
      * @see        java.lang.StringBuffer#insert(int, java.lang.String)
      * @see        java.lang.StringBuffer#length()
      */
-    public StringBuilder insert(int offset, long l) {
-        return insert(offset, String.valueOf(l));
-    }
+    // public StringBuilder insert(int offset, long l) {
+    //     return insert(offset, String.valueOf(l));
+    // }
 
     /**
      * Inserts the string representation of the <code>float</code>
