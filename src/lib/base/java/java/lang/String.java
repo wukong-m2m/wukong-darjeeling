@@ -153,16 +153,16 @@ public final class String
 	{
 		if (offset < 0)
 		{
-			throw new StringIndexOutOfBoundsException(offset);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, offset);
 		}
 		if (count < 0)
 		{
-			throw new StringIndexOutOfBoundsException(count);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, count);
 		}
 		// Note: offset or count might be near -1>>>1.
 		if (offset > value.length - count)
 		{
-			throw new StringIndexOutOfBoundsException(offset + count);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, offset + count);
 		}
 
 		this.value = new char[count];
@@ -317,7 +317,7 @@ public final class String
 	{
 		if ((index < 0) || (index >= count))
 		{
-			throw new StringIndexOutOfBoundsException(index);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, index);
 		}
 		return value[index + offset];
 	}
@@ -364,15 +364,15 @@ public final class String
 	{
 		if (srcBegin < 0)
 		{
-			throw new StringIndexOutOfBoundsException(srcBegin);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, srcBegin);
 		}
 		if (srcEnd > count)
 		{
-			throw new StringIndexOutOfBoundsException(srcEnd);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, srcEnd);
 		}
 		if (srcBegin > srcEnd)
 		{
-			throw new StringIndexOutOfBoundsException(srcEnd - srcBegin);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, srcEnd - srcBegin);
 		}
 		System.arraycopy(value, offset + srcBegin, dst, dstBegin, srcEnd
 				- srcBegin);
@@ -1112,15 +1112,15 @@ public final class String
 	{
 		if (beginIndex < 0)
 		{
-			throw new StringIndexOutOfBoundsException(beginIndex);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, beginIndex);
 		}
 		if (endIndex > count)
 		{
-			throw new StringIndexOutOfBoundsException(endIndex);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, endIndex);
 		}
 		if (beginIndex > endIndex)
 		{
-			throw new StringIndexOutOfBoundsException(endIndex - beginIndex);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, endIndex - beginIndex);
 		}
 		return ((beginIndex == 0) && (endIndex == count)) ? this : new String(
 				offset + beginIndex, endIndex - beginIndex, value);

@@ -77,7 +77,7 @@ public class Thread implements Runnable
 	{
 		// cannot instantiate with null
 		if (runnable == null)
-			throw new IllegalArgumentException();
+			throw new RuntimeException(Exception.ILLEGALARGUMENT_EXCEPTION);
 
 		this.id = _create();
 		_setRunnable(id, runnable);
@@ -90,7 +90,7 @@ public class Thread implements Runnable
 
 		// state 0 == THREADSTATE_CREATED
 		if (status != 0)
-			throw new IllegalThreadStateException();
+			throw new RuntimeException(Exception.ILLEGALTHREADSTATE_EXCEPTION);
 
 		// start
 		_start(this.id);

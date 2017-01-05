@@ -65,12 +65,12 @@ static inline void CHECKCAST()
 
 	if (dj_object_getRuntimeId(object) == CHUNKID_INVALID)
 	{
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_ClassUnloadedException);
+		dj_exec_createAndThrow(CLASSUNLOADED_EXCEPTION);
 		return;
 	}
 
 	if ( !dj_global_id_testType(object, classLocalId) )
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_ClassCastException);
+		dj_exec_createAndThrow(CLASSCAST_EXCEPTION);
 }
 
 static inline void MONITORENTER()
@@ -83,7 +83,7 @@ static inline void MONITORENTER()
 	// check for null pointer
 	if (objRef==nullref)
 	{
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 		return;
 	}
 
@@ -98,7 +98,7 @@ static inline void MONITORENTER()
 	// if the monitor didn't exist and could not be created, throw exception
 	if (monitor==NULL)
 	{
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
+		dj_exec_createAndThrow(OUTOFMEMORY_ERROR);
 	} else
 	{
 
@@ -150,14 +150,14 @@ static inline void MONITOREXIT()
 	// check if the object is still valid
 	if (dj_object_getRuntimeId(obj)==CHUNKID_INVALID)
 	{
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_ClassUnloadedException);
+		dj_exec_createAndThrow(CLASSUNLOADED_EXCEPTION);
 		return;
 	}
 
 	// check for null pointer
 	if (obj==NULL)
 	{
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 		return;
 	}
 
@@ -170,7 +170,7 @@ static inline void MONITOREXIT()
 	if(monitor == NULL)
 	{
 		DEBUG_LOG(DBG_DARJEELING, "Monitor is NULL at MONITOREXIT\n");
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_VirtualMachineError);
+		dj_exec_createAndThrow(VIRTUALMACHINE_ERROR);
 		return;
 	}
 

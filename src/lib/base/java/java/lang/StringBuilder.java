@@ -224,7 +224,7 @@ public final class StringBuilder {
     public void setLength(int newLength) {
         synchronized (this) {
 			if (newLength < 0) {
-				throw new StringIndexOutOfBoundsException(newLength);
+				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, newLength);
 			}
 			if (newLength > value.length) {
 				expandCapacity(newLength);
@@ -271,7 +271,7 @@ public final class StringBuilder {
     public char charAt(int index) {
         synchronized (this) {
 			if ((index < 0) || (index >= count)) {
-				throw new StringIndexOutOfBoundsException(index);
+				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, index);
 			}
 			return value[index];
 		}
@@ -311,13 +311,13 @@ public final class StringBuilder {
     public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
         synchronized (this) {
 			if (srcBegin < 0) {
-				throw new StringIndexOutOfBoundsException(srcBegin);
+				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, srcBegin);
 			}
 			if ((srcEnd < 0) || (srcEnd > count)) {
-				throw new StringIndexOutOfBoundsException(srcEnd);
+				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, srcEnd);
 			}
 			if (srcBegin > srcEnd) {
-				throw new StringIndexOutOfBoundsException("srcBegin > srcEnd");
+				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, -1);
 			}
 			System.arraycopy(value, srcBegin, dst, dstBegin, srcEnd - srcBegin);
 		}
@@ -342,7 +342,7 @@ public final class StringBuilder {
     public void setCharAt(int index, char ch) {
         synchronized (this) {
 			if ((index < 0) || (index >= count)) {
-				throw new StringIndexOutOfBoundsException(index);
+				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, index);
 			}
 			if (shared) {
 				copy();
@@ -600,13 +600,13 @@ public final class StringBuilder {
     public StringBuilder delete(int start, int end) {
         synchronized (this) {
 			if (start < 0) {
-				throw new StringIndexOutOfBoundsException(start);
+				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, start);
 			}
 			if (end > count) {
 				end = count;
 			}
 			if (start > end) {
-				throw new StringIndexOutOfBoundsException();
+				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION);
 			}
 			int len = end - start;
 			if (len > 0) {
@@ -635,7 +635,7 @@ public final class StringBuilder {
     public StringBuilder deleteCharAt(int index) {
         synchronized (this) {
 			if ((index < 0) || (index >= count)) {
-				throw new StringIndexOutOfBoundsException();
+				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION);
 			}
 			if (shared) {
 				copy();
@@ -708,7 +708,7 @@ public final class StringBuilder {
     public StringBuilder insert(int offset, String str) {
         synchronized (this) {
 			if ((offset < 0) || (offset > count)) {
-				throw new StringIndexOutOfBoundsException();
+				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION);
 			}
 			if (str == null) {
 				str = String.valueOf(str);
@@ -751,7 +751,7 @@ public final class StringBuilder {
     public StringBuilder insert(int offset, char str[]) {
         synchronized (this) {
 			if ((offset < 0) || (offset > count)) {
-				throw new StringIndexOutOfBoundsException();
+				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION);
 			}
 			int len = str.length;
 			int newcount = count + len;

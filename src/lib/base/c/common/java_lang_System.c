@@ -58,21 +58,21 @@ void java_lang_System_void_arraycopy_java_lang_Object_int_java_lang_Object_int_i
 	// check for null pointer
 	if ((src==nullref)||(dst==nullref))
 	{
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 		return;
 	}
 
 	// check for out of bounds
 	if ((src_pos<0)||(src_pos+length>src->length)||(dst_pos<0)||(dst_pos+length>dst->length)||length<0)
 	{
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_IndexOutOfBoundsException);
+		dj_exec_createAndThrow(INDEXOUTOFBOUNDS_EXCEPTION);
 		return;
 	}
 
 	// check types
 	if (dj_mem_getChunkId(src)!=dj_mem_getChunkId(dst))
 	{
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_ArrayStoreException);
+		dj_exec_createAndThrow(ARRAYSTORE_EXCEPTION);
 		return;
 	}
 
@@ -94,7 +94,7 @@ void java_lang_System_void_arraycopy_java_lang_Object_int_java_lang_Object_int_i
 		// check if the source/destination arrays are of the same size
 		if (srcint->type!=dstint->type)
 		{
-			dj_exec_createAndThrow(BASE_CDEF_java_lang_ArrayStoreException);
+			dj_exec_createAndThrow(ARRAYSTORE_EXCEPTION);
 			return;
 		}
 
@@ -133,7 +133,7 @@ void java_lang_System_void_arraycopy_java_lang_Object_int_java_lang_Object_int_i
 				dj_vm_getRuntimeClass(dj_exec_getVM(), srcref->runtime_class_id)
 				))
 		{
-			dj_exec_createAndThrow(BASE_CDEF_java_lang_ArrayStoreException);
+			dj_exec_createAndThrow(ARRAYSTORE_EXCEPTION);
 			return;
 		}
 

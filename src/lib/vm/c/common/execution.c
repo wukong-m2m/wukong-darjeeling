@@ -1004,7 +1004,7 @@ avroraCallMethodTimerMark(12);
 						oldNumRefStack, numRefStack, diffRefArgs);
 				dj_exec_debugCurrentFrame();
 #endif
-				dj_exec_createAndThrow(BASE_CDEF_java_lang_VirtualMachineError);
+				dj_exec_createAndThrow(VIRTUALMACHINE_ERROR);
 				return;
 			}
 
@@ -1025,8 +1025,7 @@ avroraCallMethodTimerMark(12);
 			DEBUG_LOG(DBG_DARJEELING, "No native handler! \n");
 			// there is no native handler for this method's infusion.
 			// Throw an exception
-			dj_exec_createAndThrow(
-				BASE_CDEF_javax_darjeeling_vm_NativeMethodNotImplementedError);
+			dj_exec_createAndThrow(NATIVEMETHODNOTIMPLEMENTED_ERROR);
 		}
 
 	} else {
@@ -1044,7 +1043,7 @@ avroraCallMethodTimerMark(15);
 
 		// not enough space on the heap to allocate the frame
 		if (frame == NULL) {
-			dj_exec_createAndThrow(BASE_CDEF_java_lang_StackOverflowError);
+			dj_exec_createAndThrow(STACKOVERFLOW_ERROR);
 			return;
 		}
 
@@ -1148,9 +1147,11 @@ avroraCallMethodTimerMark(30);
  * For throwing exceptions that are not in the System class, create the object manually and throw it with dj_exec_throwHere.
  * @param exceptionId the class entity ID of the exception to throw. The exception class is assumed to be in the system library.
  */
-void dj_exec_createAndThrow(int exceptionId)
+void dj_exec_createAndThrow(int16_t exceptionType)
 {
-	dj_object *obj = dj_vm_createSysLibObject(vm, exceptionId);
+	dj_object *obj = dj_vm_createSysLibObject(vm, BASE_CDEF_java_lang_Exception);
+	((BASE_STRUCT_java_lang_Exception *)obj)->type = exceptionType;
+
 	// if we can't allocate the exception, we're really out of memory :(
 	// throw the last resort panic exception object we pre-allocated
 	if (obj == NULL)
@@ -1333,7 +1334,7 @@ int dj_exec_run(int nrOpcodes)
 			temp2 = popShort();
 			temp1 = popShort();
 			if (temp2 == 0)
-				dj_exec_createAndThrow(BASE_CDEF_java_lang_ArithmeticException);
+				dj_exec_createAndThrow(ARITHMETIC_EXCEPTION);
 			else
 				pushShort(temp1 / temp2);
 			break;
@@ -1357,7 +1358,7 @@ int dj_exec_run(int nrOpcodes)
 			temp2 = popInt();
 			temp1 = popInt();
 			if (temp2 == 0)
-				dj_exec_createAndThrow(BASE_CDEF_java_lang_ArithmeticException);
+				dj_exec_createAndThrow(ARITHMETIC_EXCEPTION);
 			else
 				pushInt(temp1 / temp2);
 			break;
@@ -1390,7 +1391,7 @@ int dj_exec_run(int nrOpcodes)
 			temp2 = popLong();
 			temp1 = popLong();
 			if (temp2 == 0)
-				dj_exec_createAndThrow(BASE_CDEF_java_lang_ArithmeticException);
+				dj_exec_createAndThrow(ARITHMETIC_EXCEPTION);
 			else
 				pushLong(temp1 / temp2);
 			break;
@@ -1760,7 +1761,7 @@ int dj_exec_run(int nrOpcodes)
 
 		default:
 			DEBUG_LOG(DBG_DARJEELING, "Unimplemented opcode %d at pc=%d\n", opcode, oldPc);
-			dj_exec_createAndThrow(BASE_CDEF_java_lang_VirtualMachineError);
+			dj_exec_createAndThrow(VIRTUALMACHINE_ERROR);
 		}
 
 #ifdef DARJEELING_DEBUG_TRACE

@@ -111,7 +111,9 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 	// ENDTMPRTC
 
 	// pre-allocate an OutOfMemoryError object
-	obj = dj_vm_createSysLibObject(vm, BASE_CDEF_java_lang_OutOfMemoryError);
+	obj = dj_vm_createSysLibObject(vm, BASE_CDEF_java_lang_Exception);
+	((BASE_STRUCT_java_lang_Exception *)obj)->type = OUTOFMEMORY_ERROR;
+
 	vm_mem_setPanicExceptionObject(obj);
 
 #ifdef AVRORA

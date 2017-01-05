@@ -14,7 +14,7 @@ ref_t DO_LDS(dj_local_id localStringId) {
 	dj_object *string = dj_jstring_createFromGlobalId(dj_exec_getVM(), globalStringId);
 
 	if (string==NULL) {
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
+		dj_exec_createAndThrow(OUTOFMEMORY_ERROR);
 		return 0;
 	}
 
@@ -29,14 +29,14 @@ void DO_INVOKEVIRTUAL(dj_local_id dj_local_id, uint8_t nr_ref_args) {
 	// if null, throw exception
 	if (object==NULL)
 	{
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 		return;
 	}
 
 	// check if the object is still valid
 	if (dj_object_getRuntimeId(object)==CHUNKID_INVALID)
 	{
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_ClassUnloadedException);
+		dj_exec_createAndThrow(CLASSUNLOADED_EXCEPTION);
 		return;
 	}
 
@@ -54,7 +54,7 @@ void DO_INVOKEVIRTUAL(dj_local_id dj_local_id, uint8_t nr_ref_args) {
 	{
 		DEBUG_LOG(DBG_DARJEELING, "methodImplId.infusion is NULL at INVOKEVIRTUAL %p.%d\n", resolvedMethodDefId.infusion, resolvedMethodDefId.entity_id);
 
-		dj_exec_throwHere(dj_vm_createSysLibObject(dj_exec_getVM(), BASE_CDEF_java_lang_VirtualMachineError));
+		dj_exec_createAndThrow(VIRTUALMACHINE_ERROR);
 	} else
 	{
 		callMethod(methodImplId, true);
@@ -76,7 +76,7 @@ ref_t DO_NEW(dj_local_id dj_local_id) {
 
 	// if create returns null, throw out of memory error
 	if (object==NULL) {
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
+		dj_exec_createAndThrow(OUTOFMEMORY_ERROR);
 		return 0;
 	}
 
@@ -89,7 +89,7 @@ ref_t DO_ANEWARRAY(dj_local_id dj_local_id, uint16_t size) {
 	dj_ref_array *arr = dj_ref_array_create(id, size);
 
 	if (arr==nullref) {
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
+		dj_exec_createAndThrow(OUTOFMEMORY_ERROR);
 		return 0;
 	}
 	else
@@ -108,7 +108,7 @@ int16_t DO_INSTANCEOF(dj_local_id localClassId, ref_t ref) {
 		return 0;
     } else if (dj_object_getRuntimeId(object)==CHUNKID_INVALID)
 	{
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_ClassUnloadedException);
+		dj_exec_createAndThrow(CLASSUNLOADED_EXCEPTION);
 		return 0;
 	}
 

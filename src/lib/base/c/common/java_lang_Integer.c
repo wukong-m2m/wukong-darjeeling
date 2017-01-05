@@ -39,7 +39,7 @@ void java_lang_Integer_java_lang_String_toString_int()
 
 	if(str == NULL)
 	{
-    	dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
+    	dj_exec_createAndThrow(OUTOFMEMORY_ERROR);
     	return;
 	}
 

@@ -43,7 +43,7 @@ void javax_darjeeling_vm_Infusion_java_lang_Object__getInfusion_short()
 
 	// check for array out of bounds, just to be sure :3
 	if (index<0||index>dj_vm_countInfusions(dj_exec_getVM()))
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_IndexOutOfBoundsException);
+		dj_exec_createAndThrow(INDEXOUTOFBOUNDS_EXCEPTION);
 
 	dj_exec_stackPushRef(VOIDP_TO_REF(dj_vm_getInfusion(dj_exec_getVM(), index)));
 }
@@ -66,7 +66,7 @@ void javax_darjeeling_vm_Infusion_char____getName_java_lang_Object()
 
 	if (ret==NULL)
 	{
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
+		dj_exec_createAndThrow(OUTOFMEMORY_ERROR);
 		return;
 	}
 
@@ -94,7 +94,7 @@ void javax_darjeeling_vm_Infusion_java_lang_Object__getImportedInfusion_java_lan
 
 	// check for array out of bounds, just to be sure :3
 	if (index<0||index>infusion->nr_referenced_infusions)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_IndexOutOfBoundsException);
+		dj_exec_createAndThrow(INDEXOUTOFBOUNDS_EXCEPTION);
 
 	dj_exec_stackPushRef(VOIDP_TO_REF(infusion->referencedInfusions[index]));
 }
@@ -108,7 +108,7 @@ void javax_darjeeling_vm_Infusion_void__unload_java_lang_Object()
 	// check for dependencies
 	if (!dj_vm_safeToUnload(vm, infusion)||dj_vm_getSystemInfusion(vm)==infusion)
 	{
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_InfusionUnloadDependencyException);
+		dj_exec_createAndThrow(INFUSIONUNLOADDEPENDENCY_EXCEPTION);
 		return;
 	}
 

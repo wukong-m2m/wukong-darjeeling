@@ -31,7 +31,7 @@ static inline void NEWARRAY()
 	dj_int_array *arr = dj_int_array_create(fetch(), popShort());
 
 	if (arr==nullref)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
+		dj_exec_createAndThrow(OUTOFMEMORY_ERROR);
 	else
 		pushRef(VOIDP_TO_REF(arr));
 }
@@ -55,7 +55,7 @@ static inline void ARRAYLENGTH()
 {
 	dj_array *array = REF_TO_VOIDP(popRef());
 	if (array==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else
 		pushShort(array->length);
 }
@@ -75,12 +75,12 @@ static inline void BALOAD()
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else
 		if ((index>=0) && (index<((dj_array*)arr)->length))
 			pushShort((int16_t)arr->data.bytes[index]);
 		else
-			dj_exec_createAndThrow(BASE_CDEF_java_lang_IndexOutOfBoundsException);
+			dj_exec_createAndThrow(INDEXOUTOFBOUNDS_EXCEPTION);
 
 }
 
@@ -109,12 +109,12 @@ static inline void SALOAD()
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else
 		if ((index>=0) && (index<((dj_array*)arr)->length))
 			pushShort((int16_t)arr->data.shorts[index]);
 		else
-			dj_exec_createAndThrow(BASE_CDEF_java_lang_IndexOutOfBoundsException);
+			dj_exec_createAndThrow(INDEXOUTOFBOUNDS_EXCEPTION);
 
 }
 
@@ -133,12 +133,12 @@ static inline void IALOAD()
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else
 		if ((index>=0) && (index<((dj_array*)arr)->length))
 			pushInt((int32_t)arr->data.ints[index]);
 		else
-			dj_exec_createAndThrow(BASE_CDEF_java_lang_IndexOutOfBoundsException);
+			dj_exec_createAndThrow(INDEXOUTOFBOUNDS_EXCEPTION);
 }
 
 /**
@@ -156,12 +156,12 @@ static inline void LALOAD()
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else
 		if ((index>=0) && (index<((dj_array*)arr)->length))
 			pushLong((int64_t)arr->data.longs[index]);
 		else
-			dj_exec_createAndThrow(BASE_CDEF_java_lang_IndexOutOfBoundsException);
+			dj_exec_createAndThrow(INDEXOUTOFBOUNDS_EXCEPTION);
 }
 
 
@@ -175,12 +175,12 @@ static inline void AALOAD()
 	dj_ref_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else
 		if ((index>=0) && (index<((dj_array*)arr)->length))
 			pushRef(arr->refs[index]);
 		else
-			dj_exec_createAndThrow(BASE_CDEF_java_lang_IndexOutOfBoundsException);
+			dj_exec_createAndThrow(INDEXOUTOFBOUNDS_EXCEPTION);
 }
 
 /**
@@ -198,12 +198,12 @@ static inline void BASTORE()
 #endif
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 	if (arr==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else
 		if ((index>=0) && (index<((dj_array*)arr)->length))
 			arr->data.bytes[index] = value;
 		else
-			dj_exec_createAndThrow(BASE_CDEF_java_lang_IndexOutOfBoundsException);
+			dj_exec_createAndThrow(INDEXOUTOFBOUNDS_EXCEPTION);
 }
 
 /**
@@ -232,12 +232,12 @@ static inline void SASTORE()
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else
 		if ((index>=0) && (index<((dj_array*)arr)->length))
 			arr->data.shorts[index] = value;
 		else
-			dj_exec_createAndThrow(BASE_CDEF_java_lang_IndexOutOfBoundsException);
+			dj_exec_createAndThrow(INDEXOUTOFBOUNDS_EXCEPTION);
 }
 
 /**
@@ -256,12 +256,12 @@ static inline void IASTORE()
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else
 		if ((index>=0) && (index<((dj_array*)arr)->length))
 			arr->data.ints[index] = value;
 		else
-			dj_exec_createAndThrow(BASE_CDEF_java_lang_IndexOutOfBoundsException);
+			dj_exec_createAndThrow(INDEXOUTOFBOUNDS_EXCEPTION);
 
 }
 
@@ -281,12 +281,12 @@ static inline void LASTORE()
 	dj_int_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else
 		if ((index>=0) && (index<((dj_array*)arr)->length))
 			arr->data.longs[index] = value;
 		else
-			dj_exec_createAndThrow(BASE_CDEF_java_lang_IndexOutOfBoundsException);
+			dj_exec_createAndThrow(INDEXOUTOFBOUNDS_EXCEPTION);
 
 }
 
@@ -306,11 +306,11 @@ static inline void AASTORE()
 	dj_ref_array *arr = REF_TO_VOIDP(popRef());
 
 	if (arr==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else
 		if ((index>=0) && (index<((dj_array*)arr)->length))
 			arr->refs[index] = value;
 		else
-			dj_exec_createAndThrow(BASE_CDEF_java_lang_IndexOutOfBoundsException);
+			dj_exec_createAndThrow(INDEXOUTOFBOUNDS_EXCEPTION);
 
 }

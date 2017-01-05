@@ -40,7 +40,7 @@ public class Infusion
 	{
 		// check range
 		if (index<0||index>getInfusionCount())
-			throw new IndexOutOfBoundsException();
+			throw new RuntimeException(Exception.INDEXOUTOFBOUNDS_EXCEPTION);
 		
 		// create new instance
 		return new Infusion(_getInfusion(index));
@@ -66,7 +66,7 @@ public class Infusion
 	{
 		// check range
 		if (index<0||index>_getImportedInfusionCount(internalInfusion))
-			throw new IndexOutOfBoundsException();
+			throw new RuntimeException(Exception.INDEXOUTOFBOUNDS_EXCEPTION);
 		
 		return new Infusion(_getImportedInfusion(internalInfusion, index));
 	}
@@ -83,9 +83,9 @@ public class Infusion
 		return null;
 	}
 	
-	private native void _unload(Object internalInfusion) throws InfusionUnloadDependencyException;
+	private native void _unload(Object internalInfusion) throws Exception;
 	
-	public void unload() throws InfusionUnloadDependencyException
+	public void unload() throws Exception
 	{
 		_unload(internalInfusion);
 	}

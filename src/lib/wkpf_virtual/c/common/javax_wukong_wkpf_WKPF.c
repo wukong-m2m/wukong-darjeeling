@@ -31,7 +31,7 @@ void javax_wukong_wkpf_WKPF_void_registerWuClass_short_byte__()
 	dj_int_array *byteArrayProperties = REF_TO_VOIDP(dj_exec_stackPopRef());
 	// check null
 	if (byteArrayProperties==nullref){
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	}
 	uint16_t wuclass_id = (uint16_t)dj_exec_stackPopShort();
 	DEBUG_LOG(DBG_WKPF, "WKPF: Registering virtual wuclass with id %x\n", wuclass_id);

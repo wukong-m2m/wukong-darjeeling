@@ -41,7 +41,7 @@ void java_lang_Thread_short__create()
 
     if(thread == NULL)
     {
-    	dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
+    	dj_exec_createAndThrow(OUTOFMEMORY_ERROR);
     	return;
     }
 
@@ -73,7 +73,7 @@ void java_lang_Thread_void__start_short()
 	// check that the frame alloc was succesful
 	if(frame == NULL)
 	{
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_StackOverflowError);
+		dj_exec_createAndThrow(STACKOVERFLOW_ERROR);
 	} else
 	{
 

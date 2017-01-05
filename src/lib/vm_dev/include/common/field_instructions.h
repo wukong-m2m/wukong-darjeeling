@@ -107,9 +107,9 @@ static inline void GETFIELD_B()
 	dj_object *object = REF_TO_VOIDP(popRef());
 
 	if (object==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else if (dj_object_getRuntimeId(object)==CHUNKID_INVALID)
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_ClassUnloadedException);
+		dj_exec_createAndThrow(CLASSUNLOADED_EXCEPTION);
 	else {
 		uint16_t index = (fetch()<<8) + fetch();
 		pushShort( *((int8_t*)((size_t)object+index)) );
@@ -127,9 +127,9 @@ static inline void GETFIELD_S()
 	dj_object *object = REF_TO_VOIDP(popRef());
 
 	if (object==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else if (dj_object_getRuntimeId(object)==CHUNKID_INVALID)
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_ClassUnloadedException);
+		dj_exec_createAndThrow(CLASSUNLOADED_EXCEPTION);
 	else {
 		uint16_t index = (fetch()<<8) + fetch();
 #ifdef ALIGN_16
@@ -147,9 +147,9 @@ static inline void GETFIELD_I()
 	dj_object *object = REF_TO_VOIDP(popRef());
 
 	if (object==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else if (dj_object_getRuntimeId(object)==CHUNKID_INVALID)
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_ClassUnloadedException);
+		dj_exec_createAndThrow(CLASSUNLOADED_EXCEPTION);
 	else {
 		uint16_t index = (fetch()<<8) + fetch();
 #ifdef ALIGN_16
@@ -167,9 +167,9 @@ static inline void GETFIELD_L()
 	dj_object *object = REF_TO_VOIDP(popRef());
 
 	if (object==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else if (dj_object_getRuntimeId(object)==CHUNKID_INVALID)
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_ClassUnloadedException);
+		dj_exec_createAndThrow(CLASSUNLOADED_EXCEPTION);
 	else {
 		uint16_t index = (fetch()<<8) + fetch();
 #ifdef ALIGN_16
@@ -188,9 +188,9 @@ static inline void GETFIELD_A()
 	dj_object *object = REF_TO_VOIDP(popRef());
 
 	if (object==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else if (dj_object_getRuntimeId(object)==CHUNKID_INVALID)
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_ClassUnloadedException);
+		dj_exec_createAndThrow(CLASSUNLOADED_EXCEPTION);
 	else {
 		uint16_t index = (fetch()<<8) + fetch();
 		pushRef( dj_object_getReferences(object)[index] );
@@ -205,9 +205,9 @@ static inline void PUTFIELD_B()
 	dj_object *object = REF_TO_VOIDP(popRef());
 
 	if (object==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else if (dj_object_getRuntimeId(object)==CHUNKID_INVALID)
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_ClassUnloadedException);
+		dj_exec_createAndThrow(CLASSUNLOADED_EXCEPTION);
 	else
 	{
 		uint16_t index = (fetch()<<8) + fetch();
@@ -227,9 +227,9 @@ static inline void PUTFIELD_S()
 	dj_object *object = REF_TO_VOIDP(popRef());
 
 	if (object==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else if (dj_object_getRuntimeId(object)==CHUNKID_INVALID)
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_ClassUnloadedException);
+		dj_exec_createAndThrow(CLASSUNLOADED_EXCEPTION);
 	else
 	{
 		uint16_t index = (fetch()<<8) + fetch();
@@ -248,9 +248,9 @@ static inline void PUTFIELD_I()
 	dj_object *object = REF_TO_VOIDP(popRef());
 
 	if (object==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else if (dj_object_getRuntimeId(object)==CHUNKID_INVALID)
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_ClassUnloadedException);
+		dj_exec_createAndThrow(CLASSUNLOADED_EXCEPTION);
 	else
 	{
 		uint16_t index = (fetch()<<8) + fetch();
@@ -271,9 +271,9 @@ static inline void PUTFIELD_L()
 	dj_object *object = REF_TO_VOIDP(popRef());
 
 	if (object==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else if (dj_object_getRuntimeId(object)==CHUNKID_INVALID)
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_ClassUnloadedException);
+		dj_exec_createAndThrow(CLASSUNLOADED_EXCEPTION);
 	else
 	{
 		uint16_t index = (fetch()<<8) + fetch();
@@ -296,9 +296,9 @@ static inline void PUTFIELD_A()
 	dj_object *object = REF_TO_VOIDP(popRef());
 
 	if (object==NULL)
-		dj_exec_createAndThrow(BASE_CDEF_java_lang_NullPointerException);
+		dj_exec_createAndThrow(NULLPOINTER_EXCEPTION);
 	else if (dj_object_getRuntimeId(object)==CHUNKID_INVALID)
-		dj_exec_createAndThrow(BASE_CDEF_javax_darjeeling_vm_ClassUnloadedException);
+		dj_exec_createAndThrow(CLASSUNLOADED_EXCEPTION);
 	else
 	{
 		uint16_t index = (fetch()<<8) + fetch();

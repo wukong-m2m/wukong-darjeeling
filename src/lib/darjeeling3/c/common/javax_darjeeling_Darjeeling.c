@@ -101,7 +101,7 @@ void javax_darjeeling_Darjeeling_java_lang_Thread_getThread_short()
 
 	// check for out of bounds
 	if ( (index<0) || (index>=dj_vm_countThreads(dj_exec_getVM())) )
-		dj_exec_throwHere(dj_vm_createSysLibObject(dj_exec_getVM(), BASE_CDEF_java_lang_IndexOutOfBoundsException));
+		dj_exec_createAndThrow(INDEXOUTOFBOUNDS_EXCEPTION);
 	else
 	{
 		thread = dj_vm_getThread(dj_exec_getVM(), index);

@@ -30,6 +30,26 @@
 
 #include "config.h"
 
+// Must match numbers in Exception.java
+
+#define ARITHMETIC_EXCEPTION 1
+#define ARRAYINDEXOUTOFBOUNDS_EXCEPTION 2
+#define ARRAYSTORE_EXCEPTION 3
+#define CLASSCAST_EXCEPTION 4
+#define CLASSUNLOADED_EXCEPTION 5
+#define ILLEGALARGUMENT_EXCEPTION 6
+#define ILLEGALTHREADSTATE_EXCEPTION 7
+#define INDEXOUTOFBOUNDS_EXCEPTION 8
+#define INFUSIONUNLOADDEPENDENCY_EXCEPTION 9
+#define NATIVEMETHODNOTIMPLEMENTED_ERROR 10
+#define NULLPOINTER_EXCEPTION 11
+#define OUTOFMEMORY_ERROR 12
+#define RUNTIME_EXCEPTION 13
+#define STACKOVERFLOW_ERROR 14
+#define STRINGINDEXOUTOFBOUNDS_EXCEPTION 15
+#define VIRTUALMACHINE_ERROR 16
+
+
 // Exported for RTC only
 extern int16_t *intStack;
 extern ref_t *refStack;
@@ -47,7 +67,7 @@ void dj_exec_deactivateThread(dj_thread *thread);
 
 void dj_exec_throw(dj_object *obj, uint16_t throw_pc);
 void dj_exec_throwHere(dj_object *obj);
-void dj_exec_createAndThrow(int exceptionId);
+void dj_exec_createAndThrow(int16_t exceptionType);
 
 uint16_t dj_exec_getNumberOfObjectsOnReferenceStack();
 
