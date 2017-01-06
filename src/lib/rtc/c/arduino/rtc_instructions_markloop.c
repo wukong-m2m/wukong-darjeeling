@@ -1342,6 +1342,9 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_LD_Z(operand_regs1[1]);
             rtc_stackcache_push_16bit(operand_regs1);
         break;
+        case JVM_ATHROW:
+            // TODO: fix exceptions
+        break;
         case JVM_CHECKCAST:
             // ADUP first, CHECKCAST should only peek
             rtc_stackcache_pop_nondestructive_ref(operand_regs1);
@@ -1370,6 +1373,10 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
 
             // push the result onto the stack
             rtc_stackcache_push_16bit_from_R24R25();
+        break;
+        case JVM_MONITORENTER:
+        case JVM_MONITOREXIT:
+            // Since we don't support threads, there's no point in implementing these.
         break;
         // BRANCHES
         case JVM_SIFEQ:

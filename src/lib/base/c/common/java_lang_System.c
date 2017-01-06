@@ -41,9 +41,9 @@
 dj_time_t dj_timer_getTimeMillis();
 
 // int java.lang.System.currentTimeMillis()
-void java_lang_System_long_currentTimeMillis()
+void java_lang_System_int_currentTimeMillis()
 {
-	dj_exec_stackPushLong((uint64_t)dj_timer_getTimeMillis());
+	dj_exec_stackPushInt((uint32_t)dj_timer_getTimeMillis());
 }
 
 // void java.lang.System.arraycopy(java.lang.Object, int, java.lang.Object, int, int)

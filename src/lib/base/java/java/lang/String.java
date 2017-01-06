@@ -646,8 +646,8 @@ public final class String
 		int po = other.offset + ooffset;
 
 		// Note: toffset, ooffset, or len might be near -1>>>1.
-		if ((ooffset < 0) || (toffset < 0) || (toffset > (long) count - len)
-				|| (ooffset > (long) other.count - len))
+		if ((ooffset < 0) || (toffset < 0) || (toffset > count - len)
+				|| (ooffset > other.count - len))
 		{
 			return false;
 		}
