@@ -104,7 +104,10 @@ void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t 
 }
 
 void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
-avroraStartRTCCompileTimer();
+#ifdef AVRORA
+    avroraStartRTCCompileTimer();
+#endif
+
     // Buffer to hold the code we're building (want to keep this on the stack so it doesn't take up space at runtime)
     uint16_t codebuffer[RTC_CODEBUFFER_SIZE];
     emit_init(codebuffer); // Tell emit where the buffer is
@@ -161,6 +164,10 @@ avroraStopRTCCompileTimer();
 }
 
 void rtc_compile_lib(dj_infusion *infusion) {
+#ifdef AVRORA
+    avroraRTCSetCurrentInfusion(dj_di_header_getInfusionName(infusion->header));
+#endif
+
     // uses 512bytes on the stack... maybe optimise this later
     native_method_function_t rtc_method_start_addresses[256];
     for (uint16_t i=0; i<256; i++)
