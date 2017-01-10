@@ -26,6 +26,10 @@
 #include "rtc_markloop.h"
 #endif
 
+// This is placed at the very end of the .text section by the linker. There shouldn't be anything following this marker.
+// We will use all memory above MAX(rtc_rtc_start_of_compiled_code_marker, 65536) for AOT code. (so all compiled code
+// will be in far memory)
+const unsigned char __attribute__((section (".rtc_code_marker"))) __attribute__ ((aligned (2))) rtc_start_of_compiled_code_marker;
 
 // Offsets for static variables in an infusion, relative to the start of infusion->staticReferencesFields. (referenced infusion pointers follow the static variables)
 uint16_t rtc_offset_for_static_ref(dj_infusion *infusion_ptr, uint8_t variable_index)   { return ((uint16_t)((void*)(&((infusion_ptr)->staticReferenceFields[variable_index])) - (void *)((infusion_ptr)->staticReferenceFields))); }
@@ -72,15 +76,10 @@ uint8_t offset_for_reflocal(dj_di_pointer methodimpl, uint8_t local) {
     return (local * sizeof(ref_t));
 }
 
-// USED AT COMPILE TIME:
-const unsigned char PROGMEM __attribute__ ((aligned (SPM_PAGESIZE))) rtc_compiled_code_buffer[RTC_COMPILED_CODE_BUFFER_SIZE] = {};
-#define END_OF_SAFE_REGION ((dj_di_pointer)rtc_compiled_code_buffer + RTC_COMPILED_CODE_BUFFER_SIZE)
-// Buffer for emitting code.
-
 void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t *rtc_method_start_addresses) {
     DEBUG_LOG(DBG_RTC, "[rtc] handler list is at %p\n", infusion->native_handlers);
     uint16_t native_handlers_address = (uint16_t)infusion->native_handlers;
-    wkreprog_open_raw(native_handlers_address, END_OF_SAFE_REGION);
+    wkreprog_open_raw(native_handlers_address, RTC_END_OF_COMPILED_CODE_SPACE);
 
     uint16_t number_of_methodimpls = dj_di_parentElement_getListSize(infusion->methodImplementationList);
 
@@ -105,7 +104,7 @@ void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t 
 
 void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 #ifdef AVRORA
-    avroraStartRTCCompileTimer();
+    // avroraStartRTCCompileTimer();
 #endif
 
     // Buffer to hold the code we're building (want to keep this on the stack so it doesn't take up space at runtime)
@@ -113,7 +112,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     emit_init(codebuffer); // Tell emit where the buffer is
 
     // Remember the start of the branch table
-    dj_di_pointer branch_target_table_start_ptr = wkreprog_get_raw_position();
+    uint_farptr_t branch_target_table_start_ptr = wkreprog_get_raw_position();
     // Reserve space for the branch table
     DEBUG_LOG(DBG_RTC, "[rtc] Reserving %d bytes for %d branch targets at address %p\n", rtc_branch_table_size(methodimpl), dj_di_methodImplementation_getNumberOfBranchTargets(methodimpl), branch_target_table_start_ptr);
     wkreprog_skip(rtc_branch_table_size(methodimpl));
@@ -127,7 +126,6 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     ts.jvm_code_start = dj_di_methodImplementation_getData(methodimpl);
     ts.method_length = dj_di_methodImplementation_getLength(methodimpl);
     ts.branch_target_table_start_ptr = branch_target_table_start_ptr;
-    ts.end_of_safe_region = END_OF_SAFE_REGION;
     ts.branch_target_count = 0;
 #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS)
     ts.do_CONST_SHIFT_optimisation = 0;
@@ -153,14 +151,14 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
     emit_flush_to_flash();
 
-    dj_di_pointer tmp_current_position = wkreprog_get_raw_position();
+    uint_farptr_t tmp_current_position = wkreprog_get_raw_position();
     wkreprog_close();
 
     // Second pass:
     // All branchtarget addresses should be known now.
     // Scan for branch tags, and replace them with the proper instructions.
     rtc_patch_branches(branch_target_table_start_ptr, tmp_current_position, rtc_branch_table_size(methodimpl));
-avroraStopRTCCompileTimer();
+//avroraStopRTCCompileTimer();
 }
 
 void rtc_compile_lib(dj_infusion *infusion) {
@@ -169,11 +167,13 @@ void rtc_compile_lib(dj_infusion *infusion) {
 #endif
 
     // uses 512bytes on the stack... maybe optimise this later
+    // RTC code should always be in the 64K-128K segment.
+    // Luckily we will store function pointers as word addresses, so this should still fit in 16 bit elements.
     native_method_function_t rtc_method_start_addresses[256];
     for (uint16_t i=0; i<256; i++)
         rtc_method_start_addresses[i] = 0;
 
-    wkreprog_open_raw((dj_di_pointer)rtc_compiled_code_buffer, END_OF_SAFE_REGION);
+    wkreprog_open_raw(RTC_START_OF_COMPILED_CODE_SPACE, RTC_END_OF_COMPILED_CODE_SPACE);
 
     uint16_t number_of_methodimpls = dj_di_parentElement_getListSize(infusion->methodImplementationList);
     DEBUG_LOG(DBG_RTC, "[rtc] infusion contains %d methods\n", number_of_methodimpls);
@@ -205,8 +205,8 @@ void rtc_compile_lib(dj_infusion *infusion) {
         // store the starting address for this method;
         // IMPORTANT!!!! the PC in AVR stores WORD addresses, so we need to divide the address
         // of a function by 2 in order to get a function pointer!
-        dj_di_pointer method_address = wkreprog_get_raw_position() + rtc_branch_table_size(methodimpl);
-        rtc_method_start_addresses[i] = (native_method_function_t)(method_address/2);
+        uint_farptr_t method_address = wkreprog_get_raw_position() + rtc_branch_table_size(methodimpl);
+        rtc_method_start_addresses[i] = (native_method_function_t)(uint16_t)(method_address/2);
 
 #ifdef AVRORA
     avroraRTCTraceStartMethod(i, wkreprog_get_raw_position());
@@ -217,9 +217,9 @@ void rtc_compile_lib(dj_infusion *infusion) {
 #ifdef AVRORA
     // Don't really need to do this unless we want to print the contents of Flash memory at this point.
     emit_flush_to_flash();
-    dj_di_pointer tmp_address = wkreprog_get_raw_position();
+    uint_farptr_t tmp_address = wkreprog_get_raw_position();
     wkreprog_close();
-    wkreprog_open_raw(tmp_address, END_OF_SAFE_REGION);
+    wkreprog_open_raw(tmp_address, RTC_END_OF_COMPILED_CODE_SPACE);
     avroraRTCTraceEndMethod(wkreprog_get_raw_position(), dj_di_methodImplementation_getLength(methodimpl), rtc_branch_table_size(methodimpl)/4);
 #endif
     }

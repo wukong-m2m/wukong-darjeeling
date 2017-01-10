@@ -2,7 +2,8 @@
 #define RTC_H
 
 #include "types.h"
-#define RTC_COMPILED_CODE_BUFFER_SIZE 32000
+#define RTC_START_OF_COMPILED_CODE_SPACE ((GET_FAR_ADDRESS(rtc_start_of_compiled_code_marker) >= 65536) ? GET_FAR_ADDRESS(rtc_start_of_compiled_code_marker) : 65536)
+#define RTC_END_OF_COMPILED_CODE_SPACE ((uint32_t)122880)
 
 void rtc_compile_lib(dj_infusion *);
 
@@ -35,8 +36,7 @@ typedef struct _rtc_translationstate {
     dj_di_pointer jvm_code_start;
     uint16_t pc;
     uint16_t method_length;
-	dj_di_pointer branch_target_table_start_ptr;
-	dj_di_pointer end_of_safe_region;
+	uint_farptr_t branch_target_table_start_ptr;
     uint16_t branch_target_count; // Keep track of how many branch targets we've seen
 #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS)
     uint8_t do_CONST_SHIFT_optimisation;

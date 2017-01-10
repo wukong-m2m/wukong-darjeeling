@@ -168,6 +168,11 @@ SECTIONS
      _edata = . ;
      PROVIDE (__data_end = .) ;
   }  > data AT> text
+  .rtc_code_marker :
+  {
+    . = ALIGN(2);
+    *(.rtc_code_marker)
+  }  > text
   .bss  ADDR(.data) + SIZEOF (.data)   : AT (ADDR (.bss))
   {
      PROVIDE (__bss_start = .) ;

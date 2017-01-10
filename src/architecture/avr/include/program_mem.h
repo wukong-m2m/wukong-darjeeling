@@ -23,6 +23,7 @@
 #define __program_mem_h
 
 #include <avr/pgmspace.h>
+#include <stdint.h>
 
 // Macro to put things in program memory
 #define DJ_PROGMEM __flash
@@ -38,5 +39,26 @@ extern char DJ_SYSTEM_INFUSION_NAME[];
 #define dj_di_getU16(pointer) (pgm_read_word_far(pointer))
 #define dj_di_getU32(pointer) (pgm_read_dword_far(pointer))
 #define dj_di_getLocalId(pointer) ((dj_local_id){pgm_read_byte_far(pointer),pgm_read_byte_far(pointer+1)})
+
+
+// Taken from morepgmspace.h
+// http://savannah.nongnu.org/patch/?6352
+#define GET_FAR_ADDRESS(var)                          \
+({                                                    \
+	uint_farptr_t tmp;                                \
+                                                      \
+	__asm__ __volatile__(                             \
+                                                      \
+			"ldi	%A0, lo8(%1)"           "\n\t"    \
+			"ldi	%B0, hi8(%1)"           "\n\t"    \
+			"ldi	%C0, hh8(%1)"           "\n\t"    \
+			"clr	%D0"                    "\n\t"    \
+		:                                             \
+			"=d" (tmp)                                \
+		:                                             \
+			"p"  (&(var))                             \
+	);                                                \
+	tmp;                                              \
+})
 
 #endif

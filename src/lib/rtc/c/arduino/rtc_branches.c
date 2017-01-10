@@ -22,7 +22,7 @@ void emit_x_branchtag(uint16_t opcode, uint16_t target) {
 #define RTC_STARTADDRESS_BRTARGET_TABLE_2 (branch_target_table_start_ptr + branchTableSize/2)
 #define RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_1(branchtarget_id) (branch_target_table_start_ptr + 2*dj_di_getU16(RTC_STARTADDRESS_BRTARGET_TABLE_1 + 2*branchtarget_id))
 #define RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_2(branchtarget_id) (branch_target_table_start_ptr + 2*dj_di_getU16(RTC_STARTADDRESS_BRTARGET_TABLE_2 + 2*branchtarget_id))
-void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_pointer end_of_method, uint16_t branchTableSize) {
+void rtc_patch_branches(uint_farptr_t branch_target_table_start_ptr, uint_farptr_t end_of_method, uint16_t branchTableSize) {
 // Let RTC trace know the next emitted code won't belong to the last JVM opcode anymore. Otherwise the branch patches would be assigned to the last instruction in the method (probably RET)
 #ifdef AVRORA
     avroraRTCTracePatchingBranchesOn();
@@ -65,12 +65,11 @@ void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_point
         uint16_t savings = 0;
         wkreprog_open_raw(RTC_STARTADDRESS_BRTARGET_TABLE_2, end_of_method);
     //     for each instruction
-        uint16_t avr_pc = branch_target_table_start_ptr + branchTableSize;
+        uint_farptr_t avr_pc = branch_target_table_start_ptr + branchTableSize;
     //                          until we've passed all branchtargets
         while (next_branch_target_idx < branch_target_count) {
     //         if current address == next BT 1 address then
             while (avr_pc == RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_1(next_branch_target_idx)) { // we need a while loop here in case there are multiple BRTARGETs with the same address. (ex: BRTARGET, MARKLOOP_END, BRTARGET, when we don't use the MARKLOOP information)
-
     //             if next BT 2 address != current address - savings then
                 if ((avr_pc - savings) != RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_2(next_branch_target_idx)) {
     //                 set terminate = false
@@ -90,7 +89,7 @@ void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_point
     //             savings + 3 - the number of bytes necessary to branch from current address to the address currently stored in BT 2
                 uint16_t avr_instruction = dj_di_getU16(avr_pc+2);
                 uint16_t branchtarget_id = dj_di_getU16(avr_pc+4);
-                dj_di_pointer target_address_in_bytes = RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_2(branchtarget_id);
+                uint_farptr_t target_address_in_bytes = RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_2(branchtarget_id);
                 int16_t target_offset_in_bytes = target_address_in_bytes - avr_pc + savings - 2; // +savings to compensate for the fact this instruction may be at a different location, so the offset will be different
                 avr_pc+=4;
 
@@ -133,7 +132,7 @@ void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_point
     wkreprog_open_raw(branch_target_table_start_ptr, end_of_method);
     wkreprog_skip(branchTableSize);
 
-    for (uint16_t avr_pc=branch_target_table_start_ptr+branchTableSize; avr_pc<end_of_method; avr_pc += 2) {
+    for (uint_farptr_t avr_pc=branch_target_table_start_ptr+branchTableSize; avr_pc<end_of_method; avr_pc += 2) {
         uint16_t avr_instruction = dj_di_getU16(avr_pc);
 
         if (rtc_is_branchtag(avr_instruction)) {
@@ -150,7 +149,7 @@ void rtc_patch_branches(dj_di_pointer branch_target_table_start_ptr, dj_di_point
             //   and the branchtarget id
             uint16_t avr_instruction = dj_di_getU16(avr_pc+2);
             uint16_t branchtarget_id = dj_di_getU16(avr_pc+4);
-            dj_di_pointer target_address_in_bytes = RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_2(branchtarget_id); // Get the target of the branch from the branch table
+            uint_farptr_t target_address_in_bytes = RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_2(branchtarget_id); // Get the target of the branch from the branch table
             int16_t target_offset_in_bytes = target_address_in_bytes - wkreprog_impl_get_raw_position() - 2; // -2 because the result is PC<-PC+k+1 (in words). Without the -2 we would end up 2 bytes/1 word too far
             avr_pc+=4;
 

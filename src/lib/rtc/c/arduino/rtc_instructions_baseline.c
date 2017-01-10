@@ -22,7 +22,7 @@ extern void __divmodsi4(void);
 
 void rtc_translate_single_instruction(rtc_translationstate *ts) {
     dj_infusion *target_infusion;
-    dj_di_pointer tmp_current_position;
+    uint_farptr_t tmp_current_position;
     uint8_t offset;
     uint8_t m, n;
     int8_t i;
@@ -1572,11 +1572,11 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_flush_to_flash(); // Finish writing, and also make sure we won't optimise across basic block boundaries.
             tmp_current_position = wkreprog_get_raw_position();
             wkreprog_close();
-            wkreprog_open_raw(rtc_branch_target_table_1_address(ts, ts->branch_target_count), ts->end_of_safe_region);
+            wkreprog_open_raw(rtc_branch_target_table_1_address(ts, ts->branch_target_count), RTC_END_OF_COMPILED_CODE_SPACE);
             emit_raw_word(tmp_current_position/2 - ts->branch_target_table_start_ptr/2);
             emit_flush_to_flash();
             wkreprog_close();
-            wkreprog_open_raw(tmp_current_position, ts->end_of_safe_region);
+            wkreprog_open_raw(tmp_current_position, RTC_END_OF_COMPILED_CODE_SPACE);
             ts->branch_target_count++;
         break;
         case JVM_MARKLOOP_START:
