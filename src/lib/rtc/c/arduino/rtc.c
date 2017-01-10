@@ -31,6 +31,9 @@
 // will be in far memory)
 const unsigned char __attribute__((section (".rtc_code_marker"))) __attribute__ ((aligned (2))) rtc_start_of_compiled_code_marker;
 
+// Since we're on ATmega128, and flash address / 2 should fit in a uint16_t.
+uint16_t rtc_start_of_next_method;
+
 // Offsets for static variables in an infusion, relative to the start of infusion->staticReferencesFields. (referenced infusion pointers follow the static variables)
 uint16_t rtc_offset_for_static_ref(dj_infusion *infusion_ptr, uint8_t variable_index)   { return ((uint16_t)((void*)(&((infusion_ptr)->staticReferenceFields[variable_index])) - (void *)((infusion_ptr)->staticReferenceFields))); }
 uint16_t rtc_offset_for_static_byte(dj_infusion *infusion_ptr, uint8_t variable_index)  { return ((uint16_t)((void*)(&((infusion_ptr)->staticByteFields[variable_index]))      - (void *)((infusion_ptr)->staticReferenceFields))); }
@@ -173,7 +176,8 @@ void rtc_compile_lib(dj_infusion *infusion) {
     for (uint16_t i=0; i<256; i++)
         rtc_method_start_addresses[i] = 0;
 
-    wkreprog_open_raw(RTC_START_OF_COMPILED_CODE_SPACE, RTC_END_OF_COMPILED_CODE_SPACE);
+    // rtc_start_of_next_method contains the address/2 so that any address < 128K will fit in a uint16_t.
+    wkreprog_open_raw(((uint32_t)rtc_start_of_next_method)*2, RTC_END_OF_COMPILED_CODE_SPACE);
 
     uint16_t number_of_methodimpls = dj_di_parentElement_getListSize(infusion->methodImplementationList);
     DEBUG_LOG(DBG_RTC, "[rtc] infusion contains %d methods\n", number_of_methodimpls);
@@ -214,13 +218,14 @@ void rtc_compile_lib(dj_infusion *infusion) {
 
         rtc_compile_method(methodimpl, infusion);
 
+        emit_flush_to_flash();
+        // rtc_start_of_next_method contains the address/2 so that any address < 128K will fit in a uint16_t.
+        RTC_SET_START_OF_NEXT_METHOD(wkreprog_get_raw_position());
 #ifdef AVRORA
-    // Don't really need to do this unless we want to print the contents of Flash memory at this point.
-    emit_flush_to_flash();
-    uint_farptr_t tmp_address = wkreprog_get_raw_position();
-    wkreprog_close();
-    wkreprog_open_raw(tmp_address, RTC_END_OF_COMPILED_CODE_SPACE);
-    avroraRTCTraceEndMethod(wkreprog_get_raw_position(), dj_di_methodImplementation_getLength(methodimpl), rtc_branch_table_size(methodimpl)/4);
+        // Don't really need to do this unless we want to print the contents of Flash memory at this point.
+        wkreprog_close();
+        wkreprog_open_raw(RTC_GET_START_OF_NEXT_METHOD(), RTC_END_OF_COMPILED_CODE_SPACE);
+        avroraRTCTraceEndMethod(wkreprog_get_raw_position(), dj_di_methodImplementation_getLength(methodimpl), rtc_branch_table_size(methodimpl)/4);
 #endif
     }
 

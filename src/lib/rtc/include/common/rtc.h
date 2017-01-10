@@ -5,6 +5,10 @@
 #define RTC_START_OF_COMPILED_CODE_SPACE ((GET_FAR_ADDRESS(rtc_start_of_compiled_code_marker) >= 65536) ? GET_FAR_ADDRESS(rtc_start_of_compiled_code_marker) : 65536)
 #define RTC_END_OF_COMPILED_CODE_SPACE ((uint32_t)122880)
 
+extern uint16_t rtc_start_of_next_method;
+#define RTC_SET_START_OF_NEXT_METHOD(addr) do { rtc_start_of_next_method = (uint16_t)(addr/2); } while(0)
+#define RTC_GET_START_OF_NEXT_METHOD()     ( ((uint32_t)rtc_start_of_next_method)*2 )
+
 void rtc_compile_lib(dj_infusion *);
 
 #ifdef AVRORA
