@@ -8,8 +8,8 @@
 #include <avr/pgmspace.h>
 
 // This function should be in the NRWW section to allow it to write to flash
-//void BOOTLOADER_SECTION avr_flash_program_page(uint32_t page, uint8_t *buf);
-void __attribute__ ((section (".reprogram_flash_page"))) avr_flash_program_page (uint32_t page, uint8_t *buf);
+//void BOOTLOADER_SECTION avr_flash_program_page(uint_farptr_t page, uint8_t *buf);
+void __attribute__ ((section (".reprogram_flash_page"))) avr_flash_program_page (uint_farptr_t page, uint8_t *buf);
 extern unsigned char di_app_infusion_archive_data[];
 
 // TODO (if we run short on RAM): this can probably be made more
@@ -20,15 +20,15 @@ extern unsigned char di_app_infusion_archive_data[];
 // Alternatively we could try to reclaim heap space from the vm first,
 // since it can only reboot once we've started the reprogramming phase.
 uint8_t avr_flash_pagebuffer[SPM_PAGESIZE];
-uint32_t avr_flash_pageaddress = 0;
-uint16_t avr_flash_end_of_safe_region = 0;
+uint_farptr_t avr_flash_pageaddress = 0;
+uint_farptr_t avr_flash_end_of_safe_region = 0;
 uint16_t avr_flash_buf_len = 0;
 
 uint16_t wkreprog_impl_get_page_size() {
 	return SPM_PAGESIZE;
 }
 
-dj_di_pointer wkreprog_impl_get_raw_position() {
+uint_farptr_t wkreprog_impl_get_raw_position() {
 	return avr_flash_pageaddress // The start address of the current page
 			+ avr_flash_buf_len; // The offset within the page
 }
@@ -42,7 +42,7 @@ bool wkreprog_impl_open_app_archive(uint16_t start_write_position) {
 
 // Open reprogramming at any position in flash
 // If end_of_safe_region is set, the VM will panic when writing outside of this region.
-bool wkreprog_impl_open_raw(uint16_t start_write_position, uint16_t end_of_safe_region) {
+bool wkreprog_impl_open_raw(uint_farptr_t start_write_position, uint_farptr_t end_of_safe_region) {
 avroraStartReprogTimer();
 	DEBUG_LOG(DBG_WKREPROG, "AVR: Start writing to flash at address %p.\n", start_write_position);
 
@@ -60,7 +60,7 @@ avroraStopReprogTimer();
 	return true;
 }
 
-void avr_flash_program_page_if_not_modified(uint32_t page, uint8_t *buf) {
+void avr_flash_program_page_if_not_modified(uint_farptr_t page, uint8_t *buf) {
 	// Don't wear out the flash unnecessarily
 	for (uint16_t i=0; i<SPM_PAGESIZE; i++) {
 		if (avr_flash_pagebuffer[i] != dj_di_getU8(page+i)) {
@@ -142,7 +142,7 @@ void wkreprog_impl_reboot() {
 }
 
 // Copied from avr/boot.h example
-void avr_flash_program_page (uint32_t page, uint8_t *buf)
+void avr_flash_program_page (uint_farptr_t page, uint8_t *buf)
 {
 	uint16_t i;
 	uint8_t sreg;
