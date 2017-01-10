@@ -121,7 +121,6 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
         }
     }
 
-
     private static boolean isDestructive(Instruction instruction) {
         Opcode opcode = instruction.getOpcode();
         switch (instruction.getOpcode()) {
@@ -183,6 +182,21 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
             }
         }
         return false;
+    }
+
+    private static boolean mayTriggerGC(Instruction instruction) {
+        switch (instruction.getOpcode()) {
+            case INVOKEVIRTUAL:
+            case INVOKESPECIAL:
+            case INVOKESTATIC:
+            case INVOKEINTERFACE:
+            case NEW:
+            case NEWARRAY:
+            case ANEWARRAY:
+                return true;
+            default:
+                return false;
+        }
     }
 
     private static class ValuetagCount implements Comparable<ValuetagCount> {
@@ -259,6 +273,8 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
 
     private static void insertMARKLOOP(InstructionList instructions, InstructionHandle beginTargetHandle, InstructionHandle endBranchHandle) {
         HashMap<Integer,Integer> valuetagDict = new HashMap<Integer,Integer>();
+        boolean mayTriggerGC = false;
+
         for (int i=0; i<instructions.size(); i++)
         {
             InstructionHandle handle = instructions.get(i);
@@ -272,6 +288,22 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
                     } else {
                         valuetagDict.put(valuetag, 1);                        
                     }
+                }
+
+                // If GC may be triggered in this inner loop, we cannot pin any references since after
+                // GC the value wouldn't be correct anymore. It probably doesn't matter much since most
+                // operations that may trigger GC are quite expensive, so the gains from pinning the
+                // reference variable are limited in comparison.
+                mayTriggerGC |= mayTriggerGC(instruction);
+            }
+        }
+
+        if (mayTriggerGC) {
+            // If this inner loop may trigger the GC,
+            // remove all reference value tags.
+            for (Integer key : valuetagDict.keySet().toArray(new Integer [0])) {
+                if (isDATATYPE_REF(key)) {
+                    valuetagDict.remove(key);
                 }
             }
         }

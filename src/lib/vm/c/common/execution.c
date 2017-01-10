@@ -927,6 +927,7 @@ typedef int32_t  (*native_32bit_method_function_t)(uint16_t rtc_frame_locals_sta
 #define avroraCallMethodTimerMark(x) 
 void callMethod(dj_global_id methodImplId, int virtualCall)
 {
+// avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
 avroraCallMethodTimerMark(10);
 	dj_frame *frame;
 	bool isReturnReference=false;
@@ -1149,6 +1150,9 @@ avroraCallMethodTimerMark(30);
  */
 void dj_exec_createAndThrow(int16_t exceptionType)
 {
+	avroraPrintStr("THROWING");
+	avroraPrintInt16(exceptionType);
+
 	dj_object *obj = dj_vm_createSysLibObject(vm, BASE_CDEF_java_lang_Exception);
 	((BASE_STRUCT_java_lang_Exception *)obj)->type = exceptionType;
 

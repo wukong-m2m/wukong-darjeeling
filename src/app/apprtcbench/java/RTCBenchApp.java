@@ -27,13 +27,13 @@ public class RTCBenchApp
 {
 	public static void main(String args[])
 	{
-		perftestBubbleSort();
+		runBenchmark();
 		RTC.avroraBreak();
 	}
 
 	public static void nop() {}
 
-	public static void perftestBubbleSort() {
+	public static void runBenchmark() {
 		System.out.println("START BENCHMARK: " + RTCBenchmark.name);
 
 		System.out.println("Java stopwatch overhead");

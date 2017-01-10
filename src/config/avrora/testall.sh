@@ -13,3 +13,4 @@ done
 
 ./analyseall.sh
 
+head -n 2 results_4MARK_R11_P7_CS4/summary_4MARK_R11_P7_CS4

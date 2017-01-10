@@ -303,6 +303,14 @@ void rtc_poppedstackcache_clear_all_callused_valuetags() {
         }
     }
 }
+void rtc_poppedstackcache_clear_all_reference_valuetags() {
+    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+        // Is this a call-used register?
+        if (RTC_VALUETAG_IS_REF(RTC_STACKCACHE_GET_VALUETAG(idx))) {
+            RTC_STACKCACHE_SET_VALUETAG(idx, RTC_VALUETAG_UNUSED);
+        }
+    }
+}
 void rtc_poppedstackcache_clear_all_except_pinned_valuetags() {
     // At a branch target we can't make any assumption about the non-pinned register state since it will depend on the execution path.
     // The pinned registers should be kept however, since the infuser will guarantee there's only one exit from the current block,
@@ -657,7 +665,7 @@ void rtc_stackcache_assert_no_in_use() {
         }
     }
 }
-void rtc_stackcache_flush_call_used_regs_and_clear_valuetags() {        // Pushes all call-used registers onto the stack, removing them from the cache (R18–R27, R30, R31), and clears the value tags since the value is about to be destroyed
+void rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags() {        // Pushes all call-used registers onto the stack, removing them from the cache (R18–R27, R30, R31), and clears the value tags since the value is about to be destroyed
     // Pushes all call-used registers onto the stack, removing them from the cache (R18–R25)
     rtc_stackcache_assert_no_in_use();
 
@@ -703,8 +711,12 @@ void rtc_stackcache_flush_call_used_regs_and_clear_valuetags() {        // Pushe
         }
     }
 
-    // Finally, clear the valuetags for all call-used registers, since the value may be gone after the function call returns
+    // clear the all valuetags for all call-used registers, since the value may be gone after the function call returns,
     rtc_poppedstackcache_clear_all_callused_valuetags();
+}
+void rtc_stackcache_flush_call_used_regs_and_clear_call_used_and_reference_valuetags() {
+    rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
+    rtc_poppedstackcache_clear_all_reference_valuetags();
 }
 
 void rtc_stackcache_flush_all_regs() {

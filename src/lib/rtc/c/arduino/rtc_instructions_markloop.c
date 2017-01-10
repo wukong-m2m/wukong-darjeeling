@@ -213,7 +213,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
             emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
 
-            rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
+            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
             emit_LDI(R24, jvm_operand_byte0); // infusion id
             emit_LDI(R25, jvm_operand_byte1); // entity id
             emit_x_CALL((uint16_t)&RTC_LDS);
@@ -533,7 +533,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             rtc_stackcache_push_32bit(operand_regs1);
         break;
         case JVM_GETFIELD_A:
-            rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
+            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
             rtc_stackcache_pop_destructive_ref_into_fixed_reg(R24); // POP the reference
 
             // First find the location of reference fields
@@ -572,7 +572,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             rtc_stackcache_pop_nondestructive_ref(operand_regs2); // POP the reference
             rtc_stackcache_push_ref(operand_regs1); // PUSH the value to store
             rtc_stackcache_push_ref(operand_regs2); // PUSH the reference (TODONR: this would be a lot easier if the operands where in the reversed order. let's fix that in the infuser later.)
-            rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
+            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
             rtc_stackcache_pop_destructive_ref_into_fixed_reg(R24); // POP the reference again into R24
 
             // First find the location of reference fields
@@ -722,7 +722,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         break;
         case JVM_SDIV:
         case JVM_SREM:
-            rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
+            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
             rtc_stackcache_pop_destructive_16bit_into_fixed_reg(R22);
             rtc_stackcache_pop_destructive_16bit_into_fixed_reg(R24);
 
@@ -888,7 +888,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             rtc_stackcache_push_32bit(operand_regs2);
         break;
         case JVM_IMUL: // to read later: https://mekonik.wordpress.com/2009/03/18/arduino-avr-gcc-multiplication/
-            rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
+            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
             rtc_stackcache_pop_destructive_32bit_into_fixed_reg(R22);
             rtc_stackcache_pop_destructive_32bit_into_fixed_reg(R18);
 
@@ -897,7 +897,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         break;
         case JVM_IDIV:
         case JVM_IREM:
-            rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
+            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
             rtc_stackcache_pop_destructive_32bit_into_fixed_reg(R18);
             rtc_stackcache_pop_destructive_32bit_into_fixed_reg(R22);
 
@@ -1239,17 +1239,17 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             rtc_stackcache_push_16bit(operand_regs1);
         break;
         case JVM_SRETURN:
-            rtc_stackcache_flush_call_used_regs_and_clear_valuetags(); // To make sure the return registers are available
+            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags(); // To make sure the return registers are available
             rtc_stackcache_pop_destructive_16bit_into_fixed_reg(R24);
             emit_x_epilogue();
         break;
         case JVM_IRETURN:
-            rtc_stackcache_flush_call_used_regs_and_clear_valuetags(); // To make sure the return registers are available
+            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags(); // To make sure the return registers are available
             rtc_stackcache_pop_destructive_32bit_into_fixed_reg(R22);
             emit_x_epilogue();
         break;
         case JVM_ARETURN:
-            rtc_stackcache_flush_call_used_regs_and_clear_valuetags(); // To make sure the return registers are available
+            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags(); // To make sure the return registers are available
             rtc_stackcache_pop_destructive_ref_into_fixed_reg(R24);
             emit_x_epilogue();
         break;
@@ -1261,14 +1261,18 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         case JVM_INVOKESTATIC:
         case JVM_INVOKEINTERFACE:
             // clear the stack cache, so all stack elements are in memory, not in registers
+            // We can't just use rtc_stackcache_flush_call_used_regs_and_clear_call_used_and_reference_valuetags here
+            // because the method operands need to be in memory
             rtc_stackcache_flush_all_regs();
-            // clear the valuetags for all call-used registers, since the value may be gone after the function call returns
+            // clear the all valuetags for all call-used registers, since the value may be gone after the function call returns,
+            // and all references in call-saved registers since they may not be accurate if the garbage collector runs.
             rtc_poppedstackcache_clear_all_callused_valuetags();
+            rtc_poppedstackcache_clear_all_reference_valuetags();
 
             rtc_common_translate_invoke(opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
         break;
         case JVM_NEW:
-            rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
+            rtc_stackcache_flush_call_used_regs_and_clear_call_used_and_reference_valuetags();
 
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
@@ -1290,7 +1294,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             rtc_stackcache_push_ref_from_R24R25();
         break;
         case JVM_NEWARRAY:
-            rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
+            rtc_stackcache_flush_call_used_regs_and_clear_call_used_and_reference_valuetags();
 
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
@@ -1313,7 +1317,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             rtc_stackcache_push_ref_from_R24R25();
         break;
         case JVM_ANEWARRAY:
-            rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
+            rtc_stackcache_flush_call_used_regs_and_clear_call_used_and_reference_valuetags();
 
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
@@ -1354,7 +1358,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             rtc_stackcache_push_ref(operand_regs2);
             rtc_poppedstackcache_set_valuetag(operand_regs2, rtc_poppedstackcache_get_valuetag(operand_regs1)); // Copy the valuetag
 
-            rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
+            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
             rtc_stackcache_pop_destructive_ref_into_fixed_reg(R22); // reference to the object
             emit_LDI(R24, jvm_operand_byte0); // infusion id
             emit_LDI(R25, jvm_operand_byte1); // entity id
@@ -1363,7 +1367,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             emit_x_CALL((uint16_t)&RTC_CHECKCAST);
         break;
         case JVM_INSTANCEOF:
-            rtc_stackcache_flush_call_used_regs_and_clear_valuetags();
+            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
             rtc_stackcache_pop_destructive_ref_into_fixed_reg(R22); // reference to the object
             emit_LDI(R24, jvm_operand_byte0); // infusion id
             emit_LDI(R25, jvm_operand_byte1); // entity id

@@ -818,10 +818,10 @@ public final class String
 	 *         if the character does not occur.
 	 */
 	// public native int indexOf(int ch);
-	public int indexOf(int ch)
+	/*public int indexOf(int ch)
 	{
 		return indexOf(ch, 0);
-	}
+	}*/
 
 	/**
 	 * Returns the index within this string of the first occurrence of the
@@ -897,10 +897,10 @@ public final class String
 	 *         character sequence represented by this object, or <code>-1</code>
 	 *         if the character does not occur.
 	 */
-	public int lastIndexOf(int ch)
+	/*public int lastIndexOf(int ch)
 	{
 		return lastIndexOf(ch, count - 1);
-	}
+	}*/
 
 	/**
 	 * Returns the index within this string of the last occurrence of the
@@ -963,10 +963,10 @@ public final class String
 	 * @exception java.lang.NullPointerException
 	 *                if <code>str</code> is <code>null</code>.
 	 */
-	public int indexOf(String str)
+	/*public int indexOf(String str)
 	{
 		return indexOf(str, 0);
-	}
+	}*/
 
 	/**
 	 * Returns the index within this string of the first occurrence of the
@@ -1077,10 +1077,10 @@ public final class String
 	 *                if <code>beginIndex</code> is negative or larger than the
 	 *                length of this <code>String</code> object.
 	 */
-	public String substring(int beginIndex)
+	/*public String substring(int beginIndex)
 	{
 		return substring(beginIndex, count);
-	}
+	}*/
 
 	/**
 	 * Returns a new string that is a substring of this string. The substring
@@ -1199,14 +1199,14 @@ public final class String
 	 * @return a string derived from this string by replacing every occurrence
 	 *         of <code>oldChar</code> with <code>newChar</code>.
 	 */
-	public String replace(char oldChar, char newChar)
+	/*public String replace(char oldChar, char newChar)
 	{
 		if (oldChar != newChar)
 		{
 			int len = count;
 			int i = -1;
-			char[] val = value; /* avoid getfield opcode */
-			int off = offset; /* avoid getfield opcode */
+			char[] val = value; // avoid getfield opcode
+			int off = offset; // avoid getfield opcode
 
 			while (++i < len)
 			{
@@ -1232,7 +1232,7 @@ public final class String
 			}
 		}
 		return this;
-	}
+	}*/
 
 	// /**
 	//  * Converts all of the characters in this <code>String</code> to lower case.

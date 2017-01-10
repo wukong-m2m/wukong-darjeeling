@@ -43,6 +43,9 @@
 // TMPRTC
 extern void rtc_compile_lib(dj_infusion *infusion);
 
+// TODO: Should fine a better way to store these pointers. Probably as a part of the infusion,
+// so it only needs to be big enough for the methods in the current app.
+const DJ_PROGMEM native_method_function_t app_method_function_pointers[256] = {};
 
 /**
  * Main function that creates the vm and runs until either all threads stop or runlevel is set to RUNLEVEL_REBOOT
@@ -74,16 +77,20 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 	{
 		dj_infusion *finger = vm->infusions;
 
-		while (finger!=NULL)
-		{
-			// Look for any rtcbench or rtctest1
-			dj_di_pointer name = dj_di_header_getInfusionName(finger->header);
-
-			if (0) {
-				// RTC everything
+		if (1) {
+			// RTC everything
+			while (finger!=NULL)
+			{
 				rtc_compile_lib(finger);
-			} else {
-				// Only the benchmark
+				finger = finger->next;
+			}
+		} else {
+			// Only the benchmark
+			while (finger!=NULL)
+			{
+				// Look for any rtcbench or rtctest1
+				dj_di_pointer name = dj_di_header_getInfusionName(finger->header);
+
 				if ((      dj_di_getU8(name+0)=='b'
 						&& dj_di_getU8(name+1)=='m'
 						&& dj_di_getU8(name+2)=='_' // A AOT benchmark library
@@ -100,12 +107,8 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 					rtc_compile_lib(finger);
 					break;
 				}
+				finger = finger->next;
 			}
-			finger = finger->next;
-		}
-		if (finger == NULL) {
-			DEBUG_LOG(true, "No rtc infusions found.\n");
-			dj_panic(DJ_PANIC_MALFORMED_INFUSION);
 		}
 	}
 	// ENDTMPRTC
@@ -390,6 +393,12 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 
 	DEBUG_LOG(DBG_DARJEELING, "Loaded inf %s.\n", name);
 #endif
+
+	if (native_handlers==NULL)
+	{
+		// To compile the app archive
+		infusion->native_handlers = app_method_function_pointers;
+	}
 
 	for (i=0; i<numHandlers; i++)
 	{

@@ -51,13 +51,15 @@ void rtc_stackcache_pop_destructive_32bit_into_fixed_reg(uint8_t reg_base);     
 void rtc_stackcache_pop_destructive_ref_into_fixed_reg(uint8_t reg_base);           // Pops a value into a specific range of consecutive regs. Panics if any reg is not marked IN USE.
 void rtc_stackcache_pop_destructive_ref_into_Z();                                   // Pops a value into Z. Panics if any reg is not marked IN USE.
 
-void rtc_stackcache_flush_call_used_regs_and_clear_valuetags();         // Pushes all call-used registers onto the stack, removing them from the cache (R18–R27, R30, R31), and clears the value tags
-void rtc_stackcache_flush_all_regs();                                   // Pushes all registers onto the stack, so the stack is in the state the next JVM method expects, but preserves the value tags
+void rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();                 // Pushes all call-used registers onto the stack, removing them from the cache (R18–R27, R30, R31), and clears the call used value tags
+void rtc_stackcache_flush_call_used_regs_and_clear_call_used_and_reference_valuetags();   // Pushes all call-used registers onto the stack, removing them from the cache (R18–R27, R30, R31), and clears the call used and reference value tags
+void rtc_stackcache_flush_all_regs();                                                     // Pushes all registers onto the stack, so the stack is in the state the next JVM method expects, but preserves the value tags
 
 uint16_t rtc_poppedstackcache_get_valuetag(uint8_t *regs);
 void rtc_poppedstackcache_set_valuetag(uint8_t *regs, uint16_t valuetag);
 void rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(uint16_t valuetag);
 void rtc_poppedstackcache_clear_all_callused_valuetags();
+void rtc_poppedstackcache_clear_all_reference_valuetags();
 void rtc_poppedstackcache_clear_all_except_pinned_valuetags();
 
 bool rtc_poppedstackcache_can_I_skip_this();

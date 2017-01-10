@@ -22,8 +22,10 @@ type MethodImpl = RtcdataXml.MethodImpl
 type ProfilerdataXml = XmlProvider<"profilerdata-example.xml", Global=true>
 type Profilerdata = ProfilerdataXml.ExecutionCountPerInstruction
 type ProfiledInstruction = ProfilerdataXml.Instruction
-type DarjeelingInfusionHeaderXml = XmlProvider<"infusionheader-example.dih", Global=true>
-type Dih = DarjeelingInfusionHeaderXml.Dih
+// The infusion header isn't necessary anymore now that Avrora will put the method name in
+// rtcdata.xml, but let's keep it around in case it comes in handy later.
+//type DarjeelingInfusionHeaderXml = XmlProvider<"infusionheader-example.dih", Global=true>
+//type Dih = DarjeelingInfusionHeaderXml.Dih
 
 let JvmInstructionFromXml (xml : RtcdataXml.JavaInstruction) =
     {
@@ -194,16 +196,9 @@ let getLoops results =
   filteredInstructions |> List.map (fun jvm -> String.Format("{0} {1}\n\r", jvm.index, jvm.text)) |> List.fold (+) ""
 
 // Process trace main function
-let processTrace benchmark (dih : Dih) (rtcdata : Rtcdata) (countersForAddressAndInst : int -> int -> ExecCounters) (stdoutlog : string list) (disasm : string list) (djdebuglines : string list) =
+let processTrace benchmark (rtcdata : Rtcdata) (countersForAddressAndInst : int -> int -> ExecCounters) (stdoutlog : string list) (disasm : string list) (djdebuglines : string list) =
     // Find the methodImplId for a certain method in a Darjeeling infusion header
-    let findRtcbenchmarkMethodImplId (dih : Dih) methodName =
-        let infusionName = dih.Infusion.Header.Name
-        let methodDef = dih.Infusion.Methoddeflists |> Seq.find (fun def -> def.Name = methodName)
-        let methodImpl = dih.Infusion.Methodimpllists |> Seq.find (fun impl -> impl.MethoddefEntityId = methodDef.EntityId && impl.MethoddefInfusion = infusionName)
-        methodImpl.EntityId
-
-    let methodImplId = findRtcbenchmarkMethodImplId dih "rtcbenchmark_measure_java_performance"
-    let methodImpl = rtcdata.MethodImpls |> Seq.find (fun impl -> impl.MethodImplId = methodImplId)
+    let methodImpl = rtcdata.MethodImpls |> Seq.find (fun impl -> impl.Method.Contains("rtcbenchmark_measure_java_performance"))
 
     let optimisedAvr = methodImpl.AvrInstructions |> Seq.map AvrInstructionFromXml |> Seq.toList
     let unoptimisedAvrWithJvmIndex =
@@ -445,7 +440,6 @@ let resultsToString (results : SimulationResults) =
 
 let ProcessTrace(resultsdir : string) =
     let benchmark = (Path.GetFileName(resultsdir))
-    let dih = DarjeelingInfusionHeaderXml.Load(String.Format("{0}/bm_{1}.dih", resultsdir, benchmark))
     let rtcdata = RtcdataXml.Load(String.Format("{0}/rtcdata.xml", resultsdir))
     let profilerdata = ProfilerdataXml.Load(String.Format("{0}/profilerdata.xml", resultsdir)).Instructions |> Seq.toList
     let stdoutlog = System.IO.File.ReadLines(String.Format("{0}/stdoutlog.txt", resultsdir)) |> Seq.toList
@@ -463,7 +457,7 @@ let ProcessTrace(resultsdir : string) =
                 count = 1
                 size = AVR.instructionSize inst
             }
-    let results = processTrace benchmark dih rtcdata countersForAddressAndInst stdoutlog disasm djdebuglines
+    let results = processTrace benchmark rtcdata countersForAddressAndInst stdoutlog disasm djdebuglines
 
     let txtFilename = resultsdir + ".txt"
     let xmlFilename = resultsdir + ".xml"

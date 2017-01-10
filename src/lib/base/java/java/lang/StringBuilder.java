@@ -597,7 +597,7 @@ public final class StringBuilder {
      *             greater than <code>end</code>.
      * @since      JDK1.2
      */
-    public StringBuilder delete(int start, int end) {
+/*    public StringBuilder delete(int start, int end) {
         synchronized (this) {
 			if (start < 0) {
 				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, start);
@@ -619,7 +619,7 @@ public final class StringBuilder {
 			return this;
 		}
     }
-
+*/
     /**
      * Removes the character at the specified position in this
      * <code>StringBuffer</code> (shortening the <code>StringBuffer</code>
@@ -632,7 +632,7 @@ public final class StringBuilder {
      *              <code>length()</code>.
      * @since       JDK1.2
      */
-    public StringBuilder deleteCharAt(int index) {
+/*    public StringBuilder deleteCharAt(int index) {
         synchronized (this) {
 			if ((index < 0) || (index >= count)) {
 				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION);
@@ -645,7 +645,7 @@ public final class StringBuilder {
 			return this;
 		}
     }
-
+*/
     /**
      * Inserts the string representation of the <code>Object</code> 
      * argument into this string buffer. 
@@ -667,11 +667,11 @@ public final class StringBuilder {
      * @see        java.lang.StringBuffer#insert(int, java.lang.String)
      * @see        java.lang.StringBuffer#length()
      */
-    public StringBuilder insert(int offset, Object obj) {
+/*    public StringBuilder insert(int offset, Object obj) {
         synchronized (this) {
 			return insert(offset, String.valueOf(obj));
 		}
-    }
+    }*/
 
     /**
      * Inserts the string into this string buffer. 
@@ -705,7 +705,7 @@ public final class StringBuilder {
      * @exception  StringIndexOutOfBoundsException  if the offset is invalid.
      * @see        java.lang.StringBuffer#length()
      */
-    public StringBuilder insert(int offset, String str) {
+/*    public StringBuilder insert(int offset, String str) {
         synchronized (this) {
 			if ((offset < 0) || (offset > count)) {
 				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION);
@@ -726,7 +726,7 @@ public final class StringBuilder {
 			return this;
 		}
     }
-
+*/
     /**
      * Inserts the string representation of the <code>char</code> array 
      * argument into this string buffer. 
@@ -748,7 +748,7 @@ public final class StringBuilder {
      * @return     a reference to this <code>StringBuffer</code> object.
      * @exception  StringIndexOutOfBoundsException  if the offset is invalid.
      */
-    public StringBuilder insert(int offset, char str[]) {
+/*    public StringBuilder insert(int offset, char str[]) {
         synchronized (this) {
 			if ((offset < 0) || (offset > count)) {
 				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION);
@@ -766,7 +766,7 @@ public final class StringBuilder {
 			return this;
 		}
     }
-
+*/
     /**
      * Inserts the string representation of the <code>boolean</code> 
      * argument into this string buffer. 
@@ -788,10 +788,10 @@ public final class StringBuilder {
      * @see        java.lang.StringBuffer#insert(int, java.lang.String)
      * @see        java.lang.StringBuffer#length()
      */
-    public StringBuilder insert(int offset, boolean b) {
+/*    public StringBuilder insert(int offset, boolean b) {
         return insert(offset, String.valueOf(b));
     }
-
+*/
     /**
      * Inserts the string representation of the <code>char</code> 
      * argument into this string buffer. 
@@ -816,7 +816,7 @@ public final class StringBuilder {
      * @exception  IndexOutOfBoundsException  if the offset is invalid.
      * @see        java.lang.StringBuffer#length()
      */
-    public StringBuilder insert(int offset, char c) {
+/*    public StringBuilder insert(int offset, char c) {
         synchronized (this) {
 			int newcount = count + 1;
 			if (newcount > value.length) {
@@ -830,7 +830,7 @@ public final class StringBuilder {
 			return this;
 		}
     }
-
+*/
     /**
      * Inserts the string representation of the second <code>int</code> 
      * argument into this string buffer. 
@@ -852,10 +852,10 @@ public final class StringBuilder {
      * @see        java.lang.StringBuffer#insert(int, java.lang.String)
      * @see        java.lang.StringBuffer#length()
      */
-    public StringBuilder insert(int offset, int i) {
+/*    public StringBuilder insert(int offset, int i) {
         return insert(offset, String.valueOf(i));
     }
-
+*/
     /**
      * Inserts the string representation of the <code>long</code> 
      * argument into this string buffer. 
@@ -946,7 +946,7 @@ public final class StringBuilder {
      * @return  a reference to this <code>StringBuffer</code> object..
      * @since   JDK1.0.2
      */
-    public StringBuilder reverse() {
+/*    public StringBuilder reverse() {
         synchronized (this) {
 			if (shared) {
 				copy();
@@ -960,7 +960,7 @@ public final class StringBuilder {
 			return this;
 		}
     }
-
+*/
     /**
      * Converts to a string representing the data in this string buffer.
      * A new <code>String</code> object is allocated and initialized to 

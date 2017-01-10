@@ -54,35 +54,39 @@ void RTC_INVOKESTATIC(dj_local_id localId) {
 ref_t RTC_NEW(dj_local_id localId) {
     AVRORATRACE_DISABLE();
     DEBUG_LOG(DBG_RTC, "RTC_NEW %d %d free: %d\n", localId.infusion_id, localId.entity_id, dj_mem_getFree());
-    return DO_NEW(localId);
+    ref_t rv = DO_NEW(localId);
     AVRORATRACE_ENABLE();
+    return rv;
 }
 
 ref_t RTC_LDS(dj_local_id localId) {
     AVRORATRACE_DISABLE();
     DEBUG_LOG(DBG_RTC, "RTC_LDS %d %d\n", localId.infusion_id, localId.entity_id);
-    return DO_LDS(localId);
+    ref_t rv = DO_LDS(localId);
     AVRORATRACE_ENABLE();
+    return rv;
 }
 
 ref_t RTC_ANEWARRAY(dj_local_id localId, uint16_t size) {
     AVRORATRACE_DISABLE();
     DEBUG_LOG(DBG_RTC, "RTC_NEWARRAY %d %d %d\n", localId.infusion_id, localId.entity_id, size);
-    return DO_ANEWARRAY(localId, size);
+    ref_t rv = DO_ANEWARRAY(localId, size);
     AVRORATRACE_ENABLE();
+    return rv;
 }
 
 int16_t RTC_INSTANCEOF(dj_local_id localId, ref_t ref) {
     AVRORATRACE_DISABLE();
     DEBUG_LOG(DBG_RTC, "RTC_INSTANCEOF %d %d %d\n", localId.infusion_id, localId.entity_id, ref);
-    return DO_INSTANCEOF(localId, ref);
+    int16_t rv = DO_INSTANCEOF(localId, ref);
     AVRORATRACE_ENABLE();
+    return rv;
 }
 
 void RTC_CHECKCAST(dj_local_id localId, ref_t ref) {
     AVRORATRACE_DISABLE();
     DEBUG_LOG(DBG_RTC, "RTC_CHECKCAST %d %d %d\n", localId.infusion_id, localId.entity_id, ref);
     if (DO_INSTANCEOF(localId, ref) == 0)
-        dj_panic(DJ_PANIC_UNCAUGHT_EXCEPTION);
+        dj_panic(DJ_PANIC_CHECKCAST_FAILED);
     AVRORATRACE_ENABLE();
 }
