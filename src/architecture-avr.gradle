@@ -104,8 +104,8 @@ tasks.architectureSpecificAssemble {
 tasks.darjeeling {
     doLast {
         exec {
-            executable 'avr-size'
-            args '-A', architectureSpecificAssemble.djTargetElfFile
+            executable 'avr-objdump'
+            args '-Pmem-usage', architectureSpecificAssemble.djTargetElfFile
         }
     }
 }

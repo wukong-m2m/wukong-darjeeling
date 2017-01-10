@@ -68,7 +68,7 @@ void dj_panic(int32_t panictype)
     avroraPrintStr("PANIC!\n\r");
     avroraPrintInt32(panictype);
     asm volatile ("break");
-#endif
+#else
     DEBUG_LOG(true, "PANIC: %d!\n", panictype);
     if (dj_exec_getRunlevel() < RUNLEVEL_PANIC) {
         dj_exec_setRunlevel(panictype);
@@ -77,4 +77,5 @@ void dj_panic(int32_t panictype)
     } else {
         exit(panictype); // To avoid getting into a recursive panic.
     }
+#endif
 }
