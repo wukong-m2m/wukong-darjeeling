@@ -143,6 +143,7 @@ inline void dj_exec_breakExecution() {
 	nrOpcodesLeft = -1;
 }
 
+
 /**
  * Saves execution state (stack pointer, pc) in the given frame struct. This method
  * is used in context switching and method invocations/returns.
@@ -862,6 +863,7 @@ static inline void dj_exec_passParameters(dj_frame *frame, dj_global_id methodIm
  * frames to execute, the thread ends. Otherwise control is switched to the underlying caller frame.
  */
 static inline void returnFromMethod() {
+// avroraRTCRuntimeMethodCallReturn();
 	dj_di_pointer methodImpl;
 
 	// get the method from the stack frame so we can calculate how many parameters to pop off the operand stack
@@ -1020,6 +1022,8 @@ avroraCallMethodTimerMark(12);
 					pushRef(refData);
 				}
 			}
+			
+			// avroraRTCRuntimeMethodCallReturn();
 		}
 		else
 		{
@@ -1150,8 +1154,9 @@ avroraCallMethodTimerMark(30);
  */
 void dj_exec_createAndThrow(int16_t exceptionType)
 {
-	avroraPrintStr("THROWING");
-	avroraPrintInt16(exceptionType);
+	avroraTerminateOnException(exceptionType);
+
+	// DEAD CODE BELOW
 
 	dj_object *obj = dj_vm_createSysLibObject(vm, BASE_CDEF_java_lang_Exception);
 	((BASE_STRUCT_java_lang_Exception *)obj)->type = exceptionType;

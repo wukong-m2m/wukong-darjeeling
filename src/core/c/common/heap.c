@@ -474,55 +474,57 @@ void dj_mem_dump()
 
 	while ( (void *)finger < left_pointer )
     {
-        char pretty_printing_buffer[5];
-        char *chunk_type_pretty_print;
+        avroraPrintPtr(finger);
+        // char pretty_printing_buffer[5];
+        // char *chunk_type_pretty_print;
         switch(finger->id)
         {
             case CHUNKID_REFARRAY:
-                chunk_type_pretty_print="REFA";
+                avroraPrintStr("REFA");
                 break;
             case CHUNKID_INTARRAY:
-                chunk_type_pretty_print="INTA";
+                avroraPrintStr("INTA");
                 break;
             case CHUNKID_FREE:
-                chunk_type_pretty_print="FREE";
+                avroraPrintStr("FREE");
                 break;
             case CHUNKID_INVALID:
-                chunk_type_pretty_print="INV";
+                avroraPrintStr("INV");
                 break;
             case CHUNKID_MONITOR_BLOCK:
-                chunk_type_pretty_print="MTBK";
+                avroraPrintStr("MTBK");
                 break;
             case CHUNKID_VM:
-                chunk_type_pretty_print="  VM";
+                avroraPrintStr("  VM");
                 break;
             case CHUNKID_INFUSION:
-                chunk_type_pretty_print="IFSN";
+                avroraPrintStr("IFSN");
                 break;
             case CHUNKID_FRAME:
-                chunk_type_pretty_print="STKF";
+                avroraPrintStr("STKF");
                 break;
              case CHUNKID_THREAD:
-                 chunk_type_pretty_print="THRD";
-                 break;
+                avroraPrintStr("THRD");
+                break;
             default:
-                snprintf(pretty_printing_buffer,5," %03d",finger->id);
-                chunk_type_pretty_print=pretty_printing_buffer;
+                avroraPrintStr("????");
                 break;
 
         }
 
-		// printf("%c[32mASSERT[%3d] PASSED%c[0m\n", 0x1b, (int)id, 0x1b);
-        uint8_t color = 31 + finger->color;
-		DEBUG_LOG(DBG_DARJEELING, "%c[%dm[%p %04d %s]%c[0m \n", 0x1b, color, finger, finger->size, chunk_type_pretty_print, 0x1b);
+		// // printf("%c[32mASSERT[%3d] PASSED%c[0m\n", 0x1b, (int)id, 0x1b);
+  //       uint8_t color = 31 + finger->color;
+		// DEBUG_LOG(1, "%c[%dm[%p %04d %s]%c[0m \n", 0x1b, color, finger, finger->size, chunk_type_pretty_print, 0x1b);
 		total += finger->size;
 		if (finger->size==0)
 			break;
 		finger = (heap_chunk*)((char*)finger + finger->size);
 	}
 
-	DEBUG_LOG(DBG_DARJEELING, "\n");
-	DEBUG_LOG(DBG_DARJEELING, "total %d\n", total);
+	avroraPrintStr("totaal");
+	avroraPrintInt16(total);
+	// DEBUG_LOG(1, "\n");
+	// DEBUG_LOG(1, "total %d\n", total);
 
 }
 #endif // ifdef DARJEELING_DEBUG
