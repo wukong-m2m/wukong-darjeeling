@@ -161,7 +161,7 @@ task avrora(dependsOn: darjeeling) {
     doLast {
         javaexec {
             main '-jar'
-            args avroraJar, '-monitors=sp-guard,c-timer,c-print,rtc,profile', '-spGuardPrintAll=false', "-rtc-data-filename=${rtcdataFile}", "-rtc-gradle-build=${buildDir}", "-profile-data-filename=${profiledataFile}", '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
+            args avroraJar, '-monitors=c-timer,c-print,rtc,profile,stack', "-rtc-data-filename=${rtcdataFile}", "-rtc-gradle-build=${buildDir}", "-profile-data-filename=${profiledataFile}", '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
         }
     }
 }
@@ -192,7 +192,7 @@ task avrora_if_necessary(dependsOn: darjeeling) {
     doLast {
         javaexec {
             main '-jar'
-            args avroraJar, '-monitors=sp-guard,c-timer,c-print,rtc,profile', "-rtc-data-filename=${rtcdataFile}", "-rtc-gradle-build=${buildDir}", "-profile-data-filename=${profiledataFile}", '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
+            args avroraJar, '-monitors=c-timer,c-print,rtc,profile', "-rtc-data-filename=${rtcdataFile}", "-rtc-gradle-build=${buildDir}", "-profile-data-filename=${profiledataFile}", '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
         }
         new File(stdoutlogFile).write(project.ext.stdoutLog)
     }
@@ -234,34 +234,34 @@ task avrora_analyse_trace(type:Exec, dependsOn: [avrora_store_trace]) {
 task avrora_rtcdata_toscreen(dependsOn: darjeeling) << {
     javaexec {
         main '-jar'
-        args '/Users/nielsreijers/src/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=sp-guard,c-timer,rtc,profile,c-print', "-profile-data-filename=${buildDir}/profilerdata", '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
+        args '/Users/nielsreijers/src/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,rtc,profile,c-print', "-profile-data-filename=${buildDir}/profilerdata", '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
     }
 }
 
 task avrora_notrace(dependsOn: darjeeling) << {
     javaexec {
         main '-jar'
-        args '/Users/nielsreijers/src/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=sp-guard,c-timer,c-print', '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
+        args '/Users/nielsreijers/src/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,c-print', '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
     }
 }
 
 task avrora_tracertc(dependsOn: darjeeling) << {
     javaexec {
         main '-jar'
-        args '/Users/nielsreijers/src/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=sp-guard,c-timer,rtc,c-print,trace', '-trace-only-when-enabled=true', '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
+        args '/Users/nielsreijers/src/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,rtc,c-print,trace', '-trace-only-when-enabled=true', '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
     }
 }
 
 task avrora_gdb(dependsOn: darjeeling) << {
     javaexec {
         main '-jar'
-        args '/Users/nielsreijers/src/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=sp-guard,c-timer,rtc,gdb,c-print,trace', '-trace-only-when-enabled=true', '-port=4242', '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
+        args '/Users/nielsreijers/src/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,rtc,gdb,c-print,trace', '-trace-only-when-enabled=true', '-port=4242', '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
     }
 }
 
 task avrora_jdb(dependsOn: darjeeling) << {
     javaexec {
         main '-jar'
-        args '-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n', '/Users/nielsreijers/src/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=sp-guard,c-timer,rtc,c-print', '-trace-only-when-enabled=true', '-port=4242', '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
+        args '-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n', '/Users/nielsreijers/src/avrora/jars/avrora-beta-1.7.117.jar', '-monitors=c-timer,rtc,c-print', '-trace-only-when-enabled=true', '-port=4242', '-single', "-mcu=${djMcu}", architectureSpecificAssemble.djTargetElfFile
     }
 }

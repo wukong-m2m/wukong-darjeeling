@@ -1,6 +1,6 @@
 djlibsource {
     bm_bsort32 {
         cDependencies = [ 'darjeeling3' ]
-        javaDependencies = [ 'base', 'darjeeling3', 'rtc' ]
+        javaDependencies = [ 'base', 'darjeeling3' ]
     }
 }

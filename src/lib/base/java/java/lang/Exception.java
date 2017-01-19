@@ -1,5 +1,7 @@
 package java.lang;
 
+import javax.rtc.RTC;
+
 public class Exception extends Throwable
 {
     // Must match numbers in execution.h
@@ -31,26 +33,30 @@ public class Exception extends Throwable
 
     public Exception(short type)
     {
-        this.type = type;
+        // this.type = type;
+        RTC.terminateOnException(type);
     }
 
     public Exception(short type, String message)
     {
-        this.type = type;
-        this.message = message;
+        // this.type = type;
+        // this.message = message;
+        RTC.terminateOnException(type);
     }
 
     public Exception(short type, Exception cause)
     {
-        this.type = type;
-        this.cause = cause;
+        // this.type = type;
+        // this.cause = cause;
+        RTC.terminateOnException(type);
     }
 
     public Exception(short type, String message, Exception cause)
     {
-        this.type = type;
-        this.message = message;
-        this.cause = cause;
+        // this.type = type;
+        // this.message = message;
+        // this.cause = cause;
+        RTC.terminateOnException(type);
     }
 
     public String getMessage()

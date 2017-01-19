@@ -21,3 +21,13 @@ void javax_rtc_RTC_void_avroraPrintInt_int() {
 void javax_rtc_RTC_void_avroraPrintSP() {
     avroraPrintSP();
 }
+
+void javax_rtc_RTC_void_beep_int() {
+	uint8_t number = (uint8_t)dj_exec_stackPopInt();
+	avroraRTCRuntimeBeep(number);
+}
+
+void javax_rtc_RTC_void_terminateOnException_short() {
+    int16_t type = dj_exec_stackPopShort();
+    avroraTerminateOnException(type);	
+}

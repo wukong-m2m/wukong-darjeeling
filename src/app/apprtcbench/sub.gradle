@@ -1,5 +1,5 @@
 djappsource {
     apprtcbench {
-        javaDependencies = [ 'base', 'darjeeling3', 'rtc', "bm_${aotbm}" ]
+        javaDependencies = [ 'base', 'darjeeling3', "bm_${aotbm}" ]
     }
 }
