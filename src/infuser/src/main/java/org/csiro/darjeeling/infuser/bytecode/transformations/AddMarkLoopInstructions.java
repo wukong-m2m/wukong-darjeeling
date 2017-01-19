@@ -211,8 +211,18 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
         }
     }
 
-    private static void splitFinalBranchTargetIfNecessary(InstructionList instructions, InstructionHandle beginTargetHandle, InstructionHandle endBranchHandle) {
-        // Example:
+    private static void splitFirstAndLastBranchTargetIfNecessary(InstructionList instructions, InstructionHandle beginTargetHandle, InstructionHandle endBranchHandle) {
+        // Examples:
+        // 
+        // if (!negative) {
+        //     i = -i;
+        // }
+        // while (i <= -radix) {
+        //     buf[charPos--] = digits[-(i % radix)];
+        //     i = i / radix;
+        // }
+        // This produces code where the first BRTARGET needs to be split.
+        //
         // public static void test(int a, short[] numbers) {
         //     if (a ==1 ) {
         //        for (short i=0; i<NUMNUMBERS; i++) {
@@ -220,6 +230,8 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
         //        }
         //     }
         // }
+        // This produces code where the final BRTARGET needs to be split.
+        //
         // In this case there will be a single branch target at the end of the for loop,
         // but there will be two branches to that location, one from the if, and another
         // when the loop terminates.
@@ -237,6 +249,21 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
             InstructionHandle handle = instructions.get(i);
             Instruction instruction = handle.getInstruction();
 
+            // Branch outside the loop to the first branch target
+            if (instruction.getOpcode().isBranch()
+                    && (handle.getPc() < beginTargetHandle.getPc() || endBranchHandle.getPc() < handle.getPc())
+                    && handle.getBranchHandle() == beginTargetHandle) {
+                // Insert a new branchtarget if we hadn't already.
+                if (splitBranchTargetHandle == null) {
+                    splitBranchTargetHandle = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
+                    splitBranchTargetHandle.setPreState(endBranchHandle.getPreState());
+                    splitBranchTargetHandle.setPostState(endBranchHandle.getPostState());
+                    instructions.insertBefore(beginTargetHandle, splitBranchTargetHandle);
+                }
+                handle.setBranchHandle(splitBranchTargetHandle);
+            }
+
+            // Branch outside the loop to the last branch target
             if (instruction.getOpcode().isBranch()
                     && (handle.getPc() < beginTargetHandle.getPc() || endBranchHandle.getPc() < handle.getPc())
                     && handle.getBranchHandle() == endBranchHandle) {
@@ -480,7 +507,7 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
                 // System.err.println("Found inner loop from " + beginTargetHandle.getPc() + " to " + endBranchHandle.getPc() + ".");
 
                 // Found an inner loop. If the end is a branch target and other instructions outside the loop branch to it, then we need to split the target.
-                splitFinalBranchTargetIfNecessary(instructions, beginTargetHandle, endBranchHandle);
+                splitFirstAndLastBranchTargetIfNecessary(instructions, beginTargetHandle, endBranchHandle);
                 // Finally mark the loop.
                 insertMARKLOOP(instructions, beginTargetHandle, endBranchHandle);
                 i += 2; // Skip the MARKLOOP instructions we just added
