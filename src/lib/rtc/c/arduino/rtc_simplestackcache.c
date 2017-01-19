@@ -359,6 +359,14 @@ void rtc_stackcache_pop_ref_into_Z() {
     rtc_stackcache_pop_pair(RTC_STACKCACHE_REF_STACK_TYPE, RZ);
 }
 
+bool rtc_stackcache_has_ref_in_cache() {
+    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+        if (RTC_STACKCACHE_IS_ON_STACK(idx) && RTC_STACKCACHE_IS_REF_STACK(idx)) {
+            return true;
+        }
+    }
+    return false;
+}
 void rtc_stackcache_clear_call_used_regs_before_native_function_call() {
     // Pushes all call-used registers onto the stack, removing them from the cache (R18–R25)
     rtc_stackcache_assert_no_in_use();
@@ -405,7 +413,12 @@ void rtc_stackcache_clear_call_used_regs_before_native_function_call() {
             RTC_STACKCACHE_MOVE_CACHE_ELEMENT(call_saved_reg_available_idx, call_used_reg_on_stack_idx);
         }
     }
+    // Also spill any references in call-saved registers since they may not be valid anymore if the garbage collector runs
+    while (rtc_stackcache_has_ref_in_cache()) {
+        rtc_stackcache_spill_deepest_pair();
+    }
 }
+
 void rtc_stackcache_flush_all_regs() {
     while (get_deepest_pair_idx() != 0xFF) {
         rtc_stackcache_spill_deepest_pair();

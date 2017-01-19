@@ -580,11 +580,22 @@ void rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags() {      
     // and all references in call-saved registers since they may not be accurate if the garbage collector runs.
     rtc_poppedstackcache_clear_all_callused_and_reference_valuetags();
 }
-void rtc_stackcache_flush_call_used_regs_and_clear_call_used_and_reference_valuetags() {
+bool rtc_stackcache_has_ref_in_cache() {
+    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+        if (RTC_STACKCACHE_IS_ON_STACK(idx) && RTC_STACKCACHE_IS_REF_STACK(idx)) {
+            return true;
+        }
+    }
+    return false;
+}
+void rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references() {
     rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
     rtc_poppedstackcache_clear_all_reference_valuetags();
+    while (rtc_stackcache_has_ref_in_cache()) {
+        uint8_t idx = get_deepest_pair_idx();
+        rtc_stackcache_spill_pair(idx);
+    }
 }
-
 void rtc_stackcache_flush_all_regs() {
     // This is done before branches to make sure the whole stack is in memory. (Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.)
     // There's no need to clear the valuetags here, as we may reuse the values later if the branch wasn't taken. If it was, the valuetags are clears at the BRTARGET.

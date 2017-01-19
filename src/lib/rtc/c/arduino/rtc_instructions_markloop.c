@@ -1261,7 +1261,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         case JVM_INVOKESTATIC:
         case JVM_INVOKEINTERFACE:
             // clear the stack cache, so all stack elements are in memory, not in registers
-            // We can't just use rtc_stackcache_flush_call_used_regs_and_clear_call_used_and_reference_valuetags here
+            // We can't just use rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references here
             // because the method operands need to be in memory
             rtc_stackcache_flush_all_regs();
             // clear the all valuetags for all call-used registers, since the value may be gone after the function call returns,
@@ -1272,7 +1272,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             rtc_common_translate_invoke(opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
         break;
         case JVM_NEW:
-            rtc_stackcache_flush_call_used_regs_and_clear_call_used_and_reference_valuetags();
+            rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references();
 
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
@@ -1294,7 +1294,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             rtc_stackcache_push_ref_from_R24R25();
         break;
         case JVM_NEWARRAY:
-            rtc_stackcache_flush_call_used_regs_and_clear_call_used_and_reference_valuetags();
+            rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references();
 
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
@@ -1317,7 +1317,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             rtc_stackcache_push_ref_from_R24R25();
         break;
         case JVM_ANEWARRAY:
-            rtc_stackcache_flush_call_used_regs_and_clear_call_used_and_reference_valuetags();
+            rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references();
 
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
