@@ -73,46 +73,6 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 	dj_di_pointer di_app_infusion_data = dj_archive_get_file(di_app_infusion_archive_data, 0);
 	dj_vm_loadInfusion(vm, di_app_infusion_data, NULL, 0);
 
-	// TMPRTC
-	{
-		dj_infusion *finger = vm->infusions;
-
-		if (1) {
-			// RTC everything
-			while (finger!=NULL)
-			{
-				rtc_compile_lib(finger);
-				finger = finger->next;
-			}
-		} else {
-			// Only the benchmark
-			while (finger!=NULL)
-			{
-				// Look for any rtcbench or rtctest1
-				dj_di_pointer name = dj_di_header_getInfusionName(finger->header);
-
-				if ((      dj_di_getU8(name+0)=='b'
-						&& dj_di_getU8(name+1)=='m'
-						&& dj_di_getU8(name+2)=='_' // A AOT benchmark library
-					) || (
-					       dj_di_getU8(name+0)=='r'
-						&& dj_di_getU8(name+1)=='t'
-						&& dj_di_getU8(name+2)=='c'
-						&& dj_di_getU8(name+3)=='t'
-						&& dj_di_getU8(name+4)=='e'
-						&& dj_di_getU8(name+5)=='s'
-						&& dj_di_getU8(name+6)=='t'
-						&& dj_di_getU8(name+7)=='1'
-					)) {
-					rtc_compile_lib(finger);
-					break;
-				}
-				finger = finger->next;
-			}
-		}
-	}
-	// ENDTMPRTC
-
 	// pre-allocate an OutOfMemoryError object
 	obj = dj_vm_createSysLibObject(vm, BASE_CDEF_java_lang_Exception);
 	((BASE_STRUCT_java_lang_Exception *)obj)->type = OUTOFMEMORY_ERROR;
@@ -410,6 +370,29 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 #ifdef DARJEELING_DEBUG
 			DEBUG_LOG(DBG_DARJEELING, "Attached nat. handler to  %s.\n", name);
 #endif
+		}
+	}
+
+	if (1) {
+		rtc_compile_lib(infusion);
+	} else {
+		// Look for any rtcbench or rtctest1
+		dj_di_pointer name = dj_di_header_getInfusionName(infusion->header);
+
+		if ((      dj_di_getU8(name+0)=='b'
+				&& dj_di_getU8(name+1)=='m'
+				&& dj_di_getU8(name+2)=='_' // A AOT benchmark library
+			) || (
+			       dj_di_getU8(name+0)=='r'
+				&& dj_di_getU8(name+1)=='t'
+				&& dj_di_getU8(name+2)=='c'
+				&& dj_di_getU8(name+3)=='t'
+				&& dj_di_getU8(name+4)=='e'
+				&& dj_di_getU8(name+5)=='s'
+				&& dj_di_getU8(name+6)=='t'
+				&& dj_di_getU8(name+7)=='1'
+			)) {
+			rtc_compile_lib(infusion);
 		}
 	}
 
