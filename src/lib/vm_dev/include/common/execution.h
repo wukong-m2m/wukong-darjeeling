@@ -55,6 +55,7 @@ extern int16_t *intStack;
 extern ref_t *refStack;
 extern ref_t *localReferenceVariables;
 void callMethod(dj_global_id methodImplId, int virtualCall);
+void createThreadAndRunMethodToFinish(dj_global_id methodImplId);
 bool dj_exec_use_rtc;
 // End Exported for RTC only
 

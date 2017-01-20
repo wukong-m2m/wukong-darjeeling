@@ -1106,28 +1106,13 @@ dj_infusion *dj_vm_getSystemInfusion(dj_vm *vm)
 // TODO niels clean up this function
 void dj_vm_runClassInitialisers(dj_vm *vm, dj_infusion *infusion)
 {
-	int i, threadId;
-	dj_thread * thread;
-	dj_frame * frame;
 	dj_global_id methodImplId;
 
 	dj_mem_addSafePointer((void**)&infusion); // Since the GC may be called when running the class initialisers, or when creating the thread.
 
-	// create a new thread object to run the <CLINIT> methods in
-	thread = dj_thread_create();
-
-	if (thread == NULL)
-	{
-		DEBUG_LOG(DBG_DARJEELING, "No memory for class init,infusion %s\n", (char *) dj_di_header_getInfusionName(infusion->header));
-		dj_panic(DJ_PANIC_OUT_OF_MEMORY);
-	}
-
-	dj_vm_addThread(dj_exec_getVM(), thread);
-	threadId = thread->id;
-
 	// iterate over the class list and execute any class initialisers that are encountered
 	int size = dj_di_parentElement_getListSize(infusion->classList);
-	for (i=0; i<size; i++)
+	for (uint16_t i=0; i<size; i++)
 	{
 		dj_di_pointer classDef = dj_di_parentElement_getChild(infusion->classList, i);
 		methodImplId.entity_id = dj_di_classDefinition_getCLInit(classDef);
@@ -1135,38 +1120,10 @@ void dj_vm_runClassInitialisers(dj_vm *vm, dj_infusion *infusion)
 
 		if (methodImplId.entity_id!=255)
 		{
-			// create a frame to run the initialiser in
-			methodImplId.infusion = infusion;
-			frame = dj_frame_create(methodImplId);
-
-			// if we're out of memory, panic
-		    if (frame==NULL)
-		    {
-		        DEBUG_LOG(DBG_DARJEELING, "ClassInitialisers: no frame\n");
-		        dj_panic(DJ_PANIC_OUT_OF_MEMORY);
-		    }
-
-		    // the thread we're running the class initialisers in.
-		    thread = dj_vm_getThreadById(dj_exec_getVM(), threadId);
-		    thread->frameStack = frame;
-		    thread->status = THREADSTATUS_RUNNING;
-			dj_exec_activate_thread(thread);
-
-			// execute the method
-			while (dj_vm_getThreadById(dj_exec_getVM(), threadId)->status!=THREADSTATUS_FINISHED)
-			{
-				// running the CLINIT method may trigger garbage collection
-				dj_exec_run(RUNSIZE);
-			}
+			createThreadAndRunMethodToFinish(methodImplId);
 		}
 	}
 
 	dj_mem_removeSafePointer((void**)&infusion);
-
-	// clean up the thread
-	thread = dj_vm_getThreadById(dj_exec_getVM(), threadId);
-	dj_vm_removeThread(vm, thread);
-	dj_thread_destroy(thread);
-	vm->currentThread = NULL;
 }
 

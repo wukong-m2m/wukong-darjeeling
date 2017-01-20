@@ -1147,6 +1147,40 @@ avroraCallMethodTimerMark(29);
 avroraCallMethodTimerMark(30);
 }
 
+void createThreadAndRunMethodToFinish(dj_global_id methodImplId) {
+	int threadId;
+	dj_thread * thread;
+
+	// create a new thread object to run the <CLINIT> methods in
+	thread = dj_thread_create();
+
+	if (thread == NULL)
+	{
+		DEBUG_LOG(DBG_DARJEELING, "No memory to create thread\n");
+		dj_panic(DJ_PANIC_OUT_OF_MEMORY);
+	}
+
+	dj_vm_addThread(dj_exec_getVM(), thread);
+	threadId = thread->id;
+    thread->status = THREADSTATUS_RUNNING;
+	vm->currentThread = thread;
+
+	callMethod(methodImplId, 0);
+
+	// execute the method
+	while (dj_vm_getThreadById(dj_exec_getVM(), threadId)->status!=THREADSTATUS_FINISHED)
+	{
+		// running the CLINIT method may trigger garbage collection
+		dj_exec_run(RUNSIZE);
+	}
+
+	// clean up the thread
+	thread = dj_vm_getThreadById(dj_exec_getVM(), threadId);
+	dj_vm_removeThread(vm, thread);
+	dj_thread_destroy(thread);
+	vm->currentThread = NULL;
+}
+
 /**
  * Convenience method for throwing system library exceptions. It creates an exception object and throws it at the current PC.
  * For throwing exceptions that are not in the System class, create the object manually and throw it with dj_exec_throwHere.
