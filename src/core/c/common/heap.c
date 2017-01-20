@@ -405,6 +405,7 @@ void dj_mem_compact()
 
 void dj_mem_gc()
 {
+	avroraPrintStr("gc");
     avroraStartGarbageCollectionTimer();
 	DEBUG_LOG(DBG_DARJEELING | DBG_DARJEELING_GC, "GC start\n");
 
