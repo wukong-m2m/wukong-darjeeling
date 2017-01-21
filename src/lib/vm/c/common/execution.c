@@ -863,7 +863,9 @@ static inline void dj_exec_passParameters(dj_frame *frame, dj_global_id methodIm
  * frames to execute, the thread ends. Otherwise control is switched to the underlying caller frame.
  */
 static inline void returnFromMethod() {
-// avroraRTCRuntimeMethodCallReturn();
+#ifdef EXECUTION_PRINT_CALLS_AND_RETURNS
+	avroraRTCRuntimeMethodCallReturn();
+#endif
 	dj_di_pointer methodImpl;
 
 	// get the method from the stack frame so we can calculate how many parameters to pop off the operand stack
@@ -929,7 +931,9 @@ typedef int32_t  (*native_32bit_method_function_t)(uint16_t rtc_frame_locals_sta
 #define avroraCallMethodTimerMark(x) 
 void callMethod(dj_global_id methodImplId, int virtualCall)
 {
-// avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
+#ifdef EXECUTION_PRINT_CALLS_AND_RETURNS
+avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
+#endif
 avroraCallMethodTimerMark(10);
 	dj_frame *frame;
 	bool isReturnReference=false;
@@ -966,6 +970,9 @@ avroraCallMethodTimerMark(12);
 		// for the infusion the method is in
 		if (handler != NULL)
 		{
+#ifdef EXECUTION_PRINT_NAT_JAVA_OR_AOT
+			avroraPrintStr("call nat");
+#endif
 			// Observe the number of reference elements on the ref. stack:
 			frame = dj_exec_getCurrentFrame();
 			oldNumRefStack = refStack - dj_frame_getReferenceStackBase(frame);
@@ -1023,7 +1030,9 @@ avroraCallMethodTimerMark(12);
 				}
 			}
 			
-			// avroraRTCRuntimeMethodCallReturn();
+#ifdef EXECUTION_PRINT_CALLS_AND_RETURNS
+			avroraRTCRuntimeMethodCallReturn();
+#endif
 		}
 		else
 		{
@@ -1070,6 +1079,9 @@ avroraCallMethodTimerMark(18);
 avroraCallMethodTimerMark(19);
 
 		if (handler != NULL && dj_exec_use_rtc) {
+#ifdef EXECUTION_PRINT_NAT_JAVA_OR_AOT
+			avroraPrintStr("call aot");
+#endif
 			// RTC compiled method
 			// execute it directly
 
@@ -1130,6 +1142,10 @@ avroraCallMethodTimerMark(29);
 				default:
 					dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
 			}
+		} else {
+#ifdef EXECUTION_PRINT_NAT_JAVA_OR_AOT
+			avroraPrintStr("call java");
+#endif			
 		}
 
 	#ifdef DARJEELING_DEBUG_MEM_TRACE
@@ -1341,6 +1357,10 @@ void dj_exec_throw(dj_object *obj, uint16_t throw_pc)
  */
 int dj_exec_run(int nrOpcodes)
 {
+#ifdef EXECUTION_BREAK_IF_IN_INTERPRETER
+	avroraPrintStr("abort entering interpreter");
+	asm volatile ("break");
+#endif
 
 #ifdef DARJEELING_DEBUG_TRACE
 	int oldCallDepth = callDepth;

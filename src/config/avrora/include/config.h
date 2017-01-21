@@ -49,7 +49,9 @@
 // ---- AOT RELATED SWITCHES ----
 
 
-
+// #define EXECUTION_PRINT_CALLS_AND_RETURNS 1
+// #define EXECUTION_PRINT_NAT_JAVA_OR_AOT 1
+// #define EXECUTION_BREAK_IF_IN_INTERPRETER 1
 
 /* Please see common/debug.h */
 // #define DARJEELING_DEBUG
