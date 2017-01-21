@@ -58,6 +58,8 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 	dj_vm *vm;
 	dj_object * obj;
 
+	avroraRTCTraceInit();
+
 	// create a new VM
 	vm = dj_vm_create();
 
@@ -69,31 +71,37 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 	// set run level before loading libraries since they need to execute initialisation code
 	dj_exec_setRunlevel(RUNLEVEL_RUNNING);
 
+	// Load library infusions
 	dj_vm_loadInfusionArchive(vm, di_lib_infusions_archive_data, handlers, handlers_length);
-	dj_di_pointer di_app_infusion_data = dj_archive_get_file(di_app_infusion_archive_data, 0);
-	dj_vm_loadInfusion(vm, di_app_infusion_data, NULL, 0);
 
 	// pre-allocate an OutOfMemoryError object
 	obj = dj_vm_createSysLibObject(vm, BASE_CDEF_java_lang_Exception);
 	((BASE_STRUCT_java_lang_Exception *)obj)->type = OUTOFMEMORY_ERROR;
-
 	vm_mem_setPanicExceptionObject(obj);
 
-#ifdef AVRORA
-	avroraPrintStr("DJ Go!\n\r");
-	avroraRTCTraceInit();
-#endif
-	DEBUG_LOG(true, "DJ Go!\n");
-
-	// start the main execution loop
-	while (dj_vm_countLiveThreads(vm)>0)
+	// Load and start application infusion
+	dj_di_pointer di_app_infusion_data = dj_archive_get_file(di_app_infusion_archive_data, 0);
+	dj_infusion * app_infusion = dj_vm_loadInfusion(vm, di_app_infusion_data, NULL, 0);
+	// find the entry point for the application infusion
+	dj_global_id entryPoint;
+	if ((entryPoint.entity_id=dj_di_header_getEntryPoint(app_infusion->header))!=255)
 	{
-		dj_vm_schedule(vm);
-		if (vm->currentThread!=NULL)
-			if (vm->currentThread->status==THREADSTATUS_RUNNING)
-				dj_exec_run(RUNSIZE);
+		entryPoint.infusion = app_infusion;
+		avroraPrintStr("DJ Go!\n\r");
+		createThreadAndRunMethodToFinish(entryPoint);
 	}
-	DEBUG_LOG(true, "DJ Done!\n");
+
+	// DEBUG_LOG(true, "DJ Go!\n");
+
+	// // start the main execution loop
+	// while (dj_vm_countLiveThreads(vm)>0)
+	// {
+	// 	dj_vm_schedule(vm);
+	// 	if (vm->currentThread!=NULL)
+	// 		if (vm->currentThread->status==THREADSTATUS_RUNNING)
+	// 			dj_exec_run(RUNSIZE);
+	// }
+	// DEBUG_LOG(true, "DJ Done!\n");
 }
 
 
@@ -254,8 +262,6 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 	dj_di_pointer element;
 	dj_di_pointer staticFieldInfo = DJ_DI_NOT_SET;
 	dj_di_pointer infusionList = DJ_DI_NOT_SET;
-	dj_thread * thread;
-	dj_global_id entryPoint;
 
 	// iterate over the child elements, and find the static
 	// field size info block. We need this info to allocate
@@ -398,19 +404,6 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 
 	// run class initialisers for this infusion
 	dj_vm_runClassInitialisers(vm, infusion);
-
-	// find the entry point for the infusion
-	if ((entryPoint.entity_id=dj_di_header_getEntryPoint(infusion->header))!=255)
-	{
-		// create a new thread and add it to the VM
-		entryPoint.infusion = infusion;
-		thread = dj_thread_create_and_run(entryPoint);
-
-		if (thread==NULL)
-	        dj_panic(DJ_PANIC_OUT_OF_MEMORY);
-
-		dj_vm_addThread(vm, thread);
-	}
 
 	dj_mem_removeSafePointer((void**)&infusion);
 	return infusion;
