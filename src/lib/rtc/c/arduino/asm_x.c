@@ -1,5 +1,6 @@
 #include "asm.h"
 #include "rtc_emit.h"
+#include "config.h"
 #include <avr/pgmspace.h>
 
 // push pop order
@@ -45,7 +46,14 @@ void emit_x_POP_REF(uint8_t base) {
     emit_x_POPREF8(base+1);
     emit_x_POPREF8(base+0);
 }
-
+void emit_x_avroraBeep(uint8_t beep) {
+    emit_PUSH(R24);
+    emit_LDI(R24, beep);
+    emit_2_STS((uint16_t)&rtcMonitorVariable+1, R24);
+    emit_LDI(R24, AVRORA_RTC_BEEP);
+    emit_2_STS((uint16_t)&rtcMonitorVariable, R24);
+    emit_POP(R24);
+}
 
 
 // NOTE THAT THIS CODE ONLY WORKS ON AVR DEVICES WITH <=128KB flash.

@@ -14,6 +14,9 @@ void emit_x_POP_REF(uint8_t base);
 void emit_x_PUSH_32bit(uint8_t base);
 void emit_x_PUSH_16bit(uint8_t base);
 void emit_x_PUSH_REF(uint8_t base);
+
+void emit_x_avroraBeep(uint8_t beep);
+
 void emit_x_prologue();
 void emit_x_epilogue();
 void emit_x_preinvoke();
