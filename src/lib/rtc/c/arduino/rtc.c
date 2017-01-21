@@ -197,12 +197,6 @@ void rtc_compile_lib(dj_infusion *infusion) {
             DEBUG_LOG(DBG_RTC, "[rtc] should skip already compiled method %d with pointer %p, but won't for now\n", i, handlers[i]);
             // continue; // Skip native or already rtc compiled methods
         }
-
-        // TMPRTC
-        if (i==0) {
-            DEBUG_LOG(DBG_RTC, "[rtc] skipping method 0 for now\n", i);
-            continue;
-        }
         
         DEBUG_LOG(DBG_RTC, "[rtc] compiling method %d\n", i);
 
@@ -213,7 +207,7 @@ void rtc_compile_lib(dj_infusion *infusion) {
         rtc_method_start_addresses[i] = (native_method_function_t)(uint16_t)(method_address/2);
 
 #ifdef AVRORA
-    avroraRTCTraceStartMethod(i, wkreprog_get_raw_position());
+        avroraRTCTraceStartMethod(i, wkreprog_get_raw_position());
 #endif
 
         rtc_compile_method(methodimpl, infusion);
