@@ -463,6 +463,32 @@ bool dj_mem_isHeapPointer(void *ptr) {
 //
 //}
 
+void dj_mem_dump()
+{
+	heap_chunk *finger;
+
+	// iterate over all blocks
+	finger = (heap_chunk*)heap_base;
+
+	int total = 0;
+
+	while ( (void *)finger < left_pointer )
+    {
+    	avroraPrintHex32(0xbbbbbbbb);
+        avroraPrintPtr(finger);
+        avroraPrintUInt16(finger->id);
+        avroraPrintUInt16(finger->size);
+        avroraPrintInt16(finger->shift);
+		total += finger->size;
+		if (finger->size==0)
+			break;
+		finger = (heap_chunk*)((char*)finger + finger->size);
+	}
+
+	avroraPrintHex32(0xcccccccc);
+	avroraPrintInt16(total);
+}
+
 #ifdef DARJEELING_DEBUG
 void dj_mem_dump()
 {

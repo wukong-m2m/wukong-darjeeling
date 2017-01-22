@@ -116,6 +116,7 @@ void dj_mem_shiftRuntimeIDs(runtime_id_t start, uint16_t range);
 // Returns true if the pointer points to a location in the heap.
 bool dj_mem_isHeapPointer(void *ptr);
 
+void dj_mem_dump();
 #ifdef DARJEELING_DEBUG
 void dj_mem_dump();
 #endif
