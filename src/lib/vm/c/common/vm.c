@@ -81,14 +81,33 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 
 	// Load and start application infusion
 	dj_di_pointer di_app_infusion_data = dj_archive_get_file(di_app_infusion_archive_data, 0);
-	dj_infusion * app_infusion = dj_vm_loadInfusion(vm, di_app_infusion_data, NULL, 0);
-	// find the entry point for the application infusion
-	dj_global_id entryPoint;
-	if ((entryPoint.entity_id=dj_di_header_getEntryPoint(app_infusion->header))!=255)
-	{
-		entryPoint.infusion = app_infusion;
-		avroraPrintStr("DJ Go!\n\r");
-		createThreadAndRunMethodToFinish(entryPoint);
+	dj_vm_loadInfusion(vm, di_app_infusion_data, NULL, 0);
+
+	// Make sure the infusions are at the bottom of the heap and won't move anymore.
+	// This is also the reason we can't run the initialisers in dj_vm_loadInfusion, since it may create
+	// some garbage that would cause the infusion object for a next infusion to move if the GC runs.
+	// (leading to bugs that just took me a whole day to find)
+	dj_mem_gc();
+
+	// run class initialisers
+	// infusions get added in a linked list in the order in which they are loaded (see dj_vm_addInfusion)
+	dj_infusion * infusion = vm->infusions;
+	while (infusion != NULL) {
+		dj_vm_runClassInitialisers(vm, infusion);
+
+		if (infusion->next == NULL) {
+			// This is the last infusion, which must be the application infusion.
+			// Start the application.
+			// find the entry point for the application infusion
+			dj_global_id entryPoint;
+			if ((entryPoint.entity_id=dj_di_header_getEntryPoint(infusion->header))!=255)
+			{
+				entryPoint.infusion = infusion;
+				avroraPrintStr("DJ Go!\n\r");
+				createThreadAndRunMethodToFinish(entryPoint);
+			}
+		}
+		infusion = infusion->next;
 	}
 
 	// DEBUG_LOG(true, "DJ Go!\n");
@@ -402,10 +421,8 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 		}
 	}
 
-	// run class initialisers for this infusion
-	dj_vm_runClassInitialisers(vm, infusion);
-
 	dj_mem_removeSafePointer((void**)&infusion);
+
 	return infusion;
 }
 
