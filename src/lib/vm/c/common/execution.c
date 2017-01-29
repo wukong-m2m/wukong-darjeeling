@@ -150,9 +150,11 @@ inline void dj_exec_breakExecution() {
  * @param frame a dj_frame struct in which to save the current state
  */
 static inline void dj_exec_saveLocalState(dj_frame *frame) {
-	frame->pc = pc;
-	frame->saved_intStack = intStack;
-	frame->saved_refStack = refStack;
+	if (frame != NULL) {
+		frame->pc = pc;
+		frame->saved_intStack = intStack;
+		frame->saved_refStack = refStack;
+	}
 }
 
 /**
