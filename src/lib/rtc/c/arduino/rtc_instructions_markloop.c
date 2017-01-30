@@ -1380,7 +1380,8 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
         break;
         case JVM_MONITORENTER:
         case JVM_MONITOREXIT:
-            // Since we don't support threads, there's no point in implementing these.
+            // Since we don't support threads, there's no point in implementing these. But we still need to pop the reference.
+            rtc_stackcache_pop_nondestructive_ref(operand_regs1);
         break;
         // BRANCHES
         case JVM_SIFEQ:
