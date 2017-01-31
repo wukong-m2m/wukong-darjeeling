@@ -251,23 +251,41 @@ void dj_thread_wait(dj_thread * thread, dj_object * object, dj_time_t time)
  */
 dj_frame *dj_frame_create(dj_global_id methodImplId)
 {
-	dj_infusion * infusion = methodImplId.infusion;
-	dj_mem_addSafePointer((void**)&infusion);
+	// Mark 89 at 40 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 90 at 70 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 91 at 43 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 92 at 25 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 93 at 9 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 94 at 107 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 95 at 4 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 96 at 90 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 97 at 81 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 98 at 76 cycles since last mark. (already deducted 5 cycles for timer overhead)
 
+	// UNNECESSARY SINCE WE ASSUME THE INFUSION WON'T MOVE (we will have a lot more problems in AOT code if it does)
+	// dj_infusion * infusion = methodImplId.infusion;
+// avroraCallMethodTimerMark(89);
+	// UNNECESSARY SINCE WE ASSUME THE INFUSION WON'T MOVE (we will have a lot more problems in AOT code if it does)
+	// dj_mem_addSafePointer((void**)&infusion);
+// avroraCallMethodTimerMark(90);
 	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(methodImplId);
 
+// avroraCallMethodTimerMark(91);
 	// calculate the size of the frame to create
 	int localVariablesSize =
 		(dj_di_methodImplementation_getReferenceLocalVariableCount(methodImpl) * sizeof(ref_t)) +
 		(dj_di_methodImplementation_getIntegerLocalVariableCount(methodImpl) * sizeof(int16_t));
 
+// avroraCallMethodTimerMark(92);
 	int size =
 		sizeof(dj_frame) +
 		(dj_di_methodImplementation_getMaxStack(methodImpl) * sizeof(int16_t)) +
 		localVariablesSize
 		;
+// avroraCallMethodTimerMark(93);
 
 	dj_frame *ret = (dj_frame*)dj_mem_alloc(size, CHUNKID_FRAME);
+// avroraCallMethodTimerMark(94);
 
 	// in case of null, return and let the caller deal with it
 	if (ret==NULL)
@@ -276,7 +294,9 @@ dj_frame *dj_frame_create(dj_global_id methodImplId)
     } else
     {
     	// restore a potentially invalid infusion pointer
-    	methodImplId.infusion = infusion;
+// avroraCallMethodTimerMark(95);
+    	// UNNECESSARY SINCE WE ASSUME THE INFUSION WON'T MOVE (we will have a lot more problems in AOT code if it does)
+    	// methodImplId.infusion = infusion;
 
 		// init the frame
 		ret->method = methodImplId;
@@ -285,11 +305,15 @@ dj_frame *dj_frame_create(dj_global_id methodImplId)
 		ret->saved_intStack = dj_frame_getIntegerStackBase(ret);
 		ret->saved_refStack = dj_frame_getReferenceStackBase(ret);
 
+// avroraCallMethodTimerMark(96);
 		// set local variables to 0/null
 		memset(dj_frame_getLocalReferenceVariables(ret), 0, localVariablesSize);
+// avroraCallMethodTimerMark(97);
     }
 
-	dj_mem_removeSafePointer((void**)&infusion);
+	// UNNECESSARY SINCE WE ASSUME THE INFUSION WON'T MOVE (we will have a lot more problems in AOT code if it does)
+	// dj_mem_removeSafePointer((void**)&infusion);
+// avroraCallMethodTimerMark(98);
 
 	return ret;
 }
