@@ -48,6 +48,8 @@
 #endif
 // ---- AOT RELATED SWITCHES ----
 
+#define avroraCallMethodTimerMark(x) avroraTimerMark(x)
+// #define avroraCallMethodTimerMark(x) 
 
 // #define EXECUTION_PRINT_CALLS_AND_RETURNS 1
 // #define EXECUTION_PRINT_NAT_JAVA_OR_AOT 1

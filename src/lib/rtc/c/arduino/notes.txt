@@ -104,6 +104,7 @@ changes to bytecode
 * Added brtarget instruction (noop)
 * Added brtarget index to branch instructions
 * Added brtarget to switch instructions, flipped the order of the upper and lower bound for tableswitch.
+* Added markloop instruction
 
 
 
