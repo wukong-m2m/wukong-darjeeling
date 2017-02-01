@@ -139,13 +139,13 @@ void * dj_mem_alloc(uint16_t size, uint16_t id)
 		// not enough memory
         DEBUG_LOG(DBG_DARJEELING, "dj_mem_alloc: triggering a collection\n");
 		dj_mem_gc();
-	}
 
-	if (right_pointer-left_pointer<size)
-	{
-		// still not enough memory, return null
-        DEBUG_LOG(DBG_DARJEELING, "dj_mem_alloc: NULL!\n");
-        return NULL;
+		if (right_pointer-left_pointer<size)
+		{
+			// still not enough memory, return null
+	        DEBUG_LOG(DBG_DARJEELING, "dj_mem_alloc: NULL!\n");
+	        return NULL;
+		}
 	}
 
 	ret = (heap_chunk*)left_pointer;

@@ -159,25 +159,25 @@ static inline void dj_exec_saveLocalState(dj_frame *frame) {
 	}
 }
 
+
 /**
  * Loads execution state (stack pointer, pc, code pointer, local variables) from a dj_frame struct. This method
  * is used in context switching and method invocations/returns.
  * @param frame the frame to load
  */
-static inline void dj_exec_loadLocalState(dj_frame *frame) {
-	// Mark 50 at 454 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 51 at 47 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 52 at 6 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 53 at 24 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 54 at 67 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 55 at 190 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 56 at 12 cycles since last mark. (already deducted 5 cycles for timer overhead)
+static inline void dj_exec_loadLocalStateFast(dj_frame *frame, dj_di_pointer methodImpl) {
+	// Mark 51 at 49 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 52 at 7 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 53 at 25 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 54 at 20 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 56 at 13 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 58 at 1 cycles since last mark. (already deducted 5 cycles for timer overhead)
 
 	// get program counter, stack pointers, code
 // avroraCallMethodTimerMark(50);
-	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(
-			frame->method);
+	// dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(
+	// 		frame->method);
 // avroraCallMethodTimerMark(51);
 	code = dj_di_methodImplementation_getData(methodImpl);
 // avroraCallMethodTimerMark(52);
@@ -187,10 +187,10 @@ static inline void dj_exec_loadLocalState(dj_frame *frame) {
 	refStack = frame->saved_refStack;
 
 // avroraCallMethodTimerMark(53);
-	localReferenceVariables = dj_frame_getLocalReferenceVariables(frame);
+	localReferenceVariables = dj_frame_getLocalReferenceVariablesFast(frame, methodImpl);
 // avroraCallMethodTimerMark(54);
 #ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
-	localIntegerVariables = dj_frame_getLocalIntegerVariables(frame);
+	localIntegerVariables = dj_frame_getLocalIntegerVariablesFast(frame, methodImpl);
 #endif
 // avroraCallMethodTimerMark(55);
 	if (frame->parent != NULL) {
@@ -206,6 +206,9 @@ static inline void dj_exec_loadLocalState(dj_frame *frame) {
 // avroraCallMethodTimerMark(57);
 	}
 // avroraCallMethodTimerMark(58);
+}
+static inline void dj_exec_loadLocalState(dj_frame *frame) {
+	dj_exec_loadLocalStateFast(frame, dj_global_id_getMethodImplementation(frame->method));
 }
 
 dj_frame *dj_exec_getCurrentFrame() {
@@ -286,10 +289,10 @@ void dj_exec_dumpFrame( dj_frame *frame ) {
 		DARJEELING_PRINTF(" Frame total size is %d bytes, so frame ends at %p.\n", size, ( ((void *)frame)+size) );
 
 		dj_exec_debugInt16(" local int variables ",
-							dj_frame_getLocalIntegerVariables(frame),
+							dj_frame_getLocalIntegerVariablesFast(frame, methodImpl),
 							numLocalInts, -1);
 		dj_exec_debugRef(  " local ref. variables",
-							dj_frame_getLocalReferenceVariables(frame),
+							dj_frame_getLocalReferenceVariablesFast(frame, methodImpl),
 							numLocalRefs, 1);
 
 		numIntParams
@@ -878,8 +881,8 @@ static inline void branch(int16_t offset) {
 static inline void dj_exec_passParameters(dj_frame *frame, dj_global_id methodImplId) {
 	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(methodImplId);
 
-	int16_t *newFrameLocalIntegerVariables = dj_frame_getLocalIntegerVariables(frame);
-	ref_t *newFrameLocalReferenceVariables = dj_frame_getLocalReferenceVariables(frame);
+	int16_t *newFrameLocalIntegerVariables = dj_frame_getLocalIntegerVariablesFast(frame, methodImpl);
+	ref_t *newFrameLocalReferenceVariables = dj_frame_getLocalReferenceVariablesFast(frame, methodImpl);
 
 	uint8_t numberOfIntArguments = dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
 	uint8_t numberOfRefArguments = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
@@ -917,11 +920,11 @@ static inline void returnFromMethod() {
 #ifdef EXECUTION_PRINT_CALLS_AND_RETURNS
 	avroraRTCRuntimeMethodCallReturn();
 #endif
-	dj_di_pointer methodImpl;
+	dj_di_pointer calleeMethodImpl;
 
 // avroraCallMethodTimerMark(40);
 	// get the method from the stack frame so we can calculate how many parameters to pop off the operand stack
-	methodImpl = dj_global_id_getMethodImplementation(
+	calleeMethodImpl = dj_global_id_getMethodImplementation(
 			dj_exec_getCurrentThread()->frameStack->method);
 // avroraCallMethodTimerMark(41);
 
@@ -944,12 +947,12 @@ static inline void returnFromMethod() {
 // avroraCallMethodTimerMark(46);
 		// pop arguments off the stack
 		refStack
-				-= dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
-						+ ((dj_di_methodImplementation_getFlags(methodImpl)
+				-= dj_di_methodImplementation_getReferenceArgumentCount(calleeMethodImpl)
+						+ ((dj_di_methodImplementation_getFlags(calleeMethodImpl)
 								& FLAGS_STATIC) ? 0 : 1);
 // avroraCallMethodTimerMark(47);
 		intStack
-				+= dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
+				+= dj_di_methodImplementation_getIntegerArgumentCount(calleeMethodImpl);
 // avroraCallMethodTimerMark(48);
 	}
 
@@ -994,24 +997,23 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 	// Mark 11 at 26 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 12 at 45 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 13 at 13 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 14 at 397 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 15 at 365 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 14 at 261 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 15 at 146 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 16 at 4 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 17 at 46 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 18 at 24 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 19 at 174 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 19 at 85 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 20 at 9 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 21 at 65 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 21 at 18 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 22 at 3 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 23 at 9 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 23 at 5 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 24 at 11 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 25 at 10 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 26 at 83 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 27 at 2 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 28 at 437 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 28 at 404 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 29 at 0 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 30 at 3 cycles since last mark. (already deducted 5 cycles for timer overhead)
-
 
 #ifdef EXECUTION_PRINT_CALLS_AND_RETURNS
 avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
@@ -1057,7 +1059,7 @@ avroraCallMethodTimerMark(10);
 #endif
 			// Observe the number of reference elements on the ref. stack:
 			frame = dj_exec_getCurrentFrame();
-			oldNumRefStack = refStack - dj_frame_getReferenceStackBase(frame);
+			oldNumRefStack = refStack - dj_frame_getReferenceStackBaseFast(frame, methodImpl);
 
 			// execute the method by calling the infusion's native handler
 			handler();
@@ -1074,7 +1076,7 @@ avroraCallMethodTimerMark(10);
 
 			// Again, compute number of reference elements on the ref. stack:
 			frame = dj_exec_getCurrentFrame();
-			numRefStack = refStack - dj_frame_getReferenceStackBase(frame);
+			numRefStack = refStack - dj_frame_getReferenceStackBaseFast(frame, methodImpl);
 			diffRefArgs = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl) - (oldNumRefStack - numRefStack);
 
 			if(dj_di_methodImplementation_getReturnType(methodImpl)==JTID_REF) {
@@ -1129,7 +1131,7 @@ avroraCallMethodTimerMark(10);
 		// Java method. May or may not be RTC compiled
 
 		// create new frame for the function
-		frame = dj_frame_create(methodImplId);
+		frame = dj_frame_create_fast(methodImplId, methodImpl);
 
 // avroraCallMethodTimerMark(14);
 
@@ -1156,7 +1158,7 @@ avroraCallMethodTimerMark(10);
 // avroraCallMethodTimerMark(18);
 
 		// switch in newly created frame
-		dj_exec_loadLocalState(frame);
+		dj_exec_loadLocalStateFast(frame, methodImpl);
 
 // avroraCallMethodTimerMark(19);
 
@@ -1168,9 +1170,9 @@ avroraCallMethodTimerMark(10);
 			// execute it directly
 
 // avroraCallMethodTimerMark(20);
-			uint16_t rtc_frame_locals_start = (uint16_t)dj_frame_getLocalReferenceVariables(frame); // Will be stored in Y by the function prologue
+			uint16_t rtc_frame_locals_start = (uint16_t)dj_frame_getLocalReferenceVariablesFast(frame, methodImpl); // Will be stored in Y by the function prologue
 // avroraCallMethodTimerMark(21);
-			uint16_t rtc_ref_stack_start = (uint16_t)dj_frame_getReferenceStackBase(frame); // Will be stored in X by the function prologue
+			uint16_t rtc_ref_stack_start = (uint16_t)dj_frame_getReferenceStackBaseFast(frame, methodImpl); // Will be stored in X by the function prologue
 // avroraCallMethodTimerMark(22);
 			uint16_t rtc_statics_start = (uint16_t)methodImplId.infusion->staticReferenceFields; // Will be stored in R2 by the function prologue
 // avroraCallMethodTimerMark(23);

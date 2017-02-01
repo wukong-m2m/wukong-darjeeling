@@ -133,6 +133,51 @@ Pre: need to set the pointers to int and ref stacks (since intStack and refStack
 Popping will work fine once these variables are set.
 For pushes to the int stack, we need to reserve some space on the real stack ((number of pushes slots - number of popped slots) * 2 bytes)
 
-Post:
+
+
+
+
+
+# dj_frame_getLocalIntegerVariables
+This is how dj_frame_getLocalIntegerVariables(frame) was calculated before adding it as a constant to the methodImpl header.
+
+dj_frame_getLocalIntegerVariables(frame)
+=
+(int16_t*)(dj_frame_stackLocalIntegerOffset(frame))
+=
+(dj_frame_stackEndOffset(frame) \
+                         + (sizeof(ref_t) * dj_di_methodImplementation_getReferenceLocalVariableCount(dj_global_id_getMethodImplementation(frame->method))) \
+                         + (sizeof(int16_t) * (dj_di_methodImplementation_getIntegerLocalVariableCount(dj_global_id_getMethodImplementation(frame->method))-1)))
+=
+((dj_frame_stackStartOffset(frame) + (sizeof(int16_t) * dj_di_methodImplementation_getMaxStack(dj_global_id_getMethodImplementation(frame->method)))) \
+                         + (sizeof(ref_t) * dj_di_methodImplementation_getReferenceLocalVariableCount(dj_global_id_getMethodImplementation(frame->method))) \
+                         + (sizeof(int16_t) * (dj_di_methodImplementation_getIntegerLocalVariableCount(dj_global_id_getMethodImplementation(frame->method))-1)))
+=
+((dj_frame_stackStartOffset(frame) 
+  + (sizeof(int16_t) * dj_di_methodImplementation_getMaxStack(dj_global_id_getMethodImplementation(frame->method)))) \
+  + (sizeof(ref_t) * dj_di_methodImplementation_getReferenceLocalVariableCount(dj_global_id_getMethodImplementation(frame->method))) \
+  + (sizeof(int16_t) * (dj_di_methodImplementation_getIntegerLocalVariableCount(dj_global_id_getMethodImplementation(frame->method))-1))
+=
+(char*)frame + sizeof(dj_frame)
+  + (sizeof(int16_t) * dj_di_methodImplementation_getMaxStack(dj_global_id_getMethodImplementation(frame->method))) \
+  + (sizeof(ref_t) * dj_di_methodImplementation_getReferenceLocalVariableCount(dj_global_id_getMethodImplementation(frame->method))) \
+  + (sizeof(int16_t) * (dj_di_methodImplementation_getIntegerLocalVariableCount(dj_global_id_getMethodImplementation(frame->method))-1))
+=
+(char*)frame + sizeof(dj_frame)
+  + (sizeof(int16_t) * dj_di_methodImplementation_getMaxStack(methodImpl)) \
+  + (sizeof(ref_t) * dj_di_methodImplementation_getReferenceLocalVariableCount(methodImpl)) \
+  + (sizeof(int16_t) * (dj_di_methodImplementation_getIntegerLocalVariableCount(methodImpl)-1))
+=
+(char*)frame + sizeof(dj_frame)
+  + (sizeof(int16_t) * dj_di_getU8(methodImpl + 5)) \
+  + (sizeof(ref_t) * dj_di_getU8(methodImpl + 2)) \
+  + (sizeof(int16_t) * (dj_di_getU8(methodImpl + 3)-1))
+
+
+where methodImpl = dj_global_id_getMethodImplementation(frame->method)
+                 = dj_infusion_getMethodImplementation(frame->method.infusion, frame->method.entity_id)
+                 = dj_di_parentElement_getChild(frame->method.infusion, frame->method.entity_id)
+                 = ( ((dj_di_pointer)(frame->method.infusion)) + dj_di_getListPointer( (frame->method.infusion+1) , frame->method.entity_id) )
+                 = ( ((dj_di_pointer)(frame->method.infusion)) + (dj_di_getU16( (dj_di_pointer)(frame->method.infusion+1) + 1 + frame->method.entity_id * 2)) )
 
 
