@@ -86,7 +86,9 @@ int16_t __attribute__((section (".intStackSection"))) *intStack;
 ref_t   __attribute__((section (".refStackSection"))) *refStack;
 ref_t   __attribute__((section (".localReferenceVariablesSection"))) *localReferenceVariables;
 
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 static int16_t *localIntegerVariables;
+#endif
 
 static ref_t this;
 
@@ -187,8 +189,9 @@ static inline void dj_exec_loadLocalState(dj_frame *frame) {
 // avroraCallMethodTimerMark(53);
 	localReferenceVariables = dj_frame_getLocalReferenceVariables(frame);
 // avroraCallMethodTimerMark(54);
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 	localIntegerVariables = dj_frame_getLocalIntegerVariables(frame);
-
+#endif
 // avroraCallMethodTimerMark(55);
 	if (frame->parent != NULL) {
 		this = nullref;
@@ -340,7 +343,9 @@ dj_frame *dj_exec_dumpExecutionState() {
 		DARJEELING_PRINTF(" current reference stack: %p\n", refStack);
 		DARJEELING_PRINTF(" Couldn't determine stack depths, because frame==NULL.\n");
 	}
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 	DARJEELING_PRINTF(" local integer   variables: %p\n", localIntegerVariables);
+#endif
 	DARJEELING_PRINTF(" local reference variables: %p\n", localReferenceVariables);
 	DARJEELING_PRINTF(" PC:%#x  code:%p  this:%p  #OP-codes left:%d\n", pc, code, this, nrOpcodesLeft);
 
@@ -767,76 +772,94 @@ ref_t dj_exec_stackPeekDeepRef(int depth) {
  * @param index local variable slot number
  * @param value 16 bit short value
  */
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 static inline void setLocalShort(int index, int16_t value) {
 	// local ints grow down (so we don't need to know the types of the int arguments and worry about flipping the endianness)
   	localIntegerVariables[-index] = value;
 }
+#endif
 
 /**
  * Returns 16 bit short local variable at index
  * @param index local variable slot number
  */
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 static inline int16_t getLocalShort(int index) {
 	// local ints grow down (so we don't need to know the types of the int arguments and worry about flipping the endianness)
   	return localIntegerVariables[-index];
 }
+#endif
 
 /**
  * Set local reference variable at index
  * @param index local variable slot number
  * @param value 32 bit integer value
  */
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 static inline void setLocalInt(int index, int32_t value) {
 	// local ints grow down (so we don't need to know the types of the int arguments and worry about flipping the endianness)
 	// substract -1 to find the start of the 32 bit int.
 	*(int32_t*) (localIntegerVariables - index - 1) = value;
 }
+#endif
+
 /**
  * Returns 32 bit integer local variable at index
  * @param index local variable slot number
  */
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 static inline int32_t getLocalInt(int index) {
 	// local ints grow down (so we don't need to know the types of the int arguments and worry about flipping the endianness)
 	// substract -1 to find the start of the 32 bit int.
 	return *(int32_t*) (localIntegerVariables - index - 1);
 }
+#endif
 
 /**
  * Set local reference variable at index
  * @param index local variable slot number
  * @param value 64-bit long value
  */
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 static inline void setLocalLong(int index, int64_t value) {
 	// local ints grow down (so we don't need to know the types of the int arguments and worry about flipping the endianness)
 	// substract -3 to find the start of the 64 bit int.
 	*(int64_t*) (localIntegerVariables - index - 3) = value;
 }
+#endif
+
 /**
  * Returns 64-bit long local variable at index
  * @param index local variable slot number
  */
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 static inline int64_t getLocalLong(int index) {
 	// local ints grow down (so we don't need to know the types of the int arguments and worry about flipping the endianness)
 	// substract -3 to find the start of the 64 bit int.
 	return *(int64_t*) (localIntegerVariables - index - 3);
 }
+#endif
 
 /**
  * Set local reference variable at index
  * @param index local variable slot number
  * @param value reference value
  */
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 static inline void setLocalRef(int index, ref_t value) {
 	localReferenceVariables[index] = value;
 }
+#endif
 
 /**
  * Returns local reference variable at index
  * @param index local variable slot number
  */
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 static inline ref_t getLocalRef(int index) {
 	return localReferenceVariables[index];
 }
+#endif
 
 /**
  * Branches to PC + offset.
@@ -883,11 +906,11 @@ static inline void dj_exec_passParameters(dj_frame *frame, dj_global_id methodIm
  * frames to execute, the thread ends. Otherwise control is switched to the underlying caller frame.
  */
 static inline void returnFromMethod() {
-	// Mark 40 at 1897 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 40 at 1607 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 41 at 62 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 42 at 78 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 45 at 16 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 46 at 393 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 46 at 195 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 47 at 39 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 48 at 24 cycles since last mark. (already deducted 5 cycles for timer overhead)
 
@@ -967,8 +990,7 @@ typedef int32_t  (*native_32bit_method_function_t)(uint16_t rtc_frame_locals_sta
  */
 void callMethod(dj_global_id methodImplId, int virtualCall)
 {
-
-	// Mark 10 at 296 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 10 at 304 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 11 at 26 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 12 at 45 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 13 at 13 cycles since last mark. (already deducted 5 cycles for timer overhead)
@@ -977,7 +999,7 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 	// Mark 16 at 4 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 17 at 46 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 18 at 24 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 19 at 372 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 19 at 174 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 20 at 9 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 21 at 65 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 22 at 3 cycles since last mark. (already deducted 5 cycles for timer overhead)
@@ -986,14 +1008,15 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 	// Mark 25 at 10 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 26 at 83 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 27 at 2 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 28 at 635 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 28 at 437 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 29 at 0 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 30 at 3 cycles since last mark. (already deducted 5 cycles for timer overhead)
+
 
 #ifdef EXECUTION_PRINT_CALLS_AND_RETURNS
 avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
 #endif
-// avroraCallMethodTimerMark(10);
+avroraCallMethodTimerMark(10);
 	dj_frame *frame;
 	bool isReturnReference=false;
 	int oldNumRefStack, numRefStack;
@@ -1246,7 +1269,7 @@ void createThreadAndRunMethodToFinish(dj_global_id methodImplId) {
 	while (dj_vm_getThreadById(dj_exec_getVM(), threadId)->status!=THREADSTATUS_FINISHED)
 	{
 		// running the CLINIT method may trigger garbage collection
-		dj_exec_run(RUNSIZE);
+		rtc_run_interpreter_if_not_aot_compiled();
 	}
 
 	// clean up the thread
@@ -1407,6 +1430,8 @@ void dj_exec_throw(dj_object *obj, uint16_t throw_pc)
         ltemp1 = popLong();                        \
         pushLong((int64_t)(ltemp1 op ltemp2)); } while(0)
 
+
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 /**
  * The execution engine's main run function. Executes [nrOpcodes] instructions, or until execution is stopped explicitly,
  * or until the current method finishes if it was called by RTC compiled code.
@@ -1416,11 +1441,6 @@ void dj_exec_throw(dj_object *obj, uint16_t throw_pc)
  */
 int dj_exec_run(int nrOpcodes)
 {
-#ifdef EXECUTION_BREAK_IF_IN_INTERPRETER
-	avroraPrintStr("abort entering interpreter");
-	asm volatile ("break");
-#endif
-
 #ifdef DARJEELING_DEBUG_TRACE
 	int oldCallDepth = callDepth;
 #endif
@@ -1947,8 +1967,27 @@ int dj_exec_run(int nrOpcodes)
 	}
 
 	return nrOpcodesLeft;
-
 }
+#endif // EXECUTION_DISABLEINTERPRETER_COMPLETELY
+
+void rtc_run_interpreter_if_not_aot_compiled() {
+    if (!dj_exec_currentMethodIsRTCCompiled()) {
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
+    #ifdef EXECUTION_BREAK_IF_IN_INTERPRETER
+        avroraPrintStr("abort entering interpreter");
+        asm volatile ("break");
+    #else
+        while (!dj_exec_currentMethodIsRTCCompiled()) {
+            dj_exec_run(RUNSIZE);
+        }
+    #endif
+#else
+    avroraPrintStr("abort entering interpreter");
+    asm volatile ("break");
+#endif
+    }
+}
+
 /**
  * @}
  */

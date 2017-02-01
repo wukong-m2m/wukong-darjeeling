@@ -59,7 +59,7 @@ void createThreadAndRunMethodToFinish(dj_global_id methodImplId);
 bool dj_exec_use_rtc;
 // End Exported for RTC only
 
-int dj_exec_run();
+void rtc_run_interpreter_if_not_aot_compiled();
 void dj_exec_breakExecution();
 void dj_exec_activate_thread(dj_thread *thread);
 void dj_exec_deactivateThread(dj_thread *thread);
