@@ -244,23 +244,27 @@ void dj_thread_wait(dj_thread * thread, dj_object * object, dj_time_t time)
 }
 
 
+// This is only used when creating a new thread. Could replace those calls as well, but I'm lazy right now.
+dj_frame *dj_frame_create(dj_global_id methodImplId) {
+	return dj_frame_create_fast(methodImplId, dj_global_id_getMethodImplementation(methodImplId));
+}
+
 /**
  * Creates a new dj_frame object for a given method implementation.
  * @param methodImplId the method implementation this frame will be executing
  * @return a newly created dj_frame object, or null if fail (out of memory)
  */
-dj_frame *dj_frame_create(dj_global_id methodImplId)
+dj_frame *dj_frame_create_fast(dj_global_id methodImplId, dj_di_pointer methodImpl)
 {
-	// Mark 89 at 40 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 90 at 70 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 90 at 0 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 91 at 43 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 92 at 25 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 92 at 26 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 93 at 9 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 94 at 107 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 95 at 4 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 96 at 90 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 97 at 81 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 98 at 76 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 96 at 39 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 97 at 29 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 98 at 1 cycles since last mark. (already deducted 5 cycles for timer overhead)
 
 	// UNNECESSARY SINCE WE ASSUME THE INFUSION WON'T MOVE (we will have a lot more problems in AOT code if it does)
 	// dj_infusion * infusion = methodImplId.infusion;
@@ -268,7 +272,7 @@ dj_frame *dj_frame_create(dj_global_id methodImplId)
 	// UNNECESSARY SINCE WE ASSUME THE INFUSION WON'T MOVE (we will have a lot more problems in AOT code if it does)
 	// dj_mem_addSafePointer((void**)&infusion);
 // avroraCallMethodTimerMark(90);
-	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(methodImplId);
+	// dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(methodImplId);
 
 // avroraCallMethodTimerMark(91);
 	// calculate the size of the frame to create
@@ -302,12 +306,12 @@ dj_frame *dj_frame_create(dj_global_id methodImplId)
 		ret->method = methodImplId;
 		ret->parent = NULL;
 		ret->pc = 0;
-		ret->saved_intStack = dj_frame_getIntegerStackBase(ret);
-		ret->saved_refStack = dj_frame_getReferenceStackBase(ret);
+		ret->saved_intStack = dj_frame_getIntegerStackBaseFast(ret, methodImpl);
+		ret->saved_refStack = dj_frame_getReferenceStackBaseFast(ret, methodImpl);
 
 // avroraCallMethodTimerMark(96);
 		// set local variables to 0/null
-		memset(dj_frame_getLocalReferenceVariables(ret), 0, localVariablesSize);
+		memset(dj_frame_getLocalReferenceVariablesFast(ret, methodImpl), 0, localVariablesSize);
 // avroraCallMethodTimerMark(97);
     }
 

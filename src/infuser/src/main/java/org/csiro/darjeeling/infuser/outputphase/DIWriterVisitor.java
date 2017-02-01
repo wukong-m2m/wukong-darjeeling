@@ -204,7 +204,7 @@ public class DIWriterVisitor extends DescendingVisitor
 			out.writeUINT8(element.getMethodDefinition().getParameterCount() + (element.isStatic()?0:1));
 			
 			out.writeUINT8(element.getMaxStack());
-			
+
 			CodeBlock code = element.getCodeBlock();
 
 			// Write flags
@@ -219,6 +219,18 @@ public class DIWriterVisitor extends DescendingVisitor
 			// Write the number of branch targets
 			out.writeUINT16(element.getNumberOfBranchTargets());
 			
+			// RTC: write offsets to integer variables
+			// (storing the offset to reference variable doesn't seem worth it at this point, since it starts
+			//  at element.getMaxStack() * sizeof(int16_t). So storing it here only saves one shift left, which
+			//  should only take a single cycle)
+			// See notes.txt for how dj_frame_getLocalIntegerVariables used to be calculated:
+													// dj_frame_getLocalIntegerVariables = (char*)frame + sizeof(dj_frame)
+													// + (sizeof(int16_t) * dj_di_methodImplementation_getMaxStack(methodImpl)) \
+													// + (sizeof(ref_t) * dj_di_methodImplementation_getReferenceLocalVariableCount(methodImpl)) \
+													// + (sizeof(int16_t) * (dj_di_methodImplementation_getIntegerLocalVariableCount(methodImpl)-1))
+			// (note the header now assumes 2 byte pointers, so VMs on larger architectures will need to do some extra work!)
+			out.writeUINT16(2 * (element.getMaxStack() + element.getReferenceLocalVariableCount() + element.getIntegerLocalVariableCount()-1));
+
 			// write code block
 			if (element.getCode()==null)
 			{
