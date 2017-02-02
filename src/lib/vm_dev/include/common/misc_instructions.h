@@ -23,6 +23,8 @@
 #ifndef __misc_instructions_h
 #define __misc_instructions_h
 
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
+
 #include <string.h>
 
 #include "jstring.h"
@@ -197,5 +199,7 @@ static inline void MONITOREXIT()
 
     DEBUG_EXIT_NEST_LOG(DBG_DARJEELING, "MONITOREXIT()\n");
 }
+
+#endif // EXECUTION_DISABLEINTERPRETER_COMPLETELY
 
 #endif /* __misc_instructions_h */

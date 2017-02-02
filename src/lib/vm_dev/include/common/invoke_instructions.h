@@ -19,6 +19,8 @@
  * along with Darjeeling.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
+
 #include "execution_instructions.h"
 
 /**
@@ -124,3 +126,4 @@ static inline void INVOKEINTERFACE()
 	INVOKEVIRTUAL();
 }
 
+#endif // EXECUTION_DISABLEINTERPRETER_COMPLETELY

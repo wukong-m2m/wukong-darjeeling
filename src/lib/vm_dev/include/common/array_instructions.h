@@ -19,6 +19,7 @@
  * along with Darjeeling.  If not, see <http://www.gnu.org/licenses/>.
  */
  
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 
 /**
  * Executes the NEWARRAY instruction. The array type is fetched from code (uint8_t) and the length is
@@ -314,3 +315,5 @@ static inline void AASTORE()
 			dj_exec_createAndThrow(INDEXOUTOFBOUNDS_EXCEPTION);
 
 }
+
+#endif // EXECUTION_DISABLEINTERPRETER_COMPLETELY

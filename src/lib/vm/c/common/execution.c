@@ -79,16 +79,16 @@ static dj_vm *vm;
 //static dj_thread *currentThread;
 
 // execution state
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
+static int16_t *localIntegerVariables;
 static uint16_t pc;
 static dj_di_pointer code;
+#endif
 
 int16_t __attribute__((section (".intStackSection"))) *intStack;
 ref_t   __attribute__((section (".refStackSection"))) *refStack;
 ref_t   __attribute__((section (".localReferenceVariablesSection"))) *localReferenceVariables;
 
-#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
-static int16_t *localIntegerVariables;
-#endif
 
 static ref_t this;
 
@@ -153,7 +153,9 @@ inline void dj_exec_breakExecution() {
  */
 static inline void dj_exec_saveLocalState(dj_frame *frame) {
 	if (frame != NULL) {
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 		frame->pc = pc;
+#endif
 		frame->saved_intStack = intStack;
 		frame->saved_refStack = refStack;
 	}
@@ -178,10 +180,12 @@ static inline void dj_exec_loadLocalStateFast(dj_frame *frame, dj_di_pointer met
 // avroraCallMethodTimerMark(50);
 	// dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(
 	// 		frame->method);
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 // avroraCallMethodTimerMark(51);
 	code = dj_di_methodImplementation_getData(methodImpl);
 // avroraCallMethodTimerMark(52);
 	pc = frame->pc;
+#endif
 
 	intStack = frame->saved_intStack;
 	refStack = frame->saved_refStack;
@@ -409,9 +413,9 @@ void dj_exec_activate_thread(dj_thread *thread) {
 
 	vm->currentThread = thread;
 
-	if (thread->frameStack != NULL)
+	if (thread->frameStack != NULL) {
 		dj_exec_loadLocalState(thread->frameStack);
-	else {
+	} else {
 		DEBUG_LOG(DBG_DARJEELING, "Thread frame NULL, cannot activate\n");
 		dj_panic(DJ_PANIC_ILLEGAL_INTERNAL_STATE);
 	}
@@ -445,6 +449,7 @@ dj_thread *dj_exec_getCurrentThread() {
 	return vm->currentThread;
 }
 
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 /**
  * Fetches a byte from the code pointer. Increases the PC by 1.
  * TODO make quicker using code++
@@ -530,6 +535,7 @@ static inline dj_local_id dj_fetchLocalId() {
 	ret.entity_id = fetch();
 	return ret;
 }
+#endif // EXECUTION_DISABLEINTERPRETER_COMPLETELY
 
 /**
  * Pushes a short (16 bit) onto the runtime stack
@@ -862,7 +868,6 @@ static inline void setLocalRef(int index, ref_t value) {
 static inline ref_t getLocalRef(int index) {
 	return localReferenceVariables[index];
 }
-#endif
 
 /**
  * Branches to PC + offset.
@@ -870,6 +875,7 @@ static inline ref_t getLocalRef(int index) {
 static inline void branch(int16_t offset) {
 	pc += offset;
 }
+#endif
 
 
 /**
@@ -1306,8 +1312,12 @@ void dj_exec_createAndThrow(int16_t exceptionType)
 		dj_panic(DJ_PANIC_OUT_OF_MEMORY);
 	}
 
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 	dj_exec_throwHere(obj);
+#endif
 }
+
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 
 /**
  * Throws an exception at the current PC. Ideally this function should be called only from outside the execution module.
@@ -1433,7 +1443,6 @@ void dj_exec_throw(dj_object *obj, uint16_t throw_pc)
         pushLong((int64_t)(ltemp1 op ltemp2)); } while(0)
 
 
-#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 /**
  * The execution engine's main run function. Executes [nrOpcodes] instructions, or until execution is stopped explicitly,
  * or until the current method finishes if it was called by RTC compiled code.

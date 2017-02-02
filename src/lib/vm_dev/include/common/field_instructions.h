@@ -21,6 +21,7 @@
  
 #include "config.h"
 
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 
 static inline void GETSTATIC_B()
 {
@@ -306,3 +307,5 @@ static inline void PUTFIELD_A()
 	}
 
 }
+
+#endif // EXECUTION_DISABLEINTERPRETER_COMPLETELY

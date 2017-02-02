@@ -19,6 +19,7 @@
  * along with Darjeeling.  If not, see <http://www.gnu.org/licenses/>.
  */
  
+ #ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 
 /**
  * Executes the GOTO instruction. Branches to [offset of the GOTO instruction] + [immediate S16]
@@ -488,3 +489,5 @@ static inline void LOOKUPSWITCH()
 	}
 	branch(branchAdress - 7);
 }
+
+#endif // EXECUTION_DISABLEINTERPRETER_COMPLETELY
