@@ -948,7 +948,8 @@ static inline void returnFromMethod() {
 	} else {
 		// perform context switch.
 // avroraCallMethodTimerMark(45);
-		dj_exec_activate_thread(dj_exec_getCurrentThread());
+		// dj_exec_activate_thread(dj_exec_getCurrentThread()); This just ends up setting vm->currentThread to the value it already has, and then calling dj_exec_loadLocalState... Just call it directly.
+		dj_exec_loadLocalState(dj_exec_getCurrentThread()->frameStack);
 
 // avroraCallMethodTimerMark(46);
 		// pop arguments off the stack
