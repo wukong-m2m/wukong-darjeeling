@@ -309,8 +309,10 @@ dj_frame *dj_frame_create_fast(dj_global_id methodImplId, dj_di_pointer methodIm
 		// init the frame
 		ret->method = methodImplId;
 		ret->parent = NULL;
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 		ret->pc = 0;
 		ret->saved_intStack = dj_frame_getIntegerStackBaseFast(ret, methodImpl);
+#endif
 		ret->saved_refStack = dj_frame_getReferenceStackBaseFast(ret, methodImpl);
 
 // avroraCallMethodTimerMark(96);
