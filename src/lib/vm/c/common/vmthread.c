@@ -276,16 +276,20 @@ dj_frame *dj_frame_create_fast(dj_global_id methodImplId, dj_di_pointer methodIm
 
 // avroraCallMethodTimerMark(91);
 	// calculate the size of the frame to create
-	int localVariablesSize =
-		(dj_di_methodImplementation_getReferenceLocalVariableCount(methodImpl) * sizeof(ref_t)) +
-		(dj_di_methodImplementation_getIntegerLocalVariableCount(methodImpl) * sizeof(int16_t));
+	// int localVariablesSize =
+	// 	(dj_di_methodImplementation_getReferenceLocalVariableCount(methodImpl) * sizeof(ref_t)) +
+	// 	(dj_di_methodImplementation_getIntegerLocalVariableCount(methodImpl) * sizeof(int16_t));
 
 // avroraCallMethodTimerMark(92);
-	int size =
-		sizeof(dj_frame) +
-		(dj_di_methodImplementation_getMaxStack(methodImpl) * sizeof(int16_t)) +
-		localVariablesSize
-		;
+	// int size =
+	// 	sizeof(dj_frame) +
+	// 	(dj_di_methodImplementation_getMaxStack(methodImpl) * sizeof(int16_t)) +
+	// 	localVariablesSize
+	// 	;
+	// Note that integer variables 'grow' down in the stack frame, so dj_di_methodImplementation_getOffsetToLocalIntegerVariables is also the size of the frame, -2 because the address of the 'first' int variable is 2 lower than the size of the frame (since slots are 16-bit).
+	int size = sizeof(dj_frame)
+				+ dj_di_methodImplementation_getOffsetToLocalIntegerVariables(methodImpl) + 2;
+
 // avroraCallMethodTimerMark(93);
 
 	dj_frame *ret = (dj_frame*)dj_mem_alloc(size, CHUNKID_FRAME);
@@ -311,7 +315,11 @@ dj_frame *dj_frame_create_fast(dj_global_id methodImplId, dj_di_pointer methodIm
 
 // avroraCallMethodTimerMark(96);
 		// set local variables to 0/null
-		memset(dj_frame_getLocalReferenceVariablesFast(ret, methodImpl), 0, localVariablesSize);
+		// memset(dj_frame_getLocalReferenceVariablesFast(ret, methodImpl), 0, localVariablesSize);
+		void * start = ((void*)ret) + sizeof(dj_frame) + dj_di_methodImplementation_getMaxStack(methodImpl) * sizeof(int16_t);
+		void * end = ((void*)ret) + size;
+		memset(start, 0, end-start);
+
 // avroraCallMethodTimerMark(97);
     }
 
