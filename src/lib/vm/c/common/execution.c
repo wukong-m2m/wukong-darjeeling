@@ -884,14 +884,9 @@ static inline void branch(int16_t offset) {
  * @param frame the callee's frame
  * @param methodImplId the callee's methodimpl entity_id
  */
-static inline void dj_exec_passParameters(dj_frame *frame, dj_di_pointer methodImpl) {
-
+static inline void dj_exec_passParameters(dj_frame *frame, dj_di_pointer methodImpl, uint8_t numberOfIntArguments, uint8_t numberOfRefArguments) {
 	int16_t *newFrameLocalIntegerVariables = dj_frame_getLocalIntegerVariablesFast(frame, methodImpl);
 	ref_t *newFrameLocalReferenceVariables = dj_frame_getLocalReferenceVariablesFast(frame, methodImpl);
-
-	uint8_t numberOfIntArguments = dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
-	uint8_t numberOfRefArguments = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
-									+ ((dj_di_methodImplementation_getFlags(methodImpl) & FLAGS_STATIC) ? 0 : 1);
 
 	DEBUG_LOG(DBG_DARJEELING, " refs %d ints %d\n", numberOfRefArguments, numberOfIntArguments);
 	DEBUG_LOG(DBG_DARJEELING, " intStack %p, refStack %p\n", intStack, refStack);
@@ -913,7 +908,7 @@ static inline void dj_exec_passParameters(dj_frame *frame, dj_di_pointer methodI
  * Returns from a method. The current execution frame is popped off the thread's frame stack. If there are no other
  * frames to execute, the thread ends. Otherwise control is switched to the underlying caller frame.
  */
-static inline void returnFromMethodFast(dj_di_pointer calleeMethodImpl) {
+static inline void returnFromMethodFast(dj_di_pointer calleeMethodImpl, uint8_t numberOfIntArguments, uint8_t numberOfRefArguments) {
 	// Mark 41 at 62 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 42 at 78 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 45 at 17 cycles since last mark. (already deducted 5 cycles for timer overhead)
@@ -952,13 +947,10 @@ static inline void returnFromMethodFast(dj_di_pointer calleeMethodImpl) {
 
 // avroraCallMethodTimerMark(46);
 		// pop arguments off the stack
-		refStack
-				-= dj_di_methodImplementation_getReferenceArgumentCount(calleeMethodImpl)
-						+ ((dj_di_methodImplementation_getFlags(calleeMethodImpl)
-								& FLAGS_STATIC) ? 0 : 1);
+		refStack -= numberOfRefArguments;
+
 // avroraCallMethodTimerMark(47);
-		intStack
-				+= dj_di_methodImplementation_getIntegerArgumentCount(calleeMethodImpl);
+		intStack += numberOfIntArguments;
 // avroraCallMethodTimerMark(48);
 	}
 
@@ -972,8 +964,13 @@ static inline void returnFromMethodFast(dj_di_pointer calleeMethodImpl) {
 
 // avroraCallMethodTimerMark(49);
 }
-static inline void returnFromMethod(dj_di_pointer calleeMethodImpl) {
-	returnFromMethod(dj_global_id_getMethodImplementation(dj_exec_getCurrentThread()->frameStack->method));
+static inline void returnFromMethod() {
+	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(dj_exec_getCurrentThread()->frameStack->method);
+	uint8_t numberOfIntArguments = dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
+	uint8_t numberOfRefArguments = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
+									+ ((dj_di_methodImplementation_getFlags(methodImpl) & FLAGS_STATIC) ? 0 : 1);
+
+	returnFromMethodFast(methodImpl, numberOfIntArguments, numberOfRefArguments);
 }
 
 /**
@@ -1002,27 +999,27 @@ typedef int32_t  (*native_32bit_method_function_t)(uint16_t rtc_frame_locals_sta
  */
 void callMethod(dj_global_id methodImplId, int virtualCall)
 {
-   // Mark 10 at 284 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 11 at 26 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 12 at 45 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 13 at 13 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 14 at 217 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 15 at 146 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 16 at 4 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 17 at 38 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 18 at 24 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 19 at 66 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 20 at 9 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 21 at 18 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 22 at 3 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 23 at 5 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 24 at 11 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 25 at 11 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 26 at 83 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 27 at 2 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 28 at 305 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 29 at 0 cycles since last mark. (already deducted 5 cycles for timer overhead)
-   // Mark 30 at 3 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 10 at 308 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 11 at 26 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 12 at 48 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 13 at 17 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 14 at 220 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 15 at 112 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 16 at 4 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 17 at 38 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 18 at 24 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 19 at 69 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 20 at 9 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 21 at 12 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 22 at 3 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 23 at 5 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 24 at 13 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 25 at 11 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 26 at 83 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 27 at 2 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 28 at 264 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 29 at 0 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 30 at 3 cycles since last mark. (already deducted 5 cycles for timer overhead)
 
 #ifdef EXECUTION_PRINT_CALLS_AND_RETURNS
 avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
@@ -1144,7 +1141,10 @@ avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->h
 
 // avroraCallMethodTimerMark(14);
 
-		dj_exec_passParameters(frame, methodImpl);
+	uint8_t numberOfIntArguments = dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
+	uint8_t numberOfRefArguments = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
+									+ ((dj_di_methodImplementation_getFlags(methodImpl) & FLAGS_STATIC) ? 0 : 1);
+		dj_exec_passParameters(frame, methodImpl, numberOfIntArguments, numberOfRefArguments);
 
 // avroraCallMethodTimerMark(15);
 
@@ -1200,7 +1200,7 @@ avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->h
 // avroraCallMethodTimerMark(26);
 					AVRORATRACE_DISABLE();
 // avroraCallMethodTimerMark(27);
-					returnFromMethodFast(methodImpl);
+					returnFromMethodFast(methodImpl, numberOfIntArguments, numberOfRefArguments);
 // avroraCallMethodTimerMark(28);
 					DEBUG_LOG(DBG_RTC, "[rtc] void call returned (void)\n");
 // avroraCallMethodTimerMark(29);
@@ -1212,7 +1212,7 @@ avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->h
 					AVRORATRACE_ENABLE();
 					ret16 = ((native_16bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
 					AVRORATRACE_DISABLE();
-					returnFromMethodFast(methodImpl);
+					returnFromMethodFast(methodImpl, numberOfIntArguments, numberOfRefArguments);
 					pushShort(ret16);
 					DEBUG_LOG(DBG_RTC, "[rtc] 16b call returned %d\n", ret16);
 					break;
@@ -1220,7 +1220,7 @@ avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->h
 					AVRORATRACE_ENABLE();
 					ret32 = ((native_32bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
 					AVRORATRACE_DISABLE();
-					returnFromMethodFast(methodImpl);
+					returnFromMethodFast(methodImpl, numberOfIntArguments, numberOfRefArguments);
 					pushInt(ret32);
 					DEBUG_LOG(DBG_RTC, "[rtc] 32b call returned %ld\n", ret32);
 					break;
@@ -1228,7 +1228,7 @@ avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->h
 					AVRORATRACE_ENABLE();
 					retref = ((native_ref_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
 					AVRORATRACE_DISABLE();
-					returnFromMethodFast(methodImpl);
+					returnFromMethodFast(methodImpl, numberOfIntArguments, numberOfRefArguments);
 					pushRef(retref);
 					DEBUG_LOG(DBG_RTC, "[rtc] ref call returned %p\n", (void*)retref);
 					break;
