@@ -884,8 +884,7 @@ static inline void branch(int16_t offset) {
  * @param frame the callee's frame
  * @param methodImplId the callee's methodimpl entity_id
  */
-static inline void dj_exec_passParameters(dj_frame *frame, dj_global_id methodImplId) {
-	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(methodImplId);
+static inline void dj_exec_passParameters(dj_frame *frame, dj_di_pointer methodImpl) {
 
 	int16_t *newFrameLocalIntegerVariables = dj_frame_getLocalIntegerVariablesFast(frame, methodImpl);
 	ref_t *newFrameLocalReferenceVariables = dj_frame_getLocalReferenceVariablesFast(frame, methodImpl);
@@ -1145,7 +1144,7 @@ avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->h
 
 // avroraCallMethodTimerMark(14);
 
-		dj_exec_passParameters(frame, methodImplId);
+		dj_exec_passParameters(frame, methodImpl);
 
 // avroraCallMethodTimerMark(15);
 
