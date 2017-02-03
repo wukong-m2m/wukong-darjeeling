@@ -30,14 +30,14 @@ type ProfiledInstruction = ProfilerdataXml.Instruction
 let JvmInstructionFromXml (xml : RtcdataXml.JavaInstruction) =
     {
         JvmInstruction.index = xml.Index
-        text = xml.Text
+        text = Uri.UnescapeDataString(xml.Text)
     }
 let AvrInstructionFromXml (xml : RtcdataXml.AvrInstruction) =
     let opcode = Convert.ToInt32((xml.Opcode.Trim()), 16)
     {
         AvrInstruction.address = Convert.ToInt32(xml.Address.Trim(), 16)
         opcode = opcode
-        text = xml.Text
+        text = Uri.UnescapeDataString(xml.Text)
     }
 
 // Input: the optimised avr code, and a list of tuples of unoptimised avr instructions and the jvm instruction that generated them
