@@ -117,8 +117,9 @@ void dj_thread_destroy(dj_thread *thread)
  * @param thread the thread to push the frame onto
  * @param frame the frame to push
  */
-void dj_thread_pushFrame(dj_thread *thread, dj_frame *frame)
+void dj_thread_pushFrame(dj_frame *frame)
 {
+	dj_thread *thread = dj_exec_getCurrentThread();
 	frame->parent = thread->frameStack;
 	thread->frameStack = frame;
 }
@@ -129,8 +130,9 @@ void dj_thread_pushFrame(dj_thread *thread, dj_frame *frame)
  * @param thread the thread to pop a stack frame from
  * @return the popped frame
  */
-dj_frame *dj_thread_popFrame(dj_thread *thread)
+dj_frame *dj_thread_popFrame()
 {
+	dj_thread *thread = dj_exec_getCurrentThread();
 	dj_frame *ret = thread->frameStack;
 	thread->frameStack = thread->frameStack->parent;
 	return ret;

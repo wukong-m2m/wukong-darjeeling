@@ -59,6 +59,8 @@ void createThreadAndRunMethodToFinish(dj_global_id methodImplId);
 bool dj_exec_use_rtc;
 // End Exported for RTC only
 
+extern dj_vm *vm;
+
 void rtc_run_interpreter_if_not_aot_compiled();
 void dj_exec_breakExecution();
 void dj_exec_activate_thread(dj_thread *thread);
@@ -85,7 +87,7 @@ int32_t dj_exec_stackPeekInt();
 ref_t dj_exec_stackPeekRef();
 ref_t dj_exec_stackPeekDeepRef(int depth);
 
-dj_thread *dj_exec_getCurrentThread();
+#define dj_exec_getCurrentThread() (vm->currentThread)
 dj_infusion *dj_exec_getCurrentInfusion();
 
 void dj_exec_setVM(dj_vm *_vm);

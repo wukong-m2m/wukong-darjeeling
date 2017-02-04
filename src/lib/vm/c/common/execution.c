@@ -73,7 +73,7 @@
 #include "opcodes.c"
 
 // currently selected Virtual Machine context
-static dj_vm *vm;
+dj_vm *vm;
 
 // global variables for quick access
 //static dj_thread *currentThread;
@@ -440,13 +440,6 @@ dj_infusion * dj_exec_getCurrentInfusion() {
 	DEBUG_LOG(DBG_DARJEELING, "\tCur. infusion read from %p->%p\n", dj_exec_getCurrentThread(), dj_exec_getCurrentThread()->frameStack);
 #endif
 	return dj_exec_getCurrentThread()->frameStack->method.infusion;
-}
-
-/**
- * Returns the thread that the execution module is currently busy executing.
- */
-dj_thread *dj_exec_getCurrentThread() {
-	return vm->currentThread;
 }
 
 #ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
@@ -929,7 +922,7 @@ static inline void returnFromMethodFast(dj_di_pointer calleeMethodImpl, uint8_t 
 // avroraCallMethodTimerMark(41);
 
 	// pop frame from frame stack and dealloc it
-	dj_frame_destroy(dj_thread_popFrame(dj_exec_getCurrentThread()));
+	dj_frame_destroy(dj_thread_popFrame());
 // avroraCallMethodTimerMark(42);
 
 	// check if there are elements on the call stack
@@ -1162,7 +1155,7 @@ avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->h
 // avroraCallMethodTimerMark(17);
 
 		// push the new frame on the frame stack
-		dj_thread_pushFrame(dj_exec_getCurrentThread(), frame);
+		dj_thread_pushFrame(frame);
 
 // avroraCallMethodTimerMark(18);
 
@@ -1405,7 +1398,7 @@ void dj_exec_throw(dj_object *obj, uint16_t throw_pc)
 		if (!caught)
 		{
 
-			dj_frame_destroy(dj_thread_popFrame(dj_exec_getCurrentThread()));
+			dj_frame_destroy(dj_thread_popFrame());
 
 			// perform context switch
 			if (dj_exec_getCurrentThread()->frameStack != NULL)
