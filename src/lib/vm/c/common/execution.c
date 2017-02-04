@@ -957,6 +957,8 @@ static inline void returnFromMethodFast(dj_di_pointer calleeMethodImpl, uint8_t 
 
 // avroraCallMethodTimerMark(49);
 }
+
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 static inline void returnFromMethod() {
 	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(dj_exec_getCurrentThread()->frameStack->method);
 	uint8_t numberOfIntArguments = dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
@@ -965,6 +967,7 @@ static inline void returnFromMethod() {
 
 	returnFromMethodFast(methodImpl, numberOfIntArguments, numberOfRefArguments);
 }
+#endif
 
 /**
  * Returns true if the current frame belongs to a RTC compiled method.
@@ -1164,7 +1167,9 @@ avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->h
 
 // avroraCallMethodTimerMark(19);
 
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 		if (handler != NULL && dj_exec_use_rtc) {
+#endif
 #ifdef EXECUTION_PRINT_NAT_JAVA_OR_AOT
 			avroraPrintStr("call aot");
 #endif
@@ -1228,11 +1233,13 @@ avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->h
 				default:
 					dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
 			}
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 		} else {
 #ifdef EXECUTION_PRINT_NAT_JAVA_OR_AOT
 			avroraPrintStr("call java");
-#endif			
+#endif // EXECUTION_PRINT_NAT_JAVA_OR_AOT
 		}
+#endif // EXECUTION_DISABLEINTERPRETER_COMPLETELY
 
 	#ifdef DARJEELING_DEBUG_MEM_TRACE
 			vm_mem_dumpMemUsage();
