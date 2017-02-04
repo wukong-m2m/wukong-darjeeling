@@ -1184,24 +1184,18 @@ avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->h
 			uint16_t rtc_statics_start = (uint16_t)methodImplId.infusion->staticReferenceFields; // Will be stored in R2 by the function prologue
 // avroraCallMethodTimerMark(23);
 
-			int16_t ret16;
-			int32_t ret32;
-			ref_t retref;
+			int16_t ret16 = 0;
+			int32_t ret32 = 0;
+			ref_t retref = 0;
 			uint8_t rettype = dj_di_methodImplementation_getReturnType(methodImpl);
 			DEBUG_LOG(DBG_RTC, "[rtc] starting rtc compiled method %i at %p with return type %i\n", methodImplId.entity_id, handler, rettype);
-// avroraCallMethodTimerMark(24);
 			switch (rettype) {
 				case JTID_VOID:
 					AVRORATRACE_ENABLE();
-// avroraCallMethodTimerMark(25);
+// avroraCallMethodTimerMark(24);
 					((native_void_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
-// avroraCallMethodTimerMark(26);
+// avroraCallMethodTimerMark(25);
 					AVRORATRACE_DISABLE();
-// avroraCallMethodTimerMark(27);
-					returnFromMethodFast(methodImpl, numberOfIntArguments, numberOfRefArguments);
-// avroraCallMethodTimerMark(28);
-					DEBUG_LOG(DBG_RTC, "[rtc] void call returned (void)\n");
-// avroraCallMethodTimerMark(29);
 					break;
 				case JTID_BOOLEAN:
 				case JTID_CHAR:
@@ -1210,29 +1204,44 @@ avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->h
 					AVRORATRACE_ENABLE();
 					ret16 = ((native_16bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
 					AVRORATRACE_DISABLE();
-					returnFromMethodFast(methodImpl, numberOfIntArguments, numberOfRefArguments);
-					pushShort(ret16);
-					DEBUG_LOG(DBG_RTC, "[rtc] 16b call returned %d\n", ret16);
 					break;
 				case JTID_INT:
 					AVRORATRACE_ENABLE();
 					ret32 = ((native_32bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
 					AVRORATRACE_DISABLE();
-					returnFromMethodFast(methodImpl, numberOfIntArguments, numberOfRefArguments);
-					pushInt(ret32);
-					DEBUG_LOG(DBG_RTC, "[rtc] 32b call returned %ld\n", ret32);
 					break;
 				case JTID_REF:
 					AVRORATRACE_ENABLE();
 					retref = ((native_ref_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
 					AVRORATRACE_DISABLE();
-					returnFromMethodFast(methodImpl, numberOfIntArguments, numberOfRefArguments);
-					pushRef(retref);
-					DEBUG_LOG(DBG_RTC, "[rtc] ref call returned %p\n", (void*)retref);
 					break;
 				default:
 					dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
 			}
+
+// avroraCallMethodTimerMark(26);
+			returnFromMethodFast(methodImpl, numberOfIntArguments, numberOfRefArguments);
+// avroraCallMethodTimerMark(27);
+
+			switch (rettype) {
+				case JTID_VOID:
+					break;
+				case JTID_BOOLEAN:
+				case JTID_CHAR:
+				case JTID_BYTE:
+				case JTID_SHORT:
+					pushShort(ret16);
+					break;
+				case JTID_INT:
+					pushInt(ret32);
+					break;
+				case JTID_REF:
+					pushRef(retref);
+					break;
+				default:
+					dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
+			}
+// avroraCallMethodTimerMark(28);
 #ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 		} else {
 #ifdef EXECUTION_PRINT_NAT_JAVA_OR_AOT
