@@ -19,8 +19,11 @@ void RTC_INVOKEVIRTUAL_OR_INTERFACE(dj_local_id localId, uint8_t nr_ref_args) {
 
 	DO_INVOKEVIRTUAL(localId, nr_ref_args);
 
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
     // If we called a JVM method, run until it's done.
     rtc_run_interpreter_if_not_aot_compiled();
+#endif
+
     AVRORATRACE_ENABLE();
 }
 
@@ -31,8 +34,11 @@ void RTC_INVOKESPECIAL(dj_local_id localId) {
 	dj_global_id globalId = dj_global_id_resolve(dj_exec_getCurrentInfusion(),  localId);
 	callMethod(globalId, true); // call to callMethod in execution.c
 
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
     // If we called a JVM method, run until it's done.
     rtc_run_interpreter_if_not_aot_compiled();
+#endif
+
     AVRORATRACE_ENABLE();
 }
 
@@ -40,11 +46,16 @@ void RTC_INVOKESTATIC(dj_local_id localId) {
     AVRORATRACE_DISABLE();
     DEBUG_LOG(DBG_RTC, "RTC_INVOKESTATIC %d %d\n", localId.infusion_id, localId.entity_id);
     DEBUG_LOG(DBG_RTC, "RTC_INVOKESTATIC %p %p\n", intStack, refStack);
+
     dj_global_id globalId = dj_global_id_resolve(dj_exec_getCurrentInfusion(),  localId);
+
     callMethod(globalId, false); // call to callMethod in execution.c
 
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
     // If we called a JVM method, run until it's done.
     rtc_run_interpreter_if_not_aot_compiled();
+#endif
+
     AVRORATRACE_ENABLE();
 }
 
