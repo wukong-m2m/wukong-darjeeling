@@ -1266,7 +1266,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             rtc_poppedstackcache_clear_all_callused_valuetags();
             rtc_poppedstackcache_clear_all_reference_valuetags();
 
-            rtc_common_translate_invoke(opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
+            rtc_common_translate_invoke(ts, opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
         break;
         case JVM_NEW:
             rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references();

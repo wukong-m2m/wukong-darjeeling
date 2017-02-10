@@ -22,7 +22,7 @@ ref_t DO_LDS(dj_local_id localStringId) {
 }
 
 
-void DO_INVOKEVIRTUAL(dj_local_id dj_local_id, uint8_t nr_ref_args) {
+void DO_INVOKEVIRTUAL(dj_global_id globalMethodDefId, uint8_t nr_ref_args) {
 	// peek the object on the stack
 	dj_object *object = REF_TO_VOIDP(dj_exec_stackPeekDeepRef(nr_ref_args));
 
@@ -40,12 +40,10 @@ void DO_INVOKEVIRTUAL(dj_local_id dj_local_id, uint8_t nr_ref_args) {
 		return;
 	}
 
-	dj_global_id resolvedMethodDefId = dj_global_id_resolve(dj_exec_getCurrentInfusion(), dj_local_id);
-
 	DEBUG_LOG(DBG_DARJEELING, ">>>>> invokevirtual METHOD DEF %p.%d\n", resolvedMethodDefId.infusion, resolvedMethodDefId.entity_id);
 
 	// lookup the virtual method
-	dj_global_id methodImplId = dj_global_id_lookupVirtualMethod(resolvedMethodDefId, object);
+	dj_global_id methodImplId = dj_global_id_lookupVirtualMethod(globalMethodDefId, object);
 
 	DEBUG_LOG(DBG_DARJEELING, ">>>>> invokevirtual METHOD IMPL %p.%d\n", methodImplId.infusion, methodImplId.entity_id);
 

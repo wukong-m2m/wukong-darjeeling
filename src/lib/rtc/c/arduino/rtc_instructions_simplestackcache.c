@@ -1340,7 +1340,7 @@ void rtc_translate_single_instruction(rtc_translationstate *ts) {
             // clear the stack cache, so all stack elements are in memory, not in registers
             rtc_stackcache_flush_all_regs();
 
-            rtc_common_translate_invoke(opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
+            rtc_common_translate_invoke(ts, opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
         break;
         case JVM_NEW:
             ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)

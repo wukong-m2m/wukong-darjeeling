@@ -3,18 +3,26 @@
 #include "execution.h"
 #include "program_mem.h"
 #include "asm.h"
+#include "rtc.h"
 #include "rtc_complex_instructions.h"
 
-void rtc_common_translate_invoke(uint8_t opcode, uint8_t jvm_operand_byte0, uint8_t jvm_operand_byte1, uint8_t jvm_operand_byte2) {
-    emit_LDI(R24, jvm_operand_byte0); // infusion id
-    emit_LDI(R25, jvm_operand_byte1); // entity id
+void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8_t jvm_operand_byte0, uint8_t jvm_operand_byte1, uint8_t jvm_operand_byte2) {
+    dj_local_id localId;
+    localId.infusion_id = jvm_operand_byte0;
+    localId.entity_id = jvm_operand_byte1;
+
+    dj_global_id globalId = dj_global_id_resolve(ts->infusion,  localId);
 
 #ifdef OPTIMISE_Os_INVOKE
     emit_x_preinvoke();
 
+    emit_LDI(R22, ((uint16_t)globalId.infusion) & 0xFF);
+    emit_LDI(R23, (((uint16_t)globalId.infusion) >> 8) & 0xFF);
+    emit_LDI(R24, globalId.entity_id);
+
     if        (opcode == JVM_INVOKEVIRTUAL
             || opcode == JVM_INVOKEINTERFACE) {
-        emit_LDI(R22, jvm_operand_byte2); // nr_ref_args
+        emit_LDI(R20, jvm_operand_byte2); // nr_ref_args
         emit_x_CALL((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE);
     } else if (opcode == JVM_INVOKESPECIAL) {
         emit_x_CALL((uint16_t)&RTC_INVOKESPECIAL);
@@ -48,9 +56,12 @@ void rtc_common_translate_invoke(uint8_t opcode, uint8_t jvm_operand_byte0, uint
     emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
     emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
 
+    emit_LDI(R22, ((uint16_t)globalId.infusion) & 0xFF);
+    emit_LDI(R23, (((uint16_t)globalId.infusion) >> 8) & 0xFF);
+    emit_LDI(R24, globalId.entity_id);
     if        (opcode == JVM_INVOKEVIRTUAL
             || opcode == JVM_INVOKEINTERFACE) {
-        emit_LDI(R22, jvm_operand_byte2); // nr_ref_args
+        emit_LDI(R20, jvm_operand_byte2); // nr_ref_args
         emit_x_CALL((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE);
     } else if (opcode == JVM_INVOKESPECIAL) {
         emit_x_CALL((uint16_t)&RTC_INVOKESPECIAL);
