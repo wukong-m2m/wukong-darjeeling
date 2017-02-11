@@ -90,8 +90,6 @@ ref_t   __attribute__((section (".refStackSection"))) *refStack;
 ref_t   __attribute__((section (".localReferenceVariablesSection"))) *localReferenceVariables;
 
 
-static ref_t this;
-
 bool dj_exec_use_rtc = true;
 
 static int nrOpcodesLeft;
@@ -196,19 +194,7 @@ static inline void dj_exec_loadLocalStateFast(dj_frame *frame, dj_di_pointer met
 #ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 	localIntegerVariables = dj_frame_getLocalIntegerVariablesFast(frame, methodImpl);
 #endif
-// avroraCallMethodTimerMark(55);
-	if (frame->parent != NULL) {
-		this = nullref;
-// avroraCallMethodTimerMark(56);
-	} else {
-		// Special corner case for the run() method in threads. In this case the method will need to access the implicit
-		// 'this' parameter as run() is a virtual method. Usually parameters are accessed directly from the
-		// caller stack, but since there is no caller frame we copy the 'this' reference from the thread object to a
-		// global variable and wire the callerReferenceStack to point to it. Not very elegant, but it gets the job done.
-		// this = VOIDP_TO_REF(currentThread->runnable);
-		this = VOIDP_TO_REF(dj_exec_getCurrentThread()->runnable);
-// avroraCallMethodTimerMark(57);
-	}
+
 // avroraCallMethodTimerMark(58);
 }
 static inline void dj_exec_loadLocalState(dj_frame *frame) {
@@ -427,7 +413,6 @@ void dj_exec_activate_thread(dj_thread *thread) {
 
 void dj_exec_updatePointers() {
 	vm = dj_mem_getUpdatedPointer(vm);
-	this = dj_mem_getUpdatedReference(this);
 }
 
 /**
