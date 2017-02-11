@@ -193,9 +193,12 @@ const uint16_t PROGMEM emit_x_postinvoke_code[] =
 { asm_const_POP(R18),
   asm_const_POP(R19),
 
+#ifndef EXECUTION_FRAME_ON_STACK
+  // Y is call-saved and won't move if the frame is on the stack
   // Post possible GC: need to reset Y to the start of the stack frame's local references (the frame may have moved, so the old value may not be correct)
   asm_const_opcodeWithSingleRegOperand(OPCODE_LDS, RYL), LOCALREFERENCEVARIABLESADDRESS,   // Load localReferenceVariables into Y
   asm_const_opcodeWithSingleRegOperand(OPCODE_LDS, RYH), LOCALREFERENCEVARIABLESADDRESS+1, // Load localReferenceVariables into Y
+#endif
   // Post possible GC: need to restore X to refStack which may have changed either because of GC or because of passed/returned references
   asm_const_opcodeWithSingleRegOperand(OPCODE_LDS, RXL), REFSTACKADDRESS,   // Load refStack into X
   asm_const_opcodeWithSingleRegOperand(OPCODE_LDS, RXH), REFSTACKADDRESS+1, // Load refStack into X

@@ -60,9 +60,10 @@ static inline void vm_mem_updateSystemReference(heap_chunk *chunk)
 			dj_monitor_block_updatePointers((dj_monitor_block*)dj_mem_getData(chunk));
 			break;
 
-		case CHUNKID_FRAME:
-			dj_frame_updatePointers((dj_frame*)dj_mem_getData(chunk));
-			break;
+		// this is now handled from dj_thread_updatePointers
+		// case CHUNKID_FRAME:
+		// 	dj_frame_updatePointers((dj_frame*)dj_mem_getData(chunk));
+		// 	break;
 
 		default:
 			break;

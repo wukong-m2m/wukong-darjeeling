@@ -80,6 +80,8 @@ void dj_monitor_markRootSet(dj_monitor_block * monitor_block);
 // (note the header now assumes 2 byte pointers, so VMs on larger architectures will need to do some extra work!!!!)
 #define dj_frame_getLocalIntegerVariablesFast(frame, methodImpl)     ((int16_t*)((char*)frame + sizeof(dj_frame) + dj_di_methodImplementation_getOffsetToLocalIntegerVariables((uint16_t)methodImpl)))
 
+#ifndef EXECUTION_FRAME_ON_STACK
 #define dj_frame_destroy(frame) dj_mem_free(frame)
-
 #endif
+
+#endif // __vmthread_h
