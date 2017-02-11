@@ -1088,7 +1088,7 @@ inline dj_global_id dj_vm_getRuntimeClass(dj_vm *vm, runtime_id_t id)
 #ifdef DARJEELING_DEBUG_FRAME
 	dj_exec_debugCurrentFrame();
 #endif
-    dj_panic(DJ_PANIC_ILLEGAL_INTERNAL_STATE);
+    dj_panic(DJ_PANIC_ILLEGAL_INTERNAL_STATE_NO_RUNTIME_CLASS);
 
     // dead code to make compiler happy
     ret.entity_id=255;

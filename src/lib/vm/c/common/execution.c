@@ -417,7 +417,7 @@ void dj_exec_activate_thread(dj_thread *thread) {
 		dj_exec_loadLocalState(thread->frameStack);
 	} else {
 		DEBUG_LOG(DBG_DARJEELING, "Thread frame NULL, cannot activate\n");
-		dj_panic(DJ_PANIC_ILLEGAL_INTERNAL_STATE);
+		dj_panic(DJ_PANIC_ILLEGAL_INTERNAL_STATE_THREAD_FRAME_NULL);
 	}
 #if defined(DARJEELING_DEBUG_FRAME) && 0
 	DARJEELING_PRINTF("%s:%d\n", __FILE__, __LINE__ );

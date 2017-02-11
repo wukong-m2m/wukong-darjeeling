@@ -33,9 +33,6 @@ void dj_panic(int32_t panictype)
         case DJ_PANIC_OUT_OF_MEMORY:
         	DEBUG_LOG(true, "PANIC: out of memory!\n");
             break;
-        case DJ_PANIC_ILLEGAL_INTERNAL_STATE:
-        	DEBUG_LOG(true, "PANIC: illegal internal state!\n");
-            break;
         case DJ_PANIC_UNIMPLEMENTED_FEATURE:
         	DEBUG_LOG(true, "PANIC: unimplemented feature!\n");
             break;
