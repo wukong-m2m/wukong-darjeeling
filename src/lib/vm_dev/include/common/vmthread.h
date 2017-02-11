@@ -42,7 +42,6 @@ enum _dj_threadstatus
 };
 
 
-dj_thread *dj_thread_create_and_run(dj_global_id methodImplId);
 dj_thread *dj_thread_create();
 
 void dj_thread_destroy(dj_thread *thread);
@@ -57,7 +56,6 @@ void dj_thread_markRootSet(dj_thread *thread);
 void dj_frame_updatePointers(dj_frame *frame);
 void dj_thread_updatePointers(dj_thread *thread);
 
-dj_frame *dj_frame_create(dj_global_id methodImpl);
 dj_frame *dj_frame_create_fast(dj_global_id methodImplId, dj_di_pointer methodImpl);
 
 dj_monitor_block * dj_monitor_block_create();
