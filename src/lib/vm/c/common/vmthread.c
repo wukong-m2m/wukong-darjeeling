@@ -101,8 +101,10 @@ void dj_frame_markRootSet(dj_frame *frame)
 	int i;
 	ref_t *stack, *locals;
 
+#ifndef EXECUTION_FRAME_ON_STACK
 	// Mark the frame object as BLACK (don't collect, don't inspect further)
 	dj_mem_setChunkColor(frame, TCM_BLACK);
+#endif
 
 	// Mark every object on the reference stack
 	stack = dj_frame_getReferenceStackBase(frame);
@@ -128,6 +130,7 @@ void dj_frame_updatePointers(dj_frame * frame)
 	for (i=0; i<nr_ref_stack; i++)
 		stack[i] = dj_mem_getUpdatedReference(stack[i]);
 
+#ifndef EXECUTION_FRAME_ON_STACK
 	// Update the saved refStack and intStack pointers
 	// (note that intStack may point to the real stack or the reference stack, depending on if this method is rtc compiled or not)
 	// DEBUG_LOG(DBG_DARJEELING, "dj_frame_updatePointers before frame %p ref %p int %p shift %d\n", frame, frame->saved_refStack, frame->saved_intStack, frame_shift);
@@ -138,6 +141,8 @@ void dj_frame_updatePointers(dj_frame * frame)
 		frame->saved_intStack = (int16_t *)(((void *)frame->saved_intStack) - frame_shift);
 	}
 	// DEBUG_LOG(DBG_DARJEELING, "dj_frame_updatePointers after  frame %p ref %p int %p\n", frame, frame->saved_refStack, frame->saved_intStack);
+	frame->parent = dj_mem_getUpdatedPointer(frame->parent);
+#endif
 
 	// Update the local variables
 	locals = dj_frame_getLocalReferenceVariables(frame);
@@ -147,9 +152,6 @@ void dj_frame_updatePointers(dj_frame * frame)
 	// update pointers to the infusion and parent frame
 	// NOTE these have to be updated AFTER the stack and local variable frame
 	frame->method.infusion = dj_mem_getUpdatedPointer(frame->method.infusion);
-	DEBUG_LOG(DBG_DARJEELING, "parent changed: %p to %p\n", frame->parent, dj_mem_getUpdatedPointer(frame->parent));
-	frame->parent = dj_mem_getUpdatedPointer(frame->parent);
-
 }
 
 void dj_thread_markRootSet(dj_thread *thread)
@@ -176,10 +178,23 @@ void dj_thread_markRootSet(dj_thread *thread)
 
 void dj_thread_updatePointers(dj_thread * thread)
 {
+	// mark each of the frames
+	dj_frame *frame = thread->frameStack;
+	dj_frame *next_frame;
+	while (frame!=NULL)
+	{
+		next_frame = frame->parent; // save this since it might change after updating the pointers (only if the frames are on the heap)
+		dj_frame_updatePointers(frame);
+		frame = next_frame;
+	}
+
+#ifndef EXECUTION_FRAME_ON_STACK
 	thread->frameStack = dj_mem_getUpdatedPointer(thread->frameStack);
+#endif
 	thread->monitorObject = dj_mem_getUpdatedPointer(thread->monitorObject);
 	thread->next = dj_mem_getUpdatedPointer(thread->next);
 	thread->runnable = dj_mem_getUpdatedPointer(thread->runnable);
+
 }
 
 
@@ -204,6 +219,7 @@ void dj_thread_wait(dj_thread * thread, dj_object * object, dj_time_t time)
 }
 
 
+#ifndef EXECUTION_FRAME_ON_STACK
 /**
  * Creates a new dj_frame object for a given method implementation.
  * @param methodImplId the method implementation this frame will be executing
@@ -286,6 +302,7 @@ dj_frame *dj_frame_create_fast(dj_global_id methodImplId, dj_di_pointer methodIm
 
 	return ret;
 }
+#endif // ifndef EXECUTION_FRAME_ON_STACK
 
 /**
  * Creates a new monitor block.
