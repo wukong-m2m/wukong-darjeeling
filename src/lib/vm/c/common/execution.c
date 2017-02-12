@@ -192,10 +192,10 @@ static inline void dj_exec_loadLocalStateFast(dj_frame *frame, dj_di_pointer met
 	refStack = frame->saved_refStack;
 
 // avroraCallMethodTimerMark(53);
-	localReferenceVariables = dj_frame_getLocalReferenceVariablesFast(frame, methodImpl);
+	localReferenceVariables = dj_frame_getLocalReferenceVariables(frame, methodImpl);
 // avroraCallMethodTimerMark(54);
 #ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
-	localIntegerVariables = dj_frame_getLocalIntegerVariablesFast(frame, methodImpl);
+	localIntegerVariables = dj_frame_getLocalIntegerVariables(frame, methodImpl);
 #endif
 
 // avroraCallMethodTimerMark(58);
@@ -282,10 +282,10 @@ void dj_exec_dumpFrame( dj_frame *frame ) {
 		DARJEELING_PRINTF(" Frame total size is %d bytes, so frame ends at %p.\n", size, ( ((void *)frame)+size) );
 
 		dj_exec_debugInt16(" local int variables ",
-							dj_frame_getLocalIntegerVariablesFast(frame, methodImpl),
+							dj_frame_getLocalIntegerVariables(frame, methodImpl),
 							numLocalInts, -1);
 		dj_exec_debugRef(  " local ref. variables",
-							dj_frame_getLocalReferenceVariablesFast(frame, methodImpl),
+							dj_frame_getLocalReferenceVariables(frame, methodImpl),
 							numLocalRefs, 1);
 
 		numIntParams
@@ -629,7 +629,7 @@ static inline ref_t peekDeepRef(int depth) {
 }
 
 uint16_t dj_exec_getNumberOfObjectsOnReferenceStack(dj_frame * frame) {
-	return frame->saved_refStack - dj_frame_getReferenceStackBase(frame);	
+	return frame->saved_refStack - dj_frame_getReferenceStackBase(frame, dj_global_id_getMethodImplementation(frame->method));	
 }
 
 /**
@@ -866,8 +866,8 @@ static inline void branch(int16_t offset) {
  * @param methodImplId the callee's methodimpl entity_id
  */
 static inline void dj_exec_passParameters(dj_frame *frame, dj_di_pointer methodImpl, uint8_t numberOfIntArguments, uint8_t numberOfRefArguments) {
-	int16_t *newFrameLocalIntegerVariables = dj_frame_getLocalIntegerVariablesFast(frame, methodImpl);
-	ref_t *newFrameLocalReferenceVariables = dj_frame_getLocalReferenceVariablesFast(frame, methodImpl);
+	int16_t *newFrameLocalIntegerVariables = dj_frame_getLocalIntegerVariables(frame, methodImpl);
+	ref_t *newFrameLocalReferenceVariables = dj_frame_getLocalReferenceVariables(frame, methodImpl);
 
 	DEBUG_LOG(DBG_DARJEELING, " refs %d ints %d\n", numberOfRefArguments, numberOfIntArguments);
 	DEBUG_LOG(DBG_DARJEELING, " intStack %p, refStack %p\n", intStack, refStack);
@@ -890,12 +890,12 @@ static inline void dj_exec_passParameters(dj_frame *frame, dj_di_pointer methodI
  * frames to execute, the thread ends. Otherwise control is switched to the underlying caller frame.
  */
 static inline void returnFromMethodFast(dj_di_pointer calleeMethodImpl, uint8_t numberOfIntArguments, uint8_t numberOfRefArguments) {
-	// Mark 41 at 62 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 42 at 78 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 41 at 0 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 42 at 30 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 45 at 17 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 46 at 114 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 47 at 39 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 48 at 24 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 46 at 97 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 47 at 12 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	// Mark 48 at 10 cycles since last mark. (already deducted 5 cycles for timer overhead)
 
 #ifdef EXECUTION_PRINT_CALLS_AND_RETURNS
 	avroraRTCRuntimeMethodCallReturn();
@@ -903,11 +903,11 @@ static inline void returnFromMethodFast(dj_di_pointer calleeMethodImpl, uint8_t 
 // dj_di_pointer calleeMethodImpl;
 
 
-// avroraCallMethodTimerMark(40);
+avroraCallMethodTimerMark(40);
 	// get the method from the stack frame so we can calculate how many parameters to pop off the operand stack
 	// calleeMethodImpl = dj_global_id_getMethodImplementation(
 	// 		dj_exec_getCurrentThread()->frameStack->method);
-// avroraCallMethodTimerMark(41);
+avroraCallMethodTimerMark(41);
 
 #ifdef EXECUTION_FRAME_ON_STACK
 	dj_thread_popFrame();
@@ -916,28 +916,28 @@ static inline void returnFromMethodFast(dj_di_pointer calleeMethodImpl, uint8_t 
 	dj_frame_destroy(dj_thread_popFrame());
 #endif // EXECUTION_FRAME_ON_STACK
 
-// avroraCallMethodTimerMark(42);
+avroraCallMethodTimerMark(42);
 
 	// check if there are elements on the call stack
 	if (dj_exec_getCurrentThread()->frameStack == NULL) {
-// avroraCallMethodTimerMark(43);
+avroraCallMethodTimerMark(43);
 		// done executing (exited last element on the call stack)
 		dj_exec_getCurrentThread()->status = THREADSTATUS_FINISHED;
 		dj_exec_breakExecution();
-// avroraCallMethodTimerMark(44);
+avroraCallMethodTimerMark(44);
 	} else {
 		// perform context switch.
-// avroraCallMethodTimerMark(45);
+avroraCallMethodTimerMark(45);
 		// dj_exec_activate_thread(dj_exec_getCurrentThread()); This just ends up setting vm->currentThread to the value it already has, and then calling dj_exec_loadLocalState... Just call it directly.
 		dj_exec_loadLocalState(dj_exec_getCurrentThread()->frameStack);
 
-// avroraCallMethodTimerMark(46);
+avroraCallMethodTimerMark(46);
 		// pop arguments off the stack
 		refStack -= numberOfRefArguments;
 
-// avroraCallMethodTimerMark(47);
+avroraCallMethodTimerMark(47);
 		intStack += numberOfIntArguments;
-// avroraCallMethodTimerMark(48);
+avroraCallMethodTimerMark(48);
 	}
 
 #ifdef DARJEELING_DEBUG_TRACE
@@ -1012,7 +1012,7 @@ void callMethod(dj_global_id methodImplId, int virtualCall)
 #ifdef EXECUTION_PRINT_CALLS_AND_RETURNS
 avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
 #endif
-avroraCallMethodTimerMark(10);
+// avroraCallMethodTimerMark(10);
 	bool isReturnReference=false;
 	int oldNumRefStack, numRefStack;
 	int diffRefArgs;
@@ -1053,7 +1053,7 @@ avroraCallMethodTimerMark(10);
 #endif
 			// Observe the number of reference elements on the ref. stack:
 			dj_frame *frame = dj_exec_getCurrentFrame();
-			oldNumRefStack = refStack - dj_frame_getReferenceStackBaseFast(frame, methodImpl);
+			oldNumRefStack = refStack - dj_frame_getReferenceStackBase(frame, methodImpl);
 
 			// execute the method by calling the infusion's native handler
 			handler();
@@ -1070,7 +1070,7 @@ avroraCallMethodTimerMark(10);
 
 			// Again, compute number of reference elements on the ref. stack:
 			frame = dj_exec_getCurrentFrame();
-			numRefStack = refStack - dj_frame_getReferenceStackBaseFast(frame, methodImpl);
+			numRefStack = refStack - dj_frame_getReferenceStackBase(frame, methodImpl);
 			diffRefArgs = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl) - (oldNumRefStack - numRefStack);
 
 			if(dj_di_methodImplementation_getReturnType(methodImpl)==JTID_REF) {
@@ -1138,9 +1138,9 @@ avroraCallMethodTimerMark(10);
 		// init the frame
 		frame->method = methodImplId;
 		frame->parent = NULL;
-		frame->saved_refStack = dj_frame_getReferenceStackBaseFast(frame, methodImpl); // initial saved_refStack (nothing on the stack)
+		frame->saved_refStack = dj_frame_getReferenceStackBase(frame, methodImpl); // initial saved_refStack (nothing on the stack)
 		// set local variables to 0/null
-		// memset(dj_frame_getLocalReferenceVariablesFast(frame, methodImpl), 0, localVariablesSize);
+		// memset(dj_frame_getLocalReferenceVariables(frame, methodImpl), 0, localVariablesSize);
 		void * start = ((void*)frame) + sizeof(dj_frame) + dj_di_methodImplementation_getMaxStack(methodImpl) * sizeof(int16_t);
 		void * end = ((void*)frame) + size;
 		memset(start, 0, end-start);
@@ -1189,9 +1189,9 @@ avroraCallMethodTimerMark(10);
 			// execute it directly
 
 // avroraCallMethodTimerMark(20);
-			uint16_t rtc_frame_locals_start = (uint16_t)dj_frame_getLocalReferenceVariablesFast(frame, methodImpl); // Will be stored in Y by the function prologue
+			uint16_t rtc_frame_locals_start = (uint16_t)dj_frame_getLocalReferenceVariables(frame, methodImpl); // Will be stored in Y by the function prologue
 // avroraCallMethodTimerMark(21);
-			uint16_t rtc_ref_stack_start = (uint16_t)dj_frame_getReferenceStackBaseFast(frame, methodImpl); // Will be stored in X by the function prologue
+			uint16_t rtc_ref_stack_start = (uint16_t)dj_frame_getReferenceStackBase(frame, methodImpl); // Will be stored in X by the function prologue
 // avroraCallMethodTimerMark(22);
 			uint16_t rtc_statics_start = (uint16_t)methodImplId.infusion->staticReferenceFields; // Will be stored in R2 by the function prologue
 // avroraCallMethodTimerMark(23);
@@ -1274,7 +1274,7 @@ avroraCallMethodTimerMark(10);
 			DEBUG_LOG(DBG_DARJEELING, "Invoke done\n");
 	#endif
 	}
-avroraCallMethodTimerMark(30);
+// avroraCallMethodTimerMark(30);
 }
 
 void createThreadAndRunMethodToFinish(dj_global_id methodImplId) {
@@ -1414,8 +1414,8 @@ void dj_exec_throw(dj_object *obj, uint16_t throw_pc)
 
 				// TODO is this correct?
 				// pop all operands from the integer and reference stacks
-				intStack = (int16_t*) dj_frame_getIntegerStackBase(dj_exec_getCurrentThread()->frameStack);
-				refStack = (ref_t*) dj_frame_getReferenceStackBase(dj_exec_getCurrentThread()->frameStack);
+				intStack = (int16_t*) dj_frame_getIntegerStackBase(dj_exec_getCurrentThread()->frameStack, dj_global_id_getMethodImplementation(dj_exec_getCurrentThread()->frameStack->method));
+				refStack = (ref_t*) dj_frame_getReferenceStackBase(dj_exec_getCurrentThread()->frameStack, dj_global_id_getMethodImplementation(dj_exec_getCurrentThread()->frameStack->method));
 
 				pushRef(VOIDP_TO_REF(obj));
 				caught = 1;
@@ -1425,9 +1425,11 @@ void dj_exec_throw(dj_object *obj, uint16_t throw_pc)
 		// if not caught, destroy the current frame and go into the next on the stack
 		if (!caught)
 		{
-
+#ifdef EXECUTION_FRAME_ON_STACK
+			dj_thread_popFrame();
+#else
 			dj_frame_destroy(dj_thread_popFrame());
-
+#endif
 			// perform context switch
 			if (dj_exec_getCurrentThread()->frameStack != NULL)
 				dj_exec_activate_thread(dj_exec_getCurrentThread());

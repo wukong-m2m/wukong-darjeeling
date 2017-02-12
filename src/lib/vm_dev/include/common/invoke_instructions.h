@@ -118,7 +118,7 @@ static inline void INVOKEVIRTUAL()
 	// fetch the number of arguments for the method.
 	uint8_t nr_ref_args = fetch();
 
-	DO_INVOKEVIRTUAL(dj_local_id, nr_ref_args);
+	DO_INVOKEVIRTUAL(dj_global_id_resolve(dj_exec_getCurrentInfusion(),  dj_local_id), nr_ref_args);
 }
 
 static inline void INVOKEINTERFACE()

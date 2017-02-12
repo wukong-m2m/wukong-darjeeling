@@ -107,13 +107,13 @@ void dj_frame_markRootSet(dj_frame *frame)
 #endif
 
 	// Mark every object on the reference stack
-	stack = dj_frame_getReferenceStackBase(frame);
+	stack = dj_frame_getReferenceStackBase(frame, dj_global_id_getMethodImplementation(frame->method));
 	uint16_t nr_ref_stack = dj_exec_getNumberOfObjectsOnReferenceStack(frame);
 	for (i=0; i<nr_ref_stack; i++)
 		dj_mem_setRefGrayIfWhite(stack[i]);
 
 	// Mark every object in the local variables
-	locals = dj_frame_getLocalReferenceVariables(frame);
+	locals = dj_frame_getLocalReferenceVariables(frame, dj_global_id_getMethodImplementation(frame->method));
 	for (i=0; i<dj_di_methodImplementation_getReferenceLocalVariableCount(dj_global_id_getMethodImplementation(frame->method)); i++)
 		dj_mem_setRefGrayIfWhite(locals[i]);
 
@@ -124,8 +124,10 @@ void dj_frame_updatePointers(dj_frame * frame)
 	int i;
 	ref_t *stack, *locals;
 
+	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(frame->method);
+
 	// Update references on the reference stack
-	stack = dj_frame_getReferenceStackBase(frame);
+	stack = dj_frame_getReferenceStackBase(frame, methodImpl);
 	uint16_t nr_ref_stack = dj_exec_getNumberOfObjectsOnReferenceStack(frame);
 	for (i=0; i<nr_ref_stack; i++)
 		stack[i] = dj_mem_getUpdatedReference(stack[i]);
@@ -145,8 +147,8 @@ void dj_frame_updatePointers(dj_frame * frame)
 #endif
 
 	// Update the local variables
-	locals = dj_frame_getLocalReferenceVariables(frame);
-	for (i=0; i<dj_di_methodImplementation_getReferenceLocalVariableCount(dj_global_id_getMethodImplementation(frame->method)); i++)
+	locals = dj_frame_getLocalReferenceVariables(frame, methodImpl);
+	for (i=0; i<dj_di_methodImplementation_getReferenceLocalVariableCount(methodImpl); i++)
 		locals[i] = dj_mem_getUpdatedReference(locals[i]);
 
 	// update pointers to the infusion and parent frame
@@ -282,13 +284,13 @@ dj_frame *dj_frame_create_fast(dj_global_id methodImplId, dj_di_pointer methodIm
 		ret->parent = NULL;
 #ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 		ret->pc = 0;
-		ret->saved_intStack = dj_frame_getIntegerStackBaseFast(ret, methodImpl);
+		ret->saved_intStack = dj_frame_getIntegerStackBase(ret, methodImpl);
 #endif
-		ret->saved_refStack = dj_frame_getReferenceStackBaseFast(ret, methodImpl);
+		ret->saved_refStack = dj_frame_getReferenceStackBase(ret, methodImpl);
 
 // avroraCallMethodTimerMark(96);
 		// set local variables to 0/null
-		// memset(dj_frame_getLocalReferenceVariablesFast(ret, methodImpl), 0, localVariablesSize);
+		// memset(dj_frame_getLocalReferenceVariables(ret, methodImpl), 0, localVariablesSize);
 		void * start = ((void*)ret) + sizeof(dj_frame) + dj_di_methodImplementation_getMaxStack(methodImpl) * sizeof(int16_t);
 		void * end = ((void*)ret) + size;
 		memset(start, 0, end-start);
