@@ -62,17 +62,19 @@ dj_monitor_block * dj_monitor_block_create();
 void dj_monitor_block_updatePointers(dj_monitor_block * monitor_block);
 void dj_monitor_markRootSet(dj_monitor_block * monitor_block);
 
-#define dj_frame_stackStartOffset(methodImpl)                    (0)
-#define dj_frame_stackEndOffset(methodImpl)                      (sizeof(int16_t) * dj_di_methodImplementation_getMaxStack(methodImpl))
+// +2 because the stack should start AFTER the first (= highest) int variable
+#define dj_frame_stackStartOffset(methodImpl)                    (2*dj_di_methodImplementation_getNumberOfVariableSlots((uint16_t)methodImpl) + 2)
+#define dj_frame_stackEndOffset(methodImpl)                      (dj_frame_stackStartOffset(methodImpl) + sizeof(int16_t) * dj_di_methodImplementation_getMaxStack(methodImpl))
 #define dj_frame_getStackStart(frame, methodImpl)				 ((void*)((uint16_t)frame + sizeof(dj_frame) + (uint16_t)dj_frame_stackStartOffset(methodImpl)))
 #define dj_frame_getStackEnd(frame, methodImpl)                  ((void*)((uint16_t)frame + sizeof(dj_frame) + (uint16_t)dj_frame_stackEndOffset(methodImpl)))
 
 #define dj_frame_getReferenceStackBase(frame, methodImpl)        ((ref_t*)(dj_frame_getStackStart(frame, methodImpl)))
 #define dj_frame_getIntegerStackBase(frame, methodImpl)          ((int16_t*)(dj_frame_getStackEnd(frame, methodImpl) - sizeof(int16_t)))
 
-#define dj_frame_getLocalReferenceVariables(frame, methodImpl)   ((ref_t*)((char*)frame + sizeof(dj_frame) + dj_frame_stackEndOffset(methodImpl)))
+#define dj_frame_getLocalReferenceVariables(frame)               ((ref_t*)((char*)frame + sizeof(dj_frame)))
 // (note the header now assumes 2 byte pointers, so VMs on larger architectures will need to do some extra work!!!!)
-#define dj_frame_getLocalIntegerVariables(frame, methodImpl)     ((int16_t*)((char*)frame + sizeof(dj_frame) + dj_di_methodImplementation_getOffsetToLocalIntegerVariables((uint16_t)methodImpl)))
+#define dj_frame_getLocalIntegerVariables(frame, methodImpl)     ((int16_t*)((char*)frame + sizeof(dj_frame) + 2*(dj_di_methodImplementation_getNumberOfVariableSlots((uint16_t)methodImpl)-1)))
+#define dj_frame_size(methodImpl)                                (sizeof(dj_frame) + 2*dj_di_methodImplementation_getNumberOfVariableSlots((uint16_t)methodImpl) +  2*dj_di_methodImplementation_getMaxStack(methodImpl))
 
 #ifndef EXECUTION_FRAME_ON_STACK
 #define dj_frame_destroy(frame) dj_mem_free(frame)

@@ -229,7 +229,7 @@ public class DIWriterVisitor extends DescendingVisitor
 													// + (sizeof(ref_t) * dj_di_methodImplementation_getReferenceLocalVariableCount(methodImpl)) \
 													// + (sizeof(int16_t) * (dj_di_methodImplementation_getIntegerLocalVariableCount(methodImpl)-1))
 			// (note the header now assumes 2 byte pointers, so VMs on larger architectures will need to do some extra work!)
-			out.writeUINT16(2 * (element.getMaxStack() + element.getReferenceLocalVariableCount() + element.getIntegerLocalVariableCount()-1));
+			out.writeUINT8(element.getReferenceLocalVariableCount() + element.getIntegerLocalVariableCount());
 
 			// write code block
 			if (element.getCode()==null)

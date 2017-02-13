@@ -113,7 +113,7 @@ void dj_frame_markRootSet(dj_frame *frame)
 		dj_mem_setRefGrayIfWhite(stack[i]);
 
 	// Mark every object in the local variables
-	locals = dj_frame_getLocalReferenceVariables(frame, dj_global_id_getMethodImplementation(frame->method));
+	locals = dj_frame_getLocalReferenceVariables(frame);
 	for (i=0; i<dj_di_methodImplementation_getReferenceLocalVariableCount(dj_global_id_getMethodImplementation(frame->method)); i++)
 		dj_mem_setRefGrayIfWhite(locals[i]);
 
@@ -147,7 +147,7 @@ void dj_frame_updatePointers(dj_frame * frame)
 #endif
 
 	// Update the local variables
-	locals = dj_frame_getLocalReferenceVariables(frame, methodImpl);
+	locals = dj_frame_getLocalReferenceVariables(frame);
 	for (i=0; i<dj_di_methodImplementation_getReferenceLocalVariableCount(methodImpl); i++)
 		locals[i] = dj_mem_getUpdatedReference(locals[i]);
 
@@ -260,8 +260,7 @@ dj_frame *dj_frame_create_fast(dj_global_id methodImplId, dj_di_pointer methodIm
 	// 	localVariablesSize
 	// 	;
 	// Note that integer variables 'grow' down in the stack frame, so dj_di_methodImplementation_getOffsetToLocalIntegerVariables is also the size of the frame, -2 because the address of the 'first' int variable is 2 lower than the size of the frame (since slots are 16-bit).
-	int size = sizeof(dj_frame)
-				+ dj_di_methodImplementation_getOffsetToLocalIntegerVariables(methodImpl) + 2;
+	int size = dj_frame_size(methodImpl);
 
 // avroraCallMethodTimerMark(93);
 
@@ -290,9 +289,9 @@ dj_frame *dj_frame_create_fast(dj_global_id methodImplId, dj_di_pointer methodIm
 
 // avroraCallMethodTimerMark(96);
 		// set local variables to 0/null
-		// memset(dj_frame_getLocalReferenceVariables(ret, methodImpl), 0, localVariablesSize);
-		void * start = ((void*)ret) + sizeof(dj_frame) + dj_di_methodImplementation_getMaxStack(methodImpl) * sizeof(int16_t);
-		void * end = ((void*)ret) + size;
+		// memset(dj_frame_getLocalReferenceVariables(ret), 0, localVariablesSize);
+		void * start = ((void*)ret) + sizeof(dj_frame);
+		void * end = ret->saved_refStack;
 		memset(start, 0, end-start);
 
 // avroraCallMethodTimerMark(97);

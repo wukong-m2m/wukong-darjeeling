@@ -3,17 +3,8 @@ GCC calling convention
 Call used:  r0, r18-r25, r26:r27 (X), r30:r31 (Z)
 Call saved: r1, r2-r17, r28:r29 (Y)
 
-          
 
                              DVM stack frame layout         offset
-                             +---------------------------+
-                             |              int1 16b     | stackLocalIntegerOffset
-                             | local ints   int2 32b,msb |      ^
-                             |              int2 32b,lsb |      | getReferenceLocalVariableCount*sizeof(ref_t)
-                             +---------------------------+      | + (getIntegerLocalVariableCount-1)*sizeof(int16_t)
-                             |                           |      |
-                             | local refs   ref2         |      v
-                             |              ref1         | getLocalRefVariables, stackEndOffset, localReferenceVariables, Y
                              +---------------------------+
        integerStackBase      |  int1 16b   |             |
                              |  int2 32msb |             |
@@ -26,6 +17,14 @@ Call saved: r1, r2-r17, r28:r29 (Y)
                              |  ref3       |             |
                              |  ref2       |             |
      referenceStackBase      |  ref1       |             | sizeof(dj_frame), stackStartOffset
+                             +---------------------------+
+                             |              int1 16b     | stackLocalIntegerOffset
+                             | local ints   int2 32b,msb |      ^
+                             |              int2 32b,lsb |      | getReferenceLocalVariableCount*sizeof(ref_t)
+                             +---------------------------+      | + (getIntegerLocalVariableCount-1)*sizeof(int16_t)
+                             |                           |      |
+                             | local refs   ref2         |      v
+                             |              ref1         | getLocalRefVariables, stackEndOffset, localReferenceVariables, Y
                              +---------------------------+
                              | uint8_t nr_ref_stack      |
                              +---------------------------+
