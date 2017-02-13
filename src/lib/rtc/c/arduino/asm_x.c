@@ -173,10 +173,8 @@ const uint16_t PROGMEM emit_x_preinvoke_code[] =
   //       and if so, if the size of the return type is larger than the integers passed. Then only
   //       reserve the space that's needed.
   //       This is for the worst case, where no ints are passed, so there's no space reserved, and
-  //       a 64 bit long is returned.
+  //       a 32 bit long is returned.
   asm_const_RCALL(0), // RCALL to offset 0 does nothing, except reserving 2 bytes on the stack. cheaper than two useless pushes.
-  asm_const_RCALL(0),
-  asm_const_RCALL(0),
   asm_const_RCALL(0),
   // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
   asm_const_opcodeWithSingleRegOperand(OPCODE_STS, RXL), REFSTACKADDRESS,
