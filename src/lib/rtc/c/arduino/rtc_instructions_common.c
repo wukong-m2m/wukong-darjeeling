@@ -23,11 +23,11 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
     if        (opcode == JVM_INVOKEVIRTUAL
             || opcode == JVM_INVOKEINTERFACE) {
         emit_LDI(R20, jvm_operand_byte2); // nr_ref_args
-        emit_x_CALL((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE);
+        emit_2_CALL((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE);
     } else if (opcode == JVM_INVOKESPECIAL) {
-        emit_x_CALL((uint16_t)&RTC_INVOKESPECIAL);
+        emit_2_CALL((uint16_t)&RTC_INVOKESPECIAL);
     } else if (opcode == JVM_INVOKESTATIC) {
-        emit_x_CALL((uint16_t)&RTC_INVOKESTATIC);
+        emit_2_CALL((uint16_t)&RTC_INVOKESTATIC);
     }
 
     emit_x_postinvoke();
