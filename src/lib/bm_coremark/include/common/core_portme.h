@@ -15,6 +15,10 @@
 /* Configuration : HAS_FLOAT 
 	Define to 1 if the platform supports floating point.
 */
+
+// NR 20170215 should be supplied on command line in normal Core Mark
+#define ITERATIONS 10
+
 #ifndef HAS_FLOAT 
 #define HAS_FLOAT 0
 #endif

@@ -86,11 +86,11 @@ char *mem_name[3] = {"Static","Heap","Stack"};
 */
 
 #if MAIN_HAS_NOARGC
-MAIN_RETURN_TYPE main(void) {
+MAIN_RETURN_TYPE core_mark_main(void) {
 	int argc=0;
 	char *argv[1];
 #else
-MAIN_RETURN_TYPE main(int argc, char *argv[]) {
+MAIN_RETURN_TYPE core_mark_main(int argc, char *argv[]) {
 #endif
 	ee_u16 i,j=0,num_algorithms=0;
 	ee_s16 known_id=-1,total_errors=0;
@@ -291,9 +291,9 @@ MAIN_RETURN_TYPE main(int argc, char *argv[]) {
 	if (time_in_secs(total_time) > 0)
 		ee_printf("Iterations/Sec   : %f\n",default_num_contexts*results[0].iterations/time_in_secs(total_time));
 #else 
-	ee_printf("Total time (secs): %d\n",time_in_secs(total_time));
+	ee_printf("Total time (secs): %lu\n",time_in_secs(total_time));
 	if (time_in_secs(total_time) > 0)
-		ee_printf("Iterations/Sec   : %d\n",default_num_contexts*results[0].iterations/time_in_secs(total_time));
+		ee_printf("Iterations/Sec   : %lu\n",default_num_contexts*results[0].iterations/time_in_secs(total_time));
 #endif
 	if (time_in_secs(total_time) < 10) {
 		ee_printf("ERROR! Must execute for at least 10 secs for a valid result!\n");
@@ -302,7 +302,7 @@ MAIN_RETURN_TYPE main(int argc, char *argv[]) {
 
 	ee_printf("Iterations       : %lu\n",(ee_u32)default_num_contexts*results[0].iterations);
 	ee_printf("Compiler version : %s\n",COMPILER_VERSION);
-	ee_printf("Compiler flags   : %s\n",COMPILER_FLAGS);
+	// ee_printf("Compiler flags   : %s\n",COMPILER_FLAGS);
 #if (MULTITHREAD>1)
 	ee_printf("Parallel %s : %d\n",PARALLEL_METHOD,default_num_contexts);
 #endif
