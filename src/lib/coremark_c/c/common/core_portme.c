@@ -38,12 +38,10 @@
 	If there are issues with the return value overflowing, increase this value.
 	*/
 
-// TODO: implement this when we port to Darjeeling
-#define _CLOCKS_PER_SEC_ 1
-clock_t clock() { return 0; }
-
+dj_time_t clock() { return dj_timer_getTimeMillis(); }
+#define CLOCKS_PER_SEC 1000
 #define NSECS_PER_SEC CLOCKS_PER_SEC
-#define CORETIMETYPE clock_t 
+#define CORETIMETYPE dj_time_t 
 #define GETMYTIME(_t) (*_t=clock())
 #define MYTIMEDIFF(fin,ini) ((fin)-(ini))
 #define TIMER_RES_DIVIDER 1

@@ -27,7 +27,6 @@
 #include <stdint.h>
 
 // platform-specific header files
-#include "config.h"
 #include "program_mem.h"
 #include "pointerwidth.h"
 

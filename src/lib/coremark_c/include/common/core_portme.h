@@ -1,5 +1,8 @@
 /* File : core_portme.h */
 
+// Darjeeling headers
+#include "config.h"
+
 /*
 	Author : Shay Gal-On, EEMBC
 	Legal : TODO!
@@ -52,8 +55,11 @@
 /* Configuration : CORE_TICKS
 	Define type of return from the timing functions.
  */
-#include <time.h>
-typedef clock_t CORE_TICKS;
+// #include <time.h>
+// include <
+// dj_timer_getTimeMillis
+
+typedef dj_time_t CORE_TICKS;
 
 /* Definitions : COMPILER_VERSION, COMPILER_FLAGS, MEM_LOCATION
 	Initialize these strings per platform

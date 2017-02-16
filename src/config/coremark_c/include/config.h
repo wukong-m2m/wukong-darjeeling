@@ -25,6 +25,8 @@
 
 #define AVRORA
 #include <stdint.h>
+#include "types.h"
+#include "djtimer.h"
 #include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraTrace.h"
 #include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraPrint.h"
 #include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraTimer.h"
