@@ -1,0 +1,5 @@
+djlibsource {
+    coremark_c {
+        cDependencies = []
+    }
+}

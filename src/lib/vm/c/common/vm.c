@@ -103,6 +103,9 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 			if ((entryPoint.entity_id=dj_di_header_getEntryPoint(infusion->header))!=255)
 			{
 				entryPoint.infusion = infusion;
+				avroraPrintStr("Free mem:");
+				dj_mem_gc();
+				avroraPrintUInt16(dj_mem_getFree());
 				avroraPrintStr("DJ Go!\n\r");
 				createThreadAndRunMethodToFinish(entryPoint);
 			}

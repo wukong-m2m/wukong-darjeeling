@@ -1,0 +1,9 @@
+djConfig {
+	platform = 'arduino.avrora'
+	libraries = ['coremark_c']
+	app = 'emptyapp'
+	appArchiveSize = 4096
+}
+
+project.tasks.createAppArchive.addPart("${project.project.rootDir}/app/emptyapp/empty", 10, null)
+project.tasks.createLibArchive.addPart("${project.project.rootDir}/app/emptyapp/empty", 10, null)
