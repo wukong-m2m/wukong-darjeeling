@@ -2,6 +2,8 @@
 #define RTC_H
 
 #include "types.h"
+#include "config.h"
+
 #define RTC_START_OF_COMPILED_CODE_SPACE ((GET_FAR_ADDRESS(rtc_start_of_compiled_code_marker) >= 65536) ? GET_FAR_ADDRESS(rtc_start_of_compiled_code_marker) : 65536)
 #define RTC_END_OF_COMPILED_CODE_SPACE ((uint32_t)122880)
 

@@ -1,15 +1,14 @@
 #include <stdint.h>
 #include "darjeeling3.h"
+#include "config.h"
 
 // Split into separate function to avoid the compiler just optimising away the whole test.
 
-// The main function in the Core Mark code
-void core_mark_main(void);
 
 void __attribute__((noinline)) rtcbenchmark_measure_native_performance() {
 	javax_darjeeling_Stopwatch_void_resetAndStart();
 
-	core_mark_main();
+	avroraPrintStr("C version runs in separate conf");
 
 	javax_darjeeling_Stopwatch_void_measure();
 }
