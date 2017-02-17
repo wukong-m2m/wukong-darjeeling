@@ -20,7 +20,7 @@
 */
 
 // NR 20170215 should be supplied on command line in normal Core Mark
-#define ITERATIONS 10
+#define ITERATIONS 50
 
 #ifndef HAS_FLOAT 
 #define HAS_FLOAT 0
@@ -49,8 +49,10 @@
 	Define to 1 if the platform has stdio.h and implements the printf function.
 */
 #ifndef HAS_PRINTF
-#define HAS_PRINTF 1
+#define HAS_PRINTF 0
 #endif
+#define ee_printf(format, args...) DARJEELING_PRINTF(DARJEELING_PGMSPACE_MACRO(format),##args)
+
 
 /* Configuration : CORE_TICKS
 	Define type of return from the timing functions.
@@ -73,9 +75,6 @@ typedef dj_time_t CORE_TICKS;
 #endif
 #ifndef COMPILER_FLAGS 
  #define COMPILER_FLAGS FLAGS_STR /* "Please put compiler flags here (e.g. -o3)" */
-#endif
-#ifndef MEM_LOCATION 
- #define MEM_LOCATION "STACK"
 #endif
 
 /* Data Types :
@@ -120,6 +119,9 @@ typedef size_t ee_size_t;
 */
 #ifndef MEM_METHOD
 #define MEM_METHOD MEM_STATIC
+#endif
+#ifndef MEM_LOCATION 
+ #define MEM_LOCATION "STATIC"
 #endif
 
 /* Configuration : MULTITHREAD

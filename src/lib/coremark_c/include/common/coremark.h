@@ -36,13 +36,12 @@ El Dorado Hills, CA, 95762
 #define MEM_STACK 2
 
 #include "core_portme.h"
-#include "config.h"
 
 #if HAS_STDIO
 #include <stdio.h>
 #endif
 #if HAS_PRINTF
-#define ee_printf(format, args...) DARJEELING_PRINTF(DARJEELING_PGMSPACE_MACRO(format),##args)
+#define ee_printf printf
 #endif
 
 /* Actual benchmark execution in iterate */
