@@ -85,21 +85,15 @@ char *mem_name[3] = {"Static","Heap","Stack"};
 
 */
 
-#if MAIN_HAS_NOARGC
 MAIN_RETURN_TYPE core_mark_main(void) {
 	int argc=0;
 	char *argv[1];
-#else
-MAIN_RETURN_TYPE core_mark_main(int argc, char *argv[]) {
-#endif
 	ee_u16 i,j=0,num_algorithms=0;
 	ee_s16 known_id=-1,total_errors=0;
 	ee_u16 seedcrc=0;
 	CORE_TICKS total_time;
 	core_results results[MULTITHREAD];
-#if (MEM_METHOD==MEM_STACK)
-	ee_u8 stack_memblock[TOTAL_DATA_SIZE*MULTITHREAD];
-#endif
+
 	/* first call any initializations needed */
 	portable_init(&(results[0].port), &argc, argv);
 	/* First some checks to make sure benchmark will run ok */
@@ -111,9 +105,7 @@ MAIN_RETURN_TYPE core_mark_main(int argc, char *argv[]) {
 	results[0].seed2=get_seed(2);
 	results[0].seed3=get_seed(3);
 	results[0].iterations=get_seed_32(4);
-#if CORE_DEBUG
-	results[0].iterations=1;
-#endif
+
 	results[0].execs=get_seed_32(5);
 	if (results[0].execs==0) { /* if not supplied, execute all algorithms */
 		results[0].execs=ALL_ALGORITHMS_MASK;
@@ -129,40 +121,11 @@ MAIN_RETURN_TYPE core_mark_main(int argc, char *argv[]) {
 		results[0].seed2=0x3415;
 		results[0].seed3=0x66;
 	}
-#if (MEM_METHOD==MEM_STATIC)
+
 	results[0].memblock[0]=(void *)static_memblk;
 	results[0].size=TOTAL_DATA_SIZE;
 	results[0].err=0;
-	#if (MULTITHREAD>1)
-	#error "Cannot use a static data area with multiple contexts!"
-	#endif
-#elif (MEM_METHOD==MEM_MALLOC)
-	for (i=0 ; i<MULTITHREAD; i++) {
-		ee_s32 malloc_override=get_seed(7);
-		if (malloc_override != 0) 
-			results[i].size=malloc_override;
-		else
-			results[i].size=TOTAL_DATA_SIZE;
-		results[i].memblock[0]=portable_malloc(results[i].size);
-		results[i].seed1=results[0].seed1;
-		results[i].seed2=results[0].seed2;
-		results[i].seed3=results[0].seed3;
-		results[i].err=0;
-		results[i].execs=results[0].execs;
-	}
-#elif (MEM_METHOD==MEM_STACK)
-	for (i=0 ; i<MULTITHREAD; i++) {
-		results[i].memblock[0]=stack_memblock+i*TOTAL_DATA_SIZE;
-		results[i].size=TOTAL_DATA_SIZE;
-		results[i].seed1=results[0].seed1;
-		results[i].seed2=results[0].seed2;
-		results[i].seed3=results[0].seed3;
-		results[i].err=0;
-		results[i].execs=results[0].execs;
-	}
-#else
-#error "Please define a way to initialize a memory block."
-#endif
+
 	/* Data init */ 
 	/* Find out how space much we have based on number of algorithms */
 	for (i=0; i<NUM_ALGORITHMS; i++) {
@@ -213,21 +176,9 @@ MAIN_RETURN_TYPE core_mark_main(int argc, char *argv[]) {
 	}
 	/* perform actual benchmark */
 	start_time();
-#if (MULTITHREAD>1)
-	if (default_num_contexts>MULTITHREAD) {
-		default_num_contexts=MULTITHREAD;
-	}
-	for (i=0 ; i<default_num_contexts; i++) {
-		results[i].iterations=results[0].iterations;
-		results[i].execs=results[0].execs;
-		core_start_parallel(&results[i]);
-	}
-	for (i=0 ; i<default_num_contexts; i++) {
-		core_stop_parallel(&results[i]);
-	}
-#else
+
 	iterate(&results[0]);
-#endif
+
 	stop_time();
 	total_time=get_time();
 	/* get a function of the input to report */
@@ -286,15 +237,9 @@ MAIN_RETURN_TYPE core_mark_main(int argc, char *argv[]) {
 	/* and report results */
 	ee_printf("CoreMark Size    : %lu\n",(ee_u32)results[0].size);
 	ee_printf("Total ticks      : %lu\n",(ee_u32)total_time);
-#if HAS_FLOAT
-	ee_printf("Total time (secs): %f\n",time_in_secs(total_time));
-	if (time_in_secs(total_time) > 0)
-		ee_printf("Iterations/Sec   : %f\n",default_num_contexts*results[0].iterations/time_in_secs(total_time));
-#else 
 	ee_printf("Total time (secs): %lu\n",time_in_secs(total_time));
 	if (time_in_secs(total_time) > 0)
 		ee_printf("Iterations/Sec   : %lu\n",default_num_contexts*results[0].iterations/time_in_secs(total_time));
-#endif
 	if (time_in_secs(total_time) < 10) {
 		ee_printf("ERROR! Must execute for at least 10 secs for a valid result!\n");
 		total_errors++;
@@ -303,9 +248,6 @@ MAIN_RETURN_TYPE core_mark_main(int argc, char *argv[]) {
 	ee_printf("Iterations       : %lu\n",(ee_u32)default_num_contexts*results[0].iterations);
 	ee_printf("Compiler version : %s\n",COMPILER_VERSION);
 	// ee_printf("Compiler flags   : %s\n",COMPILER_FLAGS);
-#if (MULTITHREAD>1)
-	ee_printf("Parallel %s : %d\n",PARALLEL_METHOD,default_num_contexts);
-#endif
 	ee_printf("Memory location  : %s\n",MEM_LOCATION);
 	/* output for verification */
 	ee_printf("seedcrc          : 0x%04x\n",seedcrc);
@@ -322,31 +264,12 @@ MAIN_RETURN_TYPE core_mark_main(int argc, char *argv[]) {
 		ee_printf("[%d]crcfinal      : 0x%04x\n",i,results[i].crc);
 	if (total_errors==0) {
 		ee_printf("Correct operation validated. See readme.txt for run and reporting rules.\n");
-#if HAS_FLOAT
-		if (known_id==3) {
-			ee_printf("CoreMark 1.0 : %f / %s %s",default_num_contexts*results[0].iterations/time_in_secs(total_time),COMPILER_VERSION,COMPILER_FLAGS);
-#if defined(MEM_LOCATION) && !defined(MEM_LOCATION_UNSPEC)
-			ee_printf(" / %s",MEM_LOCATION);
-#else
-			ee_printf(" / %s",mem_name[MEM_METHOD]);
-#endif
-
-#if (MULTITHREAD>1)
-			ee_printf(" / %d:%s",default_num_contexts,PARALLEL_METHOD);
-#endif
-			ee_printf("\n");
-		}
-#endif
 	}
 	if (total_errors>0)
 		ee_printf("Errors detected\n");
 	if (total_errors<0)
 		ee_printf("Cannot validate operation for these seed values, please compare with results on a known platform.\n");
 
-#if (MEM_METHOD==MEM_MALLOC)
-	for (i=0 ; i<MULTITHREAD; i++) 
-		portable_free(results[i].memblock[0]);
-#endif
 	/* And last call any target specific code for finalizing */
 	portable_fini(&(results[0].port));
 
