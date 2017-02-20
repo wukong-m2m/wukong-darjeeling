@@ -55,7 +55,7 @@ public class CoreMatrix {
 		Iterate <matrix_test> N times, 
 		changing the matrix values slightly by a constant amount each time.
 	*/
-	short core_bench_matrix(MatParams p, short seed, short crc) {
+	static short core_bench_matrix(MatParams p, short seed, short crc) {
 		int N=p.N;
 		int[] C=p.C;
 		short[] A=p.A;
@@ -91,7 +91,7 @@ public class CoreMatrix {
 
 		After the last step, matrix A is back to original contents.
 	*/
-	short matrix_test(int N, int[] C, short[] A, short[] B, short val) {
+	static short matrix_test(int N, int[] C, short[] A, short[] B, short val) {
 		short crc=0;
 		short clipval=matrix_big(val);
 
@@ -129,7 +129,7 @@ public class CoreMatrix {
 		
 	// 	Note:
 	// 	The seed parameter MUST be supplied from a source that cannot be determined at compile time
-	short core_init_matrix(short blksize, Object memblk, int seed, MatParams p) {
+	static short core_init_matrix(short blksize, Object memblk, int seed, MatParams p) {
 		// memblk isn't used in the Java version since core_init_matrix will allocate memory itself.
 		// just keeping the parameter here to keep both versions as identical as possible.
 		short N=0;
