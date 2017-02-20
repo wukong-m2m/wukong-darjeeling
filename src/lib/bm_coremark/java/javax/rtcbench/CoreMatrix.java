@@ -1,3 +1,5 @@
+package javax.rtcbench;
+
 /*
 Author : Shay Gal-On, EEMBC
 
@@ -38,7 +40,7 @@ public class CoreMatrix {
 	// C MATDAT -> Java short
 	// C MATRES -> Java int
 
-	public class MatParams {
+	public static class MatParams {
 		public int N;
 		public short[] A;
 		public short[] B;
@@ -129,9 +131,7 @@ public class CoreMatrix {
 		
 	// 	Note:
 	// 	The seed parameter MUST be supplied from a source that cannot be determined at compile time
-	static short core_init_matrix(short blksize, Object memblk, int seed, MatParams p) {
-		// memblk isn't used in the Java version since core_init_matrix will allocate memory itself.
-		// just keeping the parameter here to keep both versions as identical as possible.
+	static short core_init_matrix(short blksize, int seed, MatParams p) {
 		short N=0;
 		short[] A;
 		short[] B;

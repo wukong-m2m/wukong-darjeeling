@@ -13,18 +13,7 @@ public class RTCBenchmark {
     public static void rtcbenchmark_measure_java_performance() {
         Stopwatch.resetAndStart();
 
-        for (short i=0; i<100; i++) {
-            nothing();
-            nothing();
-            nothing();
-            nothing();
-            nothing();
-            nothing();
-            nothing();
-            nothing();
-            nothing();
-            nothing();
-        }
+        CoreMain.core_mark_main();
 
         Stopwatch.measure();
     }

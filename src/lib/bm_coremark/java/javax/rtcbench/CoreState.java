@@ -1,38 +1,40 @@
+package javax.rtcbench;
+
+/*
+Author : Shay Gal-On, EEMBC
+
+This file is part of  EEMBC(R) and CoreMark(TM), which are Copyright (C) 2009 
+All rights reserved.                            
+
+EEMBC CoreMark Software is a product of EEMBC and is provided under the terms of the
+CoreMark License that is distributed with the official EEMBC COREMARK Software release. 
+If you received this EEMBC CoreMark Software without the accompanying CoreMark License, 
+you must discontinue use and download the official release from www.coremark.org.  
+
+Also, if you are publicly displaying scores generated from the EEMBC CoreMark software, 
+make sure that you are in compliance with Run and Reporting rules specified in the accompanying readme.txt file.
+
+EEMBC 
+4354 Town Center Blvd. Suite 114-200
+El Dorado Hills, CA, 95762 
+*/ 
+
+/*
+Topic: Description
+	Simple state machines like this one are used in many embedded products.
+	
+	For more complex state machines, sometimes a state transition table implementation is used instead, 
+	trading speed of direct coding for ease of maintenance.
+	
+	Since the main goal of using a state machine in CoreMark is to excercise the switch/if behaviour,
+	we are using a small moore machine. 
+	
+	In particular, this machine tests type of string input,
+	trying to determine whether the input is a number or something else.
+	(see core_state.png).
+*/
+
 public class CoreState {
-	/*
-	Author : Shay Gal-On, EEMBC
-
-	This file is part of  EEMBC(R) and CoreMark(TM), which are Copyright (C) 2009 
-	All rights reserved.                            
-
-	EEMBC CoreMark Software is a product of EEMBC and is provided under the terms of the
-	CoreMark License that is distributed with the official EEMBC COREMARK Software release. 
-	If you received this EEMBC CoreMark Software without the accompanying CoreMark License, 
-	you must discontinue use and download the official release from www.coremark.org.  
-
-	Also, if you are publicly displaying scores generated from the EEMBC CoreMark software, 
-	make sure that you are in compliance with Run and Reporting rules specified in the accompanying readme.txt file.
-
-	EEMBC 
-	4354 Town Center Blvd. Suite 114-200
-	El Dorado Hills, CA, 95762 
-	*/ 
-
-	/*
-	Topic: Description
-		Simple state machines like this one are used in many embedded products.
-		
-		For more complex state machines, sometimes a state transition table implementation is used instead, 
-		trading speed of direct coding for ease of maintenance.
-		
-		Since the main goal of using a state machine in CoreMark is to excercise the switch/if behaviour,
-		we are using a small moore machine. 
-		
-		In particular, this machine tests type of string input,
-		trying to determine whether the input is a number or something else.
-		(see core_state.png).
-	*/
-
 	public static final byte CORE_STATE_START = 0;
 	public static final byte CORE_STATE_INVALID = 1;
 	public static final byte CORE_STATE_S1 = 2;

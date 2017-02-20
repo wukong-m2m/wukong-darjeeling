@@ -1,6 +1,6 @@
 djlibsource {
     bm_coremark {
-        cDependencies = [ 'darjeeling3' ]
+        cDependencies = [ 'darjeeling3', 'vm_dev' ]
         javaDependencies = [ 'base', 'darjeeling3' ]
     }
 }

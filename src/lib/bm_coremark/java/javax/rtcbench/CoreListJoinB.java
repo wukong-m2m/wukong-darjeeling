@@ -1,3 +1,5 @@
+package javax.rtcbench;
+
 // This is the benchmark that most clearly shows the differences between Java and C.
 // I see three possible options to port this
 //   a) Create many separate objects for each linked-list element and link them with normal Java references
@@ -113,7 +115,7 @@ public class CoreListJoinB {
 
 
 	// This is not very efficient, but it's only used during initialisation
-	private class ShortWrapper {
+	private static class ShortWrapper {
 		private short val;
 		public ShortWrapper(short val) {
 			this.val = val;
@@ -126,8 +128,8 @@ public class CoreListJoinB {
 		}
 	}
 
-	private interface IListDataCompare {
-		int compare(short a, short b, CoreResults res);
+	private static abstract class AbstractListDataCompare {
+		abstract int compare(short a, short b, CoreResults res);
 	}
 
 	/* Function: cmp_complex
@@ -135,7 +137,7 @@ public class CoreListJoinB {
 
 		Can be used by mergesort.
 	*/
-	private static class CmpComplex implements IListDataCompare {
+	private static class CmpComplex extends AbstractListDataCompare {
 		short calc_func(short pdata, CoreResults res) {
 			short data=ListData_GetData16(pdata);
 			short retval;
@@ -183,7 +185,7 @@ public class CoreListJoinB {
 
 		Can be used by mergesort.
 	*/
-	private static class CmpIdx implements IListDataCompare {
+	private static class CmpIdx extends AbstractListDataCompare {
 		public int compare(short a, short b, CoreResults res) {
 			if (res==null) {
 				ListData_SetData16(a, (short)((ListData_GetData16(a) & 0xff00) | (0x00ff & (ListData_GetData16(a)>>8))));
@@ -202,7 +204,7 @@ public class CoreListJoinB {
 		- Single remove/reinsert
 		* At the end of this function, the list is back to original state
 	*/
-	short core_bench_list(CoreResults res, short finder_idx) {
+	static short core_bench_list(CoreResults res, short finder_idx) {
 		short retval=0;
 		short found=0,missed=0;
 		short list=res.list_CoreListJoinB;
@@ -277,10 +279,7 @@ public class CoreListJoinB {
 
 	*/
 	// list_head *core_list_init(ee_u32 blksize, list_head *memblock, ee_s16 seed) {
-	short core_list_init(int blksize, Object memblockObj, short seed) {
-		// memblockObj isn't used in the Java version since core_init_matrix will allocate memory itself.
-		// just keeping the parameter here to keep both versions as identical as possible.
-
+	static short core_list_init(int blksize, short seed) {
 		/* calculated pointers for the list */
 		int per_item=16+4; //16+sizeof(struct list_data_s);
 		int size=(blksize/per_item)-2; /* to accomodate systems with 64b pointers, and make sure same code is executed, set max list elements */
@@ -349,7 +348,7 @@ public class CoreListJoinB {
 	*/
 	// list_head *core_list_insert_new(list_head *insert_point, list_data *info, list_head **memblock, list_data **datablock
 	// , list_head *memblock_end, list_data *datablock_end) {
-	short core_list_insert_new(short insert_point, short info_data16, short info_idx, ShortWrapper memblock, ShortWrapper datablock
+	static short core_list_insert_new(short insert_point, short info_data16, short info_idx, ShortWrapper memblock, ShortWrapper datablock
 		, short memblock_end, short datablock_end) {
 		short newitem;
 		
@@ -397,7 +396,7 @@ public class CoreListJoinB {
 		Removed item.
 	*/
 	// list_head *core_list_remove(list_head *item) {
-	short core_list_remove(short item) {
+	static short core_list_remove(short item) {
 		short tmp;
 		short ret=ListHead_GetNext(item);
 		/* swap data pointers */
@@ -427,7 +426,7 @@ public class CoreListJoinB {
 		
 	*/
 	// list_head *core_list_undo_remove(list_head *item_removed, list_head *item_modified) {
-	short core_list_undo_remove(short item_removed, short item_modified) {
+	static short core_list_undo_remove(short item_removed, short item_modified) {
 		short tmp;
 		/* swap data pointers */
 		tmp=ListHead_GetInfo(item_removed);
@@ -453,7 +452,7 @@ public class CoreListJoinB {
 		Found item, or NULL if not found.
 	*/
 	// list_head *core_list_find(list_head *list,list_data *info);
-	short core_list_find(short list, short info_data16, short info_idx) {
+	static short core_list_find(short list, short info_data16, short info_idx) {
 		if (info_idx>=0) {
 			while (list != ListNULL && (ListData_GetIdx(ListHead_GetInfo(list)) != info_idx))
 				list=ListHead_GetNext(list);
@@ -479,7 +478,7 @@ public class CoreListJoinB {
 		Found item, or NULL if not found.
 	*/
 	// list_head *core_list_reverse(list_head *list);
-	short core_list_reverse(short list) {
+	static short core_list_reverse(short list) {
 		short next=ListNULL, tmp;
 		while (list!=ListNULL) {
 			tmp=ListHead_GetNext(list);
@@ -512,7 +511,7 @@ public class CoreListJoinB {
 
 	 */
 	// list_head *core_list_mergesort(list_head *list, list_cmp cmp, core_results *res) {
-	short core_list_mergesort(short list, IListDataCompare cmp, CoreResults res) {
+	static short core_list_mergesort(short list, AbstractListDataCompare cmp, CoreResults res) {
 	    short p, q, e, tail;
 	    int insize, nmerges, psize, qsize, i;
 

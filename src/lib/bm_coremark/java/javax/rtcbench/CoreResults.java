@@ -1,3 +1,5 @@
+package javax.rtcbench;
+
 public class CoreResults {
 	/* inputs */
 	public short	seed1;		/* Initializing seed */
