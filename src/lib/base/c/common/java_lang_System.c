@@ -47,12 +47,12 @@ void java_lang_System_int_currentTimeMillis()
 }
 
 // void java.lang.System.arraycopy(java.lang.Object, int, java.lang.Object, int, int)
-void java_lang_System_void_arraycopy_java_lang_Object_int_java_lang_Object_int_int()
+void java_lang_System_void_arraycopy_java_lang_Object_short_java_lang_Object_short_short()
 {
-	int32_t length = dj_exec_stackPopInt();
-	int32_t dst_pos = dj_exec_stackPopInt();
+	int16_t length = dj_exec_stackPopShort();
+	int16_t dst_pos = dj_exec_stackPopShort();
 	dj_array * dst = (dj_array *)REF_TO_VOIDP(dj_exec_stackPopRef());
-	int32_t src_pos = dj_exec_stackPopInt();
+	int16_t src_pos = dj_exec_stackPopShort();
 	dj_array * src = (dj_array *)REF_TO_VOIDP(dj_exec_stackPopRef());
 
 	// check for null pointer

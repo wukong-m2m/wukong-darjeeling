@@ -79,7 +79,7 @@ public final class Integer {
         }
         char buf[] = new char[33];
         boolean negative = (i < 0);
-        int charPos = 32;
+        short charPos = 32;
         if (!negative) {
             i = -i;
         }
@@ -91,7 +91,7 @@ public final class Integer {
         if (negative) {
             buf[--charPos] = '-';
         }
-        return new String(buf, charPos, (33 - charPos));
+        return new String(buf, charPos, (short)(33 - charPos));
     }
 
     /**
@@ -179,14 +179,14 @@ public final class Integer {
      */
     private static String toUnsignedString(int i, int shift) {
         char[] buf = new char[32];
-        int charPos = 32;
+        short charPos = 32;
         int radix = 1 << shift;
         int mask = radix - 1;
         do {
             buf[--charPos] = digits[i & mask];
             i >>>= shift;
         } while (i != 0);
-        return new String(buf, charPos, (32 - charPos));
+        return new String(buf, charPos, (short)(32 - charPos));
     }
 
     /**

@@ -74,7 +74,7 @@ public final class StringBuilder {
     /** 
      * The count is the number of characters in the buffer.
      */
-    private int count;
+    private short count;
     /**
      * A flag indicating whether the buffer is shared 
      */
@@ -85,7 +85,7 @@ public final class StringBuilder {
      * initial capacity of 16 characters. 
      */
     public StringBuilder() {
-        this(16);
+        this((short)16);
     }
 
     /**
@@ -96,7 +96,7 @@ public final class StringBuilder {
      * @exception  NegativeArraySizeException  if the <code>length</code>
      *               argument is less than <code>0</code>.
      */
-    public StringBuilder(int length) {
+    public StringBuilder(short length) {
         value = new char[length];
         shared = false;
     }
@@ -111,7 +111,7 @@ public final class StringBuilder {
      * @param   str   the initial contents of the buffer.
      */
     public StringBuilder(String str) {
-        this(str.length() + 16);
+        this((short)(str.length() + 16));
         append(str);
     }
 
@@ -142,7 +142,7 @@ public final class StringBuilder {
      */
     private final void copy() {
         char newValue[] = new char[value.length];
-        System.arraycopy(value, 0, newValue, 0, count);
+        System.arraycopy(value, (short)0, newValue, (short)0, count);
         value = newValue;
         shared = false;
     }
@@ -162,7 +162,7 @@ public final class StringBuilder {
      *
      * @param   minimumCapacity   the minimum desired capacity.
      */
-    public void ensureCapacity(int minimumCapacity) {
+    public void ensureCapacity(short minimumCapacity) {
 		synchronized (this) {
 			if (minimumCapacity > value.length) {
 				expandCapacity(minimumCapacity);
@@ -177,7 +177,7 @@ public final class StringBuilder {
      *
      * @see java.lang.StringBuffer#ensureCapacity(int)
      */
-    private void expandCapacity(int minimumCapacity) {
+    private void expandCapacity(short minimumCapacity) {
         int newCapacity = (value.length + 1) * 2;
         // This would never happen on a sensor node since we would be out of memory long before hitting Interger.MAX_VALUE (which I've just removed to save memory)
         // if (newCapacity < 0) {
@@ -188,7 +188,7 @@ public final class StringBuilder {
         }
 
         char newValue[] = new char[newCapacity];
-        System.arraycopy(value, 0, newValue, 0, count);
+        System.arraycopy(value, (short)0, newValue, (short)0, count);
         value = newValue;
         shared = false;
     }
@@ -221,7 +221,7 @@ public final class StringBuilder {
      *               <code>newLength</code> argument is negative.
      * @see        java.lang.StringBuffer#length()
      */
-    public void setLength(int newLength) {
+    public void setLength(short newLength) {
         synchronized (this) {
 			if (newLength < 0) {
 				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, newLength);
@@ -268,7 +268,7 @@ public final class StringBuilder {
      *             negative or greater than or equal to <code>length()</code>.
      * @see        java.lang.StringBuffer#length()
      */
-    public char charAt(int index) {
+    public char charAt(short index) {
         synchronized (this) {
 			if ((index < 0) || (index >= count)) {
 				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, index);
@@ -308,7 +308,7 @@ public final class StringBuilder {
      *             <code>dst.length</code>
      *             </ul>
      */
-    public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
+    public void getChars(short srcBegin, short srcEnd, char dst[], short dstBegin) {
         synchronized (this) {
 			if (srcBegin < 0) {
 				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, srcBegin);
@@ -319,7 +319,7 @@ public final class StringBuilder {
 			if (srcBegin > srcEnd) {
 				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, -1);
 			}
-			System.arraycopy(value, srcBegin, dst, dstBegin, srcEnd - srcBegin);
+			System.arraycopy(value, srcBegin, dst, dstBegin, (short)(srcEnd - srcBegin));
 		}
     }
 
@@ -396,12 +396,12 @@ public final class StringBuilder {
 			if (str == null) {
 				str = String.valueOf(str);
 			}
-			int len = str.length();
-			int newcount = count + len;
+			short len = str.length();
+			short newcount = (short)(count + len);
 			if (newcount > value.length) {
 				expandCapacity(newcount);
 			}
-			str.getChars(0, len, value, count);
+			str.getChars((short)0, len, value, (short)count);
 			count = newcount;
 			return this;
 		}
@@ -425,12 +425,12 @@ public final class StringBuilder {
      */
     public StringBuilder append(char str[]) {
         synchronized (this) {
-			int len = str.length;
-			int newcount = count + len;
+			short len = (short)str.length;
+			short newcount = (short)(count + len);
 			if (newcount > value.length) {
 				expandCapacity(newcount);
 			}
-			System.arraycopy(str, 0, value, count, len);
+			System.arraycopy(str, (short)0, value, count, len);
 			count = newcount;
 			return this;
 		}
@@ -455,9 +455,9 @@ public final class StringBuilder {
      * @param   len      the number of characters to append.
      * @return  a reference to this <code>StringBuffer</code> object.
      */
-    public StringBuilder append(char str[], int offset, int len) {
+    public StringBuilder append(char str[], short offset, short len) {
         synchronized (this) {
-			int newcount = count + len;
+			short newcount = (short)(count + len);
 			if (newcount > value.length) {
 				expandCapacity(newcount);
 			}
@@ -501,7 +501,7 @@ public final class StringBuilder {
      */
     public StringBuilder append(char c) {
         synchronized (this) {
-			int newcount = count + 1;
+			short newcount = (short)(count + 1);
 			if (newcount > value.length) {
 				expandCapacity(newcount);
 			}
