@@ -55,7 +55,7 @@ dj_infusion *dj_infusion_create(dj_di_pointer staticFieldInfo, int nrImportedInf
 
 	// allocate infusion struct, plus the memory needed for the static fields in
 	// one block to save on heap complexity (less chunks on the heap)
-	ret = (dj_infusion*)dj_mem_alloc(sizeof(dj_infusion) + staticFieldsSize + nrImportedInfusions*sizeof(dj_infusion*), CHUNKID_INFUSION);
+	ret = (dj_infusion*)dj_mem_checked_alloc(sizeof(dj_infusion) + staticFieldsSize + nrImportedInfusions*sizeof(dj_infusion*), CHUNKID_INFUSION);
 
     if(ret == NULL)
     	return NULL;

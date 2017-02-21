@@ -35,11 +35,12 @@ void java_lang_Integer_java_lang_String_toString_int()
 	char *str;
 	int32_t value = dj_exec_stackPopInt();
 	sprintf(temp,"%ld", (long)value);
-	str = dj_mem_alloc(strlen(temp)+1, dj_vm_getSysLibClassRuntimeId(dj_exec_getVM(), BASE_CDEF_java_lang_String));
+	str = dj_mem_checked_alloc(strlen(temp)+1, dj_vm_getSysLibClassRuntimeId(dj_exec_getVM(), BASE_CDEF_java_lang_String));
 
 	if(str == NULL)
 	{
-    	dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
+		// done in checked
+    	// dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
     	return;
 	}
 

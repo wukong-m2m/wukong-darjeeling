@@ -48,7 +48,7 @@ dj_int_array *dj_int_array_create(uint8_t type, uint16_t size)
 	}
 
 	// allocate array
-	arr = (dj_int_array*)dj_mem_alloc( byteSize + sizeof(dj_int_array), CHUNKID_INTARRAY );
+	arr = (dj_int_array*)dj_mem_checked_alloc( byteSize + sizeof(dj_int_array), CHUNKID_INTARRAY );
 
     // let the caller deal with it
 	if(arr == nullref) return NULL;
@@ -83,7 +83,7 @@ dj_ref_array *dj_ref_array_create(runtime_id_t runtime_class_id, uint16_t size)
 	dj_ref_array *arr;
 
 	// allocate array
-	arr = (dj_ref_array*)dj_mem_alloc( size * sizeof(ref_t) + sizeof(dj_ref_array), CHUNKID_REFARRAY );
+	arr = (dj_ref_array*)dj_mem_checked_alloc( size * sizeof(ref_t) + sizeof(dj_ref_array), CHUNKID_REFARRAY );
 
     // let the caller deal with out of memory
 	if(arr == nullref) return NULL;

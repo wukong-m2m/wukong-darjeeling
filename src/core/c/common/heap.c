@@ -116,6 +116,18 @@ void dj_mem_init(void *mem_pointer, uint16_t mem_size)
 
 }
 
+void * dj_mem_checked_alloc(uint16_t size, uint16_t id) {
+	void *p = dj_mem_alloc(size, id);
+	if (p == NULL) {
+		avroraPrintHex32(0xDEADDEAD);
+		avroraPrintInt16(dj_mem_getFree());
+		avroraPrintInt16(size);
+    	dj_panic(DJ_PANIC_OUT_OF_MEMORY);
+	}
+	return p;
+}
+
+
 /**
  * Allocates <emph>size</emph> bytes.
  * @param size size in bytes

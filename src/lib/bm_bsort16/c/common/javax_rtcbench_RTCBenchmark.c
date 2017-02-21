@@ -30,7 +30,7 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t 
 
 void javax_rtcbench_RTCBenchmark_void_test_native() {
 	uint16_t NUMNUMBERS = 256;
-	int16_t *numbers = dj_mem_alloc(NUMNUMBERS*sizeof(int16_t), CHUNKID_RTCNATIVETESTDATA);
+	int16_t *numbers = dj_mem_checked_alloc(NUMNUMBERS*sizeof(int16_t), CHUNKID_RTCNATIVETESTDATA);
 
 	// Fill the array
 	for (uint16_t i=0; i<NUMNUMBERS; i++)

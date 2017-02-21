@@ -42,7 +42,7 @@ dj_object *dj_object_create(runtime_id_t type, int nr_refs, int non_ref_size)
 
 	uint16_t size = nr_refs * sizeof(ref_t) + non_ref_size;
 
-	ret = (dj_object*)dj_mem_alloc(size + sizeof(dj_object), type);
+	ret = (dj_object*)dj_mem_checked_alloc(size + sizeof(dj_object), type);
 
 	if(ret == NULL) return NULL;
 

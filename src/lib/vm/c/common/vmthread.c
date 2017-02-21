@@ -43,7 +43,7 @@
  */
 dj_thread *dj_thread_create()
 {
-	dj_thread *ret = (dj_thread*)dj_mem_alloc(sizeof(dj_thread), CHUNKID_THREAD);
+	dj_thread *ret = (dj_thread*)dj_mem_checked_alloc(sizeof(dj_thread), CHUNKID_THREAD);
 
 	// if we're out of memory, let the caller handle it
 	if (ret==NULL)
@@ -264,7 +264,7 @@ dj_frame *dj_frame_create_fast(dj_global_id methodImplId, dj_di_pointer methodIm
 
 // avroraCallMethodTimerMark(93);
 
-	dj_frame *ret = (dj_frame*)dj_mem_alloc(size, CHUNKID_FRAME);
+	dj_frame *ret = (dj_frame*)dj_mem_checked_alloc(size, CHUNKID_FRAME);
 // avroraCallMethodTimerMark(94);
 
 	// in case of null, return and let the caller deal with it
@@ -311,7 +311,7 @@ dj_frame *dj_frame_create_fast(dj_global_id methodImplId, dj_di_pointer methodIm
  */
 dj_monitor_block * dj_monitor_block_create()
 {
-	dj_monitor_block * ret = (dj_monitor_block *)dj_mem_alloc(sizeof(dj_monitor_block), CHUNKID_MONITOR_BLOCK);
+	dj_monitor_block * ret = (dj_monitor_block *)dj_mem_checked_alloc(sizeof(dj_monitor_block), CHUNKID_MONITOR_BLOCK);
 	if (ret==NULL) return NULL;
 
     memset(ret, 0, sizeof(dj_monitor_block));

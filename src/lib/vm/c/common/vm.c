@@ -133,7 +133,7 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
  */
 dj_vm * dj_vm_create()
 {
-	dj_vm *ret = (dj_vm*)dj_mem_alloc(sizeof(dj_vm), CHUNKID_VM);
+	dj_vm *ret = (dj_vm*)dj_mem_checked_alloc(sizeof(dj_vm), CHUNKID_VM);
 
     if(ret == NULL) return NULL;
 

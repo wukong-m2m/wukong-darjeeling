@@ -15,7 +15,7 @@ uint8_t wkpf_register_virtual_wuclass(uint16_t wuclass_id, update_function_t upd
 	// Allocate memory for the new wuclass
 	uint16_t size = sizeof(wuclass_t) + number_of_properties;
 	dj_mem_addSafePointer((void**)&properties); // dj_mem_alloc may cause GC to run, so the address of the properties may change. this tells the GC to update our pointer if it does.
-	wuclass = (wuclass_t*)dj_mem_alloc(size, CHUNKID_WUCLASS);
+	wuclass = (wuclass_t*)dj_mem_checked_alloc(size, CHUNKID_WUCLASS);
 	dj_mem_removeSafePointer((void**)&properties);
 	if (wuclass == NULL) {
 		DEBUG_LOG(DBG_WKPF, "WKPF: Out of memory while registering wuclass id %d: FAILED\n", wuclass->wuclass_id);

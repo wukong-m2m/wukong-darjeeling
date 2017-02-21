@@ -95,6 +95,7 @@ __attribute__ ((__packed__))
 
 void dj_mem_init(void *mem_pointer, uint16_t mem_size);
 void * dj_mem_alloc(uint16_t size, runtime_id_t id);
+void * dj_mem_checked_alloc(uint16_t size, runtime_id_t id);
 uint16_t dj_mem_getFree();
 uint16_t dj_mem_getSize();
 
