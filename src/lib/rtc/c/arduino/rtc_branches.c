@@ -5,6 +5,7 @@
 #include "asm.h"
 #include "rtc_emit.h"
 #include "rtc_branches.h"
+#include "config.h"
 
 void emit_x_branchtag(uint16_t opcode, uint16_t target) {
     // instead of the branch, output a tag that can be replaced when target addresses are all known:
