@@ -259,7 +259,7 @@ void rtc_stackcache_set_may_use_RZ() {
     rtc_ts->may_use_RZ = true;
 }
 void rtc_stackcache_clear_may_use_RZ() {
-    rtc_ts->may_use_RZ = true;
+    rtc_ts->may_use_RZ = false;
 }
 bool rtc_stackcache_test_may_use_RZ() {
     if (rtc_ts->may_use_RZ) {
