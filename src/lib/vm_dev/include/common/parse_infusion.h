@@ -28,10 +28,10 @@
 
 #ifdef ARRAYINDEX_32BIT
  // Version 100: 32 bit index
-#define INFUSION_FORMAT_VERSION 106
+#define INFUSION_FORMAT_VERSION 108
 #else
  // Version 101: 16 bit index
-#define INFUSION_FORMAT_VERSION 107
+#define INFUSION_FORMAT_VERSION 109
 #endif
 
 enum ElementType
@@ -127,12 +127,13 @@ enum JavaTypeID
 #define dj_di_methodImplementation_getIntegerLocalVariableCount(pointer) dj_di_getU8(pointer + 3)
 #define dj_di_methodImplementation_getParameterCount(pointer) dj_di_getU8(pointer + 4)
 #define dj_di_methodImplementation_getMaxStack(pointer) dj_di_getU8(pointer + 5)
-#define dj_di_methodImplementation_getFlags(pointer) dj_di_getU8(pointer + 6)
-#define dj_di_methodImplementation_getReturnType(pointer) dj_di_getU8(pointer + 7)
-#define dj_di_methodImplementation_getNumberOfBranchTargets(pointer) dj_di_getU16(pointer + 8)
-#define dj_di_methodImplementation_getNumberOfVariableSlots(pointer) dj_di_getU8(pointer + 10)
-#define dj_di_methodImplementation_getLength(pointer) dj_di_getU16(pointer + 11)
-#define dj_di_methodImplementation_getData(pointer) (pointer + 13)
+#define dj_di_methodImplementation_getMaxRefStack(pointer) dj_di_getU8(pointer + 6)
+#define dj_di_methodImplementation_getFlags(pointer) dj_di_getU8(pointer + 7)
+#define dj_di_methodImplementation_getReturnType(pointer) dj_di_getU8(pointer + 8)
+#define dj_di_methodImplementation_getNumberOfBranchTargets(pointer) dj_di_getU16(pointer + 9)
+#define dj_di_methodImplementation_getNumberOfVariableSlots(pointer) dj_di_getU8(pointer + 11)
+#define dj_di_methodImplementation_getLength(pointer) dj_di_getU16(pointer + 12)
+#define dj_di_methodImplementation_getData(pointer) (pointer + 14)
 
 #define dj_di_methodImplementation_getNrExceptionHandlers(pointer) \
 	dj_di_getU8((pointer + 10 + dj_di_getU16(pointer + 8)))

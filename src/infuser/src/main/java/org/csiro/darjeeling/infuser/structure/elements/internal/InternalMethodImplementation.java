@@ -95,6 +95,12 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 			return codeBlock.getMaxStack();
 	}
 
+	public int getMaxRefStack()
+	{
+		if (codeBlock==null) return 0; else
+			return codeBlock.getMaxStack();
+	}
+
 	public boolean isNative()
 	{
 		return isNative;

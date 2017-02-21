@@ -74,7 +74,13 @@ void dj_monitor_markRootSet(dj_monitor_block * monitor_block);
 #define dj_frame_getLocalReferenceVariables(frame)               ((ref_t*)((char*)frame + sizeof(dj_frame)))
 // (note the header now assumes 2 byte pointers, so VMs on larger architectures will need to do some extra work!!!!)
 #define dj_frame_getLocalIntegerVariables(frame, methodImpl)     ((int16_t*)((char*)frame + sizeof(dj_frame) + 2*(dj_di_methodImplementation_getNumberOfVariableSlots((uint16_t)methodImpl)-1)))
+#ifdef EXECUTION_DISABLEINTERPRETER_COMPLETELY
+// If the interpreter is disabled, we'll never need to reserve an int stack in the stack frame, since we will use the real stack as int stack.
+#define dj_frame_size(methodImpl)                                (sizeof(dj_frame) + 2*dj_di_methodImplementation_getNumberOfVariableSlots((uint16_t)methodImpl) +  2*dj_di_methodImplementation_getMaxRefStack(methodImpl))
+#else
 #define dj_frame_size(methodImpl)                                (sizeof(dj_frame) + 2*dj_di_methodImplementation_getNumberOfVariableSlots((uint16_t)methodImpl) +  2*dj_di_methodImplementation_getMaxStack(methodImpl))
+
+#endif // EXECUTION_DISABLEINTERPRETER_COMPLETELY
 
 #ifndef EXECUTION_FRAME_ON_STACK
 #define dj_frame_destroy(frame) dj_mem_free(frame)

@@ -204,6 +204,7 @@ public class DIWriterVisitor extends DescendingVisitor
 			out.writeUINT8(element.getMethodDefinition().getParameterCount() + (element.isStatic()?0:1));
 			
 			out.writeUINT8(element.getMaxStack());
+			out.writeUINT8(element.getMaxRefStack());
 
 			CodeBlock code = element.getCodeBlock();
 

@@ -79,7 +79,7 @@ public class CodeBlock
 	// is only used in some of the initial steps, the max locals is
 	// used after transformation is finished and holds the maximum
 	// number of 16-bit slots on the operand stack.
-	private int maxLocals, maxStack;
+	private int maxLocals, maxStack, maxRefStack;
 	
 	// Local variables are split into two groups, reference types and integer
 	// types. These variables hold how many of each there are in this code
@@ -348,6 +348,16 @@ public class CodeBlock
 		this.maxStack = maxStack;
 	}
 	
+	public int getMaxRefStack()
+	{
+		return maxRefStack;
+	}
+	
+	public void setMaxRefStack(int maxRefStack)
+	{
+		this.maxRefStack = maxRefStack;
+	}
+
 	public InternalMethodImplementation getMethodImplementation()
 	{
 		return methodImplementation;

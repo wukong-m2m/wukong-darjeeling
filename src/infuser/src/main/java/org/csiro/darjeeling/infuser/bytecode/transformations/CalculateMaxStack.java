@@ -42,13 +42,14 @@ public class CalculateMaxStack extends CodeBlockTransformation
 	protected void transformInternal()
 	{
 		int maxStack = 0;
+		int maxRefStack = 0;
 
 		for (InstructionHandle handle : codeBlock.getInstructions().getInstructionHandles())
 		{
 			
 			InterpreterState state = handle.getPreState();
 			InterpreterStack stack = state.getStack();
-			int stackSize = 0;
+			int stackSize = 0, refStackSize = 0;
 			for (int i=0; i<stack.size(); i++)
 			{
 				BaseType type = stack.peek(i).getType();
@@ -65,10 +66,13 @@ public class CalculateMaxStack extends CodeBlockTransformation
 				}
 				
 				stackSize += type.getNrIntegerSlots() + type.getNrReferenceSlots();
+				refStackSize += type.getNrReferenceSlots();
 			}
 			maxStack = stackSize>maxStack?stackSize:maxStack;
+			maxRefStack = refStackSize>maxRefStack?refStackSize:maxRefStack;
 		}
 		codeBlock.setMaxStack(maxStack+1);
+		codeBlock.setMaxRefStack(maxRefStack+1); // Why +1?
 	}
 
 }
