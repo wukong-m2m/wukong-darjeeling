@@ -2,6 +2,7 @@
 #include "types.h"
 #include "debug.h"
 #include "panic.h"
+#include "heap.h"
 #include "wkreprog_impl.h"
 #include <avr/boot.h>
 #include <avr/interrupt.h>
@@ -12,14 +13,7 @@
 void __attribute__ ((section (".reprogram_flash_page"))) avr_flash_program_page (uint_farptr_t page, uint8_t *buf);
 extern unsigned char di_app_infusion_archive_data[];
 
-// TODO (if we run short on RAM): this can probably be made more
-// efficient by splitting this up in two parts and writing directly
-// to the flash page buffer while receiving the code using
-// boot_page_fill, and then writing the buffer to flash in a separate
-// function.
-// Alternatively we could try to reclaim heap space from the vm first,
-// since it can only reboot once we've started the reprogramming phase.
-uint8_t avr_flash_pagebuffer[SPM_PAGESIZE];
+uint8_t *avr_flash_pagebuffer = NULL;
 uint_farptr_t avr_flash_pageaddress = 0;
 uint_farptr_t avr_flash_end_of_safe_region = 0;
 uint16_t avr_flash_buf_len = 0;
@@ -45,6 +39,9 @@ bool wkreprog_impl_open_app_archive(uint16_t start_write_position) {
 bool wkreprog_impl_open_raw(uint_farptr_t start_write_position, uint_farptr_t end_of_safe_region) {
 avroraStartReprogTimer();
 	DEBUG_LOG(DBG_WKREPROG, "AVR: Start writing to flash at address %p.\n", start_write_position);
+
+	// Allocate memory for the flash buffer
+	avr_flash_pagebuffer = dj_mem_checked_alloc(SPM_PAGESIZE, CHUNKID_WKREPROG_BUFFER);
 
 	// Set the position to start writing at start_write_position
 	// avr_flash_pageaddress should point at a page start
@@ -125,6 +122,10 @@ avroraStartReprogTimer();
 		avr_flash_program_page_if_not_modified(avr_flash_pageaddress, avr_flash_pagebuffer);
 	}
 	avr_flash_pageaddress = 0;
+
+	// Release the memory allocated for the flash buffer
+	dj_mem_free(avr_flash_pagebuffer);
+	avr_flash_pagebuffer = NULL;
 avroraStopReprogTimer();
 }
 
