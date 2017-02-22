@@ -35,6 +35,10 @@ uint8_t offset_for_intlocal_long(dj_di_pointer methodimpl, uint8_t local);
 uint8_t offset_for_reflocal(dj_di_pointer methodimpl, uint8_t local);
 uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode);
 
+#define RTC_STACKCACHE_MAX_IDX             16 // 16 because we only keep track of pairs
+#define REG_TO_ARRAY_INDEX(reg)            ((reg)/2)
+#define ARRAY_INDEX_TO_REG(idx)            ((idx)*2)
+
 typedef struct _rtc_translationstate {
 	dj_infusion *infusion;
 	dj_di_pointer methodimpl;
@@ -44,6 +48,8 @@ typedef struct _rtc_translationstate {
 	uint_farptr_t branch_target_table_start_ptr;
     uint16_t branch_target_count; // Keep track of how many branch targets we've seen
     uint16_t codebuffer[RTC_CODEBUFFER_SIZE];
+    uint16_t *rtc_codebuffer;
+    uint16_t *rtc_codebuffer_position; // A pointer to somewhere within the buffer
 #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS)
     uint8_t do_CONST_SHIFT_optimisation;
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
@@ -57,6 +63,10 @@ typedef struct _rtc_translationstate {
     uint8_t current_instruction_opcode;
     uint8_t current_instruction_opcodetype;
     uint16_t pinned_reg_needs_store;
+    uint8_t rtc_stackcache_state[RTC_STACKCACHE_MAX_IDX];
+    uint16_t rtc_stackcache_valuetags[RTC_STACKCACHE_MAX_IDX];
+    uint16_t rtc_stackcache_age[RTC_STACKCACHE_MAX_IDX];
+    uint16_t rtc_stackcache_pinned;
     bool may_use_RZ;
 #endif // AOT_STRATEGY_MARKLOOP
 } rtc_translationstate;

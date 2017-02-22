@@ -6,10 +6,6 @@
 #include "rtc_simplestackcache.h"
 #include "asm.h"
 
-#define RTC_STACKCACHE_MAX_IDX             16 // 16 because we only keep track of pairs
-#define REG_TO_ARRAY_INDEX(reg)            ((reg)/2)
-#define ARRAY_INDEX_TO_REG(idx)            ((idx)*2)
-
 #define RTC_STACKCACHE_AVAILABLE                     0xFF
 #define RTC_STACKCACHE_IN_USE                        0xFE
 #define RTC_STACKCACHE_DISABLED                      0xFD
