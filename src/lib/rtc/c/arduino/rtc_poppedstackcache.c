@@ -56,7 +56,6 @@
 #define RTC_STACKCACHE_UPDATE_AGE(idx)               (rtc_stackcache_age[(idx)] = rtc_ts->pc)
 #define RTC_STACKCACHE_GET_AGE(idx)                  (rtc_stackcache_age[(idx)])
 
-rtc_translationstate *rtc_ts; // Store a global pointer to the translation state. Bit of a hack, but this way I don't need to pass the pointer on each call.
 uint8_t rtc_stackcache_state[RTC_STACKCACHE_MAX_IDX];
 uint16_t rtc_stackcache_valuetags[RTC_STACKCACHE_MAX_IDX];
 uint16_t rtc_stackcache_age[RTC_STACKCACHE_MAX_IDX];
@@ -181,9 +180,7 @@ uint8_t rtc_get_lru_available_index() {
 #ifndef RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE
 #define RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE RTC_NUMBER_OF_USABLE_REGS_PAIRS
 #endif
-void rtc_stackcache_init(rtc_translationstate *ts) {
-    rtc_ts = ts;
-
+void rtc_stackcache_init() {
     // First mark all regs as DISABLED.
     for (uint8_t i=0; i<RTC_STACKCACHE_MAX_IDX; i++) {
         RTC_STACKCACHE_MARK_DISABLED(i);

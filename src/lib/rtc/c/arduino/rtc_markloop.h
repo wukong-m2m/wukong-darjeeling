@@ -5,7 +5,7 @@
 
 #define RTC_VALUETAG_TO_INT_L(tag)                  ((tag) + 0x1000)
 
-void rtc_stackcache_init(rtc_translationstate *ts);
+void rtc_stackcache_init();
 void rtc_stackcache_set_may_use_RZ(); // Set this to indicate a value may be popped to RZ. Note that this is only useful if we're not going to push the same reg back onto the stack, otherwise we will have to pay the price of clearing a register anyway, and a MOVW on top of that.
 void rtc_stackcache_clear_may_use_RZ(); // so this method allows us to clear the bit again, because for some opcodes we can pop the first value to RZ, but not the second.
 void rtc_stackcache_next_instruction();

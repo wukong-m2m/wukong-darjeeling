@@ -26,6 +26,10 @@
 #include "rtc_markloop.h"
 #endif
 
+// Store a global pointer to the translation state. This will point to a big struct on the heap that
+// will contain all the state necessary for AOT translation.
+rtc_translationstate *rtc_ts;
+
 // This is placed at the very end of the .text section by the linker. There shouldn't be anything following this marker.
 // We will use all memory above MAX(rtc_rtc_start_of_compiled_code_marker, 65536) for AOT code. (so all compiled code
 // will be in far memory)
@@ -111,8 +115,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 #endif
 
     // Buffer to hold the code we're building (want to keep this on the stack so it doesn't take up space at runtime)
-    uint16_t codebuffer[RTC_CODEBUFFER_SIZE];
-    emit_init(codebuffer); // Tell emit where the buffer is
+    emit_init(rtc_ts->codebuffer); // Tell emit where the buffer is
 
     // Remember the start of the branch table
     uint_farptr_t branch_target_table_start_ptr = wkreprog_get_raw_position();
@@ -122,16 +125,15 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
     emit_x_prologue();
 
-    rtc_translationstate ts;
-    ts.pc = 0;
-    ts.infusion = infusion;
-    ts.methodimpl = methodimpl;
-    ts.jvm_code_start = dj_di_methodImplementation_getData(methodimpl);
-    ts.method_length = dj_di_methodImplementation_getLength(methodimpl);
-    ts.branch_target_table_start_ptr = branch_target_table_start_ptr;
-    ts.branch_target_count = 0;
+    rtc_ts->pc = 0;
+    rtc_ts->infusion = infusion;
+    rtc_ts->methodimpl = methodimpl;
+    rtc_ts->jvm_code_start = dj_di_methodImplementation_getData(methodimpl);
+    rtc_ts->method_length = dj_di_methodImplementation_getLength(methodimpl);
+    rtc_ts->branch_target_table_start_ptr = branch_target_table_start_ptr;
+    rtc_ts->branch_target_count = 0;
 #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS)
-    ts.do_CONST_SHIFT_optimisation = 0;
+    rtc_ts->do_CONST_SHIFT_optimisation = 0;
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
 
     // If we're using stack caching, initialise the cache
@@ -139,17 +141,17 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     rtc_stackcache_init();
 #endif
 #ifdef AOT_STRATEGY_POPPEDSTACKCACHE    
-    rtc_stackcache_init(&ts);
+    rtc_stackcache_init();
 #endif
 #ifdef AOT_STRATEGY_MARKLOOP
-    ts.may_use_RZ = false;
-    rtc_stackcache_init(&ts);
+    rtc_ts->may_use_RZ = false;
+    rtc_stackcache_init();
 #endif
 
     // translate the method
     DEBUG_LOG(DBG_RTC, "[rtc] method length %d\n", ts.method_length);
-    while (ts.pc < ts.method_length) {
-        rtc_translate_single_instruction(&ts);
+    while (rtc_ts->pc < rtc_ts->method_length) {
+        rtc_translate_single_instruction();
     }
 
     emit_flush_to_flash();
@@ -168,6 +170,10 @@ void rtc_compile_lib(dj_infusion *infusion) {
 #ifdef AVRORA
     avroraRTCSetCurrentInfusion(dj_di_header_getInfusionName(infusion->header));
 #endif
+
+    // Allocate memory for translation state datastructure
+    rtc_ts = dj_mem_checked_alloc(sizeof(rtc_translationstate), CHUNKID_RTC_TSSTATE);
+    dj_mem_addSafePointer((void**)&rtc_ts); // GC shouldn't run during RTC, but just to be safe.
 
     // uses 512bytes on the stack... maybe optimise this later
     // RTC code should always be in the 64K-128K segment.
@@ -229,6 +235,11 @@ void rtc_compile_lib(dj_infusion *infusion) {
     // We need to fill in the addresses in rtc_method_start_addresses in the
     // empty slots in the handler table.
     rtc_update_method_pointers(infusion, rtc_method_start_addresses);
+
+    // Free memory for translation state datastructure
+    dj_mem_removeSafePointer((void**)&rtc_ts);
+    dj_mem_free(rtc_ts);
+    rtc_ts = NULL;
 }
 
 uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode) {

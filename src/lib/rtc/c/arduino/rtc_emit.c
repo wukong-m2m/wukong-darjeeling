@@ -1,5 +1,6 @@
 #include "debug.h"
 #include "wkreprog.h"
+#include "rtc.h"
 #include "rtc_emit.h"
 #include "rtc_optimiser.h"
 

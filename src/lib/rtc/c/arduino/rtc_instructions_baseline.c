@@ -20,7 +20,8 @@ extern void __divmodhi4(void);
 extern void __mulsi3(void);
 extern void __divmodsi4(void);
 
-void rtc_translate_single_instruction(rtc_translationstate *ts) {
+void rtc_translate_single_instruction() {
+    rtc_translationstate *ts = rtc_ts;
     dj_infusion *target_infusion;
     uint_farptr_t tmp_current_position;
     uint8_t offset;

@@ -2,7 +2,6 @@
 #define RTC_EMIT_H
 
 #include <stdint.h>
-#define RTC_CODEBUFFER_SIZE 96
 
 void emit_init(uint16_t *rtc_codebuffer);
 

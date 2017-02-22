@@ -4,6 +4,6 @@
 #include <stdint.h>
 #include "rtc.h"
 
-void rtc_translate_single_instruction(rtc_translationstate *translationstate);
+void rtc_translate_single_instruction();
 
 #endif // RTC_INSTRUCTIONS_H

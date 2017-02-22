@@ -7,6 +7,8 @@
 #define RTC_START_OF_COMPILED_CODE_SPACE (GET_FAR_ADDRESS(rtc_start_of_compiled_code_marker))
 #define RTC_END_OF_COMPILED_CODE_SPACE ((uint32_t)122880)
 
+#define RTC_CODEBUFFER_SIZE 96
+
 extern uint16_t rtc_start_of_next_method;
 #define RTC_SET_START_OF_NEXT_METHOD(addr) do { rtc_start_of_next_method = (uint16_t)(addr/2); } while(0)
 #define RTC_GET_START_OF_NEXT_METHOD()     ( ((uint32_t)rtc_start_of_next_method)*2 )
@@ -21,7 +23,6 @@ void rtc_compile_lib(dj_infusion *);
 #define AVRORATRACE_ENABLE()
 #endif
 
-
 uint16_t rtc_offset_for_static_ref(dj_infusion *infusion_ptr, uint8_t variable_index);
 uint16_t rtc_offset_for_static_byte(dj_infusion *infusion_ptr, uint8_t variable_index);
 uint16_t rtc_offset_for_static_short(dj_infusion *infusion_ptr, uint8_t variable_index);
@@ -34,8 +35,6 @@ uint8_t offset_for_intlocal_long(dj_di_pointer methodimpl, uint8_t local);
 uint8_t offset_for_reflocal(dj_di_pointer methodimpl, uint8_t local);
 uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode);
 
-// Just a container for a lot of parameters we need to
-// make available to rtc_translate_single_instruction
 typedef struct _rtc_translationstate {
 	dj_infusion *infusion;
 	dj_di_pointer methodimpl;
@@ -44,6 +43,7 @@ typedef struct _rtc_translationstate {
     uint16_t method_length;
 	uint_farptr_t branch_target_table_start_ptr;
     uint16_t branch_target_count; // Keep track of how many branch targets we've seen
+    uint16_t codebuffer[RTC_CODEBUFFER_SIZE];
 #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS)
     uint8_t do_CONST_SHIFT_optimisation;
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
@@ -60,5 +60,9 @@ typedef struct _rtc_translationstate {
     bool may_use_RZ;
 #endif // AOT_STRATEGY_MARKLOOP
 } rtc_translationstate;
+
+// Store a global pointer to the translation state. This will point to a big struct on the heap that
+// will contain all the state necessary for AOT translation.
+extern rtc_translationstate *rtc_ts;
 
 #endif // RTC_H
