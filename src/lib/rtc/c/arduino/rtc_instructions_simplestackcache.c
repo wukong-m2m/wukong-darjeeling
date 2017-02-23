@@ -1726,8 +1726,7 @@ void rtc_translate_single_instruction() {
 
             emit_RCALL(0); // RCALL to offset 0 does nothing, except get the PC on the stack, which we need here
 
-            emit_POP(RZH); // POP PC into Z (ignore the highest (>128K) byte for now)
-            emit_POP(RZH);
+            emit_POP(RZH); // POP PC into Z
             emit_POP(RZL);
             emit_ADIW(RZ, 7); // Will need to compensate here for the instructions inbetween RCALL(0) and the table. Now Z will point to the start of the RJMP table.
             emit_ADD(RZL, operand_regs1[0]); // Add the index to get the target address in the RJMP table
