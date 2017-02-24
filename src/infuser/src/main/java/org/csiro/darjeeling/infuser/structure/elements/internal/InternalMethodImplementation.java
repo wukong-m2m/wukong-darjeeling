@@ -106,6 +106,12 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 		return isNative;
 	}
 
+	public boolean usesLocalInfusionStatics()
+	{
+		if (codeBlock==null) return false; else
+			return codeBlock.usesLocalInfusionStatics();
+	}
+
 	public int getNumberOfBranchTargets()
 	{
 		if (codeBlock==null) return 0; else

@@ -28,10 +28,10 @@
 
 #ifdef ARRAYINDEX_32BIT
  // Version 100: 32 bit index
-#define INFUSION_FORMAT_VERSION 108
+#define INFUSION_FORMAT_VERSION 110
 #else
  // Version 101: 16 bit index
-#define INFUSION_FORMAT_VERSION 109
+#define INFUSION_FORMAT_VERSION 111
 #endif
 
 enum ElementType
@@ -48,7 +48,8 @@ enum ElementType
 enum MethodImplementationFlags
 {
 	FLAGS_NATIVE = 1,
-	FLAGS_STATIC = 2
+	FLAGS_STATIC = 2,
+	FLAGS_USESLOCALINFUSIONSTATICS = 4
 };
 
 enum JavaTypeID

@@ -30,6 +30,7 @@ import org.apache.bcel.classfile.Code;
 import org.apache.bcel.classfile.CodeException;
 import org.apache.bcel.classfile.ConstantClass;
 import org.apache.bcel.generic.ConstantPoolGen;
+import org.csiro.darjeeling.infuser.bytecode.instructions.LocalIdInstruction;
 import org.csiro.darjeeling.infuser.bytecode.transformations.AddBranchTargetInstructions;
 import org.csiro.darjeeling.infuser.bytecode.transformations.AddMarkLoopInstructions;
 import org.csiro.darjeeling.infuser.bytecode.transformations.AnalyseTypes;
@@ -166,6 +167,34 @@ public class CodeBlock
 	public int getLocalVariableCount()
 	{
 		return localVariables.size();
+	}
+
+	/**
+	 * @return the number of branch targets
+	 */
+	public boolean usesLocalInfusionStatics()
+	{
+		for (int i=0; i<instructions.size(); i++)
+		{			
+			InstructionHandle handle = instructions.get(i);
+			Opcode opcode = handle.getInstruction().getOpcode();
+			if (opcode == Opcode.PUTSTATIC_B ||
+					opcode == Opcode.PUTSTATIC_C ||
+					opcode == Opcode.PUTSTATIC_S ||
+					opcode == Opcode.PUTSTATIC_I ||
+					opcode == Opcode.PUTSTATIC_L ||
+					opcode == Opcode.PUTSTATIC_A ||
+					opcode == Opcode.GETSTATIC_A ||
+					opcode == Opcode.GETSTATIC_B ||
+					opcode == Opcode.GETSTATIC_C ||
+					opcode == Opcode.GETSTATIC_I ||
+					opcode == Opcode.GETSTATIC_L ||
+					opcode == Opcode.GETSTATIC_S) {
+				if (((LocalIdInstruction)handle.getInstruction()).referencesLocalInfusion())
+					return true;
+			}
+		}
+		return false;
 	}
 
 	/**
