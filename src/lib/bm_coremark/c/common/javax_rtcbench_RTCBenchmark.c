@@ -8,8 +8,6 @@
 void __attribute__((noinline)) rtcbenchmark_measure_native_performance() {
 	javax_darjeeling_Stopwatch_void_resetAndStart();
 
-	avroraPrintStr("C version runs in separate conf");
-
 	javax_darjeeling_Stopwatch_void_measure();
 }
 
