@@ -100,12 +100,11 @@ public class CoreState {
 		return crc;
 	}
 
-
 	/* Default initialization patterns */
-	private static String[] intpat  ={    "5012",    "1234",    "-874",    "+122"};
-	private static String[] floatpat={"35.54400",".1234500","-110.700","+0.64400"};
-	private static String[] scipat  ={"5.500e+3","-.123e-2","-87e+832","+0.6e-12"};
-	private static String[] errpat  ={"T0.3e-1F","-T.T++Tq","1T3.4e4z","34.0e-T^"};
+	private static Object[] intpat  ={    "5012".getBytes(),    "1234".getBytes(),    "-874".getBytes(),    "+122".getBytes()};
+	private static Object[] floatpat={"35.54400".getBytes(),".1234500".getBytes(),"-110.700".getBytes(),"+0.64400".getBytes()};
+	private static Object[] scipat  ={"5.500e+3".getBytes(),"-.123e-2".getBytes(),"-87e+832".getBytes(),"+0.6e-12".getBytes()};
+	private static Object[] errpat  ={"T0.3e-1F".getBytes(),"-T.T++Tq".getBytes(),"1T3.4e4z".getBytes(),"34.0e-T^".getBytes()};
 
 	/* Function: core_init_state
 		Initialize the input data for the state machine.
@@ -135,21 +134,21 @@ public class CoreState {
 				case 0: /* int */
 				case 1: /* int */
 				case 2: /* int */
-					buf=intpat[(seed>>3) & 0x3].getBytes();
+					buf=(byte[])intpat[(seed>>3) & 0x3];
 					next=4;
 				break;
 				case 3: /* float */
 				case 4: /* float */
-					buf=floatpat[(seed>>3) & 0x3].getBytes();
+					buf=(byte[])floatpat[(seed>>3) & 0x3];
 					next=8;
 				break;
 				case 5: /* scientific */
 				case 6: /* scientific */
-					buf=scipat[(seed>>3) & 0x3].getBytes();
+					buf=(byte[])scipat[(seed>>3) & 0x3];
 					next=8;
 				break;
 				case 7: /* invalid */
-					buf=errpat[(seed>>3) & 0x3].getBytes();
+					buf=(byte[])errpat[(seed>>3) & 0x3];
 					next=8;
 				break;
 				default: /* Never happen, just to make some compilers happy */
