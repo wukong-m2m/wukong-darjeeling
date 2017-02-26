@@ -3,9 +3,27 @@
 #include "program_mem.h"
 #include "wkreprog.h"
 #include "asm.h"
+#include "rtc.h"
 #include "rtc_emit.h"
 #include "rtc_branches.h"
 #include "config.h"
+
+
+void rtc_mark_branchtarget() {
+    // This is a noop, but we need to record the offset of the next
+    // instruction in the branch target table at the start of the method.
+    // Record the offset IN WORDS from the method start to make sure it works
+    // for addresses > 128K as well. (but this won't work for methods > 128K)
+    emit_flush_to_flash(); // Finish writing, and also make sure we won't optimise across basic block boundaries.
+    uint_farptr_t tmp_current_position = wkreprog_get_raw_position();
+    wkreprog_close();
+    wkreprog_open_raw(rtc_branch_target_table_1_address(rtc_ts, rtc_ts->branch_target_count), RTC_END_OF_COMPILED_CODE_SPACE);
+    emit_raw_word(tmp_current_position/2 - rtc_ts->branch_target_table_start_ptr/2);
+    emit_flush_to_flash();
+    wkreprog_close();
+    wkreprog_open_raw(tmp_current_position, RTC_END_OF_COMPILED_CODE_SPACE);
+    rtc_ts->branch_target_count++;
+}
 
 void emit_x_branchtag(uint16_t opcode, uint16_t target) {
     // instead of the branch, output a tag that can be replaced when target addresses are all known:

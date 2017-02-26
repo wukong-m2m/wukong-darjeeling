@@ -153,6 +153,8 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     while (rtc_ts->pc < rtc_ts->method_length) {
         rtc_translate_single_instruction();
     }
+    rtc_mark_branchtarget(); // Mark the location of the epilogue
+    emit_x_epilogue();
 
     emit_flush_to_flash();
 

@@ -23,7 +23,6 @@ extern void __divmodsi4(void);
 void rtc_translate_single_instruction() {
     rtc_translationstate *ts = rtc_ts;
     dj_infusion *target_infusion;
-    uint_farptr_t tmp_current_position;
     uint8_t offset;
     uint8_t m, n;
     int8_t i;
@@ -1137,18 +1136,18 @@ void rtc_translate_single_instruction() {
         break;
         case JVM_SRETURN:
             emit_x_POP_16bit(R24);
-            emit_x_epilogue();
+            emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_IRETURN:
             emit_x_POP_32bit(R22);
-            emit_x_epilogue();
+            emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_ARETURN:
             emit_x_POP_REF(R24); // POP the reference into Z
-            emit_x_epilogue();
+            emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_RETURN:
-            emit_x_epilogue();
+            emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_INVOKEVIRTUAL:
         case JVM_INVOKESPECIAL:
@@ -1565,19 +1564,7 @@ void rtc_translate_single_instruction() {
         }
         break;
         case JVM_BRTARGET:
-            // This is a noop, but we need to record the offset of the next
-            // instruction in the branch target table at the start of the method.
-            // Record the offset IN WORDS from the method start to make sure it works
-            // for addresses > 128K as well. (but this won't work for methods > 128K)
-            emit_flush_to_flash(); // Finish writing, and also make sure we won't optimise across basic block boundaries.
-            tmp_current_position = wkreprog_get_raw_position();
-            wkreprog_close();
-            wkreprog_open_raw(rtc_branch_target_table_1_address(ts, ts->branch_target_count), RTC_END_OF_COMPILED_CODE_SPACE);
-            emit_raw_word(tmp_current_position/2 - ts->branch_target_table_start_ptr/2);
-            emit_flush_to_flash();
-            wkreprog_close();
-            wkreprog_open_raw(tmp_current_position, RTC_END_OF_COMPILED_CODE_SPACE);
-            ts->branch_target_count++;
+            rtc_mark_branchtarget();
         break;
         case JVM_MARKLOOP_START:
             ts->pc += (2*jvm_operand_byte0)+1;
