@@ -39,14 +39,16 @@ void emit_x_branchtag(uint16_t opcode, uint16_t target) {
 
 #define RTC_STARTADDRESS_BRTARGET_TABLE_1 (branch_target_table_start_ptr)
 #define RTC_STARTADDRESS_BRTARGET_TABLE_2 (branch_target_table_start_ptr + branchTableSize/2)
-#define RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_1(branchtarget_id) (branch_target_table_start_ptr + 2*dj_di_getU16(RTC_STARTADDRESS_BRTARGET_TABLE_1 + 2*branchtarget_id))
-#define RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_2(branchtarget_id) (branch_target_table_start_ptr + 2*dj_di_getU16(RTC_STARTADDRESS_BRTARGET_TABLE_2 + 2*branchtarget_id))
-void rtc_patch_branches(uint_farptr_t branch_target_table_start_ptr, uint_farptr_t end_of_method, uint16_t branchTableSize) {
-// Let RTC trace know the next emitted code won't belong to the last JVM opcode anymore. Otherwise the branch patches would be assigned to the last instruction in the method (probably RET)
-#ifdef AVRORA
-    avroraRTCTracePatchingBranchesOn();
-#endif
 
+// Note we only compensate for shift_because_of_smaller_prologue when reading from table 1.
+// This is because those addresses were filled during code gen, when the prologue size was not yet known.
+// After code gen, all generated code was shifted back if we emitted a smaller prologue, so we compensate by
+// substracting shift_because_of_smaller_prologue.
+// The addresses in table 2 are taken from addresses we got from RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_1
+// so these are already adjusted for the smaller prologue.
+#define RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_1(branchtarget_id) (branch_target_table_start_ptr - shift_because_of_smaller_prologue + 2*dj_di_getU16(RTC_STARTADDRESS_BRTARGET_TABLE_1 + 2*branchtarget_id))
+#define RTC_GET_BRTARGET_BYTE_ADDRESS_FROM_TABLE_2(branchtarget_id) (branch_target_table_start_ptr + 2*dj_di_getU16(RTC_STARTADDRESS_BRTARGET_TABLE_2 + 2*branchtarget_id))
+void rtc_patch_branches(uint_farptr_t branch_target_table_start_ptr, uint_farptr_t end_of_method, uint16_t branchTableSize, uint8_t shift_because_of_smaller_prologue) {
     // All branchtarget addresses should be known now, but they are based on each branch taking 3 words.
     // (since the worst case is a 1 word (reverse) conditional branch, follow by a 2 word JMP)
     // The NOP that we would need to generate take up over 10% in some benchmarks (bsort, binsrch), so
@@ -226,9 +228,4 @@ void rtc_patch_branches(uint_farptr_t branch_target_table_start_ptr, uint_farptr
         }
         emit_flush_to_flash();
     }
-
-// Let RTC trace know we're done patching branches
-#ifdef AVRORA
-    avroraRTCTracePatchingBranchesOff();
-#endif
 }

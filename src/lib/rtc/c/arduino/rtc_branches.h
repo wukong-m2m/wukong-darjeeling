@@ -12,6 +12,6 @@
 
 void rtc_mark_branchtarget();
 void emit_x_branchtag(uint16_t opcode, uint16_t target);
-void rtc_patch_branches(uint_farptr_t branch_target_table_start_ptr, uint_farptr_t end_of_method, uint16_t branchTableSize);
+void rtc_patch_branches(uint_farptr_t branch_target_table_start_ptr, uint_farptr_t end_of_method, uint16_t branchTableSize, uint8_t shift_because_of_smaller_prologue);
 
 #endif // RTC_BRANCHES_H

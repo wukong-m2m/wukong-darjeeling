@@ -13,6 +13,7 @@
 #include "rtc_instructions.h"
 #include "rtc_branches.h"
 #include "rtc_emit.h"
+#include "rtc_prologue_epilogue.h"
 #include "opcodes.h"
 #include <avr/pgmspace.h>
 #include <avr/boot.h>
@@ -119,11 +120,21 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 
     // Remember the start of the branch table
     uint_farptr_t branch_target_table_start_ptr = wkreprog_get_raw_position();
+    uint_farptr_t prologue_start_ptr = branch_target_table_start_ptr + rtc_branch_table_size(methodimpl);
+    uint_farptr_t code_start_ptr = prologue_start_ptr + RTC_PROLOGUE_MAX_SIZE;
+
     // Reserve space for the branch table
     DEBUG_LOG(DBG_RTC, "[rtc] Reserving %d bytes for %d branch targets at address %p\n", rtc_branch_table_size(methodimpl), dj_di_methodImplementation_getNumberOfBranchTargets(methodimpl), branch_target_table_start_ptr);
-    wkreprog_skip(rtc_branch_table_size(methodimpl));
+    wkreprog_skip(rtc_branch_table_size(methodimpl) + RTC_PROLOGUE_MAX_SIZE);
 
-    emit_x_prologue();
+    // The method prologue/epilogue will depend on the registers used.
+    //  - reserve RTC_PROLOGUE_MAX_SIZE bytes
+    //  - generate code without the prologue
+    //  - after generation go back to prologue_start_ptr
+    //  - generate prologue
+    //  - prologue_end_ptr = wkreprog_get_raw_position();
+    //  - move code at code_start_ptr back by (code_start_ptr-prologue_end_ptr)
+    //  - compensate patch_branches by (code_start_ptr-prologue_end_ptr) bytes to account for bytes saved in the prologue
 
     rtc_ts->pc = 0;
     rtc_ts->infusion = infusion;
@@ -132,6 +143,10 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     rtc_ts->method_length = dj_di_methodImplementation_getLength(methodimpl);
     rtc_ts->branch_target_table_start_ptr = branch_target_table_start_ptr;
     rtc_ts->branch_target_count = 0;
+    rtc_ts->current_method_used_call_saved_reg = 0;
+    if (dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_USESLOCALINFUSIONSTATICS) {
+        rtc_current_method_set_uses_reg(R2);
+    }
 #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS)
     rtc_ts->do_CONST_SHIFT_optimisation = 0;
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
@@ -153,19 +168,50 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     while (rtc_ts->pc < rtc_ts->method_length) {
         rtc_translate_single_instruction();
     }
+
     rtc_mark_branchtarget(); // Mark the location of the epilogue
-    emit_x_epilogue();
+    rtc_emit_epilogue(); // Emit epilogue for used registers only
 
+    // record the position of the end of the epilogue
     emit_flush_to_flash();
-
-    uint_farptr_t tmp_current_position = wkreprog_get_raw_position();
+    uint_farptr_t code_end_ptr = wkreprog_get_raw_position();
     wkreprog_close();
 
-    // Second pass:
+// Let RTC trace know the next emitted code won't belong to the last JVM opcode anymore. Otherwise the branch patches would be assigned to the last instruction in the method (probably RET)
+#ifdef AVRORA
+    avroraRTCTracePatchingBranchesOn();
+#endif
+
+    // go back to the start of the method and emit the prologue for used registers only
+    wkreprog_open_raw(prologue_start_ptr, RTC_END_OF_COMPILED_CODE_SPACE);
+    rtc_emit_prologue();
+    emit_flush_to_flash();
+
+    // this is how many bytes we saved, and will shift the code block by,
+    // because we used a smaller than maximum prologue.
+    uint8_t shift_because_of_smaller_prologue = code_start_ptr - wkreprog_get_raw_position();
+
+
+
+    // shift all code back by this many bytes
+    for (uint_farptr_t pos = code_start_ptr; pos < code_end_ptr; pos+=2) {
+        emit_without_optimisation(dj_di_getU16(pos));
+    }
+    emit_flush_to_flash();
+
+    wkreprog_close();
+
     // All branchtarget addresses should be known now.
     // Scan for branch tags, and replace them with the proper instructions.
-    rtc_patch_branches(branch_target_table_start_ptr, tmp_current_position, rtc_branch_table_size(methodimpl));
+    rtc_patch_branches(branch_target_table_start_ptr,
+                       code_end_ptr - shift_because_of_smaller_prologue,
+                       rtc_branch_table_size(methodimpl),
+                       shift_because_of_smaller_prologue);
 //avroraStopRTCCompileTimer();
+// Let RTC trace know we're done patching branches
+#ifdef AVRORA
+    avroraRTCTracePatchingBranchesOff();
+#endif
 }
 
 void rtc_compile_lib(dj_infusion *infusion) {
