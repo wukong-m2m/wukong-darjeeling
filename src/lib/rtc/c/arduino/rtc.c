@@ -177,15 +177,20 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     uint_farptr_t code_end_ptr = wkreprog_get_raw_position();
     wkreprog_close();
 
-// Let RTC trace know the next emitted code won't belong to the last JVM opcode anymore. Otherwise the branch patches would be assigned to the last instruction in the method (probably RET)
+// Let RTC trace know the next emitted code won't belong to the prologue anymore. Otherwise the branch patches would be assigned to the last instruction in the method (probably RET)
 #ifdef AVRORA
-    avroraRTCTracePatchingBranchesOn();
+    avroraRTCTraceEmitPrologue();
 #endif
 
     // go back to the start of the method and emit the prologue for used registers only
     wkreprog_open_raw(prologue_start_ptr, RTC_END_OF_COMPILED_CODE_SPACE);
     rtc_emit_prologue();
     emit_flush_to_flash();
+
+// Let RTC trace know the next emitted code won't belong to the prologue anymore. Otherwise the branch patches would be assigned to the last instruction in the method (probably RET)
+#ifdef AVRORA
+    avroraRTCTracePatchingBranchesOn();
+#endif
 
     // this is how many bytes we saved, and will shift the code block by,
     // because we used a smaller than maximum prologue.
