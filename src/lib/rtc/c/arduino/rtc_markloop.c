@@ -8,6 +8,7 @@
 #include "rtc.h"
 #include "opcodes.h"
 #include "rtc_markloop.h"
+#include "rtc_prologue_epilogue.h"
 
 #define RTC_STACKCACHE_AVAILABLE                     0xFF
 #define RTC_STACKCACHE_IN_USE                        0xFE
@@ -346,14 +347,18 @@ uint8_t rtc_stackcache_getfree_pair() {
     }
     RTC_STACKCACHE_MARK_IN_USE(idx);
     RTC_STACKCACHE_CLEAR_VALUETAG(idx);
-    return ARRAY_INDEX_TO_REG(idx);
+    uint8_t reg = ARRAY_INDEX_TO_REG(idx);
+    rtc_current_method_set_uses_reg(reg);
+    return reg;
 }
 uint8_t rtc_stackcache_getfree_pair_but_only_if_we_wont_spill() {
     uint8_t idx = rtc_get_lru_available_index();
     if (idx != 0xFF) {
         RTC_STACKCACHE_MARK_IN_USE(idx);
         RTC_STACKCACHE_CLEAR_VALUETAG(idx);
-        return ARRAY_INDEX_TO_REG(idx);
+        uint8_t reg = ARRAY_INDEX_TO_REG(idx);
+        rtc_current_method_set_uses_reg(reg);
+        return reg;
     }
     return 0xFF;
 }
@@ -393,6 +398,7 @@ bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs) {
             // We're in luck.
             RTC_STACKCACHE_MARK_IN_USE(idx);
             RTC_STACKCACHE_CLEAR_VALUETAG(idx);
+            rtc_current_method_set_uses_reg(reg);
             regs[0] = reg;
             regs[1] = reg+1;
             return true;
@@ -691,8 +697,10 @@ void rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags() {      
             // next iteration.
             continue;
         } else {
+            rtc_current_method_set_uses_reg(ARRAY_INDEX_TO_REG(call_saved_reg_available_idx));
             // There's also an available call-saved register, so move the value in the call-used reg there.
             emit_MOVW(ARRAY_INDEX_TO_REG(call_saved_reg_available_idx), ARRAY_INDEX_TO_REG(call_used_reg_on_stack_idx));
+
             // Update the cache state and value tag, and mark the source register IN USE
             RTC_STACKCACHE_MOVE_CACHE_STATE(call_saved_reg_available_idx, call_used_reg_on_stack_idx);
         }
@@ -1135,6 +1143,7 @@ uint8_t rtc_markloop_getfree_16bit_idx_callsaved_only() {
     for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
         if(RTC_STACKCACHE_IS_AVAILABLE(idx) && !RTC_MARKLOOP_ISPINNED(idx) && !rtc_stackcache_is_call_used_idx(idx)) {
             RTC_STACKCACHE_MARK_IN_USE(idx);
+            rtc_current_method_set_uses_reg(ARRAY_INDEX_TO_REG(idx));
             return idx;
         }
     }
@@ -1157,28 +1166,6 @@ void rtc_markloop_emit_prologue() {
         valuetag = valuetag & 0xF3FF;
 
         if (RTC_VALUETAG_IS_TYPE_LOCAL(valuetag)) {
-#define GeenVLIEGTUIG
-#ifdef VLIEGTUIG
-            idx_to_pin = rtc_poppedstackcache_find_available_valuetag(valuetag);
-            if (RTC_VALUETAG_IS_INT(valuetag)) {
-                idx_to_pin2 = rtc_poppedstackcache_find_available_valuetag(RTC_VALUETAG_TO_INT_L(valuetag));
-                if (idx_to_pin != 0xFF && idx_to_pin2 != 0xFF && !rtc_stackcache_is_call_used_idx(idx_to_pin) && !rtc_stackcache_is_call_used_idx(idx_to_pin2)) {
-                    // Int is already in a non-callused reg. Just pin it.
-                    RTC_MARKLOOP_PIN(idx_to_pin, needs_store);
-                    RTC_MARKLOOP_PIN(idx_to_pin2, needs_store);
-                    number_idx_pinned+=2;
-                    continue;
-                }
-            } else {
-                if (idx_to_pin != 0xFF && !rtc_stackcache_is_call_used_idx(idx_to_pin)) {
-                // Short or ref is already in a non-callused reg. Just pin it.
-                    RTC_MARKLOOP_PIN(idx_to_pin, needs_store);
-                    number_idx_pinned++;
-                    continue;
-                }
-            }
-#endif
-
             idx_to_pin = rtc_markloop_getfree_16bit_idx_callsaved_only();
             uint8_t operand_regs[4];
             operand_regs[0] = ARRAY_INDEX_TO_REG(idx_to_pin);

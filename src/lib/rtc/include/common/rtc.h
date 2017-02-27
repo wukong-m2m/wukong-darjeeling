@@ -50,6 +50,7 @@ typedef struct _rtc_translationstate {
     uint16_t codebuffer[RTC_CODEBUFFER_SIZE];
     uint16_t *rtc_codebuffer;
     uint16_t *rtc_codebuffer_position; // A pointer to somewhere within the buffer
+    uint8_t current_method_used_call_saved_reg; // Used to generate the method prologue/epilogue
 #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS)
     uint8_t do_CONST_SHIFT_optimisation;
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
@@ -58,7 +59,6 @@ typedef struct _rtc_translationstate {
     uint16_t current_instruction_valuetag;
 #endif // AOT_STRATEGY_POPPEDSTACKCACHE
 #ifdef AOT_STRATEGY_MARKLOOP
-    uint8_t current_method_used_call_saved_reg; // Used to generate the method prologue/epilogue
     uint16_t current_instruction_pc; // We may need this later, after the instruction already forwarded pc to skip over arguments
     uint16_t current_instruction_valuetag;
     uint8_t current_instruction_opcode;

@@ -14,8 +14,11 @@ void rtc_current_method_set_uses_reg(uint8_t reg) {
 }
 
 bool rtc_current_method_get_uses_reg(uint8_t reg) {
-	return true; // for testing purposes only
-	// return (rtc_ts->current_method_used_call_saved_reg & 1<<((reg-2)/2)) != 0;
+#ifdef AOT_STRATEGY_MARKLOOP	
+	return (rtc_ts->current_method_used_call_saved_reg & 1<<((reg-2)/2)) != 0;
+#else // TODO: implement this optimisation for other strategies as well
+	return true;
+#endif
 }
 
 uint8_t rtc_current_method_prologue_size() {
