@@ -21,12 +21,14 @@
  
 #include <stdlib.h>
 
+#include "config.h"
 #include "panic.h"
 #include "debug.h"
 #include "hooks.h"
 #include "core.h"
 
-void dj_panic(int32_t panictype)
+#ifndef AVRORA
+void dj_panic(uint8_t panictype)
 {
 /*    switch(panictype)
     {
@@ -61,11 +63,7 @@ void dj_panic(int32_t panictype)
             DEBUG_LOG(true, "PANIC: unknown panic type %d!\n", panictype);
             break;
     }*/
-#ifdef AVRORA
-    avroraPrintStr("PANIC!\n\r");
-    avroraPrintInt32(panictype);
-    asm volatile ("break");
-#else
+
     DEBUG_LOG(true, "PANIC: %d!\n", panictype);
     if (dj_exec_getRunlevel() < RUNLEVEL_PANIC) {
         dj_exec_setRunlevel(panictype);
@@ -74,5 +72,5 @@ void dj_panic(int32_t panictype)
     } else {
         exit(panictype); // To avoid getting into a recursive panic.
     }
-#endif
 }
+#endif

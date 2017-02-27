@@ -23,6 +23,7 @@
 #ifndef __panic_h
 #define __panic_h
 
+#include "config.h"
 #include "types.h"
 #include "core.h"
  
@@ -53,6 +54,10 @@
 // Reserved 110-119 for wkpf
 // Reserved 120-129 for eco
 
-void dj_panic(int32_t panictype);
-
+#ifdef AVRORA
+#define dj_panic(panictype)     { avroraPrintPanic(panictype); asm volatile ("break"); }
+#else
+void dj_panic(uint8_t panictype);
 #endif
+
+#endif // __panic_h
