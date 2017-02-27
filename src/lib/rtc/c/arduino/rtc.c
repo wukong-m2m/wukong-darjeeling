@@ -144,7 +144,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     rtc_ts->branch_target_table_start_ptr = branch_target_table_start_ptr;
     rtc_ts->branch_target_count = 0;
     rtc_ts->current_method_used_call_saved_reg = 0;
-    if (dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_USESLOCALINFUSIONSTATICS) {
+    if (dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_USESSTATICFIELDS) {
         rtc_current_method_set_uses_reg(R2);
     }
 #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS)

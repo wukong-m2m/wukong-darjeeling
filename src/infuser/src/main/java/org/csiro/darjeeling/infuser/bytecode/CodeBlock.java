@@ -172,7 +172,7 @@ public class CodeBlock
 	/**
 	 * @return the number of branch targets
 	 */
-	public boolean usesLocalInfusionStatics()
+	public boolean usesStaticFields()
 	{
 		for (int i=0; i<instructions.size(); i++)
 		{			
@@ -190,8 +190,7 @@ public class CodeBlock
 					opcode == Opcode.GETSTATIC_I ||
 					opcode == Opcode.GETSTATIC_L ||
 					opcode == Opcode.GETSTATIC_S) {
-				if (((LocalIdInstruction)handle.getInstruction()).referencesLocalInfusion())
-					return true;
+				return true;
 			}
 		}
 		return false;

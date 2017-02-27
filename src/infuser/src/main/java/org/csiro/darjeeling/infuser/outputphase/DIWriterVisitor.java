@@ -212,7 +212,7 @@ public class DIWriterVisitor extends DescendingVisitor
 			int flags = 0;
 			if (element.isNative()) flags |= 1;
 			if (element.isStatic()) flags |= 2;
-			if (element.usesLocalInfusionStatics()) flags |= 4;
+			if (element.usesStaticFields()) flags |= 4;
 			out.writeUINT8(flags);
 			
 			// Write return type

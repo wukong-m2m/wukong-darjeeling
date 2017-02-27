@@ -39,11 +39,6 @@ public class LocalIdInstruction extends Instruction
 		this.localId = localId;
 	}
 
-	public boolean referencesLocalInfusion()
-	{
-		return localId.getInfusionId() == 0;
-	}
-
 	@Override
 	public void dump(DataOutputStream out) throws IOException
 	{

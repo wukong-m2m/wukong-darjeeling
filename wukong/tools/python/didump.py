@@ -83,8 +83,9 @@ def print_method_impl_list(rawdata):
 		print "\t\t\tintlocvar-intarg:", methoddata.pop(0)
 		print "\t\t\ttotal number of parameters:", methoddata.pop(0)
 		print "\t\t\tmax stack:", methoddata.pop(0)
+		print "\t\t\tmax ref stack:", methoddata.pop(0)
 		flags = methoddata.pop(0)
-		print "\t\t\tflags:", ("NATIVE" if flags & 1 != 0 else ""), ("STATIC" if flags & 2 != 0 else "")
+		print "\t\t\tflags:", ("NATIVE" if flags & 1 != 0 else ""), ("STATIC" if flags & 2 != 0 else ""), ("USESSTATICFIELDS" if flags & 4 != 0 else "")
 		print "\t\t\treturn type:", methoddata.pop(0)
 		number_of_branch_targets = little_endian(methoddata[0:2])
 		print "\t\t\tnumber of branch targets:", number_of_branch_targets
@@ -93,15 +94,15 @@ def print_method_impl_list(rawdata):
 		print "\t\t\tcode length:", code_length
 		print "\t\t\tcode:", methoddata[2:2+code_length]
 		methoddata = methoddata[2+code_length:]
-		number_of_exceptions = methoddata.pop(0)
-		print "\t\t\tnumber of exceptions:", number_of_exceptions
-		for j in range(number_of_exceptions):
-			print "\t\t\t\texception", j
-			print "\t\t\t\tcatch type infusion:", methoddata[0]
-			print "\t\t\t\tcatch type local id:", methoddata[1]
-			print "\t\t\t\texception start, end PC:", little_endian(methoddata[2:4]), ",", little_endian(methoddata[4:6])
-			print "\t\t\t\thandler PC:", little_endian(methoddata[6:8])
-			methoddata = methoddata[8:]
+		# number_of_exceptions = methoddata.pop(0)
+		# print "\t\t\tnumber of exceptions:", number_of_exceptions
+		# for j in range(number_of_exceptions):
+		# 	print "\t\t\t\texception", j
+		# 	print "\t\t\t\tcatch type infusion:", methoddata[0]
+		# 	print "\t\t\t\tcatch type local id:", methoddata[1]
+		# 	print "\t\t\t\texception start, end PC:", little_endian(methoddata[2:4]), ",", little_endian(methoddata[4:6])
+		# 	print "\t\t\t\thandler PC:", little_endian(methoddata[6:8])
+		# 	methoddata = methoddata[8:]
 		if i != count-1:
 			print ''
 

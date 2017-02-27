@@ -49,7 +49,7 @@ enum MethodImplementationFlags
 {
 	FLAGS_NATIVE = 1,
 	FLAGS_STATIC = 2,
-	FLAGS_USESLOCALINFUSIONSTATICS = 4
+	FLAGS_USESSTATICFIELDS = 4
 };
 
 enum JavaTypeID
