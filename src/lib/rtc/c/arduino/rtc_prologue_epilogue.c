@@ -10,6 +10,8 @@ void rtc_current_method_set_uses_reg(uint8_t reg) {
 	// R12 : bit 5
 	// R14 : bit 6
 	// R16 : bit 7
+
+	// This makes sure only R2 through R16 will update a bit. We can safely call it with other values, but current_method_used_call_saved_reg will not be affected
 	rtc_ts->current_method_used_call_saved_reg |= 1<<((reg-2)/2);
 }
 

@@ -599,6 +599,7 @@ void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack
             }
         }
 
+        rtc_current_method_set_uses_reg(ARRAY_INDEX_TO_REG(target_idx));
         if (regs != NULL) {
             regs[0] = ARRAY_INDEX_TO_REG(target_idx);
             regs[1] = ARRAY_INDEX_TO_REG(target_idx)+1;
