@@ -878,7 +878,7 @@ static inline void dj_exec_passParameters(dj_frame *frame, dj_di_pointer methodI
  * Returns from a method. The current execution frame is popped off the thread's frame stack. If there are no other
  * frames to execute, the thread ends. Otherwise control is switched to the underlying caller frame.
  */
-static inline void returnFromMethodFast(dj_di_pointer calleeMethodImpl) {
+static inline void returnFromMethodFast() {
 	// Mark 41 at 0 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 42 at 30 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 45 at 17 cycles since last mark. (already deducted 5 cycles for timer overhead)
@@ -933,13 +933,6 @@ static inline void returnFromMethodFast(dj_di_pointer calleeMethodImpl) {
 
 // avroraCallMethodTimerMark(49);
 }
-
-#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
-static inline void returnFromMethod() {
-	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(dj_exec_getCurrentThread()->frameStack->method);
-	returnFromMethodFast(methodImpl);
-}
-#endif
 
 /**
  * Returns true if the current frame belongs to a RTC compiled method.
@@ -1218,7 +1211,7 @@ avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->h
 			}
 
 // avroraCallMethodTimerMark(26);
-			returnFromMethodFast(methodImpl);
+			returnFromMethodFast();
 // avroraCallMethodTimerMark(27);
 
 			switch (rettype) {
