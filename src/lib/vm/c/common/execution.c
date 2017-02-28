@@ -878,7 +878,7 @@ static inline void dj_exec_passParameters(dj_frame *frame, dj_di_pointer methodI
  * Returns from a method. The current execution frame is popped off the thread's frame stack. If there are no other
  * frames to execute, the thread ends. Otherwise control is switched to the underlying caller frame.
  */
-static inline void returnFromMethodFast(dj_di_pointer calleeMethodImpl, uint8_t numberOfIntArguments, uint8_t numberOfRefArguments) {
+static inline void returnFromMethodFast(dj_di_pointer calleeMethodImpl) {
 	// Mark 41 at 0 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 42 at 30 cycles since last mark. (already deducted 5 cycles for timer overhead)
 	// Mark 45 at 17 cycles since last mark. (already deducted 5 cycles for timer overhead)
@@ -920,12 +920,6 @@ static inline void returnFromMethodFast(dj_di_pointer calleeMethodImpl, uint8_t 
 		// dj_exec_activate_thread(dj_exec_getCurrentThread()); This just ends up setting vm->currentThread to the value it already has, and then calling dj_exec_loadLocalState... Just call it directly.
 		dj_exec_loadLocalState(dj_exec_getCurrentThread()->frameStack);
 
-// avroraCallMethodTimerMark(46);
-		// pop arguments off the stack
-		refStack -= numberOfRefArguments;
-
-// avroraCallMethodTimerMark(47);
-		intStack += numberOfIntArguments;
 // avroraCallMethodTimerMark(48);
 	}
 
@@ -943,11 +937,7 @@ static inline void returnFromMethodFast(dj_di_pointer calleeMethodImpl, uint8_t 
 #ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 static inline void returnFromMethod() {
 	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(dj_exec_getCurrentThread()->frameStack->method);
-	uint8_t numberOfIntArguments = dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
-	uint8_t numberOfRefArguments = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
-									+ ((dj_di_methodImplementation_getFlags(methodImpl) & FLAGS_STATIC) ? 0 : 1);
-
-	returnFromMethodFast(methodImpl, numberOfIntArguments, numberOfRefArguments);
+	returnFromMethodFast(methodImpl);
 }
 #endif
 
@@ -1154,6 +1144,9 @@ avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->h
 	uint8_t numberOfRefArguments = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
 									+ ((flags & FLAGS_STATIC) ? 0 : 1);
 		dj_exec_passParameters(frame, methodImpl, numberOfIntArguments, numberOfRefArguments);
+		// pop arguments off the stack
+		refStack -= numberOfRefArguments;
+		intStack += numberOfIntArguments;
 
 // avroraCallMethodTimerMark(16);
 
@@ -1225,7 +1218,7 @@ avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->h
 			}
 
 // avroraCallMethodTimerMark(26);
-			returnFromMethodFast(methodImpl, numberOfIntArguments, numberOfRefArguments);
+			returnFromMethodFast(methodImpl);
 // avroraCallMethodTimerMark(27);
 
 			switch (rettype) {
