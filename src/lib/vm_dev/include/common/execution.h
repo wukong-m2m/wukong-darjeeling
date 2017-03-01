@@ -54,7 +54,7 @@
 extern int16_t *intStack;
 extern ref_t *refStack;
 extern ref_t *localReferenceVariables;
-void callMethod(dj_global_id methodImplId, int virtualCall);
+void callMethod(dj_global_id methodImplId, bool virtualCall);
 void createThreadAndRunMethodToFinish(dj_global_id methodImplId);
 bool dj_exec_use_rtc;
 // End Exported for RTC only
@@ -97,6 +97,15 @@ void dj_exec_updatePointers();
 
 dj_frame *dj_exec_getCurrentFrame();
 bool dj_exec_currentMethodIsRTCCompiled();
+
+#ifdef EXECUTION_PRINT_CALLS_AND_RETURNS
+#define AVRORA_PRINT_METHOD_CALL(infusionname, entity_id) avroraRTCRuntimeMethodCall(infusionname, entity_id)
+#define AVRORA_PRINT_METHOD_RETURN()                      avroraRTCRuntimeMethodCallReturn()
+#else
+#define AVRORA_PRINT_METHOD_CALL(infusionname, entity_id)
+#define AVRORA_PRINT_METHOD_RETURN()
+#endif
+
 
 #ifdef DARJEELING_DEBUG_FRAME
 void dj_exec_dumpFrame( dj_frame *frame );

@@ -878,25 +878,8 @@ static inline void dj_exec_passParameters(dj_frame *frame, dj_di_pointer methodI
  * Returns from a method. The current execution frame is popped off the thread's frame stack. If there are no other
  * frames to execute, the thread ends. Otherwise control is switched to the underlying caller frame.
  */
-static inline void returnFromMethodFast() {
-	// Mark 41 at 0 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 42 at 30 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 45 at 17 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 46 at 97 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 47 at 12 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 48 at 10 cycles since last mark. (already deducted 5 cycles for timer overhead)
-
-#ifdef EXECUTION_PRINT_CALLS_AND_RETURNS
-	avroraRTCRuntimeMethodCallReturn();
-#endif
-// dj_di_pointer calleeMethodImpl;
-
-
-// avroraCallMethodTimerMark(40);
-	// get the method from the stack frame so we can calculate how many parameters to pop off the operand stack
-	// calleeMethodImpl = dj_global_id_getMethodImplementation(
-	// 		dj_exec_getCurrentThread()->frameStack->method);
-// avroraCallMethodTimerMark(41);
+static inline void returnFromMethod() {
+	AVRORA_PRINT_METHOD_RETURN();
 
 #ifdef EXECUTION_FRAME_ON_STACK
 	dj_thread_popFrame();
@@ -905,33 +888,17 @@ static inline void returnFromMethodFast() {
 	dj_frame_destroy(dj_thread_popFrame());
 #endif // EXECUTION_FRAME_ON_STACK
 
-// avroraCallMethodTimerMark(42);
-
 	// check if there are elements on the call stack
 	if (dj_exec_getCurrentThread()->frameStack == NULL) {
-// avroraCallMethodTimerMark(43);
 		// done executing (exited last element on the call stack)
 		dj_exec_getCurrentThread()->status = THREADSTATUS_FINISHED;
 		dj_exec_breakExecution();
-// avroraCallMethodTimerMark(44);
 	} else {
 		// perform context switch.
-// avroraCallMethodTimerMark(45);
 		// dj_exec_activate_thread(dj_exec_getCurrentThread()); This just ends up setting vm->currentThread to the value it already has, and then calling dj_exec_loadLocalState... Just call it directly.
 		dj_exec_loadLocalState(dj_exec_getCurrentThread()->frameStack);
 
-// avroraCallMethodTimerMark(48);
 	}
-
-#ifdef DARJEELING_DEBUG_TRACE
-	callDepth--;
-#endif
-
-#ifdef DARJEELING_DEBUG_MEM_TRACE
-	vm_mem_dumpMemUsage();
-#endif
-
-// avroraCallMethodTimerMark(49);
 }
 
 /**
@@ -958,59 +925,150 @@ typedef int32_t  (*native_32bit_method_function_t)(uint16_t rtc_frame_locals_sta
  * case of a virtual call the object the method belongs to is on the stack and
  * should be handled as an additional parameter. Should be either 1 or 0.
  */
-void callMethod(dj_global_id methodImplId, int virtualCall)
+void callNativeMethod(dj_global_id methodImplId, bool virtualCall);
+void callMethod(dj_global_id methodImplId, bool virtualCall)
 {
-	// Mark 10 at 220 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 11 at 29 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 12 at 45 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 13 at 13 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 14 at 125 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 15 at 0 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 16 at 69 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 17 at 34 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 18 at 35 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 19 at 21 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 20 at 0 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 21 at 0 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 22 at 12 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 23 at 12 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 24 at 20 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 25 at 88 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 26 at 12 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 27 at 79 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 28 at 8 cycles since last mark. (already deducted 5 cycles for timer overhead)
-	// Mark 30 at 1 cycles since last mark. (already deducted 5 cycles for timer overhead)
+	AVRORA_PRINT_METHOD_CALL(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
 
-#ifdef EXECUTION_PRINT_CALLS_AND_RETURNS
-avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
-#endif
-// avroraCallMethodTimerMark(10);
-	bool isReturnReference=false;
-	int oldNumRefStack, numRefStack;
-	int diffRefArgs;
 	const native_method_function_t *handlers = methodImplId.infusion->native_handlers;
 	native_method_function_t handler = (handlers != NULL ? methodImplId.infusion->native_handlers[methodImplId.entity_id] : NULL);
 
-#ifdef DARJEELING_DEBUG
-	dj_infusion_getName(methodImplId.infusion, name, 16);
-
-	DEBUG_LOG(DBG_DARJEELING, ">>>>> callMethod inf %s, ent %d, vir %d\n",
-								name,
-								methodImplId.entity_id,
-								virtualCall);
-#endif
-
 	// get a pointer in program space to the method implementation block
 	// from the method's global id
-	dj_di_pointer methodImpl;
-// avroraCallMethodTimerMark(11);
-	methodImpl = dj_global_id_getMethodImplementation(methodImplId);
-// avroraCallMethodTimerMark(12);
+	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(methodImplId);
 	uint8_t flags = dj_di_methodImplementation_getFlags(methodImpl);
 
 	// check if the method is a native methods
 	if ((flags & FLAGS_NATIVE) != 0)
 	{
+		callNativeMethod(methodImplId, virtualCall);
+	} else {
+		// Java method. May or may not be RTC compiled
+
+		// create new frame for the function
+#ifdef EXECUTION_FRAME_ON_STACK
+		// Note that integer variables 'grow' down in the stack frame, so dj_di_methodImplementation_getOffsetToLocalIntegerVariables is also the size of the frame, -2 because the address of the 'first' int variable is 2 lower than the size of the frame (since slots are 16-bit).
+		uint16_t size = dj_frame_size(methodImpl);
+		dj_frame *frame = alloca(size);
+
+		if (frame == NULL) {
+			dj_exec_createAndThrow(STACKOVERFLOW_ERROR);
+			return;
+		}
+
+		// init the frame
+		frame->method = methodImplId;
+		frame->parent = NULL;
+		frame->saved_refStack = dj_frame_getReferenceStackBase(frame, methodImpl); // initial saved_refStack (nothing on the stack)
+		// set local variables to 0/null
+		// memset(dj_frame_getLocalReferenceVariables(ret), 0, localVariablesSize);
+		void * start = ((void*)frame) + sizeof(dj_frame);
+		void * end = frame->saved_refStack;
+		memset(start, 0, end-start);
+#else // EXECUTION_FRAME_ON_STACK
+		dj_frame *frame = dj_frame_create_fast(methodImplId, methodImpl);
+		// not enough space on the heap to allocate the frame
+		if (frame == NULL) {
+			dj_exec_createAndThrow(STACKOVERFLOW_ERROR);
+			return;
+		}
+#endif // EXECUTION_FRAME_ON_STACK
+
+		uint8_t numberOfIntArguments = dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
+		uint8_t numberOfRefArguments = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
+										+ ((flags & FLAGS_STATIC) ? 0 : 1);
+		dj_exec_passParameters(frame, methodImpl, numberOfIntArguments, numberOfRefArguments);
+		// pop arguments off the stack
+		refStack -= numberOfRefArguments;
+		intStack += numberOfIntArguments;
+
+
+		// save current state of the frame
+		dj_exec_saveLocalState(dj_exec_getCurrentThread()->frameStack);
+
+
+		// push the new frame on the frame stack
+		dj_thread_pushFrame(frame);
+
+
+		// switch in newly created frame
+		dj_exec_loadLocalState(frame);
+
+
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
+		if (handler != NULL && dj_exec_use_rtc)
+#endif
+		{
+			// RTC compiled method: execute it directly
+			uint16_t rtc_frame_locals_start = (uint16_t)dj_frame_getLocalReferenceVariables(frame); // Will be stored in Y by the function prologue
+			uint16_t rtc_ref_stack_start = (uint16_t)dj_frame_getReferenceStackBase(frame, methodImpl); // Will be stored in X by the function prologue
+			uint16_t rtc_statics_start = (uint16_t)methodImplId.infusion->staticReferenceFields; // Will be stored in R2 by the function prologue
+
+			int16_t ret16 = 0;
+			int32_t ret32 = 0;
+			ref_t retref = 0;
+			uint8_t rettype = dj_di_methodImplementation_getReturnType(methodImpl);
+			DEBUG_LOG(DBG_RTC, "[rtc] starting rtc compiled method %i at %p with return type %i\n", methodImplId.entity_id, handler, rettype);
+			switch (rettype) {
+				case JTID_VOID:
+					AVRORATRACE_ENABLE();
+					((native_void_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
+					AVRORATRACE_DISABLE();
+					break;
+				case JTID_BOOLEAN:
+				case JTID_CHAR:
+				case JTID_BYTE:
+				case JTID_SHORT:
+					AVRORATRACE_ENABLE();
+					ret16 = ((native_16bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
+					AVRORATRACE_DISABLE();
+					break;
+				case JTID_INT:
+					AVRORATRACE_ENABLE();
+					ret32 = ((native_32bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
+					AVRORATRACE_DISABLE();
+					break;
+				case JTID_REF:
+					AVRORATRACE_ENABLE();
+					retref = ((native_ref_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
+					AVRORATRACE_DISABLE();
+					break;
+				default:
+					dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
+			}
+
+			returnFromMethod();
+
+			switch (rettype) {
+				case JTID_VOID:
+					break;
+				case JTID_BOOLEAN:
+				case JTID_CHAR:
+				case JTID_BYTE:
+				case JTID_SHORT:
+					pushShort(ret16);
+					break;
+				case JTID_INT:
+					pushInt(ret32);
+					break;
+				case JTID_REF:
+					pushRef(retref);
+					break;
+				default:
+					dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
+			}
+		}
+	}
+}
+
+void callNativeMethod(dj_global_id methodImplId, bool virtualCall) {
+	bool isReturnReference=false;
+	int oldNumRefStack, numRefStack;
+	int diffRefArgs;
+	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(methodImplId);
+
+	const native_method_function_t *handlers = methodImplId.infusion->native_handlers;
+	native_method_function_t handler = (handlers != NULL ? methodImplId.infusion->native_handlers[methodImplId.entity_id] : NULL);
 
 #ifndef DARJEELING_DEBUG_FRAME
 		DEBUG_LOG(DBG_DARJEELING, "Invoking native.\n");
@@ -1080,9 +1138,7 @@ avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->h
 				}
 			}
 			
-#ifdef EXECUTION_PRINT_CALLS_AND_RETURNS
-			avroraRTCRuntimeMethodCallReturn();
-#endif
+			AVRORA_PRINT_METHOD_RETURN();
 		}
 		else
 		{
@@ -1091,169 +1147,6 @@ avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->h
 			// Throw an exception
 			dj_exec_createAndThrow(NATIVEMETHODNOTIMPLEMENTED_ERROR);
 		}
-
-	} else {
-// avroraCallMethodTimerMark(13);
-		// Java method. May or may not be RTC compiled
-
-		// create new frame for the function
-#ifdef EXECUTION_FRAME_ON_STACK
-		// Note that integer variables 'grow' down in the stack frame, so dj_di_methodImplementation_getOffsetToLocalIntegerVariables is also the size of the frame, -2 because the address of the 'first' int variable is 2 lower than the size of the frame (since slots are 16-bit).
-		uint16_t size = dj_frame_size(methodImpl);
-// avroraCallMethodTimerMark(131);
-		dj_frame *frame = alloca(size);
-// avroraCallMethodTimerMark(132);
-
-		if (frame == NULL) {
-			dj_exec_createAndThrow(STACKOVERFLOW_ERROR);
-			return;
-		}
-
-// avroraCallMethodTimerMark(133);
-		// init the frame
-		frame->method = methodImplId;
-		frame->parent = NULL;
-		frame->saved_refStack = dj_frame_getReferenceStackBase(frame, methodImpl); // initial saved_refStack (nothing on the stack)
-// avroraCallMethodTimerMark(134);
-		// set local variables to 0/null
-		// memset(dj_frame_getLocalReferenceVariables(ret), 0, localVariablesSize);
-		void * start = ((void*)frame) + sizeof(dj_frame);
-		void * end = frame->saved_refStack;
-		memset(start, 0, end-start);
-#else // EXECUTION_FRAME_ON_STACK
-		dj_frame *frame = dj_frame_create_fast(methodImplId, methodImpl);
-		// not enough space on the heap to allocate the frame
-		if (frame == NULL) {
-			dj_exec_createAndThrow(STACKOVERFLOW_ERROR);
-			return;
-		}
-#endif // EXECUTION_FRAME_ON_STACK
-
-// avroraCallMethodTimerMark(14);
-
-// avroraCallMethodTimerMark(15);
-
-	uint8_t numberOfIntArguments = dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
-	uint8_t numberOfRefArguments = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
-									+ ((flags & FLAGS_STATIC) ? 0 : 1);
-		dj_exec_passParameters(frame, methodImpl, numberOfIntArguments, numberOfRefArguments);
-		// pop arguments off the stack
-		refStack -= numberOfRefArguments;
-		intStack += numberOfIntArguments;
-
-// avroraCallMethodTimerMark(16);
-
-		// save current state of the frame
-		dj_exec_saveLocalState(dj_exec_getCurrentThread()->frameStack);
-
-// avroraCallMethodTimerMark(17);
-
-		// push the new frame on the frame stack
-		dj_thread_pushFrame(frame);
-
-// avroraCallMethodTimerMark(18);
-
-		// switch in newly created frame
-		dj_exec_loadLocalState(frame);
-
-// avroraCallMethodTimerMark(19);
-
-#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
-		if (handler != NULL && dj_exec_use_rtc) {
-#endif
-#ifdef EXECUTION_PRINT_NAT_JAVA_OR_AOT
-			avroraPrintStr("call aot");
-#endif
-			// RTC compiled method
-			// execute it directly
-
-// avroraCallMethodTimerMark(20);
-			uint16_t rtc_frame_locals_start = (uint16_t)dj_frame_getLocalReferenceVariables(frame); // Will be stored in Y by the function prologue
-// avroraCallMethodTimerMark(21);
-			uint16_t rtc_ref_stack_start = (uint16_t)dj_frame_getReferenceStackBase(frame, methodImpl); // Will be stored in X by the function prologue
-// avroraCallMethodTimerMark(22);
-			uint16_t rtc_statics_start = (uint16_t)methodImplId.infusion->staticReferenceFields; // Will be stored in R2 by the function prologue
-// avroraCallMethodTimerMark(23);
-
-			int16_t ret16 = 0;
-			int32_t ret32 = 0;
-			ref_t retref = 0;
-			uint8_t rettype = dj_di_methodImplementation_getReturnType(methodImpl);
-			DEBUG_LOG(DBG_RTC, "[rtc] starting rtc compiled method %i at %p with return type %i\n", methodImplId.entity_id, handler, rettype);
-			switch (rettype) {
-				case JTID_VOID:
-					AVRORATRACE_ENABLE();
-// avroraCallMethodTimerMark(24);
-					((native_void_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
-// avroraCallMethodTimerMark(25);
-					AVRORATRACE_DISABLE();
-					break;
-				case JTID_BOOLEAN:
-				case JTID_CHAR:
-				case JTID_BYTE:
-				case JTID_SHORT:
-					AVRORATRACE_ENABLE();
-					ret16 = ((native_16bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
-					AVRORATRACE_DISABLE();
-					break;
-				case JTID_INT:
-					AVRORATRACE_ENABLE();
-					ret32 = ((native_32bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
-					AVRORATRACE_DISABLE();
-					break;
-				case JTID_REF:
-					AVRORATRACE_ENABLE();
-					retref = ((native_ref_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
-					AVRORATRACE_DISABLE();
-					break;
-				default:
-					dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
-			}
-
-// avroraCallMethodTimerMark(26);
-			returnFromMethodFast();
-// avroraCallMethodTimerMark(27);
-
-			switch (rettype) {
-				case JTID_VOID:
-					break;
-				case JTID_BOOLEAN:
-				case JTID_CHAR:
-				case JTID_BYTE:
-				case JTID_SHORT:
-					pushShort(ret16);
-					break;
-				case JTID_INT:
-					pushInt(ret32);
-					break;
-				case JTID_REF:
-					pushRef(retref);
-					break;
-				default:
-					dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
-			}
-// avroraCallMethodTimerMark(28);
-#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
-		} else {
-#ifdef EXECUTION_PRINT_NAT_JAVA_OR_AOT
-			avroraPrintStr("call java");
-#endif // EXECUTION_PRINT_NAT_JAVA_OR_AOT
-		}
-#endif // EXECUTION_DISABLEINTERPRETER_COMPLETELY
-
-	#ifdef DARJEELING_DEBUG_MEM_TRACE
-			vm_mem_dumpMemUsage();
-	#endif
-
-	#ifdef DARJEELING_DEBUG_TRACE
-			callDepth++;
-	#endif
-
-	#ifndef DARJEELING_DEBUG_FRAME
-			DEBUG_LOG(DBG_DARJEELING, "Invoke done\n");
-	#endif
-	}
-// avroraCallMethodTimerMark(30);
 }
 
 void createThreadAndRunMethodToFinish(dj_global_id methodImplId) {
