@@ -54,7 +54,12 @@
 extern int16_t *intStack;
 extern ref_t *refStack;
 extern ref_t *localReferenceVariables;
+// Original interface
 void callMethod(dj_global_id methodImplId, bool virtualCall);
+// Optimised versions to use when the target impl is known at compile time
+void callNativeMethod(dj_global_id methodImplId, dj_di_pointer methodImpl, bool virtualCall);
+void callJavaMethod(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t flags);
+
 void createThreadAndRunMethodToFinish(dj_global_id methodImplId);
 bool dj_exec_use_rtc;
 // End Exported for RTC only

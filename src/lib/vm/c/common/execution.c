@@ -920,126 +920,140 @@ bool dj_exec_currentMethodIsRTCCompiled() {
  * case of a virtual call the object the method belongs to is on the stack and
  * should be handled as an additional parameter. Should be either 1 or 0.
  */
-void callNativeMethod(dj_global_id methodImplId, bool virtualCall);
+void callMethodFast(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t flags, bool virtualCall);
 void callMethod(dj_global_id methodImplId, bool virtualCall)
 {
 	AVRORA_PRINT_METHOD_CALL(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
-
-	const native_method_function_t *handlers = methodImplId.infusion->native_handlers;
-	native_method_function_t handler = (handlers != NULL ? methodImplId.infusion->native_handlers[methodImplId.entity_id] : NULL);
 
 	// get a pointer in program space to the method implementation block
 	// from the method's global id
 	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(methodImplId);
 	uint8_t flags = dj_di_methodImplementation_getFlags(methodImpl);
 
+	callMethodFast(methodImplId, methodImpl, flags, virtualCall);
+}
+
+void callMethodFast(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t flags, bool virtualCall)
+{
 	// check if the method is a native methods
 	if ((flags & FLAGS_NATIVE) != 0)
 	{
-		callNativeMethod(methodImplId, virtualCall);
+		callNativeMethod(methodImplId, methodImpl, virtualCall);
 	} else {
-		// Java method. May or may not be RTC compiled
+		callJavaMethod(methodImplId, methodImpl, flags);
+	}	
+}
 
-		// create new frame for the function
+dj_di_pointer callJavaMethodTest(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t flags) {
+	return methodImpl;
+	// return flags; // R18
+}
+
+void callJavaMethod(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t flags) {
+	const native_method_function_t *handlers = methodImplId.infusion->native_handlers;
+	native_method_function_t handler = (handlers != NULL ? methodImplId.infusion->native_handlers[methodImplId.entity_id] : NULL);
+
+	// Java method. May or may not be RTC compiled
+
+	// create new frame for the function
 #ifdef EXECUTION_FRAME_ON_STACK
-		// Note that integer variables 'grow' down in the stack frame, so dj_di_methodImplementation_getOffsetToLocalIntegerVariables is also the size of the frame, -2 because the address of the 'first' int variable is 2 lower than the size of the frame (since slots are 16-bit).
-		uint16_t size = dj_frame_size(methodImpl);
-		dj_frame *frame = alloca(size);
+	// Note that integer variables 'grow' down in the stack frame, so dj_di_methodImplementation_getOffsetToLocalIntegerVariables is also the size of the frame, -2 because the address of the 'first' int variable is 2 lower than the size of the frame (since slots are 16-bit).
+	uint16_t size = dj_frame_size(methodImpl);
+	dj_frame *frame = alloca(size);
 
-		if (frame == NULL) {
-			dj_exec_createAndThrow(STACKOVERFLOW_ERROR);
-			return;
-		}
+	if (frame == NULL) {
+		dj_exec_createAndThrow(STACKOVERFLOW_ERROR);
+		return;
+	}
 
-		// init the frame
-		frame->method = methodImplId;
-		frame->parent = NULL;
-		frame->saved_refStack = dj_frame_getReferenceStackBase(frame, methodImpl); // initial saved_refStack (nothing on the stack)
-		// set local variables to 0/null
-		// memset(dj_frame_getLocalReferenceVariables(ret), 0, localVariablesSize);
-		void * start = ((void*)frame) + sizeof(dj_frame);
-		void * end = frame->saved_refStack;
-		memset(start, 0, end-start);
+	// init the frame
+	frame->method = methodImplId;
+	frame->parent = NULL;
+	frame->saved_refStack = dj_frame_getReferenceStackBase(frame, methodImpl); // initial saved_refStack (nothing on the stack)
+	// set local variables to 0/null
+	// memset(dj_frame_getLocalReferenceVariables(ret), 0, localVariablesSize);
+	void * start = ((void*)frame) + sizeof(dj_frame);
+	void * end = frame->saved_refStack;
+	memset(start, 0, end-start);
 #else // EXECUTION_FRAME_ON_STACK
-		dj_frame *frame = dj_frame_create_fast(methodImplId, methodImpl);
-		// not enough space on the heap to allocate the frame
-		if (frame == NULL) {
-			dj_exec_createAndThrow(STACKOVERFLOW_ERROR);
-			return;
-		}
+	dj_frame *frame = dj_frame_create_fast(methodImplId, methodImpl);
+	// not enough space on the heap to allocate the frame
+	if (frame == NULL) {
+		dj_exec_createAndThrow(STACKOVERFLOW_ERROR);
+		return;
+	}
 #endif // EXECUTION_FRAME_ON_STACK
 
-		uint8_t numberOfIntArguments = dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
-		uint8_t numberOfRefArguments = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
-										+ ((flags & FLAGS_STATIC) ? 0 : 1);
-		dj_exec_passParameters(frame, methodImpl, numberOfIntArguments, numberOfRefArguments);
-		// pop arguments off the stack
-		refStack -= numberOfRefArguments;
-		intStack += numberOfIntArguments;
+	uint8_t numberOfIntArguments = dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
+	uint8_t numberOfRefArguments = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
+									+ ((flags & FLAGS_STATIC) ? 0 : 1);
+	dj_exec_passParameters(frame, methodImpl, numberOfIntArguments, numberOfRefArguments);
+	// pop arguments off the stack
+	refStack -= numberOfRefArguments;
+	intStack += numberOfIntArguments;
 
 
-		// save current state of the frame
-		dj_exec_saveLocalState(dj_exec_getCurrentThread()->frameStack);
+	// save current state of the frame
+	dj_exec_saveLocalState(dj_exec_getCurrentThread()->frameStack);
 
 
-		// push the new frame on the frame stack
-		dj_thread_pushFrame(frame);
+	// push the new frame on the frame stack
+	dj_thread_pushFrame(frame);
 
 
-		// switch in newly created frame
-		dj_exec_loadLocalState(frame);
+	// switch in newly created frame
+	dj_exec_loadLocalState(frame);
 
 
 #ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
-		if (handler != NULL && dj_exec_use_rtc)
+	if (handler != NULL && dj_exec_use_rtc)
 #endif
-		{
-			// RTC compiled method: execute it directly
-			uint16_t rtc_frame_locals_start = (uint16_t)dj_frame_getLocalReferenceVariables(frame); // Will be stored in Y by the function prologue
-			uint16_t rtc_ref_stack_start = (uint16_t)dj_frame_getReferenceStackBase(frame, methodImpl); // Will be stored in X by the function prologue
-			uint16_t rtc_statics_start = (uint16_t)methodImplId.infusion->staticReferenceFields; // Will be stored in R2 by the function prologue
+	{
+		// RTC compiled method: execute it directly
+		uint16_t rtc_frame_locals_start = (uint16_t)dj_frame_getLocalReferenceVariables(frame); // Will be stored in Y by the function prologue
+		uint16_t rtc_ref_stack_start = (uint16_t)dj_frame_getReferenceStackBase(frame, methodImpl); // Will be stored in X by the function prologue
+		uint16_t rtc_statics_start = (uint16_t)methodImplId.infusion->staticReferenceFields; // Will be stored in R2 by the function prologue
 
-			int32_t retval = 0;
-			uint8_t rettype = dj_di_methodImplementation_getReturnType(methodImpl);
-			DEBUG_LOG(DBG_RTC, "[rtc] starting rtc compiled method %i at %p with return type %i\n", methodImplId.entity_id, handler, rettype);
+		int32_t retval = 0;
+		uint8_t rettype = dj_di_methodImplementation_getReturnType(methodImpl);
+		DEBUG_LOG(DBG_RTC, "[rtc] starting rtc compiled method %i at %p with return type %i\n", methodImplId.entity_id, handler, rettype);
 
-			AVRORATRACE_ENABLE();
-			// This doesn't always return int32. We don't follow the real avr-gcc ABI here, which requires shorts to be returned in R24:25 and ints in R22:25.
-			// Instead we return shorts in R22:23 and ints in R22:25, which means we can simply cast a short return value when we push it on the stack and
-			// ignore the higher bytes. For voids we just ignore the (garbage) return value completely.
-			retval = ((int32_t (*)(uint16_t, uint16_t, uint16_t))handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
-			// retval = ((aot_compiled_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
-			AVRORATRACE_DISABLE();
+		AVRORATRACE_ENABLE();
+		// This doesn't always return int32. We don't follow the real avr-gcc ABI here, which requires shorts to be returned in R24:25 and ints in R22:25.
+		// Instead we return shorts in R22:23 and ints in R22:25, which means we can simply cast a short return value when we push it on the stack and
+		// ignore the higher bytes. For voids we just ignore the (garbage) return value completely.
+		retval = ((int32_t (*)(uint16_t, uint16_t, uint16_t))handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
+		// retval = ((aot_compiled_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
+		AVRORATRACE_DISABLE();
 
-			returnFromMethod();
+		returnFromMethod();
 
-			switch (rettype) {
-				case JTID_VOID:
-					break;
-				case JTID_BOOLEAN:
-				case JTID_CHAR:
-				case JTID_BYTE:
-				case JTID_SHORT:
-					pushShort(retval);
-					break;
-				case JTID_INT:
-					pushInt(retval);
-					break;
-				case JTID_REF:
-					pushRef((void*)(uint16_t)retval);
-					break;
-				default:
-					dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
-			}
+		switch (rettype) {
+			case JTID_VOID:
+				break;
+			case JTID_BOOLEAN:
+			case JTID_CHAR:
+			case JTID_BYTE:
+			case JTID_SHORT:
+				pushShort(retval);
+				break;
+			case JTID_INT:
+				pushInt(retval);
+				break;
+			case JTID_REF:
+				pushRef((void*)(uint16_t)retval);
+				break;
+			default:
+				dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
 		}
 	}
+
 }
 
-void callNativeMethod(dj_global_id methodImplId, bool virtualCall) {
+void callNativeMethod(dj_global_id methodImplId, dj_di_pointer methodImpl, bool virtualCall) {
 	bool isReturnReference=false;
 	int oldNumRefStack, numRefStack;
 	int diffRefArgs;
-	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(methodImplId);
 
 	const native_method_function_t *handlers = methodImplId.infusion->native_handlers;
 	native_method_function_t handler = (handlers != NULL ? methodImplId.infusion->native_handlers[methodImplId.entity_id] : NULL);

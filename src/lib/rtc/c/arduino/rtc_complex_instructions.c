@@ -57,6 +57,38 @@ void RTC_INVOKESTATIC(dj_global_id globalId) {
 }
 
 
+void RTC_INVOKESTATIC_FAST_JAVA(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t flags) {
+    AVRORATRACE_DISABLE();
+    DEBUG_LOG(DBG_RTC, "RTC_INVOKESTATIC %d %d\n", localId.infusion_id, localId.entity_id);
+    DEBUG_LOG(DBG_RTC, "RTC_INVOKESTATIC %p %p\n", intStack, refStack);
+
+
+    callJavaMethod(methodImplId, methodImpl, flags);
+
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
+    // If we called a JVM method, run until it's done.
+    rtc_run_interpreter_if_not_aot_compiled();
+#endif
+
+    AVRORATRACE_ENABLE();
+}
+
+void RTC_INVOKESTATIC_FAST_NATIVE(dj_global_id methodImplId, dj_di_pointer methodImpl) {
+    AVRORATRACE_DISABLE();
+    DEBUG_LOG(DBG_RTC, "RTC_INVOKESTATIC %d %d\n", localId.infusion_id, localId.entity_id);
+    DEBUG_LOG(DBG_RTC, "RTC_INVOKESTATIC %p %p\n", intStack, refStack);
+
+    callNativeMethod(methodImplId, methodImpl, false);
+
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
+    // If we called a JVM method, run until it's done.
+    rtc_run_interpreter_if_not_aot_compiled();
+#endif
+
+    AVRORATRACE_ENABLE();
+}
+
+
 ref_t RTC_NEW(dj_local_id localId) {
     AVRORATRACE_DISABLE();
     DEBUG_LOG(DBG_RTC, "RTC_NEW %d %d free: %d\n", localId.infusion_id, localId.entity_id, dj_mem_getFree());
