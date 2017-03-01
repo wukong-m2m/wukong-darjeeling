@@ -1311,7 +1311,8 @@ void rtc_translate_single_instruction() {
         break;
         case JVM_SRETURN:
             rtc_stackcache_clear_call_used_regs_before_native_function_call(); // To make sure the return registers are available
-            rtc_stackcache_pop_16bit_into_fixed_reg(R24);
+            // NOTE THAT THIS IS NOT STANDARD avr-gcc ABI, WHICH EXPECTS 16 bit VALUES IN R24:R25, BUT THIS ALLOWS FOR MORE EFFICIENT HANDLING IN CALLMETHOD.
+            rtc_stackcache_pop_16bit_into_fixed_reg(R22);
             emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_IRETURN:
@@ -1321,7 +1322,8 @@ void rtc_translate_single_instruction() {
         break;
         case JVM_ARETURN:
             rtc_stackcache_clear_call_used_regs_before_native_function_call(); // To make sure the return registers are available
-            rtc_stackcache_pop_ref_into_fixed_reg(R24);
+            // NOTE THAT THIS IS NOT STANDARD avr-gcc ABI, WHICH EXPECTS 16 bit VALUES IN R24:R25, BUT THIS ALLOWS FOR MORE EFFICIENT HANDLING IN CALLMETHOD.
+            rtc_stackcache_pop_ref_into_fixed_reg(R22);
             emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_RETURN:

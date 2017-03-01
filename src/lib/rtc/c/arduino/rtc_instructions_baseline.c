@@ -1135,7 +1135,8 @@ void rtc_translate_single_instruction() {
             emit_x_PUSH_16bit(R22);
         break;
         case JVM_SRETURN:
-            emit_x_POP_16bit(R24);
+            // NOTE THAT THIS IS NOT STANDARD avr-gcc ABI, WHICH EXPECTS 16 bit VALUES IN R24:R25, BUT THIS ALLOWS FOR MORE EFFICIENT HANDLING IN CALLMETHOD.
+            emit_x_POP_16bit(R22);
             emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_IRETURN:
@@ -1143,7 +1144,8 @@ void rtc_translate_single_instruction() {
             emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_ARETURN:
-            emit_x_POP_REF(R24); // POP the reference into Z
+            // NOTE THAT THIS IS NOT STANDARD avr-gcc ABI, WHICH EXPECTS 16 bit VALUES IN R24:R25, BUT THIS ALLOWS FOR MORE EFFICIENT HANDLING IN CALLMETHOD.
+            emit_x_POP_REF(R22);
             emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_RETURN:

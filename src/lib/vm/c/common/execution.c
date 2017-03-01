@@ -909,11 +909,6 @@ bool dj_exec_currentMethodIsRTCCompiled() {
 	return !dj_mem_isHeapPointer(intStack);
 }
 
-typedef void     (*native_void_method_function_t) (uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
-typedef ref_t    (*native_ref_method_function_t)  (uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
-typedef int16_t  (*native_16bit_method_function_t)(uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
-typedef int32_t  (*native_32bit_method_function_t)(uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
-
 /**
  * Enters a method. The method may be either Java or native. If the method is
  * native, the native handler of the method's containing infusion will be
@@ -1004,38 +999,17 @@ void callMethod(dj_global_id methodImplId, bool virtualCall)
 			uint16_t rtc_ref_stack_start = (uint16_t)dj_frame_getReferenceStackBase(frame, methodImpl); // Will be stored in X by the function prologue
 			uint16_t rtc_statics_start = (uint16_t)methodImplId.infusion->staticReferenceFields; // Will be stored in R2 by the function prologue
 
-			int16_t ret16 = 0;
-			int32_t ret32 = 0;
-			ref_t retref = 0;
+			int32_t retval = 0;
 			uint8_t rettype = dj_di_methodImplementation_getReturnType(methodImpl);
 			DEBUG_LOG(DBG_RTC, "[rtc] starting rtc compiled method %i at %p with return type %i\n", methodImplId.entity_id, handler, rettype);
-			switch (rettype) {
-				case JTID_VOID:
-					AVRORATRACE_ENABLE();
-					((native_void_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
-					AVRORATRACE_DISABLE();
-					break;
-				case JTID_BOOLEAN:
-				case JTID_CHAR:
-				case JTID_BYTE:
-				case JTID_SHORT:
-					AVRORATRACE_ENABLE();
-					ret16 = ((native_16bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
-					AVRORATRACE_DISABLE();
-					break;
-				case JTID_INT:
-					AVRORATRACE_ENABLE();
-					ret32 = ((native_32bit_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
-					AVRORATRACE_DISABLE();
-					break;
-				case JTID_REF:
-					AVRORATRACE_ENABLE();
-					retref = ((native_ref_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
-					AVRORATRACE_DISABLE();
-					break;
-				default:
-					dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
-			}
+
+			AVRORATRACE_ENABLE();
+			// This doesn't always return int32. We don't follow the real avr-gcc ABI here, which requires shorts to be returned in R24:25 and ints in R22:25.
+			// Instead we return shorts in R22:23 and ints in R22:25, which means we can simply cast a short return value when we push it on the stack and
+			// ignore the higher bytes. For voids we just ignore the (garbage) return value completely.
+			retval = ((int32_t (*)(uint16_t, uint16_t, uint16_t))handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
+			// retval = ((aot_compiled_method_function_t)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
+			AVRORATRACE_DISABLE();
 
 			returnFromMethod();
 
@@ -1046,13 +1020,13 @@ void callMethod(dj_global_id methodImplId, bool virtualCall)
 				case JTID_CHAR:
 				case JTID_BYTE:
 				case JTID_SHORT:
-					pushShort(ret16);
+					pushShort(retval);
 					break;
 				case JTID_INT:
-					pushInt(ret32);
+					pushInt(retval);
 					break;
 				case JTID_REF:
-					pushRef(retref);
+					pushRef((void*)(uint16_t)retval);
 					break;
 				default:
 					dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
