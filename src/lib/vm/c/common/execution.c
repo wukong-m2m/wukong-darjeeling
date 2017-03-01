@@ -923,8 +923,6 @@ bool dj_exec_currentMethodIsRTCCompiled() {
 void callMethodFast(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t flags, bool virtualCall);
 void callMethod(dj_global_id methodImplId, bool virtualCall)
 {
-	AVRORA_PRINT_METHOD_CALL(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
-
 	// get a pointer in program space to the method implementation block
 	// from the method's global id
 	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(methodImplId);
@@ -940,22 +938,16 @@ void callMethodFast(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t
 	{
 		callNativeMethod(methodImplId, methodImpl, virtualCall);
 	} else {
-		callJavaMethod(methodImplId, methodImpl, flags);
+		dj_global_id_with_flags methodImplIdWithFlags;
+		methodImplIdWithFlags.infusion = methodImplId.infusion;
+		methodImplIdWithFlags.entity_id = methodImplId.entity_id;
+		methodImplIdWithFlags.flags = flags;
+		callJavaMethod(methodImplIdWithFlags, methodImpl);
 	}	
 }
 
-// dj_di_pointer callJavaMethodTest(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t flags) {
-// 	//
-// 	// return methodImpl; // R20
-// 	// return flags; // R18
-// }
 typedef int32_t  (*aot_compiled_method_handler)(uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
-
-uint32_t callHandler(aot_compiled_method_handler handler, uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start) {
-	return handler(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
-}
-
-uint32_t callJavaMethod_setup(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t flags, dj_frame *frame) {
+uint32_t callJavaMethod_setup(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl, dj_frame *frame) {
 	// Java method. May or may not be RTC compiled
 
 	// not enough space on the heap to allocate the frame
@@ -969,7 +961,8 @@ uint32_t callJavaMethod_setup(dj_global_id methodImplId, dj_di_pointer methodImp
 	// Note that integer variables 'grow' down in the stack frame, so dj_di_methodImplementation_getOffsetToLocalIntegerVariables is also the size of the frame, -2 because the address of the 'first' int variable is 2 lower than the size of the frame (since slots are 16-bit).
 
 	// init the frame
-	frame->method = methodImplId;
+	frame->method.infusion = methodImplId.infusion;
+	frame->method.entity_id = methodImplId.entity_id;
 	frame->parent = NULL;
 	frame->saved_refStack = dj_frame_getReferenceStackBase(frame, methodImpl); // initial saved_refStack (nothing on the stack)
 	// set local variables to 0/null
@@ -981,7 +974,7 @@ uint32_t callJavaMethod_setup(dj_global_id methodImplId, dj_di_pointer methodImp
 
 	uint8_t numberOfIntArguments = dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
 	uint8_t numberOfRefArguments = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
-									+ ((flags & FLAGS_STATIC) ? 0 : 1);
+									+ ((methodImplId.flags & FLAGS_STATIC) ? 0 : 1);
 	dj_exec_passParameters(frame, methodImpl, numberOfIntArguments, numberOfRefArguments);
 	// pop arguments off the stack
 	refStack -= numberOfRefArguments;
@@ -1017,14 +1010,16 @@ uint32_t callJavaMethod_setup(dj_global_id methodImplId, dj_di_pointer methodImp
 		// This doesn't always return int32. We don't follow the real avr-gcc ABI here, which requires shorts to be returned in R24:25 and ints in R22:25.
 		// Instead we return shorts in R22:23 and ints in R22:25, which means we can simply cast a short return value when we push it on the stack and
 		// ignore the higher bytes. For voids we just ignore the (garbage) return value completely.
-		return callHandler((aot_compiled_method_handler)handler, rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
+		return ((aot_compiled_method_handler)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
 #ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 	}
 	return 0;
 #endif
 }
 
-void callJavaMethod(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t flags) {
+void callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl) {
+	AVRORA_PRINT_METHOD_CALL(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
+
 #ifdef EXECUTION_FRAME_ON_STACK
 	uint16_t size = dj_frame_size(methodImpl);
 	dj_frame *frame = alloca(size);
@@ -1034,7 +1029,7 @@ void callJavaMethod(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t
 
 	// This will create the frame, pass parameters, etc. For AOT compiled methods it will also call the method and return the return value.
 	// It always returns a 32 bit int, but for short/refs the high two bytes are garbage. For voids the whole return value should be ignored.
-	uint32_t retval = callJavaMethod_setup(methodImplId, methodImpl, flags, frame);
+	uint32_t retval = callJavaMethod_setup(methodImplId, methodImpl, frame);
 	AVRORATRACE_DISABLE();
 
 #ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
@@ -1070,6 +1065,8 @@ void callJavaMethod(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t
 
 
 void callNativeMethod(dj_global_id methodImplId, dj_di_pointer methodImpl, bool virtualCall) {
+	AVRORA_PRINT_METHOD_CALL(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
+
 	bool isReturnReference=false;
 	int oldNumRefStack, numRefStack;
 	int diffRefArgs;

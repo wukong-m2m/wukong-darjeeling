@@ -38,7 +38,7 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
             emit_2_CALL((uint16_t)&RTC_INVOKESTATIC_FAST_NATIVE);
         } else {
             // void RTC_INVOKESTATIC_FAST_JAVA(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t flags);
-            emit_LDI(R18, flags);
+            emit_LDI(R25, flags);
             emit_2_CALL((uint16_t)&RTC_INVOKESTATIC_FAST_JAVA);
         }
     }
