@@ -75,10 +75,10 @@ const uint16_t PROGMEM emit_x_preinvoke_code[] =
   asm_const_PUSH(ZERO_REG), // NOTE: THE DVM STACK IS A 16 BIT POINTER, SP IS 8 BIT. 
                             // BOTH POINT TO THE NEXT free SLOT, BUT SINCE THEY GROW down THIS MEANS THE DVM POINTER SHOULD POINT TO TWO BYTES BELOW THE LAST VALUE,
                             // WHILE CURRENTLY THE NATIVE SP POINTS TO THE BYTE DIRECTLY BELOW IT. RESERVE AN EXTRA BYTE TO FIX THIS.
-  asm_const_IN(R22, SP_L_port),       // Load SP into R22:R23
-  asm_const_IN(R23, SP_H_port),       // Load SP into R22:R23
-  asm_const_opcodeWithSingleRegOperand(OPCODE_STS, R22), INTSTACKADDRESS,   // Store SP into intStack
-  asm_const_opcodeWithSingleRegOperand(OPCODE_STS, R23), INTSTACKADDRESS+1, // Store SP into intStack
+  asm_const_IN(R0, SP_L_port),       // Load SPL into R0
+  asm_const_opcodeWithSingleRegOperand(OPCODE_STS, R0), INTSTACKADDRESS,   // Store R0 into intStackL
+  asm_const_IN(R0, SP_H_port),       // Load SPH into R0
+  asm_const_opcodeWithSingleRegOperand(OPCODE_STS, R0), INTSTACKADDRESS+1, // Store R0 into intStackH
   // Reserve 8 bytes of space on the stack, in case the returned int is large than passed ints
   // TODO: make this more efficient by looking up the method, and seeing if the return type is int,
   //       and if so, if the size of the return type is larger than the integers passed. Then only
@@ -112,11 +112,11 @@ const uint16_t PROGMEM emit_x_postinvoke_code[] =
   asm_const_opcodeWithSingleRegOperand(OPCODE_LDS, RXL), REFSTACKADDRESS,   // Load refStack into X
   asm_const_opcodeWithSingleRegOperand(OPCODE_LDS, RXH), REFSTACKADDRESS+1, // Load refStack into X
   // get SP from intStack
-  asm_const_opcodeWithSingleRegOperand(OPCODE_LDS, R22), INTSTACKADDRESS,   // Load intStack into R22:R23
-  asm_const_opcodeWithSingleRegOperand(OPCODE_LDS, R23), INTSTACKADDRESS+1, // Load intStack into R22:R23
-  asm_const_OUT(SP_L_port, R22),       // Store R22:R23 into SP
-  asm_const_OUT(SP_H_port, R23),       // Store R22:R23 into SP
-  asm_const_POP(R23), // JUST POP AND DISCARD TO CLEAR THE BYTE WE RESERVED IN THE asm_const_PUSH(ZERO_REG) LINE IN PREINVOKE
+  asm_const_opcodeWithSingleRegOperand(OPCODE_LDS, R0), INTSTACKADDRESS,   // Load intStackL into R0
+  asm_const_OUT(SP_L_port, R0),       // Store R0 into SPL
+  asm_const_opcodeWithSingleRegOperand(OPCODE_LDS, R0), INTSTACKADDRESS+1, // Load intStackH into R0
+  asm_const_OUT(SP_H_port, R0),       // Store R0 into SPH
+  asm_const_POP(R0), // JUST POP AND DISCARD TO CLEAR THE BYTE WE RESERVED IN THE asm_const_PUSH(ZERO_REG) LINE IN PREINVOKE
 
   asm_const_PUSH(R19),
   asm_const_PUSH(R18),
