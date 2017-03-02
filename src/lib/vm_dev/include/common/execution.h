@@ -54,10 +54,7 @@
 extern int16_t *intStack;
 extern ref_t *refStack;
 extern ref_t *localReferenceVariables;
-// Original interface
-void callMethod(dj_global_id methodImplId, bool virtualCall);
-// Optimised versions to use when the target impl is known at compile time
-void callNativeMethod(dj_global_id methodImplId, dj_di_pointer methodImpl, bool virtualCall);
+
 
 // This is just here so we can pass both flags and global id in 1 4 byte parameter to callJavaMethod.
 // Otherwise the 3 byte global id and 1 byte flags would take up 6 bytes since both get rounded up to
@@ -69,7 +66,14 @@ struct _dj_global_id_with_flags
 	uint8_t entity_id;
 	uint8_t flags;
 };
-void callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl);
+
+// Original interface
+void callMethod(dj_global_id methodImplId, bool virtualCall);
+// Optimised versions to use when the target impl is known at compile time
+void callNativeMethod(dj_global_id methodImplId, dj_di_pointer methodImpl, bool virtualCall);
+uint32_t callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl);
+uint32_t callJavaMethodTestje(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl);
+
 
 void createThreadAndRunMethodToFinish(dj_global_id methodImplId);
 bool dj_exec_use_rtc;

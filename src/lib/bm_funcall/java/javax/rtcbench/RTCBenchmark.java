@@ -32,7 +32,9 @@ public class RTCBenchmark {
 
 
     // 100x16 nested calls
-    // Current cycles: 1572437, max stack: 1100
+    // Originally                                                         cycles: 1572437, max stack: 1100
+    // Remove pc from stack frame if interpreter is disabled              cycles: 1572437, max stack: 1044
+    // Return retval from callMethod and push it on the stack in AOT code cycles: 1514136, max stack: 991
     public static void rtcbenchmark_measure_java_performance() {
         Stopwatch.resetAndStart();
 

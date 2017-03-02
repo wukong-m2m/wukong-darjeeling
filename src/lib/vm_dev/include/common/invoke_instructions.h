@@ -29,7 +29,7 @@
 static inline void RETURN()
 {
 	// return
-	returnFromMethod();
+	returnFromMethod(0);
 }
 
 /**
@@ -41,7 +41,7 @@ static inline void SRETURN()
 	int16_t ret = popShort();
 
 	// return
-	returnFromMethod();
+	returnFromMethod(0);
 
 	// push return value on the runtime stack
 	pushShort(ret);
@@ -58,7 +58,7 @@ static inline void IRETURN()
 	int32_t ret = popInt();
 
 	// return
-	returnFromMethod();
+	returnFromMethod(0);
 
 	// push return value on the runtime stack
 	pushInt(ret);
@@ -74,7 +74,7 @@ static inline void LRETURN()
 	int64_t ret = popLong();
 
 	// return
-	returnFromMethod();
+	returnFromMethod(0);
 
 	// push return value on the runtime stack
 	pushLong(ret);

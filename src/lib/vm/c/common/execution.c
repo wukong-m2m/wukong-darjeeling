@@ -878,7 +878,10 @@ static inline void dj_exec_passParameters(dj_frame *frame, dj_di_pointer methodI
  * Returns from a method. The current execution frame is popped off the thread's frame stack. If there are no other
  * frames to execute, the thread ends. Otherwise control is switched to the underlying caller frame.
  */
-static inline void returnFromMethod() {
+// This only contains retval so we can avoid callMethod from storing the return value in a local var first, then calling returnFromMethod, then returing that local var.
+// This takes up space in the stack frame while this allows it to stay in registers.
+static inline uint32_t returnFromMethod(uint32_t retval) {
+	AVRORATRACE_DISABLE();
 	AVRORA_PRINT_METHOD_RETURN();
 
 #ifdef EXECUTION_FRAME_ON_STACK
@@ -897,8 +900,8 @@ static inline void returnFromMethod() {
 		// perform context switch.
 		// dj_exec_activate_thread(dj_exec_getCurrentThread()); This just ends up setting vm->currentThread to the value it already has, and then calling dj_exec_loadLocalState... Just call it directly.
 		dj_exec_loadLocalState(dj_exec_getCurrentThread()->frameStack);
-
 	}
+	return retval;
 }
 
 /**
@@ -942,7 +945,34 @@ void callMethodFast(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t
 		methodImplIdWithFlags.infusion = methodImplId.infusion;
 		methodImplIdWithFlags.entity_id = methodImplId.entity_id;
 		methodImplIdWithFlags.flags = flags;
-		callJavaMethod(methodImplIdWithFlags, methodImpl);
+		uint32_t retval = callJavaMethod(methodImplIdWithFlags, methodImpl);
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
+		const native_method_function_t *handlers = methodImplId.infusion->native_handlers;
+		native_method_function_t handler = (handlers != NULL ? methodImplId.infusion->native_handlers[methodImplId.entity_id] : NULL);
+		if (handler != NULL && dj_exec_use_rtc)
+#endif
+		{
+			uint8_t rettype = dj_di_methodImplementation_getReturnType(methodImpl);
+
+			switch (rettype) {
+				case JTID_VOID:
+					break;
+				case JTID_BOOLEAN:
+				case JTID_CHAR:
+				case JTID_BYTE:
+				case JTID_SHORT:
+					pushShort(retval);
+					break;
+				case JTID_INT:
+					pushInt(retval);
+					break;
+				case JTID_REF:
+					pushRef((void*)(uint16_t)retval);
+					break;
+				default:
+					dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
+			}
+		}
 	}	
 }
 
@@ -1018,7 +1048,7 @@ uint32_t callJavaMethod_setup(dj_global_id_with_flags methodImplId, dj_di_pointe
 }
 
 
-void callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl) {
+uint32_t callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl) {
 	AVRORA_PRINT_METHOD_CALL(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
 
 #ifdef EXECUTION_FRAME_ON_STACK
@@ -1029,40 +1059,8 @@ void callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer methodIm
 
 	// This will create the frame, pass parameters, etc. For AOT compiled methods it will also call the method and return the return value.
 	// It always returns a 32 bit int, but for short/refs the high two bytes are garbage. For voids the whole return value should be ignored.
-	uint32_t retval = callJavaMethod_setup(methodImplId, methodImpl, frame);
-	AVRORATRACE_DISABLE();
-
-#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
-	const native_method_function_t *handlers = methodImplId.infusion->native_handlers;
-	native_method_function_t handler = (handlers != NULL ? methodImplId.infusion->native_handlers[methodImplId.entity_id] : NULL);
-	if (handler != NULL && dj_exec_use_rtc)
-#endif
-	{
-		uint8_t rettype = dj_di_methodImplementation_getReturnType(methodImpl);
-
-		returnFromMethod();
-
-		switch (rettype) {
-			case JTID_VOID:
-				break;
-			case JTID_BOOLEAN:
-			case JTID_CHAR:
-			case JTID_BYTE:
-			case JTID_SHORT:
-				pushShort(retval);
-				break;
-			case JTID_INT:
-				pushInt(retval);
-				break;
-			case JTID_REF:
-				pushRef((void*)(uint16_t)retval);
-				break;
-			default:
-				dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
-		}
-	}
+	return returnFromMethod(callJavaMethod_setup(methodImplId, methodImpl, frame));
 }
-
 
 void callNativeMethod(dj_global_id methodImplId, dj_di_pointer methodImpl, bool virtualCall) {
 	AVRORA_PRINT_METHOD_CALL(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
