@@ -56,106 +56,17 @@ void emit_x_avroraBeep(uint8_t beep) {
 }
 
 
-// NOTE THAT THIS CODE ONLY WORKS ON AVR DEVICES WITH <=128KB flash.
-// On larger devices, such as the WuDevice, the return address after
-// a call is 24 bit, so we need to pop/push 3 bytes at the beginning
-// and end of the fragments below.
-// (POP R18; POP19 -> POP R18; POP R19; POP R20)
-
-// Call saved: r1, r2-r17, r28:r29 (Y)
-const uint16_t PROGMEM emit_x_prologue_code[] =
-{ asm_const_POP(R18),
-  asm_const_POP(R19),
-
-  asm_const_PUSH(R2),
-  asm_const_PUSH(R3),
-  asm_const_PUSH(R4),
-  asm_const_PUSH(R5),
-  asm_const_PUSH(R6),
-  asm_const_PUSH(R7),
-  asm_const_PUSH(R8),
-  asm_const_PUSH(R9),
-  asm_const_PUSH(R10),
-  asm_const_PUSH(R11),
-  asm_const_PUSH(R12),
-  asm_const_PUSH(R13),
-  asm_const_PUSH(R14),
-  asm_const_PUSH(R15),
-  asm_const_PUSH(R16),
-  asm_const_PUSH(R17),
-  asm_const_PUSH(R28),
-  asm_const_PUSH(R29),
-  asm_const_MOVW(R28, R24),
-  asm_const_MOVW(R26, R22),
-  asm_const_MOVW(R2, R20),
-
-  asm_const_PUSH(R19),
-  asm_const_PUSH(R18),
-  OPCODE_RET };
-void emit_x_prologue() {
-#ifdef OPTIMISE_Os_PROLOGUE_EPILOGUE
-    emit_2_CALL(((uint16_t)emit_x_prologue_code)/2);
-#else // OPTIMISE_Os_PROLOGUE_EPILOGUE
-    // prologue (is this the right way?)
-    for (int8_t i=0; i<=17-2; i++) { // PUSH R2-R17
-      emit_PUSH(R2+i);
-    }
-    emit_PUSH(R28);
-    emit_PUSH(R29); // Push Y
-    emit_MOVW(R28, R24); // Pointer to locals in Y
-    emit_MOVW(R26, R22); // Pointer to ref stack in X
-    emit_MOVW(R2, R20); // Pointer to static in R2 (will be MOVWed to R30 when necessary)
-#endif // OPTIMISE_Os_PROLOGUE_EPILOGUE
-}
-
-// Call saved: r1, r2-r17, r28:r29 (Y)
-const uint16_t PROGMEM emit_x_epilogue_code[] =
-{ asm_const_POP(R18),
-  asm_const_POP(R19),
-
-  asm_const_POP(R29),
-  asm_const_POP(R28),
-  asm_const_POP(R17),
-  asm_const_POP(R16),
-  asm_const_POP(R15),
-  asm_const_POP(R14),
-  asm_const_POP(R13),
-  asm_const_POP(R12),
-  asm_const_POP(R11),
-  asm_const_POP(R10),
-  asm_const_POP(R9),
-  asm_const_POP(R8),
-  asm_const_POP(R7),
-  asm_const_POP(R6),
-  asm_const_POP(R5),
-  asm_const_POP(R4),
-  asm_const_POP(R3),
-  asm_const_POP(R2),
-
-  asm_const_PUSH(R19),
-  asm_const_PUSH(R18),
-  OPCODE_RET };
-void emit_x_epilogue() {
-#ifdef OPTIMISE_Os_PROLOGUE_EPILOGUE
-    emit_2_CALL(((uint16_t)emit_x_epilogue_code)/2);
-    emit_RET();
-#else // OPTIMISE_Os_PROLOGUE_EPILOGUE
-    // epilogue (is this the right way?)
-    emit_POP(R29); // Pop Y
-    emit_POP(R28);
-    for (int8_t i=17-2; i>=0; i--) { // POP R17-R2
-      emit_POP(R2+i);
-    }
-    emit_RET();
-#endif // OPTIMISE_Os_PROLOGUE_EPILOGUE
-}
-
 // This needs to be a #define to calculate the instruction at compile time.
 // There is also a asm_opcodeWithSingleRegOperand, which is a function. This
 // needs to be a function to save programme size, because expanding this macro
 // with variable parameters will be much larger than the function calls.
 #define asm_const_opcodeWithSingleRegOperand(opcode, reg) (((opcode) + ((reg) << 4)))
 
+// NOTE THAT THIS CODE ONLY WORKS ON AVR DEVICES WITH <=128KB flash.
+// On larger devices, such as the WuDevice, the return address after
+// a call is 24 bit, so we need to pop/push 3 bytes at the beginning
+// and end of the fragments below.
+// (POP R18; POP19 -> POP R18; POP R19; POP R20)
 const uint16_t PROGMEM emit_x_preinvoke_code[] =
 { asm_const_POP(R18),
   asm_const_POP(R19),
