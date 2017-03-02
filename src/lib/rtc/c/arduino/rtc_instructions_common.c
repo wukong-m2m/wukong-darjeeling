@@ -5,7 +5,16 @@
 #include "asm.h"
 #include "rtc.h"
 #include "rtc_complex_instructions.h"
+
+#ifdef AOT_STRATEGY_SIMPLESTACKCACHE
+#include "rtc_simplestackcache.h"
+#endif
+#ifdef AOT_STRATEGY_POPPEDSTACKCACHE
+#include "rtc_poppedstackcache.h"
+#endif
+#ifdef AOT_STRATEGY_MARKLOOP
 #include "rtc_markloop.h"
+#endif
 
 void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8_t jvm_operand_byte0, uint8_t jvm_operand_byte1, uint8_t jvm_operand_byte2) {
     dj_local_id localId;
@@ -59,20 +68,35 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
     emit_x_postinvoke();
 
     // Will be VOID except for INVOKESTATIC calls that return something.
+#if defined (AOT_STRATEGY_BASELINE)  || defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)
     switch (rettype) {
         case JTID_BOOLEAN:
         case JTID_CHAR:
         case JTID_BYTE:
         case JTID_SHORT:
-            emit_MOVW(R24, R22); // Since we return everything as 32 bit, we need to move the lower 16 bits to R24 in order to use rtc_stackcache_push_16bit_from_R24R25. Optimise this later by pushing R22 directly. This is just a test now.
-            rtc_stackcache_push_16bit_from_R24R25();
+            rtc_stackcache_push_16bit_from_R22R23();
             break;
         case JTID_INT:
             rtc_stackcache_push_32bit_from_R22R25();
             break;
         case JTID_REF:
-            emit_MOVW(R24, R22); // Since we return everything as 32 bit, we need to move the lower 16 bits to R24 in order to use rtc_stackcache_push_16bit_from_R24R25. Optimise this later by pushing R22 directly. This is just a test now.
-            rtc_stackcache_push_ref_from_R24R25();
+            rtc_stackcache_push_ref_from_R22R23();
             break;
     }
+#else // simple, popped, or markloop
+    switch (rettype) {
+        case JTID_BOOLEAN:
+        case JTID_CHAR:
+        case JTID_BYTE:
+        case JTID_SHORT:
+            emit_x_PUSH_16bit(R22);
+            break;
+        case JTID_INT:
+            emit_x_PUSH_32bit(R22);
+            break;
+        case JTID_REF:
+            emit_x_PUSH_REF(R22);
+            break;
+    }
+#endif
 }

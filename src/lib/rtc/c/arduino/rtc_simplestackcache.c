@@ -228,12 +228,18 @@ void rtc_stackcache_push_pair(uint8_t reg_base, uint8_t which_stack) {
         dj_panic(DJ_PANIC_AOT_STACKCACHE_PUSHED_REG_NOT_IN_USE);
     }
 }
+void rtc_stackcache_push_16bit_from_R22R23() {
+    rtc_stackcache_push_pair(R22, RTC_STACKCACHE_INT_STACK_TYPE);
+}
 void rtc_stackcache_push_16bit_from_R24R25() {
     rtc_stackcache_push_pair(R24, RTC_STACKCACHE_INT_STACK_TYPE);
 }
 void rtc_stackcache_push_32bit_from_R22R25() {
     rtc_stackcache_push_pair(R24, RTC_STACKCACHE_INT_STACK_TYPE);
     rtc_stackcache_push_pair(R22, RTC_STACKCACHE_INT_STACK_TYPE);
+}
+void rtc_stackcache_push_ref_from_R22R23() {
+    rtc_stackcache_push_pair(R22, RTC_STACKCACHE_REF_STACK_TYPE);
 }
 void rtc_stackcache_push_ref_from_R24R25() {
     rtc_stackcache_push_pair(R24, RTC_STACKCACHE_REF_STACK_TYPE);
