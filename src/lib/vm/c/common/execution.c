@@ -882,7 +882,7 @@ static inline void dj_exec_passParameters(dj_frame *frame, dj_di_pointer methodI
 // This takes up space in the stack frame while this allows it to stay in registers.
 static inline uint32_t returnFromMethod(uint32_t retval) {
 	AVRORATRACE_DISABLE();
-	AVRORA_PRINT_METHOD_RETURN();
+	avroraRTCRuntimeMethodCallReturn();
 
 #ifdef EXECUTION_FRAME_ON_STACK
 	dj_thread_popFrame();
@@ -1049,7 +1049,7 @@ uint32_t callJavaMethod_setup(dj_global_id_with_flags methodImplId, dj_di_pointe
 
 
 uint32_t callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl) {
-	AVRORA_PRINT_METHOD_CALL(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
+	avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
 
 #ifdef EXECUTION_FRAME_ON_STACK
 	dj_frame *frame = alloca(dj_frame_size(methodImpl));
@@ -1063,7 +1063,7 @@ uint32_t callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer meth
 }
 
 void callNativeMethod(dj_global_id methodImplId, dj_di_pointer methodImpl, bool virtualCall) {
-	AVRORA_PRINT_METHOD_CALL(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
+	avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
 
 	bool isReturnReference=false;
 	int oldNumRefStack, numRefStack;
@@ -1140,7 +1140,7 @@ void callNativeMethod(dj_global_id methodImplId, dj_di_pointer methodImpl, bool 
 				}
 			}
 			
-			AVRORA_PRINT_METHOD_RETURN();
+			avroraRTCRuntimeMethodCallReturn();
 		}
 		else
 		{

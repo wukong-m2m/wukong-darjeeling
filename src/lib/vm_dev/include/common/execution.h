@@ -118,15 +118,6 @@ void dj_exec_updatePointers();
 dj_frame *dj_exec_getCurrentFrame();
 bool dj_exec_currentMethodIsRTCCompiled();
 
-#ifdef EXECUTION_PRINT_CALLS_AND_RETURNS
-#define AVRORA_PRINT_METHOD_CALL(infusionname, entity_id) avroraRTCRuntimeMethodCall(infusionname, entity_id)
-#define AVRORA_PRINT_METHOD_RETURN()                      avroraRTCRuntimeMethodCallReturn()
-#else
-#define AVRORA_PRINT_METHOD_CALL(infusionname, entity_id)
-#define AVRORA_PRINT_METHOD_RETURN()
-#endif
-
-
 #ifdef DARJEELING_DEBUG_FRAME
 void dj_exec_dumpFrame( dj_frame *frame );
 void dj_exec_dumpFrameTrace( dj_frame *frame );

@@ -150,6 +150,7 @@ void * dj_mem_alloc(uint16_t size, uint16_t id)
 	{
 		// not enough memory
         DEBUG_LOG(DBG_DARJEELING, "dj_mem_alloc: triggering a collection\n");
+        avroraPrintInt16(size);
 		dj_mem_gc();
 
 		if (right_pointer-left_pointer<size)
@@ -418,6 +419,7 @@ void dj_mem_compact()
 void dj_mem_gc()
 {
 	avroraPrintStr("gc");
+	avroraPrintFreeHeapMemory();
     avroraStartGarbageCollectionTimer();
 	DEBUG_LOG(DBG_DARJEELING | DBG_DARJEELING_GC, "GC start\n");
 
@@ -427,6 +429,8 @@ void dj_mem_gc()
 
 	DEBUG_LOG(DBG_DARJEELING | DBG_DARJEELING_GC, "GC done\n");
     avroraStopGarbageCollectionTimer();
+	avroraPrintFreeHeapMemory();
+	avroraPrintStr("gc done");
 }
 
 bool dj_mem_isHeapPointer(void *ptr) {
