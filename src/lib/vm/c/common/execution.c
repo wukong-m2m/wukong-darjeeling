@@ -1017,12 +1017,12 @@ uint32_t callJavaMethod_setup(dj_global_id_with_flags methodImplId, dj_di_pointe
 #endif
 }
 
+
 void callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl) {
 	AVRORA_PRINT_METHOD_CALL(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
 
 #ifdef EXECUTION_FRAME_ON_STACK
-	uint16_t size = dj_frame_size(methodImpl);
-	dj_frame *frame = alloca(size);
+	dj_frame *frame = alloca(dj_frame_size(methodImpl));
 #else // EXECUTION_FRAME_ON_STACK
 	dj_frame *frame = dj_frame_create_fast(methodImplId, methodImpl);
 #endif // EXECUTION_FRAME_ON_STACK

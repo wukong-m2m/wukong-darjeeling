@@ -8,7 +8,6 @@
 
 void RTC_INVOKEVIRTUAL_OR_INTERFACE(dj_local_id localId, uint8_t nr_ref_args);
 void RTC_INVOKESPECIAL(dj_local_id localId);
-void RTC_INVOKESTATIC(dj_local_id localId);
 void RTC_INVOKESTATIC_FAST_JAVA(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t flags);
 void RTC_INVOKESTATIC_FAST_NATIVE(dj_global_id methodImplId, dj_di_pointer methodImpl);
 ref_t RTC_NEW(dj_local_id localId);
