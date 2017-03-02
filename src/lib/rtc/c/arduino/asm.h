@@ -52,8 +52,10 @@
 #define Y  1
 #define Z  0 
 
-#define SPaddress_L 0x5D
-#define SPaddress_H 0x5E
+#define SP_L_address 0x5D
+#define SP_H_address 0x5E
+#define SP_L_port 0x3D
+#define SP_H_port 0x3E
 
 
 // 0000 00kk kkkk k000
@@ -66,7 +68,7 @@
             + (((src_register) & 0x10) << 5))
 
 // 0000 0AA0 0000 AAAA
-#define makeINaddress(address) ( \
+#define makeIN_OUTport(address) ( \
                ((address) & 0x0F) \
             + (((address) & 0x30) << 5))
 
@@ -149,9 +151,10 @@
 
 // IN                                   1011 0AAd dddd AAAA, with d=dest register, A the address of the IO location to read 0<=A<=63 (63==0x3F)
 #define OPCODE_IN                       0xB000
-#define emit_IN(destreg, address)       emit((OPCODE_IN \
+#define asm_const_IN(destreg, port)     (OPCODE_IN \
                                          + ((destreg) << 4) \
-                                         + makeINaddress(address)))
+                                         + makeIN_OUTport(port))
+#define emit_IN(destreg, port)          emit(asm_const_IN(destreg, port))
 
 // INC                                  1001 010d dddd 0011, with d=dest register
 #define OPCODE_INC                      0x9403
@@ -223,6 +226,14 @@
 // OR                                   0010 10rd dddd rrrr, with d=dest register, r=source register
 #define OPCODE_OR                       0x2800
 #define emit_OR(destreg, srcreg)        emit_opcodeWithSrcAndDestRegOperand(OPCODE_OR, destreg, srcreg)
+
+// OUT                                  1011 1AAr rrrr AAAA, with r=src register, A the address of the IO location to read 0<=A<=63 (63==0x3F)
+#define OPCODE_OUT                      0xB800
+#define asm_const_OUT(port, srcreg)     (OPCODE_OUT \
+                                         + ((srcreg) << 4) \
+                                         + makeIN_OUTport(port))
+#define emit_OUT(port, srcreg)          emit(asm_const_OUT(port, srcreg))
+
 
 // PUSH                                 1001 001d dddd 1111, with d=source register
 #define OPCODE_PUSH                     0x920F
