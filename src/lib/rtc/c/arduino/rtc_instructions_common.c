@@ -26,7 +26,20 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
         emit_LDI(R20, jvm_operand_byte2); // nr_ref_args
         emit_2_CALL((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE);
     } else if (opcode == JVM_INVOKESPECIAL) {
-        emit_2_CALL((uint16_t)&RTC_INVOKESPECIAL);
+        dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(globalId);
+        uint8_t flags = dj_di_methodImplementation_getFlags(methodImpl);
+        rettype = dj_di_methodImplementation_getReturnType(methodImpl);
+
+        emit_LDI(R20, ((uint16_t)methodImpl) & 0xFF);
+        emit_LDI(R21, (((uint16_t)methodImpl) >> 8) & 0xFF);
+
+        if ((flags & FLAGS_NATIVE) != 0) {
+            emit_2_CALL((uint16_t)&RTC_INVOKESPECIAL_FAST_NATIVE);
+        } else {
+            emit_LDI(R25, flags);
+            emit_2_CALL((uint16_t)&RTC_INVOKESPECIAL_FAST_JAVA);
+        }
+
     } else if (opcode == JVM_INVOKESTATIC) {
         dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(globalId);
         uint8_t flags = dj_di_methodImplementation_getFlags(methodImpl);
@@ -36,10 +49,8 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
         emit_LDI(R21, (((uint16_t)methodImpl) >> 8) & 0xFF);
 
         if ((flags & FLAGS_NATIVE) != 0) {
-            // void RTC_INVOKESTATIC_FAST_NATIVE(dj_global_id methodImplId, dj_di_pointer methodImpl);
             emit_2_CALL((uint16_t)&RTC_INVOKESTATIC_FAST_NATIVE);
         } else {
-            // void RTC_INVOKESTATIC_FAST_JAVA(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t flags);
             emit_LDI(R25, flags);
             emit_2_CALL((uint16_t)&RTC_INVOKESTATIC_FAST_JAVA);
         }
