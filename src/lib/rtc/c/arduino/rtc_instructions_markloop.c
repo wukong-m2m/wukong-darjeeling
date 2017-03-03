@@ -545,8 +545,8 @@ void rtc_translate_single_instruction() {
             // R24:R25 now points to the location of the instance references
             emit_MOVW(RZ, R24); // Move the location to Z
             jvm_operand_word0 = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, jvm_operand_word0*2);
-            emit_LDD(R22, Z, (jvm_operand_word0*2)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
-            emit_LDD(R23, Z, (jvm_operand_word0*2)+1);
+            emit_LDD(R22, Z, (jvm_operand_word0)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
+            emit_LDD(R23, Z, (jvm_operand_word0)+1);
             operand_regs1[0] = R22;
             operand_regs1[1] = R23;
             rtc_stackcache_push_ref(operand_regs1);
@@ -590,8 +590,8 @@ void rtc_translate_single_instruction() {
 
             rtc_stackcache_pop_nondestructive_ref(operand_regs1); // POP the value to store again
             jvm_operand_word0 = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, jvm_operand_word0*2);
-            emit_STD(operand_regs1[0], Z, (jvm_operand_word0*2)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
-            emit_STD(operand_regs1[1], Z, (jvm_operand_word0*2)+1);
+            emit_STD(operand_regs1[0], Z, (jvm_operand_word0)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
+            emit_STD(operand_regs1[1], Z, (jvm_operand_word0)+1);
         break;
         case JVM_GETSTATIC_B:
         case JVM_GETSTATIC_C:
