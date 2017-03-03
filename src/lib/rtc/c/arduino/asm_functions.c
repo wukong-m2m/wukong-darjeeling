@@ -71,6 +71,18 @@ void emit_ADIW(uint8_t reg, uint8_t constant) {
 void emit_BRANCH(uint16_t opcode, uint8_t offset) {
     emit (opcode + makeBranchOffset(((offset)/2)));
 }
+
+uint16_t emit_ADIW_if_necessary_to_bring_offset_in_range(uint8_t reg, uint16_t offset) {
+    // LDD/STD can accept an offset up to 63, but since this may be the first LDD/STD of a
+    // 32 bit int, we add a margin of 3 more bytes. Maybe we'll emit an ADIW too many in some
+    // cases, but it keeps the rest of the code a little bit smaller and cleaner.
+    while (offset > 60) {
+        emit_ADIW(reg, 63);
+        offset -= 63;
+    }
+    return offset;
+}
+
 // 6 bit offset q has to be inserted in the opcode like this:
 // 00q0 qq00 0000 0qqq
 #define makeLDDSTDoffset(offset) ( \
@@ -78,19 +90,27 @@ void emit_BRANCH(uint16_t opcode, uint8_t offset) {
             + (((offset) & 0x18) << 7) \
             + (((offset) & 0x20) << 8))
 // LDD                                  10q0 qq0d dddd yqqq, with d=dest register, q=offset from Y or Z, y=1 for Y 0 for Z
-void emit_LDD(uint8_t reg, uint8_t xy, uint8_t offset) {
+void emit_LDD(uint8_t reg, uint8_t yz, uint16_t offset) {
+    if (offset > 63) {
+        dj_panic(DJ_PANIC_AOT_ASM_ERROR_OFFSET_OUT_OF_RANGE);
+    }
     emit (OPCODE_LDD
              + ((reg) << 4)
-             + ((xy) << 3)
+             + ((yz) << 3)
              + makeLDDSTDoffset(offset));
 }
 // STD                                  10q0 qq1r rrrr yqqq, with r=source register, q=offset from Y or Z, y=1 for Y 0 for Z
-void emit_STD(uint8_t reg, uint8_t xy, uint8_t offset) {
+void emit_STD(uint8_t reg, uint8_t yz, uint16_t offset) {
+    if (offset > 63) {
+        dj_panic(DJ_PANIC_AOT_ASM_ERROR_OFFSET_OUT_OF_RANGE);
+    }
     emit ((OPCODE_STD
              + ((reg) << 4)
-             + ((xy) << 3)
+             + ((yz) << 3)
              + makeLDDSTDoffset(offset)));
 }
+
+
 // LDI                                  1110 KKKK dddd KKKK, with K=constant to load, d=dest register-16 (can only load to r16-r31)
 // SBCI                                 0100 KKKK dddd KKKK, with K a constant <= 255,d the destination register - 16
 // SUBI                                 0101 KKKK dddd KKKK, with K a constant <= 255,d the destination register - 16

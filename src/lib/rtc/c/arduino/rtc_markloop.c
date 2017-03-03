@@ -1245,6 +1245,7 @@ void rtc_markloop_emit_epilogue() {
 
 // emit instructions to be used by MARKLOOP prologue and epilogue as well as normal instructions
 void emit_load_local_16bit(uint8_t *regs, uint16_t offset) {
+    offset = emit_ADIW_if_necessary_to_bring_offset_in_range(RY, offset);
     emit_LDD(regs[0], Y, offset);
     emit_LDD(regs[1], Y, offset+1);
 }
@@ -1253,6 +1254,7 @@ void emit_load_local_32bit(uint8_t *regs, uint16_t offset) {
     emit_load_local_16bit(regs+2, offset+2);
 }
 void emit_store_local_16bit(uint8_t *regs, uint16_t offset) {
+    offset = emit_ADIW_if_necessary_to_bring_offset_in_range(RY, offset);
     emit_STD(regs[0], Y, offset);
     emit_STD(regs[1], Y, offset+1);
 }
