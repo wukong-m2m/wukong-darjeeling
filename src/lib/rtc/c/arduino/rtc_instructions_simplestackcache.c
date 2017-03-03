@@ -1679,13 +1679,13 @@ void rtc_translate_single_instruction() {
             jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
             jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
             int32_t upperbound = (int32_t)(((uint32_t)jvm_operand_byte0 << 24) | ((uint32_t)jvm_operand_byte1 << 16) | ((uint32_t)jvm_operand_byte2 << 8) | ((uint32_t)jvm_operand_byte3 << 0));
-            emit_LDI(RZL, jvm_operand_byte0); // Bytecode is big endian
+            emit_LDI(RZL, jvm_operand_byte3); // Bytecode is big endian
             emit_CP (RZL, operand_regs1[0]);
-            emit_LDI(RZL, jvm_operand_byte1);
-            emit_CPC(RZL, operand_regs1[1]);
             emit_LDI(RZL, jvm_operand_byte2);
+            emit_CPC(RZL, operand_regs1[1]);
+            emit_LDI(RZL, jvm_operand_byte1);
             emit_CPC(RZL, operand_regs1[2]);
-            emit_LDI(RZL, jvm_operand_byte3);
+            emit_LDI(RZL, jvm_operand_byte0);
             emit_CPC(RZL, operand_regs1[3]);
             emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
 
@@ -1695,13 +1695,13 @@ void rtc_translate_single_instruction() {
             jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
             jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
             int32_t lowerbound = (int32_t)(((uint32_t)jvm_operand_byte0 << 24) | ((uint32_t)jvm_operand_byte1 << 16) | ((uint32_t)jvm_operand_byte2 << 8) | ((uint32_t)jvm_operand_byte3 << 0));
-            emit_LDI(RZL, jvm_operand_byte0); // Bytecode is big endian
+            emit_LDI(RZL, jvm_operand_byte3); // Bytecode is big endian
             emit_CP(operand_regs1[0], RZL);
-            emit_LDI(RZL, jvm_operand_byte1);
-            emit_CPC(operand_regs1[1], RZL);
             emit_LDI(RZL, jvm_operand_byte2);
+            emit_CPC(operand_regs1[1], RZL);
+            emit_LDI(RZL, jvm_operand_byte1);
             emit_CPC(operand_regs1[2], RZL);
-            emit_LDI(RZL, jvm_operand_byte3);
+            emit_LDI(RZL, jvm_operand_byte0);
             emit_CPC(operand_regs1[3], RZL);
             emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
 
@@ -1729,7 +1729,8 @@ void rtc_translate_single_instruction() {
 
             emit_POP(RZH); // POP PC into Z
             emit_POP(RZL);
-            emit_ADIW(RZ, 7); // Will need to compensate here for the instructions inbetween RCALL(0) and the table. Now Z will point to the start of the RJMP table.
+            emit_ADIW(RZ, 6); // Will need to compensate here for the instructions inbetween RCALL(0) and the table. Now Z will point to the start of the RJMP table.
+                              // Note that this should be 7 for cpus with >128K flash since they have a 3 byte PC.
             emit_ADD(RZL, operand_regs1[0]); // Add the index to get the target address in the RJMP table
             emit_ADC(RZH, operand_regs1[1]);
             emit_IJMP(); // All this fuss because there's no relative indirect jump...
@@ -1762,13 +1763,13 @@ void rtc_translate_single_instruction() {
                 // Get the branch target (and skip the branch address used by the interpreter)
                 jvm_operand_word0 = (dj_di_getU8(ts->jvm_code_start + ts->pc + 3) << 8) | dj_di_getU8(ts->jvm_code_start + ts->pc + 4);
                 ts->pc += 4;
-                emit_LDI(RZL, jvm_operand_byte0); // Bytecode is big endian
+                emit_LDI(RZL, jvm_operand_byte3); // Bytecode is big endian
                 emit_CP(RZL, operand_regs1[0]);
-                emit_LDI(RZL, jvm_operand_byte1);
-                emit_CPC(RZL, operand_regs1[1]);
                 emit_LDI(RZL, jvm_operand_byte2);
+                emit_CPC(RZL, operand_regs1[1]);
+                emit_LDI(RZL, jvm_operand_byte1);
                 emit_CPC(RZL, operand_regs1[2]);
-                emit_LDI(RZL, jvm_operand_byte3);
+                emit_LDI(RZL, jvm_operand_byte0);
                 emit_CPC(RZL, operand_regs1[3]);
                 emit_x_branchtag(OPCODE_BREQ, jvm_operand_word0);
             }
