@@ -211,6 +211,14 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
         }
     }
 
+    private static InstructionHandle newInstructionHandleWithSameStateAndLiveVariables(InstructionHandle oldHandle, Instruction instruction) {
+        InstructionHandle newHandle = new InstructionHandle(instruction);
+        newHandle.setPreState(oldHandle.getPreState());
+        newHandle.setPostState(oldHandle.getPostState());
+        newHandle.getLiveVariables().merge(oldHandle.getLiveVariables());
+        return newHandle;
+    }
+
     private static void splitFirstAndLastBranchTargetIfNecessary(InstructionList instructions, InstructionHandle beginTargetHandle, InstructionHandle endBranchHandle) {
         // Examples:
         // 
@@ -255,9 +263,7 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
                     && handle.getBranchHandle() == beginTargetHandle) {
                 // Insert a new branchtarget if we hadn't already.
                 if (splitBranchTargetHandle == null) {
-                    splitBranchTargetHandle = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
-                    splitBranchTargetHandle.setPreState(endBranchHandle.getPreState());
-                    splitBranchTargetHandle.setPostState(endBranchHandle.getPostState());
+                    splitBranchTargetHandle = newInstructionHandleWithSameStateAndLiveVariables(endBranchHandle, new BranchTargetInstruction(Opcode.BRTARGET));
                     instructions.insertBefore(beginTargetHandle, splitBranchTargetHandle);
                 }
                 handle.setBranchHandle(splitBranchTargetHandle);
@@ -269,9 +275,7 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
                     && handle.getBranchHandle() == endBranchHandle) {
                 // Insert a new branchtarget if we hadn't already.
                 if (splitBranchTargetHandle == null) {
-                    splitBranchTargetHandle = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
-                    splitBranchTargetHandle.setPreState(endBranchHandle.getPreState());
-                    splitBranchTargetHandle.setPostState(endBranchHandle.getPostState());
+                    splitBranchTargetHandle = newInstructionHandleWithSameStateAndLiveVariables(endBranchHandle, new BranchTargetInstruction(Opcode.BRTARGET));
                     instructions.insertAfter(endBranchHandle, splitBranchTargetHandle);
                 }
                 handle.setBranchHandle(splitBranchTargetHandle);
@@ -372,13 +376,9 @@ public class AddMarkLoopInstructions extends CodeBlockTransformation
         }
 
         InstructionHandle markLoopHandle;
-        markLoopHandle = new InstructionHandle(new MarkLoopInstruction(Opcode.MARKLOOP_START, valuetagList));
-        markLoopHandle.setPreState(beginTargetHandle.getPreState());
-        markLoopHandle.setPostState(beginTargetHandle.getPostState());
+        markLoopHandle = newInstructionHandleWithSameStateAndLiveVariables(beginTargetHandle, new MarkLoopInstruction(Opcode.MARKLOOP_START, valuetagList));
         instructions.insertBefore(beginTargetHandle, markLoopHandle);
-        markLoopHandle = new InstructionHandle(new SimpleInstruction(Opcode.MARKLOOP_END));
-        markLoopHandle.setPreState(endBranchHandle.getPreState());
-        markLoopHandle.setPostState(endBranchHandle.getPostState());
+        markLoopHandle = newInstructionHandleWithSameStateAndLiveVariables(endBranchHandle, new SimpleInstruction(Opcode.MARKLOOP_END));
         instructions.insertAfter(endBranchHandle, markLoopHandle);
     }
 
