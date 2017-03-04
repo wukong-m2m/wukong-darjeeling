@@ -30,7 +30,7 @@
 #include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraTimer.h"
 #include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraRTC.h"
 
-#define HEAPSIZE 2580
+#define HEAPSIZE 2560
 
 // 'Time slices' are 128 instructions
 #define RUNSIZE 128
@@ -53,6 +53,8 @@
 #define EXECUTION_FRAME_ON_STACK 1
 
 // #define EXECUTION_PRINT_CALLS_AND_RETURNS 1
+#define EXECUTION_PRINT_WHEN_GC_RUNS
+// #define EXECUTION_PRINT_GC_DETAILS 1
 // #define EXECUTION_BREAK_IF_IN_INTERPRETER 1
 
 /* Please see common/debug.h */
