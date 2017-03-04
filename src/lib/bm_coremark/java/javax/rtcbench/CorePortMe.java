@@ -1,6 +1,41 @@
 package javax.rtcbench;
 
 public class CorePortMe {
+	public static boolean PROFILE_RUN;
+	public static boolean PERFORMANCE_RUN;
+	public static boolean VALIDATION_RUN;
+	public static final int ITERATIONS                      = 50;
+
+	static {
+		if (!PROFILE_RUN && !PERFORMANCE_RUN && !VALIDATION_RUN) {
+			if (CoreMarkH.TOTAL_DATA_SIZE==1200) {
+				PROFILE_RUN=true;
+			} else if (CoreMarkH.TOTAL_DATA_SIZE==2000) {
+				PERFORMANCE_RUN=true;
+			} else {
+				VALIDATION_RUN=true;
+			}
+		}
+
+		if (VALIDATION_RUN) {
+			CoreUtil.seed1_volatile=0x3415;
+			CoreUtil.seed2_volatile=0x3415;
+			CoreUtil.seed3_volatile=0x66;
+		}
+		if (PERFORMANCE_RUN) {
+			CoreUtil.seed1_volatile=0x0;
+			CoreUtil.seed2_volatile=0x0;
+			CoreUtil.seed3_volatile=0x66;
+		}
+		if (PROFILE_RUN) {
+			CoreUtil.seed1_volatile=0x8;
+			CoreUtil.seed2_volatile=0x8;
+			CoreUtil.seed3_volatile=0x8;
+		}
+		CoreUtil.seed4_volatile=ITERATIONS;
+		CoreUtil.seed5_volatile=0;		
+	}
+
 	public static final int CLOCKS_PER_SEC					= 1000;
 	public static final int NSECS_PER_SEC					= CLOCKS_PER_SEC;
 	public static final int TIMER_RES_DIVIDER				= 1;
