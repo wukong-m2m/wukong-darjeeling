@@ -285,9 +285,9 @@ public class CoreListJoinB {
 		int size=(blksize/per_item)-2; /* to accomodate systems with 64b pointers, and make sure same code is executed, set max list elements */
 
 		ShortWrapper memblock = new ShortWrapper((short)0);
-		short memblock_end=(short)size;
+		short memblock_end=(short)(size*2); // *2 because in the C version we count in pointers to list_head structs, which are 4 bytes, but in Java we count 2 byte shorts. So we need to reserve *2 as much memory.
 		ShortWrapper datablock = new ShortWrapper(memblock_end);
-		short datablock_end=(short)(datablock.GetValue()+size);
+		short datablock_end=(short)(datablock.GetValue()+(size*2)); // *2 because in the C version we count in pointers to list_data structs, which are 4 bytes, but in Java we count 2 byte shorts. So we need to reserve *2 as much memory.
 
 		data = new short[datablock_end];
 
