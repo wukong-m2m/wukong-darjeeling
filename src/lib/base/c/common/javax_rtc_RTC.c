@@ -18,12 +18,12 @@ void javax_rtc_RTC_void_avroraPrintInt_int() {
     avroraPrintInt32(value);
 }
 
-void javax_rtc_RTC_void_avroraPrintHexShort_short() {
+void javax_rtc_RTC_void_avroraPrintHex16_short() {
     int32_t value = dj_exec_stackPopShort();
     avroraPrintHex16(value);
 }
 
-void javax_rtc_RTC_void_avroraPrintHexInt_int() {
+void javax_rtc_RTC_void_avroraPrintHex32_int() {
     int32_t value = dj_exec_stackPopInt();
     avroraPrintHex32(value);
 }
