@@ -189,6 +189,15 @@ public class CoreMain {
 		CorePortMe.stop_time();
 		total_time=CorePortMe.get_time();
 
+		// NOT STANDARD COREMARK CODE
+		// Free up some memory here because otherwise we'll get
+		// out of memory errors when printing the report. This is
+		// not standard CoreMark code, but it should be ok here
+		// since the benchmark is already done here.
+		results[0].mat = null;
+		results[0].statememblock3 = null;
+		CoreListJoinB.data = null;
+
 		/* get a function of the input to report */
 		seedcrc=CoreUtil.crc16((short)results[0].seed1,seedcrc);
 		seedcrc=CoreUtil.crc16((short)results[0].seed2,seedcrc);

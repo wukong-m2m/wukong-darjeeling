@@ -78,7 +78,7 @@ public class CoreListJoinB {
 	// list_head_s and list_data_s structures respectively.
 	// So the data array consists of pairs of two shorts which may be
 	// either a list_head_s or list_data_s struct.
-	private static short[] data;
+	public static short[] data;
 
 
 	private final static short ListNULL = -1;
