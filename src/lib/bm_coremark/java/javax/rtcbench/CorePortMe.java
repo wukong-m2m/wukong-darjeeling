@@ -1,4 +1,5 @@
 package javax.rtcbench;
+import javax.rtc.RTC;
 
 public class CorePortMe {
 	public static boolean PROFILE_RUN;

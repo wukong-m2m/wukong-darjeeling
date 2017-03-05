@@ -1,4 +1,5 @@
 package javax.rtcbench;
+import javax.rtc.RTC;
 
 public class CoreMarkH {
 	public static short TOTAL_DATA_SIZE		= 2*1000;

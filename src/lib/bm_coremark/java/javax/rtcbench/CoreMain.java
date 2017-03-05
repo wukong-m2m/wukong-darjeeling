@@ -1,4 +1,5 @@
 package javax.rtcbench;
+import javax.rtc.RTC;
 
 /*
 Author : Shay Gal-On, EEMBC
