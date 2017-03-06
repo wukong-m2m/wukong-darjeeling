@@ -269,24 +269,25 @@ public class CoreMain {
 		// System.out.println("Compiler flags   : %s\n",COMPILER_FLAGS);
 		// System.out.println("Memory location  : %s\n",MEM_LOCATION);
 		/* output for verification */
-		System.out.println("seedcrc          : " + Integer.toHexString(seedcrc));
+		System.out.println("seedcrc          : " + Integer.toHexString(seedcrc & 0xFFFF)); // & 0xFFFF is just here because there's a bug in Integer.toHexString when printing negative ints. Fix later.
 		if ((results[0].execs & CoreMarkH.ID_LIST) != 0) {
 			for (i=0 ; i<CorePortMe.default_num_contexts; i++) {
-				System.out.println("[" + i + "]crclist       : 0x" + Integer.toHexString(results[i].crclist));
+				System.out.println("[" + i + "]crclist       : 0x" + Integer.toHexString(results[i].crclist & 0xFFFF)); // & 0xFFFF is just here because there's a bug in Integer.toHexString when printing negative ints. Fix later.
 			}
 		}
 		if ((results[0].execs & CoreMarkH.ID_MATRIX)  != 0) {
 			for (i=0 ; i<CorePortMe.default_num_contexts; i++) {
-				System.out.println("[" + i + "]crcmatrix     : 0x" + Integer.toHexString(results[i].crcmatrix));
+				System.out.println("[" + i + "]crcmatrix     : 0x" + Integer.toHexString(results[i].crcmatrix & 0xFFFF)); // & 0xFFFF is just here because there's a bug in Integer.toHexString when printing negative ints. Fix later.
 			}
 		}
 		if ((results[0].execs & CoreMarkH.ID_STATE) != 0) {
 			for (i=0 ; i<CorePortMe.default_num_contexts; i++) {
-				System.out.println("[" + i + "]crcstate      : 0x" + Integer.toHexString(results[i].crcstate));
+				System.out.println("[" + i + "]crcstate      : 0x" + Integer.toHexString(results[i].crcstate & 0xFFFF)); // & 0xFFFF is just here because there's a bug in Integer.toHexString when printing negative ints. Fix later.
 			}
 		}
 		for (i=0 ; i<CorePortMe.default_num_contexts; i++) {
-			System.out.println("[" + i + "]crcfinal      : 0x" + Integer.toHexString(results[i].crc));
+			RTC.avroraPrintHex32(results[i].crc);
+			System.out.println("[" + i + "]crcfinal      : 0x" + Integer.toHexString(results[i].crc & 0xFFFF)); // & 0xFFFF is just here because there's a bug in Integer.toHexString when printing negative ints. Fix later.
 		}
 		if (total_errors==0) {
 			System.out.println("Correct operation validated. See readme.txt for run and reporting rules.");
