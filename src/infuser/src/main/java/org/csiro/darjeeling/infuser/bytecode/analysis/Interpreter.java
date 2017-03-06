@@ -125,13 +125,24 @@ public class Interpreter
 		
 		pendingHandles.clear();
 		
-		// we first find the last instructions in the method,
+		// NR 20170306 This is wrong: the last instruction isn't necessarily the only exit point.
+		// For a method containing something like "if (...) { ...; return x; } else { ...; return y; }"
+		// only the second block returning y would be marked properly, while the first block will have
+		// no live variables at all.
+			// // we first find the last instructions in the method,
+			// pendingHandles.add(instructions.get(instructions.size()-1));
+		// instread we scan for RETURN opcodes and add all of those to pendingHandles.
+		for (InstructionHandle localHandle : instructions.getInstructionHandles()) {
+			if (localHandle.getInstruction().getOpcode().isReturn()){
+				pendingHandles.add(localHandle);
+			}
+		}
+
 		// then we add the last instruction in each try block,
 		// the reason to consider the try blocks separately is if
 		// a try block is followed by no instruction in a simple while loop,
 		// the bottom-to-top chain of incoming handle is lost in the catch instructions
 		// bootstrap the last instruction
-		pendingHandles.add(instructions.get(instructions.size()-1));
 		
 		// bootstrap the last instruction in all try blocks
 		for (ExceptionHandler exceptionHandler : codeBlock.getExceptionHandlers())
