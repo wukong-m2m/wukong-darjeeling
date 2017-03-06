@@ -62,6 +62,15 @@ public class InstructionHandle implements Comparable<InstructionHandle>
 		this.switchTargets = new ArrayList<InstructionHandle>();
 		this.liveVariables = new LiveSet();
 	}
+
+    public InstructionHandle copyToNewHandleWithSameStateAndLiveVariables(Instruction instruction) {
+        InstructionHandle newHandle = new InstructionHandle(instruction);
+        newHandle.setPreState(this.getPreState());
+        newHandle.setPostState(this.getPostState());
+        newHandle.getLiveVariables().merge(this.getLiveVariables());
+        return newHandle;
+    }
+
 	
 	public void setKeepOverflow(boolean keepOverflow)
 	{

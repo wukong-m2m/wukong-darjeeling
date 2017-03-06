@@ -35,7 +35,7 @@ public class AddBranchTargetInstructions extends CodeBlockTransformation
 			// System.out.println("------ SKIPPED: " + handle);
 		} else {
 			// Insert a BRTARGET before the target handle of this branch
-			InstructionHandle brtargetHandle = new InstructionHandle(new BranchTargetInstruction (Opcode.BRTARGET));
+			InstructionHandle brtargetHandle = targetInstructionHandle.copyToNewHandleWithSameStateAndLiveVariables(new BranchTargetInstruction (Opcode.BRTARGET));
 			instructions.insertBefore(targetInstructionHandle, brtargetHandle);
 
 			return brtargetHandle; // this will be the new branch target
