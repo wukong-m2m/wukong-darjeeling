@@ -270,24 +270,33 @@ public class CoreMain {
 		// System.out.println("Memory location  : %s\n",MEM_LOCATION);
 		/* output for verification */
 		System.out.println("seedcrc          : " + Integer.toHexString(seedcrc));
-		if ((results[0].execs & CoreMarkH.ID_LIST) != 0)
-			for (i=0 ; i<CorePortMe.default_num_contexts; i++) 
+		if ((results[0].execs & CoreMarkH.ID_LIST) != 0) {
+			for (i=0 ; i<CorePortMe.default_num_contexts; i++) {
 				System.out.println("[" + i + "]crclist       : 0x" + Integer.toHexString(results[i].crclist));
-		if ((results[0].execs & CoreMarkH.ID_MATRIX)  != 0)
-			for (i=0 ; i<CorePortMe.default_num_contexts; i++) 
+			}
+		}
+		if ((results[0].execs & CoreMarkH.ID_MATRIX)  != 0) {
+			for (i=0 ; i<CorePortMe.default_num_contexts; i++) {
 				System.out.println("[" + i + "]crcmatrix     : 0x" + Integer.toHexString(results[i].crcmatrix));
-		if ((results[0].execs & CoreMarkH.ID_STATE) != 0)
-			for (i=0 ; i<CorePortMe.default_num_contexts; i++) 
+			}
+		}
+		if ((results[0].execs & CoreMarkH.ID_STATE) != 0) {
+			for (i=0 ; i<CorePortMe.default_num_contexts; i++) {
 				System.out.println("[" + i + "]crcstate      : 0x" + Integer.toHexString(results[i].crcstate));
-		for (i=0 ; i<CorePortMe.default_num_contexts; i++) 
+			}
+		}
+		for (i=0 ; i<CorePortMe.default_num_contexts; i++) {
 			System.out.println("[" + i + "]crcfinal      : 0x" + Integer.toHexString(results[i].crc));
+		}
 		if (total_errors==0) {
 			System.out.println("Correct operation validated. See readme.txt for run and reporting rules.");
 		}
-		if (total_errors>0)
+		if (total_errors>0){
 			System.out.println("Errors detected");
-		if (total_errors<0)
+		}
+		if (total_errors<0) {
 			System.out.println("Cannot validate operation for these seed values, please compare with results on a known platform.");
+		}
 
 		// /* And last call any target specific code for finalizing */
 		// portable_fini(&(results[0].port));
