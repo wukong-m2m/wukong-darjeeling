@@ -77,8 +77,8 @@ uint16_t emit_ADIW_if_necessary_to_bring_offset_in_range(uint8_t reg, uint16_t o
     // 32 bit int, we add a margin of 3 more bytes. Maybe we'll emit an ADIW too many in some
     // cases, but it keeps the rest of the code a little bit smaller and cleaner.
     while (offset > 60) {
-        emit_ADIW(reg, 63);
-        offset -= 63;
+        emit_ADIW(reg, 60);
+        offset -= 60;
     }
     return offset;
 }
