@@ -37,10 +37,10 @@ public class CorePortMe {
 		CoreUtil.seed5_volatile=0;		
 	}
 
-	public static final int CLOCKS_PER_SEC					= 1000;
-	public static final int NSECS_PER_SEC					= CLOCKS_PER_SEC;
-	public static final int TIMER_RES_DIVIDER				= 1;
-	public static final int EE_TICKS_PER_SEC				= (NSECS_PER_SEC / TIMER_RES_DIVIDER);
+	// public static final int CLOCKS_PER_SEC					= 1000;
+	// public static final int NSECS_PER_SEC					= CLOCKS_PER_SEC;
+	// public static final int TIMER_RES_DIVIDER				= 1;
+	public static final int EE_TICKS_PER_SEC				= 1000;
 
 	public static int default_num_contexts					= 1;
 
@@ -79,7 +79,8 @@ public class CorePortMe {
 		Default implementation implemented by the EE_TICKS_PER_SEC macro above.
 	*/
 	public static int time_in_secs(int ticks) {
-		int retval = ticks / EE_TICKS_PER_SEC;
+		// int retval = ticks / EE_TICKS_PER_SEC;
+		int retval = ticks / 1000;
 		return retval;
 	}
 }
