@@ -184,10 +184,12 @@ public class CoreMain {
 		}
 
 		// /* perform actual benchmark */
+		RTC.avroraStartCountingCalls();
 		CorePortMe.start_time();
 		iterate(results[0]);
 		CorePortMe.stop_time();
 		total_time=CorePortMe.get_time();
+		RTC.avroraStopCountingCalls();
 
 		// NOT STANDARD COREMARK CODE
 		// Free up some memory here because otherwise we'll get

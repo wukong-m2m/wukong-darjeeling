@@ -32,6 +32,14 @@ void javax_rtc_RTC_void_avroraPrintSP() {
     avroraPrintSP();
 }
 
+void javax_rtc_RTC_void_avroraStartCountingCalls() {
+    avroraRTCStartCountingCalls();
+}
+
+void javax_rtc_RTC_void_avroraStopCountingCalls() {
+    avroraRTCStopCountingCalls();
+}
+
 void javax_rtc_RTC_void_beep_int() {
 	uint8_t number = (uint8_t)dj_exec_stackPopInt();
 	avroraRTCRuntimeBeep(number);
