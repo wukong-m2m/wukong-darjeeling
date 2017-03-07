@@ -69,7 +69,7 @@ void avr_flash_program_page_if_not_modified(uint_farptr_t page, uint8_t *buf) {
 }
 
 
-void wkreprog_impl_write(uint8_t size, uint8_t* data, bool skip) {
+void wkreprog_impl_write(uint16_t size, uint8_t* data, bool skip) {
 avroraStartReprogTimer();
 	// TODONR: Check if the size fits in the allocated space for app archive
 	if (avr_flash_pageaddress == 0)
@@ -77,7 +77,7 @@ avroraStartReprogTimer();
 	DEBUG_LOG(DBG_WKREPROG, "AVR: Received %d bytes to flash to page 0x%x.\n", size, avr_flash_pageaddress);
 	DEBUG_LOG(DBG_WKREPROG, "AVR: Buffer already contains %d bytes.\n", avr_flash_buf_len);
 	DEBUG_LOG(DBG_WKREPROG, "AVR: Writing to 0x%x: ", avr_flash_pageaddress+avr_flash_buf_len);
-	for (uint8_t i=0; i<size; i++) {
+	for (uint16_t i=0; i<size; i++) {
 		DEBUG_LOG(DBG_WKREPROG, " %x", data[i]);
 	}
 	DEBUG_LOG(DBG_WKREPROG, "\n");
@@ -88,7 +88,7 @@ avroraStartReprogTimer();
 	}
 
 	while(size!=0) {
-		uint8_t bytes_on_this_page = size;
+		uint16_t bytes_on_this_page = size;
 		if (avr_flash_buf_len + size > SPM_PAGESIZE) {
 			// Only 1 page at a time
 			bytes_on_this_page = SPM_PAGESIZE-avr_flash_buf_len;
