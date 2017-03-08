@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#define RTC_PROLOGUE_MAX_SIZE 42
+#define RTC_PROLOGUE_MAX_SIZE 46
 
 void rtc_current_method_set_uses_reg(uint8_t reg);
 bool rtc_current_method_get_uses_reg(uint8_t reg);

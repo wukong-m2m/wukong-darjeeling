@@ -46,7 +46,7 @@ uint8_t rtc_current_method_prologue_size() {
 	// MOVW(R28, R24),
 	// MOVW(R26, R22),
 	// MOVW(R2, R20),
-	return rtc_current_method_get_uses_reg(R2)*6 // 6 instead of 4 because we also need to emit the MOVW
+	return rtc_current_method_get_uses_reg(R2)*10 // 10 instead of 4 because we also need to emit the LDIs and MOVW
 		 + rtc_current_method_get_uses_reg(R4)*4
 		 + rtc_current_method_get_uses_reg(R6)*4
 		 + rtc_current_method_get_uses_reg(R8)*4
@@ -61,6 +61,9 @@ void rtc_emit_prologue() {
 	if (rtc_current_method_get_uses_reg(R2)) {
 		emit_PUSH(R2);
 		emit_PUSH(R3);
+		uint16_t rtc_statics_start = (uint16_t)rtc_ts->infusion->staticReferenceFields;
+		emit_LDI(R20, rtc_statics_start&0xFF);
+		emit_LDI(R21, (rtc_statics_start>>8)&0xFF);
 		emit_MOVW(R2, R20);
 	}
 	if (rtc_current_method_get_uses_reg(R4)) {
