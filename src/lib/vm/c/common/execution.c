@@ -1004,9 +1004,10 @@ uint32_t callJavaMethod_setup(dj_global_id_with_flags methodImplId, dj_di_pointe
 	frame->saved_refStack = dj_frame_getReferenceStackBase(frame, methodImpl); // initial saved_refStack (nothing on the stack)
 #endif
 	// set local variables to 0/null
-	// memset(dj_frame_getLocalReferenceVariables(ret), 0, localVariablesSize);
+	// Java requires locals to be explicitly initialised, so it may seem this is not necessary.
+	// But if we don't initialise references to null, a GC run may mistake it for a real reference, thus corrupting memory.
 	void * start = ((void*)frame) + sizeof(dj_frame);
-	void * end = dj_frame_getReferenceStackBase(frame, methodImpl); // frame->saved_refStack, but that may not be set if the interpreter is disabled. Actually we only need to clear the ref variables, but we don't have that count available
+	void * end = start + dj_di_methodImplementation_getReferenceLocalVariableCount(methodImpl)*2;
 	memset(start, 0, end-start);
 #endif // EXECUTION_FRAME_ON_STACK
 
