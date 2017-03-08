@@ -223,7 +223,7 @@ struct _dj_vm
 	//                         this but it's better than a global variable.
 	dj_di_pointer di_app_infusion_archive_data;
 
-	dj_thread *currentThread;
+	// dj_thread *currentThread;
 
 	uint16_t threadNr;
 	uint16_t numMonitors;

@@ -119,8 +119,8 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 	// while (dj_vm_countLiveThreads(vm)>0)
 	// {
 	// 	dj_vm_schedule(vm);
-	// 	if (vm->currentThread!=NULL)
-	// 		if (vm->currentThread->status==THREADSTATUS_RUNNING)
+	// 	if (dj_exec_getCurrentThread()!=NULL)
+	// 		if (dj_exec_getCurrentThread()->status==THREADSTATUS_RUNNING)
 	// 			dj_exec_run(RUNSIZE);
 	// }
 	// DEBUG_LOG(true, "DJ Done!\n");
@@ -142,7 +142,8 @@ dj_vm * dj_vm_create()
 	ret->threads = NULL;
 
 	// no threads running
-	ret->currentThread = NULL;
+	// NR 20170308 Moved currentThread to a global for performance reasons. Maybe that should happen with all fields in dj_vm?
+	// ret->currentThread = NULL;
 	ret->threadNr = 0;
 
 	// no monitors
@@ -742,8 +743,8 @@ void dj_vm_checkFinishedThreads(dj_vm *vm)
 		next = thread->next;
 		if (thread->status == THREADSTATUS_FINISHED)
 		{
-			if (vm->currentThread == thread)
-				vm->currentThread = NULL;
+			if (dj_exec_getCurrentThread() == thread)
+				dj_exec_setCurrentThread(NULL);
 			dj_vm_removeThread(vm, thread);
 			dj_thread_destroy(thread);
 		}
@@ -899,10 +900,10 @@ char dj_vm_activateThread(dj_vm *vm, dj_thread *selectedThread)
 {
 
 	// stop the current thread
-	if (vm->currentThread != NULL)
-		dj_exec_deactivateThread(vm->currentThread);
+	if (dj_exec_getCurrentThread() != NULL)
+		dj_exec_deactivateThread(dj_exec_getCurrentThread());
 
-	vm->currentThread = selectedThread;
+	dj_exec_setCurrentThread(selectedThread);
 
 	// check if we found a thread we can activate
 	if (selectedThread!=NULL)
@@ -925,7 +926,8 @@ char dj_vm_activateThread(dj_vm *vm, dj_thread *selectedThread)
  */
 void dj_vm_mem_updatePointers(dj_vm *vm)
 {
-	vm->currentThread = dj_mem_getUpdatedPointer(vm->currentThread);
+	// NR 20170308 Moved currentThread to a global for performance reasons. Maybe that should happen with all fields in dj_vm?
+	// vm->currentThread = dj_mem_getUpdatedPointer(vm->currentThread);
 	vm->infusions = dj_mem_getUpdatedPointer(vm->infusions);
 	vm->monitors = dj_mem_getUpdatedPointer(vm->monitors);
 	vm->systemInfusion = dj_mem_getUpdatedPointer(vm->systemInfusion);

@@ -105,7 +105,9 @@ int32_t dj_exec_stackPeekInt();
 ref_t dj_exec_stackPeekRef();
 ref_t dj_exec_stackPeekDeepRef(int depth);
 
-#define dj_exec_getCurrentThread() (vm->currentThread)
+extern dj_thread *dj_currentThread;
+#define dj_exec_getCurrentThread() dj_currentThread
+#define dj_exec_setCurrentThread(thread) do { dj_currentThread = thread; } while (0)
 dj_infusion *dj_exec_getCurrentInfusion();
 
 void dj_exec_setVM(dj_vm *_vm);

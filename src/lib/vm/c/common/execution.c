@@ -77,6 +77,7 @@
 
 // currently selected Virtual Machine context
 dj_vm *vm;
+dj_thread *dj_currentThread;
 
 // global variables for quick access
 //static dj_thread *currentThread;
@@ -389,7 +390,7 @@ void dj_exec_activate_thread(dj_thread *thread) {
 	if (thread == NULL)
 		return;
 
-	vm->currentThread = thread;
+	dj_exec_setCurrentThread(thread);
 
 	if (thread->frameStack != NULL) {
 		dj_exec_loadLocalState(thread->frameStack);
@@ -405,6 +406,7 @@ void dj_exec_activate_thread(dj_thread *thread) {
 
 void dj_exec_updatePointers() {
 	vm = dj_mem_getUpdatedPointer(vm);
+	dj_exec_setCurrentThread(dj_mem_getUpdatedPointer(dj_exec_getCurrentThread()));
 }
 
 /**
@@ -1185,7 +1187,7 @@ void createThreadAndRunMethodToFinish(dj_global_id methodImplId) {
 	dj_vm_addThread(dj_exec_getVM(), thread);
 	threadId = thread->id;
     thread->status = THREADSTATUS_RUNNING;
-	vm->currentThread = thread;
+	dj_exec_setCurrentThread(thread);
 
 	callMethod(methodImplId, 0);
 
@@ -1200,7 +1202,7 @@ void createThreadAndRunMethodToFinish(dj_global_id methodImplId) {
 	thread = dj_vm_getThreadById(dj_exec_getVM(), threadId);
 	dj_vm_removeThread(vm, thread);
 	dj_thread_destroy(thread);
-	vm->currentThread = NULL;
+	dj_exec_setCurrentThread(NULL);
 }
 
 /**
