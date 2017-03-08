@@ -71,18 +71,6 @@ void dj_thread_destroy(dj_thread *thread)
 }
 
 /**
- * Pushes a new stack frame onto the stack. Used by the execution engine to enter methods.
- * @param thread the thread to push the frame onto
- * @param frame the frame to push
- */
-void dj_thread_pushFrame(dj_frame *frame)
-{
-	dj_thread *thread = dj_exec_getCurrentThread();
-	frame->parent = thread->frameStack;
-	thread->frameStack = frame;
-}
-
-/**
  * Pops a stack frame from the frame stack. Used by the execution engine to leave methods and throw
  * exceptions.
  * @param thread the thread to pop a stack frame from
