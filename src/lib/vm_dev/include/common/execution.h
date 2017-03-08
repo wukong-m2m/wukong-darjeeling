@@ -71,7 +71,7 @@ struct _dj_global_id_with_flags
 void callMethod(dj_global_id methodImplId, bool virtualCall);
 // Optimised versions to use when the target impl is known at compile time
 void callNativeMethod(dj_global_id methodImplId, dj_di_pointer methodImpl, bool virtualCall);
-uint32_t callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl);
+uint32_t callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl, uint16_t frame_size);
 
 void createThreadAndRunMethodToFinish(dj_global_id methodImplId);
 bool dj_exec_use_rtc;

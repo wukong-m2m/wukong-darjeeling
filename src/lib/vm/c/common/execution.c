@@ -949,7 +949,7 @@ void callMethodFast(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t
 		methodImplIdWithFlags.infusion = methodImplId.infusion;
 		methodImplIdWithFlags.entity_id = methodImplId.entity_id;
 		methodImplIdWithFlags.flags = flags;
-		uint32_t retval = callJavaMethod(methodImplIdWithFlags, methodImpl);
+		uint32_t retval = callJavaMethod(methodImplIdWithFlags, methodImpl, dj_frame_size(methodImpl));
 #ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 		const native_method_function_t *handlers = methodImplId.infusion->native_handlers;
 		native_method_function_t handler = (handlers != NULL ? methodImplId.infusion->native_handlers[methodImplId.entity_id] : NULL);
@@ -1066,12 +1066,12 @@ uint32_t callJavaMethod_setup(dj_global_id_with_flags methodImplId, dj_di_pointe
 }
 
 
-uint32_t callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl) {
+uint32_t callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl, uint16_t frame_size) {
 	avroraRTCRuntimeMethodCall(methodImplId.infusion, methodImplId.entity_id);
 
 // avroraCallMethodTimerMark(10);
 #ifdef EXECUTION_FRAME_ON_STACK
-	dj_frame *frame = alloca(dj_frame_size(methodImpl));
+	dj_frame *frame = alloca(frame_size);
 #else // EXECUTION_FRAME_ON_STACK
 	dj_frame *frame = dj_frame_create_fast(methodImplId, methodImpl);
 #endif // EXECUTION_FRAME_ON_STACK

@@ -30,26 +30,10 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
     emit_LDI(R23, (((uint16_t)globalId.infusion) >> 8) & 0xFF);
     emit_LDI(R24, globalId.entity_id);
 
-    if        (opcode == JVM_INVOKEVIRTUAL
-            || opcode == JVM_INVOKEINTERFACE) {
+    if (opcode == JVM_INVOKEVIRTUAL || opcode == JVM_INVOKEINTERFACE) {
         emit_LDI(R20, jvm_operand_byte2); // nr_ref_args
         emit_2_CALL((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE);
-    } else if (opcode == JVM_INVOKESPECIAL) {
-        dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(globalId);
-        uint8_t flags = dj_di_methodImplementation_getFlags(methodImpl);
-
-        emit_LDI(R20, ((uint16_t)methodImpl) & 0xFF);
-        emit_LDI(R21, (((uint16_t)methodImpl) >> 8) & 0xFF);
-
-        if ((flags & FLAGS_NATIVE) != 0) {
-            emit_2_CALL((uint16_t)&RTC_INVOKESPECIAL_FAST_NATIVE);
-        } else {
-            rettype = dj_di_methodImplementation_getReturnType(methodImpl); // By setting rettype here, the code past postinvoke will push any return value onto the stack (using stack caching if possible). This shouldn't be done for native methods, since they will push the return value onto the stack directly!!!!
-            emit_LDI(R25, flags);
-            emit_2_CALL((uint16_t)&RTC_INVOKESPECIAL_FAST_JAVA);
-        }
-
-    } else if (opcode == JVM_INVOKESTATIC) {
+    } else { // JVM_INVOKESPECIAL or JVM_INVOKESTATIC
         dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(globalId);
         uint8_t flags = dj_di_methodImplementation_getFlags(methodImpl);
 
@@ -60,8 +44,11 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
             emit_2_CALL((uint16_t)&RTC_INVOKESTATIC_FAST_NATIVE);
         } else {
             rettype = dj_di_methodImplementation_getReturnType(methodImpl); // By setting rettype here, the code past postinvoke will push any return value onto the stack (using stack caching if possible). This shouldn't be done for native methods, since they will push the return value onto the stack directly!!!!
+            uint16_t frame_size = dj_frame_size(methodImpl);
+            emit_LDI(R18, frame_size & 0xFF);
+            emit_LDI(R19, (frame_size >> 8) & 0xFF);
             emit_LDI(R25, flags);
-            emit_2_CALL((uint16_t)&RTC_INVOKESTATIC_FAST_JAVA);
+            emit_2_CALL((uint16_t)&RTC_INVOKESPECIAL_OR_STATIC_FAST_JAVA);
         }
     }
 
