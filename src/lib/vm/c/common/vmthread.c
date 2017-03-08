@@ -88,6 +88,7 @@ void dj_thread_pushFrame(dj_frame *frame)
  * @param thread the thread to pop a stack frame from
  * @return the popped frame
  */
+#ifndef EXECUTION_FRAME_ON_STACK
 dj_frame *dj_thread_popFrame()
 {
 	dj_thread *thread = dj_exec_getCurrentThread();
@@ -95,6 +96,9 @@ dj_frame *dj_thread_popFrame()
 	thread->frameStack = thread->frameStack->parent;
 	return ret;
 }
+#endif
+
+
 
 void dj_frame_markRootSet(dj_frame *frame)
 {

@@ -47,7 +47,11 @@ dj_thread *dj_thread_create();
 void dj_thread_destroy(dj_thread *thread);
 
 void dj_thread_pushFrame(dj_frame *frame);
+#ifdef EXECUTION_FRAME_ON_STACK
+#define dj_thread_popFrame() do { dj_exec_getCurrentThread()->frameStack = dj_exec_getCurrentThread()->frameStack->parent; } while (0)
+#else
 dj_frame *dj_thread_popFrame();
+#endif
 char dj_thread_scanRootSetForRef(dj_thread *thread, ref_t ref);
 void dj_thread_sleep(dj_thread *thread, dj_time_t time);
 void dj_thread_wait(dj_thread * thread, dj_object * object, dj_time_t time);
