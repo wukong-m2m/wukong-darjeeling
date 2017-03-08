@@ -1067,7 +1067,7 @@ uint32_t callJavaMethod_setup(dj_global_id_with_flags methodImplId, dj_di_pointe
 
 
 uint32_t callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl) {
-	avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
+	avroraRTCRuntimeMethodCall(methodImplId.infusion, methodImplId.entity_id);
 
 // avroraCallMethodTimerMark(10);
 #ifdef EXECUTION_FRAME_ON_STACK
@@ -1083,7 +1083,7 @@ uint32_t callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer meth
 }
 
 void callNativeMethod(dj_global_id methodImplId, dj_di_pointer methodImpl, bool virtualCall) {
-	avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
+	avroraRTCRuntimeMethodCall(methodImplId.infusion, methodImplId.entity_id);
 
 	bool isReturnReference=false;
 	int oldNumRefStack, numRefStack;
