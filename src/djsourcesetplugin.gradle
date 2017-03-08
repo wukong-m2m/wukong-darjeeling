@@ -121,7 +121,7 @@ class DjSourceSet {
             }
         }
         def proguard_task = project.tasks.create(name: 'proguard_'+this.name, type: proguard.gradle.ProGuardTask) {
-            System.setProperty('maximum.inlined.code.length', '80')
+            System.setProperty('maximum.inlined.code.length', '10')
             dependsOn(jar_task)
             inputs.file outputJar
             outputs.file outputOptimisedJar
