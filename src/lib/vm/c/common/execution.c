@@ -999,11 +999,14 @@ uint32_t callJavaMethod_setup(dj_global_id_with_flags methodImplId, dj_di_pointe
 	frame->method.infusion = methodImplId.infusion;
 	frame->method.entity_id = methodImplId.entity_id;
 	frame->parent = NULL;
+#ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
+	// This isn't necessary when the interpreter is disabled, since the start of refStack will be set when calling the AOT compiled handler. saved_refStack is only necessary when this method will call another, at which point saveLocalState will set saved_refStack.
 	frame->saved_refStack = dj_frame_getReferenceStackBase(frame, methodImpl); // initial saved_refStack (nothing on the stack)
+#endif
 	// set local variables to 0/null
 	// memset(dj_frame_getLocalReferenceVariables(ret), 0, localVariablesSize);
 	void * start = ((void*)frame) + sizeof(dj_frame);
-	void * end = frame->saved_refStack;
+	void * end = dj_frame_getReferenceStackBase(frame, methodImpl); // frame->saved_refStack, but that may not be set if the interpreter is disabled. Actually we only need to clear the ref variables, but we don't have that count available
 	memset(start, 0, end-start);
 #endif // EXECUTION_FRAME_ON_STACK
 
