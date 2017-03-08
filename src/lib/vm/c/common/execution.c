@@ -881,6 +881,7 @@ static inline void dj_exec_passParameters(dj_frame *frame, dj_di_pointer methodI
 // This only contains retval so we can avoid callMethod from storing the return value in a local var first, then calling returnFromMethod, then returing that local var.
 // This takes up space in the stack frame while this allows it to stay in registers.
 static inline uint32_t returnFromMethod(uint32_t retval) {
+// avroraCallMethodTimerMark(20);
 	AVRORATRACE_DISABLE();
 	avroraRTCRuntimeMethodCallReturn();
 
@@ -901,6 +902,7 @@ static inline uint32_t returnFromMethod(uint32_t retval) {
 		// dj_exec_activate_thread(dj_exec_getCurrentThread()); This just ends up setting vm->currentThread to the value it already has, and then calling dj_exec_loadLocalState... Just call it directly.
 		dj_exec_loadLocalState(dj_exec_getCurrentThread()->frameStack);
 	}
+// avroraCallMethodTimerMark(21);
 	return retval;
 }
 
@@ -979,12 +981,15 @@ void callMethodFast(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t
 typedef int32_t  (*aot_compiled_method_handler)(uint16_t rtc_frame_locals_start, uint16_t rtc_ref_stack_start, uint16_t rtc_statics_start);
 uint32_t callJavaMethod_setup(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl, dj_frame *frame) {
 	// Java method. May or may not be RTC compiled
+// avroraCallMethodTimerMark(30);
 
 	// not enough space on the heap to allocate the frame
 	if (frame == NULL) {
 		dj_exec_createAndThrow(STACKOVERFLOW_ERROR);
 		return 0;
 	}
+
+// avroraCallMethodTimerMark(31);
 
 	// create new frame for the function
 #ifdef EXECUTION_FRAME_ON_STACK
@@ -1002,6 +1007,7 @@ uint32_t callJavaMethod_setup(dj_global_id_with_flags methodImplId, dj_di_pointe
 	memset(start, 0, end-start);
 #endif // EXECUTION_FRAME_ON_STACK
 
+// avroraCallMethodTimerMark(32);
 	uint8_t numberOfIntArguments = dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
 	uint8_t numberOfRefArguments = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
 									+ ((methodImplId.flags & FLAGS_STATIC) ? 0 : 1);
@@ -1010,18 +1016,22 @@ uint32_t callJavaMethod_setup(dj_global_id_with_flags methodImplId, dj_di_pointe
 	refStack -= numberOfRefArguments;
 	intStack += numberOfIntArguments;
 
+// avroraCallMethodTimerMark(33);
 
 	// save current state of the frame
 	dj_exec_saveLocalState(dj_exec_getCurrentThread()->frameStack);
 
+// avroraCallMethodTimerMark(34);
 
 	// push the new frame on the frame stack
 	dj_thread_pushFrame(frame);
 
+// avroraCallMethodTimerMark(35);
 
 	// switch in newly created frame
 	dj_exec_loadLocalState(frame);
 
+// avroraCallMethodTimerMark(36);
 
 	const native_method_function_t *handlers = methodImplId.infusion->native_handlers;
 	native_method_function_t handler = (handlers != NULL ? methodImplId.infusion->native_handlers[methodImplId.entity_id] : NULL);
@@ -1029,10 +1039,15 @@ uint32_t callJavaMethod_setup(dj_global_id_with_flags methodImplId, dj_di_pointe
 	if (handler != NULL && dj_exec_use_rtc)
 	{
 #endif
+// avroraCallMethodTimerMark(37);
 		// RTC compiled method: execute it directly
 		uint16_t rtc_frame_locals_start = (uint16_t)dj_frame_getLocalReferenceVariables(frame); // Will be stored in Y by the function prologue
+// avroraCallMethodTimerMark(38);
 		uint16_t rtc_ref_stack_start = (uint16_t)dj_frame_getReferenceStackBase(frame, methodImpl); // Will be stored in X by the function prologue
 		uint16_t rtc_statics_start = (uint16_t)methodImplId.infusion->staticReferenceFields; // Will be stored in R2 by the function prologue
+// avroraCallMethodTimerMark(38);
+// avroraCallMethodTimerMark(38);
+// avroraCallMethodTimerMark(38);
 
 		DEBUG_LOG(DBG_RTC, "[rtc] starting rtc compiled method %i at %p with return type %i\n", methodImplId.entity_id, handler, rettype);
 
@@ -1041,6 +1056,7 @@ uint32_t callJavaMethod_setup(dj_global_id_with_flags methodImplId, dj_di_pointe
 		// Instead we return shorts in R22:23 and ints in R22:25, which means we can simply cast a short return value when we push it on the stack and
 		// ignore the higher bytes. For voids we just ignore the (garbage) return value completely.
 		return ((aot_compiled_method_handler)handler)(rtc_frame_locals_start, rtc_ref_stack_start, rtc_statics_start);
+// avroraCallMethodTimerMark(39);
 #ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 	}
 	return 0;
@@ -1051,11 +1067,13 @@ uint32_t callJavaMethod_setup(dj_global_id_with_flags methodImplId, dj_di_pointe
 uint32_t callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl) {
 	avroraRTCRuntimeMethodCall(dj_di_header_getInfusionName(methodImplId.infusion->header), methodImplId.entity_id);
 
+// avroraCallMethodTimerMark(10);
 #ifdef EXECUTION_FRAME_ON_STACK
 	dj_frame *frame = alloca(dj_frame_size(methodImpl));
 #else // EXECUTION_FRAME_ON_STACK
 	dj_frame *frame = dj_frame_create_fast(methodImplId, methodImpl);
 #endif // EXECUTION_FRAME_ON_STACK
+// avroraCallMethodTimerMark(11);
 
 	// This will create the frame, pass parameters, etc. For AOT compiled methods it will also call the method and return the return value.
 	// It always returns a 32 bit int, but for short/refs the high two bytes are garbage. For voids the whole return value should be ignored.

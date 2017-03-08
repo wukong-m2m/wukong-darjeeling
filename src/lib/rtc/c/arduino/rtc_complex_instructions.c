@@ -66,7 +66,9 @@ uint32_t RTC_INVOKESTATIC_FAST_JAVA(dj_global_id_with_flags methodImplId, dj_di_
     DEBUG_LOG(DBG_RTC, "RTC_INVOKESTATIC %p %p\n", intStack, refStack);
 
 
+// avroraCallMethodTimerMark(0);
     uint32_t retval = callJavaMethod(methodImplId, methodImpl);
+// avroraCallMethodTimerMark(100);
 
 #ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
     // If we called a JVM method, run until it's done.
