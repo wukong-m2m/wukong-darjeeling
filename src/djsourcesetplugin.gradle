@@ -117,6 +117,12 @@ class DjSourceSet {
             doLast {
                 ant.jar (destfile: outputJar) {
                     fileset(dir: outputClassesDir, includes: '**/*.class')
+
+                    if (this.name == 'apprtcbench') {
+                        manifest() { 
+                            attribute (name: 'Main-Class', value: 'RTCBenchApp')
+                        } 
+                    }
                 }
             }
         }
