@@ -4,6 +4,7 @@
 #include "panic.h"
 #include "asm.h"
 #include "rtc_emit.h"
+#include "asm_functions.h"
 
 #define ASM_GUARDS // Define this for debugging to add some checks to the assembler.
 #ifdef ASM_GUARDS
@@ -76,7 +77,7 @@ uint16_t emit_ADIW_if_necessary_to_bring_offset_in_range(uint8_t reg, uint16_t o
     // LDD/STD can accept an offset up to 63, but since this may be the first LDD/STD of a
     // 32 bit int, we add a margin of 3 more bytes. Maybe we'll emit an ADIW too many in some
     // cases, but it keeps the rest of the code a little bit smaller and cleaner.
-    while (offset > 60) {
+    while (asm_needs_ADIW_to_bring_offset_in_range(offset)) {
         emit_ADIW(reg, 60);
         offset -= 60;
     }
@@ -92,6 +93,7 @@ uint16_t emit_ADIW_if_necessary_to_bring_offset_in_range(uint8_t reg, uint16_t o
 // LDD                                  10q0 qq0d dddd yqqq, with d=dest register, q=offset from Y or Z, y=1 for Y 0 for Z
 void emit_LDD(uint8_t reg, uint8_t yz, uint16_t offset) {
     if (offset > 63) {
+        avroraPrintInt16(offset);
         dj_panic(DJ_PANIC_AOT_ASM_ERROR_OFFSET_OUT_OF_RANGE);
     }
     emit (OPCODE_LDD

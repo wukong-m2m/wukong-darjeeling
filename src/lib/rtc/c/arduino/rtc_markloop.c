@@ -1245,18 +1245,34 @@ void rtc_markloop_emit_epilogue() {
 
 // emit instructions to be used by MARKLOOP prologue and epilogue as well as normal instructions
 void emit_load_local_16bit(uint8_t *regs, uint16_t offset) {
-    offset = emit_ADIW_if_necessary_to_bring_offset_in_range(RY, offset);
-    emit_LDD(regs[0], Y, offset);
-    emit_LDD(regs[1], Y, offset+1);
+    if (asm_needs_ADIW_to_bring_offset_in_range(offset)) {
+        // Offset too large: copy Z to Y and ADIW it until we can reach the desired offset
+        emit_MOVW(RZ, RY);
+        offset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, offset);
+        emit_LDD(regs[0], Z, offset);
+        emit_LDD(regs[1], Z, offset+1);
+    } else {
+        // Offset in range: just use Y directly
+        emit_LDD(regs[0], Y, offset);
+        emit_LDD(regs[1], Y, offset+1);
+    }
 }
 void emit_load_local_32bit(uint8_t *regs, uint16_t offset) {
     emit_load_local_16bit(regs, offset);
     emit_load_local_16bit(regs+2, offset+2);
 }
 void emit_store_local_16bit(uint8_t *regs, uint16_t offset) {
-    offset = emit_ADIW_if_necessary_to_bring_offset_in_range(RY, offset);
-    emit_STD(regs[0], Y, offset);
-    emit_STD(regs[1], Y, offset+1);
+    if (asm_needs_ADIW_to_bring_offset_in_range(offset)) {
+        // Offset too large: copy Z to Y and ADIW it until we can reach the desired offset
+        emit_MOVW(RZ, RY);
+        offset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, offset);
+        emit_STD(regs[0], Z, offset);
+        emit_STD(regs[1], Z, offset+1);
+    } else {
+        // Offset in range: just use Y directly
+        emit_STD(regs[0], Y, offset);
+        emit_STD(regs[1], Y, offset+1);
+    }
 }
 void emit_store_local_32bit(uint8_t *regs, uint16_t offset) {
     emit_store_local_16bit(regs, offset);

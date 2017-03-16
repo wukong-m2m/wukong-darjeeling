@@ -1132,16 +1132,34 @@ void rtc_translate_single_instruction() {
                 jvm_operand_signed_word = (int16_t)(((uint16_t)jvm_operand_byte1 << 8) + jvm_operand_byte2);
             }
             offset = offset_for_intlocal_short(ts->methodimpl, jvm_operand_byte0);
+            if (asm_needs_ADIW_to_bring_offset_in_range(offset)) {
+                // Offset too large: copy Z to Y and ADIW it until we can reach the desired offset
+                emit_MOVW(RZ, RY);
+                offset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, offset);
+                operand_regs1[0] = Z;
+                if (jvm_operand_signed_word == 1) {
+                    operand_regs2[0] = R0; // The register to load the local into, one byte at a time.
+                } else {
+                    // We will use SUBI/SBCI instead of INC to increment by more than 1, but we can't use
+                    // R0 for that since these instructions need a register >= R16. Temporarily save R16 on
+                    // the stack and use that instead.
+                    emit_PUSH(R16);
+                    operand_regs2[0] = R16; // The register to load the local into, one byte at a time.
+                }
+            } else {
+                // Offset in range: just use Y directly
+                operand_regs1[0] = Y;
+                operand_regs2[0] = RZL; // The register to load the local into, one byte at a time.
+            }            
             if (jvm_operand_signed_word == 1) {
                 // Special case
-                offset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, offset);
-                emit_LDD(RZL, Y, offset);
-                emit_INC(RZL);
-                emit_STD(RZL, Y, offset);
+                emit_LDD(operand_regs2[0], operand_regs1[0], offset);
+                emit_INC(operand_regs2[0]);
+                emit_STD(operand_regs2[0], operand_regs1[0], offset);
                 emit_BRNE(6);
-                emit_LDD(RZL, Y, offset+1);
-                emit_INC(RZL);
-                emit_STD(RZL, Y, offset+1);
+                emit_LDD(operand_regs2[0], operand_regs1[0], offset+1);
+                emit_INC(operand_regs2[0]);
+                emit_STD(operand_regs2[0], operand_regs1[0], offset+1);
             } else {
                 uint8_t c0, c1;
                 if (jvm_operand_signed_word > 0) {
@@ -1154,14 +1172,16 @@ void rtc_translate_single_instruction() {
                     c1 = ((-jvm_operand_signed_word) >> 8) & 0xFF;
                 }
 
-                offset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, offset);
-                emit_LDD(RZL, Y, offset);
-                emit_SUBI(RZL, c0);
-                emit_STD(RZL, Y, offset);
+                emit_LDD(operand_regs2[0], operand_regs1[0], offset);
+                emit_SUBI(operand_regs2[0], c0);
+                emit_STD(operand_regs2[0], operand_regs1[0], offset);
 
-                emit_LDD(RZL, Y, offset+1);
-                emit_SBCI(RZL, c1);
-                emit_STD(RZL, Y, offset+1);
+                emit_LDD(operand_regs2[0], operand_regs1[0], offset+1);
+                emit_SBCI(operand_regs2[0], c1);
+                emit_STD(operand_regs2[0], operand_regs1[0], offset+1);
+            }
+            if (operand_regs2[0] == R16) {
+                emit_POP(R16);
             }
             rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(ts->current_instruction_valuetag); // Any cached value for this variable is now outdated.
         break;
@@ -1178,24 +1198,42 @@ void rtc_translate_single_instruction() {
                 jvm_operand_signed_word = (int16_t)(((uint16_t)jvm_operand_byte1 << 8) + jvm_operand_byte2);
             }
             offset = offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0);
+            if (asm_needs_ADIW_to_bring_offset_in_range(offset)) {
+                // Offset too large: copy Z to Y and ADIW it until we can reach the desired offset
+                emit_MOVW(RZ, RY);
+                offset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, offset);
+                operand_regs1[0] = Z;
+                if (jvm_operand_signed_word == 1) {
+                    operand_regs2[0] = R0; // The register to load the local into, one byte at a time.
+                } else {
+                    // We will use SUBI/SBCI instead of INC to increment by more than 1, but we can't use
+                    // R0 for that since these instructions need a register >= R16. Temporarily save R16 on
+                    // the stack and use that instead.
+                    emit_PUSH(R16);
+                    operand_regs2[0] = R16; // The register to load the local into, one byte at a time.
+                }
+            } else {
+                // Offset in range: just use Y directly
+                operand_regs1[0] = Y;
+                operand_regs2[0] = RZL; // The register to load the local into, one byte at a time.
+            }            
             if (jvm_operand_signed_word == 1) {
                 // Special case
-                offset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, offset);
-                emit_LDD(RZL, Y, offset);
-                emit_INC(RZL);
-                emit_STD(RZL, Y, offset);
+                emit_LDD(operand_regs2[0], operand_regs1[0], offset);
+                emit_INC(operand_regs2[0]);
+                emit_STD(operand_regs2[0], operand_regs1[0], offset);
                 emit_BRNE(22);
-                emit_LDD(RZL, Y, offset+1);
-                emit_INC(RZL);
-                emit_STD(RZL, Y, offset+1);
+                emit_LDD(operand_regs2[0], operand_regs1[0], offset+1);
+                emit_INC(operand_regs2[0]);
+                emit_STD(operand_regs2[0], operand_regs1[0], offset+1);
                 emit_BRNE(14);
-                emit_LDD(RZL, Y, offset+2);
-                emit_INC(RZL);
-                emit_STD(RZL, Y, offset+2);
+                emit_LDD(operand_regs2[0], operand_regs1[0], offset+2);
+                emit_INC(operand_regs2[0]);
+                emit_STD(operand_regs2[0], operand_regs1[0], offset+2);
                 emit_BRNE(6);
-                emit_LDD(RZL, Y, offset+3);
-                emit_INC(RZL);
-                emit_STD(RZL, Y, offset+3);
+                emit_LDD(operand_regs2[0], operand_regs1[0], offset+3);
+                emit_INC(operand_regs2[0]);
+                emit_STD(operand_regs2[0], operand_regs1[0], offset+3);
             } else {
                 uint8_t c0, c1, c2, c3;
                 if (jvm_operand_signed_word > 0) {
@@ -1212,22 +1250,24 @@ void rtc_translate_single_instruction() {
                     c3 = 0;
                 }
 
-                offset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, offset);
-                emit_LDD(RZL, Y, offset);
-                emit_SUBI(RZL, c0);
-                emit_STD(RZL, Y, offset);
+                emit_LDD(operand_regs2[0], operand_regs1[0], offset);
+                emit_SUBI(operand_regs2[0], c0);
+                emit_STD(operand_regs2[0], operand_regs1[0], offset);
 
-                emit_LDD(RZL, Y, offset+1);
-                emit_SBCI(RZL, c1);
-                emit_STD(RZL, Y, offset+1);
+                emit_LDD(operand_regs2[0], operand_regs1[0], offset+1);
+                emit_SBCI(operand_regs2[0], c1);
+                emit_STD(operand_regs2[0], operand_regs1[0], offset+1);
 
-                emit_LDD(RZL, Y, offset+2);
-                emit_SBCI(RZL, c2);
-                emit_STD(RZL, Y, offset+2);
+                emit_LDD(operand_regs2[0], operand_regs1[0], offset+2);
+                emit_SBCI(operand_regs2[0], c2);
+                emit_STD(operand_regs2[0], operand_regs1[0], offset+2);
 
-                emit_LDD(RZL, Y, offset+3);
-                emit_SBCI(RZL, c3);
-                emit_STD(RZL, Y, offset+3);
+                emit_LDD(operand_regs2[0], operand_regs1[0], offset+3);
+                emit_SBCI(operand_regs2[0], c3);
+                emit_STD(operand_regs2[0], operand_regs1[0], offset+3);
+            }
+            if (operand_regs2[0] == R16) {
+                emit_POP(R16);
             }
             rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(ts->current_instruction_valuetag); // Any cached value for this variable is now outdated.
             rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(RTC_VALUETAG_TO_INT_L(ts->current_instruction_valuetag)); // Also for the 2nd word
