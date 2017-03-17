@@ -24,13 +24,13 @@ Call saved: r1, r2-r17, r28:r29 (Y)
                              +---------------------------+      | + (getIntegerLocalVariableCount-1)*sizeof(int16_t)
                              |                           |      |
                              | local refs   ref2         |      v
-                             |              ref1         | getLocalRefVariables, stackEndOffset, localReferenceVariables, Y
+                             |              ref1         | getLocalRefVariables, localReferenceVariables, Y
                              +---------------------------+
-                             | uint8_t nr_ref_stack      |
+                             | ref_t* saved_refStack     |
                              +---------------------------+
-                             | uint8_t nr_int_stack      |
+                             | int16_t* saved_intStack   |
                              +---------------------------+
-                             | uint16_t pc               |
+                             | uint16_t pc               | (ONLY IF INTERPRETER IS ENABLED)
                              +---------------------------+
                              | dj_global_id method       |  ^
                              +---------------------------+  |  +offsets
