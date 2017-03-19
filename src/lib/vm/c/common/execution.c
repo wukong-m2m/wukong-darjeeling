@@ -1017,7 +1017,10 @@ uint32_t callJavaMethod_setup(dj_global_id_with_flags methodImplId, dj_di_pointe
 	uint8_t numberOfIntArguments = dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
 	uint8_t numberOfRefArguments = dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
 									+ ((methodImplId.flags & FLAGS_STATIC) ? 0 : 1);
-	dj_exec_passParameters(frame, methodImpl, numberOfIntArguments, numberOfRefArguments);
+	if(dj_exec_getCurrentThread()->frameStack != NULL) {
+		// For the main(String args[]) method, we don't pass anything but just leave the args NULL.
+		dj_exec_passParameters(frame, methodImpl, numberOfIntArguments, numberOfRefArguments);
+	}
 	// pop arguments off the stack
 	refStack -= numberOfRefArguments;
 	intStack += numberOfIntArguments;
