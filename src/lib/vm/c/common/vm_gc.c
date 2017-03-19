@@ -153,8 +153,10 @@ void vm_mem_markRootSet(void *data)
 	}
 
 	// mark the panic exception object
-	if (panicExceptionObject!=nullref)
+	if (panicExceptionObject!=nullref) {
+		DBG_PRINT_GC(0x10000101);
 		dj_mem_setRefGrayIfWhite(VOIDP_TO_REF(panicExceptionObject));
+	}
 }
 
 /**
@@ -178,16 +180,20 @@ void vm_mem_markObject(void *data)
 	{
 		classDef = dj_vm_getRuntimeClassDefinition(vm, chunk->id);
 		refs = dj_object_getReferences(object);
-		for (i=0; i<dj_di_classDefinition_getNrRefs(classDef); i++)
+		for (i=0; i<dj_di_classDefinition_getNrRefs(classDef); i++) {
+			DBG_PRINT_GC(0x10000102);
 			dj_mem_setRefGrayIfWhite(refs[i]);
+		}
 	}
 
 	// if it's a reference array, mark the members
 	if (chunk->id==CHUNKID_REFARRAY)
 	{
 		refArray = (dj_ref_array*)object;
-		for (i=0; i<refArray->array.length; i++)
+		for (i=0; i<refArray->array.length; i++) {
+			DBG_PRINT_GC(0x10000103);
 			dj_mem_setRefGrayIfWhite(refArray->refs[i]);
+		}
 	}
 
 	// mark the object as 'black'

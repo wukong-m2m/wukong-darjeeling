@@ -179,6 +179,7 @@ static inline int dj_mem_getChunkColor(void *ptr)
 static inline void dj_mem_setRefGrayIfWhite(ref_t ref)
 {
 	if (ref==nullref) return;
+	DBG_PRINT_GC(0x10000001);
 	dj_mem_guardValidHeapPointer(ref);
 	heap_chunk * chunk = ((heap_chunk*)((size_t)REF_TO_VOIDP(ref) - sizeof(heap_chunk)));
 	if (chunk->color==TCM_WHITE) chunk->color=TCM_GRAY;
@@ -187,6 +188,7 @@ static inline void dj_mem_setRefGrayIfWhite(ref_t ref)
 static inline void dj_mem_setPointerGrayIfWhite(void * ptr)
 {
 	if (ptr == NULL) return;
+	DBG_PRINT_GC(0x10000002);
 	dj_mem_guardValidHeapPointer(ptr);
 	heap_chunk * chunk = ((heap_chunk*)((size_t)ptr - sizeof(heap_chunk)));
 	if (chunk->color==TCM_WHITE) chunk->color=TCM_GRAY;
@@ -195,6 +197,7 @@ static inline void dj_mem_setPointerGrayIfWhite(void * ptr)
 static inline void dj_mem_setRefColor(ref_t ref, int color)
 {
 	if (ref==nullref) return;
+	DBG_PRINT_GC(0x10000003);
 	dj_mem_guardValidHeapPointer(ref);
 	dj_mem_setChunkColor(REF_TO_VOIDP(ref), color);
 }

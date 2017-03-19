@@ -101,13 +101,19 @@ void dj_frame_markRootSet(dj_frame *frame)
 	// Mark every object on the reference stack
 	stack = dj_frame_getReferenceStackBase(frame, dj_global_id_getMethodImplementation(frame->method));
 	uint16_t nr_ref_stack = dj_exec_getNumberOfObjectsOnReferenceStack(frame);
-	for (i=0; i<nr_ref_stack; i++)
+	for (i=0; i<nr_ref_stack; i++) {
+		DBG_PRINT_GC(0x10000104);
 		dj_mem_setRefGrayIfWhite(stack[i]);
+	}
 
 	// Mark every object in the local variables
 	locals = dj_frame_getLocalReferenceVariables(frame);
-	for (i=0; i<dj_di_methodImplementation_getReferenceLocalVariableCount(dj_global_id_getMethodImplementation(frame->method)); i++)
+	for (i=0; i<dj_di_methodImplementation_getReferenceLocalVariableCount(dj_global_id_getMethodImplementation(frame->method)); i++) {
+		DBG_PRINT_GC(0x10000105);
+		avroraPrintInt16(i);
+		avroraPrintPtr(&(locals[i]));
 		dj_mem_setRefGrayIfWhite(locals[i]);
+	}
 
 }
 
@@ -158,8 +164,14 @@ void dj_thread_markRootSet(dj_thread *thread)
 		dj_mem_setChunkColor(thread, TCM_BLACK);
 
 	// mark the thread's monitor object and name string as GRAY
-	if (thread->monitorObject!=NULL) dj_mem_setRefGrayIfWhite(VOIDP_TO_REF(thread->monitorObject));
-	if (thread->runnable!=NULL) dj_mem_setRefGrayIfWhite(VOIDP_TO_REF(thread->runnable));
+	if (thread->monitorObject!=NULL) {
+		DBG_PRINT_GC(0x10000106);
+		dj_mem_setRefGrayIfWhite(VOIDP_TO_REF(thread->monitorObject));
+	}
+	if (thread->runnable!=NULL) {
+		DBG_PRINT_GC(0x10000107);
+		dj_mem_setRefGrayIfWhite(VOIDP_TO_REF(thread->runnable));
+	}
 
 	// mark each of the frames
 	frame = thread->frameStack;
@@ -329,8 +341,10 @@ void dj_monitor_markRootSet(dj_monitor_block * monitor_block)
 	// Mark the monitor object as BLACK (don't collect, don't inspect further)
 	dj_mem_setChunkColor(monitor_block, TCM_BLACK);
 
-	for (i=0; i<monitor_block->count; i++)
+	for (i=0; i<monitor_block->count; i++) {
+		DBG_PRINT_GC(0x10000108);
 		dj_mem_setRefGrayIfWhite(VOIDP_TO_REF(monitor_block->monitors[i].object));
+	}
 
 }
 
