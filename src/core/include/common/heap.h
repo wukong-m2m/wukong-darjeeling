@@ -120,6 +120,7 @@ void dj_mem_shiftRuntimeIDs(runtime_id_t start, uint16_t range);
 
 // Returns true if the pointer points to a location in the heap.
 bool dj_mem_isHeapPointer(void *ptr);
+void dj_mem_guardValidHeapPointer(void *ptr);
 
 void dj_mem_dump();
 #ifdef DARJEELING_DEBUG
@@ -178,6 +179,7 @@ static inline int dj_mem_getChunkColor(void *ptr)
 static inline void dj_mem_setRefGrayIfWhite(ref_t ref)
 {
 	if (ref==nullref) return;
+	dj_mem_guardValidHeapPointer(ref);
 	heap_chunk * chunk = ((heap_chunk*)((size_t)REF_TO_VOIDP(ref) - sizeof(heap_chunk)));
 	if (chunk->color==TCM_WHITE) chunk->color=TCM_GRAY;
 }
@@ -185,6 +187,7 @@ static inline void dj_mem_setRefGrayIfWhite(ref_t ref)
 static inline void dj_mem_setPointerGrayIfWhite(void * ptr)
 {
 	if (ptr == NULL) return;
+	dj_mem_guardValidHeapPointer(ptr);
 	heap_chunk * chunk = ((heap_chunk*)((size_t)ptr - sizeof(heap_chunk)));
 	if (chunk->color==TCM_WHITE) chunk->color=TCM_GRAY;
 }
@@ -192,6 +195,7 @@ static inline void dj_mem_setPointerGrayIfWhite(void * ptr)
 static inline void dj_mem_setRefColor(ref_t ref, int color)
 {
 	if (ref==nullref) return;
+	dj_mem_guardValidHeapPointer(ref);
 	dj_mem_setChunkColor(REF_TO_VOIDP(ref), color);
 }
 
