@@ -208,12 +208,12 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_push_32bit(operand_regs1);
         break;
         case JVM_LDS:
+            rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references();
 
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
             emit_2_STS((uint16_t)&(refStack)+1, RXH); // Store X into refStack
 
-            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
             emit_LDI(R24, jvm_operand_byte0); // infusion id
             emit_LDI(R25, jvm_operand_byte1); // entity id
             emit_x_CALL((uint16_t)&RTC_LDS);
