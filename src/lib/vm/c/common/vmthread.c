@@ -110,8 +110,6 @@ void dj_frame_markRootSet(dj_frame *frame)
 	locals = dj_frame_getLocalReferenceVariables(frame);
 	for (i=0; i<dj_di_methodImplementation_getReferenceLocalVariableCount(dj_global_id_getMethodImplementation(frame->method)); i++) {
 		DBG_PRINT_GC(0x10000105);
-		avroraPrintInt16(i);
-		avroraPrintPtr(&(locals[i]));
 		dj_mem_setRefGrayIfWhite(locals[i]);
 	}
 
