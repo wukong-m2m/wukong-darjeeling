@@ -453,6 +453,15 @@ void dj_mem_guardValidHeapPointer(void *ptr) {
 		dj_panic(DJ_PANIC_ILLEGAL_INTERNAL_STATE_NOT_A_HEAP_PTR);
 	}
 }
+void dj_mem_guardValidHeapPointerPointer(void **ptr) {
+	if (! ((void *)heap_base <= *ptr && *ptr <= (void *)left_pointer)) {
+		avroraPrintPtr(heap_base);
+		avroraPrintPtr(ptr);
+		avroraPrintPtr(*ptr);
+		avroraPrintPtr(left_pointer);
+		dj_panic(DJ_PANIC_ILLEGAL_INTERNAL_STATE_NOT_A_HEAP_PTR);
+	}
+}
 
 //void dj_mem_thread_dump()
 //{

@@ -164,6 +164,37 @@ static inline void dj_exec_saveLocalState(dj_frame *frame) {
 }
 
 
+void verifyAllFrames() {
+	dj_frame *frame = dj_exec_getCurrentThread()->frameStack;
+
+	while (frame != NULL && frame > (dj_frame *)0x0b00) {
+		avroraPrintHex32(0xfae00000);
+		avroraPrintPtr(frame);
+		ref_t *localReferenceVariables = dj_frame_getLocalReferenceVariables(frame);
+		dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(frame->method);
+		uint16_t numberOfRefVariables = dj_di_methodImplementation_getReferenceLocalVariableCount(methodImpl);
+
+		for (int i=0; i<numberOfRefVariables; i++) {
+			avroraPrintHex32(0x10ca1000);
+			if (localReferenceVariables[i] != NULL) {
+				dj_mem_guardValidHeapPointerPointer(&(localReferenceVariables[i]));
+			}
+		}
+
+		ref_t *refStackFinger = dj_frame_getReferenceStackBase(frame, methodImpl);
+		ref_t *end_of_refStack = frame == dj_exec_getCurrentThread()->frameStack ? refStack : frame->saved_refStack;
+		while (refStackFinger < end_of_refStack) {
+			avroraPrintHex32(0x5ac5ac00);
+			if (*refStackFinger != NULL) {
+				dj_mem_guardValidHeapPointerPointer(refStackFinger);
+			}
+			refStackFinger++;
+		}
+
+		frame = frame->parent;
+	}
+}
+
 /**
  * Loads execution state (stack pointer, pc, code pointer, local variables) from a dj_frame struct. This method
  * is used in context switching and method invocations/returns.
@@ -903,6 +934,9 @@ static inline uint32_t returnFromMethod(uint32_t retval) {
 		// perform context switch.
 		// dj_exec_activate_thread(dj_exec_getCurrentThread()); This just ends up setting vm->currentThread to the value it already has, and then calling dj_exec_loadLocalState... Just call it directly.
 		dj_exec_loadLocalState(dj_exec_getCurrentThread()->frameStack);
+#ifdef EXECUTION_VERIFY_FRAMES_ON_JVM_RETURN
+		verifyAllFrames();
+#endif
 	}
 // avroraCallMethodTimerMark(21);
 	return retval;
