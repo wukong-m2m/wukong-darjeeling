@@ -1,0 +1,26 @@
+defaultTasks 'run'
+
+apply plugin: 'java'
+
+version = 1.0
+
+dependencies {
+    compile files('../src/build/avrora/bm_coremark.jar')
+}
+
+jar {
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    manifest {
+        attributes 'Main-Class': 'Main'
+    }
+}
+
+task run(dependsOn: 'jar') {
+	doLast {
+		print sourceSets.main.runtimeClasspath
+		javaexec {
+			main 'Main'
+			classpath sourceSets.main.runtimeClasspath
+		}
+	}
+}
