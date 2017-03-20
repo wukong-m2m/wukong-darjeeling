@@ -1,3 +1,5 @@
+#include "config.h"
+#include "djtimer.h"
 #include "execution.h"
 
 void javax_rtc_RTC_void_useRTC_boolean() {
@@ -48,4 +50,21 @@ void javax_rtc_RTC_void_beep_int() {
 void javax_rtc_RTC_void_terminateOnException_short() {
     int16_t type = dj_exec_stackPopShort();
     avroraTerminateOnException(type);	
+}
+
+
+dj_time_t CorePortMe_start;
+dj_time_t CorePortMe_stop;
+
+
+void javax_rtc_RTC_void_coremark_start_time_nat() {
+    CorePortMe_start = dj_timer_getTimeMillis();
+}
+
+void javax_rtc_RTC_void_coremark_stop_time() {
+    CorePortMe_stop = dj_timer_getTimeMillis();
+}
+
+void javax_rtc_RTC_int_coremark_get_time() {
+    dj_exec_stackPushInt(CorePortMe_stop - CorePortMe_start);
 }

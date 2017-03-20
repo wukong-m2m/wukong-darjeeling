@@ -44,13 +44,16 @@ public class CorePortMe {
 
 	public static int default_num_contexts					= 1;
 
+	// NR 20170320: These have been moved to RTC.java in base so the benchmark doesn't contain any native code.
+	//              This makes it easier to run the same code in macOS by providing an alternative implementation
+	//              for RTC.java.
 	/* Function : start_time
 		This function will be called right before starting the timed portion of the benchmark.
 
 		Implementation may be capturing a system timer (as implemented in the example code) 
 		or zeroing some system parameters - e.g. setting the cpu clocks cycles to 0.
 	*/
-	public static native void start_time();
+	// public static native void start_time();
 
 	/* Function : stop_time
 		This function will be called right after ending the timed portion of the benchmark.
@@ -58,7 +61,7 @@ public class CorePortMe {
 		Implementation may be capturing a system timer (as implemented in the example code) 
 		or other system parameters - e.g. reading the current value of cpu cycles counter.
 	*/
-	public static native void stop_time();
+	// public static native void stop_time();
 
 	/* Function : get_time
 		Return an abstract "ticks" number that signifies time on the system.
@@ -69,7 +72,7 @@ public class CorePortMe {
 		The sample implementation returns millisecs by default, 
 		and the resolution is controlled by <TIMER_RES_DIVIDER>
 	*/
-	public static native int get_time();
+	// public static native int get_time();
 
 
 	/* Function : time_in_secs

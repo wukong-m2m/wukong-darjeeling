@@ -171,10 +171,10 @@ public class CoreMain {
 			results[0].iterations=1;
 			while (secs_passed < 1) {
 				results[0].iterations*=10;
-				CorePortMe.start_time();
+				RTC.coremark_start_time();
 				iterate(results[0]);
-				CorePortMe.stop_time();
-				secs_passed=CorePortMe.time_in_secs(CorePortMe.get_time());
+				RTC.coremark_stop_time();
+				secs_passed=CorePortMe.time_in_secs(RTC.coremark_get_time());
 			}
 			/* now we know it executes for at least 1 sec, set actual run time at about 10 secs */
 			divisor=secs_passed;
@@ -185,10 +185,10 @@ public class CoreMain {
 
 		// /* perform actual benchmark */
 		RTC.avroraStartCountingCalls();
-		CorePortMe.start_time();
+		RTC.coremark_start_time();
 		iterate(results[0]);
-		CorePortMe.stop_time();
-		total_time=CorePortMe.get_time();
+		RTC.coremark_stop_time();
+		total_time=RTC.coremark_get_time();
 		RTC.avroraStopCountingCalls();
 
 		// NOT STANDARD COREMARK CODE
