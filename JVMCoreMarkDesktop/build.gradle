@@ -4,8 +4,12 @@ apply plugin: 'java'
 
 version = 1.0
 
-dependencies {
-    compile files('../src/build/avrora/bm_coremark.jar')
+sourceSets {
+  main {
+    java {
+      srcDirs = ['../src/lib/bm_coremark/java', './src/main/java']
+    }
+  }
 }
 
 jar {

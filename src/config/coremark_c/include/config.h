@@ -55,9 +55,10 @@
 #define EXECUTION_FRAME_ON_STACK 1
 
 // #define EXECUTION_PRINT_CALLS_AND_RETURNS 1
-#define EXECUTION_PRINT_WHEN_GC_RUNS
+// #define EXECUTION_PRINT_WHEN_GC_RUNS
 // #define EXECUTION_PRINT_GC_DETAILS 1
 // #define EXECUTION_BREAK_IF_IN_INTERPRETER 1
+#define DBG_PRINT_GC(x) // avroraPrintHex32(x)
 
 /* Please see common/debug.h */
 // #define DARJEELING_DEBUG
