@@ -37,11 +37,35 @@ El Dorado Hills, CA, 95762
 
 public class CoreMain {
 	// NOT STANDARD COREMARK CODE: switch to select an implementation of CoreListJoin
-	private static final boolean useCoreListJoinA = true;
+	private static final boolean useCoreListJoinA = false;
 
-	private static short list_known_crc[]   = {(short)0xd4b0,(short)0x3340,(short)0x6a79,(short)0xe714,(short)0xe3c1};
-	private static short matrix_known_crc[] = {(short)0xbe52,(short)0x1199,(short)0x5608,(short)0x1fd7,(short)0x0747};
-	private static short state_known_crc[]  = {(short)0x5e47,(short)0x39bf,(short)0xe5a4,(short)0x8e3a,(short)0x8d84};
+	// NOT STANDARD COREMARK CODE: make this into functions to prevent them taking up memory at runtime.
+	// not used during the benchmark so this won't influence the results.
+	// private static short list_known_crc[]   = {(short)0xd4b0,(short)0x3340,(short)0x6a79,(short)0xe714,(short)0xe3c1};
+	// private static short matrix_known_crc[] = {(short)0xbe52,(short)0x1199,(short)0x5608,(short)0x1fd7,(short)0x0747};
+	// private static short state_known_crc[]  = {(short)0x5e47,(short)0x39bf,(short)0xe5a4,(short)0x8e3a,(short)0x8d84};
+
+	private static short list_known_crc(short i) {
+			 if (i==0) return (short)0xd4b0;
+		else if (i==1) return (short)0x3340;
+		else if (i==2) return (short)0x6a79;
+		else if (i==3) return (short)0xe714;
+		else           return (short)0xe3c1;
+	}
+	private static short matrix_known_crc(short i) {
+			 if (i==0) return (short)0xbe52;
+		else if (i==1) return (short)0x1199;
+		else if (i==2) return (short)0x5608;
+		else if (i==3) return (short)0x1fd7;
+		else           return (short)0x0747;
+	}
+	private static short state_known_crc(short i) {
+			 if (i==0) return (short)0x5e47;
+		else if (i==1) return (short)0x39bf;
+		else if (i==2) return (short)0xe5a4;
+		else if (i==3) return (short)0x8e3a;
+		else           return (short)0x8d84;
+	}
 
 	private static void iterate(CoreResults pres) {
 		int i;
@@ -255,18 +279,18 @@ public class CoreMain {
 			for (i=0 ; i<CorePortMe.default_num_contexts; i++) {
 				results[i].err=0;
 				if ((results[i].execs & CoreMarkH.ID_LIST) != 0 && 
-					(results[i].crclist!=list_known_crc[known_id])) {
-					System.out.println("[" + i + "]ERROR! list crc 0x" + Integer.toHexString(results[i].crclist) + " - should be 0x" + Integer.toHexString(list_known_crc[known_id]));
+					(results[i].crclist!=list_known_crc(known_id))) {
+					System.out.println("[" + i + "]ERROR! list crc 0x" + Integer.toHexString(results[i].crclist) + " - should be 0x" + Integer.toHexString(list_known_crc(known_id)));
 					results[i].err++;
 				}
 				if ((results[i].execs & CoreMarkH.ID_MATRIX) != 0 &&
-					(results[i].crcmatrix!=matrix_known_crc[known_id])) {
-					System.out.println("[" + i + "]ERROR! matrix crc 0x" + Integer.toHexString(results[i].crcmatrix) + " - should be 0x" + Integer.toHexString(matrix_known_crc[known_id]));
+					(results[i].crcmatrix!=matrix_known_crc(known_id))) {
+					System.out.println("[" + i + "]ERROR! matrix crc 0x" + Integer.toHexString(results[i].crcmatrix) + " - should be 0x" + Integer.toHexString(matrix_known_crc(known_id)));
 					results[i].err++;
 				}
 				if ((results[i].execs & CoreMarkH.ID_STATE) != 0 &&
-					(results[i].crcstate!=state_known_crc[known_id])) {
-					System.out.println("[" + i + "]ERROR! state crc 0x" + Integer.toHexString(results[i].crcstate) + " - should be 0x" + Integer.toHexString(state_known_crc[known_id]));
+					(results[i].crcstate!=state_known_crc(known_id))) {
+					System.out.println("[" + i + "]ERROR! state crc 0x" + Integer.toHexString(results[i].crcstate) + " - should be 0x" + Integer.toHexString(state_known_crc(known_id)));
 					results[i].err++;
 				}
 				total_errors+=results[i].err;
