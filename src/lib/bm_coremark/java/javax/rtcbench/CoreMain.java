@@ -36,6 +36,9 @@ El Dorado Hills, CA, 95762
 */
 
 public class CoreMain {
+	// NOT STANDARD COREMARK CODE: switch to select an implementation of CoreListJoin
+	private static final boolean useCoreListJoinA = true;
+
 	private static short list_known_crc[]   = {(short)0xd4b0,(short)0x3340,(short)0x6a79,(short)0xe714,(short)0xe3c1};
 	private static short matrix_known_crc[] = {(short)0xbe52,(short)0x1199,(short)0x5608,(short)0x1fd7,(short)0x0747};
 	private static short state_known_crc[]  = {(short)0x5e47,(short)0x39bf,(short)0xe5a4,(short)0x8e3a,(short)0x8d84};
@@ -50,12 +53,23 @@ public class CoreMain {
 		res.crcmatrix=0;
 		res.crcstate=0;
 
-		for (i=0; i<iterations; i++) {
-			crc=CoreListJoinB.core_bench_list(res,(short)1);
-			res.crc=CoreUtil.crcu16(crc,res.crc);
-			crc=CoreListJoinB.core_bench_list(res,(short)-1);
-			res.crc=CoreUtil.crcu16(crc,res.crc);
-			if (i==0) res.crclist=res.crc;
+		// NOT STANDARD COREMARK CODE: switch to select an implementation of CoreListJoin
+		if (useCoreListJoinA) {
+			for (i=0; i<iterations; i++) {
+				crc=CoreListJoinA.core_bench_list(res,(short)1);
+				res.crc=CoreUtil.crcu16(crc,res.crc);
+				crc=CoreListJoinA.core_bench_list(res,(short)-1);
+				res.crc=CoreUtil.crcu16(crc,res.crc);
+				if (i==0) res.crclist=res.crc;
+			}
+		} else {
+			for (i=0; i<iterations; i++) {
+				crc=CoreListJoinB.core_bench_list(res,(short)1);
+				res.crc=CoreUtil.crcu16(crc,res.crc);
+				crc=CoreListJoinB.core_bench_list(res,(short)-1);
+				res.crc=CoreUtil.crcu16(crc,res.crc);
+				if (i==0) res.crclist=res.crc;
+			}
 		}
 		return;
 	}
@@ -153,7 +167,12 @@ public class CoreMain {
 		/* call inits */
 		for (i=0 ; i<MULTITHREAD; i++) {
 			if ((results[i].execs & CoreMarkH.ID_LIST) != 0) {
-				results[i].list_CoreListJoinB=CoreListJoinB.core_list_init(results[0].size,results[i].seed1);
+				// NOT STANDARD COREMARK CODE: switch to select an implementation of CoreListJoin
+				if (useCoreListJoinA) {
+					results[i].list_CoreListJoinA=CoreListJoinA.core_list_init(results[0].size,results[i].seed1);
+				} else {
+					results[i].list_CoreListJoinB=CoreListJoinB.core_list_init(results[0].size,results[i].seed1);
+				}
 			}
 			if ((results[i].execs & CoreMarkH.ID_MATRIX) != 0) {
 				results[i].mat = new CoreMatrix.MatParams();
@@ -198,6 +217,7 @@ public class CoreMain {
 		// since the benchmark is already done here.
 		results[0].mat = null;
 		results[0].statememblock3 = null;
+		results[0].list_CoreListJoinA = null;
 		CoreListJoinB.data = null;
 
 		/* get a function of the input to report */

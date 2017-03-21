@@ -60,7 +60,7 @@ Topic: Description
 	
 */
 
-public class CoreListJoinB {
+public class CoreListJoinA {
 
 	// /* list data structures */
 	// typedef struct list_data_s {
@@ -73,48 +73,15 @@ public class CoreListJoinB {
 	// 	struct list_data_s *info;
 	// } list_head;
 
-	// Since both a pointer and the data and idx fields are 16 bit,
-	// we model de data as an array of shorts.
-	// Pointers *next and *info will be indexes into this array. The
-	// next two shorts at that location will contain the data of the
-	// list_head_s and list_data_s structures respectively.
-	// So the data array consists of pairs of two shorts which may be
-	// either a list_head_s or list_data_s struct.
-	public static short[] data;
-
-
-	private final static short ListNULL = -1;
-
-	// These should be tiny enough to inline by ProGuard.
-	// We should also do a manual inline to see if there is a big
-	// difference or not (since ProGuard inlining isn't as efficient
-	// as manual inlining)
-	private static short ListData_GetData16(short ptr) {
-		return data[ptr];
-	}
-	private static short ListData_GetIdx(short ptr) {
-		return data[ptr+1];
-	}
-	private static void ListData_SetData16(short ptr, short val) {
-		data[ptr] = val;
-	}
-	private static void ListData_SetIdx(short ptr, short val) {
-		data[ptr+1] = val;
+	public static class ListData {
+		public short data16;
+		public short idx;
 	}
 
-	private static short ListHead_GetNext(short ptr) {
-		return data[ptr];
+	public static class ListHead {
+		ListHead next;
+		ListData info;
 	}
-	private static short ListHead_GetInfo(short ptr) {
-		return data[ptr+1];
-	}
-	private static void ListHead_SetNext(short ptr, short val) {
-		data[ptr] = val;
-	}
-	private static void ListHead_SetInfo(short ptr, short val) {
-		data[ptr+1] = val;
-	}
-
 
 	// This is not very efficient, but it's only used during initialisation
 	private static class ShortWrapper {
@@ -131,7 +98,7 @@ public class CoreListJoinB {
 	}
 
 	private static abstract class AbstractListDataCompare {
-		abstract int compare(short a, short b, CoreResults res);
+		abstract int compare(ListData a, ListData b, CoreResults res);
 	}
 
 	/* Function: cmp_complex
@@ -140,8 +107,8 @@ public class CoreListJoinB {
 		Can be used by mergesort.
 	*/
 	private static class CmpComplex extends AbstractListDataCompare {
-		short calc_func(short pdata, CoreResults res) {
-			short data=ListData_GetData16(pdata);
+		short calc_func(ListData pdata, CoreResults res) {
+			short data=pdata.data16;
 			short retval;
 			byte optype=(byte)((data>>7) & 1); /* bit 7 indicates if the function result has been cached */
 			if (optype!=0) /* if cached, use cache */
@@ -169,12 +136,12 @@ public class CoreListJoinB {
 				}
 				res.crc=CoreUtil.crcu16(retval,res.crc);
 				retval &= 0x007f; 
-				ListData_SetData16(pdata, (short)((data & 0xff00) | 0x0080 | retval)); /* cache the result */
+				pdata.data16=(short)((data & 0xff00) | 0x0080 | retval); /* cache the result */
 				return retval;
 			}
 		}
 
-		public int compare(short a, short b, CoreResults res) {
+		public int compare(ListData a, ListData b, CoreResults res) {
 			short val1=calc_func(a,res);
 			short val2=calc_func(b,res);
 			return val1 - val2;
@@ -188,12 +155,12 @@ public class CoreListJoinB {
 		Can be used by mergesort.
 	*/
 	private static class CmpIdx extends AbstractListDataCompare {
-		public int compare(short a, short b, CoreResults res) {
+		public int compare(ListData a, ListData b, CoreResults res) {
 			if (res==null) {
-				ListData_SetData16(a, (short)((ListData_GetData16(a) & 0xff00) | (0x00ff & (ListData_GetData16(a)>>8))));
-				ListData_SetData16(b, (short)((ListData_GetData16(b) & 0xff00) | (0x00ff & (ListData_GetData16(b)>>8))));
+				a.data16=(short)((a.data16 & 0xff00) | (0x00ff & (a.data16>>8)));
+				b.data16=(short)((b.data16 & 0xff00) | (0x00ff & (b.data16>>8)));
 			}
-			return ListData_GetIdx(a) - ListData_GetIdx(b);
+			return a.idx - b.idx;
 		}
 	}
 	private static CmpIdx cmp_idx = new CmpIdx();
@@ -209,60 +176,59 @@ public class CoreListJoinB {
 	static short core_bench_list(CoreResults res, short finder_idx) {
 		short retval=0;
 		short found=0,missed=0;
-		short list=res.list_CoreListJoinB;
+		ListHead list=res.list_CoreListJoinA;
 		short find_num=res.seed3;
-		short this_find;
-		short finder, remover;
-		short info_data16=0;
-		short info_idx;
+		ListHead this_find;
+		ListHead finder, remover;
+		ListData info=new ListData();
 		short i;
 
-		info_idx=finder_idx;
+		info.idx=finder_idx;
 		/* find <find_num> values in the list, and change the list each time (reverse and cache if value found) */
 		for (i=0; i<find_num; i++) {
-			info_data16=(short)(i & 0xff);
-			this_find=core_list_find(list,info_data16,info_idx);
+			info.data16=(short)(i & 0xff);
+			this_find=core_list_find(list,info);
 			list=core_list_reverse(list);
-			if (this_find==ListNULL) {
+			if (this_find==null) {
 				missed++;
-				retval+=(ListData_GetData16(ListHead_GetInfo(ListHead_GetNext(list))) >> 8) & 1;
+				retval+=(list.next.info.data16 >> 8) & 1;
 			}
 			else {
 				found++;
-				if ((ListData_GetData16(ListHead_GetInfo(this_find)) & 0x1) != 0) /* use found value */
-					retval+=(ListData_GetData16(ListHead_GetInfo(this_find)) >> 9) & 1;
+				if ((this_find.info.data16 & 0x1) != 0) /* use found value */
+					retval+=(this_find.info.data16 >> 9) & 1;
 				/* and cache next item at the head of the list (if any) */
-				if (ListHead_GetNext(this_find) != ListNULL) {
-					finder = ListHead_GetNext(this_find);
-					ListHead_SetNext(this_find, ListHead_GetNext(finder));
-					ListHead_SetNext(finder, ListHead_GetNext(list));
-					ListHead_SetNext(list, finder);
+				if (this_find.next != null) {
+					finder = this_find.next;
+					this_find.next=finder.next;
+					finder.next=list.next;
+					list.next=finder;
 				}
 			}
-			if (info_idx>=0)
-				info_idx++;
+			if (info.idx>=0)
+				info.idx++;
 		}
 		retval+=found*4-missed;
 		/* sort the list by data content and remove one item*/
 		if (finder_idx>0)
 			list=core_list_mergesort(list,cmp_complex,res);
-		remover=core_list_remove(ListHead_GetNext(list));
+		remover=core_list_remove(list.next);
 		/* CRC data content of list from location of index N forward, and then undo remove */
-		finder=core_list_find(list,info_data16,info_idx);
-		if (finder==ListNULL)
-			finder=ListHead_GetNext(list);
-		while (finder!=ListNULL) {
-			retval=CoreUtil.crc16(ListData_GetData16(ListHead_GetInfo(list)),retval);
-			finder=ListHead_GetNext(finder);
+		finder=core_list_find(list,info);
+		if (finder==null)
+			finder=list.next;
+		while (finder!=null) {
+			retval=CoreUtil.crc16(list.info.data16,retval);
+			finder=finder.next;
 		}
-		remover=core_list_undo_remove(remover, ListHead_GetNext(list));
+		remover=core_list_undo_remove(remover, list.next);
 		/* sort the list by index, in effect returning the list to original state */
 		list=core_list_mergesort(list,cmp_idx,null);
 		/* CRC data content of list */
-		finder=ListHead_GetNext(list);
-		while (finder!=ListNULL) {
-			retval=CoreUtil.crc16(ListData_GetData16(ListHead_GetInfo(list)),retval);
-			finder=ListHead_GetNext(finder);
+		finder=list.next;
+		while (finder!=null) {
+			retval=CoreUtil.crc16(list.info.data16,retval);
+			finder=finder.next;
 		}
 		return retval;
 	}
@@ -281,57 +247,54 @@ public class CoreListJoinB {
 
 	*/
 	// list_head *core_list_init(ee_u32 blksize, list_head *memblock, ee_s16 seed) {
-	static short core_list_init(int blksize, short seed) {
+	static ListHead core_list_init(int blksize, short seed) {
 		/* calculated pointers for the list */
 		int per_item=16+4; //16+sizeof(struct list_data_s);
 		int size=(blksize/per_item)-2; /* to accomodate systems with 64b pointers, and make sure same code is executed, set max list elements */
-
-		ShortWrapper memblock = new ShortWrapper((short)0);
+ 
+ 		ShortWrapper memblock = new ShortWrapper((short)0);
 		short memblock_end=(short)(size*2); // *2 because in the C version we count in pointers to list_head structs, which are 4 bytes, but in Java we count 2 byte shorts. So we need to reserve *2 as much memory.
 		ShortWrapper datablock = new ShortWrapper(memblock_end);
 		short datablock_end=(short)(datablock.GetValue()+(size*2)); // *2 because in the C version we count in pointers to list_data structs, which are 4 bytes, but in Java we count 2 byte shorts. So we need to reserve *2 as much memory.
 
-		data = new short[datablock_end];
-
 		/* some useful variables */
 		int i;
-		short finder, list=0;
-		short info_data16;
-		short info_idx;
-
-		/* create a fake items for the list head and tail */
-		ListHead_SetNext(list, ListNULL);
-		ListHead_SetInfo(list, datablock.GetValue());
-		ListData_SetIdx(ListHead_GetInfo(list), (short)0x0000);
-		ListData_SetData16(ListHead_GetInfo(list), (short)0x8080);
+		ListHead finder, list=new ListHead();
+		ListData info=new ListData();
+ 
+ 		/* create a fake items for the list head and tail */
+		list.next=null;
+		list.info=new ListData();
+		list.info.idx=(short)0x0000;
+		list.info.data16=(short)0x8080;
 		memblock.SetValue((short)(memblock.GetValue()+2)); // +2 because we're counting shorts instead of structs
 		datablock.SetValue((short)(datablock.GetValue()+2)); // +2 because we're counting shorts instead of structs
-		info_idx=(short)0x7fff;
-		info_data16=(short)0xffff;
-		core_list_insert_new(list,info_data16,info_idx,memblock,datablock,memblock_end,datablock_end);
-		
-		/* then insert size items */
+		info.idx=(short)0x7fff;
+		info.data16=(short)0xffff;
+		core_list_insert_new(list,info,memblock,datablock,memblock_end,datablock_end);
+ 
+ 		/* then insert size items */
 		for (i=0; i<size; i++) {
 			short datpat=(short)((seed^i) & 0xf);
 			short dat=(short)((datpat<<3) | (i&0x7)); /* alternate between algorithms */
-			info_data16=(short)((dat<<8) | dat);		/* fill the data with actual data and upper bits with rebuild value */
-			core_list_insert_new(list,info_data16,info_idx,memblock,datablock,memblock_end,datablock_end);
+			info.data16=(short)((dat<<8) | dat);		/* fill the data with actual data and upper bits with rebuild value */
+			core_list_insert_new(list,info,memblock,datablock,memblock_end,datablock_end);
 		}
 		/* and now index the list so we know initial seed order of the list */
-		finder=ListHead_GetNext(list);
+		finder=list.next;
 		i=1;
-		while (ListHead_GetNext(finder)!=ListNULL) {
+		while (finder.next!=null) {
 			if (i<size/5) /* first 20% of the list in order */
-				ListData_SetIdx(ListHead_GetInfo(finder), (short)(i++));
+				finder.info.idx=(short)(i++);
 			else { 
 				short pat=(short)(i++ ^ seed); /* get a pseudo random number */
-				ListData_SetIdx(ListHead_GetInfo(finder), (short)(0x3fff & (((i & 0x07) << 8) | pat))); /* make sure the mixed items end up after the ones in sequence */
+				finder.info.idx=(short)(0x3fff & (((i & 0x07) << 8) | pat)); /* make sure the mixed items end up after the ones in sequence */
 			}
-			finder=ListHead_GetNext(finder);
+			finder=finder.next;
 		}
 		list = core_list_mergesort(list,cmp_idx,null);
-
-		return list;
+ 
+ 		return list;
 	}
 
 	/* Function: core_list_insert
@@ -350,36 +313,33 @@ public class CoreListJoinB {
 	*/
 	// list_head *core_list_insert_new(list_head *insert_point, list_data *info, list_head **memblock, list_data **datablock
 	// , list_head *memblock_end, list_data *datablock_end) {
-	static short core_list_insert_new(short insert_point, short info_data16, short info_idx, ShortWrapper memblock, ShortWrapper datablock
+	static ListHead core_list_insert_new(ListHead insert_point, ListData info, ShortWrapper memblock, ShortWrapper datablock
 		, short memblock_end, short datablock_end) {
-		short newitem;
+		ListHead newitem;
 		
 		short memblock_val = memblock.GetValue();
 		short datablock_val = datablock.GetValue();
 
+		// These values are copied from CoreListJoinB since they should still work the same, even if the pointers aren't actually used anymore.
 		// if ((*memblock+1) >= memblock_end)
 		if ((memblock_val+2) >= memblock_end) // +2 because it's not a list_head pointer anymore, so we need to count 2 shorts instead of 1 struct
-			return ListNULL;
+			return null;
 		// if ((*datablock+1) >= datablock_end)
 		if ((datablock_val+2) >= datablock_end) // +2 because it's not a list_head pointer anymore, so we need to count 2 shorts instead of 1 struct
-			return ListNULL;
+			return null;
 			
-		newitem=memblock_val;
+		newitem=new ListHead();
 		// (*memblock)++;
 		memblock.SetValue((short)(memblock_val+2)); // +2, see above
-		ListHead_SetNext(newitem, ListHead_GetNext(insert_point));
-		ListHead_SetNext(insert_point, newitem);
+		newitem.next=insert_point.next;
+		insert_point.next=newitem;
 		
-		ListHead_SetInfo(newitem, datablock.GetValue());
+		newitem.info=new ListData();
 		// (*datablock)++;
 		datablock.SetValue((short)(datablock_val+2)); // +2, see above
 		// copy_info(newitem->info,info);
-		// void copy_info(list_data *to,list_data *from) {
-		// 	to->data16=from->data16;
-		// 	to->idx=from->idx;
-		// }
-		ListData_SetData16(ListHead_GetInfo(newitem), info_data16);
-		ListData_SetIdx(ListHead_GetInfo(newitem), info_idx);
+		newitem.info.idx=info.idx;
+		newitem.info.data16=info.data16;
 
 		return newitem;
 	}
@@ -392,22 +352,22 @@ public class CoreListJoinB {
 		over to the current cell, and unlinking the next item.
 
 		Note: 
-		since there is always a fake item at the end of the list, no need to check for NULL.
+		since there is always a fake item at the end of the list, no need to check for null.
 
 		Returns:
 		Removed item.
 	*/
 	// list_head *core_list_remove(list_head *item) {
-	static short core_list_remove(short item) {
-		short tmp;
-		short ret=ListHead_GetNext(item);
+	static ListHead core_list_remove(ListHead item) {
+		ListData tmp;
+		ListHead ret=item.next;
 		/* swap data pointers */
-		tmp=ListHead_GetInfo(item);
-		ListHead_SetInfo(item, ListHead_GetInfo(ret));
-		ListHead_SetInfo(ret, tmp);
+		tmp=item.info;
+		item.info=ret.info;
+		ret.info=tmp;
 		/* and eliminate item */
-		ListHead_SetNext(item, ListHead_GetNext(ListHead_GetNext(item)));
-		ListHead_SetNext(ret, ListNULL);
+		item.next=item.next.next;
+		ret.next=null;
 		return ret;
 	}
 
@@ -428,15 +388,15 @@ public class CoreListJoinB {
 		
 	*/
 	// list_head *core_list_undo_remove(list_head *item_removed, list_head *item_modified) {
-	static short core_list_undo_remove(short item_removed, short item_modified) {
-		short tmp;
+	static ListHead core_list_undo_remove(ListHead item_removed, ListHead item_modified) {
+		ListData tmp;
 		/* swap data pointers */
-		tmp=ListHead_GetInfo(item_removed);
-		ListHead_SetInfo(item_removed, ListHead_GetInfo(item_modified));
-		ListHead_SetInfo(item_modified, tmp);
+		tmp=item_removed.info;
+		item_removed.info=item_modified.info;
+		item_modified.info=tmp;
 		/* and insert item */
-		ListHead_SetNext(item_removed, ListHead_GetNext(item_modified));
-		ListHead_SetNext(item_modified, item_removed);
+		item_removed.next=item_modified.next;
+		item_modified.next=item_removed;
 		return item_removed;
 	}
 
@@ -451,17 +411,17 @@ public class CoreListJoinB {
 		info - idx or data to find
 
 		Returns:
-		Found item, or NULL if not found.
+		Found item, or null if not found.
 	*/
 	// list_head *core_list_find(list_head *list,list_data *info);
-	static short core_list_find(short list, short info_data16, short info_idx) {
-		if (info_idx>=0) {
-			while (list != ListNULL && (ListData_GetIdx(ListHead_GetInfo(list)) != info_idx))
-				list=ListHead_GetNext(list);
+	static ListHead core_list_find(ListHead list, ListData info) {
+		if (info.idx>=0) {
+			while (list != null && (list.info.idx != info.idx))
+				list=list.next;
 			return list;
 		} else {
-			while (list != ListNULL && ((ListData_GetData16(ListHead_GetInfo(list)) & 0xff) != info_data16))
-				list=ListHead_GetNext(list);
+			while (list != null && ((list.info.data16 & 0xff) != info.data16))
+				list=list.next;
 			return list;
 		}
 	}
@@ -477,14 +437,14 @@ public class CoreListJoinB {
 		info - idx or data to find
 
 		Returns:
-		Found item, or NULL if not found.
+		Found item, or null if not found.
 	*/
 	// list_head *core_list_reverse(list_head *list);
-	static short core_list_reverse(short list) {
-		short next=ListNULL, tmp;
-		while (list!=ListNULL) {
-			tmp=ListHead_GetNext(list);
-			ListHead_SetNext(list, next);
+	static ListHead core_list_reverse(ListHead list) {
+		ListHead next=null, tmp;
+		while (list!=null) {
+			tmp=list.next;
+			list.next=next;
 			next=list;
 			list=tmp;
 		}
@@ -513,54 +473,54 @@ public class CoreListJoinB {
 
 	 */
 	// list_head *core_list_mergesort(list_head *list, list_cmp cmp, core_results *res) {
-	static short core_list_mergesort(short list, AbstractListDataCompare cmp, CoreResults res) {
-	    short p, q, e, tail;
+	static ListHead core_list_mergesort(ListHead list, AbstractListDataCompare cmp, CoreResults res) {
+	    ListHead p, q, e, tail;
 	    int insize, nmerges, psize, qsize, i;
 
 	    insize = 1;
 
 	    while (true) {
 	        p = list;
-	        list = ListNULL;
-	        tail = ListNULL;
+	        list = null;
+	        tail = null;
 
 	        nmerges = 0;  /* count number of merges we do in this pass */
 
-	        while (p!=ListNULL) {
+	        while (p!=null) {
 	            nmerges++;  /* there exists a merge to be done */
 	            /* step `insize' places along from p */
 	            q = p;
 	            psize = 0;
 	            for (i = 0; i < insize; i++) {
 	                psize++;
-				    q = ListHead_GetNext(q);
-	                if (q==ListNULL) break;
+				    q = q.next;
+	                if (q==null) break;
 	            }
 
 	            /* if q hasn't fallen off end, we have two lists to merge */
 	            qsize = insize;
 
 	            /* now we have two lists; merge them */
-	            while (psize > 0 || (qsize > 0 && q!=ListNULL)) {
+	            while (psize > 0 || (qsize > 0 && q!=null)) {
 
 					/* decide whether next element of merge comes from p or q */
 					if (psize == 0) {
 					    /* p is empty; e must come from q. */
-					    e = q; q = ListHead_GetNext(q); qsize--;
-					} else if (qsize == 0 || q==ListNULL) {
+					    e = q; q = q.next; qsize--;
+					} else if (qsize == 0 || q==null) {
 					    /* q is empty; e must come from p. */
-					    e = p; p = ListHead_GetNext(p); psize--;
-					} else if (cmp.compare(ListHead_GetInfo(p),ListHead_GetInfo(q),res) <= 0) {
+					    e = p; p = p.next; psize--;
+					} else if (cmp.compare(p.info,q.info,res) <= 0) {
 					    /* First element of p is lower (or same); e must come from p. */
-					    e = p; p = ListHead_GetNext(p); psize--;
+					    e = p; p = p.next; psize--;
 					} else {
 					    /* First element of q is lower; e must come from q. */
-					    e = q; q = ListHead_GetNext(q); qsize--;
+					    e = q; q = q.next; qsize--;
 					}
 
 			        /* add the next element to the merged list */
-					if (tail!=ListNULL) {
-					    ListHead_SetNext(tail, e);
+					if (tail!=null) {
+					    tail.next = e;
 					} else {
 					    list = e;
 					}
@@ -571,7 +531,7 @@ public class CoreListJoinB {
 				p = q;
 	        }
 			
-		    ListHead_SetNext(tail, ListNULL);
+		    tail.next = null;
 
 	        /* If we have done only one merge, we're finished. */
 	        if (nmerges <= 1)   /* allow for nmerges==0, the empty list case */

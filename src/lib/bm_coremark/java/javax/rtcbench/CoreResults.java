@@ -15,6 +15,7 @@ public class CoreResults {
 	// For State benchmark
 	byte[] statememblock3;
 	// For List benchmark
+	CoreListJoinA.ListHead list_CoreListJoinA; // for the A implementation, the pointer to the list head.
 	short list_CoreListJoinB; // for the B implementation, the pointer to the list is simply the index into the static data array in CoreListJoinB that will be returned by core_list_init.
 	/* outputs */
 	short	crc;
