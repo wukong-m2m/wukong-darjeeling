@@ -219,6 +219,8 @@ __attribute__ ((__packed__))
 
 struct _dj_vm
 {
+	dj_infusion *infusions;
+
 	// 20130322 Niels Reijers: not sure if this is the best place to store
 	//                         this but it's better than a global variable.
 	dj_di_pointer di_app_infusion_archive_data;
@@ -230,7 +232,6 @@ struct _dj_vm
 
 	dj_infusion *systemInfusion;
 
-	dj_infusion *infusions;
 	dj_thread *threads;
 	dj_monitor_block *monitors;
 
