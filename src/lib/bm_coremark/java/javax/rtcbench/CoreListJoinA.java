@@ -248,6 +248,8 @@ public class CoreListJoinA {
 	*/
 	// list_head *core_list_init(ee_u32 blksize, list_head *memblock, ee_s16 seed) {
 	static ListHead core_list_init(int blksize, short seed) {
+		System.out.println("Using CoreListJoinA");
+
 		/* calculated pointers for the list */
 		int per_item=16+4; //16+sizeof(struct list_data_s);
 		int size=(blksize/per_item)-2; /* to accomodate systems with 64b pointers, and make sure same code is executed, set max list elements */

@@ -86,6 +86,9 @@ public class CorePortMe {
 		int retval = ticks / 1000;
 		return retval;
 	}
+	public static int time_in_msecs(int ticks) {
+		return ticks;
+	}
 }
 
 
