@@ -1528,7 +1528,7 @@ void rtc_translate_single_instruction() {
             // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
 
-            rtc_stackcache_pop_nondestructive_ref(operand_regs1);
+            rtc_stackcache_pop_destructive_ref(operand_regs1);
             rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
             if (opcode == JVM_IFNULL) {
                 emit_OR(operand_regs1[0], operand_regs1[1]);
