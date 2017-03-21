@@ -36,7 +36,7 @@
 #define RUNSIZE 128
 
 #define PACK_STRUCTS
-#define ALIGN_16
+// #define ALIGN_16
 
 // ---- AOT RELATED SWITCHES ----
 
