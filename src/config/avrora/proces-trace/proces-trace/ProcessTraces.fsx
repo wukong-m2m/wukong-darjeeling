@@ -196,10 +196,7 @@ let getLoops results =
   filteredInstructions |> List.map (fun jvm -> String.Format("{0} {1}\n\r", jvm.index, jvm.text)) |> List.fold (+) ""
 
 // Process trace main function
-let processTrace benchmark (rtcdata : Rtcdata) (countersForAddressAndInst : int -> int -> ExecCounters) (stdoutlog : string list) (disasm : string list) (djdebuglines : string list) =
-    // Find the methodImplId for a certain method in a Darjeeling infusion header
-    let methodImpl = rtcdata.MethodImpls |> Seq.find (fun impl -> impl.Method.Contains("rtcbenchmark_measure_java_performance"))
-
+let processMethodTrace benchmark (methodImpl : MethodImpl) (countersForAddressAndInst : int -> int -> ExecCounters) (stdoutlog : string list) (disasm : string list) (djdebuglines : string list) =
     let optimisedAvr = methodImpl.AvrInstructions |> Seq.map AvrInstructionFromXml |> Seq.toList
     let unoptimisedAvrWithJvmIndex =
         methodImpl.JavaInstructions |> Seq.map (fun jvm -> jvm.UnoptimisedAvr.AvrInstructions |> Seq.map (fun avr -> (AvrInstructionFromXml avr, JvmInstructionFromXml jvm)))
@@ -457,7 +454,9 @@ let ProcessTrace(resultsdir : string) =
                 count = 1
                 size = AVR.instructionSize inst
             }
-    let results = processTrace benchmark rtcdata countersForAddressAndInst stdoutlog disasm djdebuglines
+    // Find the benchmark method
+    let methodImpl = rtcdata.MethodImpls |> Seq.find (fun impl -> impl.Method.Contains("rtcbenchmark_measure_java_performance"))
+    let results = processMethodTrace benchmark methodImpl countersForAddressAndInst stdoutlog disasm djdebuglines
 
     let txtFilename = resultsdir + ".txt"
     let xmlFilename = resultsdir + ".xml"
