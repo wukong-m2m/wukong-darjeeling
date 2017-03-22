@@ -332,7 +332,6 @@ public class CoreMain {
 			}
 		}
 		for (i=0 ; i<CorePortMe.default_num_contexts; i++) {
-			RTC.avroraPrintHex32(results[i].crc);
 			System.out.println("[" + i + "]crcfinal      : 0x" + Integer.toHexString(results[i].crc & 0xFFFF)); // & 0xFFFF is just here because there's a bug in Integer.toHexString when printing negative ints. Fix later.
 		}
 		if (total_errors==0) {

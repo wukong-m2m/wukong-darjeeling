@@ -101,11 +101,41 @@ public class CoreState {
 		return crc;
 	}
 
+	// NOT STANDARD COREMARK CODE: make this into functions to prevent them taking up memory at runtime.
+	// not used during the benchmark so this won't influence the results.
 	/* Default initialization patterns */
-	private static Object[] intpat  ={    "5012".getBytes(),    "1234".getBytes(),    "-874".getBytes(),    "+122".getBytes()};
-	private static Object[] floatpat={"35.54400".getBytes(),".1234500".getBytes(),"-110.700".getBytes(),"+0.64400".getBytes()};
-	private static Object[] scipat  ={"5.500e+3".getBytes(),"-.123e-2".getBytes(),"-87e+832".getBytes(),"+0.6e-12".getBytes()};
-	private static Object[] errpat  ={"T0.3e-1F".getBytes(),"-T.T++Tq".getBytes(),"1T3.4e4z".getBytes(),"34.0e-T^".getBytes()};
+	// private static Object[] intpat  ={    "5012".getBytes(),    "1234".getBytes(),    "-874".getBytes(),    "+122".getBytes()};
+	// private static Object[] floatpat={"35.54400".getBytes(),".1234500".getBytes(),"-110.700".getBytes(),"+0.64400".getBytes()};
+	// private static Object[] scipat  ={"5.500e+3".getBytes(),"-.123e-2".getBytes(),"-87e+832".getBytes(),"+0.6e-12".getBytes()};
+	// private static Object[] errpat  ={"T0.3e-1F".getBytes(),"-T.T++Tq".getBytes(),"1T3.4e4z".getBytes(),"34.0e-T^".getBytes()};
+	private static byte[] intpat(int i) {
+			 if (i==0) return     "5012".getBytes();
+		else if (i==1) return     "1234".getBytes();
+		else if (i==2) return     "-874".getBytes();
+		else           return     "+122".getBytes();
+	}
+	private static byte[] floatpat(int i) {
+			 if (i==0) return "35.54400".getBytes();
+		else if (i==1) return ".1234500".getBytes();
+		else if (i==2) return "-110.700".getBytes();
+		else           return "+0.64400".getBytes();
+	}
+	private static byte[] scipat(int i) {
+			 if (i==0) return "5.500e+3".getBytes();
+		else if (i==1) return "-.123e-2".getBytes();
+		else if (i==2) return "-87e+832".getBytes();
+		else           return "+0.6e-12".getBytes();
+	}
+	private static byte[] errpat(int i) {
+			 if (i==0) return "T0.3e-1F".getBytes();
+		else if (i==1) return "-T.T++Tq".getBytes();
+		else if (i==2) return "1T3.4e4z".getBytes();
+		else           return "34.0e-T^".getBytes();
+	}
+
+	// TODO: This is a very ugly hack to prevent ProGuard from inlining core_bench_state, which causes other problems when it happens.
+	//       It would be nice to have more direct control over what gets inlined or not.
+	private static byte vliegtuig = 1;
 
 	/* Function: core_init_state
 		Initialize the input data for the state machine.
@@ -135,21 +165,21 @@ public class CoreState {
 				case 0: /* int */
 				case 1: /* int */
 				case 2: /* int */
-					buf=(byte[])intpat[(seed>>3) & 0x3];
+					buf=intpat((seed>>3) & 0x3);
 					next=4;
 				break;
 				case 3: /* float */
 				case 4: /* float */
-					buf=(byte[])floatpat[(seed>>3) & 0x3];
+					buf=floatpat((seed>>3) & 0x3);
 					next=8;
 				break;
 				case 5: /* scientific */
 				case 6: /* scientific */
-					buf=(byte[])scipat[(seed>>3) & 0x3];
+					buf=scipat((seed>>3) & 0x3);
 					next=8;
 				break;
 				case 7: /* invalid */
-					buf=(byte[])errpat[(seed>>3) & 0x3];
+					buf=errpat((seed>>3) & 0x3);
 					next=8;
 				break;
 				default: /* Never happen, just to make some compilers happy */
