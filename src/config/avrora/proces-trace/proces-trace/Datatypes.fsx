@@ -5,6 +5,7 @@
 
 open Helpers
 open FSharp.Data
+open System.Web
 
 type RtcdataXml = XmlProvider<"rtcdata-example.xml", Global=true>
 type Rtcdata = RtcdataXml.Methods
@@ -12,6 +13,20 @@ type MethodImpl = RtcdataXml.MethodImpl
 type ProfilerdataXml = XmlProvider<"profilerdata-example.xml", Global=true>
 type Profilerdata = ProfilerdataXml.ExecutionCountPerInstruction
 type ProfiledInstruction = ProfilerdataXml.Instruction
+
+let getMethodNameFromFullName (fullname : string) =
+    let indexOfLastDot = fullname.LastIndexOf(".");
+    let indexOfSecondLastDot = match indexOfLastDot with
+                               | -1 -> -1
+                               | 0 -> -1
+                               | _ -> fullname.LastIndexOf(".", indexOfLastDot-1)
+    let methodName = match indexOfSecondLastDot with
+                     | -1 -> fullname
+                     | _ -> fullname.Substring(indexOfSecondLastDot+1)
+    HttpUtility.UrlDecode(methodName)
+
+let getMethodNameFromImpl (impl : MethodImpl) =
+    getMethodNameFromFullName impl.Method
 
 type AvrInstruction = {
     address : int

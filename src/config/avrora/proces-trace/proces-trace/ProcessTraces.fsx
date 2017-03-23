@@ -189,7 +189,7 @@ let parseDJDebug (allLines : string list) =
 
 // Process trace main function
 let processMethodTrace benchmark (methodImpl : MethodImpl) (countersForAddressAndInst : int -> int -> ExecCounters) (stdoutlog : string list) (disasm : string list) (djdebuglines : string list) =
-    printfn "Processing %s" (methodImpl.Method)
+    printfn "Processing %s" (getMethodNameFromImpl methodImpl)
     let optimisedAvr = methodImpl.AvrInstructions |> Seq.map AvrInstructionFromXml |> Seq.toList
     let unoptimisedAvrWithJvmIndex =
         methodImpl.JavaInstructions |> Seq.map (fun jvm -> jvm.UnoptimisedAvr.AvrInstructions |> Seq.map (fun avr -> (AvrInstructionFromXml avr, JvmInstructionFromXml jvm)))
@@ -309,14 +309,16 @@ let ProcessTrace (outputType : string) (resultsdir : string) =
       File.WriteAllText (xmlFilename, (xmlSerializer.PickleToString results))
       Console.Error.WriteLine ("Wrote output to " + xmlFilename)
     | "profile" ->
-      let methodsExclAbstracts = rtcdata.MethodImpls |> Seq.filter (fun methodImpl -> methodImpl.JavaInstructions.Length > 1) // Bug in RTC: abstract methods become just a method prologue
-      let allMethodResults = methodsExclAbstracts |> Seq.map (fun methodImpl -> (methodImpl, (processMethodTrace benchmark methodImpl countersForAddressAndInst stdoutlog disasm djdebuglines)))
-      let allMethodResultsTexts = allMethodResults |> Seq.map (fun (methodImpl, results) -> (resultsToProfiledText methodImpl results))
-                                                   |> Seq.fold (fun r s -> r + s) ""
+      let benchmarkMethods = rtcdata.MethodImpls |> Seq.filter (fun methodImpl -> (methodImpl.MethodDefInfusion.StartsWith("bm_")))
+                                                 |> Seq.filter (fun methodImpl -> methodImpl.JavaInstructions.Length > 1) // Bug in RTC: abstract methods become just a method prologue
+      let allMethodResults = benchmarkMethods |> Seq.map (fun methodImpl -> (methodImpl, (processMethodTrace benchmark methodImpl countersForAddressAndInst stdoutlog disasm djdebuglines)))
+                                              |> Seq.toList
+
+      let report = multipleResultsToProfileReport allMethodResults
 
       let txtFilename = resultsdir + "_profile.txt"
 
-      File.WriteAllText (txtFilename, allMethodResultsTexts)
+      File.WriteAllText (txtFilename, report)
     | _ -> failwith "unknown output type"
 
 let ProcessResultsDir (directory) =

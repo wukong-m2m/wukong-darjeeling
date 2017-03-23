@@ -20,6 +20,16 @@ type RtcdataXml = XmlProvider<"rtcdata-example.xml", Global=true>
 type Rtcdata = RtcdataXml.Methods
 type MethodImpl = RtcdataXml.MethodImpl
 
+let countersToString totalCycles totalBytes (counters : ExecCounters) =
+    // String.Format("cyc:{0,8} {1,5:0.0}% {2,5:0.0}%C exe:{3,8}  avg:{4,5:0.0} byt:{5,5} {6,5:0.0}% {7,5:0.0}%C",
+    String.Format("{0,9} {1,5:0.0}% {2,8} {3,9:0.0} | {4,5} {5,5:0.0}%",
+                  counters.cycles,
+                  100.0 * float (counters.cycles) / float totalCycles,
+                  counters.executions,
+                  counters.average,
+                  counters.size,
+                  100.0 * float (counters.size) / float totalBytes)
+
 let getLoops results =
   let jvmInstructions = results.jvmInstructions |> List.map (fun jvm -> jvm.jvm)
   let filteredInstructions = jvmInstructions |> List.filter (fun jvm -> jvm.text.Contains("MARKLOOP") || jvm.text.Contains("JVM_BRTARGET") || jvm.text.Contains("Branch target"))
@@ -181,6 +191,46 @@ let resultsToString (results : SimulationResults) =
     let result = (sb.ToString())
     result
 
+let resultsToSummaryListEntry (impl : MethodImpl) (results : SimulationResults) =
+    let totalCycles =
+        results.jvmInstructions |> List.map (fun j -> j.counters.cycles)
+                                |> List.reduce (+)
+    let ownCycles =
+        results.jvmInstructions |> List.filter (fun j -> not (j.jvm.text.StartsWith("JVM_INVOKE")))
+                                |> List.map (fun j -> j.counters.cycles)
+                                |> List.reduce (+)
+    let numberOfExecutions =
+        let firstJvmInstruction = results.jvmInstructions |> List.head
+        firstJvmInstruction.counters.executions
+    let methodName = getMethodNameFromImpl impl
+    let entry = String.Format("{0,11} {1,11} {2,7}   {3}",
+                    totalCycles,
+                    ownCycles,
+                    numberOfExecutions,
+                    methodName)
+    entry
+
+let resultsToCalledMethodsList (results : SimulationResults) =
+    let totalCyclesAOTJava = results.countersAOTTotal.cycles
+    let totalBytesAOTJava = results.countersAOTTotal.size
+
+    let nonInvokeCounters = results.jvmInstructions |> List.filter (fun j -> not (j.jvm.text.StartsWith("JVM_INVOKE")))
+                                                    |> List.map (fun j -> j.counters)
+                                                    |> List.fold (+) ExecCounters.empty
+    let totalCounters = results.jvmInstructions |> List.map (fun j -> j.counters)
+                                                |> List.fold (+) ExecCounters.empty
+    let groupedInvokes =
+        results.jvmInstructions |> List.filter (fun j -> (j.jvm.text.StartsWith("JVM_INVOKE")))
+                                |> List.map (fun j -> (getMethodNameFromFullName j.jvm.text, j.counters)) // This will work for now, since we just take the name from the second
+                                |> groupFold fst snd (+) ExecCounters.empty
+    let combined = ("----own----", nonInvokeCounters) :: groupedInvokes @ [ ("---total---", totalCounters) ]
+
+    combined |> List.map (fun (target, counters)
+                                -> String.Format("{0,50} : {1}\n\r",
+                                                 countersToString totalCyclesAOTJava totalBytesAOTJava counters,
+                                                 target))
+             |> List.fold (+) ""
+
 let resultsToProfiledText (impl : MethodImpl) (results : SimulationResults) =
     let totalCyclesAOTJava = results.countersAOTTotal.cycles
     let totalCyclesNativeC = results.countersCTotal.cycles
@@ -192,25 +242,20 @@ let resultsToProfiledText (impl : MethodImpl) (results : SimulationResults) =
         String.Join(",", stack |> List.map (fun el -> el.datatype |> StackDatatypeToString))
 
     let countersHeaderString = "cycles                    exec   avg | bytes"
-    let countersToString totalCycles totalBytes (counters : ExecCounters) =
-        // String.Format("cyc:{0,8} {1,5:0.0}% {2,5:0.0}%C exe:{3,8}  avg:{4,5:0.0} byt:{5,5} {6,5:0.0}% {7,5:0.0}%C",
-        String.Format("{0,8} {1,5:0.0}% {2,5:0.0}%C {3,8} {4,5:0.0} | {5,5} {6,5:0.0}% {7,5:0.0}%C",
-                      counters.cycles,
-                      100.0 * float (counters.cycles) / float totalCycles,
-                      100.0 * float (counters.cycles) / float totalCyclesNativeC,
-                      counters.executions,
-                      counters.average,
-                      counters.size,
-                      100.0 * float (counters.size) / float totalBytes,
-                      100.0 * float (counters.size) / float totalBytesNativeC)
 
     let resultJavaListingToString (result : ProcessedJvmInstruction) =
-        String.Format("{0,-60}{1} {2}->{3}:{4}",
-                      result.jvm.text,
+        let jvmTextFirstPart (text : String) =
+            match text.StartsWith ("JVM_INVOKE") with
+            | false -> text
+            | true -> text.Substring(0, text.IndexOf(" "))
+        let jvmTextSecondPart (text : String) =
+            match text.StartsWith ("JVM_INVOKE") with
+            | false -> ""
+            | true -> getMethodNameFromFullName text
+        String.Format("{0,-60}{1,50} {2}",
+                      jvmTextFirstPart result.jvm.text,
                       countersToString totalCyclesAOTJava totalBytesAOTJava result.counters,
-                      result.djDebugData.stackSizeBefore,
-                      result.djDebugData.stackSizeAfter,
-                      stackToString result.djDebugData.stackAfter)
+                      jvmTextSecondPart result.jvm.text)
 
     let resultsAvrToString (avr : ResultAvr) =
         let avrInstOption2Text = function
@@ -223,17 +268,22 @@ let resultsToProfiledText (impl : MethodImpl) (results : SimulationResults) =
                                                       avr.counters.cycles,
                                                       avr.counters.executions)
 
+
     let sb = new Text.StringBuilder(10000000)
     let addLn s =
       sb.AppendLine(s) |> ignore
-    addLn ("============================= " + impl.Method + " =============================")
+
+    addLn ("----------------------------------------------------------")
+    addLn ((getMethodNameFromImpl impl))
+    addLn ("----------------------------------------------------------")
+
+    addLn (resultsToCalledMethodsList results)
+
+    addLn ("")
     addLn ("--- ONLY JVM                                         " + countersHeaderString)
     results.jvmInstructions
       |> List.map resultJavaListingToString
       |> List.iter addLn
-    addLn ("")
-    addLn ("--- JVM LOOPS")
-    addLn (getLoops results)
     addLn ("")
     addLn ("--- JVM + AVR                               " + countersHeaderString)
     results.jvmInstructions
@@ -242,5 +292,36 @@ let resultsToProfiledText (impl : MethodImpl) (results : SimulationResults) =
       |> List.iter addLn
     addLn ("")
     addLn ("")
+    let result = (sb.ToString())
+    result
+
+let multipleResultsToProfileReport (allMethodResults : (MethodImpl * SimulationResults) list) =
+    let summaryListHeader = "  cyc.total     cyc.own    exec   method"
+
+    let sb = new Text.StringBuilder(10000000)
+    let addLn s =
+      sb.AppendLine(s) |> ignore
+
+
+    addLn("========================================SUMMARY========================================")
+    addLn("")
+    addLn("")
+    addLn(summaryListHeader)
+    allMethodResults |> List.map (fun (methodImpl, results) -> (resultsToSummaryListEntry methodImpl results))
+                     |> List.iter addLn
+    addLn("")
+    addLn("")
+    addLn("====================================INVOKE OVERVIEW====================================")
+    addLn("")
+    addLn("")
+    allMethodResults |> List.map (fun (methodImpl, results) -> String.Format("{0}\n\r{1}", (getMethodNameFromImpl methodImpl), (resultsToCalledMethodsList results)))
+                     |> List.iter addLn
+    addLn("")
+    addLn("")
+    addLn("====================================DETAILED TRACES====================================")
+    addLn("")
+    addLn("")
+    allMethodResults |> List.map (fun (methodImpl, results) -> (resultsToProfiledText methodImpl results))
+                     |> List.iter addLn
     let result = (sb.ToString())
     result
