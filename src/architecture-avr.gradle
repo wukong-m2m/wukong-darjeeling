@@ -223,6 +223,14 @@ task avrora_store_trace(type:Copy, dependsOn: [avrora_if_necessary, disassemble]
     into file("${project.rootDir}/config/${djConfigname}/${project.ext.aotTraceResultsDirName}/${project.ext.aotbm}")
 }
 
+task avrora_profile_trace(type:Exec, dependsOn: [avrora_store_trace]) {
+    def fsxScript = "${project.rootDir}/config/${djConfigname}/proces-trace/proces-trace/ProcessTraces.fsx"
+    def tracesOutputDir = new File("${project.rootDir}/config/${djConfigname}/${project.ext.aotTraceResultsDirName}/${project.ext.aotbm}")
+
+    executable "fsharpi"
+    args '--exec', fsxScript, "profile", tracesOutputDir
+}
+
 task avrora_analyse_trace(type:Exec, dependsOn: [avrora_store_trace]) {
     def fsxScript = "${project.rootDir}/config/${djConfigname}/proces-trace/proces-trace/ProcessTraces.fsx"
     def tracesOutputDir = new File("${project.rootDir}/config/${djConfigname}/${project.ext.aotTraceResultsDirName}/${project.ext.aotbm}")
