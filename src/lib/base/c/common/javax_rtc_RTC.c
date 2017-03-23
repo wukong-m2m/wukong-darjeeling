@@ -59,9 +59,11 @@ dj_time_t CorePortMe_stop;
 
 void javax_rtc_RTC_void_coremark_start_time_nat() {
     CorePortMe_start = dj_timer_getTimeMillis();
+    avroraProfilerResetAndStart();
 }
 
 void javax_rtc_RTC_void_coremark_stop_time() {
+    avroraProfilerStopCounting();
     CorePortMe_stop = dj_timer_getTimeMillis();
 }
 

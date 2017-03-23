@@ -31,6 +31,7 @@
 #include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraPrint.h"
 #include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraTimer.h"
 #include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraRTC.h"
+#include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraProfiler.h"
 
 #define HEAPSIZE 512
 
