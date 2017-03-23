@@ -1,8 +1,17 @@
+#r "binaries/FSharp.Data/FSharp.Data.dll"
 #load "Helpers.fsx"
 #load "AVR.fsx"
 #load "JVM.fsx"
 
 open Helpers
+open FSharp.Data
+
+type RtcdataXml = XmlProvider<"rtcdata-example.xml", Global=true>
+type Rtcdata = RtcdataXml.Methods
+type MethodImpl = RtcdataXml.MethodImpl
+type ProfilerdataXml = XmlProvider<"profilerdata-example.xml", Global=true>
+type Profilerdata = ProfilerdataXml.ExecutionCountPerInstruction
+type ProfiledInstruction = ProfilerdataXml.Instruction
 
 type AvrInstruction = {
     address : int
