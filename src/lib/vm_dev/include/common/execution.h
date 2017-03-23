@@ -77,7 +77,7 @@ void createThreadAndRunMethodToFinish(dj_global_id methodImplId);
 bool dj_exec_use_rtc;
 // End Exported for RTC only
 
-extern dj_vm *vm;
+extern dj_vm *currentVm;
 
 void rtc_run_interpreter_if_not_aot_compiled();
 void dj_exec_breakExecution();
@@ -111,7 +111,7 @@ extern dj_thread *dj_currentThread;
 dj_infusion *dj_exec_getCurrentInfusion();
 
 void dj_exec_setVM(dj_vm *_vm);
-dj_vm *dj_exec_getVM();
+#define dj_exec_getVM() (currentVm)
 
 void dj_exec_updatePointers();
 

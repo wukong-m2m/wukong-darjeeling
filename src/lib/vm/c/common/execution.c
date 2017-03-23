@@ -76,7 +76,7 @@
 #include "opcodes.c"
 
 // currently selected Virtual Machine context
-dj_vm *vm;
+dj_vm *currentVm;
 dj_thread *dj_currentThread;
 
 // global variables for quick access
@@ -127,16 +127,7 @@ void dj_exec_setVM(dj_vm *_vm)
 #ifdef DARJEELING_DEBUG
 	totalNrOpcodes=0;
 #endif
-	vm = _vm;
-}
-
-/**
- * Returns the VM that is currently executing.
- * @return the current VM
- */
-inline dj_vm *dj_exec_getVM()
-{
-	return vm;
+	currentVm = _vm;
 }
 
 /**
@@ -436,7 +427,7 @@ void dj_exec_activate_thread(dj_thread *thread) {
 }
 
 void dj_exec_updatePointers() {
-	vm = dj_mem_getUpdatedPointer(vm);
+	dj_exec_setVM(dj_mem_getUpdatedPointer(dj_exec_getVM()));
 	dj_exec_setCurrentThread(dj_mem_getUpdatedPointer(dj_exec_getCurrentThread()));
 }
 
@@ -1237,7 +1228,7 @@ void createThreadAndRunMethodToFinish(dj_global_id methodImplId) {
 
 	// clean up the thread
 	thread = dj_vm_getThreadById(dj_exec_getVM(), threadId);
-	dj_vm_removeThread(vm, thread);
+	dj_vm_removeThread(dj_exec_getVM(), thread);
 	dj_thread_destroy(thread);
 	dj_exec_setCurrentThread(NULL);
 }
@@ -1253,7 +1244,7 @@ void dj_exec_createAndThrow(int16_t exceptionType)
 
 	// DEAD CODE BELOW
 
-	dj_object *obj = dj_vm_createSysLibObject(vm, BASE_CDEF_java_lang_Exception);
+	dj_object *obj = dj_vm_createSysLibObject(dj_exec_getVM(), BASE_CDEF_java_lang_Exception);
 	((BASE_STRUCT_java_lang_Exception *)obj)->type = exceptionType;
 
 	// if we can't allocate the exception, we're really out of memory :(
