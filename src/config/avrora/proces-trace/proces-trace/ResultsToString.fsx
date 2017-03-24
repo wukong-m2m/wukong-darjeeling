@@ -22,7 +22,7 @@ type MethodImpl = RtcdataXml.MethodImpl
 
 let countersToString totalCycles totalBytes (counters : ExecCounters) =
     // String.Format("cyc:{0,8} {1,5:0.0}% {2,5:0.0}%C exe:{3,8}  avg:{4,5:0.0} byt:{5,5} {6,5:0.0}% {7,5:0.0}%C",
-    String.Format("{0,9} {1,5:0.0}% {2,8} {3,9:0.0} | {4,5} {5,5:0.0}%",
+    String.Format("{0,11:n0} {1,5:0.0}% {2,9:n0} {3,9:0.0} | {4,5} {5,5:0.0}%",
                   counters.cycles,
                   100.0 * float (counters.cycles) / float totalCycles,
                   counters.executions,
@@ -203,7 +203,7 @@ let resultsToSummaryListEntry (impl : MethodImpl) (results : SimulationResults) 
         let firstJvmInstruction = results.jvmInstructions |> List.head
         firstJvmInstruction.counters.executions
     let methodName = getMethodNameFromImpl impl
-    let entry = String.Format("{0,11} {1,11} {2,7}   {3}",
+    let entry = String.Format("{0,11:n0} {1,11:n0} {2,7:n0}   {3}",
                     totalCycles,
                     ownCycles,
                     numberOfExecutions,
@@ -226,7 +226,7 @@ let resultsToCalledMethodsList (results : SimulationResults) =
     let combined = ("----own----", nonInvokeCounters) :: groupedInvokes @ [ ("---total---", totalCounters) ]
 
     combined |> List.map (fun (target, counters)
-                                -> String.Format("{0,50} : {1}\n\r",
+                                -> String.Format("{0,53} : {1}\n\r",
                                                  countersToString totalCyclesAOTJava totalBytesAOTJava counters,
                                                  target))
              |> List.fold (+) ""
@@ -279,12 +279,12 @@ let resultsToProfiledText (impl : MethodImpl) (results : SimulationResults) =
     addLn (resultsToCalledMethodsList results)
 
     addLn ("")
-    addLn ("--- ONLY JVM                                         " + countersHeaderString)
+    addLn ("--- ONLY JVM                                               " + countersHeaderString)
     results.jvmInstructions
       |> List.map resultJavaListingToString
       |> List.iter addLn
     addLn ("")
-    addLn ("--- JVM + AVR                               " + countersHeaderString)
+    addLn ("--- JVM + AVR                                              " + countersHeaderString)
     results.jvmInstructions
       |> List.map (fun r -> (r |> resultJavaListingToString) :: (r.avr |> List.filter (fun avr -> avr.opt.IsSome) |> List.map resultsAvrToString))
       |> List.concat
