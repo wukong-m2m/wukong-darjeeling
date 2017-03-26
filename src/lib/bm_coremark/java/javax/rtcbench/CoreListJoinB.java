@@ -115,21 +115,6 @@ public class CoreListJoinB {
 		data[ptr+1] = val;
 	}
 
-
-	// This is not very efficient, but it's only used during initialisation
-	private static class ShortWrapper {
-		private short val;
-		public ShortWrapper(short val) {
-			this.val = val;
-		}
-		public short GetValue() {
-			return val;
-		}
-		public void SetValue(short val) {
-			this.val = val;
-		}
-	}
-
 	private static abstract class AbstractListDataCompare {
 		abstract int compare(short a, short b, CoreResults res);
 	}
@@ -288,10 +273,12 @@ public class CoreListJoinB {
 		int per_item=16+4; //16+sizeof(struct list_data_s);
 		int size=(blksize/per_item)-2; /* to accomodate systems with 64b pointers, and make sure same code is executed, set max list elements */
 
-		ShortWrapper memblock = new ShortWrapper((short)0);
+		ShortWrapper memblock = new ShortWrapper();
+		memblock.value = (short)0;
 		short memblock_end=(short)(size*2); // *2 because in the C version we count in pointers to list_head structs, which are 4 bytes, but in Java we count 2 byte shorts. So we need to reserve *2 as much memory.
-		ShortWrapper datablock = new ShortWrapper(memblock_end);
-		short datablock_end=(short)(datablock.GetValue()+(size*2)); // *2 because in the C version we count in pointers to list_data structs, which are 4 bytes, but in Java we count 2 byte shorts. So we need to reserve *2 as much memory.
+		ShortWrapper datablock = new ShortWrapper();
+		datablock.value = memblock_end;
+		short datablock_end=(short)(datablock.value+(size*2)); // *2 because in the C version we count in pointers to list_data structs, which are 4 bytes, but in Java we count 2 byte shorts. So we need to reserve *2 as much memory.
 
 		data = new short[datablock_end];
 
@@ -303,11 +290,11 @@ public class CoreListJoinB {
 
 		/* create a fake items for the list head and tail */
 		ListHead_SetNext(list, ListNULL);
-		ListHead_SetInfo(list, datablock.GetValue());
+		ListHead_SetInfo(list, datablock.value);
 		ListData_SetIdx(ListHead_GetInfo(list), (short)0x0000);
 		ListData_SetData16(ListHead_GetInfo(list), (short)0x8080);
-		memblock.SetValue((short)(memblock.GetValue()+2)); // +2 because we're counting shorts instead of structs
-		datablock.SetValue((short)(datablock.GetValue()+2)); // +2 because we're counting shorts instead of structs
+		memblock.value=((short)(memblock.value+2)); // +2 because we're counting shorts instead of structs
+		datablock.value=((short)(datablock.value+2)); // +2 because we're counting shorts instead of structs
 		info_idx=(short)0x7fff;
 		info_data16=(short)0xffff;
 		core_list_insert_new(list,info_data16,info_idx,memblock,datablock,memblock_end,datablock_end);
@@ -356,8 +343,8 @@ public class CoreListJoinB {
 		, short memblock_end, short datablock_end) {
 		short newitem;
 		
-		short memblock_val = memblock.GetValue();
-		short datablock_val = datablock.GetValue();
+		short memblock_val = memblock.value;
+		short datablock_val = datablock.value;
 
 		// if ((*memblock+1) >= memblock_end)
 		if ((memblock_val+2) >= memblock_end) // +2 because it's not a list_head pointer anymore, so we need to count 2 shorts instead of 1 struct
@@ -368,13 +355,13 @@ public class CoreListJoinB {
 			
 		newitem=memblock_val;
 		// (*memblock)++;
-		memblock.SetValue((short)(memblock_val+2)); // +2, see above
+		memblock.value=((short)(memblock_val+2)); // +2, see above
 		ListHead_SetNext(newitem, ListHead_GetNext(insert_point));
 		ListHead_SetNext(insert_point, newitem);
 		
-		ListHead_SetInfo(newitem, datablock.GetValue());
+		ListHead_SetInfo(newitem, datablock.value);
 		// (*datablock)++;
-		datablock.SetValue((short)(datablock_val+2)); // +2, see above
+		datablock.value=((short)(datablock_val+2)); // +2, see above
 		// copy_info(newitem->info,info);
 		// void copy_info(list_data *to,list_data *from) {
 		// 	to->data16=from->data16;
