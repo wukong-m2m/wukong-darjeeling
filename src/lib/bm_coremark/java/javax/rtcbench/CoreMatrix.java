@@ -149,17 +149,19 @@ public class CoreMatrix {
 		A=new short[N*N];
 		B=new short[N*N];
 
+		short i_times_N = 0;
 		for (i=0; i<N; i++) {
 			for (j=0; j<N; j++) {
 				seed = ( ( order * seed ) % 65536 );
 				val = (short)(seed + order);
 				val=matrix_clip(val,false);
-				B[i*N+j] = val;
+				B[i_times_N+j] = val;
 				val = (short)(val + order);
 				val=matrix_clip(val,true);
-				A[i*N+j] = val;
+				A[i_times_N+j] = val;
 				order++;
 			}
+			i_times_N += N;
 		}
 
 		p.A=A;
@@ -184,9 +186,10 @@ public class CoreMatrix {
 		int tmp=0,prev=0,cur=0;
 		short ret=0;
 		short i,j;
+		short i_times_N = 0;
 		for (i=0; i<N; i++) {
 			for (j=0; j<N; j++) {
-				cur=C[i*N+j];
+				cur=C[i_times_N+j];
 				tmp+=cur;
 				if (tmp>clipval) {
 					ret+=10;
@@ -196,6 +199,7 @@ public class CoreMatrix {
 				}
 				prev=cur;
 			}
+			i_times_N += N;
 		}
 		return ret;
 	}
@@ -206,10 +210,12 @@ public class CoreMatrix {
 	*/
 	static void matrix_mul_const(short N, int[] C, short[] A, short val) {
 		short i,j;
+		short i_times_N = 0;
 		for (i=0; i<N; i++) {
 			for (j=0; j<N; j++) {
-				C[i*N+j]=(int)A[i*N+j] * (int)val;
+				C[i_times_N+j]=(int)A[i_times_N+j] * (int)val;
 			}
+			i_times_N += N;
 		}
 	}
 
@@ -218,10 +224,12 @@ public class CoreMatrix {
 	*/
 	static void matrix_add_const(short N, short[] A, short val) {
 		short i,j;
+		short i_times_N = 0;
 		for (i=0; i<N; i++) {
 			for (j=0; j<N; j++) {
-				A[i*N+j] += val;
+				A[i_times_N+j] += val;
 			}
+			i_times_N += N;
 		}
 	}
 
@@ -231,11 +239,13 @@ public class CoreMatrix {
 	*/
 	static void matrix_mul_vect(short N, int[] C, short[] A, short[] B) {
 		short i,j;
+		short i_times_N = 0;
 		for (i=0; i<N; i++) {
 			C[i]=0;
 			for (j=0; j<N; j++) {
-				C[i]+=(int)A[i*N+j] * (int)B[j];
+				C[i]+=(int)A[i_times_N+j] * (int)B[j];
 			}
+			i_times_N += N;
 		}
 	}
 
@@ -245,14 +255,16 @@ public class CoreMatrix {
 	*/
 	static void matrix_mul_matrix(short N, int[] C, short[] A, short[] B) {
 		short i,j,k;
+		short i_times_N = 0;
 		for (i=0; i<N; i++) {
 			for (j=0; j<N; j++) {
-				C[i*N+j]=0;
+				C[i_times_N+j]=0;
 				for(k=0;k<N;k++)
 				{
-					C[i*N+j]+=(int)A[i*N+k] * (int)B[k*N+j];
+					C[i_times_N+j]+=(int)A[i_times_N+k] * (int)B[k*N+j];
 				}
 			}
+			i_times_N += N;
 		}
 	}
 
@@ -262,15 +274,17 @@ public class CoreMatrix {
 	*/
 	static void matrix_mul_matrix_bitextract(short N, int[] C, short[] A, short[] B) {
 		short i,j,k;
+		short i_times_N = 0;
 		for (i=0; i<N; i++) {
 			for (j=0; j<N; j++) {
-				C[i*N+j]=0;
+				C[i_times_N+j]=0;
 				for(k=0;k<N;k++)
 				{
-					int tmp=(int)A[i*N+k] * (int)B[k*N+j];
-					C[i*N+j]+=bit_extract(tmp,(byte)2,(byte)4)*bit_extract(tmp,(byte)5,(byte)7);
+					int tmp=(int)A[i_times_N+k] * (int)B[k*N+j];
+					C[i_times_N+j]+=bit_extract(tmp,(byte)2,(byte)4)*bit_extract(tmp,(byte)5,(byte)7);
 				}
 			}
+			i_times_N += N;
 		}
 	}
 }
