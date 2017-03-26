@@ -56,9 +56,9 @@ public class CoreState {
 	{
 		int[] final_counts = new int[NUM_CORE_STATES];
 		int[] track_counts = new int[NUM_CORE_STATES];
-		CoreStateTransitionParam p=new CoreStateTransitionParam();
-		p.instr=memblock;
-		p.index=0;
+		ShortWrapper p = new ShortWrapper();
+		short pValue; // Within this method we use this so the local variable can be pinned by markloop.
+		p.value=0;    // We use this to pass to core_state_transition since it needs to be able to modify the index (it's a double pointer in C).
 		int i;
 
 
@@ -66,32 +66,32 @@ public class CoreState {
 			final_counts[i]=track_counts[i]=0;
 		}
 		/* run the state machine over the input */
-		while (p.instr[p.index]!=0) {
-			byte fstate=core_state_transition(p,track_counts);
+		while (memblock[p.value]!=0) {
+			byte fstate=core_state_transition(p,memblock,track_counts);
 			final_counts[fstate]++;
 		}
 
 		// p=memblock;
-		p.index=0;
-		while (p.index < blksize) { /* insert some corruption */
-			if (p.instr[p.index]!=',')
-				p.instr[p.index]^=(byte)seed1;
-			p.index+=step;
+		pValue=0; // Stays within this method, so use pValue
+		while (pValue < blksize) { /* insert some corruption */
+			if (memblock[pValue]!=',')
+				memblock[pValue]^=(byte)seed1;
+			pValue+=step;
 		}
 		// p=memblock;
-		p.index=0;
+		p.value=0;
 		/* run the state machine over the input again */
-		while (p.instr[p.index]!=0) {
-			byte fstate=core_state_transition(p,track_counts);
+		while (memblock[p.value]!=0) {
+			byte fstate=core_state_transition(p,memblock,track_counts);
 			final_counts[fstate]++;
 		}
 
 		// p=memblock;
-		p.index=0;
-		while (p.index < blksize) { /* undo corruption if seed1 and seed2 are equal */
-			if (p.instr[p.index]!=',')
-				p.instr[p.index]^=(byte)seed2;
-			p.index+=step;
+		pValue=0; // Stays within this method, so use pValue
+		while (pValue < blksize) { /* undo corruption if seed1 and seed2 are equal */
+			if (memblock[pValue]!=',')
+				memblock[pValue]^=(byte)seed2;
+			pValue+=step;
 		}
 		/* end timing */
 		for (i=0; i<NUM_CORE_STATES; i++) {
@@ -216,10 +216,8 @@ public class CoreState {
 	}
 
 	// State core_state_transition( ee_u8 **instr , int[] transition_count) {
-	static byte core_state_transition(CoreStateTransitionParam param , int[] transition_count) {
-		// ee_u8 *str=*instr;
-		byte[] str = param.instr;
-		short index = param.index;
+	static byte core_state_transition(ShortWrapper indexWrapper, byte[] str, int[] transition_count) {
+		short index = indexWrapper.value;
 		byte NEXT_SYMBOL;
 		byte state=CORE_STATE_START;
 		// for( ; *str && state != CORE_INVALID; str++ ) {
@@ -311,7 +309,7 @@ public class CoreState {
 			}
 		}
 		// *instr=str;
-		param.index = index;
+		indexWrapper.value = index;
 		return state;
 	}
 }
