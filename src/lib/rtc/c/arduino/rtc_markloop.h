@@ -19,7 +19,7 @@ bool rtc_stackcache_stack_top_is_pinned(); // Some opcodes can destroy either le
 void rtc_stackcache_getfree_16bit(uint8_t *regs);
 void rtc_stackcache_getfree_32bit(uint8_t *regs);
 void rtc_stackcache_getfree_ref(uint8_t *regs);
-void rtc_stackcache_getfree_16bit_but_only_if_we_wont_spill_otherwise_clear_valuetag(uint8_t *regs);
+void rtc_stackcache_getfree_16bit_for_array_load(uint8_t *regs);
 bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs);
 
 // PUSH

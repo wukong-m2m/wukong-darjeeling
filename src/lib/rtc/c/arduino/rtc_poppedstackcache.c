@@ -284,7 +284,7 @@ void rtc_stackcache_getfree_ref(uint8_t *regs) {
     regs[0] = r;
     regs[1] = r+1;
 }
-void rtc_stackcache_getfree_16bit_but_only_if_we_wont_spill_otherwise_clear_valuetag(uint8_t *regs) {
+void rtc_stackcache_getfree_16bit_for_array_load(uint8_t *regs) {
     uint8_t r = rtc_stackcache_getfree_pair_but_only_if_we_wont_spill();
     if (r != 0xFF) {
         regs[0] = r;

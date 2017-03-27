@@ -380,13 +380,21 @@ void rtc_stackcache_getfree_ref(uint8_t *regs) {
     regs[0] = r;
     regs[1] = r+1;
 }
-void rtc_stackcache_getfree_16bit_but_only_if_we_wont_spill_otherwise_clear_valuetag(uint8_t *regs) {
+void rtc_stackcache_getfree_16bit_for_array_load(uint8_t *regs) {
     uint8_t r = rtc_stackcache_getfree_pair_but_only_if_we_wont_spill();
     if (r != 0xFF) {
         regs[0] = r;
         regs[1] = r+1;
     } else {
-        RTC_STACKCACHE_CLEAR_VALUETAG(REG_TO_ARRAY_INDEX(regs[0]));
+        // If the register passed isn't pinned, then we just clear the value tag and use it in the array load instead.
+        // But if it's a pinned register we can't corrupt it's value, so we still need to get a free register.
+        if (RTC_MARKLOOP_ISPINNED(REG_TO_ARRAY_INDEX(regs[0]))) {
+            r = rtc_stackcache_getfree_pair();
+            regs[0] = r;
+            regs[1] = r+1;
+        } else {
+            RTC_STACKCACHE_CLEAR_VALUETAG(REG_TO_ARRAY_INDEX(regs[0]));
+        }
     }
 }
 // Returns true if a register in the range >=r16 is allocated, false otherwise

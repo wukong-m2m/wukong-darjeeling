@@ -336,7 +336,7 @@ void rtc_translate_single_instruction() {
             // Now Z points to the target element
             // We could load into operand_regs1, but this contains the array reference, which we may want to preserve.
             // Ask the stack cache for an available register pair, but it shouldn't spill to memory if nothing is available.
-            rtc_stackcache_getfree_16bit_but_only_if_we_wont_spill_otherwise_clear_valuetag(operand_regs1);
+            rtc_stackcache_getfree_16bit_for_array_load(operand_regs1);
             switch (opcode) {
                 case JVM_BALOAD:
                 case JVM_CALOAD:
