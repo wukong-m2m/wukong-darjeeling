@@ -1831,6 +1831,11 @@ int dj_exec_run(int nrOpcodes)
 		case JVM_PUTFIELD_L: PUTFIELD_L(); break;
 		case JVM_PUTFIELD_A: PUTFIELD_A(); break;
 
+        case JVM_GETFIELD_A_FIXED:
+        case JVM_PUTFIELD_A_FIXED:
+            dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
+        break;
+
 		// Case statements
 		case JVM_TABLESWITCH: TABLESWITCH(); break;
 		case JVM_LOOKUPSWITCH: LOOKUPSWITCH(); break;

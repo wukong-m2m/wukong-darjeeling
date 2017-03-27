@@ -71,7 +71,7 @@ import org.w3c.dom.Document;
 public class Infuser
 {
 	// Version of the infusion format. VM should check if it matches the VM's format
-	public static final int infusionFormatVersion = Opcode.Use32BitArrayIndex ? 110 : 111;
+	public static final int infusionFormatVersion = Opcode.Use32BitArrayIndex ? 111 : 113;
 
 	// never start with version 1.0.0 :-)
 	public static final String version = "1.1.12";

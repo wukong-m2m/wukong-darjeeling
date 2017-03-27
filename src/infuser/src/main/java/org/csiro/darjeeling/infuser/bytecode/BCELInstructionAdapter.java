@@ -44,6 +44,7 @@ import org.csiro.darjeeling.infuser.bytecode.instructions.BranchInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.ConstantPushInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.ExplicitCastInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.FieldInstruction;
+import org.csiro.darjeeling.infuser.bytecode.instructions.FixedOffsetFieldAInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.ImmediateBytePushInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.ImmediateIntPushInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.ImmediateLongPushInstruction;
@@ -70,6 +71,7 @@ import org.csiro.darjeeling.infuser.structure.elements.AbstractInfusion;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractMethodDefinition;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractMethodImplementation;
 import org.csiro.darjeeling.infuser.structure.elements.internal.InternalInfusion;
+import org.csiro.darjeeling.infuser.structure.elements.internal.InternalClassDefinition;
 
 /**
  * Adapter that converts BCEL instructions to corresponding Darjeeling instructions. Note that there are some
@@ -419,6 +421,41 @@ public class BCELInstructionAdapter
 		
 		throw new IllegalStateException("Unhandled type in instanceof/checkcast");
 	}
+
+	private Instruction makeGETPUTFIELD_A(Opcode opcode, org.apache.bcel.generic.Instruction instruction, AbstractField field) {
+		// Determine if the runtime class is known. If it is a final class,
+		// with Object as a superclass, we will know the offset to the reference
+		// field at AOT compile time.
+		// For ints the offset is always known, but since references are located
+		// behind the ints in the object's memory, the offset to a reference
+		// depends on the runtime type. Determining this offset at runtime is
+		// expensive, so if we are sure we can do it at compile time this
+		// saves a lot of overhead.
+		//
+		// There is a better way to optimise this: if we can put ints and refs
+		// together, the offset will always be known. However, this requires
+		// a major change to the garbage collector, and for our current benchmarks
+		// this option is good enough.
+
+		String className = ((org.apache.bcel.generic.FieldInstruction) instruction).getReferenceType(constantPoolGen).toString();
+		InternalClassDefinition classDef = (InternalClassDefinition)(infusion.lookupClassByName(className));
+
+		if (classDef.getSuperClassName().equals("java.lang.Object")
+				&& classDef.getJavaClass().isFinal()) {
+			// We can be sure of the runtime type, so use the
+			// optimised GETFIELD_A_FIXED
+			LocalId localId = getClassID(className);
+			int offset = field.getOffset();
+			if (opcode == Opcode.GETFIELD_A) {
+				return new FixedOffsetFieldAInstruction(Opcode.GETFIELD_A_FIXED, localId, offset);
+			} else {
+				return new FixedOffsetFieldAInstruction(Opcode.PUTFIELD_A_FIXED, localId, offset);
+			}
+		} else {
+			// Not sure, so use the normal GETFIELD_A
+			return new FieldInstruction(opcode, field.getOffset());
+		}
+	}
 	
 	/**
 	 * This code maps a BCEL instruction onto a darjeeling instruction.
@@ -602,7 +639,7 @@ public class BCELInstructionAdapter
 					case Short: ret = new FieldInstruction(Opcode.PUTFIELD_S, field.getOffset()); break;
 					case Int: ret = new FieldInstruction(Opcode.PUTFIELD_I, field.getOffset()); break;
 					case Long: ret = new FieldInstruction(Opcode.PUTFIELD_L, field.getOffset()); break;
-					case Ref: ret = new FieldInstruction(Opcode.PUTFIELD_A, field.getOffset()); break;
+					case Ref: ret = makeGETPUTFIELD_A(Opcode.PUTFIELD_A, instruction, field); break;
 					default:
 						throw new IllegalStateException("Unsupported type for putfield");
 				}
@@ -618,7 +655,7 @@ public class BCELInstructionAdapter
 					case Short: ret = new FieldInstruction(Opcode.GETFIELD_S, field.getOffset()); break;
 					case Int: ret = new FieldInstruction(Opcode.GETFIELD_I, field.getOffset()); break;
 					case Long: ret = new FieldInstruction(Opcode.GETFIELD_L, field.getOffset()); break;
-					case Ref: ret = new FieldInstruction(Opcode.GETFIELD_A, field.getOffset()); break;
+					case Ref: ret = makeGETPUTFIELD_A(Opcode.GETFIELD_A, instruction, field); break;
 					default:
 						throw new IllegalStateException("Unsupported type for getfield");
 				}

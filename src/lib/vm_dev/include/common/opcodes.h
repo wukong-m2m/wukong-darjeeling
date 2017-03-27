@@ -245,6 +245,9 @@
 #define JVM_BRTARGET 219
 #define JVM_MARKLOOP_START 220
 #define JVM_MARKLOOP_END 221
+#define JVM_GETFIELD_A_FIXED 222
+#define JVM_PUTFIELD_A_FIXED 223
+
 
 #endif // __opcodes__h
 

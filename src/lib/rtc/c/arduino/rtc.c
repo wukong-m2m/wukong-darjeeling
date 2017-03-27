@@ -332,6 +332,8 @@ uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode) {
     }
 
     if (opcode == JVM_IIPUSH
+        || opcode == JVM_GETFIELD_A_FIXED
+        || opcode == JVM_PUTFIELD_A_FIXED
         || (opcode >= JVM_IIFEQ && opcode <= JVM_GOTO)
         || (opcode >= JVM_SIFEQ && opcode <= JVM_SIFLE)) {
         return 4;

@@ -555,6 +555,10 @@ void rtc_translate_single_instruction() {
             emit_STD(R16, Z, (jvm_operand_word0*2)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
             emit_STD(R17, Z, (jvm_operand_word0*2)+1);
         break;
+        case JVM_GETFIELD_A_FIXED:
+        case JVM_PUTFIELD_A_FIXED:
+            dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
+        break;
         case JVM_GETSTATIC_B:
         case JVM_GETSTATIC_C:
         case JVM_GETSTATIC_S:

@@ -265,6 +265,9 @@ public enum Opcode
 	MARKLOOP_START((short)220, "markloop_start", null),
 	MARKLOOP_END((short)221, "markloop_end", null),
 
+	GETFIELD_A_FIXED((short)222,"getfield_a_fixed", BaseType.Ref),
+	PUTFIELD_A_FIXED((short)223,"putfield_a_fixed", BaseType.Ref),
+
 	// this is a dummy placeholder opcode, will not appear in the final output
 	S2S((short)-1,"s2s", BaseType.Short, BaseType.Short)
 	;

@@ -73,12 +73,12 @@ public class CoreListJoinA {
 	// 	struct list_data_s *info;
 	// } list_head;
 
-	public static class ListData {
+	public static final class ListData {
 		public short data16;
 		public short idx;
 	}
 
-	public static class ListHead {
+	public static final class ListHead {
 		ListHead next;
 		ListData info;
 	}

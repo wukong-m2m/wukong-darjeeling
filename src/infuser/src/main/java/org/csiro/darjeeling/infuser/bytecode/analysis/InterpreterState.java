@@ -272,6 +272,7 @@ public class InterpreterState implements Comparable<InterpreterState>
 			case GETFIELD_I:
 			case GETFIELD_L:
 			case GETFIELD_A:
+			case GETFIELD_A_FIXED:
 				ret.getStack().pop();
 				ret.getStack().push(handle);
 				break;
@@ -282,6 +283,7 @@ public class InterpreterState implements Comparable<InterpreterState>
 			case PUTFIELD_I:
 			case PUTFIELD_L:
 			case PUTFIELD_A:
+			case PUTFIELD_A_FIXED:
 				ret.getStack().pop();
 				ret.getStack().pop();
 				break;

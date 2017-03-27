@@ -551,6 +551,25 @@ void rtc_translate_single_instruction() {
             operand_regs1[1] = R23;
             rtc_stackcache_push_ref(operand_regs1);
         break;
+        case JVM_GETFIELD_A_FIXED: {
+            dj_local_id local_id;
+            local_id.infusion_id = jvm_operand_byte0;
+            local_id.entity_id = jvm_operand_byte1;
+            dj_global_id global_id = dj_global_id_resolve(rtc_ts->infusion, local_id);
+            dj_di_pointer classDef = dj_infusion_getClassDefinition(global_id.infusion, global_id.entity_id);
+            uint16_t baseRefOffset = dj_di_classDefinition_getOffsetOfFirstReference(classDef);
+            uint16_t targetRefOffset = baseRefOffset + jvm_operand_word1*2;
+
+            rtc_stackcache_getfree_ref(operand_regs1);
+            rtc_stackcache_pop_destructive_ref_into_Z(); // POP the reference into Z
+
+            targetRefOffset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, targetRefOffset);
+            emit_LDD(operand_regs1[0], Z, targetRefOffset);
+            emit_LDD(operand_regs1[1], Z, targetRefOffset+1);
+
+            rtc_stackcache_push_ref(operand_regs1);
+        }
+        break;
         case JVM_PUTFIELD_B:
         case JVM_PUTFIELD_C:
             rtc_stackcache_pop_nondestructive_16bit(operand_regs1);
@@ -592,6 +611,24 @@ void rtc_translate_single_instruction() {
             jvm_operand_word0 = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, jvm_operand_word0*2);
             emit_STD(operand_regs1[0], Z, (jvm_operand_word0)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
             emit_STD(operand_regs1[1], Z, (jvm_operand_word0)+1);
+        break;
+        case JVM_PUTFIELD_A_FIXED: {
+            dj_local_id local_id;
+            local_id.infusion_id = jvm_operand_byte0;
+            local_id.entity_id = jvm_operand_byte1;
+            dj_global_id global_id = dj_global_id_resolve(rtc_ts->infusion, local_id);
+            dj_di_pointer classDef = dj_infusion_getClassDefinition(global_id.infusion, global_id.entity_id);
+            uint16_t baseRefOffset = dj_di_classDefinition_getOffsetOfFirstReference(classDef);
+            uint16_t targetRefOffset = baseRefOffset + jvm_operand_word1*2;
+
+            rtc_stackcache_pop_nondestructive_ref(operand_regs1); // POP the value to store
+            rtc_stackcache_pop_destructive_ref_into_Z(); // POP the reference into Z
+
+            targetRefOffset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, targetRefOffset);
+
+            emit_STD(operand_regs1[0], Z, targetRefOffset); // targetRefOffset is an index in the (16 bit) array, so multiply by 2
+            emit_STD(operand_regs1[1], Z, targetRefOffset+1);
+        }
         break;
         case JVM_GETSTATIC_B:
         case JVM_GETSTATIC_C:
