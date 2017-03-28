@@ -137,10 +137,18 @@ void rtc_translate_single_instruction() {
         case JVM_BSPUSH:
             if (rtc_stackcache_getfree_16bit_prefer_ge_R16(operand_regs1)) {
                 emit_LDI(operand_regs1[0], jvm_operand_byte0);
-                emit_CLR(operand_regs1[1]);
+                if(jvm_operand_byte0 & 0x80) { // Sign extend
+                    emit_LDI(operand_regs1[1], 0xFF);
+                } else {
+                    emit_LDI(operand_regs1[1], 0x00);
+                }
             } else {
                 emit_LDI(RZL, jvm_operand_byte0);
-                emit_CLR(RZH);
+                if(jvm_operand_byte0 & 0x80) { // Sign extend
+                    emit_LDI(RZH, 0xFF);
+                } else {
+                    emit_LDI(RZH, 0x00);
+                }
                 emit_MOVW(operand_regs1[0], RZ);
             }
             rtc_stackcache_push_16bit(operand_regs1);
@@ -1488,6 +1496,19 @@ void rtc_translate_single_instruction() {
         // BRANCHES
         case JVM_SIFEQ:
         case JVM_SIFNE:
+            // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
+            // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
+
+            rtc_stackcache_pop_destructive_16bit(operand_regs1);
+            rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
+            if (opcode == JVM_SIFEQ) {
+                emit_OR(operand_regs1[0], operand_regs1[1]);
+                emit_x_branchtag(OPCODE_BREQ, jvm_operand_word1);
+            } else if (opcode == JVM_SIFNE) {
+                emit_OR(operand_regs1[0], operand_regs1[1]);
+                emit_x_branchtag(OPCODE_BRNE, jvm_operand_word1);
+            }
+        break;
         case JVM_SIFLT:
         case JVM_SIFGE:
         case JVM_SIFGT:
@@ -1497,13 +1518,7 @@ void rtc_translate_single_instruction() {
 
             rtc_stackcache_pop_nondestructive_16bit(operand_regs1);
             rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
-            if (opcode == JVM_SIFEQ) {
-                emit_OR(operand_regs1[0], operand_regs1[1]);
-                emit_x_branchtag(OPCODE_BREQ, jvm_operand_word1);
-            } else if (opcode == JVM_SIFNE) {
-                emit_OR(operand_regs1[0], operand_regs1[1]);
-                emit_x_branchtag(OPCODE_BRNE, jvm_operand_word1);
-            } else if (opcode == JVM_SIFLT) {
+            if (opcode == JVM_SIFLT) {
                 emit_CP(operand_regs1[1], ZERO_REG); // Only need to consider the highest byte to decide < 0 or >= 0
                 emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
             } else if (opcode == JVM_SIFGE) {
@@ -1521,14 +1536,10 @@ void rtc_translate_single_instruction() {
         break;
         case JVM_IIFEQ:
         case JVM_IIFNE:
-        case JVM_IIFLT:
-        case JVM_IIFGE:
-        case JVM_IIFGT:
-        case JVM_IIFLE:
             // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
 
-            rtc_stackcache_pop_nondestructive_32bit(operand_regs1);
+            rtc_stackcache_pop_destructive_32bit(operand_regs1);
             rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
             if (opcode == JVM_IIFEQ) {
                 emit_OR(operand_regs1[0], operand_regs1[1]);
@@ -1540,7 +1551,18 @@ void rtc_translate_single_instruction() {
                 emit_OR(operand_regs1[0], operand_regs1[2]);
                 emit_OR(operand_regs1[0], operand_regs1[3]);
                 emit_x_branchtag(OPCODE_BRNE, jvm_operand_word1);
-            } else if (opcode == JVM_IIFLT) {
+            }
+        break;
+        case JVM_IIFLT:
+        case JVM_IIFGE:
+        case JVM_IIFGT:
+        case JVM_IIFLE:
+            // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
+            // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
+
+            rtc_stackcache_pop_nondestructive_32bit(operand_regs1);
+            rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
+            if (opcode == JVM_IIFLT) {
                 emit_CP(operand_regs1[3], ZERO_REG); // Only need to consider the highest byte to decide < 0 or >= 0
                 emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
             } else if (opcode == JVM_IIFGE) {

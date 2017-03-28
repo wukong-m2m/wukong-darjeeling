@@ -169,10 +169,18 @@ void rtc_translate_single_instruction() {
 #endif
             if (rtc_stackcache_getfree_16bit_prefer_ge_R16(operand_regs1)) {
                 emit_LDI(operand_regs1[0], jvm_operand_byte0);
-                emit_CLR(operand_regs1[1]);
+                if(jvm_operand_byte0 & 0x80) { // Sign extend
+                    emit_LDI(operand_regs1[1], 0xFF);
+                } else {
+                    emit_LDI(operand_regs1[1], 0x00);
+                }
             } else {
                 emit_LDI(RZL, jvm_operand_byte0);
-                emit_CLR(RZH);
+                if(jvm_operand_byte0 & 0x80) { // Sign extend
+                    emit_LDI(RZH, 0xFF);
+                } else {
+                    emit_LDI(RZH, 0x00);
+                }
                 emit_MOVW(operand_regs1[0], RZ);
             }
             rtc_stackcache_push_16bit(operand_regs1);

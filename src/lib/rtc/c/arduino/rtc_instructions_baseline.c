@@ -124,7 +124,11 @@ void rtc_translate_single_instruction() {
             }
 #endif
             emit_LDI(R24, jvm_operand_byte0);
-            emit_LDI(R25, 0);
+            if(jvm_operand_byte0 & 0x80) { // Sign extend
+                emit_LDI(R25, 0xFF);
+            } else {
+                emit_LDI(R25, 0x00);
+            }
             emit_x_PUSH_16bit(R24);
         break;
         case JVM_BIPUSH:
