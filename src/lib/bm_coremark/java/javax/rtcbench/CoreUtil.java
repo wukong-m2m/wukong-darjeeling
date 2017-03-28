@@ -70,27 +70,23 @@ public class CoreUtil {
 		Service functions to calculate 16b CRC code.
 
 	*/
-	static short crcu8(byte data, short crc )
+	static short crcu8(short data, short crc )
 	{
-		byte i=0,x16=0,carry=0;
-
-		for (i = 0; i < 8; i++)
+		// for (short i = 0; i < 8; i++)
+		for (short i = (short)-8; i != 0; i++) // This is faster because a !=0 check is faster than <8.
 	    {
-			x16 = (byte)((data & 1) ^ ((byte)crc & 1));
-			data >>>= 1;
-
-			if (x16 == 1)
+			if (((data ^ crc) & 1) == 0)
 			{
-			   crc ^= 0x4002;
-			   carry = 1;
+				crc >>>= 1;
+				crc &= (short)0x7fff;
 			}
-			else 
-				carry = 0;
-			crc >>>= 1;
-			if (carry != 0)
-			   crc |= 0x8000;
 			else
-			   crc &= 0x7fff;
+			{
+				crc ^= (short)0x4002;
+				crc >>>= 1;
+				crc |= (short)-0x8000;
+			}
+			data >>>= 1;
 	    }
 		return crc;
 	} 
