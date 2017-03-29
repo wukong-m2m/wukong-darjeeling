@@ -214,11 +214,31 @@ let resultsToCalledMethodsList (results : SimulationResults) =
     let totalCyclesAOTJava = results.countersAOTTotal.cycles
     let totalBytesAOTJava = results.countersAOTTotal.size
 
-    let nonInvokeCounters = results.jvmInstructions |> List.filter (fun j -> not (j.jvm.text.StartsWith("JVM_INVOKE")))
-                                                    |> List.map (fun j -> j.counters)
-                                                    |> List.fold (+) ExecCounters.empty
-    let totalCounters = results.jvmInstructions |> List.map (fun j -> j.counters)
-                                                |> List.fold (+) ExecCounters.empty
+    let numberOfExecutions =
+        let firstJvmInstruction = results.jvmInstructions |> List.head
+        firstJvmInstruction.counters.executions
+
+    let nonInvokeCounters =
+      let sumOfAllNonInvokeCounters = results.jvmInstructions |> List.filter (fun j -> not (j.jvm.text.StartsWith("JVM_INVOKE")))
+                                                              |> List.map (fun j -> j.counters)
+                                                              |> List.fold (+) ExecCounters.empty
+      {
+        executions = numberOfExecutions
+        cycles = sumOfAllNonInvokeCounters.cycles
+        count = sumOfAllNonInvokeCounters.count
+        size = sumOfAllNonInvokeCounters.size
+      }
+
+    let totalCounters = 
+      let sumOfAllCounters = results.jvmInstructions |> List.map (fun j -> j.counters)
+                                                     |> List.fold (+) ExecCounters.empty
+      {
+        executions = numberOfExecutions
+        cycles = sumOfAllCounters.cycles
+        count = sumOfAllCounters.count
+        size = sumOfAllCounters.size
+      }
+
     let groupedInvokes =
         results.jvmInstructions |> List.filter (fun j -> (j.jvm.text.StartsWith("JVM_INVOKE")))
                                 |> List.map (fun j -> (getMethodNameFromFullName j.jvm.text, j.counters)) // This will work for now, since we just take the name from the second
@@ -230,6 +250,76 @@ let resultsToCalledMethodsList (results : SimulationResults) =
                                                  countersToString totalCyclesAOTJava totalBytesAOTJava counters,
                                                  target))
              |> List.fold (+) ""
+
+let resultsListToMainCountersString (results : SimulationResults list) =
+    let sb = new Text.StringBuilder(10000000)
+    let addLn s =
+      sb.AppendLine(s) |> ignore
+
+    let countersAOTTotal      = results |> List.map (fun (r) -> r.countersAOTTotal)      |> List.fold (+) ExecCounters.empty
+    let countersAOTLoadStore  = results |> List.map (fun (r) -> r.countersAOTLoadStore)  |> List.fold (+) ExecCounters.empty
+    let countersAOTPushPopInt = results |> List.map (fun (r) -> r.countersAOTPushPopInt) |> List.fold (+) ExecCounters.empty
+    let countersAOTPushPopRef = results |> List.map (fun (r) -> r.countersAOTPushPopRef) |> List.fold (+) ExecCounters.empty
+    let countersAOTMov        = results |> List.map (fun (r) -> r.countersAOTMov)        |> List.fold (+) ExecCounters.empty
+    let countersAOTOthers     = results |> List.map (fun (r) -> r.countersAOTOthers)     |> List.fold (+) ExecCounters.empty
+
+    addLn(               "             Note that 'others' includes INVOKEs, so there's a lot of double counting right now.")
+    addLn("")
+    addLn(String.Format ("             Total                       {0}", (countersToString countersAOTTotal.cycles countersAOTTotal.size countersAOTTotal)))
+    addLn(String.Format ("              load/store                 {0}", (countersToString countersAOTTotal.cycles countersAOTTotal.size countersAOTLoadStore)))
+    addLn(String.Format ("              push/pop int               {0}", (countersToString countersAOTTotal.cycles countersAOTTotal.size countersAOTPushPopInt)))
+    addLn(String.Format ("              push/pop ref               {0}", (countersToString countersAOTTotal.cycles countersAOTTotal.size countersAOTPushPopRef)))
+    addLn(String.Format ("              mov(w)                     {0}", (countersToString countersAOTTotal.cycles countersAOTTotal.size countersAOTMov)))
+    addLn(String.Format ("              others                     {0}", (countersToString countersAOTTotal.cycles countersAOTTotal.size countersAOTOthers)))
+
+    let result = (sb.ToString())
+    result
+
+let resultsListToDetailedCountersString (results : SimulationResults list) =
+    let countersAOTTotal      = results |> List.map (fun (r) -> r.countersAOTTotal)      |> List.fold (+) ExecCounters.empty
+    let categoryResultsToString totalCycles totalBytes categoryResults =
+            categoryResults
+            |> List.map (fun (category, counters)
+                             -> String.Format("{0,-40} {1}",
+                                              category,
+                                              (countersToString totalCycles totalBytes counters)))
+
+    let opcodeResultsToString totalCycles totalBytes opcodeResults =
+            opcodeResults
+            |> List.map (fun (category, opcode, counters)
+                             ->  String.Format("{0,-20}{1,-20} {2}",
+                                               category,
+                                               opcode,
+                                               (countersToString totalCycles totalBytes counters)))
+
+    let sb = new Text.StringBuilder(10000000)
+    let addLn s =
+      sb.AppendLine(s) |> ignore
+
+    addLn(" Note that the percentages aren't accurate, since they're measured against the wrong total (see MAIN COUNTERS).")
+    addLn("")
+
+    let countersPerJvmOpcodeCategoryAOTJava =
+      results
+        |> List.collect (fun (r) -> r.countersPerJvmOpcodeCategoryAOTJava)
+        |> groupFold fst snd  (+) ExecCounters.empty
+    let countersPerJvmOpcodeAOTJava =
+      results
+        |> List.collect (fun (r) -> r.countersPerJvmOpcodeAOTJava)
+        |> groupFold (fun (cat, opcode, cnt) -> (cat, opcode)) (fun (cat, opcode, cnt) -> cnt) (+) ExecCounters.empty
+        |> List.map (fun (catOpcode, cnt) -> ((fst catOpcode), (snd catOpcode), cnt))
+
+
+    addLn ("--- SUMMED: PER JVM CATEGORY               ")
+    categoryResultsToString countersAOTTotal.cycles countersAOTTotal.size countersPerJvmOpcodeCategoryAOTJava
+      |> List.iter addLn
+    addLn ("")
+    addLn ("--- SUMMED: PER JVM OPCODE                 ")
+    opcodeResultsToString countersAOTTotal.cycles countersAOTTotal.size countersPerJvmOpcodeAOTJava
+      |> List.iter addLn
+
+    let result = (sb.ToString())
+    result
 
 let resultsToProfiledText (impl : MethodImpl) (results : SimulationResults) =
     let totalCyclesAOTJava = results.countersAOTTotal.cycles
@@ -278,6 +368,17 @@ let resultsToProfiledText (impl : MethodImpl) (results : SimulationResults) =
 
     addLn (resultsToCalledMethodsList results)
 
+    addLn("--- MAIN COUNTERS " + (getMethodNameFromImpl impl))
+    addLn("")
+    addLn("")
+    addLn(resultsListToMainCountersString [ results ])
+    addLn("")
+    addLn("")
+    addLn("--- DETAILED COUNTERS " + (getMethodNameFromImpl impl))
+    addLn("")
+    addLn("")
+    addLn(resultsListToDetailedCountersString [ results ])
+
     addLn ("")
     addLn ("--- ONLY JVM                                               " + countersHeaderString)
     results.jvmInstructions
@@ -295,19 +396,7 @@ let resultsToProfiledText (impl : MethodImpl) (results : SimulationResults) =
     result
 
 let multipleResultsToProfileReport (allMethodResults : (MethodImpl * SimulationResults) list) =
-    let opcodeResultsToString totalCycles totalBytes opcodeResults =
-            opcodeResults
-            |> List.map (fun (category, opcode, counters)
-                             ->  String.Format("{0,-20}{1,-20} {2}",
-                                               category,
-                                               opcode,
-                                               (countersToString totalCycles totalBytes counters)))
-    let categoryResultsToString totalCycles totalBytes categoryResults =
-            categoryResults
-            |> List.map (fun (category, counters)
-                             -> String.Format("{0,-40} {1}",
-                                              category,
-                                              (countersToString totalCycles totalBytes counters)))
+    let allSortedMethodResults = allMethodResults |> List.sortBy (fun (impl, results) -> 0-results.countersAOTTotal.cycles)
 
     let summaryListHeader = "  cyc.total     cyc.own    exec   method"
 
@@ -320,70 +409,33 @@ let multipleResultsToProfileReport (allMethodResults : (MethodImpl * SimulationR
     addLn("")
     addLn("")
     addLn(summaryListHeader)
-    allMethodResults |> List.map (fun (methodImpl, results) -> (resultsToSummaryListEntry methodImpl results))
+    allSortedMethodResults |> List.map (fun (methodImpl, results) -> (resultsToSummaryListEntry methodImpl results))
                      |> List.iter addLn
     addLn("")
     addLn("")
     addLn("====================================INVOKE OVERVIEW====================================")
     addLn("")
     addLn("")
-    allMethodResults |> List.map (fun (methodImpl, results) -> String.Format("{0}\n\r{1}", (getMethodNameFromImpl methodImpl), (resultsToCalledMethodsList results)))
+    allSortedMethodResults |> List.map (fun (methodImpl, results) -> String.Format("{0}\n\r{1}", (getMethodNameFromImpl methodImpl), (resultsToCalledMethodsList results)))
                      |> List.iter addLn
     addLn("")
     addLn("")
     addLn("==================================== MAIN COUNTERS ====================================")
     addLn("")
     addLn("")
-
-    let countersAOTTotal      = allMethodResults |> List.map (fun (i,r) -> r.countersAOTTotal)      |> List.fold (+) ExecCounters.empty
-    let countersAOTLoadStore  = allMethodResults |> List.map (fun (i,r) -> r.countersAOTLoadStore)  |> List.fold (+) ExecCounters.empty
-    let countersAOTPushPopInt = allMethodResults |> List.map (fun (i,r) -> r.countersAOTPushPopInt) |> List.fold (+) ExecCounters.empty
-    let countersAOTPushPopRef = allMethodResults |> List.map (fun (i,r) -> r.countersAOTPushPopRef) |> List.fold (+) ExecCounters.empty
-    let countersAOTMov        = allMethodResults |> List.map (fun (i,r) -> r.countersAOTMov)        |> List.fold (+) ExecCounters.empty
-    let countersAOTOthers     = allMethodResults |> List.map (fun (i,r) -> r.countersAOTOthers)     |> List.fold (+) ExecCounters.empty
-
-    addLn(               "             Note that 'others' includes INVOKEs, so there's a lot of double counting right now.")
-    addLn("")
-    addLn(String.Format ("             Total                       {0}", (countersToString countersAOTTotal.cycles countersAOTTotal.size countersAOTTotal)))
-    addLn(String.Format ("              load/store                 {0}", (countersToString countersAOTTotal.cycles countersAOTTotal.size countersAOTLoadStore)))
-    addLn(String.Format ("              push/pop int               {0}", (countersToString countersAOTTotal.cycles countersAOTTotal.size countersAOTPushPopInt)))
-    addLn(String.Format ("              push/pop ref               {0}", (countersToString countersAOTTotal.cycles countersAOTTotal.size countersAOTPushPopRef)))
-    addLn(String.Format ("              mov(w)                     {0}", (countersToString countersAOTTotal.cycles countersAOTTotal.size countersAOTMov)))
-    addLn(String.Format ("              others                     {0}", (countersToString countersAOTTotal.cycles countersAOTTotal.size countersAOTOthers)))
-
+    addLn(resultsListToMainCountersString (allSortedMethodResults |> List.map (fun (methodImpl, results) -> results)))
     addLn("")
     addLn("")
     addLn("================================== DETAILED COUNTERS ==================================")
     addLn("")
     addLn("")
-    addLn(" Note that the percentages aren't accurate, since they're measured against the wrong total (see MAIN COUNTERS).")
-    addLn("")
-
-    let countersPerJvmOpcodeCategoryAOTJava =
-      allMethodResults
-        |> List.collect (fun (i,r) -> r.countersPerJvmOpcodeCategoryAOTJava)
-        |> groupFold fst snd  (+) ExecCounters.empty
-    let countersPerJvmOpcodeAOTJava =
-      allMethodResults
-        |> List.collect (fun (i,r) -> r.countersPerJvmOpcodeAOTJava)
-        |> groupFold (fun (cat, opcode, cnt) -> (cat, opcode)) (fun (cat, opcode, cnt) -> cnt) (+) ExecCounters.empty
-        |> List.map (fun (catOpcode, cnt) -> ((fst catOpcode), (snd catOpcode), cnt))
-
-
-    addLn ("--- SUMMED: PER JVM CATEGORY               ")
-    categoryResultsToString countersAOTTotal.cycles countersAOTTotal.size countersPerJvmOpcodeCategoryAOTJava
-      |> List.iter addLn
-    addLn ("")
-    addLn ("--- SUMMED: PER JVM OPCODE                 ")
-    opcodeResultsToString countersAOTTotal.cycles countersAOTTotal.size countersPerJvmOpcodeAOTJava
-      |> List.iter addLn
-
+    addLn(resultsListToDetailedCountersString (allSortedMethodResults |> List.map (fun (methodImpl, results) -> results)))
     addLn("")
     addLn("")
     addLn("====================================DETAILED TRACES====================================")
     addLn("")
     addLn("")
-    allMethodResults |> List.map (fun (methodImpl, results) -> (resultsToProfiledText methodImpl results))
-                     |> List.iter addLn
+    allSortedMethodResults |> List.map (fun (methodImpl, results) -> (resultsToProfiledText methodImpl results))
+                           |> List.iter addLn
     let result = (sb.ToString())
     result
