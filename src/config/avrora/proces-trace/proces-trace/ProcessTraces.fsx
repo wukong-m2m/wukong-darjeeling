@@ -46,7 +46,7 @@ let rec matchOptUnopt (optimisedAvr : AvrInstruction list) (unoptimisedAvr : (Av
     let isNOP x = AVR.is AVR.NOP (x.opcode)
     let isJMP x = AVR.is AVR.JMP (x.opcode)
     let isRJMP x = AVR.is AVR.RJMP (x.opcode)
-    let isBRANCH x = AVR.is AVR.BREQ (x.opcode) || AVR.is AVR.BRGE (x.opcode) || AVR.is AVR.BRLT (x.opcode) || AVR.is AVR.BRNE (x.opcode)
+    let isBRANCH x = AVR.is AVR.BREQ (x.opcode) || AVR.is AVR.BRGE (x.opcode) || AVR.is AVR.BRLO (x.opcode) || AVR.is AVR.BRLT (x.opcode) || AVR.is AVR.BRNE (x.opcode) || AVR.is AVR.BRSH (x.opcode)
     let isBRANCH_BY_BYTES x y = isBRANCH x && ((((x.opcode) &&& (0x03F8)) >>> 2) = y) // avr opcode BRxx 0000 00kk kkkk k000, with k the offset in WORDS (thus only shift right by 2, not 3, to get the number of bytes)
 
     let isMOV_MOVW_PUSH_POP x = isMOV x || isMOVW x || isAOT_PUSH x || isAOT_POP x

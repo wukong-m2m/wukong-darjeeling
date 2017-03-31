@@ -190,6 +190,7 @@ void rtc_patch_branches(uint_farptr_t branch_target_table_start_ptr, uint_farptr
                     switch (avr_instruction) {
                         case OPCODE_BREQ: emit_BREQ(target_offset_in_bytes); break;
                         case OPCODE_BRNE: emit_BRNE(target_offset_in_bytes); break;
+                        case OPCODE_BRLO: emit_BRLO(target_offset_in_bytes); break;
                         case OPCODE_BRLT: emit_BRLT(target_offset_in_bytes); break;
                         case OPCODE_BRGE: emit_BRGE(target_offset_in_bytes); break;
                         default:
@@ -202,6 +203,7 @@ void rtc_patch_branches(uint_farptr_t branch_target_table_start_ptr, uint_farptr
                     switch (avr_instruction) {
                         case OPCODE_BREQ: emit_BRNE(offset); break;
                         case OPCODE_BRNE: emit_BREQ(offset); break;
+                        case OPCODE_BRLO: emit_BRSH(offset); break;
                         case OPCODE_BRLT: emit_BRGE(offset); break;
                         case OPCODE_BRGE: emit_BRLT(offset); break;
                         default:

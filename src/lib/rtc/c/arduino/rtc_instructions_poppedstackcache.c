@@ -1609,12 +1609,32 @@ void rtc_translate_single_instruction() {
             // Pop the key value, and reserve some registers
             rtc_stackcache_pop_destructive_32bit(operand_regs1);
 
-            // Load the upper bound
+            // Load the lower bound
             jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
             jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
             jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
             jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
-            int32_t upperbound = (int32_t)(((uint32_t)jvm_operand_byte0 << 24) | ((uint32_t)jvm_operand_byte1 << 16) | ((uint32_t)jvm_operand_byte2 << 8) | ((uint32_t)jvm_operand_byte3 << 0));
+
+            // Substract lower bound from the key to find the index
+            if (jvm_operand_byte0 != 0 || jvm_operand_byte1 != 0 || jvm_operand_byte2 != 0 || jvm_operand_byte3 != 0) {
+                emit_LDI(RZL, jvm_operand_byte3);
+                emit_SUB(operand_regs1[0], RZL);
+                emit_LDI(RZL, jvm_operand_byte2);
+                emit_SBC(operand_regs1[1], RZL);
+                emit_LDI(RZL, jvm_operand_byte1);
+                emit_SBC(operand_regs1[2], RZL);
+                emit_LDI(RZL, jvm_operand_byte0);
+                emit_SBC(operand_regs1[3], RZL);
+            }
+
+            // Load the range (=upperbound-lowerbound)
+            jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
+            jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
+            jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
+            jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
+            int32_t range = (int32_t)(((uint32_t)jvm_operand_byte0 << 24) | ((uint32_t)jvm_operand_byte1 << 16) | ((uint32_t)jvm_operand_byte2 << 8) | ((uint32_t)jvm_operand_byte3 << 0));
+
+            // Do an unsigned (BRLO) compare to see if the index is negative or larger than the upper bound
             emit_LDI(RZL, jvm_operand_byte3); // Bytecode is big endian
             emit_CP (RZL, operand_regs1[0]);
             emit_LDI(RZL, jvm_operand_byte2);
@@ -1623,38 +1643,10 @@ void rtc_translate_single_instruction() {
             emit_CPC(RZL, operand_regs1[2]);
             emit_LDI(RZL, jvm_operand_byte0);
             emit_CPC(RZL, operand_regs1[3]);
-            emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
+            emit_x_branchtag(OPCODE_BRLO, jvm_operand_word1);
 
-            // Lower than or equal to the upper bound: load the lower bound
-            jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
-            jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
-            jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
-            jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
-            int32_t lowerbound = (int32_t)(((uint32_t)jvm_operand_byte0 << 24) | ((uint32_t)jvm_operand_byte1 << 16) | ((uint32_t)jvm_operand_byte2 << 8) | ((uint32_t)jvm_operand_byte3 << 0));
-            emit_LDI(RZL, jvm_operand_byte3); // Bytecode is big endian
-            emit_CP(operand_regs1[0], RZL);
-            emit_LDI(RZL, jvm_operand_byte2);
-            emit_CPC(operand_regs1[1], RZL);
-            emit_LDI(RZL, jvm_operand_byte1);
-            emit_CPC(operand_regs1[2], RZL);
-            emit_LDI(RZL, jvm_operand_byte0);
-            emit_CPC(operand_regs1[3], RZL);
-            emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
-
-            // Also higher than or equal to the lower bound: branch through the switch table
-            // Substract lower bound from the key to find the index (assume 16b will be enough)
-            if (rtc_stackcache_getfree_16bit_prefer_ge_R16(operand_regs2)) {
-                emit_LDI(operand_regs2[0], jvm_operand_byte3);
-                emit_LDI(operand_regs2[1], jvm_operand_byte2);
-            } else {
-                emit_LDI(RZL, jvm_operand_byte3);
-                emit_LDI(RZH, jvm_operand_byte2);
-                emit_MOVW(operand_regs2[0], RZ);                
-            }
-            emit_SUB(operand_regs1[0], operand_regs2[0]);
-            emit_SBC(operand_regs1[1], operand_regs2[1]);
-
-            // operand_regs1[0]:operand_regs1[1] now contains the index
+            // lower bound <= index <= upper bound, so we need to jump to a case: label.
+            // operand_regs1[0]:operand_regs1[1] now contains the index (it can't be > 16 bits since that doesn't fit in flash)
             // The branch targets may not have consecutive numbers, for example if there are branches within a switch case
             // We'll do a double jump instead, first IJMPing to a table of RJMPs to the branch target table
             // So a total of 3 jmps instead of 2 for a normal branch. This could be optimised a bit by making sure the branch targets
@@ -1669,10 +1661,11 @@ void rtc_translate_single_instruction() {
                               // Note that this should be 7 for cpus with >128K flash since they have a 3 byte PC.
             emit_ADD(RZL, operand_regs1[0]); // Add the index to get the target address in the RJMP table
             emit_ADC(RZH, operand_regs1[1]);
+
             emit_IJMP(); // All this fuss because there's no relative indirect jump...
 
             // Now emit the RJMP table itself
-            for (int i=0; i<(upperbound-lowerbound+1); i++) { // +1 since both bounds are inclusive
+            for (int i=0; i<(range+1); i++) { // +1 since both bounds are inclusive
                 jvm_operand_word0 = (dj_di_getU8(ts->jvm_code_start + ts->pc + 3) << 8) | dj_di_getU8(ts->jvm_code_start + ts->pc + 4);
                 ts->pc += 4;
                 emit_x_branchtag(OPCODE_RJMP, jvm_operand_word0);

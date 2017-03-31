@@ -45,6 +45,9 @@ let BREQ                          = (0xF001, MASK_BRANCH, "BREQ")
 // avr opcode BRGE                  1111 01kk kkkk k100, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
 let BRGE                          = (0xF404, MASK_BRANCH, "BRGE")
 
+// avr opcode BRLO                  1111 00kk kkkk k000, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
+let BRLO                          = (0xF000, MASK_BRANCH, "BRLO")
+
 // avr opcode BRLT                  1111 00kk kkkk k100, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
 let BRLT                          = (0xF004, MASK_BRANCH, "BRLT")
 
@@ -53,6 +56,9 @@ let BRNE                          = (0xF401, MASK_BRANCH, "BRNE")
 
 // avr opcode BRPL                  1111 01kk kkkk k010
 let BRPL                          = (0xF402, MASK_BRANCH, "BRPL")
+
+// avr opcode BRSH                  1111 01kk kkkk k000, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
+let BRSH                          = (0xF400, MASK_BRANCH, "BRSH")
 
 //                                  1001 010k kkkk 111k
 // avr opcode CALL                  kkkk kkkk kkkk kkkk
@@ -273,7 +279,7 @@ let opcodeCategories =
      ("04) Stack push/pop", [ POP; PUSH ]);
      ("05) Register moves", [ MOV; MOVW ]);         
      ("06) Constant load", [ LDI ]);
-     ("07) Comp./branches", [ BRCC; BRCS; BREQ; BRGE; BRLT; BRNE; BRPL; CP; CPC; CPI; CPSE; SBRC; SBRS ]);
+     ("07) Comp./branches", [ BRCC; BRCS; BREQ; BRGE; BRLO; BRLT; BRNE; BRPL; BRSH; CP; CPC; CPI; CPSE; SBRC; SBRS ]);
      ("08) Math", [ ADC; ADD; ADIW; DEC; MUL; MULS; MULSU; NEG; INC; SBC; SBCI; SBIW; SUB; SUBI ]);
      ("09) Bit shifts", [ ASR; ROR; LSR ]);
      ("10) Bit logic", [ AND; ANDI; EOR; OR; ORI ]);

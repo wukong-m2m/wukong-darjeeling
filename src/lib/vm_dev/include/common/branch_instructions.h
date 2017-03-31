@@ -460,8 +460,8 @@ static inline void TABLESWITCH()
 	uint16_t branchAdress = fetch16();
 	fetch16(); // skip over BranchTargetIndex. It's only used for rtc compiled code.
 
-	uint32_t high = fetch32();
 	uint32_t low = fetch32();
+	uint32_t high = fetch32()+low;
 
 	if ((key>=low)&&(key<=high)) branchAdress = peekn16((key-low) * 4);
 	branch(branchAdress - 13);

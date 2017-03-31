@@ -104,6 +104,10 @@
 #define OPCODE_BRGE                     0xF404
 #define emit_BRGE(offset)               emit_BRANCH(OPCODE_BRGE, offset)
 
+// BRLO                                 1111 00kk kkkk k000, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
+#define OPCODE_BRLO                     0xF000
+#define emit_BRLO(offset)               emit_BRANCH(OPCODE_BRLO, offset)
+
 // BRLT                                 1111 00kk kkkk k100, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
 #define OPCODE_BRLT                     0xF004
 #define emit_BRLT(offset)               emit_BRANCH(OPCODE_BRLT, offset)
@@ -115,6 +119,10 @@
 // BRPL                                 1111 01kk kkkk k010
 #define OPCODE_BRPL                     0xF402
 #define emit_BRPL(offset)               emit_BRANCH(OPCODE_BRPL, offset)
+
+// BRSH                                 1111 01kk kkkk k000
+#define OPCODE_BRSH                     0xF400
+#define emit_BRSH(offset)               emit_BRANCH(OPCODE_BRSH, offset)
 
 // CALL                                 1001 010k kkkk 111k
 //                                      kkkk kkkk kkkk kkkk

@@ -61,13 +61,13 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
         case JTID_CHAR:
         case JTID_BYTE:
         case JTID_SHORT:
-            rtc_stackcache_push_16bit_from_R22R23();
+            emit_x_PUSH_16bit(R22);
             break;
         case JTID_INT:
-            rtc_stackcache_push_32bit_from_R22R25();
+            emit_x_PUSH_32bit(R22);
             break;
         case JTID_REF:
-            rtc_stackcache_push_ref_from_R22R23();
+            emit_x_PUSH_REF(R22);
             break;
     }
 #else // simple, popped, or markloop
@@ -76,13 +76,13 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
         case JTID_CHAR:
         case JTID_BYTE:
         case JTID_SHORT:
-            emit_x_PUSH_16bit(R22);
+            rtc_stackcache_push_16bit_from_R22R23();
             break;
         case JTID_INT:
-            emit_x_PUSH_32bit(R22);
+            rtc_stackcache_push_32bit_from_R22R25();
             break;
         case JTID_REF:
-            emit_x_PUSH_REF(R22);
+            rtc_stackcache_push_ref_from_R22R23();
             break;
     }
 #endif
