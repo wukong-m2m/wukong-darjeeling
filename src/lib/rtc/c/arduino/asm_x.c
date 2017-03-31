@@ -54,6 +54,18 @@ void emit_x_avroraBeep(uint8_t beep) {
     emit_2_STS((uint16_t)&rtcMonitorVariable, R24);
     emit_POP(R24);
 }
+void emit_x_avroraPrintPC() {
+    emit_PUSH(R24);
+    emit_LDI(R24, 0x12);
+    emit_2_STS((uint16_t)&(debugbuf1), R24);
+    emit_POP(R24);
+}
+void emit_x_avroraPrintRegs() {
+    emit_PUSH(R24);
+    emit_LDI(R24, 0xE);
+    emit_2_STS((uint16_t)&(debugbuf1), R24);
+    emit_POP(R24);
+}
 
 
 // This needs to be a #define to calculate the instruction at compile time.
