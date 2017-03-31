@@ -129,14 +129,39 @@ public class OptimizeByteCode extends CodeBlockTransformation
 						handle.getPreState().getStack().peek(j).setOptimizationHint(operandTypes[operandTypes.length-1-j]);
 					break;
 					
+				case IMUL:
+					if (!forceOptimise)
+					{
+						if (stack.peek(0).getLogicalType().getTypeClass()!=TypeClass.Short) break;
+						if (stack.peek(1).getLogicalType().getTypeClass()!=TypeClass.Short) break;
+					}
+					
+					if (handle.getOptimisationHint()==BaseType.Short) {
+						// never optimise if we need to preserve the overflow
+						if (handle.generatesOverflow() && handle.isKeepOverflow()) break;
+						
+						// optimise the instruction
+						instruction.setOpcode(Opcode.SMUL);
+						handle.setOptimisationHint(0, BaseType.Short);
+						handle.setOptimisationHint(1, BaseType.Short);
+						
+						// reset :3
+						i=instructions.size()-1;
+					} else {
+						// optimise the instruction
+						instruction.setOpcode(Opcode.SIMUL);
+						handle.setOptimisationHint(0, BaseType.Short);
+						handle.setOptimisationHint(1, BaseType.Short);
+					}
+					
+					break;
+					
 				case IADD:
 				case ISUB:
 				case IAND:
 				case IOR:
 				case IXOR:	
 					if (handle.getOptimisationHint()==BaseType.Short) forceOptimise = true;
-					
-				case IMUL:
 				case IDIV:
 				case IREM:
 				case INEG:

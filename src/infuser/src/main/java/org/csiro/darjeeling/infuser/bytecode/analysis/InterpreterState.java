@@ -213,6 +213,7 @@ public class InterpreterState implements Comparable<InterpreterState>
 			case LAND:
 			case LOR:
 			case LXOR:
+			case SIMUL:
 				ret.getStack().pop();
 				ret.getStack().pop();
 				ret.getStack().push(handle);

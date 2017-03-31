@@ -268,6 +268,8 @@ public enum Opcode
 	GETFIELD_A_FIXED((short)222,"getfield_a_fixed", BaseType.Ref),
 	PUTFIELD_A_FIXED((short)223,"putfield_a_fixed", BaseType.Ref),
 
+	SIMUL((short)224, "simul", BaseType.Int, BaseType.Short, BaseType.Short),
+
 	// this is a dummy placeholder opcode, will not appear in the final output
 	S2S((short)-1,"s2s", BaseType.Short, BaseType.Short)
 	;

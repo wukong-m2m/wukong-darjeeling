@@ -247,6 +247,7 @@
 #define JVM_MARKLOOP_END 221
 #define JVM_GETFIELD_A_FIXED 222
 #define JVM_PUTFIELD_A_FIXED 223
+#define JVM_SIMUL 224
 
 
 #endif // __opcodes__h
