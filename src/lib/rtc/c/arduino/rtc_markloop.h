@@ -5,11 +5,12 @@
 
 #define RTC_VALUETAG_TO_INT_L(tag)                  ((tag) + 0x1000)
 
-#define RTC_FILTER_NONE            0
-#define RTC_FILTER_CALLUSED        1
-#define RTC_FILTER_REFERENCE       2
-#define RTC_FILTER_INT             4
-#define RTC_FILTER_ALL             8
+#define RTC_FILTER_NONE                      0
+#define RTC_FILTER_CALLUSED                  1
+#define RTC_FILTER_REFERENCE                 2
+#define RTC_FILTER_CALLUSED_AND_REFERENCE    (RTC_FILTER_CALLUSED + RTC_FILTER_REFERENCE)
+#define RTC_FILTER_INT                       4
+#define RTC_FILTER_ALL                       8
 
 #define RTC_STACKCACHE_INT_STACK_TYPE                0x00
 #define RTC_STACKCACHE_REF_STACK_TYPE                0x10
@@ -17,6 +18,7 @@
 void rtc_stackcache_init();
 void rtc_stackcache_set_may_use_RZ(); // Set this to indicate a value may be popped to RZ. Note that this is only useful if we're not going to push the same reg back onto the stack, otherwise we will have to pay the price of clearing a register anyway, and a MOVW on top of that.
 void rtc_stackcache_clear_may_use_RZ(); // so this method allows us to clear the bit again, because for some opcodes we can pop the first value to RZ, but not the second.
+void rtc_stackcache_mark_all_inused_available();
 void rtc_stackcache_next_instruction();
 void rtc_stackcache_mark_available_16bit(uint8_t* regs);
 void rtc_stackcache_mark_available_32bit(uint8_t* regs);
@@ -62,14 +64,12 @@ void rtc_stackcache_pop_destructive_32bit_into_fixed_reg(uint8_t reg_base);     
 void rtc_stackcache_pop_destructive_ref_into_fixed_reg(uint8_t reg_base);           // Pops a value into a specific range of consecutive regs. Panics if any reg is not marked IN USE.
 void rtc_stackcache_pop_destructive_ref_into_Z();                                   // Pops a value into Z. Panics if any reg is not marked IN USE.
 
-#define rtc_pop_flush_and_cleartags_ref  (pop_target,               flush_filter, cleartags_filter)   rtc_pop_flush_and_cleartags(pop_target,  0,             0,           0,             RTC_STACKCACHE_INT_STACK_TYPE, flush_filter, cleartags_filter)
-#define rtc_pop_flush_and_cleartags_int16(pop_target1, pop_target2, flush_filter, cleartags_filter)   rtc_pop_flush_and_cleartags(pop_target1, pop_target2,   0,           0,             RTC_STACKCACHE_INT_STACK_TYPE, flush_filter, cleartags_filter)
-#define rtc_pop_flush_and_cleartags_int32(pop_target1, pop_target2, flush_filter, cleartags_filter)   rtc_pop_flush_and_cleartags(pop_target1, pop_target1+2, pop_target2, pop_target2+2, RTC_STACKCACHE_REF_STACK_TYPE, flush_filter, cleartags_filter)
+#define rtc_flush_and_cleartags_ref(flush_filter, cleartags_filter)                                          rtc_pop_flush_and_cleartags(0,           0,             0,           0,             RTC_STACKCACHE_INT_STACK_TYPE, flush_filter, cleartags_filter)
+#define rtc_pop_flush_and_cleartags_ref(pop_target, flush_filter, cleartags_filter)                          rtc_pop_flush_and_cleartags(pop_target,  0,             0,           0,             RTC_STACKCACHE_REF_STACK_TYPE, flush_filter, cleartags_filter)
+#define rtc_pop_flush_and_cleartags_int16(pop_target1, pop_target2, flush_filter, cleartags_filter)          rtc_pop_flush_and_cleartags(pop_target1, pop_target2,   0,           0,             RTC_STACKCACHE_INT_STACK_TYPE, flush_filter, cleartags_filter)
+#define rtc_pop_flush_and_cleartags_single_int32(pop_target1, flush_filter, cleartags_filter)                rtc_pop_flush_and_cleartags(pop_target1, pop_target1+2, 0,           0 , RTC_STACKCACHE_INT_STACK_TYPE, flush_filter, cleartags_filter)
+#define rtc_pop_flush_and_cleartags_double_int32(pop_target1, pop_target2, flush_filter, cleartags_filter)   rtc_pop_flush_and_cleartags(pop_target1, pop_target1+2, pop_target2, pop_target2+2, RTC_STACKCACHE_INT_STACK_TYPE, flush_filter, cleartags_filter)
 void rtc_pop_flush_and_cleartags(uint8_t pop_target1, uint8_t pop_target2, uint8_t pop_target3, uint8_t pop_target4, uint8_t which_stack, uint8_t flush_filter, uint8_t cleartags_filter);
-
-void rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();                 // Pushes all call-used registers onto the stack, removing them from the cache (R18–R27, R30, R31), and clears the call used value tags
-void rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references();   // Pushes all call-used registers onto the stack, removing them from the cache (R18–R27, R30, R31), and clears the call used and reference value tags
-void rtc_stackcache_flush_all_regs();                                                     // Pushes all registers onto the stack, so the stack is in the state the next JVM method expects, but preserves the value tags
 
 uint16_t rtc_poppedstackcache_get_valuetag(uint8_t *regs);
 void rtc_poppedstackcache_set_valuetag(uint8_t *regs, uint16_t valuetag);

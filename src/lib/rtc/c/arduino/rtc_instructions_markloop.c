@@ -217,7 +217,7 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_push_32bit(operand_regs1);
         break;
         case JVM_LDS:
-            rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references();
+            rtc_flush_and_cleartags_ref(RTC_FILTER_CALLUSED_AND_REFERENCE, RTC_FILTER_CALLUSED_AND_REFERENCE);
 
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
@@ -545,8 +545,7 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_push_32bit(operand_regs1);
         break;
         case JVM_GETFIELD_A:
-            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
-            rtc_stackcache_pop_destructive_ref_into_fixed_reg(R24); // POP the reference
+            rtc_pop_flush_and_cleartags_ref(R24, RTC_FILTER_CALLUSED, RTC_FILTER_CALLUSED);
 
             // First find the location of reference fields
             emit_x_CALL((uint16_t)&dj_object_getReferences);
@@ -607,8 +606,9 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_pop_nondestructive_ref(operand_regs2); // POP the reference
             rtc_stackcache_push_ref(operand_regs1); // PUSH the value to store
             rtc_stackcache_push_ref(operand_regs2); // PUSH the reference (TODONR: this would be a lot easier if the operands where in the reversed order. let's fix that in the infuser later.)
-            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
-            rtc_stackcache_pop_destructive_ref_into_fixed_reg(R24); // POP the reference again into R24
+
+            rtc_stackcache_mark_all_inused_available(); // After the previous some registers may be marked IN_USE, but we need them to be AVAILABLE
+            rtc_pop_flush_and_cleartags_ref(R24, RTC_FILTER_CALLUSED, RTC_FILTER_CALLUSED);
 
             // First find the location of reference fields
             emit_x_CALL((uint16_t)&dj_object_getReferences);
@@ -787,9 +787,7 @@ void rtc_translate_single_instruction() {
         break;
         case JVM_SDIV:
         case JVM_SREM:
-            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
-            rtc_stackcache_pop_destructive_16bit_into_fixed_reg(R22);
-            rtc_stackcache_pop_destructive_16bit_into_fixed_reg(R24);
+            rtc_pop_flush_and_cleartags_int16(R22, R24, RTC_FILTER_CALLUSED, RTC_FILTER_CALLUSED);
 
             emit_x_CALL((uint16_t)&__divmodhi4);
             if (opcode == JVM_SDIV) {
@@ -970,18 +968,14 @@ void rtc_translate_single_instruction() {
             emit_MOVW(RX, RZ);
         break;
         case JVM_IMUL: // to read later: https://mekonik.wordpress.com/2009/03/18/arduino-avr-gcc-multiplication/
-            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
-            rtc_stackcache_pop_destructive_32bit_into_fixed_reg(R22);
-            rtc_stackcache_pop_destructive_32bit_into_fixed_reg(R18);
+            rtc_pop_flush_and_cleartags_double_int32(R18, R22, RTC_FILTER_CALLUSED, RTC_FILTER_CALLUSED);
 
             emit_x_CALL((uint16_t)&__mulsi3);
             rtc_stackcache_push_32bit_from_R22R25();
         break;
         case JVM_IDIV:
         case JVM_IREM:
-            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
-            rtc_stackcache_pop_destructive_32bit_into_fixed_reg(R18);
-            rtc_stackcache_pop_destructive_32bit_into_fixed_reg(R22);
+            rtc_pop_flush_and_cleartags_double_int32(R18, R22, RTC_FILTER_CALLUSED, RTC_FILTER_CALLUSED);
 
             emit_x_CALL((uint16_t)&__divmodsi4);
             if (opcode == JVM_IDIV) {
@@ -1365,20 +1359,17 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_push_16bit(operand_regs1);
         break;
         case JVM_SRETURN:
-            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags(); // To make sure the return registers are available
             // NOTE THAT THIS IS NOT STANDARD avr-gcc ABI, WHICH EXPECTS 16 bit VALUES IN R24:R25, BUT THIS ALLOWS FOR MORE EFFICIENT HANDLING IN CALLMETHOD.
-            rtc_stackcache_pop_destructive_16bit_into_fixed_reg(R22);
+            rtc_pop_flush_and_cleartags_int16(R22, 0, RTC_FILTER_NONE, RTC_FILTER_NONE);
             emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_IRETURN:
-            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags(); // To make sure the return registers are available
-            rtc_stackcache_pop_destructive_32bit_into_fixed_reg(R22);
+            rtc_pop_flush_and_cleartags_single_int32(R22, RTC_FILTER_NONE, RTC_FILTER_NONE);
             emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_ARETURN:
-            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags(); // To make sure the return registers are available
             // NOTE THAT THIS IS NOT STANDARD avr-gcc ABI, WHICH EXPECTS 16 bit VALUES IN R24:R25, BUT THIS ALLOWS FOR MORE EFFICIENT HANDLING IN CALLMETHOD.
-            rtc_stackcache_pop_destructive_ref_into_fixed_reg(R22);
+            rtc_pop_flush_and_cleartags_ref(R22, RTC_FILTER_NONE, RTC_FILTER_NONE);
             emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_RETURN:
@@ -1389,18 +1380,16 @@ void rtc_translate_single_instruction() {
         case JVM_INVOKESTATIC:
         case JVM_INVOKEINTERFACE:
             // clear the stack cache, so all stack elements are in memory, not in registers
-            // We can't just use rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references here
-            // because the method operands need to be in memory
-            rtc_stackcache_flush_all_regs();
+            // We can't just flush the call used registers here because the method operands need to be in memory
+
             // clear the all valuetags for all call-used registers, since the value may be gone after the function call returns,
             // and all references in call-saved registers since they may not be accurate if the garbage collector runs.
-            rtc_poppedstackcache_clear_all_callused_valuetags();
-            rtc_poppedstackcache_clear_all_reference_valuetags();
+            rtc_flush_and_cleartags_ref(RTC_FILTER_ALL, RTC_FILTER_CALLUSED_AND_REFERENCE);
 
             rtc_common_translate_invoke(ts, opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
         break;
         case JVM_NEW:
-            rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references();
+            rtc_flush_and_cleartags_ref(RTC_FILTER_CALLUSED_AND_REFERENCE, RTC_FILTER_CALLUSED_AND_REFERENCE);
 
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
@@ -1422,7 +1411,7 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_push_ref_from_R24R25();
         break;
         case JVM_NEWARRAY:
-            rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references();
+            rtc_flush_and_cleartags_ref(RTC_FILTER_CALLUSED_AND_REFERENCE, RTC_FILTER_CALLUSED_AND_REFERENCE);
 
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
@@ -1445,7 +1434,7 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_push_ref_from_R24R25();
         break;
         case JVM_ANEWARRAY:
-            rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references();
+            rtc_flush_and_cleartags_ref(RTC_FILTER_CALLUSED_AND_REFERENCE, RTC_FILTER_CALLUSED_AND_REFERENCE);
 
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
@@ -1486,8 +1475,10 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_push_ref(operand_regs2);
             rtc_poppedstackcache_set_valuetag(operand_regs2, rtc_poppedstackcache_get_valuetag(operand_regs1)); // Copy the valuetag
 
-            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
-            rtc_stackcache_pop_destructive_ref_into_fixed_reg(R22); // reference to the object
+            rtc_stackcache_mark_all_inused_available(); // After the previous some registers may be marked IN_USE, but we need them to be AVAILABLE
+
+            rtc_pop_flush_and_cleartags_ref(R22, RTC_FILTER_CALLUSED, RTC_FILTER_CALLUSED);
+
             emit_LDI(R24, jvm_operand_byte0); // infusion id
             emit_LDI(R25, jvm_operand_byte1); // entity id
 
@@ -1495,8 +1486,7 @@ void rtc_translate_single_instruction() {
             emit_x_CALL((uint16_t)&RTC_CHECKCAST);
         break;
         case JVM_INSTANCEOF:
-            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
-            rtc_stackcache_pop_destructive_ref_into_fixed_reg(R22); // reference to the object
+            rtc_pop_flush_and_cleartags_ref(R22, RTC_FILTER_CALLUSED, RTC_FILTER_CALLUSED);
             emit_LDI(R24, jvm_operand_byte0); // infusion id
             emit_LDI(R25, jvm_operand_byte1); // entity id
 
@@ -1518,7 +1508,7 @@ void rtc_translate_single_instruction() {
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
 
             rtc_stackcache_pop_destructive_16bit(operand_regs1);
-            rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
+            rtc_flush_and_cleartags_ref(RTC_FILTER_ALL, RTC_FILTER_NONE); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
             if (opcode == JVM_SIFEQ) {
                 emit_OR(operand_regs1[0], operand_regs1[1]);
                 emit_x_branchtag(OPCODE_BREQ, jvm_operand_word1);
@@ -1535,7 +1525,7 @@ void rtc_translate_single_instruction() {
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
 
             rtc_stackcache_pop_nondestructive_16bit(operand_regs1);
-            rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
+            rtc_flush_and_cleartags_ref(RTC_FILTER_ALL, RTC_FILTER_NONE); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
             if (opcode == JVM_SIFLT) {
                 emit_CP(operand_regs1[1], ZERO_REG); // Only need to consider the highest byte to decide < 0 or >= 0
                 emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
@@ -1558,7 +1548,7 @@ void rtc_translate_single_instruction() {
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
 
             rtc_stackcache_pop_destructive_32bit(operand_regs1);
-            rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
+            rtc_flush_and_cleartags_ref(RTC_FILTER_ALL, RTC_FILTER_NONE); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
             if (opcode == JVM_IIFEQ) {
                 emit_OR(operand_regs1[0], operand_regs1[1]);
                 emit_OR(operand_regs1[0], operand_regs1[2]);
@@ -1579,7 +1569,7 @@ void rtc_translate_single_instruction() {
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
 
             rtc_stackcache_pop_nondestructive_32bit(operand_regs1);
-            rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
+            rtc_flush_and_cleartags_ref(RTC_FILTER_ALL, RTC_FILTER_NONE); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
             if (opcode == JVM_IIFLT) {
                 emit_CP(operand_regs1[3], ZERO_REG); // Only need to consider the highest byte to decide < 0 or >= 0
                 emit_x_branchtag(OPCODE_BRLT, jvm_operand_word1);
@@ -1606,7 +1596,7 @@ void rtc_translate_single_instruction() {
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
 
             rtc_stackcache_pop_destructive_ref(operand_regs1);
-            rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
+            rtc_flush_and_cleartags_ref(RTC_FILTER_ALL, RTC_FILTER_NONE); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
             if (opcode == JVM_IFNULL) {
                 emit_OR(operand_regs1[0], operand_regs1[1]);
                 emit_x_branchtag(OPCODE_BREQ, jvm_operand_word1);
@@ -1625,7 +1615,7 @@ void rtc_translate_single_instruction() {
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
             rtc_stackcache_pop_nondestructive_16bit(operand_regs1);
             rtc_stackcache_pop_nondestructive_16bit(operand_regs2);
-            rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
+            rtc_flush_and_cleartags_ref(RTC_FILTER_ALL, RTC_FILTER_NONE); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
             // Do the complementary branch. Not taking a branch means jumping over the unconditional branch to the branch target table
             if (opcode == JVM_IF_SCMPEQ) {
                 emit_CP(operand_regs2[0], operand_regs1[0]);
@@ -1663,7 +1653,7 @@ void rtc_translate_single_instruction() {
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
             rtc_stackcache_pop_nondestructive_32bit(operand_regs1);
             rtc_stackcache_pop_nondestructive_32bit(operand_regs2);
-            rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
+            rtc_flush_and_cleartags_ref(RTC_FILTER_ALL, RTC_FILTER_NONE); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
             if (opcode == JVM_IF_ICMPEQ) {
                 emit_CP(operand_regs2[0], operand_regs1[0]);
                 emit_CPC(operand_regs2[1], operand_regs1[1]);
@@ -1708,7 +1698,7 @@ void rtc_translate_single_instruction() {
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
             rtc_stackcache_pop_nondestructive_ref(operand_regs1);
             rtc_stackcache_pop_nondestructive_ref(operand_regs2);                
-            rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
+            rtc_flush_and_cleartags_ref(RTC_FILTER_ALL, RTC_FILTER_NONE); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
             if (opcode == JVM_IF_ACMPEQ) {
                 emit_CP(operand_regs2[0], operand_regs1[0]);
                 emit_CPC(operand_regs2[1], operand_regs1[1]);
@@ -1723,7 +1713,7 @@ void rtc_translate_single_instruction() {
             // Branch instructions first have a bytecode offset, used by the interpreter, (in jvm_operand_word0)
             // followed by a branch target index used when compiling to native code. (in jvm_operand_word1)
 
-            rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
+            rtc_flush_and_cleartags_ref(RTC_FILTER_ALL, RTC_FILTER_NONE); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
             emit_x_branchtag(OPCODE_RJMP, jvm_operand_word1);
         break;
         case JVM_TABLESWITCH: {
@@ -1833,7 +1823,7 @@ void rtc_translate_single_instruction() {
         }
         break;
         case JVM_BRTARGET:
-            rtc_stackcache_flush_all_regs(); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
+            rtc_flush_and_cleartags_ref(RTC_FILTER_ALL, RTC_FILTER_NONE); // Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.
             rtc_poppedstackcache_clear_all_except_pinned_valuetags();
 
             rtc_mark_branchtarget();

@@ -260,15 +260,19 @@ bool rtc_stackcache_test_may_use_RZ() {
     return false;
 }
 
-void rtc_stackcache_next_instruction() {
-    avroraRTCTraceStackCacheState(rtc_ts->rtc_stackcache_state); // Store it here so we can see what's IN USE
-    avroraRTCTraceStackCacheValuetags(rtc_ts->rtc_stackcache_valuetags);
-    avroraRTCTraceStackCachePinnedRegisters(rtc_ts->rtc_stackcache_pinned);
+void rtc_stackcache_mark_all_inused_available() {
     for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
         if (RTC_STACKCACHE_IS_IN_USE(idx)) {
             RTC_STACKCACHE_MARK_AVAILABLE(idx);
         }
-    }
+    }    
+}
+
+void rtc_stackcache_next_instruction() {
+    avroraRTCTraceStackCacheState(rtc_ts->rtc_stackcache_state); // Store it here so we can see what's IN USE
+    avroraRTCTraceStackCacheValuetags(rtc_ts->rtc_stackcache_valuetags);
+    avroraRTCTraceStackCachePinnedRegisters(rtc_ts->rtc_stackcache_pinned);
+    rtc_stackcache_mark_all_inused_available();
     rtc_stackcache_test_may_use_RZ(); // to clear the flag.
 }
 
@@ -775,57 +779,6 @@ void rtc_pop_flush_and_cleartags(uint8_t pop_target1, uint8_t pop_target2, uint8
     }
 }
 
-void rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags() {        // Pushes all call-used registers onto the stack, removing them from the cache (R18–R27, R30, R31), and clears the value tags since the value is about to be destroyed
-    // Pushes all call-used registers onto the stack, removing them from the cache (R18–R25)
-    rtc_stackcache_assert_no_in_use();
-
-    // After this all call-used registers are marked IN USE, so they can be pushed on the stack to store a function result
-    while(true) {
-        // Check if there's any call-used reg on the stack
-        uint8_t call_used_reg_on_stack_idx = 0xFF;
-        uint8_t call_saved_reg_available_idx = 0xFF;
-        for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
-            // Is this an available call-saved register?
-            if (!rtc_stackcache_is_call_used_idx(idx) && RTC_STACKCACHE_IS_AVAILABLE(idx) && !RTC_MARKLOOP_ISPINNED(idx)) {
-                call_saved_reg_available_idx = idx;
-            }
-
-            // Is this an on-stack call-used register?
-            if (rtc_stackcache_is_call_used_idx(idx)) {
-                if (RTC_STACKCACHE_IS_ON_STACK(idx)) { // It's on the stack: we need to move it to memory
-                    call_used_reg_on_stack_idx = idx;
-                }
-                if (RTC_STACKCACHE_IS_AVAILABLE(idx)) { // It's available: mark it IN USE
-                    RTC_STACKCACHE_MARK_IN_USE(idx);    
-                }
-            }
-        }
-
-        if (call_used_reg_on_stack_idx == 0xFF) {
-            break; // No call-used regs are on the stack, so we're done.
-        }
-
-        // There's a call used register on the stack.
-        if (call_saved_reg_available_idx == 0xFF) {
-            // No call-saved registers available, so we need to free one
-            rtc_stackcache_freeup_a_non_pinned_pair();
-            // Either this was a call-used register, in which case we may be done now,
-            // or this was a call-saved register, in which case we can use it in the
-            // next iteration.
-            continue;
-        } else {
-            rtc_current_method_set_uses_reg(ARRAY_INDEX_TO_REG(call_saved_reg_available_idx));
-            // There's also an available call-saved register, so move the value in the call-used reg there.
-            emit_MOVW(ARRAY_INDEX_TO_REG(call_saved_reg_available_idx), ARRAY_INDEX_TO_REG(call_used_reg_on_stack_idx));
-
-            // Update the cache state and value tag, and mark the source register IN USE
-            RTC_STACKCACHE_MOVE_CACHE_STATE(call_saved_reg_available_idx, call_used_reg_on_stack_idx);
-        }
-    }
-
-    // clear the all valuetags for all call-used registers, since the value may be gone after the function call returns,
-    rtc_poppedstackcache_clear_all_callused_valuetags();
-}
 bool rtc_stackcache_has_ref_in_cache() {
     for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
         if (RTC_STACKCACHE_IS_ON_STACK(idx) && RTC_STACKCACHE_IS_REF_STACK(idx)) {
@@ -833,22 +786,6 @@ bool rtc_stackcache_has_ref_in_cache() {
         }
     }
     return false;
-}
-void rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references() {
-    rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
-    rtc_poppedstackcache_clear_all_reference_valuetags();
-    while (rtc_stackcache_has_ref_in_cache()) {
-        uint8_t idx = get_deepest_pair_idx(RTC_FILTER_REFERENCE);
-        rtc_stackcache_spill_pair(idx);
-    }
-}
-void rtc_stackcache_flush_all_regs() {
-    // This is done before branches to make sure the whole stack is in memory. (Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.)
-    // There's no need to clear the valuetags here, as we may reuse the values later if the branch wasn't taken. If it was, the valuetags are clears at the BRTARGET.
-    uint8_t idx;
-    while ((idx=get_deepest_pair_idx(RTC_FILTER_ALL)) != 0xFF) {
-        rtc_stackcache_spill_pair(idx);
-    }
 }
 
 #define RTC_MARKLOOP_OPCODETYPE_LOAD    0x00
