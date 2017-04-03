@@ -221,8 +221,7 @@ public class CoreState {
 		byte NEXT_SYMBOL;
 		byte state=CORE_STATE_START;
 		// for( ; *str && state != CORE_INVALID; str++ ) {
-		for( ; str[index]!=0 && state != CORE_STATE_INVALID; index++ ) {
-			NEXT_SYMBOL = str[index];
+		for( ; (NEXT_SYMBOL = str[index])!=0 && state != CORE_STATE_INVALID; index++ ) {
 			if (NEXT_SYMBOL==',') /* end of this input */ {
 				index++;
 				break;
