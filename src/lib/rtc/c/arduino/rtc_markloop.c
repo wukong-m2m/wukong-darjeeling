@@ -14,8 +14,6 @@
 #define RTC_STACKCACHE_IN_USE                        0xFE
 #define RTC_STACKCACHE_DISABLED                      0xFD
 
-#define RTC_STACKCACHE_INT_STACK_TYPE                0x00
-#define RTC_STACKCACHE_REF_STACK_TYPE                0x10
 #define RTC_STACKCACHE_IS_AVAILABLE(idx)             (rtc_ts->rtc_stackcache_state[(idx)] == RTC_STACKCACHE_AVAILABLE)
 #define RTC_STACKCACHE_IS_IN_USE(idx)                (rtc_ts->rtc_stackcache_state[(idx)] == RTC_STACKCACHE_IN_USE)
 #define RTC_STACKCACHE_IS_DISABLED(idx)              (rtc_ts->rtc_stackcache_state[(idx)] == RTC_STACKCACHE_DISABLED)
@@ -137,11 +135,16 @@ bool rtc_stackcache_is_call_used_idx(uint8_t idx) {
     uint8_t reg = ARRAY_INDEX_TO_REG(idx);
     return reg == R18 || reg == R20 || reg == R22 || reg == R24;
 }
-uint8_t get_deepest_pair_idx() { // Returns 0xFF if there's nothing on the stack.
+
+uint8_t get_deepest_pair_idx(uint8_t filter) { // Returns 0xFF if there's nothing on the stack.
     int8_t deepest_depth = -1;
     uint8_t deepest_idx = 0xFF;
     for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
-        if (RTC_STACKCACHE_IS_ON_STACK(idx) && RTC_STACKCACHE_STACK_DEPTH_FOR_IDX(idx) > deepest_depth) {
+        if (RTC_STACKCACHE_IS_ON_STACK(idx) && RTC_STACKCACHE_STACK_DEPTH_FOR_IDX(idx) > deepest_depth
+                && ((filter & RTC_FILTER_ALL)
+                    || ((filter & RTC_FILTER_REFERENCE) && RTC_STACKCACHE_IS_REF_STACK(idx))
+                    || ((filter & RTC_FILTER_INT) && !RTC_STACKCACHE_IS_REF_STACK(idx))
+                    || ((filter & RTC_FILTER_CALLUSED) && rtc_stackcache_is_call_used_idx(idx)))) {
             deepest_idx = idx;
             deepest_depth = RTC_STACKCACHE_STACK_DEPTH_FOR_IDX(idx);
         }
@@ -161,7 +164,7 @@ uint8_t rtc_stackcache_freeup_a_non_pinned_pair() { // Returns the idx of the fr
     // Find the highest/deepest element and spill it to the real stack.
     // Post: the ON STACK register with the highest number is pushed to the real stack, and changed to AVAILABLE
     while(true) {
-        uint8_t idx = get_deepest_pair_idx();
+        uint8_t idx = get_deepest_pair_idx(RTC_FILTER_ALL);
         if (idx != 0xFF) {
             // Found the deepest register that's on the stack. Push it to real memory, and mark it AVAILABLE
             rtc_stackcache_spill_pair(idx);
@@ -674,6 +677,104 @@ void rtc_stackcache_assert_no_in_use() {
         }
     }
 }
+
+void rtc_stackcache_emit_MOVW_and_move_cache_state(uint8_t dest_reg, uint8_t src_reg) {
+    emit_MOVW(dest_reg, src_reg);
+    uint8_t dest_idx = REG_TO_ARRAY_INDEX(dest_reg);
+    uint8_t src_idx = REG_TO_ARRAY_INDEX(src_reg);
+    RTC_STACKCACHE_MOVE_CACHE_STATE(dest_idx, src_idx);
+    RTC_STACKCACHE_MARK_AVAILABLE(src_idx); // Original location is now AVAILABLE
+    RTC_STACKCACHE_SET_VALUETAG(dest_idx, RTC_STACKCACHE_GET_VALUETAG(src_idx)); // Also copy the valuetag if there is any
+}
+
+void rtc_pop_flush_and_cleartags(uint8_t pop_target1, uint8_t pop_target2, uint8_t pop_target3, uint8_t pop_target4, uint8_t which_stack, uint8_t flush_filter, uint8_t cleartags_filter) {
+    // Step 1: pop stack values into target registers. All pop targets are EITHER ints OR references. They cannot be mixed.
+    // Step 2: flush remaining cached stack values if necessary (call used, references, all, or none)
+    // Step 3: clear value tags if necessary (call used, references, all, or none)
+
+    // Step 1: pop stack values
+    // while (regs to pop) {
+    //     if (target not free) {
+    //         get a free register (possibly spilling to memory)
+    //         MOVW free register, target
+    //     }
+    //     target is now free,
+    //     pop into target
+    // }
+
+    uint8_t *pop_target;
+    // while (regs to pop) {
+    do {
+        pop_target = NULL;
+        if      (pop_target1 != 0) pop_target = &pop_target1;
+        else if (pop_target2 != 0) pop_target = &pop_target2;
+        else if (pop_target3 != 0) pop_target = &pop_target3;
+        else if (pop_target4 != 0) pop_target = &pop_target4;
+
+        if (pop_target != NULL) {
+            // We need to pop into a specific register
+            // if (target not free)
+            if (!RTC_STACKCACHE_IS_AVAILABLE(REG_TO_ARRAY_INDEX(*pop_target))) {
+                // get a free register (possibly spilling to memory)
+                uint8_t free_reg;
+                do {
+                    free_reg = rtc_stackcache_getfree_pair(); // this sets free_reg to USED
+                } while (free_reg == 0);
+                // MOVW free register, target
+
+                rtc_stackcache_emit_MOVW_and_move_cache_state(free_reg, *pop_target);
+            }
+            // target is now available
+            // pop into target, marking this register USED
+            rtc_stackcache_pop_pair(NULL, RTC_STACKCACHE_POP_DESTRUCTIVE, which_stack, *pop_target);
+
+            // This one is done.
+            *pop_target = 0;
+        }
+    } while (pop_target != NULL);
+
+    // All necessary values have been popped into the right registers now
+
+    // Step 2: flush remaining cached stack values if necessary (call used, references, all, or none)
+    uint8_t idx;
+    if (flush_filter & RTC_FILTER_ALL) {
+        while ((idx=get_deepest_pair_idx(RTC_FILTER_ALL)) != 0xFF) {
+            rtc_stackcache_spill_pair(idx);
+        }
+    } else {
+        if (flush_filter & RTC_FILTER_REFERENCE) {
+            while ((idx=get_deepest_pair_idx(RTC_FILTER_REFERENCE)) != 0xFF) {
+                rtc_stackcache_spill_pair(idx);
+            }
+        }
+        if (flush_filter & RTC_FILTER_CALLUSED) {
+            // TODO : change this to use any available call-saved regs
+            while ((idx=get_deepest_pair_idx(RTC_FILTER_CALLUSED)) != 0xFF) {
+                // To free up call used regs, we can't just spill the register we found
+                // since there may be a deeper register in a call saved reg that needs to
+                // be spilled first.
+                if (RTC_STACKCACHE_IS_REF_STACK(idx)) {
+                    idx=get_deepest_pair_idx(RTC_FILTER_REFERENCE);
+                } else {
+                    idx=get_deepest_pair_idx(RTC_FILTER_INT);
+                }
+                rtc_stackcache_spill_pair(idx);
+            }
+        }
+    }
+
+    // Step 3: clear value tags if necessary (call used, references, all, or none)
+    for (idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+        // Is this a tag we need to clear?
+        if (!RTC_MARKLOOP_ISPINNED(idx)
+            && ((cleartags_filter & RTC_FILTER_ALL)
+                || ((cleartags_filter & RTC_FILTER_REFERENCE) && RTC_VALUETAG_IS_REF(RTC_STACKCACHE_GET_VALUETAG(idx)))
+                || ((cleartags_filter & RTC_FILTER_CALLUSED) && rtc_stackcache_is_call_used_idx(idx)))) {
+            RTC_STACKCACHE_SET_VALUETAG(idx, RTC_VALUETAG_UNUSED);
+        }
+    }
+}
+
 void rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags() {        // Pushes all call-used registers onto the stack, removing them from the cache (R18–R27, R30, R31), and clears the value tags since the value is about to be destroyed
     // Pushes all call-used registers onto the stack, removing them from the cache (R18–R25)
     rtc_stackcache_assert_no_in_use();
@@ -737,7 +838,7 @@ void rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references(
     rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
     rtc_poppedstackcache_clear_all_reference_valuetags();
     while (rtc_stackcache_has_ref_in_cache()) {
-        uint8_t idx = get_deepest_pair_idx();
+        uint8_t idx = get_deepest_pair_idx(RTC_FILTER_REFERENCE);
         rtc_stackcache_spill_pair(idx);
     }
 }
@@ -745,7 +846,7 @@ void rtc_stackcache_flush_all_regs() {
     // This is done before branches to make sure the whole stack is in memory. (Java guarantees the stack to be empty between statements, but there may still be things on the stack if this is part of a ? : expression.)
     // There's no need to clear the valuetags here, as we may reuse the values later if the branch wasn't taken. If it was, the valuetags are clears at the BRTARGET.
     uint8_t idx;
-    while ((idx=get_deepest_pair_idx()) != 0xFF) {
+    while ((idx=get_deepest_pair_idx(RTC_FILTER_ALL)) != 0xFF) {
         rtc_stackcache_spill_pair(idx);
     }
 }

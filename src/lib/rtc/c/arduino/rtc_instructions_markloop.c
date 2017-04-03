@@ -955,12 +955,9 @@ void rtc_translate_single_instruction() {
         case JVM_SIMUL:
             // Note that __mulhisi3 needs one of the operands in RX (R26:R27)
 
-            rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
-
-            emit_MOVW(RZ, RX);
-
-            rtc_stackcache_pop_destructive_16bit_into_fixed_reg(R26);
-            rtc_stackcache_pop_destructive_16bit_into_fixed_reg(R18);
+            rtc_pop_flush_and_cleartags_int16(R18, R20, RTC_FILTER_CALLUSED, RTC_FILTER_CALLUSED); // First pop the operand in R20 because this may change RX
+            emit_MOVW(RZ, RX); // Now save RX in RZ
+            emit_MOVW(RX, R20); // And then move the operand into RX
 
             // ;;; R25:R22 = (signed long) R27:R26 * (signed long) R19:R18
             // ;;; C3:C0   = (signed long) A1:A0   * (signed long) B1:B0
