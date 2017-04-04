@@ -139,8 +139,14 @@ ee_s32 get_seed_32(int i) {
 	Service functions to calculate 16b CRC code.
 
 */
-ee_u16 crcu8(ee_u8 data, ee_u16 crc )
-{
+
+#ifdef CORE_OPTIMISATION_REDUCE_CRC_FUNCALLS
+ee_u16 crc_loop(ee_u32 intdata, ee_u16 crc, ee_u8 number_of_bytes ) {
+	while (number_of_bytes > 0) {
+		ee_u8 data = (ee_u8)intdata;
+#else
+ee_u16 crcu8(ee_u8 data, ee_u16 crc ) {
+#endif
 #ifdef CORE_OPTIMISATION_OPTIMISE_CRC_1
 		for (ee_s16 i = -8; i != 0; i++)
 	    {
@@ -158,29 +164,48 @@ ee_u16 crcu8(ee_u8 data, ee_u16 crc )
 			data >>= 1;
 	    }
 #else
-	ee_u8 i=0,x16=0,carry=0;
-	for (i = 0; i < 8; i++)
-    {
-		x16 = (ee_u8)((data & 1) ^ ((ee_u8)crc & 1));
-		data >>= 1;
+		ee_u8 i=0,x16=0,carry=0;
+		for (i = 0; i < 8; i++)
+	    {
+			x16 = (ee_u8)((data & 1) ^ ((ee_u8)crc & 1));
+			data >>= 1;
 
-		if (x16 == 1)
-		{
-		   crc ^= 0x4002;
-		   carry = 1;
-		}
-		else 
-			carry = 0;
-		crc >>= 1;
-		if (carry)
-		   crc |= 0x8000;
-		else
-		   crc &= 0x7fff;
-    }
+			if (x16 == 1)
+			{
+			   crc ^= 0x4002;
+			   carry = 1;
+			}
+			else 
+				carry = 0;
+			crc >>= 1;
+			if (carry)
+			   crc |= 0x8000;
+			else
+			   crc &= 0x7fff;
+	    }
+#endif
+
+#ifdef CORE_OPTIMISATION_REDUCE_CRC_FUNCALLS
+		number_of_bytes--;
+		intdata >>= 8;
+	}
 #endif
 
 	return crc;
 } 
+
+
+#ifdef CORE_OPTIMISATION_REDUCE_CRC_FUNCALLS
+ee_u16 crcu16(ee_u16 newval, ee_u16 crc) {
+	return crc_loop(newval, crc, 2);
+}
+ee_u16 crcu32(ee_u32 newval, ee_u16 crc) {
+	return crc_loop(newval, crc, 4);
+}
+ee_u16 crc16(ee_s16 newval, ee_u16 crc) {
+	return crc_loop(newval, crc, 2);
+}
+#else
 ee_u16 crcu16(ee_u16 newval, ee_u16 crc) {
 	crc=crcu8( (ee_u8) (newval)				,crc);
 	crc=crcu8( (ee_u8) ((newval)>>8)	,crc);
@@ -194,6 +219,8 @@ ee_u16 crcu32(ee_u32 newval, ee_u16 crc) {
 ee_u16 crc16(ee_s16 newval, ee_u16 crc) {
 	return crcu16((ee_u16)newval, crc);
 }
+#endif
+
 
 ee_u8 check_data_types() {
 	ee_u8 retval=0;

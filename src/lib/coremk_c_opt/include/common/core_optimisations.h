@@ -33,8 +33,9 @@
 #define CORE_OPTIMISATION_ISOLATE_CALL_TO_CORE_STATE_TRANSITION
 
 // cheat by force inlining ee_isdigit
+	// ! Already inlined by avr-gcc.
 
 // cheat by refactoring crc to reduce funcalls
-
+#define CORE_OPTIMISATION_REDUCE_CRC_FUNCALLS
 
 #endif // CORE_OPTIMISATIONS_H
