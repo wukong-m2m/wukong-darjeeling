@@ -1,6 +1,13 @@
+if (!project.hasProperty('cCompilerOptimisationLevel')) {
+    println "==***=== setting default c optimisation level: -Os"
+    project.ext.cCompilerOptimisationLevel = '-Os'
+} else {
+    println "==***=== c optimisation level overridden in config: " + project.ext.cCompilerOptimisationLevel
+}
+
 binaries.all {
     cCompiler.args "-mmcu=${djMcu}"
-    cCompiler.args '-Os'
+    cCompiler.args project.ext.cCompilerOptimisationLevel
     cCompiler.args '-finline-limit-0'
     cCompiler.args '-ggdb'
     cCompiler.args '-Wall'
