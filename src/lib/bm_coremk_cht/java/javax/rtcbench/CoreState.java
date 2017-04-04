@@ -46,16 +46,24 @@ public class CoreState {
 	public static final byte CORE_STATE_SCIENTIFIC = 7;
 	public static final byte NUM_CORE_STATES = 8;
 
+	private static int[] final_counts;
+	private static int[] track_counts;
+
 	/* Function: core_bench_state
 		Benchmark function
 
 		Go over the input twice, once direct, and once after introducing some corruption. 
 	*/
+	static void core_state_transition_loop(ShortWrapper p, byte[] memblock, int[] track_counts, int[] final_counts) {
+		while (memblock[p.value]!=0) {
+			byte fstate=core_state_transition(p,memblock,track_counts);
+			final_counts[fstate]++;
+		}
+	}
+
 	static short core_bench_state(int blksize, byte[] memblock, 
 			short seed1, short seed2, short step, short crc) 
 	{
-		int[] final_counts = new int[NUM_CORE_STATES];
-		int[] track_counts = new int[NUM_CORE_STATES];
 		ShortWrapper p = new ShortWrapper();
 		short pValue; // Within this method we use this so the local variable can be pinned by markloop.
 		p.value=0;    // We use this to pass to core_state_transition since it needs to be able to modify the index (it's a double pointer in C).
@@ -66,10 +74,7 @@ public class CoreState {
 			final_counts[i]=track_counts[i]=0;
 		}
 		/* run the state machine over the input */
-		while (memblock[p.value]!=0) {
-			byte fstate=core_state_transition(p,memblock,track_counts);
-			final_counts[fstate]++;
-		}
+		core_state_transition_loop(p,memblock,track_counts,final_counts);
 
 		// p=memblock;
 		pValue=0; // Stays within this method, so use pValue
@@ -81,10 +86,7 @@ public class CoreState {
 		// p=memblock;
 		p.value=0;
 		/* run the state machine over the input again */
-		while (memblock[p.value]!=0) {
-			byte fstate=core_state_transition(p,memblock,track_counts);
-			final_counts[fstate]++;
-		}
+		core_state_transition_loop(p,memblock,track_counts,final_counts);
 
 		// p=memblock;
 		pValue=0; // Stays within this method, so use pValue
@@ -150,6 +152,9 @@ public class CoreState {
 		byte[] p=new byte[size];
 		int total=0,next=0,i;
 		byte[] buf=null;
+
+		final_counts = new int[NUM_CORE_STATES];
+		track_counts = new int[NUM_CORE_STATES];
 
 		size--;
 		next=0;

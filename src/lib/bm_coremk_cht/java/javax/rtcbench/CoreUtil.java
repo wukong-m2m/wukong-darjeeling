@@ -70,38 +70,41 @@ public class CoreUtil {
 		Service functions to calculate 16b CRC code.
 
 	*/
-	static short crcu8(short data, short crc )
+	static short crc(int intdata, short crc, short number_of_bytes )
 	{
-		// for (short i = 0; i < 8; i++)
-		for (short i = (short)-8; i != 0; i++) // This is faster because a !=0 check is faster than <8.
-	    {
-			if (((data ^ crc) & 1) == 0)
-			{
-				crc >>>= 1;
-				crc &= (short)0x7fff;
-			}
-			else
-			{
-				crc ^= (short)0x4002;
-				crc >>>= 1;
-				crc |= (short)-0x8000;
-			}
-			data >>>= 1;
-	    }
+		while (number_of_bytes > 0) {
+			short data = (short)intdata;
+
+			// for (short i = 0; i < 8; i++)
+			for (short i = (short)-8; i != 0; i++) // This is faster because a !=0 check is faster than <8.
+		    {
+				if (((data ^ crc) & 1) == 0)
+				{
+					crc >>>= 1;
+					crc &= (short)0x7fff;
+				}
+				else
+				{
+					crc ^= (short)0x4002;
+					crc >>>= 1;
+					crc |= (short)-0x8000;
+				}
+				data >>>= 1;
+		    }
+
+		    number_of_bytes--;
+		    intdata >>>= 8;
+		}
 		return crc;
 	} 
 	static short crcu16(short newval, short crc) {
-		crc=crcu8((byte) (newval), crc);
-		crc=crcu8((byte) ((newval)>>>8), crc);
-		return crc;
+		return crc(newval, crc, (short)2);
 	}
 	static short crcu32(int newval, short crc) {
-		crc=crc16((short) newval, crc);
-		crc=crc16((short) (newval>>>16), crc);
-		return crc;
+		return crc(newval, crc, (short)4);
 	}
 	static short crc16(short newval, short crc) {
-		return crcu16((short)newval, crc);
+		return crc(newval, crc, (short)2);
 	}
 
 	// ee_u8 check_data_types() {
