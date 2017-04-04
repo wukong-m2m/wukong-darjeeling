@@ -395,7 +395,17 @@ void matrix_mul_vect(ee_u16 N, MATRES *C, MATDAT *A, MATDAT *B) {
 void matrix_mul_vect(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 	ee_u32 i,j;
 #endif
-#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+#if defined(CORE_OPTIMISATION_REDUCE_C_ARRAY_ACCESS)
+	ee_u16 i_times_N = 0;
+	for (i=0; i<N; i++) {
+		MATRES C_value=0;
+		for (j=0; j<N; j++) {
+			C_value+=(MATRES)A[i_times_N+j] * (MATRES)B[j];
+		}
+		C[i]=C_value;
+		i_times_N += N;
+	}
+#elif defined(CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP)
 	ee_u16 i_times_N = 0;
 	for (i=0; i<N; i++) {
 		C[i]=0;
@@ -425,7 +435,20 @@ void matrix_mul_matrix(ee_u16 N, MATRES *C, MATDAT *A, MATDAT *B) {
 void matrix_mul_matrix(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 	ee_u32 i,j,k;
 #endif
-#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+#if defined(CORE_OPTIMISATION_REDUCE_C_ARRAY_ACCESS)
+	ee_u16 i_times_N = 0;
+	for (i=0; i<N; i++) {
+		for (j=0; j<N; j++) {
+			MATRES C_value=0;
+			for(k=0;k<N;k++)
+			{
+				C_value+=(MATRES)A[i_times_N+k] * (MATRES)B[k*N+j];
+			}
+			C[i_times_N+j]=C_value;
+		}
+		i_times_N += N;
+	}
+#elif defined(CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP)
 	ee_u16 i_times_N = 0;
 	for (i=0; i<N; i++) {
 		for (j=0; j<N; j++) {
@@ -461,7 +484,26 @@ void matrix_mul_matrix_bitextract(ee_u16 N, MATRES *C, MATDAT *A, MATDAT *B) {
 void matrix_mul_matrix_bitextract(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 	ee_u32 i,j,k;
 #endif
-#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+#if defined(CORE_OPTIMISATION_REDUCE_C_ARRAY_ACCESS)
+	ee_u16 i_times_N = 0;
+	for (i=0; i<N; i++) {
+		for (j=0; j<N; j++) {
+			MATRES C_value=0;
+			for(k=0;k<N;k++)
+			{
+				MATRES tmp=(MATRES)A[i_times_N+k] * (MATRES)B[k*N+j];
+
+#ifdef CORE_OPTIMISATION_MANUALLY_INLINE_BIT_EXTRACT
+				C_value+=((tmp>>2) & (~(0xffffffff << 4))) * ((tmp>>5) & (~(0xffffffff << 7)));
+#else
+				C_value+=bit_extract(tmp,2,4)*bit_extract(tmp,5,7);
+#endif
+			}
+			C[i_times_N+j]=C_value;
+		}
+		i_times_N += N;
+	}
+#elif defined(CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP)
 	ee_u16 i_times_N = 0;
 	for (i=0; i<N; i++) {
 		for (j=0; j<N; j++) {
