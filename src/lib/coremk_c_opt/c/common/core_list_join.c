@@ -58,7 +58,11 @@ list_head *core_list_insert_new(list_head *insert_point
 	, list_data *info, list_head **memblock, list_data **datablock
 	, list_head *memblock_end, list_data *datablock_end);
 typedef ee_s32(*list_cmp)(list_data *a, list_data *b, core_results *res);
+#ifdef CORE_OPTIMISATION_AVOID_INVOKEVIRTUAL
+list_head *core_list_mergesort(list_head *list, bool use_idx_compare, core_results *res);
+#else
 list_head *core_list_mergesort(list_head *list, list_cmp cmp, core_results *res);
+#endif
 
 ee_s16 calc_func(ee_s16 *pdata, core_results *res) {
 	ee_s16 data=*pdata;
@@ -169,8 +173,13 @@ ee_u16 core_bench_list(core_results *res, ee_s16 finder_idx) {
 	}
 	retval+=found*4-missed;
 	/* sort the list by data content and remove one item*/
-	if (finder_idx>0)
+	if (finder_idx>0) {
+#ifdef CORE_OPTIMISATION_AVOID_INVOKEVIRTUAL
+		list=core_list_mergesort(list,false,res);
+#else
 		list=core_list_mergesort(list,cmp_complex,res);
+#endif
+	}
 	remover=core_list_remove(list->next);
 	/* CRC data content of list from location of index N forward, and then undo remove */
 	finder=core_list_find(list,&info);
@@ -185,7 +194,11 @@ ee_u16 core_bench_list(core_results *res, ee_s16 finder_idx) {
 #endif
 	remover=core_list_undo_remove(remover,list->next);
 	/* sort the list by index, in effect returning the list to original state */
+#ifdef CORE_OPTIMISATION_AVOID_INVOKEVIRTUAL
+	list=core_list_mergesort(list,true,NULL);
+#else
 	list=core_list_mergesort(list,cmp_idx,NULL);
+#endif
 	/* CRC data content of list */
 	finder=list->next;
 	while (finder) {
@@ -252,7 +265,11 @@ list_head *core_list_init(ee_u32 blksize, list_head *memblock, ee_s16 seed) {
 		}
 		finder=finder->next;
 	}
+#ifdef CORE_OPTIMISATION_AVOID_INVOKEVIRTUAL
+	list = core_list_mergesort(list,true,NULL);
+#else
 	list = core_list_mergesort(list,cmp_idx,NULL);
+#endif
 #if CORE_DEBUG
 	ee_printf("Initialized list:\n");
 	finder=list;
@@ -423,7 +440,11 @@ list_head *core_list_reverse(list_head *list) {
 	but the algorithm could theoretically modify where the list starts.
 
  */
+#ifdef CORE_OPTIMISATION_AVOID_INVOKEVIRTUAL
+list_head *core_list_mergesort(list_head *list, bool use_idx_compare, core_results *res) {
+#else
 list_head *core_list_mergesort(list_head *list, list_cmp cmp, core_results *res) {
+#endif
     list_head *p, *q, *e, *tail;
     ee_s32 insize, nmerges, psize, qsize, i;
 
@@ -460,7 +481,11 @@ list_head *core_list_mergesort(list_head *list, list_cmp cmp, core_results *res)
 				} else if (qsize == 0 || !q) {
 				    /* q is empty; e must come from p. */
 				    e = p; p = p->next; psize--;
+#ifdef CORE_OPTIMISATION_AVOID_INVOKEVIRTUAL
+				} else if ((use_idx_compare ? cmp_idx(p->info,q->info,res) : cmp_complex(p->info,q->info,res)) <= 0) {
+#else
 				} else if (cmp(p->info,q->info,res) <= 0) {
+#endif
 				    /* First element of p is lower (or same); e must come from p. */
 				    e = p; p = p->next; psize--;
 				} else {

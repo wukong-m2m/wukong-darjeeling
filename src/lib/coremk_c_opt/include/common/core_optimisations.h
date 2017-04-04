@@ -27,6 +27,7 @@
 #define CORE_OPTIMISATION_AVOID_NEWARRAY
 
 // cheat to avoid INVOKEVIRTUAL
+#define CORE_OPTIMISATION_AVOID_INVOKEVIRTUAL
 
 // cheat by isolating core_state_transition call
 
