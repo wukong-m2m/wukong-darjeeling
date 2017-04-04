@@ -17,6 +17,7 @@
 #define CORE_OPTIMISATION_MANUALLY_INLINE_BIT_EXTRACT
 
 // Optimise core_bench_matrix
+#define CORE_OPTIMISATION_AVOID_SOME_ADDITIONS // replaces CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
 
 // Small optimisation in CoreState
 

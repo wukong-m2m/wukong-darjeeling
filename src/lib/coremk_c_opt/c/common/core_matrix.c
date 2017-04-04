@@ -260,16 +260,12 @@ ee_s16 matrix_sum(ee_u32 N, MATRES *C, MATDAT clipval) {
 	MATRES tmp=0,prev=0,cur=0;
 	ee_s16 ret=0;
 	ee_u32 i,j;
-#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+#if defined(CORE_OPTIMISATION_AVOID_SOME_ADDITIONS)
 	ee_u16 i_times_N = 0;
-#endif
 	for (i=0; i<N; i++) {
-		for (j=0; j<N; j++) {
-#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
-			cur=C[i_times_N+j];
-#else
-			cur=C[i*N+j];
-#endif
+		ee_u16 i_times_N_plus_N = i_times_N + N;
+		for (j=i_times_N; j<i_times_N_plus_N; j++) {
+			cur=C[j];
 			tmp+=cur;
 			if (tmp>clipval) {
 				ret+=10;
@@ -279,10 +275,39 @@ ee_s16 matrix_sum(ee_u32 N, MATRES *C, MATDAT clipval) {
 			}
 			prev=cur;
 		}
-#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
 		i_times_N += N;
-#endif
 	}
+#elif defined(CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP)
+	ee_u16 i_times_N = 0;
+	for (i=0; i<N; i++) {
+		for (j=0; j<N; j++) {
+			cur=C[i_times_N+j];
+			tmp+=cur;
+			if (tmp>clipval) {
+				ret+=10;
+				tmp=0;
+			} else {
+				ret += (cur>prev) ? 1 : 0;
+			}
+			prev=cur;
+		}
+		i_times_N += N;
+	}
+#else
+	for (i=0; i<N; i++) {
+		for (j=0; j<N; j++) {
+			cur=C[i*N+j];
+			tmp+=cur;
+			if (tmp>clipval) {
+				ret+=10;
+				tmp=0;
+			} else {
+				ret += (cur>prev) ? 1 : 0;
+			}
+			prev=cur;
+		}
+	}
+#endif
 	return ret;
 }
 
@@ -297,7 +322,16 @@ void matrix_mul_const(ee_u16 N, MATRES *C, MATDAT *A, MATDAT val) {
 void matrix_mul_const(ee_u32 N, MATRES *C, MATDAT *A, MATDAT val) {
 	ee_u32 i,j;
 #endif
-#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+#if defined(CORE_OPTIMISATION_AVOID_SOME_ADDITIONS)
+	ee_u16 i_times_N = 0;
+	for (i=0; i<N; i++) {
+		ee_u16 i_times_N_plus_N = i_times_N + N;
+		for (j=i_times_N; j<i_times_N_plus_N; j++) {
+			C[j]=(MATRES)A[j] * (MATRES)val;
+		}
+		i_times_N += N;
+	}
+#elif defined(CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP)
 	ee_u16 i_times_N = 0;
 	for (i=0; i<N; i++) {
 		for (j=0; j<N; j++) {
@@ -324,7 +358,16 @@ void matrix_add_const(ee_u16 N, MATDAT *A, MATDAT val) {
 void matrix_add_const(ee_u32 N, MATDAT *A, MATDAT val) {
 	ee_u32 i,j;
 #endif
-#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+#if defined(CORE_OPTIMISATION_AVOID_SOME_ADDITIONS)
+	ee_u16 i_times_N = 0;
+	for (i=0; i<N; i++) {
+		ee_u16 i_times_N_plus_N = i_times_N + N;
+		for (j=i_times_N; j<i_times_N_plus_N; j++) {
+			A[j] += val;
+		}
+		i_times_N += N;
+	}
+#elif defined(CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP)
 	ee_u16 i_times_N = 0;
 	for (i=0; i<N; i++) {
 		for (j=0; j<N; j++) {
