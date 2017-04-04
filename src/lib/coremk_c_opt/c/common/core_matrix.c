@@ -199,17 +199,32 @@ ee_u32 core_init_matrix(ee_u32 blksize, void *memblk, ee_s32 seed, mat_params *p
 	A=(MATDAT *)align_mem(memblk);
 	B=A+N*N;
 
+#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+	ee_u16 i_times_N = 0;
+#endif
 	for (i=0; i<N; i++) {
 		for (j=0; j<N; j++) {
 			seed = ( ( order * seed ) % 65536 );
 			val = (seed + order);
 			val=matrix_clip(val,0);
+#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+			B[i_times_N+j] = val;
+#else
 			B[i*N+j] = val;
+#endif
 			val =  (val + order);
 			val=matrix_clip(val,1);
+#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+			A[i_times_N+j] = val;
+#else
 			A[i*N+j] = val;
+#endif
 			order++;
 		}
+#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+		i_times_N += N;
+#endif
+
 	}
 
 	p->A=A;
@@ -241,9 +256,16 @@ ee_s16 matrix_sum(ee_u32 N, MATRES *C, MATDAT clipval) {
 	MATRES tmp=0,prev=0,cur=0;
 	ee_s16 ret=0;
 	ee_u32 i,j;
+#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+	ee_u16 i_times_N = 0;
+#endif
 	for (i=0; i<N; i++) {
 		for (j=0; j<N; j++) {
+#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+			cur=C[i_times_N+j];
+#else
 			cur=C[i*N+j];
+#endif
 			tmp+=cur;
 			if (tmp>clipval) {
 				ret+=10;
@@ -253,6 +275,9 @@ ee_s16 matrix_sum(ee_u32 N, MATRES *C, MATDAT clipval) {
 			}
 			prev=cur;
 		}
+#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+		i_times_N += N;
+#endif
 	}
 	return ret;
 }
@@ -268,11 +293,21 @@ void matrix_mul_const(ee_u16 N, MATRES *C, MATDAT *A, MATDAT val) {
 void matrix_mul_const(ee_u32 N, MATRES *C, MATDAT *A, MATDAT val) {
 	ee_u32 i,j;
 #endif
+#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+	ee_u16 i_times_N = 0;
+	for (i=0; i<N; i++) {
+		for (j=0; j<N; j++) {
+			C[i_times_N+j]=(MATRES)A[i_times_N+j] * (MATRES)val;
+		}
+		i_times_N += N;
+	}
+#else
 	for (i=0; i<N; i++) {
 		for (j=0; j<N; j++) {
 			C[i*N+j]=(MATRES)A[i*N+j] * (MATRES)val;
 		}
 	}
+#endif
 }
 
 /* Function: matrix_add_const
@@ -285,11 +320,21 @@ void matrix_add_const(ee_u16 N, MATDAT *A, MATDAT val) {
 void matrix_add_const(ee_u32 N, MATDAT *A, MATDAT val) {
 	ee_u32 i,j;
 #endif
+#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+	ee_u16 i_times_N = 0;
+	for (i=0; i<N; i++) {
+		for (j=0; j<N; j++) {
+			A[i_times_N+j] += val;
+		}
+		i_times_N += N;
+	}
+#else
 	for (i=0; i<N; i++) {
 		for (j=0; j<N; j++) {
 			A[i*N+j] += val;
 		}
 	}
+#endif
 }
 
 /* Function: matrix_mul_vect
@@ -303,12 +348,23 @@ void matrix_mul_vect(ee_u16 N, MATRES *C, MATDAT *A, MATDAT *B) {
 void matrix_mul_vect(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 	ee_u32 i,j;
 #endif
+#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+	ee_u16 i_times_N = 0;
+	for (i=0; i<N; i++) {
+		C[i]=0;
+		for (j=0; j<N; j++) {
+			C[i]+=(MATRES)A[i_times_N+j] * (MATRES)B[j];
+		}
+		i_times_N += N;
+	}
+#else
 	for (i=0; i<N; i++) {
 		C[i]=0;
 		for (j=0; j<N; j++) {
 			C[i]+=(MATRES)A[i*N+j] * (MATRES)B[j];
 		}
 	}
+#endif
 }
 
 /* Function: matrix_mul_matrix
@@ -322,6 +378,19 @@ void matrix_mul_matrix(ee_u16 N, MATRES *C, MATDAT *A, MATDAT *B) {
 void matrix_mul_matrix(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 	ee_u32 i,j,k;
 #endif
+#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+	ee_u16 i_times_N = 0;
+	for (i=0; i<N; i++) {
+		for (j=0; j<N; j++) {
+			C[i_times_N+j]=0;
+			for(k=0;k<N;k++)
+			{
+				C[i_times_N+j]+=(MATRES)A[i_times_N+k] * (MATRES)B[k*N+j];
+			}
+		}
+		i_times_N += N;
+	}
+#else
 	for (i=0; i<N; i++) {
 		for (j=0; j<N; j++) {
 			C[i*N+j]=0;
@@ -331,6 +400,7 @@ void matrix_mul_matrix(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 			}
 		}
 	}
+#endif
 }
 
 /* Function: matrix_mul_matrix_bitextract
@@ -344,6 +414,20 @@ void matrix_mul_matrix_bitextract(ee_u16 N, MATRES *C, MATDAT *A, MATDAT *B) {
 void matrix_mul_matrix_bitextract(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 	ee_u32 i,j,k;
 #endif
+#ifdef CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
+	ee_u16 i_times_N = 0;
+	for (i=0; i<N; i++) {
+		for (j=0; j<N; j++) {
+			C[i_times_N+j]=0;
+			for(k=0;k<N;k++)
+			{
+				MATRES tmp=(MATRES)A[i_times_N+k] * (MATRES)B[k*N+j];
+				C[i_times_N+j]+=bit_extract(tmp,2,4)*bit_extract(tmp,5,7);
+			}
+		}
+		i_times_N += N;
+	}
+#else
 	for (i=0; i<N; i++) {
 		for (j=0; j<N; j++) {
 			C[i*N+j]=0;
@@ -354,4 +438,5 @@ void matrix_mul_matrix_bitextract(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 			}
 		}
 	}
+#endif
 }

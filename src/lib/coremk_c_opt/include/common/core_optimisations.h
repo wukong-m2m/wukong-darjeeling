@@ -2,6 +2,7 @@
 #define CORE_OPTIMISATIONS_H
 
 #define CORE_OPTIMISATION_SHORT_ARRAY_INDEX
+#define CORE_OPTIMISATION_CALC_I_TIMES_N_OUTSIDE_LOOP
 
 // short array index for matrix benchmark
 // store i*N in variable to use in inner loop
