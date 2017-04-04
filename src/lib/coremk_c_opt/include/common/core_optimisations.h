@@ -30,6 +30,7 @@
 #define CORE_OPTIMISATION_AVOID_INVOKEVIRTUAL
 
 // cheat by isolating core_state_transition call
+#define CORE_OPTIMISATION_ISOLATE_CALL_TO_CORE_STATE_TRANSITION
 
 // cheat by force inlining ee_isdigit
 

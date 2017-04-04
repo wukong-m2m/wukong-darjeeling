@@ -45,6 +45,21 @@ ee_u32 final_counts[NUM_CORE_STATES];
 ee_u32 track_counts[NUM_CORE_STATES];
 #endif
 
+#ifdef CORE_OPTIMISATION_ISOLATE_CALL_TO_CORE_STATE_TRANSITION
+void core_state_transition_loop(ee_u8 **p, ee_u32* track_counts, ee_u32* final_counts) {
+	while (**p!=0) {
+		enum CORE_STATE fstate=core_state_transition(p,track_counts);
+		final_counts[fstate]++;
+#if CORE_DEBUG
+	ee_printf("%d,",fstate);
+	}
+	ee_printf("\n");
+#else
+	}
+#endif
+}
+#endif
+
 ee_u16 core_bench_state(ee_u32 blksize, ee_u8 *memblock, 
 		ee_s16 seed1, ee_s16 seed2, ee_s16 step, ee_u16 crc) 
 {
@@ -63,6 +78,9 @@ ee_u16 core_bench_state(ee_u32 blksize, ee_u8 *memblock,
 		final_counts[i]=track_counts[i]=0;
 	}
 	/* run the state machine over the input */
+#ifdef CORE_OPTIMISATION_ISOLATE_CALL_TO_CORE_STATE_TRANSITION
+	core_state_transition_loop(&p, track_counts, final_counts);
+#else
 	while (*p!=0) {
 		enum CORE_STATE fstate=core_state_transition(&p,track_counts);
 		final_counts[fstate]++;
@@ -73,6 +91,8 @@ ee_u16 core_bench_state(ee_u32 blksize, ee_u8 *memblock,
 #else
 	}
 #endif
+#endif
+
 	p=memblock;
 	while (p < (memblock+blksize)) { /* insert some corruption */
 		if (*p!=',')
@@ -81,6 +101,9 @@ ee_u16 core_bench_state(ee_u32 blksize, ee_u8 *memblock,
 	}
 	p=memblock;
 	/* run the state machine over the input again */
+#ifdef CORE_OPTIMISATION_ISOLATE_CALL_TO_CORE_STATE_TRANSITION
+	core_state_transition_loop(&p, track_counts, final_counts);
+#else
 	while (*p!=0) {
 		enum CORE_STATE fstate=core_state_transition(&p,track_counts);
 		final_counts[fstate]++;
@@ -90,6 +113,7 @@ ee_u16 core_bench_state(ee_u32 blksize, ee_u8 *memblock,
 	ee_printf("\n");
 #else
 	}
+#endif
 #endif
 	p=memblock;
 	while (p < (memblock+blksize)) { /* undo corruption is seed1 and seed2 are equal */
