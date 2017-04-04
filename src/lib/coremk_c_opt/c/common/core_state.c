@@ -185,8 +185,13 @@ enum CORE_STATE core_state_transition( ee_u8 **instr , ee_u32 *transition_count)
 	ee_u8 *str=*instr;
 	ee_u8 NEXT_SYMBOL;
 	enum CORE_STATE state=CORE_START;
+
+#ifdef CORE_OPTIMISATION_SMALL_CORE_STATE_OPTIMISATION
+	for( ; (NEXT_SYMBOL = *str) && state != CORE_INVALID; str++ ) {
+#else
 	for( ; *str && state != CORE_INVALID; str++ ) {
 		NEXT_SYMBOL = *str;
+#endif
 		if (NEXT_SYMBOL==',') /* end of this input */ {
 			str++;
 			break;
