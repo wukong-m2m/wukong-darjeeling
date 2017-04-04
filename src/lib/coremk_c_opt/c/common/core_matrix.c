@@ -33,6 +33,16 @@ Topic: Description
 
 	The actual values for A and B must be derived based on input that is not available at compile time.
 */
+
+#ifdef CORE_OPTIMISATION_SHORT_ARRAY_INDEX
+ee_s16 matrix_test(ee_u16 N, MATRES *C, MATDAT *A, MATDAT *B, MATDAT val);
+ee_s16 matrix_sum(ee_u16 N, MATRES *C, MATDAT clipval);
+void matrix_mul_const(ee_u16 N, MATRES *C, MATDAT *A, MATDAT val);
+void matrix_mul_vect(ee_u16 N, MATRES *C, MATDAT *A, MATDAT *B);
+void matrix_mul_matrix(ee_u16 N, MATRES *C, MATDAT *A, MATDAT *B);
+void matrix_mul_matrix_bitextract(ee_u16 N, MATRES *C, MATDAT *A, MATDAT *B);
+void matrix_add_const(ee_u16 N, MATDAT *A, MATDAT val);
+#else
 ee_s16 matrix_test(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B, MATDAT val);
 ee_s16 matrix_sum(ee_u32 N, MATRES *C, MATDAT clipval);
 void matrix_mul_const(ee_u32 N, MATRES *C, MATDAT *A, MATDAT val);
@@ -40,6 +50,8 @@ void matrix_mul_vect(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B);
 void matrix_mul_matrix(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B);
 void matrix_mul_matrix_bitextract(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B);
 void matrix_add_const(ee_u32 N, MATDAT *A, MATDAT val);
+#endif
+
 
 #define matrix_test_next(x) (x+1)
 #define matrix_clip(x,y) ((y) ? (x) & 0x0ff : (x) & 0x0ffff)
@@ -79,7 +91,11 @@ void printmatC(MATRES *C, ee_u32 N, char *name) {
 	changing the matrix values slightly by a constant amount each time.
 */
 ee_u16 core_bench_matrix(mat_params *p, ee_s16 seed, ee_u16 crc) {
+#ifdef CORE_OPTIMISATION_SHORT_ARRAY_INDEX
+	ee_u16 N=p->N;
+#else
 	ee_u32 N=p->N;
+#endif
 	MATRES *C=p->C;
 	MATDAT *A=p->A;
 	MATDAT *B=p->B;
@@ -114,7 +130,11 @@ ee_u16 core_bench_matrix(mat_params *p, ee_s16 seed, ee_u16 crc) {
 
 	After the last step, matrix A is back to original contents.
 */
+#ifdef CORE_OPTIMISATION_SHORT_ARRAY_INDEX
+ee_s16 matrix_test(ee_u16 N, MATRES *C, MATDAT *A, MATDAT *B, MATDAT val) {
+#else
 ee_s16 matrix_test(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B, MATDAT val) {
+#endif
 	ee_u16 crc=0;
 	MATDAT clipval=matrix_big(val);
 
@@ -213,7 +233,11 @@ ee_u32 core_init_matrix(ee_u32 blksize, void *memblk, ee_s32 seed, mat_params *p
 	
 	Otherwise, reset the accumulator and add 10 to the result.
 */
+#ifdef CORE_OPTIMISATION_SHORT_ARRAY_INDEX
+ee_s16 matrix_sum(ee_u16 N, MATRES *C, MATDAT clipval) {
+#else
 ee_s16 matrix_sum(ee_u32 N, MATRES *C, MATDAT clipval) {
+#endif
 	MATRES tmp=0,prev=0,cur=0;
 	ee_s16 ret=0;
 	ee_u32 i,j;
@@ -237,8 +261,13 @@ ee_s16 matrix_sum(ee_u32 N, MATRES *C, MATDAT clipval) {
 	Multiply a matrix by a constant.
 	This could be used as a scaler for instance.
 */
+#ifdef CORE_OPTIMISATION_SHORT_ARRAY_INDEX
+void matrix_mul_const(ee_u16 N, MATRES *C, MATDAT *A, MATDAT val) {
+	ee_u16 i,j;
+#else
 void matrix_mul_const(ee_u32 N, MATRES *C, MATDAT *A, MATDAT val) {
 	ee_u32 i,j;
+#endif
 	for (i=0; i<N; i++) {
 		for (j=0; j<N; j++) {
 			C[i*N+j]=(MATRES)A[i*N+j] * (MATRES)val;
@@ -249,8 +278,13 @@ void matrix_mul_const(ee_u32 N, MATRES *C, MATDAT *A, MATDAT val) {
 /* Function: matrix_add_const
 	Add a constant value to all elements of a matrix.
 */
+#ifdef CORE_OPTIMISATION_SHORT_ARRAY_INDEX
+void matrix_add_const(ee_u16 N, MATDAT *A, MATDAT val) {
+	ee_u16 i,j;
+#else
 void matrix_add_const(ee_u32 N, MATDAT *A, MATDAT val) {
 	ee_u32 i,j;
+#endif
 	for (i=0; i<N; i++) {
 		for (j=0; j<N; j++) {
 			A[i*N+j] += val;
@@ -262,8 +296,13 @@ void matrix_add_const(ee_u32 N, MATDAT *A, MATDAT val) {
 	Multiply a matrix by a vector.
 	This is common in many simple filters (e.g. fir where a vector of coefficients is applied to the matrix.)
 */
+#ifdef CORE_OPTIMISATION_SHORT_ARRAY_INDEX
+void matrix_mul_vect(ee_u16 N, MATRES *C, MATDAT *A, MATDAT *B) {
+	ee_u16 i,j;
+#else
 void matrix_mul_vect(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 	ee_u32 i,j;
+#endif
 	for (i=0; i<N; i++) {
 		C[i]=0;
 		for (j=0; j<N; j++) {
@@ -276,8 +315,13 @@ void matrix_mul_vect(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 	Multiply a matrix by a matrix.
 	Basic code is used in many algorithms, mostly with minor changes such as scaling.
 */
+#ifdef CORE_OPTIMISATION_SHORT_ARRAY_INDEX
+void matrix_mul_matrix(ee_u16 N, MATRES *C, MATDAT *A, MATDAT *B) {
+	ee_u16 i,j,k;
+#else
 void matrix_mul_matrix(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 	ee_u32 i,j,k;
+#endif
 	for (i=0; i<N; i++) {
 		for (j=0; j<N; j++) {
 			C[i*N+j]=0;
@@ -293,8 +337,13 @@ void matrix_mul_matrix(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 	Multiply a matrix by a matrix, and extract some bits from the result.
 	Basic code is used in many algorithms, mostly with minor changes such as scaling.
 */
+#ifdef CORE_OPTIMISATION_SHORT_ARRAY_INDEX
+void matrix_mul_matrix_bitextract(ee_u16 N, MATRES *C, MATDAT *A, MATDAT *B) {
+	ee_u16 i,j,k;
+#else
 void matrix_mul_matrix_bitextract(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 	ee_u32 i,j,k;
+#endif
 	for (i=0; i<N; i++) {
 		for (j=0; j<N; j++) {
 			C[i*N+j]=0;

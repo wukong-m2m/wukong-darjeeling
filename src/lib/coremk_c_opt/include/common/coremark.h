@@ -36,6 +36,7 @@ El Dorado Hills, CA, 95762
 #define MEM_STACK 2
 
 #include "core_portme.h"
+#include "core_optimisations.h"
 
 #if HAS_STDIO
 #include <stdio.h>
@@ -110,7 +111,11 @@ typedef ee_f32 MATRES;
 #endif
 
 typedef struct MAT_PARAMS_S {
+#ifdef CORE_OPTIMISATION_SHORT_ARRAY_INDEX
+	ee_u16 N;
+#else
 	int N;
+#endif
 	MATDAT *A;
 	MATDAT *B;
 	MATRES *C;
