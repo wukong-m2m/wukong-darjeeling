@@ -141,8 +141,24 @@ ee_s32 get_seed_32(int i) {
 */
 ee_u16 crcu8(ee_u8 data, ee_u16 crc )
 {
+#ifdef CORE_OPTIMISATION_OPTIMISE_CRC_1
+		for (ee_s16 i = -8; i != 0; i++)
+	    {
+			if (((data ^ crc) & 1) == 0)
+			{
+				crc >>= 1;
+				crc &= 0x7fff;
+			}
+			else
+			{
+				crc ^= 0x4002;
+				crc >>= 1;
+				crc |= -0x8000;
+			}
+			data >>= 1;
+	    }
+#else
 	ee_u8 i=0,x16=0,carry=0;
-
 	for (i = 0; i < 8; i++)
     {
 		x16 = (ee_u8)((data & 1) ^ ((ee_u8)crc & 1));
@@ -161,6 +177,8 @@ ee_u16 crcu8(ee_u8 data, ee_u16 crc )
 		else
 		   crc &= 0x7fff;
     }
+#endif
+
 	return crc;
 } 
 ee_u16 crcu16(ee_u16 newval, ee_u16 crc) {
