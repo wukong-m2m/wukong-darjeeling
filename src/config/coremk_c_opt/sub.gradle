@@ -1,0 +1,9 @@
+djConfig {
+	platform = 'arduino.avrora'
+	libraries = ['coremk_c_opt']
+	app = 'emptyapp'
+	appArchiveSize = 0 // We won't reprogramme the app anyway, so just use exactly the required amount without reserving space to upload future apps.
+}
+
+project.tasks.createAppArchive.addPart("${project.project.rootDir}/app/emptyapp/empty", 10, null)
+project.tasks.createLibArchive.addPart("${project.project.rootDir}/app/emptyapp/empty", 10, null)
