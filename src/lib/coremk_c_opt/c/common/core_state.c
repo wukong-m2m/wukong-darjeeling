@@ -40,11 +40,18 @@ Topic: Description
 
 	Go over the input twice, once direct, and once after introducing some corruption. 
 */
+#ifdef CORE_OPTIMISATION_AVOID_NEWARRAY
+ee_u32 final_counts[NUM_CORE_STATES];
+ee_u32 track_counts[NUM_CORE_STATES];
+#endif
+
 ee_u16 core_bench_state(ee_u32 blksize, ee_u8 *memblock, 
 		ee_s16 seed1, ee_s16 seed2, ee_s16 step, ee_u16 crc) 
 {
+#ifndef CORE_OPTIMISATION_AVOID_NEWARRAY
 	ee_u32 final_counts[NUM_CORE_STATES];
 	ee_u32 track_counts[NUM_CORE_STATES];
+#endif
 	ee_u8 *p=memblock;
 	ee_u32 i;
 
