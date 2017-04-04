@@ -14,6 +14,7 @@
 #define CORE_OPTIMISATION_OPTIMISE_CRC_1
 
 // Optimise core_bench_matrix
+#define CORE_OPTIMISATION_MANUALLY_INLINE_BIT_EXTRACT
 
 // Optimise core_bench_matrix
 

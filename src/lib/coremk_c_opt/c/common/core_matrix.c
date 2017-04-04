@@ -186,7 +186,11 @@ ee_u32 core_init_matrix(ee_u32 blksize, void *memblk, ee_s32 seed, mat_params *p
 	ee_u32 N=0;
 	MATDAT *A;
 	MATDAT *B;
+#ifdef CORE_OPTIMISATION_MANUALLY_INLINE_BIT_EXTRACT // This has nothing to do with bit_extract, but it was done in the same commit for the Java version.
+	ee_u16 order=1;
+#else
 	ee_s32 order=1;
+#endif
 	MATDAT val;
 	ee_u32 i=0,j=0;
 	if (seed==0)
@@ -422,7 +426,12 @@ void matrix_mul_matrix_bitextract(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 			for(k=0;k<N;k++)
 			{
 				MATRES tmp=(MATRES)A[i_times_N+k] * (MATRES)B[k*N+j];
+
+#ifdef CORE_OPTIMISATION_MANUALLY_INLINE_BIT_EXTRACT
+				C[i_times_N+j]+=((tmp>>2) & (~(0xffffffff << 4))) * ((tmp>>5) & (~(0xffffffff << 7)));
+#else
 				C[i_times_N+j]+=bit_extract(tmp,2,4)*bit_extract(tmp,5,7);
+#endif
 			}
 		}
 		i_times_N += N;
@@ -434,7 +443,11 @@ void matrix_mul_matrix_bitextract(ee_u32 N, MATRES *C, MATDAT *A, MATDAT *B) {
 			for(k=0;k<N;k++)
 			{
 				MATRES tmp=(MATRES)A[i*N+k] * (MATRES)B[k*N+j];
+#ifdef CORE_OPTIMISATION_MANUALLY_INLINE_BIT_EXTRACT
+				C[i*N+j]+=((tmp>>2) & (~(0xffffffff << 4))) * ((tmp>>5) & (~(0xffffffff << 7)));
+#else
 				C[i*N+j]+=bit_extract(tmp,2,4)*bit_extract(tmp,5,7);
+#endif
 			}
 		}
 	}
