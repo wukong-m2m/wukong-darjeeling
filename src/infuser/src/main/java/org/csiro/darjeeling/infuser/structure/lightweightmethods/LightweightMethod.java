@@ -52,6 +52,22 @@ public class LightweightMethod {
 		return i;		
 	}
 
+	public int getParameterIntStack() {
+		int slots = 0;
+		for (BaseType p : this.parameters) {
+			slots += p.getNrIntegerSlots();
+		}
+		return slots;
+	}
+
+	public int getParameterRefStack() {
+		int slots = 0;
+		for (BaseType p : this.parameters) {
+			slots += p.getNrReferenceSlots();
+		}
+		return slots;
+	}
+
 	public int getMaxIntStack() {
 		return maxIntStack;
 	}
@@ -83,8 +99,8 @@ public class LightweightMethod {
 	public void determineMaxStackDepth() {
 		InternalMethodImplementation dummyMethodImpl = new DummyMethodImplementation(this.parameters);
 		CodeBlock dummy = CodeBlock.fromLightweightMethod(this, dummyMethodImpl);
-		maxIntStack = dummy.getMaxStack()-1;    // -1 because CalculateMaxStack does a +1 for unknown reasons. We should remove this -1 if that ever changes.
-		maxRefStack = dummy.getMaxRefStack()-1;
+		maxIntStack = dummy.getMaxStack() - dummy.getMaxRefStack();
+		maxRefStack = dummy.getMaxRefStack() - 1; // -1 because CalculateMaxStack does a +1 for unknown reasons. We should remove this -1 if that ever changes.
 		System.err.println("Stack depth for light method " + methodName + " int: " + maxIntStack + " ref: " + maxRefStack);
 	}
 

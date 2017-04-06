@@ -28,7 +28,9 @@ import org.csiro.darjeeling.infuser.bytecode.Opcode;
 import org.csiro.darjeeling.infuser.bytecode.analysis.GeneratedValue;
 import org.csiro.darjeeling.infuser.bytecode.analysis.InterpreterStack;
 import org.csiro.darjeeling.infuser.bytecode.analysis.InterpreterState;
+import org.csiro.darjeeling.infuser.bytecode.instructions.StaticInvokeInstruction;
 import org.csiro.darjeeling.infuser.structure.BaseType;
+import org.csiro.darjeeling.infuser.structure.lightweightmethods.LightweightMethod;
 
 public class CalculateMaxStack extends CodeBlockTransformation
 {
@@ -68,6 +70,25 @@ public class CalculateMaxStack extends CodeBlockTransformation
 				stackSize += type.getNrIntegerSlots() + type.getNrReferenceSlots();
 				refStackSize += type.getNrReferenceSlots();
 			}
+
+			if (handle.getInstruction().getOpcode() == Opcode.INVOKELIGHT) {
+				// Lightweight methods may use more stack space when they execute.
+				// We need to reserve space for this
+				// The parameters and return value are already handled by the code above.
+				// If (max size of the called method - parameters) > 0 then we need to add the difference to stacksize (and similarly for ref stack)
+				LightweightMethod l = ((StaticInvokeInstruction)handle.getInstruction()).getLightweightMethod();
+
+				int extraIntSlots = l.getMaxIntStack() - l.getParameterIntStack();
+				int extraRefSlots = l.getMaxRefStack() - l.getParameterRefStack();
+				int extraSlots = extraIntSlots + extraRefSlots;
+				if (extraRefSlots > 0) {
+					refStackSize += extraRefSlots;
+				}
+				if (extraSlots > 0) {
+					stackSize += extraSlots;
+				}
+			}
+
 			maxStack = stackSize>maxStack?stackSize:maxStack;
 			maxRefStack = refStackSize>maxRefStack?refStackSize:maxRefStack;
 		}

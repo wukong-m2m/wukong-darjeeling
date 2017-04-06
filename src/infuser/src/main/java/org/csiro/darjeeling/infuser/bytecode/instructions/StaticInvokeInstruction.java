@@ -24,10 +24,12 @@ package org.csiro.darjeeling.infuser.bytecode.instructions;
 import org.csiro.darjeeling.infuser.bytecode.Opcode;
 import org.csiro.darjeeling.infuser.structure.LocalId;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractMethodImplementation;
+import org.csiro.darjeeling.infuser.structure.lightweightmethods.LightweightMethod;
 
 public class StaticInvokeInstruction extends AbstractInvokeInstruction
 {
 	AbstractMethodImplementation methodImplementation;
+	LightweightMethod lightweightMethod;
 
 	public StaticInvokeInstruction(Opcode opcode, LocalId localId, AbstractMethodImplementation methodImplementation)
 	{
@@ -37,5 +39,13 @@ public class StaticInvokeInstruction extends AbstractInvokeInstruction
 
 	public AbstractMethodImplementation getMethodImplementation() {
 		return this.methodImplementation;
+	}
+
+	public void setLightweightMethod(LightweightMethod lightweightMethod) {
+		this.lightweightMethod = lightweightMethod;
+	}
+
+	public LightweightMethod getLightweightMethod() {
+		return this.lightweightMethod;
 	}
 }
