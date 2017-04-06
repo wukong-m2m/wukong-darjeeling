@@ -528,7 +528,7 @@ public class BCELInstructionAdapter
 			case INVOKESTATIC:
 				invoke = (org.apache.bcel.generic.InvokeInstruction)instruction;
 				methodImplementation = lookupMethodImplementation(invoke);
-				ret = new StaticInvokeInstruction(map(instruction), methodImplementation.getGlobalId().resolve(infusion), methodImplementation.getMethodDefinition());
+				ret = new StaticInvokeInstruction(map(instruction), methodImplementation.getGlobalId().resolve(infusion), methodImplementation);
 				break;
 				
 			// virtual invoke instructions

@@ -40,6 +40,7 @@ import org.csiro.darjeeling.infuser.bytecode.transformations.OptimizeByteCode;
 import org.csiro.darjeeling.infuser.bytecode.transformations.ReMapLocalVariables;
 import org.csiro.darjeeling.infuser.bytecode.transformations.ReplaceStackInstructions;
 import org.csiro.darjeeling.infuser.bytecode.transformations.UseSINC;
+import org.csiro.darjeeling.infuser.bytecode.transformations.AddInvokeLightweightInstructions;
 import org.csiro.darjeeling.infuser.structure.BaseType;
 import org.csiro.darjeeling.infuser.structure.LocalId;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractClassDefinition;
@@ -367,6 +368,10 @@ public class CodeBlock
 		ret.instructions.threadStates();
 
 		ret.instructions.fixBranchAddresses();
+
+		// Replace INVOKESTATIC with INVOKELIGHT where necessary
+		new AddInvokeLightweightInstructions(ret).transform();
+
 		// insert BRTARGET instructions just before each branch target
 		new AddBranchTargetInstructions(ret).transform();
 		ret.instructions.reThreadStates();

@@ -23,14 +23,19 @@ package org.csiro.darjeeling.infuser.bytecode.instructions;
 
 import org.csiro.darjeeling.infuser.bytecode.Opcode;
 import org.csiro.darjeeling.infuser.structure.LocalId;
-import org.csiro.darjeeling.infuser.structure.elements.AbstractMethodDefinition;
+import org.csiro.darjeeling.infuser.structure.elements.AbstractMethodImplementation;
 
 public class StaticInvokeInstruction extends AbstractInvokeInstruction
 {
+	AbstractMethodImplementation methodImplementation;
 
-	public StaticInvokeInstruction(Opcode opcode, LocalId localId, AbstractMethodDefinition methodDefinition)
+	public StaticInvokeInstruction(Opcode opcode, LocalId localId, AbstractMethodImplementation methodImplementation)
 	{
-		super(opcode, localId, methodDefinition);
+		super(opcode, localId, methodImplementation.getMethodDefinition());
+		this.methodImplementation = methodImplementation;
 	}
 
+	public AbstractMethodImplementation getMethodImplementation() {
+		return this.methodImplementation;
+	}
 }

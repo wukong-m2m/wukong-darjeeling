@@ -167,6 +167,7 @@ public class InterpreterState implements Comparable<InterpreterState>
 			case INVOKEINTERFACE:
 			case INVOKEVIRTUAL:
 			case INVOKESTATIC:
+			case INVOKELIGHT:
 				ret.interpretInvoke(handle);
 				break;
 				

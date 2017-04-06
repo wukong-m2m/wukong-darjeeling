@@ -276,6 +276,8 @@ public enum Opcode
 	LIGHTWEIGHTMETHODPARAMETER_I((short)228, "lightweightmethodparameter_i", BaseType.Int),
 	LIGHTWEIGHTMETHODPARAMETER_A((short)229, "lightweightmethodparameter_a", BaseType.Ref),
 
+	INVOKELIGHT((short)230,"invokelight", null),
+
 	// this is a dummy placeholder opcode, will not appear in the final output
 	S2S((short)-1,"s2s", BaseType.Short, BaseType.Short)
 	;
@@ -333,7 +335,7 @@ public enum Opcode
 	
 	// Defines the group of return instructions. Membership testing on this group is used in the isInvoke method.
 	private static List<Opcode> invokeInstructions = 
-		Arrays.asList(new Opcode[] { INVOKEINTERFACE, INVOKESPECIAL, INVOKESTATIC, INVOKEVIRTUAL });
+		Arrays.asList(new Opcode[] { INVOKEINTERFACE, INVOKESPECIAL, INVOKESTATIC, INVOKEVIRTUAL, INVOKELIGHT });
 
 	private short opcode;
 	private String name;
@@ -439,7 +441,7 @@ public enum Opcode
 	}
 	
 	/**
-	 * Checks if the opcode is an invoke instruction (INVOKEINTERFACE, INVOKESPECIAL, INVOKESTATIC, INVOKEVIRTUAL) 
+	 * Checks if the opcode is an invoke instruction (INVOKEINTERFACE, INVOKESPECIAL, INVOKESTATIC, INVOKEVIRTUAL, INVOKELIGHT) 
 	 * @return true if the opcode is an invoke instruction
 	 */
 	public boolean isInvoke()
@@ -448,12 +450,12 @@ public enum Opcode
 	}
 	
 	/**
-	 * Checks if the opcode is a virtual invoke instruction (INVOKEINTERFACE, INVOKESPECIAL, INVOKEVIRTUAL) 
+	 * Checks if the opcode is a virtual invoke instruction (INVOKEINTERFACE, INVOKESPECIAL, INVOKEVIRTUAL, INVOKELIGHT) 
 	 * @return true if the opcode is a virtual invoke instruction
 	 */
 	public boolean isVirtualInvoke()
 	{
-		return invokeInstructions.contains(this) && this!=INVOKESTATIC;
+		return invokeInstructions.contains(this) && this!=INVOKESTATIC && this!=INVOKELIGHT;
 	}
 	
 	/**
