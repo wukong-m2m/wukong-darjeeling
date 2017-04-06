@@ -31,6 +31,7 @@ import org.csiro.darjeeling.infuser.structure.ElementVisitor;
 import org.csiro.darjeeling.infuser.structure.GlobalId;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractMethodDefinition;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractMethodImplementation;
+import org.csiro.darjeeling.infuser.structure.lightweightmethods.LightweightMethod;
 
 public class InternalMethodImplementation extends AbstractMethodImplementation
 {
@@ -41,6 +42,7 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 	
 	private boolean isSynchronized;
 	private boolean isNative;
+	private boolean isLightweight;
 
 	protected InternalMethodImplementation()
 	{
@@ -61,7 +63,10 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 		methodImpl.referenceArgumentCount = 0;
 		
 		methodImpl.isSynchronized = method.isSynchronized();		
-		methodImpl.isNative = method.isNative();		
+
+		// Lightweight methods are marked native so we can detect if they're not filled in properly, but they're not really native.
+		methodImpl.isLightweight = method.isNative() && LightweightMethod.isLightweightMethod(parentClass.getName(), methodDef.getName());
+		methodImpl.isNative = method.isNative() && !methodImpl.isLightweight; 
 
 		for (Type type : method.getArgumentTypes())
 		{
@@ -75,8 +80,12 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 	
 	public void processCode(InternalInfusion infusion)
 	{
-		if (code==null) return;
-		codeBlock = CodeBlock.fromCode(code, this, infusion, new ConstantPoolGen(code.getConstantPool()));
+		if (code!=null) {
+			codeBlock = CodeBlock.fromCode(code, this, infusion, new ConstantPoolGen(code.getConstantPool()));
+		} else if (isLightweight) {
+			LightweightMethod lightweightMethod = LightweightMethod.getLightweightMethod(this.parentClass.getName(), this.methodDefinition.getName());
+			codeBlock = CodeBlock.fromLightweightMethod(lightweightMethod, this, infusion);
+		}
 	}
 	
 	public CodeBlock getCodeBlock()
@@ -104,6 +113,11 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 	public boolean isNative()
 	{
 		return isNative;
+	}
+
+	public boolean isLightweight()
+	{
+		return isLightweight;
 	}
 
 	public boolean usesStaticFields()

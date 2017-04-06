@@ -1,0 +1,6 @@
+djlibsource {
+    bm_lightmethod {
+        cDependencies = [ 'darjeeling3' ]
+        javaDependencies = [ 'base', 'darjeeling3' ]
+    }
+}

@@ -45,6 +45,7 @@ import org.csiro.darjeeling.infuser.structure.LocalId;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractClassDefinition;
 import org.csiro.darjeeling.infuser.structure.elements.internal.InternalInfusion;
 import org.csiro.darjeeling.infuser.structure.elements.internal.InternalMethodImplementation;
+import org.csiro.darjeeling.infuser.structure.lightweightmethods.LightweightMethod;
 
 /**
  * 
@@ -211,6 +212,53 @@ public class CodeBlock
 		return count;
 	}
 	
+	public static CodeBlock fromLightweightMethod(LightweightMethod lightweightMethod, InternalMethodImplementation methodImplementation, InternalInfusion infusion) {
+		System.err.println("Adding lightweight method " + lightweightMethod.className + "." + lightweightMethod.methodName);
+
+		CodeBlock ret = new CodeBlock();
+
+		ret.maxLocals = 0;
+// TODO		ret.maxStack = code.getMaxStack();
+		ret.methodImplementation = methodImplementation;
+
+		boolean isStatic = methodImplementation.isStatic();
+
+		// First add some dummy LightweightMethodParameterHandles to push the parameters on the stack.
+		// These won't emit any real code, but are just here so the stack state will be consistent from
+		// the Infuser's point of view. At runtime the parameters will already be on the stack when we
+		// enter the method.
+		for(BaseType type : methodImplementation.getMethodDefinition().getArgumentTypes()) {
+			LightweightMethodParameterHandle handle = null;
+			switch (type) {
+				case Byte:
+					handle = new LightweightMethodParameterHandle(Opcode.LIGHTWEIGHTMETHODPARAMETER_B);
+					break;
+				case Char:
+					handle = new LightweightMethodParameterHandle(Opcode.LIGHTWEIGHTMETHODPARAMETER_C);
+					break;
+				case Short:
+					handle = new LightweightMethodParameterHandle(Opcode.LIGHTWEIGHTMETHODPARAMETER_S);
+					break;
+				case Int:
+					handle = new LightweightMethodParameterHandle(Opcode.LIGHTWEIGHTMETHODPARAMETER_I);
+					break;
+				case Ref:
+					handle = new LightweightMethodParameterHandle(Opcode.LIGHTWEIGHTMETHODPARAMETER_A);
+					break;
+			}
+			ret.instructions.addInstructionHandle(handle);
+		}
+		// Get the instructions from the lightweight method
+		for(InstructionHandle handle : lightweightMethod.getInstructionHandles()) {
+			ret.instructions.addInstructionHandle(handle);
+		}
+		
+		// We don't support exceptions in lightweight methods
+
+		return optimise(ret);
+	}
+
+
 	/**
 	 * Creates a new CodeBlock from an existing BCEL Code object. Code is transformed and optimised.
 	 * @param code a BCEL Code object
@@ -311,6 +359,10 @@ public class CodeBlock
 			}
 		}
 
+		return optimise(ret);
+	}
+	
+	private static CodeBlock optimise(CodeBlock ret) {
 		// thread states, creating incoming and outgoing links between instruction handles
 		ret.instructions.threadStates();
 
@@ -347,15 +399,15 @@ public class CodeBlock
 
 		new UseSINC(ret).transform();
 
-		new AddMarkLoopInstructions(ret, methodImplementation.toString()).transform();
+		new AddMarkLoopInstructions(ret).transform();
 
 		// fix the branch addresses in the branch instructions
 		ret.instructions.fixBranchAddresses();
 		ret.instructions.setBranchTargetIndexes();
 		
-		return ret;
+		return ret;		
 	}
-	
+
 	public InstructionList getInstructions()
 	{
 		return instructions;

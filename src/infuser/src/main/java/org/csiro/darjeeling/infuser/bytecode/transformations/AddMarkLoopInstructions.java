@@ -18,10 +18,9 @@ import org.csiro.darjeeling.infuser.bytecode.instructions.BranchTargetInstructio
 
 public class AddMarkLoopInstructions extends CodeBlockTransformation
 {
-    public AddMarkLoopInstructions(CodeBlock codeBlock, String methodname)
+    public AddMarkLoopInstructions(CodeBlock codeBlock)
     {
         super(codeBlock);
-        // System.err.println("AddMarkLoopInstructions: " + methodname);
     }
 
     private final static int RTC_VALUETAG_TYPE_LOCAL     = 0x0000;

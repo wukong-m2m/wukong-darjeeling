@@ -270,6 +270,12 @@ public enum Opcode
 
 	SIMUL((short)224, "simul", BaseType.Int, BaseType.Short, BaseType.Short),
 
+	LIGHTWEIGHTMETHODPARAMETER_B((short)225, "lightweightmethodparameter_b", BaseType.Byte),
+	LIGHTWEIGHTMETHODPARAMETER_C((short)226, "lightweightmethodparameter_c", BaseType.Char),
+	LIGHTWEIGHTMETHODPARAMETER_S((short)227, "lightweightmethodparameter_s", BaseType.Short),
+	LIGHTWEIGHTMETHODPARAMETER_I((short)228, "lightweightmethodparameter_i", BaseType.Int),
+	LIGHTWEIGHTMETHODPARAMETER_A((short)229, "lightweightmethodparameter_a", BaseType.Ref),
+
 	// this is a dummy placeholder opcode, will not appear in the final output
 	S2S((short)-1,"s2s", BaseType.Short, BaseType.Short)
 	;

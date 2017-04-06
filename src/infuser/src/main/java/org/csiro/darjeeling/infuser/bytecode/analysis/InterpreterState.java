@@ -449,6 +449,14 @@ public class InterpreterState implements Comparable<InterpreterState>
 				// nothing
 				break;
 
+			case LIGHTWEIGHTMETHODPARAMETER_B:
+			case LIGHTWEIGHTMETHODPARAMETER_C:
+			case LIGHTWEIGHTMETHODPARAMETER_S:
+			case LIGHTWEIGHTMETHODPARAMETER_I:
+			case LIGHTWEIGHTMETHODPARAMETER_A:
+				ret.getStack().push(handle);
+				break;
+
 			default:
 				throw new IllegalArgumentException("Unimplemented opcode: " + handle.getInstruction().getOpcode().getName());
 				
