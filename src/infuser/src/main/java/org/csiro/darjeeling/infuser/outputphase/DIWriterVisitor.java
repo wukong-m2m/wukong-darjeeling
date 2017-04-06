@@ -213,6 +213,7 @@ public class DIWriterVisitor extends DescendingVisitor
 			if (element.isNative()) flags |= 1;
 			if (element.isStatic()) flags |= 2;
 			if (element.usesStaticFields()) flags |= 4;
+			if (element.isLightweight()) flags |= 8;
 			out.writeUINT8(flags);
 			
 			// Write return type
@@ -234,7 +235,7 @@ public class DIWriterVisitor extends DescendingVisitor
 			out.writeUINT8(element.getReferenceLocalVariableCount() + element.getIntegerLocalVariableCount());
 
 			// write code block
-			if (element.getCode()==null)
+			if (element.getCode()==null && !element.isLightweight()) // Lightweight methods done have code, but do have a codeblock
 			{
 				out.writeUINT16(0);
 			} else
