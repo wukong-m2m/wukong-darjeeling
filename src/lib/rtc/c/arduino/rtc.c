@@ -110,7 +110,7 @@ void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t 
     wkreprog_close();
 }
 
-void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
+void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion, native_method_function_t *method_start_addresses) {
 #ifdef AVRORA
     // avroraStartRTCCompileTimer();
 #endif
@@ -144,6 +144,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
     rtc_ts->branch_target_table_start_ptr = branch_target_table_start_ptr;
     rtc_ts->branch_target_count = 0;
     rtc_ts->current_method_used_call_saved_reg = 0;
+    rtc_ts->method_start_addresses = method_start_addresses;
     if (dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_USESSTATICFIELDS) {
         rtc_current_method_set_uses_reg(R2);
     }
@@ -160,7 +161,7 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion) {
 #endif
 #ifdef AOT_STRATEGY_MARKLOOP
     rtc_ts->may_use_RZ = false;
-    rtc_stackcache_init();
+    rtc_stackcache_init(dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_LIGHTWEIGHT);
 #endif
 
     // translate the method
@@ -269,7 +270,7 @@ void rtc_compile_lib(dj_infusion *infusion) {
         avroraRTCTraceStartMethod(i, wkreprog_get_raw_position());
 #endif
 
-        rtc_compile_method(methodimpl, infusion);
+        rtc_compile_method(methodimpl, infusion, rtc_method_start_addresses);
 
         emit_flush_to_flash();
         // rtc_start_of_next_method contains the address/2 so that any address < 128K will fit in a uint16_t.
@@ -317,6 +318,7 @@ uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode) {
         || opcode == JVM_IINC
         || opcode == JVM_INVOKESPECIAL
         || opcode == JVM_INVOKESTATIC
+        || opcode == JVM_INVOKELIGHT
         || opcode == JVM_NEW
         || opcode == JVM_ANEWARRAY
         || opcode == JVM_CHECKCAST

@@ -51,6 +51,7 @@ typedef struct _rtc_translationstate {
     uint16_t *rtc_codebuffer;
     uint16_t *rtc_codebuffer_position; // A pointer to somewhere within the buffer
     uint8_t current_method_used_call_saved_reg; // Used to generate the method prologue/epilogue
+    native_method_function_t *method_start_addresses; // Used by INVOKELIGHT to find the address of lightweight methods in the current infusion.
 #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS)
     uint8_t do_CONST_SHIFT_optimisation;
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS

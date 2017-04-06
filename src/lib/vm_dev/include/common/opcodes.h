@@ -248,6 +248,12 @@
 #define JVM_GETFIELD_A_FIXED 222
 #define JVM_PUTFIELD_A_FIXED 223
 #define JVM_SIMUL 224
+#define JVM_LIGHTWEIGHTMETHODPARAMETER_B 225 // These are just here to keep the range continuous. They're not actually used in the bytecode.
+#define JVM_LIGHTWEIGHTMETHODPARAMETER_C 226 // These are just here to keep the range continuous. They're not actually used in the bytecode.
+#define JVM_LIGHTWEIGHTMETHODPARAMETER_S 227 // These are just here to keep the range continuous. They're not actually used in the bytecode.
+#define JVM_LIGHTWEIGHTMETHODPARAMETER_I 228 // These are just here to keep the range continuous. They're not actually used in the bytecode.
+#define JVM_LIGHTWEIGHTMETHODPARAMETER_A 229 // These are just here to keep the range continuous. They're not actually used in the bytecode.
+#define JVM_INVOKELIGHT 230
 
 
 #endif // __opcodes__h

@@ -13,30 +13,43 @@ public class RTCBenchmark {
     public static boolean test_java() {
         return rtcbenchmark_measure_java_performance();
     }
-
-    public static boolean rtcbenchmark_measure_java_performance() {
-        boolean success = true;
-
-        success = success && isOddShort((short)2) == false;
-        success = success && isOddShort((short)-3) == true;
-        success = success && isOddInt(3) == true;
-        success = success && isOddInt(-2) == false;
-        // success = success && isNull(null) == true;
-        // success = success && isNull("null") == false;
-        // success = success && addXZand1ifYnotnull(500000, "null", (short)5) == 500006;
-        // success = success && addXZand1ifYnotnull(500000, null, (short)5) == 500005;
-        success = success && timesTenTestHighStackShort((short)123) == 1230;
-        // success = success && timesTenTestHighStackInt(123456) == 1234560;
-
-        return success;
-    }
-
+    
     public static native boolean isOddInt(int x);
     public static native boolean isOddShort(short x);
     // public static native boolean isNull(Object x);
     // public static native int addXZand1ifYnotnull(int x, Object y, short z);
     public static native short timesTenTestHighStackShort(short x);
     // public static native int timesTenTestHighStackInt(int x);
+
+    public static boolean rtcbenchmark_measure_java_performance() {
+        boolean success = true;
+
+        short i;
+        for (i = 0; i<10; i++) {
+            System.out.println("round " + i);
+            success = success && isOddShort((short)2) == false;
+            success = success && isOddShort((short)-3) == true;
+            success = success && isOddInt(3) == true;
+            success = success && isOddInt(-2) == false;
+            // success = success && isNull(null) == true;
+            // success = success && isNull("null") == false;
+            // success = success && addXZand1ifYnotnull(500000, "null", (short)5) == 500006;
+            // success = success && addXZand1ifYnotnull(500000, null, (short)5) == 500005;
+            success = success && timesTenTestHighStackShort((short)123) == 1230;
+            // success = success && timesTenTestHighStackInt(123456) == 1234560;
+
+            if (success) {
+                System.out.println("ok");
+            } else {                
+                System.out.println("kaput");
+            }
+        }
+
+        success = success && i==10;
+        System.out.println("total number of rounds: " + i);
+
+        return success;
+    }
 
     // public static boolean isOddShort(short x) { return (x & (short)1) == (short)1; }
     // public static boolean isOddInt(int x) { return (x & 1) == 1; }

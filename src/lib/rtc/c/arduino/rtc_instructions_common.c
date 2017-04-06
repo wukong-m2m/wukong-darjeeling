@@ -5,6 +5,7 @@
 #include "asm.h"
 #include "rtc.h"
 #include "rtc_complex_instructions.h"
+#include "rtc_instructions_common.h"
 
 #ifdef AOT_STRATEGY_SIMPLESTACKCACHE
 #include "rtc_simplestackcache.h"
@@ -54,6 +55,10 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
 
     emit_x_postinvoke();
 
+    rtc_common_push_returnvalue_from_R22_if_necessary(rettype);
+}
+
+void rtc_common_push_returnvalue_from_R22_if_necessary(uint8_t rettype) {
     // Will be VOID except for INVOKESTATIC calls that return something.
 #if defined (AOT_STRATEGY_BASELINE)  || defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)
     switch (rettype) {
@@ -85,5 +90,5 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
             rtc_stackcache_push_ref_from_R22R23();
             break;
     }
-#endif
+#endif    
 }
