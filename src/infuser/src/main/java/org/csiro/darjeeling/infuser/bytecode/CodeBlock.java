@@ -213,13 +213,12 @@ public class CodeBlock
 		return count;
 	}
 	
-	public static CodeBlock fromLightweightMethod(LightweightMethod lightweightMethod, InternalMethodImplementation methodImplementation, InternalInfusion infusion) {
+	public static CodeBlock fromLightweightMethod(LightweightMethod lightweightMethod, InternalMethodImplementation methodImplementation) {
 		System.err.println("Adding lightweight method " + lightweightMethod.className + "." + lightweightMethod.methodName);
 
 		CodeBlock ret = new CodeBlock();
 
 		ret.maxLocals = 0;
-// TODO		ret.maxStack = code.getMaxStack();
 		ret.methodImplementation = methodImplementation;
 
 		boolean isStatic = methodImplementation.isStatic();

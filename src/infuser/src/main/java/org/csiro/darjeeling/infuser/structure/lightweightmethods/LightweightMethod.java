@@ -1,14 +1,20 @@
 package org.csiro.darjeeling.infuser.structure.lightweightmethods;
 
 import java.util.ArrayList;
+import org.csiro.darjeeling.infuser.structure.BaseType;
 import org.csiro.darjeeling.infuser.bytecode.*;
 import org.csiro.darjeeling.infuser.bytecode.instructions.*;
+import org.csiro.darjeeling.infuser.structure.elements.internal.InternalMethodImplementation;
+import org.csiro.darjeeling.infuser.structure.elements.AbstractMethodDefinition;
 
 public class LightweightMethod {
 	public String className;
 	public String methodName;
+	private BaseType[] parameters;
+	private int maxIntStack;
+	private int maxRefStack;
 
-	private ArrayList<InstructionHandle> instructionHandles;
+	public ArrayList<InstructionHandle> getInstructionHandles() { return null; }
 
 	private static ArrayList<LightweightMethod> lightweightMethods;
 
@@ -24,242 +30,321 @@ public class LightweightMethod {
 		return null;		
 	}
 
-	private LightweightMethod(String className, String methodName) {
+	private LightweightMethod(String className, String methodName, BaseType[] parameters) {
 		this.className = className;
 		this.methodName = methodName;
-		this.instructionHandles = new ArrayList<InstructionHandle>();
+		// It would be nice if we could determine this from the CodeBlock, but we need the information
+		// when we process the INVOKELIGHT instruction, and it's not guaranteed the Lightweight method
+		// will already have been processed at that time.
+		// Would be good to change this sometime 
+		this.parameters = parameters;
+		this.maxIntStack = 1000000; // Will be set later in determineMaxStackDepth
+		this.maxRefStack = 1000000; // Will be set later in determineMaxStackDepth
 	}
 
-	private InstructionHandle addInstruction(Instruction instruction) {
+	private static InstructionHandle addInstruction(ArrayList<InstructionHandle> instructionHandles, Instruction instruction) {
 		InstructionHandle i = new InstructionHandle(instruction);
-		this.instructionHandles.add(i);
+		instructionHandles.add(i);
 		return i;
 	}
-	private InstructionHandle addInstructionHandle(InstructionHandle i) {
-		this.instructionHandles.add(i);
+	private static InstructionHandle addInstructionHandle(ArrayList<InstructionHandle> instructionHandles, InstructionHandle i) {
+		instructionHandles.add(i);
 		return i;		
 	}
 
-	public ArrayList<InstructionHandle> getInstructionHandles() {
-		return instructionHandles;
+	public int getMaxIntStack() {
+		return maxIntStack;
+	}
+
+	public int getMaxRefStack() {
+		return maxRefStack;
+	}
+
+	private class DummyMethodImplementation extends InternalMethodImplementation {
+		private class DummyMethodDefinition extends AbstractMethodDefinition {
+			private BaseType[] arguments;
+
+			public DummyMethodDefinition(BaseType[] arguments) {
+				super("","");
+				this.arguments = arguments;
+			}
+
+			@Override
+			public BaseType[] getArgumentTypes() {
+				return arguments;
+			}
+		}
+
+		public DummyMethodImplementation(BaseType[] arguments) {
+			this.methodDefinition = new DummyMethodDefinition(arguments);
+		}
+	}
+
+	public void determineMaxStackDepth() {
+		InternalMethodImplementation dummyMethodImpl = new DummyMethodImplementation(this.parameters);
+		CodeBlock dummy = CodeBlock.fromLightweightMethod(this, dummyMethodImpl);
+		maxIntStack = dummy.getMaxStack()-1;    // -1 because CalculateMaxStack does a +1 for unknown reasons. We should remove this -1 if that ever changes.
+		maxRefStack = dummy.getMaxRefStack()-1;
+		System.err.println("Stack depth for light method " + methodName + " int: " + maxIntStack + " ref: " + maxRefStack);
+	}
+
+	public static void registerLightweightMethod(LightweightMethod l) {
+		l.determineMaxStackDepth();
+		lightweightMethods.add(l);
 	}
 
 	static {
 		lightweightMethods = new ArrayList<LightweightMethod>();
 
-		lightweightMethods.add(ee_isdigit_light());
-		lightweightMethods.add(isOddShort());
-		lightweightMethods.add(isOddInt());
-		lightweightMethods.add(isNull());
-		lightweightMethods.add(addXZand1ifYnotnull());
-		lightweightMethods.add(timesTenTestHighStackShort());
-		lightweightMethods.add(timesTenTestHighStackInt());
+		// registerLightweightMethod(ee_isdigit_light());
+		registerLightweightMethod(isOddShort());
+		registerLightweightMethod(isOddInt());
+		// registerLightweightMethod(isNull());
+		// registerLightweightMethod(addXZand1ifYnotnull());
+		registerLightweightMethod(timesTenTestHighStackShort());
+		// registerLightweightMethod(timesTenTestHighStackInt());
 	}
 
 	private static LightweightMethod ee_isdigit_light() {
-		LightweightMethod l = new LightweightMethod("javax.rtcbench.CoreState", "ee_isdigit_light");
-		InstructionHandle brtarget0 = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
+		return new LightweightMethod("javax.rtcbench.CoreState", "ee_isdigit_light", new BaseType[] { BaseType.Short }) {
+			@Override
+			public ArrayList<InstructionHandle> getInstructionHandles() {
+				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
+				InstructionHandle brtarget0 = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
 
-		// idup
-		// bspush 48
-		// if_scmplt brtarget 0
-		// idup
-		// bspush 57
-		// if_scmpgt brtarget 0
-		// sconst_1
-		// sreturn
-		// brtarget 0
-		// sconst_0
-		// sreturn
+				// idup
+				// bspush 48
+				// if_scmplt brtarget 0
+				// idup
+				// bspush 57
+				// if_scmpgt brtarget 0
+				// sconst_1
+				// sreturn
+				// brtarget 0
+				// sconst_0
+				// sreturn
 
-		l.addInstruction(new StackInstruction(Opcode.IDUP));
-		l.addInstruction(new ConstantPushInstruction(Opcode.BSPUSH, 48));
-		l.addInstruction(new BranchInstruction(Opcode.SIFLT, 0)).setBranchHandle(brtarget0);
-		l.addInstruction(new StackInstruction(Opcode.IDUP));
-		l.addInstruction(new ConstantPushInstruction(Opcode.BSPUSH, 57));
-		l.addInstruction(new BranchInstruction(Opcode.SIFGT, 0)).setBranchHandle(brtarget0);
-		l.addInstruction(new ConstantPushInstruction(Opcode.SCONST_1, 1));
-		l.addInstruction(new SimpleInstruction(Opcode.SRETURN));
-		l.addInstructionHandle(brtarget0);
-		l.addInstruction(new ConstantPushInstruction(Opcode.SCONST_0, 0));
-		l.addInstruction(new SimpleInstruction(Opcode.SRETURN));
+				addInstruction(l, new StackInstruction(Opcode.IDUP));
+				addInstruction(l, new ConstantPushInstruction(Opcode.BSPUSH, 48));
+				addInstruction(l, new BranchInstruction(Opcode.SIFLT, 0)).setBranchHandle(brtarget0);
+				addInstruction(l, new StackInstruction(Opcode.IDUP));
+				addInstruction(l, new ConstantPushInstruction(Opcode.BSPUSH, 57));
+				addInstruction(l, new BranchInstruction(Opcode.SIFGT, 0)).setBranchHandle(brtarget0);
+				addInstruction(l, new ConstantPushInstruction(Opcode.SCONST_1, 1));
+				addInstruction(l, new SimpleInstruction(Opcode.SRETURN));
+				addInstructionHandle(l, brtarget0);
+				addInstruction(l, new ConstantPushInstruction(Opcode.SCONST_0, 0));
+				addInstruction(l, new SimpleInstruction(Opcode.SRETURN));
 
-		return l;
+				return l;
+			}
+		};
 	}
 
 	private static LightweightMethod isOddShort() {
-		LightweightMethod l = new LightweightMethod("javax.rtcbench.RTCBenchmark", "isOddShort");
-		InstructionHandle brtarget0 = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "isOddShort", new BaseType[] { BaseType.Short }) {
+			@Override
+			public ArrayList<InstructionHandle> getInstructionHandles() {
+				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
 
-		// sconst_1
-		// sand
-		// sreturn
+				InstructionHandle brtarget0 = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
 
-		l.addInstruction(new ConstantPushInstruction(Opcode.SCONST_1, 1));
-		l.addInstruction(new ArithmeticInstruction(Opcode.SAND));
-		l.addInstruction(new SimpleInstruction(Opcode.SRETURN));
+				// sconst_1
+				// sand
+				// sreturn
 
-		return l;
+				addInstruction(l, new ConstantPushInstruction(Opcode.SCONST_1, 1));
+				addInstruction(l, new ArithmeticInstruction(Opcode.SAND));
+				addInstruction(l, new SimpleInstruction(Opcode.SRETURN));
+
+				return l;
+			}
+		};
 	}
 
 	private static LightweightMethod isOddInt() {
-		LightweightMethod l = new LightweightMethod("javax.rtcbench.RTCBenchmark", "isOddInt");
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "isOddInt", new BaseType[] { BaseType.Int }) {
+			@Override
+			public ArrayList<InstructionHandle> getInstructionHandles() {
+				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
 
-		// i2s
-		// sconst_1
-		// sand
-		// sreturn
+				// i2s
+				// sconst_1
+				// sand
+				// sreturn
 
-		l.addInstruction(new ExplicitCastInstruction(Opcode.I2S));
-		l.addInstruction(new ConstantPushInstruction(Opcode.SCONST_1, 1));
-		l.addInstruction(new ArithmeticInstruction(Opcode.SAND));
-		l.addInstruction(new SimpleInstruction(Opcode.SRETURN));
+				addInstruction(l, new ExplicitCastInstruction(Opcode.I2S));
+				addInstruction(l, new ConstantPushInstruction(Opcode.SCONST_1, 1));
+				addInstruction(l, new ArithmeticInstruction(Opcode.SAND));
+				addInstruction(l, new SimpleInstruction(Opcode.SRETURN));
 
-		return l;
+				return l;
+			}
+		};
 	}
 
 	private static LightweightMethod isNull() {
-		LightweightMethod l = new LightweightMethod("javax.rtcbench.RTCBenchmark", "isNull");
-		InstructionHandle brtarget0 = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "isNull", new BaseType[] { BaseType.Ref }) {
+			@Override
+			public ArrayList<InstructionHandle> getInstructionHandles() {
+				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
+				InstructionHandle brtarget0 = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
 
-		// ifnull brtarget 0
-		// sconst_1
-		// sret
-		// brtarget 0
-		// sconst_0
-		// sret
+				// ifnull brtarget 0
+				// sconst_1
+				// sret
+				// brtarget 0
+				// sconst_0
+				// sret
 
-		l.addInstruction(new BranchInstruction(Opcode.IFNULL, 0)).setBranchHandle(brtarget0);
-		l.addInstruction(new ConstantPushInstruction(Opcode.SCONST_1, 1));
-		l.addInstruction(new SimpleInstruction(Opcode.SRETURN));
-		l.addInstructionHandle(brtarget0);
-		l.addInstruction(new ConstantPushInstruction(Opcode.SCONST_0, 0));
-		l.addInstruction(new SimpleInstruction(Opcode.SRETURN));
+				addInstruction(l, new BranchInstruction(Opcode.IFNULL, 0)).setBranchHandle(brtarget0);
+				addInstruction(l, new ConstantPushInstruction(Opcode.SCONST_1, 1));
+				addInstruction(l, new SimpleInstruction(Opcode.SRETURN));
+				addInstructionHandle(l, brtarget0);
+				addInstruction(l, new ConstantPushInstruction(Opcode.SCONST_0, 0));
+				addInstruction(l, new SimpleInstruction(Opcode.SRETURN));
 
-		return l;
+				return l;
+			}
+		};
 	}
 
 	private static LightweightMethod addXZand1ifYnotnull() {
-		LightweightMethod l = new LightweightMethod("javax.rtcbench.RTCBenchmark", "addXZand1ifYnotnull");
-		InstructionHandle brtarget0 = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "addXZand1ifYnotnull", new BaseType[] { BaseType.Int, BaseType.Ref, BaseType.Short }) {
+			@Override
+			public ArrayList<InstructionHandle> getInstructionHandles() {
+				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
+				InstructionHandle brtarget0 = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
 
-		// stack: int, ref, short
-		// note that we can't do (short, ref, int) since there's no way to s2i the short if it's not at the top of the stack
+				// stack: int, ref, short
+				// note that we can't do (short, ref, int) since there's no way to s2i the short if it's not at the top of the stack
 
-		// s2i
-		// ifnull brtarget 0
-		// iconst_1
-		// iadd
-		// brtarget 0
-		// iadd
-		// ireturn
+				// s2i
+				// ifnull brtarget 0
+				// iconst_1
+				// iadd
+				// brtarget 0
+				// iadd
+				// ireturn
 
-		l.addInstruction(new ArithmeticInstruction(Opcode.IADD));
-		l.addInstruction(new BranchInstruction(Opcode.IFNULL, 0)).setBranchHandle(brtarget0);
-		l.addInstruction(new ConstantPushInstruction(Opcode.ICONST_1, 1));
-		l.addInstruction(new ArithmeticInstruction(Opcode.IADD));
-		l.addInstructionHandle(brtarget0);
-		l.addInstruction(new ArithmeticInstruction(Opcode.IADD));
-		l.addInstruction(new SimpleInstruction(Opcode.IRETURN));
+				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
+				addInstruction(l, new BranchInstruction(Opcode.IFNULL, 0)).setBranchHandle(brtarget0);
+				addInstruction(l, new ConstantPushInstruction(Opcode.ICONST_1, 1));
+				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
+				addInstructionHandle(l, brtarget0);
+				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
+				addInstruction(l, new SimpleInstruction(Opcode.IRETURN));
 
-		return l;
+				return l;
+			}
+		};
 	}
 
 	private static LightweightMethod timesTenTestHighStackShort() {
-		LightweightMethod l = new LightweightMethod("javax.rtcbench.RTCBenchmark", "timesTenTestHighStackShort");
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "timesTenTestHighStackShort", new BaseType[] { BaseType.Short }) {
+			@Override
+			public ArrayList<InstructionHandle> getInstructionHandles() {
+				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
 
-		// test if the infuser handles the case where the lightweight method has a stack higher than the parameters,
-		// and higher than the calling method correctly. it needs to increase maxIntStack for the caller.
+				// test if the infuser handles the case where the lightweight method has a stack higher than the parameters,
+				// and higher than the calling method correctly. it needs to increase maxIntStack for the caller.
 
-		// idup
-		// idup
-		// idup
-		// idup
-		// idup
-		// idup
-		// idup
-		// idup
-		// idup
-		// sadd
-		// sadd
-		// sadd
-		// sadd
-		// sadd
-		// sadd
-		// sadd
-		// sadd
-		// sadd
-		// sreturn
+				// idup
+				// idup
+				// idup
+				// idup
+				// idup
+				// idup
+				// idup
+				// idup
+				// idup
+				// sadd
+				// sadd
+				// sadd
+				// sadd
+				// sadd
+				// sadd
+				// sadd
+				// sadd
+				// sadd
+				// sreturn
 
-		l.addInstruction(new StackInstruction(Opcode.IDUP));
-		l.addInstruction(new StackInstruction(Opcode.IDUP));
-		l.addInstruction(new StackInstruction(Opcode.IDUP));
-		l.addInstruction(new StackInstruction(Opcode.IDUP));
-		l.addInstruction(new StackInstruction(Opcode.IDUP));
-		l.addInstruction(new StackInstruction(Opcode.IDUP));
-		l.addInstruction(new StackInstruction(Opcode.IDUP));
-		l.addInstruction(new StackInstruction(Opcode.IDUP));
-		l.addInstruction(new StackInstruction(Opcode.IDUP));
-		l.addInstruction(new ArithmeticInstruction(Opcode.SADD));
-		l.addInstruction(new ArithmeticInstruction(Opcode.SADD));
-		l.addInstruction(new ArithmeticInstruction(Opcode.SADD));
-		l.addInstruction(new ArithmeticInstruction(Opcode.SADD));
-		l.addInstruction(new ArithmeticInstruction(Opcode.SADD));
-		l.addInstruction(new ArithmeticInstruction(Opcode.SADD));
-		l.addInstruction(new ArithmeticInstruction(Opcode.SADD));
-		l.addInstruction(new ArithmeticInstruction(Opcode.SADD));
-		l.addInstruction(new ArithmeticInstruction(Opcode.SADD));
-		l.addInstruction(new SimpleInstruction(Opcode.SRETURN));
+				addInstruction(l, new StackInstruction(Opcode.IDUP));
+				addInstruction(l, new StackInstruction(Opcode.IDUP));
+				addInstruction(l, new StackInstruction(Opcode.IDUP));
+				addInstruction(l, new StackInstruction(Opcode.IDUP));
+				addInstruction(l, new StackInstruction(Opcode.IDUP));
+				addInstruction(l, new StackInstruction(Opcode.IDUP));
+				addInstruction(l, new StackInstruction(Opcode.IDUP));
+				addInstruction(l, new StackInstruction(Opcode.IDUP));
+				addInstruction(l, new StackInstruction(Opcode.IDUP));
+				addInstruction(l, new ArithmeticInstruction(Opcode.SADD));
+				addInstruction(l, new ArithmeticInstruction(Opcode.SADD));
+				addInstruction(l, new ArithmeticInstruction(Opcode.SADD));
+				addInstruction(l, new ArithmeticInstruction(Opcode.SADD));
+				addInstruction(l, new ArithmeticInstruction(Opcode.SADD));
+				addInstruction(l, new ArithmeticInstruction(Opcode.SADD));
+				addInstruction(l, new ArithmeticInstruction(Opcode.SADD));
+				addInstruction(l, new ArithmeticInstruction(Opcode.SADD));
+				addInstruction(l, new ArithmeticInstruction(Opcode.SADD));
+				addInstruction(l, new SimpleInstruction(Opcode.SRETURN));
 
-		return l;
+				return l;
+			}
+		};
 	}
 
 	private static LightweightMethod timesTenTestHighStackInt() {
-		LightweightMethod l = new LightweightMethod("javax.rtcbench.RTCBenchmark", "timesTenTestHighStackInt");
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "timesTenTestHighStackInt", new BaseType[] { BaseType.Int }) {
+			@Override
+			public ArrayList<InstructionHandle> getInstructionHandles() {
+				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
 
-		// test if the infuser handles the case where the lightweight method has a stack higher than the parameters,
-		// and higher than the calling method correctly. it needs to increase maxIntStack for the caller.
+				// test if the infuser handles the case where the lightweight method has a stack higher than the parameters,
+				// and higher than the calling method correctly. it needs to increase maxIntStack for the caller.
 
-		// idup2
-		// idup2
-		// idup2
-		// idup2
-		// idup2
-		// idup2
-		// idup2
-		// idup2
-		// idup2
-		// iadd
-		// iadd
-		// iadd
-		// iadd
-		// iadd
-		// iadd
-		// iadd
-		// iadd
-		// iadd
-		// ireturn
+				// idup2
+				// idup2
+				// idup2
+				// idup2
+				// idup2
+				// idup2
+				// idup2
+				// idup2
+				// idup2
+				// iadd
+				// iadd
+				// iadd
+				// iadd
+				// iadd
+				// iadd
+				// iadd
+				// iadd
+				// iadd
+				// ireturn
 
-		l.addInstruction(new StackInstruction(Opcode.IDUP2));
-		l.addInstruction(new StackInstruction(Opcode.IDUP2));
-		l.addInstruction(new StackInstruction(Opcode.IDUP2));
-		l.addInstruction(new StackInstruction(Opcode.IDUP2));
-		l.addInstruction(new StackInstruction(Opcode.IDUP2));
-		l.addInstruction(new StackInstruction(Opcode.IDUP2));
-		l.addInstruction(new StackInstruction(Opcode.IDUP2));
-		l.addInstruction(new StackInstruction(Opcode.IDUP2));
-		l.addInstruction(new StackInstruction(Opcode.IDUP2));
-		l.addInstruction(new ArithmeticInstruction(Opcode.IADD));
-		l.addInstruction(new ArithmeticInstruction(Opcode.IADD));
-		l.addInstruction(new ArithmeticInstruction(Opcode.IADD));
-		l.addInstruction(new ArithmeticInstruction(Opcode.IADD));
-		l.addInstruction(new ArithmeticInstruction(Opcode.IADD));
-		l.addInstruction(new ArithmeticInstruction(Opcode.IADD));
-		l.addInstruction(new ArithmeticInstruction(Opcode.IADD));
-		l.addInstruction(new ArithmeticInstruction(Opcode.IADD));
-		l.addInstruction(new ArithmeticInstruction(Opcode.IADD));
-		l.addInstruction(new SimpleInstruction(Opcode.IRETURN));
+				addInstruction(l, new StackInstruction(Opcode.IDUP2));
+				addInstruction(l, new StackInstruction(Opcode.IDUP2));
+				addInstruction(l, new StackInstruction(Opcode.IDUP2));
+				addInstruction(l, new StackInstruction(Opcode.IDUP2));
+				addInstruction(l, new StackInstruction(Opcode.IDUP2));
+				addInstruction(l, new StackInstruction(Opcode.IDUP2));
+				addInstruction(l, new StackInstruction(Opcode.IDUP2));
+				addInstruction(l, new StackInstruction(Opcode.IDUP2));
+				addInstruction(l, new StackInstruction(Opcode.IDUP2));
+				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
+				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
+				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
+				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
+				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
+				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
+				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
+				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
+				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
+				addInstruction(l, new SimpleInstruction(Opcode.IRETURN));
 
-		return l;
-	}
+				return l;
+			}
+		};
+	}		
 }

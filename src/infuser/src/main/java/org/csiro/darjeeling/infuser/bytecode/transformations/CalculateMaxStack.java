@@ -72,7 +72,7 @@ public class CalculateMaxStack extends CodeBlockTransformation
 			maxRefStack = refStackSize>maxRefStack?refStackSize:maxRefStack;
 		}
 		codeBlock.setMaxStack(maxStack+1);
-		codeBlock.setMaxRefStack(maxRefStack+1); // Why +1?
+		codeBlock.setMaxRefStack(maxRefStack+1); // Why +1? Don't know, but if it ever changes we should remove the -1 from LightweightMethod.determineMaxStackDepth to avoid reserving too little stack space!
 	}
 
 }
