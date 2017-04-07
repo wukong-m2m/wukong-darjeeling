@@ -2,30 +2,8 @@
 #include "asm.h"
 #include "parse_infusion.h"
 
-void rtc_current_method_set_uses_reg(uint8_t reg) {
-	// R2 : bit 0
-	// R4 : bit 1
-	// R6 : bit 2
-	// R8 : bit 3
-	// R10 : bit 4
-	// R12 : bit 5
-	// R14 : bit 6
-	// R16 : bit 7
-
-	// This makes sure only R2 through R16 will update a bit. We can safely call it with other values, but current_method_used_call_saved_reg will not be affected
-	rtc_ts->current_method_used_call_saved_reg |= 1<<((reg-2)/2);
-}
-
 bool rtc_current_method_is_lightweight() {
 	return dj_di_methodImplementation_getFlags(rtc_ts->methodimpl) & FLAGS_LIGHTWEIGHT;
-}
-
-bool rtc_current_method_get_uses_reg(uint8_t reg) {
-#ifdef AOT_STRATEGY_MARKLOOP	
-	return (rtc_ts->current_method_used_call_saved_reg & 1<<((reg-2)/2)) != 0;
-#else // TODO: implement this optimisation for other strategies as well
-	return true;
-#endif
 }
 
 void rtc_emit_prologue() {

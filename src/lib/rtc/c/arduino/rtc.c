@@ -110,7 +110,7 @@ void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t 
     wkreprog_close();
 }
 
-void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion, native_method_function_t *method_start_addresses) {
+void rtc_compile_method(dj_di_pointer methodimpl) {
 #ifdef AVRORA
     // avroraStartRTCCompileTimer();
 #endif
@@ -137,14 +137,11 @@ void rtc_compile_method(dj_di_pointer methodimpl, dj_infusion *infusion, native_
     //  - compensate patch_branches by (code_start_ptr-prologue_end_ptr) bytes to account for bytes saved in the prologue
 
     rtc_ts->pc = 0;
-    rtc_ts->infusion = infusion;
     rtc_ts->methodimpl = methodimpl;
     rtc_ts->jvm_code_start = dj_di_methodImplementation_getData(methodimpl);
     rtc_ts->method_length = dj_di_methodImplementation_getLength(methodimpl);
     rtc_ts->branch_target_table_start_ptr = branch_target_table_start_ptr;
     rtc_ts->branch_target_count = 0;
-    rtc_ts->current_method_used_call_saved_reg = 0;
-    rtc_ts->method_start_addresses = method_start_addresses;
     if (dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_USESSTATICFIELDS) {
         rtc_current_method_set_uses_reg(R2);
     }
@@ -232,9 +229,15 @@ void rtc_compile_lib(dj_infusion *infusion) {
     // uses 512bytes on the stack... maybe optimise this later
     // RTC code should always be in the 64K-128K segment.
     // Luckily we will store function pointers as word addresses, so this should still fit in 16 bit elements.
-    native_method_function_t rtc_method_start_addresses[256];
-    for (uint16_t i=0; i<256; i++)
-        rtc_method_start_addresses[i] = 0;
+    native_method_function_t method_start_addresses[256];
+    uint8_t call_saved_registers_used_per_method[256];
+    for (uint16_t i=0; i<256; i++) {
+        method_start_addresses[i] = 0;
+        call_saved_registers_used_per_method[i] = 0;
+    }
+    rtc_ts->call_saved_registers_used_per_method = call_saved_registers_used_per_method;
+    rtc_ts->method_start_addresses = method_start_addresses;
+    rtc_ts->infusion = infusion;
 
     // rtc_start_of_next_method contains the address/2 so that any address < 128K will fit in a uint16_t.
     wkreprog_open_raw(((uint32_t)rtc_start_of_next_method)*2, RTC_END_OF_COMPILED_CODE_SPACE);
@@ -264,13 +267,14 @@ void rtc_compile_lib(dj_infusion *infusion) {
         // IMPORTANT!!!! the PC in AVR stores WORD addresses, so we need to divide the address
         // of a function by 2 in order to get a function pointer!
         uint_farptr_t method_address = wkreprog_get_raw_position() + rtc_branch_table_size(methodimpl);
-        rtc_method_start_addresses[i] = (native_method_function_t)(uint16_t)(method_address/2);
+        method_start_addresses[i] = (native_method_function_t)(uint16_t)(method_address/2);
 
 #ifdef AVRORA
         avroraRTCTraceStartMethod(i, wkreprog_get_raw_position());
 #endif
 
-        rtc_compile_method(methodimpl, infusion, rtc_method_start_addresses);
+        rtc_ts->current_method_index = i;
+        rtc_compile_method(methodimpl);
 
         emit_flush_to_flash();
         // rtc_start_of_next_method contains the address/2 so that any address < 128K will fit in a uint16_t.
@@ -284,11 +288,11 @@ void rtc_compile_lib(dj_infusion *infusion) {
     }
 
 
-    // At this point, the addresses in the rtc_method_start_addresses are 0
+    // At this point, the addresses in the method_start_addresses are 0
     // for the native methods, while the handler table is 0 for the java methods.
-    // We need to fill in the addresses in rtc_method_start_addresses in the
+    // We need to fill in the addresses in method_start_addresses in the
     // empty slots in the handler table.
-    rtc_update_method_pointers(infusion, rtc_method_start_addresses);
+    rtc_update_method_pointers(infusion, method_start_addresses);
 
     // Free memory for translation state datastructure
     dj_mem_removeSafePointer((void**)&rtc_ts);
@@ -353,107 +357,33 @@ uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode) {
 
     return 0;
 }
-// uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode) {
-//     switch(opcode) {
-//         case JVM_BSPUSH: // 16
-//         case JVM_BIPUSH: // 17
-//         case JVM_SLOAD:  // 22
-//         case JVM_ILOAD:  // 27
-//         case JVM_ALOAD:  // 32
-//         case JVM_SSTORE:  // 37
-//         case JVM_ISTORE:  // 42
-//         case JVM_ASTORE:  // 47
-//         case JVM_NEWARRAY:  // 161
-//         case JVM_IDUP_X:  // 175
-//              return 1;
-//         break;
 
-//         case JVM_SSPUSH:  // 18
-//         case JVM_SIPUSH:  // 19
-//         case JVM_LDS:  // 21
-//         case JVM_GETFIELD_B:  // 75
-//         case JVM_GETFIELD_C:  // 
-//         case JVM_GETFIELD_S:  // 
-//         case JVM_GETFIELD_I:  // 
-//         case JVM_GETFIELD_A:  // 
-//         case JVM_PUTFIELD_B:  // 
-//         case JVM_PUTFIELD_C:  // 
-//         case JVM_PUTFIELD_S:  // 
-//         case JVM_PUTFIELD_I:  // 
-//         case JVM_PUTFIELD_A:  // 84
-//         case JVM_GETSTATIC_B:  // 85
-//         case JVM_GETSTATIC_C:  // 
-//         case JVM_GETSTATIC_S:  // 
-//         case JVM_GETSTATIC_I:  // 
-//         case JVM_GETSTATIC_A:  // 
-//         case JVM_PUTSTATIC_B:  // 
-//         case JVM_PUTSTATIC_C:  // 
-//         case JVM_PUTSTATIC_S:  // 
-//         case JVM_PUTSTATIC_I:  // 
-//         case JVM_PUTSTATIC_A:  // 94
-//         case JVM_SINC:  // 120
-//         case JVM_IINC:  // 121
-//         case JVM_INVOKESPECIAL:  // 157
-//         case JVM_INVOKESTATIC:  // 158
-//         case JVM_NEW:  // 160
-//         case JVM_ANEWARRAY:  // 162
-//         case JVM_CHECKCAST:  // 165
-//         case JVM_INSTANCEOF:  // 166
-//              return 2;
-//         break;
+    // uint8_t current_method_index;
+    // uint8_t *call_saved_registers_used_per_method // Used to generate the method prologue/epilogue and by INVOKELIGHT inside of a MARKLOOP loop to determine which pinned registers to save/restore.
 
-//         case JVM_SINC_W:  // 170
-//         case JVM_IINC_W:  // 171
-//         case JVM_INVOKEVIRTUAL:  // 156
-//         case JVM_INVOKEINTERFACE:  // 159
-//              return 3;
-//         break;
+void rtc_current_method_set_uses_reg(uint8_t reg) {
+    // R2 : bit 0
+    // R4 : bit 1
+    // R6 : bit 2
+    // R8 : bit 3
+    // R10 : bit 4
+    // R12 : bit 5
+    // R14 : bit 6
+    // R16 : bit 7
 
-//         case JVM_IIPUSH:  // 20
-//         case JVM_IIFEQ:  // 126
-//         case JVM_IIFNE:  // 
-//         case JVM_IIFLT:  // 
-//         case JVM_IIFGE:  // 
-//         case JVM_IIFGT:  // 
-//         case JVM_IIFLE:  // 131
-//         case JVM_IFNULL:  // 132
-//         case JVM_IFNONNULL:  // 133
-//         case JVM_IF_SCMPEQ:  // 134
-//         case JVM_IF_SCMPNE:  // 
-//         case JVM_IF_SCMPLT:  // 
-//         case JVM_IF_SCMPGE:  // 
-//         case JVM_IF_SCMPGT:  // 
-//         case JVM_IF_SCMPLE:  // 
-//         case JVM_IF_ICMPEQ:  // 
-//         case JVM_IF_ICMPNE:  // 
-//         case JVM_IF_ICMPLT:  // 
-//         case JVM_IF_ICMPGE:  // 
-//         case JVM_IF_ICMPGT:  // 
-//         case JVM_IF_ICMPLE:  // 
-//         case JVM_IF_ACMPEQ:  // 
-//         case JVM_IF_ACMPNE:  // 147
-//         case JVM_GOTO:  // 148
-//         case JVM_SIFEQ:  // 176
-//         case JVM_SIFNE:  // 
-//         case JVM_SIFLT:  // 
-//         case JVM_SIFGE:  // 
-//         case JVM_SIFGT:  // 
-//         case JVM_SIFLE:  // 181
-//              return 4;
-//         break;
+    // This makes sure only R2 through R16 will update a bit. We can safely call it with other values, but current_method_used_call_saved_reg will not be affected
+    rtc_ts->call_saved_registers_used_per_method[rtc_ts->current_method_index] |= 1<<((reg-2)/2);
+}
 
-//         case JVM_TABLESWITCH:  // 
-//         case JVM_LOOKUPSWITCH:  // 
-//             // need to skip a lot, but we'll handle during codegen.
-//             // these won't be optimised away by stackcaching anyway.
-//             return 0;
-//         break;
+bool rtc_method_get_uses_reg(uint8_t method, uint8_t reg) {
+#ifdef AOT_STRATEGY_MARKLOOP    
+    return (rtc_ts->call_saved_registers_used_per_method[method] & 1<<((reg-2)/2)) != 0;
+#else // TODO: implement this optimisation for other strategies as well
+    return true;
+#endif
+}
 
-//         case JVM_MARKLOOP_START:  // 
-//             // need to skip a lot, but we'll handle during codegen.
-//             // these won't be optimised away by stackcaching anyway.
+bool rtc_current_method_get_uses_reg(uint8_t reg) {
+    return rtc_method_get_uses_reg(rtc_ts->current_method_index, reg);
+}
 
-//         default:
-//             return 0;
-//     }
-// }

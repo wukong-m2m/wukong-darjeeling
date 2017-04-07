@@ -1391,8 +1391,10 @@ void rtc_translate_single_instruction() {
         case JVM_INVOKELIGHT: {
             if (jvm_operand_byte0 != 0) {
                 // We don't (yet) support calling lightweight methods in other infusions.
-                // For one, R2 may have to be updated, but there may be other consequences.
-                // Have another good look at this when we need it.
+                // At least, R2 may have to be updated, and we'll have to save the used
+                // call saved registers per method in flash.
+                // But there may be other consequences, so have another good look at this
+                // when we need it.
                 dj_panic(DJ_PANIC_LIGHTWEIGHT_METHOD_MUST_BE_LOCAL);
             }
 

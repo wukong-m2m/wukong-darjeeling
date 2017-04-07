@@ -34,6 +34,9 @@ uint8_t offset_for_intlocal_int(dj_di_pointer methodimpl, uint8_t local);
 uint8_t offset_for_intlocal_long(dj_di_pointer methodimpl, uint8_t local);
 uint8_t offset_for_reflocal(dj_di_pointer methodimpl, uint8_t local);
 uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode);
+void rtc_current_method_set_uses_reg(uint8_t reg);
+bool rtc_current_method_get_uses_reg(uint8_t reg);
+bool rtc_method_get_uses_reg(uint8_t method, uint8_t reg);
 
 #define RTC_STACKCACHE_MAX_IDX             16 // 16 because we only keep track of pairs
 #define REG_TO_ARRAY_INDEX(reg)            ((reg)/2)
@@ -50,7 +53,8 @@ typedef struct _rtc_translationstate {
     uint16_t codebuffer[RTC_CODEBUFFER_SIZE];
     uint16_t *rtc_codebuffer;
     uint16_t *rtc_codebuffer_position; // A pointer to somewhere within the buffer
-    uint8_t current_method_used_call_saved_reg; // Used to generate the method prologue/epilogue
+    uint8_t current_method_index;
+    uint8_t *call_saved_registers_used_per_method; // Used to generate the method prologue/epilogue and by INVOKELIGHT inside of a MARKLOOP loop to determine which pinned registers to save/restore.
     native_method_function_t *method_start_addresses; // Used by INVOKELIGHT to find the address of lightweight methods in the current infusion.
 #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS)
     uint8_t do_CONST_SHIFT_optimisation;
