@@ -2,7 +2,7 @@ GCC calling convention
 ---
 Call used:  r0, r18-r25, r26:r27 (X), r30:r31 (Z)
 Call saved: r1, r2-r17, r28:r29 (Y)
-
+May be pinned by MARKLOOP: r4-r17
 
                              DVM stack frame layout         offset
                              +---------------------------+

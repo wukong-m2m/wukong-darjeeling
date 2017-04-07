@@ -24,17 +24,28 @@ public class RTCBenchmark {
     public static boolean rtcbenchmark_measure_java_performance() {
         boolean success = true;
 
-        short i;
+        short i,j=3;
+        int k=12;
         for (i = 0; i<10; i++) {
+            // This loop should pin 4 pairs, but the methods inside shouldn't use all.
+            // Check if INVOKELIGHT saves the right registers (only those that are used
+            // by the method it calls)
             System.out.println("round " + i);
+            System.out.println("test to pin more regs " + (i*k)+j);
+
             success = success && isOddShort((short)2) == false;
             success = success && isOddShort((short)-3) == true;
             success = success && isOddInt(3) == true;
             success = success && isOddInt(-2) == false;
             // success = success && isNull(null) == true;
             // success = success && isNull("null") == false;
+
             // success = success && addXZand1ifYnotnull(500000, "null", (short)5) == 500006;
             // success = success && addXZand1ifYnotnull(500000, null, (short)5) == 500005;
+
+            // This should create a high stack depth. Check to see if maxStack of this method
+            // is correctly increased to reserve space for the lightweight method's stack.
+            // (actually for ints it shouldn't matter. add another test for refs later.)
             success = success && timesTenTestHighStackShort((short)123) == 1230;
             // success = success && timesTenTestHighStackInt(123456) == 1234560;
 

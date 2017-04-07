@@ -375,6 +375,13 @@ void rtc_current_method_set_uses_reg(uint8_t reg) {
     rtc_ts->call_saved_registers_used_per_method[rtc_ts->current_method_index] |= 1<<((reg-2)/2);
 }
 
+void rtc_current_method_set_uses_reg_used_in_lightweight_invoke(uint8_t lightweightmethod_id) {
+    // a method calling a lightweight method will have to mark all the call saved registers
+    // used by the lightweight method as used in it's own context.
+    // (since the calling method will be responsible for saving them in it's prologue)
+    rtc_ts->call_saved_registers_used_per_method[rtc_ts->current_method_index] |= rtc_ts->call_saved_registers_used_per_method[lightweightmethod_id];
+}
+
 bool rtc_method_get_uses_reg(uint8_t method, uint8_t reg) {
 #ifdef AOT_STRATEGY_MARKLOOP    
     return (rtc_ts->call_saved_registers_used_per_method[method] & 1<<((reg-2)/2)) != 0;
@@ -386,4 +393,3 @@ bool rtc_method_get_uses_reg(uint8_t method, uint8_t reg) {
 bool rtc_current_method_get_uses_reg(uint8_t reg) {
     return rtc_method_get_uses_reg(rtc_ts->current_method_index, reg);
 }
-

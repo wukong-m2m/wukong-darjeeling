@@ -1389,7 +1389,11 @@ void rtc_translate_single_instruction() {
             rtc_common_translate_invoke(ts, opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
         break;
         case JVM_INVOKELIGHT: {
-            if (jvm_operand_byte0 != 0) {
+            dj_local_id localId;
+            localId.infusion_id = jvm_operand_byte0;
+            localId.entity_id = jvm_operand_byte1;
+
+            if (localId.infusion_id != 0) {
                 // We don't (yet) support calling lightweight methods in other infusions.
                 // At least, R2 may have to be updated, and we'll have to save the used
                 // call saved registers per method in flash.
@@ -1398,11 +1402,14 @@ void rtc_translate_single_instruction() {
                 dj_panic(DJ_PANIC_LIGHTWEIGHT_METHOD_MUST_BE_LOCAL);
             }
 
+            rtc_current_method_set_uses_reg(R16);
+            rtc_current_method_set_uses_reg_used_in_lightweight_invoke(localId.entity_id);
             rtc_flush_and_cleartags_ref(RTC_FILTER_ALL, RTC_FILTER_ALL); // Maybe this could be more selective using the information from the compiled method. But I doubt that will make a big difference, and may not be worth the code space to implement.
 
-            dj_local_id localId;
-            localId.infusion_id = jvm_operand_byte0;
-            localId.entity_id = jvm_operand_byte1;
+            // If the invoke light happens in a MARKLOOP loop, the lightweight method might corrupt some pinned values, so we need to save them back to their variable slots first.
+            // If we're not in a MARKLOOP loop, this will be a noop.
+            rtc_markloop_emit_epilogue(true, localId.entity_id);
+
             dj_global_id globalId = dj_global_id_resolve(ts->infusion,  localId);
             native_method_function_t handler = rtc_ts->method_start_addresses[globalId.entity_id]; // Can't get the address from the infusion because the method addresses haven't been written to Flash yet
             if (handler == NULL) {
@@ -1413,6 +1420,10 @@ void rtc_translate_single_instruction() {
 
             emit_2_CALL((uint16_t)handler);
             rtc_common_push_returnvalue_from_R22_if_necessary(rettype);
+
+            // If the invoke light happens in a MARKLOOP loop, the lightweight method might corrupt some pinned values, so we need to save them back to their variable slots first.
+            // If we're not in a MARKLOOP loop, this will be a noop.
+            rtc_markloop_emit_prologue(true, localId.entity_id);
         }
         break;
         case JVM_NEW:
@@ -1856,11 +1867,11 @@ void rtc_translate_single_instruction() {
             rtc_mark_branchtarget();
         break;
         case JVM_MARKLOOP_START:
-            rtc_markloop_emit_prologue();
+            rtc_markloop_emit_prologue(false, 0);
             ts->pc += (2*jvm_operand_byte0)+1;
         break;
         case JVM_MARKLOOP_END:
-            rtc_markloop_emit_epilogue();
+            rtc_markloop_emit_epilogue(false, 0);
         break;
 
         // Not implemented

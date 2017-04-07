@@ -35,6 +35,7 @@ uint8_t offset_for_intlocal_long(dj_di_pointer methodimpl, uint8_t local);
 uint8_t offset_for_reflocal(dj_di_pointer methodimpl, uint8_t local);
 uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode);
 void rtc_current_method_set_uses_reg(uint8_t reg);
+void rtc_current_method_set_uses_reg_used_in_lightweight_invoke(uint8_t lightweightmethod_id);
 bool rtc_current_method_get_uses_reg(uint8_t reg);
 bool rtc_method_get_uses_reg(uint8_t method, uint8_t reg);
 

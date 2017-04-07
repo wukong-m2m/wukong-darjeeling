@@ -67,7 +67,7 @@ void rtc_stackcache_pop_destructive_ref_into_Z();                               
 #define rtc_flush_and_cleartags_ref(flush_filter, cleartags_filter)                                          rtc_pop_flush_and_cleartags(0,           0,             0,           0,             RTC_STACKCACHE_INT_STACK_TYPE, flush_filter, cleartags_filter)
 #define rtc_pop_flush_and_cleartags_ref(pop_target, flush_filter, cleartags_filter)                          rtc_pop_flush_and_cleartags(pop_target,  0,             0,           0,             RTC_STACKCACHE_REF_STACK_TYPE, flush_filter, cleartags_filter)
 #define rtc_pop_flush_and_cleartags_int16(pop_target1, pop_target2, flush_filter, cleartags_filter)          rtc_pop_flush_and_cleartags(pop_target1, pop_target2,   0,           0,             RTC_STACKCACHE_INT_STACK_TYPE, flush_filter, cleartags_filter)
-#define rtc_pop_flush_and_cleartags_single_int32(pop_target1, flush_filter, cleartags_filter)                rtc_pop_flush_and_cleartags(pop_target1, pop_target1+2, 0,           0 , RTC_STACKCACHE_INT_STACK_TYPE, flush_filter, cleartags_filter)
+#define rtc_pop_flush_and_cleartags_single_int32(pop_target1, flush_filter, cleartags_filter)                rtc_pop_flush_and_cleartags(pop_target1, pop_target1+2, 0,           0,             RTC_STACKCACHE_INT_STACK_TYPE, flush_filter, cleartags_filter)
 #define rtc_pop_flush_and_cleartags_double_int32(pop_target1, pop_target2, flush_filter, cleartags_filter)   rtc_pop_flush_and_cleartags(pop_target1, pop_target1+2, pop_target2, pop_target2+2, RTC_STACKCACHE_INT_STACK_TYPE, flush_filter, cleartags_filter)
 void rtc_pop_flush_and_cleartags(uint8_t pop_target1, uint8_t pop_target2, uint8_t pop_target3, uint8_t pop_target4, uint8_t which_stack, uint8_t flush_filter, uint8_t cleartags_filter);
 
@@ -79,8 +79,8 @@ void rtc_poppedstackcache_clear_all_reference_valuetags();
 void rtc_poppedstackcache_clear_all_except_pinned_valuetags();
 
 bool rtc_poppedstackcache_can_I_skip_this();
-void rtc_markloop_emit_prologue();
-void rtc_markloop_emit_epilogue();
+void rtc_markloop_emit_prologue(bool called_from_invokelight, uint8_t lightweightmethod_id);
+void rtc_markloop_emit_epilogue(bool called_from_invokelight, uint8_t lightweightmethod_id);
 
 // emit instructions to be used by MARKLOOP prologue and epilogue as well as normal instructions
 void emit_load_local_16bit(uint8_t *regs, uint16_t offset);
