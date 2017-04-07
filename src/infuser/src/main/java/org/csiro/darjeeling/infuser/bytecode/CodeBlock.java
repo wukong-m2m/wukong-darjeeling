@@ -214,8 +214,6 @@ public class CodeBlock
 	}
 	
 	public static CodeBlock fromLightweightMethod(LightweightMethod lightweightMethod, InternalMethodImplementation methodImplementation) {
-		System.err.println("Adding lightweight method " + lightweightMethod.className + "." + lightweightMethod.methodName);
-
 		CodeBlock ret = new CodeBlock();
 
 		ret.maxLocals = 0;
@@ -255,7 +253,7 @@ public class CodeBlock
 		
 		// We don't support exceptions in lightweight methods
 
-		return optimise(ret);
+		return optimise(ret, true);
 	}
 
 
@@ -359,10 +357,10 @@ public class CodeBlock
 			}
 		}
 
-		return optimise(ret);
+		return optimise(ret, false);
 	}
 	
-	private static CodeBlock optimise(CodeBlock ret) {
+	private static CodeBlock optimise(CodeBlock ret, boolean isLightweight) {
 		// thread states, creating incoming and outgoing links between instruction handles
 		ret.instructions.threadStates();
 
@@ -372,7 +370,9 @@ public class CodeBlock
 		new AddInvokeLightweightInstructions(ret).transform();
 
 		// insert BRTARGET instructions just before each branch target
-		new AddBranchTargetInstructions(ret).transform();
+		if (!isLightweight) { // For lightweight methods, the branch targets are already there
+			new AddBranchTargetInstructions(ret).transform();
+		}
 		ret.instructions.reThreadStates();
 		ret.instructions.fixBranchAddresses();
 		

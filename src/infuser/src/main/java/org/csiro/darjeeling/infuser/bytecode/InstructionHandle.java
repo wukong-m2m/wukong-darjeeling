@@ -61,6 +61,7 @@ public class InstructionHandle implements Comparable<InstructionHandle>
 		this.exceptionHandlers = new ArrayList<InstructionHandle>();
 		this.switchTargets = new ArrayList<InstructionHandle>();
 		this.liveVariables = new LiveSet();
+		this.branchHandle = null;
 	}
 
     public InstructionHandle copyToNewHandleWithSameStateAndLiveVariables(Instruction instruction) {

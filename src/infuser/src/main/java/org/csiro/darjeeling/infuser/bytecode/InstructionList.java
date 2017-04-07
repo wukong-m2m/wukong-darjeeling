@@ -212,11 +212,16 @@ public class InstructionList
 			// jump adress
 			if (opcode.isBranch())
 			{
-				InstructionHandle target = getHandleByPc(((BranchInstruction) instruction).getBranchAdress());
-				handle.setBranchHandle(target);
-				target.addIncomingHandle(handle);
-			}
-			
+				if (handle.getBranchHandle() != null) {
+					// For lightweight methods we already have a branch handle since it's hardcoded in LightweightMethod, but we don't have the target's PC.
+					// Just set the incoming handle for the target
+					handle.getBranchHandle().addIncomingHandle(handle);
+				} else {
+					InstructionHandle target = getHandleByPc(((BranchInstruction) instruction).getBranchAdress());
+					handle.setBranchHandle(target);
+					target.addIncomingHandle(handle);
+				}
+			}			
 		}
 	}
 	

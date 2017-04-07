@@ -74,7 +74,12 @@ public class InterpreterStack implements Comparable<InterpreterStack>
 	public static InterpreterStack merge(InterpreterStack a, InterpreterStack b)
 	{
 		// check for size equivalence 
-		if (a.size()!=b.size()) throw new IllegalStateException("Stacks must be same size");
+		if (a.size()!=b.size()) {
+			System.err.println("Stack mismatch in InterpreterStack.merge.");
+			System.err.println("Stack a: " + a);
+			System.err.println("Stack b: " + b);
+			throw new IllegalStateException("Stacks must be same size");
+		}
 		
 		// merge stacks
 		InterpreterStack ret = new InterpreterStack();

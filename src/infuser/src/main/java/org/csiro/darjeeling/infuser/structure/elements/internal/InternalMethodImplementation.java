@@ -84,6 +84,7 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 			codeBlock = CodeBlock.fromCode(code, this, infusion, new ConstantPoolGen(code.getConstantPool()));
 		} else if (isLightweight) {
 			LightweightMethod lightweightMethod = LightweightMethod.getLightweightMethod(this.parentClass.getName(), this.methodDefinition.getName());
+			System.err.println("Adding lightweight method " + lightweightMethod.className + "." + lightweightMethod.methodName);
 			codeBlock = CodeBlock.fromLightweightMethod(lightweightMethod, this);
 		}
 	}

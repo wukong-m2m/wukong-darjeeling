@@ -49,6 +49,16 @@ public class RTCBenchmark {
             success = success && timesTenTestHighStackShort((short)123) == 1230;
             // success = success && timesTenTestHighStackInt(123456) == 1234560;
 
+            if (success) { System.out.println("ok"); } else { System.out.println("kaput"); }
+            success = success && (CoreState.ee_isdigit((byte)'/') == false); // 0x2f
+            if (success) { System.out.println("ok"); } else { System.out.println("kaput"); }
+            success = success && (CoreState.ee_isdigit((byte)'0') == true);  // 0x30
+            if (success) { System.out.println("ok"); } else { System.out.println("kaput"); }
+            success = success && (CoreState.ee_isdigit((byte)'0') == true);  // 0x39
+            if (success) { System.out.println("ok"); } else { System.out.println("kaput"); }
+            success = success && (CoreState.ee_isdigit((byte)':') == false); // 0x3a
+            if (success) { System.out.println("ok"); } else { System.out.println("kaput"); }
+
             if (success) {
                 System.out.println("ok");
             } else {                

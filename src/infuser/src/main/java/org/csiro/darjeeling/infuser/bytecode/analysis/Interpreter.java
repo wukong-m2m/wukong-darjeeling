@@ -97,9 +97,14 @@ public class Interpreter
 				try {
 					boolean changed = outgoingHandle.mergePreState(postState);
 					if (changed) pendingHandles.add(outgoingHandle);
-				} catch (IllegalArgumentException ex)
-				{
+				}
+				catch (IllegalArgumentException ex) {
 					throw new IllegalStateException(String.format("Unable to merge stacks at pc=%d: %s", handle.getPc(), ex.getMessage() ));
+				}
+				catch (IllegalStateException ex) {
+					System.err.println("instruction a: " + outgoingHandle.getInstruction());
+					System.err.println("instruction b: " + handle.getInstruction());
+					throw ex;
 				}
 			}
 			

@@ -112,7 +112,7 @@ public class LightweightMethod {
 	static {
 		lightweightMethods = new ArrayList<LightweightMethod>();
 
-		// registerLightweightMethod(ee_isdigit_light());
+		registerLightweightMethod(ee_isdigit());
 		registerLightweightMethod(isOddShort());
 		registerLightweightMethod(isOddInt());
 		// registerLightweightMethod(isNull());
@@ -121,36 +121,73 @@ public class LightweightMethod {
 		// registerLightweightMethod(timesTenTestHighStackInt());
 	}
 
-	private static LightweightMethod ee_isdigit_light() {
-		return new LightweightMethod("javax.rtcbench.CoreState", "ee_isdigit_light", new BaseType[] { BaseType.Short }) {
+	private static LightweightMethod ee_isdigit() {
+		return new LightweightMethod("javax.rtcbench.CoreState", "ee_isdigit", new BaseType[] { BaseType.Short }) {
 			@Override
 			public ArrayList<InstructionHandle> getInstructionHandles() {
 				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
 				InstructionHandle brtarget0 = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
+				InstructionHandle brtarget1 = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
+				InstructionHandle brtarget2 = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
+
+				// // idup
+				// // bspush 48
+				// // if_scmplt brtarget 0
+				// // bspush 57
+				// // if_scmpgt brtarget 1
+				// // sconst_1
+				// // sreturn
+				// // brtarget 0
+				// // ipop // To clear the copy of the parameter. We won't need anymore.
+				// // if_scmpgt brtarget 1
+				// // sconst_0
+				// // sreturn
+
+				// addInstruction(l, new StackInstruction(Opcode.IDUP));
+				// addInstruction(l, new ConstantPushInstruction(Opcode.BSPUSH, 48));
+				// addInstruction(l, new BranchInstruction(Opcode.IF_SCMPLT, 0)).setBranchHandle(brtarget0);
+				// addInstruction(l, new ConstantPushInstruction(Opcode.BSPUSH, 57));
+				// addInstruction(l, new BranchInstruction(Opcode.IF_SCMPGT, 0)).setBranchHandle(brtarget1);
+				// addInstruction(l, new ConstantPushInstruction(Opcode.SCONST_1, 1));
+				// addInstruction(l, new SimpleInstruction(Opcode.SRETURN));
+				// addInstructionHandle(l, brtarget0);
+				// addInstruction(l, new StackInstruction(Opcode.IPOP));				
+				// addInstructionHandle(l, brtarget1);
+				// addInstruction(l, new ConstantPushInstruction(Opcode.SCONST_0, 0));
+				// addInstruction(l, new SimpleInstruction(Opcode.SRETURN));
 
 				// idup
 				// bspush 48
 				// if_scmplt brtarget 0
-				// idup
 				// bspush 57
-				// if_scmpgt brtarget 0
+				// if_scmpgt brtarget 1
 				// sconst_1
 				// sreturn
 				// brtarget 0
+				// ipop // To clear the copy of the parameter. We won't need anymore.
+				// if_scmpgt brtarget 1
 				// sconst_0
 				// sreturn
 
 				addInstruction(l, new StackInstruction(Opcode.IDUP));
 				addInstruction(l, new ConstantPushInstruction(Opcode.BSPUSH, 48));
-				addInstruction(l, new BranchInstruction(Opcode.SIFLT, 0)).setBranchHandle(brtarget0);
-				addInstruction(l, new StackInstruction(Opcode.IDUP));
+				addInstruction(l, new BranchInstruction(Opcode.IF_SCMPLT, 0)).setBranchHandle(brtarget0);
 				addInstruction(l, new ConstantPushInstruction(Opcode.BSPUSH, 57));
-				addInstruction(l, new BranchInstruction(Opcode.SIFGT, 0)).setBranchHandle(brtarget0);
+				addInstruction(l, new BranchInstruction(Opcode.IF_SCMPGT, 0)).setBranchHandle(brtarget1);
 				addInstruction(l, new ConstantPushInstruction(Opcode.SCONST_1, 1));
-				addInstruction(l, new SimpleInstruction(Opcode.SRETURN));
+				addInstruction(l, new BranchInstruction(Opcode.GOTO, 0)).setBranchHandle(brtarget2);
 				addInstructionHandle(l, brtarget0);
+				addInstruction(l, new StackInstruction(Opcode.IPOP));				
+				addInstructionHandle(l, brtarget1);
 				addInstruction(l, new ConstantPushInstruction(Opcode.SCONST_0, 0));
+				addInstructionHandle(l, brtarget2);
 				addInstruction(l, new SimpleInstruction(Opcode.SRETURN));
+
+				// for (InstructionHandle h : l) {
+				// 	System.err.println("");
+				// 	System.err.println("" + h.getInstruction());
+				// 	System.err.println("");
+				// }
 
 				return l;
 			}
