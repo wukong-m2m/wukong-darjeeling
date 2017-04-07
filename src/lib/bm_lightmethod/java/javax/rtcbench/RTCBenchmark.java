@@ -16,10 +16,9 @@ public class RTCBenchmark {
     
     public static native boolean isOddInt(int x);
     public static native boolean isOddShort(short x);
-    // public static native boolean isNull(Object x);
-    // public static native int addXZand1ifYnotnull(int x, Object y, short z);
+    public static native boolean isNull(Object x);
     public static native short timesTenTestHighStackShort(short x);
-    // public static native int timesTenTestHighStackInt(int x);
+    public static native short timesTenTestHighStackRef(Object x);
 
     public static boolean rtcbenchmark_measure_java_performance() {
         boolean success = true;
@@ -37,17 +36,18 @@ public class RTCBenchmark {
             success = success && isOddShort((short)-3) == true;
             success = success && isOddInt(3) == true;
             success = success && isOddInt(-2) == false;
-            // success = success && isNull(null) == true;
-            // success = success && isNull("null") == false;
 
-            // success = success && addXZand1ifYnotnull(500000, "null", (short)5) == 500006;
-            // success = success && addXZand1ifYnotnull(500000, null, (short)5) == 500005;
+            success = success && isNull(null) == true;
+            success = success && isNull("null") == false;
+            success = success && isNull(new Object()) == false;
 
             // This should create a high stack depth. Check to see if maxStack of this method
             // is correctly increased to reserve space for the lightweight method's stack.
             // (actually for ints it shouldn't matter. add another test for refs later.)
             success = success && timesTenTestHighStackShort((short)123) == 1230;
-            // success = success && timesTenTestHighStackInt(123456) == 1234560;
+            success = success && timesTenTestHighStackRef(null) == 42;
+            success = success && timesTenTestHighStackRef("null") == 42;
+            success = success && timesTenTestHighStackRef(new Object()) == 42;
 
             success = success && (CoreState.ee_isdigit((byte)'/') == false); // 0x2f
             success = success && (CoreState.ee_isdigit((byte)'0') == true);  // 0x30
@@ -63,19 +63,18 @@ public class RTCBenchmark {
         return success;
     }
 
-    // public static boolean isOddShort(short x) { return (x & (short)1) == (short)1; }
-    // public static boolean isOddInt(int x) { return (x & 1) == 1; }
-    // public static boolean isNull(Object x) { return x == null; }
-    // public static int addXZand1ifYnotnull(int x, Object y, short z) { return x + (y == null ? 0 : 1) + z; }
-    // public static short timesTenTestHighStackShort(short x) { return (short)((short)x+
-    //                                                                  (short)((short)x+
-    //                                                                  (short)((short)x+
-    //                                                                  (short)((short)x+
-    //                                                                  (short)((short)x+
-    //                                                                  (short)((short)x+
-    //                                                                  (short)((short)x+
-    //                                                                  (short)((short)x+
-    //                                                                  (short)((short)x+
-    //                                                                  (short)((short)x)))))))))); }
-    // public static int timesTenTestHighStackInt(int x) { return x+x+x+x+x+x+x+x+x+x; }
+    public static boolean isOddShort_notlight(short x) { return (x & (short)1) == (short)1; }
+    public static boolean isOddInt_notlight(int x) { return (x & 1) == 1; }
+    public static boolean isNull_notlight(Object x) { return x == null; }
+    public static int addXZand1ifYnotnull_notlight(int x, Object y, short z) { return x + (y == null ? 0 : 1) + z; }
+    public static short timesTenTestHighStackShort_notlight(short x) { return (short)((short)x+
+                                                                     (short)((short)x+
+                                                                     (short)((short)x+
+                                                                     (short)((short)x+
+                                                                     (short)((short)x+
+                                                                     (short)((short)x+
+                                                                     (short)((short)x+
+                                                                     (short)((short)x+
+                                                                     (short)((short)x+
+                                                                     (short)((short)x)))))))))); }
 }

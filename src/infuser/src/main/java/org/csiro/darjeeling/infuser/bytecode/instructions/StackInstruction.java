@@ -44,6 +44,11 @@ public class StackInstruction extends SimpleInstruction
 				
 			case IPOP2:
 				throw new IllegalStateException("POP does not output values");
+
+			case ADUP:
+				if (index<2) element = handle.getPreState().getStack().peek();
+				else throw new IllegalStateException("DUP outputs only two values");
+				break;
 				
 			case IDUP:
 				if (index<2) element = handle.getPreState().getStack().peek();
@@ -83,6 +88,7 @@ public class StackInstruction extends SimpleInstruction
 		{
 			case IPOP: return 0;
 			case IPOP2: return 0;				
+			case ADUP: return 2;
 			case IDUP: return 2;
 			case IDUP2: return 4;
 			case IDUP_X1: return 3;
@@ -135,6 +141,12 @@ public class StackInstruction extends SimpleInstruction
 					handle.setOptimisationHint(0, BaseType.DontCare);
 					handle.setOptimisationHint(1, BaseType.DontCare);
 				}
+				break;
+
+			case ADUP:
+				hinta = handle.getPostState().getStack().peek(1).getOptimizationHint();
+				hintb = handle.getPostState().getStack().peek(0).getOptimizationHint();
+				handle.setOptimisationHint(0, max(hinta, hintb));
 				break;
 				
 			case IDUP:

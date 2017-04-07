@@ -115,10 +115,9 @@ public class LightweightMethod {
 		registerLightweightMethod(ee_isdigit());
 		registerLightweightMethod(isOddShort());
 		registerLightweightMethod(isOddInt());
-		// registerLightweightMethod(isNull());
-		// registerLightweightMethod(addXZand1ifYnotnull());
+		registerLightweightMethod(isNull());
 		registerLightweightMethod(timesTenTestHighStackShort());
-		// registerLightweightMethod(timesTenTestHighStackInt());
+		registerLightweightMethod(timesTenTestHighStackRef());
 	}
 
 	private static LightweightMethod ee_isdigit() {
@@ -217,42 +216,11 @@ public class LightweightMethod {
 				// sret
 
 				addInstruction(l, new BranchInstruction(Opcode.IFNULL, 0)).setBranchHandle(brtarget0);
-				addInstruction(l, new ConstantPushInstruction(Opcode.SCONST_1, 1));
-				addInstruction(l, new SimpleInstruction(Opcode.SRETURN));
-				addInstructionHandle(l, brtarget0);
 				addInstruction(l, new ConstantPushInstruction(Opcode.SCONST_0, 0));
 				addInstruction(l, new SimpleInstruction(Opcode.SRETURN));
-
-				return l;
-			}
-		};
-	}
-
-	private static LightweightMethod addXZand1ifYnotnull() {
-		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "addXZand1ifYnotnull", new BaseType[] { BaseType.Int, BaseType.Ref, BaseType.Short }) {
-			@Override
-			public ArrayList<InstructionHandle> getInstructionHandles() {
-				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
-				InstructionHandle brtarget0 = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
-
-				// stack: int, ref, short
-				// note that we can't do (short, ref, int) since there's no way to s2i the short if it's not at the top of the stack
-
-				// s2i
-				// ifnull brtarget 0
-				// iconst_1
-				// iadd
-				// brtarget 0
-				// iadd
-				// ireturn
-
-				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
-				addInstruction(l, new BranchInstruction(Opcode.IFNULL, 0)).setBranchHandle(brtarget0);
-				addInstruction(l, new ConstantPushInstruction(Opcode.ICONST_1, 1));
-				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
 				addInstructionHandle(l, brtarget0);
-				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
-				addInstruction(l, new SimpleInstruction(Opcode.IRETURN));
+				addInstruction(l, new ConstantPushInstruction(Opcode.SCONST_1, 1));
+				addInstruction(l, new SimpleInstruction(Opcode.SRETURN));
 
 				return l;
 			}
@@ -286,6 +254,7 @@ public class LightweightMethod {
 				// sadd
 				// sadd
 				// sadd
+				// bspush 42
 				// sreturn
 
 				addInstruction(l, new StackInstruction(Opcode.IDUP));
@@ -313,8 +282,8 @@ public class LightweightMethod {
 		};
 	}
 
-	private static LightweightMethod timesTenTestHighStackInt() {
-		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "timesTenTestHighStackInt", new BaseType[] { BaseType.Int }) {
+	private static LightweightMethod timesTenTestHighStackRef() {
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "timesTenTestHighStackRef", new BaseType[] { BaseType.Ref }) {
 			@Override
 			public ArrayList<InstructionHandle> getInstructionHandles() {
 				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
@@ -322,48 +291,51 @@ public class LightweightMethod {
 				// test if the infuser handles the case where the lightweight method has a stack higher than the parameters,
 				// and higher than the calling method correctly. it needs to increase maxIntStack for the caller.
 
-				// idup2
-				// idup2
-				// idup2
-				// idup2
-				// idup2
-				// idup2
-				// idup2
-				// idup2
-				// idup2
-				// iadd
-				// iadd
-				// iadd
-				// iadd
-				// iadd
-				// iadd
-				// iadd
-				// iadd
-				// iadd
-				// ireturn
+				// adup
+				// adup
+				// adup
+				// adup
+				// adup
+				// adup
+				// adup
+				// adup
+				// adup
+				// apop
+				// apop
+				// apop
+				// apop
+				// apop
+				// apop
+				// apop
+				// apop
+				// apop
+				// apop
+				// sreturn
 
-				addInstruction(l, new StackInstruction(Opcode.IDUP2));
-				addInstruction(l, new StackInstruction(Opcode.IDUP2));
-				addInstruction(l, new StackInstruction(Opcode.IDUP2));
-				addInstruction(l, new StackInstruction(Opcode.IDUP2));
-				addInstruction(l, new StackInstruction(Opcode.IDUP2));
-				addInstruction(l, new StackInstruction(Opcode.IDUP2));
-				addInstruction(l, new StackInstruction(Opcode.IDUP2));
-				addInstruction(l, new StackInstruction(Opcode.IDUP2));
-				addInstruction(l, new StackInstruction(Opcode.IDUP2));
-				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
-				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
-				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
-				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
-				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
-				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
-				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
-				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
-				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
-				addInstruction(l, new SimpleInstruction(Opcode.IRETURN));
+				addInstruction(l, new StackInstruction(Opcode.ADUP));
+				addInstruction(l, new StackInstruction(Opcode.ADUP));
+				addInstruction(l, new StackInstruction(Opcode.ADUP));
+				addInstruction(l, new StackInstruction(Opcode.ADUP));
+				addInstruction(l, new StackInstruction(Opcode.ADUP));
+				addInstruction(l, new StackInstruction(Opcode.ADUP));
+				addInstruction(l, new StackInstruction(Opcode.ADUP));
+				addInstruction(l, new StackInstruction(Opcode.ADUP));
+				addInstruction(l, new StackInstruction(Opcode.ADUP));
+				addInstruction(l, new ArithmeticInstruction(Opcode.APOP));
+				addInstruction(l, new ArithmeticInstruction(Opcode.APOP));
+				addInstruction(l, new ArithmeticInstruction(Opcode.APOP));
+				addInstruction(l, new ArithmeticInstruction(Opcode.APOP));
+				addInstruction(l, new ArithmeticInstruction(Opcode.APOP));
+				addInstruction(l, new ArithmeticInstruction(Opcode.APOP));
+				addInstruction(l, new ArithmeticInstruction(Opcode.APOP));
+				addInstruction(l, new ArithmeticInstruction(Opcode.APOP));
+				addInstruction(l, new ArithmeticInstruction(Opcode.APOP));
+				addInstruction(l, new ArithmeticInstruction(Opcode.APOP));
+				addInstruction(l, new ImmediateBytePushInstruction(Opcode.BSPUSH, 42));
+				addInstruction(l, new SimpleInstruction(Opcode.SRETURN));
 
 				return l;
 			}
 		};
-	}		
+	}
 }
