@@ -194,11 +194,12 @@ public class CoreState {
 		return p;
 	}
 
-	static boolean ee_isdigit(byte c) {
-		boolean retval;
-		retval = ((c>='0') & (c<='9')) ? true : false;
-		return retval;
-	}
+	native static boolean ee_isdigit(byte c);
+	// static boolean ee_isdigit(byte c) {
+	// 	boolean retval;
+	// 	retval = ((c>='0') & (c<='9')) ? true : false;
+	// 	return retval;
+	// }
 
 	/* Function: core_state_transition
 		Actual state machine.
