@@ -150,13 +150,24 @@ uint8_t get_deepest_pair_idx(uint8_t filter) { // Returns 0xFF if there's nothin
     }
     return deepest_idx;
 }
-void rtc_stackcache_spill_pair(uint8_t idx) {
-    if (RTC_STACKCACHE_IS_INT_STACK(idx)) {
-        emit_x_PUSH_16bit(ARRAY_INDEX_TO_REG(idx));            
+void rtc_stackcache_spill_pair(uint8_t idx_to_spill) {
+    if (RTC_STACKCACHE_IS_INT_STACK(idx_to_spill)) {
+        emit_x_PUSH_16bit(ARRAY_INDEX_TO_REG(idx_to_spill));            
     } else {
-        emit_x_PUSH_REF(ARRAY_INDEX_TO_REG(idx));            
+        emit_x_PUSH_REF(ARRAY_INDEX_TO_REG(idx_to_spill));            
     }
-    RTC_STACKCACHE_MARK_AVAILABLE(idx);    
+
+    // This should always be the deepest pair of it's type (int or ref).
+    // But there may be a deeper stack element of the other type. We
+    // still need to check if any deeper pairs need their index updated,
+    // so the range of indexes in the cache stays consecutive.
+    for (uint8_t idx2=0; idx2<RTC_STACKCACHE_MAX_IDX; idx2++) {
+        if (RTC_STACKCACHE_IS_ON_STACK(idx2) && RTC_STACKCACHE_STACK_DEPTH_FOR_IDX(idx2) > RTC_STACKCACHE_STACK_DEPTH_FOR_IDX(idx_to_spill)) {
+            RTC_STACKCACHE_DEC_DEPTH(idx2);
+        }
+    }
+
+    RTC_STACKCACHE_MARK_AVAILABLE(idx_to_spill);    
 }
 uint8_t rtc_stackcache_freeup_a_non_pinned_pair() { // Returns the idx of the freed slot
     // Registers ON STACK are numbered consecutively from 0 up.
@@ -184,12 +195,13 @@ uint8_t rtc_get_stack_idx_at_depth(uint8_t depth) {
     }
     return 0xFF;
 }
+
 uint8_t rtc_get_lru_available_index() {
     uint16_t oldest_available_age = 0xFFFF;
     uint8_t idx_to_return = 0xFF;
 
     // We prefer registers without a value tag, since we can't recycle those anyway. (so it's technically not lru_available...)
-    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+    for (int8_t idx=RTC_STACKCACHE_MAX_IDX-1; idx>=0; idx--) {
         if (RTC_STACKCACHE_IS_AVAILABLE(idx) && !RTC_MARKLOOP_ISPINNED(idx) && RTC_STACKCACHE_GET_VALUETAG(idx)==RTC_VALUETAG_UNUSED) {
             idx_to_return = idx;
             break;
@@ -198,7 +210,7 @@ uint8_t rtc_get_lru_available_index() {
 
     // If there are no available registers without valuetag, we want to use the oldest one
     if (idx_to_return == 0xFF) {
-        for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+        for (int8_t idx=RTC_STACKCACHE_MAX_IDX-1; idx>=0; idx--) {
             if (RTC_STACKCACHE_IS_AVAILABLE(idx) && !RTC_MARKLOOP_ISPINNED(idx) && RTC_STACKCACHE_GET_AGE(idx)<oldest_available_age) {
                 oldest_available_age = RTC_STACKCACHE_GET_AGE(idx);
                 idx_to_return = idx;
@@ -410,7 +422,7 @@ void rtc_stackcache_getfree_16bit_for_array_load(uint8_t *regs) {
 // Returns true if a register in the range >=r16 is allocated, false otherwise
 bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs) {
     // Check if any reg in the range starting at R16 is free
-    for(uint8_t reg=16; reg<=30; reg+=2) {
+    for(uint8_t reg=24; reg>=16; reg-=2) {
         uint8_t idx = REG_TO_ARRAY_INDEX(reg);
         if (RTC_STACKCACHE_IS_AVAILABLE(idx) && !RTC_MARKLOOP_ISPINNED(idx)) {
             // We're in luck.
