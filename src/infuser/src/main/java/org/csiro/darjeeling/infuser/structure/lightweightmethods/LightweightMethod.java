@@ -112,7 +112,7 @@ public class LightweightMethod {
 	static {
 		lightweightMethods = new ArrayList<LightweightMethod>();
 
-		registerLightweightMethod(ee_isdigit());
+		registerLightweightMethod(ee_isdigit_lightweight());
 		registerLightweightMethod(isOddShort());
 		registerLightweightMethod(isOddInt());
 		registerLightweightMethod(isNull());
@@ -120,8 +120,8 @@ public class LightweightMethod {
 		registerLightweightMethod(timesTenTestHighStackRef());
 	}
 
-	private static LightweightMethod ee_isdigit() {
-		return new LightweightMethod("javax.rtcbench.CoreState", "ee_isdigit", new BaseType[] { BaseType.Short }) {
+	private static LightweightMethod ee_isdigit_lightweight() {
+		return new LightweightMethod("javax.rtcbench.CoreState", "ee_isdigit_lightweight", new BaseType[] { BaseType.Short }) {
 			@Override
 			public ArrayList<InstructionHandle> getInstructionHandles() {
 				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
