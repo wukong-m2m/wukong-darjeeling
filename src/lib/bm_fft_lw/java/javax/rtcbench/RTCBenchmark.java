@@ -4,7 +4,8 @@ import javax.darjeeling.Stopwatch;
 import javax.rtc.*;
 
 public class RTCBenchmark {
-    public static String name = "FIX_FFT";
+	private native static byte FIX_MPY_lightweight(byte a, byte b);
+    public static String name = "FIX_FFT LIGHTWEIGHT METHOD";
     public static native void test_native();
     public static boolean test_java() {
     	final int RTCTEST_FFT_ARRAYSIZE = 6;
@@ -87,40 +88,40 @@ public class RTCBenchmark {
 	// // SIN8 and COS8 - 8-bit pseudo sine and cosine for better handling. 
 	// // Normalized to y * N_WAVE_HALF and x * N_WAVE / 2pi .
 	// // Returns char value which can be used for integer arithmetic
-	// private static final byte SIN8(short n)
-	// {
-	//   n = (short)(n % N_WAVE);
-	//   return Sinewave[n];
-	// }
+	private static final byte SIN8(short n)
+	{
+	  n = (short)(n % N_WAVE);
+	  return Sinewave[n];
+	}
 
-	// private static final byte COS8(short n)
-	// {
-	//   n = (short)((n + N_WAVE/4) % N_WAVE);
-	//   return Sinewave[n];
-	// }
+	private static final byte COS8(short n)
+	{
+	  n = (short)((n + N_WAVE/4) % N_WAVE);
+	  return Sinewave[n];
+	}
 
 
-	// // FIX_MPY() - fixed-point multiplication & scaling.
-	// // Substitute inline assembly for hardware-specific
-	// // optimization suited to a particluar DSP processor.
-	// // Scaling ensures that result remains 16-bit.
-	// private static byte FIX_MPY(byte a, byte b)
-	// { 
-	// 	// Multiply, then scale back to one signed 8-bit value
+	// FIX_MPY() - fixed-point multiplication & scaling.
+	// Substitute inline assembly for hardware-specific
+	// optimization suited to a particluar DSP processor.
+	// Scaling ensures that result remains 16-bit.
+	private static byte FIX_MPY(byte a, byte b)
+	{ 
+		// Multiply, then scale back to one signed 8-bit value
 
-	// 	// Original
-	//     // // shift right one less bit (i.e. 7-1)
-	//     // short c = (short)((short)((short)a * (short)b) >> 6);
-	//     // // last bit shifted out = rounding-bit
-	//     // b = (byte)(c & 0x01);
-	//     // // last shift + rounding bit
-	//     // a = (byte)((c >> 1) + b);
-	//     // return a;
+		// Original
+	    // // shift right one less bit (i.e. 7-1)
+	    // short c = (short)(((short)a * (short)b) >> 6);
+	    // // last bit shifted out = rounding-bit
+	    // b = (byte)(c & 0x01);
+	    // // last shift + rounding bit
+	    // a = (byte)((c >> 1) + b);
+	    // return a;
 
-	// 	// Reformatted to make it easier to inline
-	//     short c = (short)(((short)a * (short)b) >> 6);
-	//     return (byte)((c >> 1) + ((c & 0x01)));
-	// }
+		// Reformatted to make it easier to inline
+	    short c = (short)((short)((short)a * (short)b) >> 6);
+	    return (byte)((c >> 1) + (c & 0x01));
+	}
 	
 
 
@@ -200,12 +201,12 @@ public class RTCBenchmark {
 			for (m=0; m<l; ++m) {
 				j = (short)(m << k);
 				// 0 <= j < N_WAVE/2
-				// wr =  COS8(j);
-				// wi = (byte)-SIN8(j);
+				wr =  COS8(j);
+				wi = (byte)-SIN8(j);
 				// wr =  Sinewave[((short)(j + N_WAVE/4) % N_WAVE)]; // COS8(j)
 				// wi = (byte)-Sinewave[(j % N_WAVE)]; // -SIN8(j)
-				wr =  Sinewave[((short)(j + N_WAVE/4) & 0xFF)]; // COS8(j)
-				wi = (byte)-Sinewave[(j & 0xFF)]; // -SIN8(j)
+				// wr =  Sinewave[((short)(j + N_WAVE/4) & 0xFF)]; // COS8(j)
+				// wi = (byte)-Sinewave[(j & 0xFF)]; // -SIN8(j)
 				if (inverse)
 					wi = (byte)-wi;
 				if (shift) {
@@ -214,19 +215,19 @@ public class RTCBenchmark {
 				}
 				for (i=m; i<n; i+=istep) {
 					j = (short)(i + l);
-					// tr = (byte)(FIX_MPY(wr,fr[j]) - FIX_MPY(wi,fi[j]));
-					// ti = (byte)(FIX_MPY(wr,fi[j]) + FIX_MPY(wi,fr[j]));
-					// Inlined FIX_MPY
+					tr = (byte)(FIX_MPY_lightweight(wr,fr[j]) - FIX_MPY_lightweight(wi,fi[j]));
+					ti = (byte)(FIX_MPY_lightweight(wr,fi[j]) + FIX_MPY_lightweight(wi,fr[j]));
+					// // Inlined FIX_MPY
 
-					short c3 = fr[j];
-					short c1 = (short)((short)(wr * c3) >> 6);
-					short c4 = (short)((short)(wi * c3) >> 6);
-					c3 = fi[j];
-					short c2 = (short)((short)(wi * c3) >> 6);
-					      c3 = (short)((short)(wr * c3) >> 6);
+					// short c3 = fr[j];
+					// short c1 = (short)((short)(wr * c3) >> 6);
+					// short c4 = (short)((short)(wi * c3) >> 6);
+					// c3 = fi[j];
+					// short c2 = (short)((short)(wi * c3) >> 6);
+					//       c3 = (short)((short)(wr * c3) >> 6);
 
-					tr = (byte)(((c1 >> 1) + ((c1 & 0x01))) - ((c2 >> 1) + ((c2 & 0x01))));
-					ti = (byte)(((c3 >> 1) + ((c3 & 0x01))) + ((c4 >> 1) + ((c4 & 0x01))));
+					// tr = (byte)(((c1 >> 1) + ((c1 & 0x01))) - ((c2 >> 1) + ((c2 & 0x01))));
+					// ti = (byte)(((c3 >> 1) + ((c3 & 0x01))) + ((c4 >> 1) + ((c4 & 0x01))));
 					qr = fr[i];
 					qi = fi[i];
 					if (shift) {

@@ -121,6 +121,7 @@ public class LightweightMethod {
 	static {
 		lightweightMethods = new ArrayList<LightweightMethod>();
 
+        registerLightweightMethod(fft_FIX_MPY_lightweight());
         registerLightweightMethod(coremark_ee_isdigit_lightweight());
         registerLightweightMethod(testISWAP());
 		registerLightweightMethod(isOddShort());
@@ -129,6 +130,70 @@ public class LightweightMethod {
 		registerLightweightMethod(timesTenTestHighStackShort());
 		registerLightweightMethod(timesTenTestHighStackRef());
 	}
+
+    private static LightweightMethod fft_FIX_MPY_lightweight() {
+        return new LightweightMethod("javax.rtcbench.RTCBenchmark", "FIX_MPY_lightweight", BaseType.Byte, new BaseType[] { BaseType.Byte, BaseType.Byte }) {
+            @Override
+            public ArrayList<InstructionHandle> getInstructionHandles() {
+                ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
+
+                // Java version
+                // private static byte FIX_MPY(byte a, byte b)
+                // {
+                //     short c = (short)((short)((short)a * (short)b) >> 6);
+                //     return (byte)((c >> 1) + ((byte)(c & 0x01)));
+                // }
+
+                // // Original (non-lightweight) JVM version:
+                // sload(0)                      ;                                                             ; 0Short(Byte)                                                ;   ; 0,1
+                // sload(1)                      ; 0Short(Byte)                                                ; 0Short(Byte),1Short(Byte)                                   ;   ; 1
+                // smul                          ; 0Short(Byte),1Short(Byte)                                   ; 2Short                                                      ; G ; 
+                // bspush                        ; 2Short                                                      ; 2Short,3Short(Byte)                                         ;   ; 
+                // sshr                          ; 2Short,3Short(Byte)                                         ; 5Short                                                      ;   ; 
+                // sstore(2)                     ; 5Short                                                      ;                                                             ;   ; 2
+                // sload(2)                      ;                                                             ; 7Short                                                      ;  K; 2
+                // sconst_1                      ; 7Short                                                      ; 7Short,8Short(Byte)                                         ;   ; 2
+                // sshr                          ; 7Short,8Short(Byte)                                         ; 9Short                                                      ;   ; 2
+                // sload(2)                      ; 9Short                                                      ; 9Short,10Short                                              ;   ; 2
+                // sconst_1                      ; 9Short,10Short                                              ; 9Short,10Short,11Short(Byte)                                ;   ; 
+                // sand                          ; 9Short,10Short,11Short(Byte)                                ; 9Short,12Short                                              ;   ; 
+                // s2b                           ; 9Short,12Short                                              ; 9Short,13Byte                                               ;   ; 
+                // sadd                          ; 9Short,13Byte                                               ; 14Short                                                     ;   ; 
+                // s2b                           ; 14Short                                                     ; 15Byte                                                      ;   ; 
+                // sreturn                       ; 15Byte                                                      ;                                                             ;   ; 
+
+                // Lightweight version
+                //                   // a, b
+                // smul              // a*b
+                // bspush 6          // a*b, 6
+                // sshr              // c (=(a*b)>>6)
+                // idup              // c, c
+                // sconst_1          // c, c, 1
+                // sshr              // c, c>>1
+                // swap              // c>>1, c
+                // sconst_1          // c>>1, c, 1
+                // sand              // c>>1, c&1
+                // sadd              // (c>>1 + c&1)
+                // s2b               // (byte)(c>>1 + c&1)
+                // sreturn
+
+                addInstruction(l, new ArithmeticInstruction(Opcode.SMUL));
+                addInstruction(l, new ImmediateBytePushInstruction(Opcode.BSPUSH, 6));
+                addInstruction(l, new ArithmeticInstruction(Opcode.SSHR));
+                addInstruction(l, new StackInstruction(Opcode.IDUP));
+                addInstruction(l, new ConstantPushInstruction(Opcode.SCONST_1, 1));
+                addInstruction(l, new ArithmeticInstruction(Opcode.SSHR));
+                addInstruction(l, new StackInstruction(Opcode.ISWAP_X));
+                addInstruction(l, new ConstantPushInstruction(Opcode.SCONST_1, 1));
+                addInstruction(l, new ArithmeticInstruction(Opcode.SAND));
+                addInstruction(l, new ArithmeticInstruction(Opcode.SADD));
+                addInstruction(l, new ExplicitCastInstruction(Opcode.S2B));
+                addInstruction(l, new SimpleInstruction(Opcode.SRETURN));
+
+                return l;
+            }
+        };      
+    }
 
 	private static LightweightMethod coremark_ee_isdigit_lightweight() {
 		return new LightweightMethod("javax.rtcbench.CoreState", "ee_isdigit_lightweight", BaseType.Short,  new BaseType[] { BaseType.Short }) {

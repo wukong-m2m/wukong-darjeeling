@@ -312,6 +312,10 @@ public class OptimizeByteCode extends CodeBlockTransformation
 				case L2S:
 					handle.setOptimisationHint(0, BaseType.Short);
 					break;
+
+				case S2B:
+					handle.setOptimisationHint(0, BaseType.Short);
+					break;
 			}
 		}
 	}
