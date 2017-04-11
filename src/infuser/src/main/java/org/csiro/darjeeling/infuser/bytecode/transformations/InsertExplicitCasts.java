@@ -72,6 +72,11 @@ public class InsertExplicitCasts extends CodeBlockTransformation
 			
 			int nrOutputs = handle.getInstruction().getNrOutputValues();
 
+			// System.err.println("");
+			// System.err.println("instruction " + handle.getInstruction());
+			// System.err.println("pre " + handle.getPreState().getStack());
+			// System.err.println("post " + handle.getPostState().getStack());
+
 			for (int j=0; j<nrOutputs; j++)
 			{
 				BaseType outputType = handle.getOutputType(j);
@@ -81,7 +86,10 @@ public class InsertExplicitCasts extends CodeBlockTransformation
 					// get the optimization hint
 					element = handle.getPostState().getStack().peek(j);
 					hint = element.getOptimizationHint();
-					
+					// System.err.print("element at " + j + ":");
+					// System.err.print(" "+ element);
+					// System.err.println(", hint:"+ hint);
+
 					// if the hint is a 'don't care', the output of this handle is being discarded
 					// (probably by a pop/pop2 instruction) - we don't need to cast it
 					if (hint!=BaseType.DontCare)

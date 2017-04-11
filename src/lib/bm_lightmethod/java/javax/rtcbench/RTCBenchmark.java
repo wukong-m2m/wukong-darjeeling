@@ -14,8 +14,9 @@ public class RTCBenchmark {
         return rtcbenchmark_measure_java_performance();
     }
     
-    public static native boolean isOddInt(int x);
+    public static native int testISWAP(short a, int b);
     public static native boolean isOddShort(short x);
+    public static native boolean isOddInt(int x);
     public static native boolean isNull(Object x);
     public static native short timesTenTestHighStackShort(short x);
     public static native short timesTenTestHighStackRef(Object x);
@@ -31,6 +32,8 @@ public class RTCBenchmark {
             // by the method it calls)
             System.out.println("round " + i);
             System.out.println("test to pin more regs " + (i*k)+j);
+
+            success = success && testISWAP((short) 42, 4200000) == 4200042;
 
             success = success && isOddShort((short)2) == false;
             success = success && isOddShort((short)-3) == true;
@@ -49,10 +52,10 @@ public class RTCBenchmark {
             success = success && timesTenTestHighStackRef("null") == 42;
             success = success && timesTenTestHighStackRef(new Object()) == 42;
 
-            success = success && (CoreState.ee_isdigit((byte)'/') == false); // 0x2f
-            success = success && (CoreState.ee_isdigit((byte)'0') == true);  // 0x30
-            success = success && (CoreState.ee_isdigit((byte)'9') == true);  // 0x39
-            success = success && (CoreState.ee_isdigit((byte)':') == false); // 0x3a
+            success = success && (CoreState.ee_isdigit_lightweight((byte)'/') == false); // 0x2f
+            success = success && (CoreState.ee_isdigit_lightweight((byte)'0') == true);  // 0x30
+            success = success && (CoreState.ee_isdigit_lightweight((byte)'9') == true);  // 0x39
+            success = success && (CoreState.ee_isdigit_lightweight((byte)':') == false); // 0x3a
 
             if (success) { System.out.println("ok"); } else { System.out.println("kaput"); }
         }

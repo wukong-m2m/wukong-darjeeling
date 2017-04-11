@@ -415,6 +415,13 @@ public class InterpreterState implements Comparable<InterpreterState>
 				ret.getStack().push(handle, 1);
 				ret.getStack().push(handle, 0);
 				break;
+
+			case ASWAP:
+			case ISWAP_X:
+				ret.getStack().pop();
+				ret.getStack().pop();
+				ret.getStack().push(handle, 1);
+				ret.getStack().push(handle, 0);
 				
 			case B2C:
 			case S2B:

@@ -10,6 +10,7 @@ import org.csiro.darjeeling.infuser.structure.elements.AbstractMethodDefinition;
 public class LightweightMethod {
 	public String className;
 	public String methodName;
+	private BaseType returnType;
 	private BaseType[] parameters;
 	private int maxIntStack;
 	private int maxRefStack;
@@ -30,13 +31,14 @@ public class LightweightMethod {
 		return null;		
 	}
 
-	private LightweightMethod(String className, String methodName, BaseType[] parameters) {
+	private LightweightMethod(String className, String methodName, BaseType returnType, BaseType[] parameters) {
 		this.className = className;
 		this.methodName = methodName;
 		// It would be nice if we could determine this from the CodeBlock, but we need the information
 		// when we process the INVOKELIGHT instruction, and it's not guaranteed the Lightweight method
 		// will already have been processed at that time.
 		// Would be good to change this sometime 
+		this.returnType = returnType;
 		this.parameters = parameters;
 		this.maxIntStack = 1000000; // Will be set later in determineMaxStackDepth
 		this.maxRefStack = 1000000; // Will be set later in determineMaxStackDepth
@@ -78,26 +80,33 @@ public class LightweightMethod {
 
 	private class DummyMethodImplementation extends InternalMethodImplementation {
 		private class DummyMethodDefinition extends AbstractMethodDefinition {
-			private BaseType[] arguments;
+			private BaseType returnType;
+			private BaseType[] argumentTypes;
 
-			public DummyMethodDefinition(BaseType[] arguments) {
+			public DummyMethodDefinition(BaseType returnType, BaseType[] argumentTypes) {
 				super("","");
-				this.arguments = arguments;
+				this.returnType = returnType;
+				this.argumentTypes = argumentTypes;
 			}
 
 			@Override
 			public BaseType[] getArgumentTypes() {
-				return arguments;
+				return argumentTypes;
+			}
+
+			@Override
+			public BaseType getReturnType() {
+				return returnType;
 			}
 		}
 
-		public DummyMethodImplementation(BaseType[] arguments) {
-			this.methodDefinition = new DummyMethodDefinition(arguments);
+		public DummyMethodImplementation(BaseType returnType, BaseType[] argumentTypes) {
+			this.methodDefinition = new DummyMethodDefinition(returnType, argumentTypes);
 		}
 	}
 
 	public void determineMaxStackDepth() {
-		InternalMethodImplementation dummyMethodImpl = new DummyMethodImplementation(this.parameters);
+		InternalMethodImplementation dummyMethodImpl = new DummyMethodImplementation(this.returnType, this.parameters);
 		CodeBlock dummy = CodeBlock.fromLightweightMethod(this, dummyMethodImpl);
 		maxIntStack = dummy.getMaxStack() - dummy.getMaxRefStack();
 		maxRefStack = dummy.getMaxRefStack() - 1; // -1 because CalculateMaxStack does a +1 for unknown reasons. We should remove this -1 if that ever changes.
@@ -112,7 +121,8 @@ public class LightweightMethod {
 	static {
 		lightweightMethods = new ArrayList<LightweightMethod>();
 
-		registerLightweightMethod(ee_isdigit_lightweight());
+        registerLightweightMethod(coremark_ee_isdigit_lightweight());
+        registerLightweightMethod(testISWAP());
 		registerLightweightMethod(isOddShort());
 		registerLightweightMethod(isOddInt());
 		registerLightweightMethod(isNull());
@@ -120,8 +130,8 @@ public class LightweightMethod {
 		registerLightweightMethod(timesTenTestHighStackRef());
 	}
 
-	private static LightweightMethod ee_isdigit_lightweight() {
-		return new LightweightMethod("javax.rtcbench.CoreState", "ee_isdigit_lightweight", new BaseType[] { BaseType.Short }) {
+	private static LightweightMethod coremark_ee_isdigit_lightweight() {
+		return new LightweightMethod("javax.rtcbench.CoreState", "ee_isdigit_lightweight", BaseType.Short,  new BaseType[] { BaseType.Short }) {
 			@Override
 			public ArrayList<InstructionHandle> getInstructionHandles() {
 				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
@@ -159,8 +169,28 @@ public class LightweightMethod {
 		};
 	}
 
+	private static LightweightMethod testISWAP() {
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "testISWAP", BaseType.Int, new BaseType[] { BaseType.Short, BaseType.Int }) {
+			@Override
+			public ArrayList<InstructionHandle> getInstructionHandles() {
+				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
+
+				// iswap_x
+				// s2i
+				// iadd
+				// ireturn
+
+                addInstruction(l, new StackInstruction(Opcode.ISWAP_X));
+				addInstruction(l, new ArithmeticInstruction(Opcode.S2I));
+				addInstruction(l, new ArithmeticInstruction(Opcode.IADD));
+				addInstruction(l, new SimpleInstruction(Opcode.IRETURN));
+
+				return l;
+			}
+		};
+	}
 	private static LightweightMethod isOddShort() {
-		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "isOddShort", new BaseType[] { BaseType.Short }) {
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "isOddShort",  BaseType.Short, new BaseType[] { BaseType.Short }) {
 			@Override
 			public ArrayList<InstructionHandle> getInstructionHandles() {
 				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
@@ -181,7 +211,7 @@ public class LightweightMethod {
 	}
 
 	private static LightweightMethod isOddInt() {
-		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "isOddInt", new BaseType[] { BaseType.Int }) {
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "isOddInt",  BaseType.Short, new BaseType[] { BaseType.Int }) {
 			@Override
 			public ArrayList<InstructionHandle> getInstructionHandles() {
 				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
@@ -202,7 +232,7 @@ public class LightweightMethod {
 	}
 
 	private static LightweightMethod isNull() {
-		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "isNull", new BaseType[] { BaseType.Ref }) {
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "isNull",  BaseType.Short, new BaseType[] { BaseType.Ref }) {
 			@Override
 			public ArrayList<InstructionHandle> getInstructionHandles() {
 				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
@@ -228,7 +258,7 @@ public class LightweightMethod {
 	}
 
 	private static LightweightMethod timesTenTestHighStackShort() {
-		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "timesTenTestHighStackShort", new BaseType[] { BaseType.Short }) {
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "timesTenTestHighStackShort",  BaseType.Short, new BaseType[] { BaseType.Short }) {
 			@Override
 			public ArrayList<InstructionHandle> getInstructionHandles() {
 				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();
@@ -283,7 +313,7 @@ public class LightweightMethod {
 	}
 
 	private static LightweightMethod timesTenTestHighStackRef() {
-		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "timesTenTestHighStackRef", new BaseType[] { BaseType.Ref }) {
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "timesTenTestHighStackRef", BaseType.Short, new BaseType[] { BaseType.Ref }) {
 			@Override
 			public ArrayList<InstructionHandle> getInstructionHandles() {
 				ArrayList<InstructionHandle> l = new ArrayList<InstructionHandle>();

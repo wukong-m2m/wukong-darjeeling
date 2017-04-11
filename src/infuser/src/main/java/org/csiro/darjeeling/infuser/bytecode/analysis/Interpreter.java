@@ -87,6 +87,9 @@ public class Interpreter
 		InstructionHandle handle = pickNextState();
 		while ((handle=pickNextState())!=null)
 		{
+			// System.err.println("instruction " + handle.getInstruction());
+			// System.err.println("pre " + handle.getPreState().getStack());
+
 			// intepret this instruction
 			InterpreterState postState = handle.getPreState().transition(handle);
 			handle.setPostState(postState);
@@ -109,6 +112,8 @@ public class Interpreter
 			}
 			
 			pendingHandles.remove(handle);
+			// System.err.println("post " + handle.getPostState().getStack());
+			// System.err.println("");
 		}
 		
 	}
