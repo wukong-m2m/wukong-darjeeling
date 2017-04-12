@@ -4,7 +4,7 @@ import javax.darjeeling.Stopwatch;
 import javax.rtc.*;
 
 public class RTCBenchmark {
-    public static String name = "FIX_FFT LIGHTWEIGHT METHOD";
+    public static String name = "FIX_FFT FUNCTIONS";
     public static native void test_native();
     public static boolean test_java() {
     	final int RTCTEST_FFT_ARRAYSIZE = 6;
@@ -89,14 +89,12 @@ public class RTCBenchmark {
 	// // Returns char value which can be used for integer arithmetic
 	private static final byte SIN8(short n)
 	{
-	  n = (short)(n % N_WAVE);
-	  return Sinewave[n];
+	  return Sinewave[n & 0xFF];
 	}
 
 	private static final byte COS8(short n)
 	{
-	  n = (short)((n + N_WAVE/4) % N_WAVE);
-	  return Sinewave[n];
+	  return Sinewave[(n + N_WAVE/4) & 0xFF];
 	}
 
 

@@ -90,14 +90,12 @@ public class RTCBenchmark {
 	// // Returns char value which can be used for integer arithmetic
 	private static final byte SIN8(short n)
 	{
-	  n = (short)(n % N_WAVE);
-	  return Sinewave[n];
+	  return Sinewave[n & 0xFF];
 	}
 
 	private static final byte COS8(short n)
 	{
-	  n = (short)((n + N_WAVE/4) % N_WAVE);
-	  return Sinewave[n];
+	  return Sinewave[(n + N_WAVE/4) & 0xFF];
 	}
 
 
