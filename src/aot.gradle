@@ -11,6 +11,8 @@ tasks.whenTaskAdded { task ->
                     cCompiler.args.remove "-Os"
                     cCompiler.args "-O3"
                     println cCompiler.args
+                } else {
+                    ext.needToRestoreOs = false
                 }
             }
         }
@@ -19,7 +21,7 @@ tasks.whenTaskAdded { task ->
                 if (ext.needToRestoreOs) {
                     println "============= RESTORING -Os"
                     println cCompiler.args
-                    ext.needToRestoreOs = true
+                    ext.needToRestoreOs = false
                     cCompiler.args.remove "-O3"
                     cCompiler.args "-Os"
                     println cCompiler.args
