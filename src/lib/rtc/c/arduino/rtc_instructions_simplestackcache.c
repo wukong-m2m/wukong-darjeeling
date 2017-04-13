@@ -635,6 +635,20 @@ void rtc_translate_single_instruction() {
             operand_regs1[1] = R23;
             rtc_stackcache_push_ref(operand_regs1);
         break;
+        case JVM_GETFIELD_A_FIXED: {
+            ts->pc += 4; // Skip operand (already read into jvm_operand_byte0)
+            uint16_t targetRefOffset = get_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
+
+            rtc_stackcache_getfree_ref(operand_regs1);
+            rtc_stackcache_pop_ref_into_Z(); // POP the reference into Z
+
+            targetRefOffset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, targetRefOffset);
+            emit_LDD(operand_regs1[0], Z, targetRefOffset);
+            emit_LDD(operand_regs1[1], Z, targetRefOffset+1);
+
+            rtc_stackcache_push_ref(operand_regs1);
+        }
+        break;
         case JVM_PUTFIELD_B:
         case JVM_PUTFIELD_C:
             ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
@@ -678,9 +692,18 @@ void rtc_translate_single_instruction() {
             emit_STD(operand_regs1[0], Z, (jvm_operand_word0*2)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
             emit_STD(operand_regs1[1], Z, (jvm_operand_word0*2)+1);
         break;
-        case JVM_GETFIELD_A_FIXED:
-        case JVM_PUTFIELD_A_FIXED:
-            dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
+        case JVM_PUTFIELD_A_FIXED: {
+            ts->pc += 4; // Skip operand (already read into jvm_operand_byte0)
+            uint16_t targetRefOffset = get_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
+
+            rtc_stackcache_pop_ref(operand_regs1); // POP the value to store
+            rtc_stackcache_pop_ref_into_Z(); // POP the reference into Z
+
+            targetRefOffset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, targetRefOffset);
+
+            emit_STD(operand_regs1[0], Z, targetRefOffset); // targetRefOffset is an index in the (16 bit) array, so multiply by 2
+            emit_STD(operand_regs1[1], Z, targetRefOffset+1);
+        }
         break;
         case JVM_GETSTATIC_B:
         case JVM_GETSTATIC_C:

@@ -523,6 +523,19 @@ void rtc_translate_single_instruction() {
             emit_LDD(R25, Z, (jvm_operand_word0*2)+1);
             emit_x_PUSH_REF(R24);
         break;
+        case JVM_GETFIELD_A_FIXED: {
+            ts->pc += 4; // Skip operands (already read into jvm_operand_byte0)
+            uint16_t targetRefOffset = get_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
+
+            emit_x_POP_REF(RZ); // POP the reference into Z
+
+            targetRefOffset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, targetRefOffset);
+            emit_LDD(R24, Z, targetRefOffset);
+            emit_LDD(R25, Z, targetRefOffset+1);
+
+            emit_x_PUSH_REF(R24);
+        }
+        break;
         case JVM_PUTFIELD_B:
         case JVM_PUTFIELD_C:
             ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
@@ -559,9 +572,18 @@ void rtc_translate_single_instruction() {
             emit_STD(R16, Z, (jvm_operand_word0*2)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
             emit_STD(R17, Z, (jvm_operand_word0*2)+1);
         break;
-        case JVM_GETFIELD_A_FIXED:
-        case JVM_PUTFIELD_A_FIXED:
-            dj_panic(DJ_PANIC_UNIMPLEMENTED_FEATURE);
+        case JVM_PUTFIELD_A_FIXED: {
+            ts->pc += 4; // Skip operands (already read into jvm_operand_byte0)
+            uint16_t targetRefOffset = get_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
+
+            emit_x_POP_REF(R16); // POP the value to store (store in in call-saved R16-R17)
+            emit_x_POP_REF(RZ); // POP the reference into Z
+
+            targetRefOffset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, targetRefOffset);
+
+            emit_STD(R16, Z, targetRefOffset); // targetRefOffset is an index in the (16 bit) array, so multiply by 2
+            emit_STD(R17, Z, targetRefOffset+1);
+        }
         break;
         case JVM_GETSTATIC_B:
         case JVM_GETSTATIC_C:
@@ -1596,6 +1618,7 @@ void rtc_translate_single_instruction() {
         // Not implemented
         default:
             DEBUG_LOG(DBG_RTC, "Unimplemented Java opcode %d at pc=%d\n", opcode, ts->pc);
+            avroraPrintInt32(opcode);
             dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
         break;
     }
