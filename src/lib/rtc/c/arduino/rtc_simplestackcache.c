@@ -126,7 +126,7 @@ uint8_t rtc_get_stack_idx_at_depth(uint8_t depth) {
     return 0xFF;
 }
 uint8_t rtc_get_first_available_index() {
-    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+    for (int8_t idx=RTC_STACKCACHE_MAX_IDX-1; idx>=0; idx--) {
         if (RTC_STACKCACHE_IS_AVAILABLE(idx)) {
             return idx;
         }
@@ -197,7 +197,7 @@ void rtc_stackcache_getfree_ref(uint8_t *regs) {
 // Returns true if a register in the range >=r16 is allocated, false otherwise
 bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs) {
     // Check if any reg in the range starting at R16 is free
-    for(uint8_t reg=16; reg<=30; reg+=2) {
+    for(uint8_t reg=24; reg>=16; reg-=2) {
         uint8_t idx = REG_TO_ARRAY_INDEX(reg);
         if (RTC_STACKCACHE_IS_AVAILABLE(idx)) {
             // We're in luck.
