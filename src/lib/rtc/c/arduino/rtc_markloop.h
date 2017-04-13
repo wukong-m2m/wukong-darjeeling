@@ -82,13 +82,4 @@ bool rtc_poppedstackcache_can_I_skip_this();
 void rtc_markloop_emit_prologue(bool called_from_invokelight, uint8_t lightweightmethod_id);
 void rtc_markloop_emit_epilogue(bool called_from_invokelight, uint8_t lightweightmethod_id);
 
-// emit instructions to be used by MARKLOOP prologue and epilogue as well as normal instructions
-void emit_load_local_16bit(uint8_t *regs, uint16_t offset);
-void emit_load_local_32bit(uint8_t *regs, uint16_t offset);
-#define emit_load_local_ref(regs, offset) emit_load_local_16bit(regs, offset)
-
-void emit_store_local_16bit(uint8_t *regs, uint16_t offset);
-void emit_store_local_32bit(uint8_t *regs, uint16_t offset);
-#define emit_store_local_ref(regs, offset) emit_store_local_16bit(regs, offset)
-
 #endif // RTC_MARKLOOP_H

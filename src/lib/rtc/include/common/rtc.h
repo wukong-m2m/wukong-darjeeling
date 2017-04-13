@@ -39,6 +39,14 @@ void rtc_current_method_set_uses_reg_used_in_lightweight_invoke(uint8_t lightwei
 bool rtc_current_method_get_uses_reg(uint8_t reg);
 bool rtc_method_get_uses_reg(uint8_t method, uint8_t reg);
 
+void emit_load_local_16bit(uint8_t *regs, uint16_t offset);
+void emit_load_local_32bit(uint8_t *regs, uint16_t offset);
+#define emit_load_local_ref(regs, offset) emit_load_local_16bit(regs, offset)
+
+void emit_store_local_16bit(uint8_t *regs, uint16_t offset);
+void emit_store_local_32bit(uint8_t *regs, uint16_t offset);
+#define emit_store_local_ref(regs, offset) emit_store_local_16bit(regs, offset)
+
 #define RTC_STACKCACHE_MAX_IDX             16 // 16 because we only keep track of pairs
 #define REG_TO_ARRAY_INDEX(reg)            ((reg)/2)
 #define ARRAY_INDEX_TO_REG(idx)            ((idx)*2)
