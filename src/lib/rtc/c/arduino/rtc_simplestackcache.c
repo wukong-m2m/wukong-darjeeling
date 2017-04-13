@@ -263,6 +263,7 @@ uint8_t rtc_stackcache_pop_pair(uint8_t which_stack, uint8_t target_reg) {
      && target_reg != R20
      && target_reg != R22
      && target_reg != R24
+     && target_reg != R26
      && target_reg != RZ) {
         while (true) {
             avroraPrintUInt8(which_stack);
@@ -322,7 +323,7 @@ uint8_t rtc_stackcache_pop_pair(uint8_t which_stack, uint8_t target_reg) {
                 RTC_STACKCACHE_MARK_AVAILABLE(stack_top_idx); // Original location is now AVAILABLE
             }
         }
-        if (target_idx != REG_TO_ARRAY_INDEX(RZ)) { // Don't mark Z in use, because it can't become available after this instruction
+        if (target_idx != REG_TO_ARRAY_INDEX(RX) && target_idx != REG_TO_ARRAY_INDEX(RZ)) { // Don't mark X or Z in use, because it should't become available after this instruction
             RTC_STACKCACHE_MARK_IN_USE(target_idx); // Target is now IN USE (if it wasn't already)
         }
         return ARRAY_INDEX_TO_REG(target_idx);

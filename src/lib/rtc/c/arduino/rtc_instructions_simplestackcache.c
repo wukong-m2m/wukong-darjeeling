@@ -19,6 +19,7 @@
 // avr-libgcc functions used by translation
 extern void __divmodhi4(void);
 extern void __mulsi3(void);
+extern void __mulhisi3(void);
 extern void __divmodsi4(void);
 
 void rtc_translate_single_instruction() {
@@ -1004,6 +1005,24 @@ void rtc_translate_single_instruction() {
             emit_SBC(operand_regs2[3], operand_regs1[3]);
 
             rtc_stackcache_push_32bit(operand_regs2);
+        break;
+        case JVM_SIMUL:
+            // Note that __mulhisi3 needs one of the operands in RX (R26:R27)
+
+            rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call(); // First pop the operand in R20 because this may change RX
+            emit_MOVW(RZ, RX); // Save RX in RZ
+            rtc_stackcache_pop_16bit_into_fixed_reg(R18);
+            rtc_stackcache_pop_16bit_into_fixed_reg(R26);
+
+            // ;;; R25:R22 = (signed long) R27:R26 * (signed long) R19:R18
+            // ;;; C3:C0   = (signed long) A1:A0   * (signed long) B1:B0
+            // ;;; Clobbers: __tmp_reg__
+            // DEFUN __mulhisi3            
+
+            emit_x_CALL_without_saving_RX((uint16_t)&__mulhisi3);
+            rtc_stackcache_push_32bit_from_R22R25();
+
+            emit_MOVW(RX, RZ);
         break;
         case JVM_IMUL: // to read later: https://mekonik.wordpress.com/2009/03/18/arduino-avr-gcc-multiplication/
             rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call();

@@ -389,6 +389,7 @@ void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack
      && target_reg != R20
      && target_reg != R22
      && target_reg != R24
+     && target_reg != R26
      && target_reg != RZ) {
         while (true) {
          dj_panic(DJ_PANIC_AOT_STACKCACHE_INVALID_POP_TARGET); }
@@ -447,7 +448,7 @@ void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack
         }
 
         RTC_STACKCACHE_UPDATE_AGE(target_idx); // Mark the fact that this value was used at this pc.
-        if (target_idx != REG_TO_ARRAY_INDEX(RZ)) { // Don't mark Z in use, because it should't become available after this instruction
+        if (target_idx != REG_TO_ARRAY_INDEX(RX) && target_idx != REG_TO_ARRAY_INDEX(RZ)) { // Don't mark X or Z in use, because it should't become available after this instruction
             RTC_STACKCACHE_MARK_IN_USE(target_idx); // Target is now IN USE (might already have been IN USE if we're popping to a specific register before a function call)
         }
         if (poptype == RTC_STACKCACHE_POP_NONDESTRUCTIVE) {

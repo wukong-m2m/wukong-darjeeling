@@ -18,6 +18,7 @@
 // avr-libgcc functions used by translation
 extern void __divmodhi4(void);
 extern void __mulsi3(void);
+extern void __mulhisi3(void);
 extern void __divmodsi4(void);
 
 void rtc_translate_single_instruction() {
@@ -858,6 +859,24 @@ void rtc_translate_single_instruction() {
             emit_SBC(R20, R24);
             emit_SBC(R21, R25);
             emit_x_PUSH_32bit(R18);
+        break;
+        case JVM_SIMUL:
+            // Note that __mulhisi3 needs one of the operands in RX (R26:R27)
+
+            emit_MOVW(RZ, RX); // Save RX in RZ
+
+            emit_x_POP_16bit(R18);
+            emit_x_POP_16bit(R26);
+
+            // ;;; R25:R22 = (signed long) R27:R26 * (signed long) R19:R18
+            // ;;; C3:C0   = (signed long) A1:A0   * (signed long) B1:B0
+            // ;;; Clobbers: __tmp_reg__
+            // DEFUN __mulhisi3            
+
+            emit_x_CALL_without_saving_RX((uint16_t)&__mulhisi3);
+            emit_x_PUSH_32bit(R22);
+
+            emit_MOVW(RX, RZ);
         break;
         case JVM_IMUL:
             emit_x_POP_32bit(R22);
