@@ -370,7 +370,7 @@ bool rtc_stackcache_has_ref_in_cache() {
     }
     return false;
 }
-void rtc_stackcache_clear_call_used_regs_before_native_function_call() {
+void rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call() {
     // Pushes all call-used registers onto the stack, removing them from the cache (R18–R25)
     rtc_stackcache_assert_no_in_use();
 
@@ -398,7 +398,7 @@ void rtc_stackcache_clear_call_used_regs_before_native_function_call() {
         }
 
         if (call_used_reg_on_stack_idx == 0xFF) {
-            return; // No call-used regs are on the stack, so we're done.
+            break; // No call-used regs are on the stack, so we're almost done.
         }
 
         // There's a call used register on the stack.

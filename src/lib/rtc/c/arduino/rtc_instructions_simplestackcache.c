@@ -255,7 +255,7 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_push_32bit(operand_regs1);
         break;
         case JVM_LDS:
-            rtc_stackcache_clear_call_used_regs_before_native_function_call();
+            rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call();
 
             ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
@@ -621,7 +621,7 @@ void rtc_translate_single_instruction() {
         case JVM_GETFIELD_A:
             ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
-            rtc_stackcache_clear_call_used_regs_before_native_function_call();
+            rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call();
             rtc_stackcache_pop_ref_into_fixed_reg(R24); // POP the reference
 
             // First find the location of reference fields
@@ -679,7 +679,7 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_pop_ref(operand_regs2); // POP the reference
             rtc_stackcache_push_ref(operand_regs1); // PUSH the value to store
             rtc_stackcache_push_ref(operand_regs2); // PUSH the reference (TODONR: this would be a lot easier if the operands where in the reversed order. let's fix that in the infuser later.)
-            rtc_stackcache_clear_call_used_regs_before_native_function_call();
+            rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call();
             rtc_stackcache_pop_ref_into_fixed_reg(R24); // POP the reference again into R24
 
             // First find the location of reference fields
@@ -840,7 +840,7 @@ void rtc_translate_single_instruction() {
         break;
         case JVM_SDIV:
         case JVM_SREM:
-            rtc_stackcache_clear_call_used_regs_before_native_function_call();
+            rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call();
             rtc_stackcache_pop_16bit_into_fixed_reg(R22);
             rtc_stackcache_pop_16bit_into_fixed_reg(R24);
 
@@ -1006,7 +1006,7 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_push_32bit(operand_regs2);
         break;
         case JVM_IMUL: // to read later: https://mekonik.wordpress.com/2009/03/18/arduino-avr-gcc-multiplication/
-            rtc_stackcache_clear_call_used_regs_before_native_function_call();
+            rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call();
             rtc_stackcache_pop_32bit_into_fixed_reg(R22);
             rtc_stackcache_pop_32bit_into_fixed_reg(R18);
 
@@ -1015,7 +1015,7 @@ void rtc_translate_single_instruction() {
         break;
         case JVM_IDIV:
         case JVM_IREM:
-            rtc_stackcache_clear_call_used_regs_before_native_function_call();
+            rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call();
             rtc_stackcache_pop_32bit_into_fixed_reg(R18);
             rtc_stackcache_pop_32bit_into_fixed_reg(R22);
 
@@ -1346,18 +1346,18 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_push_16bit(operand_regs1);
         break;
         case JVM_SRETURN:
-            rtc_stackcache_clear_call_used_regs_before_native_function_call(); // To make sure the return registers are available
+            rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call(); // To make sure the return registers are available
             // NOTE THAT THIS IS NOT STANDARD avr-gcc ABI, WHICH EXPECTS 16 bit VALUES IN R24:R25, BUT THIS ALLOWS FOR MORE EFFICIENT HANDLING IN CALLMETHOD.
             rtc_stackcache_pop_16bit_into_fixed_reg(R22);
             emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_IRETURN:
-            rtc_stackcache_clear_call_used_regs_before_native_function_call(); // To make sure the return registers are available
+            rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call(); // To make sure the return registers are available
             rtc_stackcache_pop_32bit_into_fixed_reg(R22);
             emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_ARETURN:
-            rtc_stackcache_clear_call_used_regs_before_native_function_call(); // To make sure the return registers are available
+            rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call(); // To make sure the return registers are available
             // NOTE THAT THIS IS NOT STANDARD avr-gcc ABI, WHICH EXPECTS 16 bit VALUES IN R24:R25, BUT THIS ALLOWS FOR MORE EFFICIENT HANDLING IN CALLMETHOD.
             rtc_stackcache_pop_ref_into_fixed_reg(R22);
             emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
@@ -1383,7 +1383,7 @@ void rtc_translate_single_instruction() {
         case JVM_NEW:
             ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
-            rtc_stackcache_clear_call_used_regs_before_native_function_call();
+            rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call();
 
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
@@ -1407,7 +1407,7 @@ void rtc_translate_single_instruction() {
         case JVM_NEWARRAY:
             ts->pc += 1; // Skip operand (already read into jvm_operand_byte0)
 
-            rtc_stackcache_clear_call_used_regs_before_native_function_call();
+            rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call();
 
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
@@ -1432,7 +1432,7 @@ void rtc_translate_single_instruction() {
         case JVM_ANEWARRAY:
             ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
-            rtc_stackcache_clear_call_used_regs_before_native_function_call();
+            rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call();
 
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack
@@ -1475,7 +1475,7 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_push_ref(operand_regs2);
 
             // THIS WILL BREAK IF GC RUNS, BUT IT COULD ONLY RUN IF AN EXCEPTION IS THROWN, WHICH MEANS WE CRASH ANYWAY
-            rtc_stackcache_clear_call_used_regs_before_native_function_call();
+            rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call();
             rtc_stackcache_pop_ref_into_fixed_reg(R22); // reference to the object
             emit_LDI(R24, jvm_operand_byte0); // infusion id
             emit_LDI(R25, jvm_operand_byte1); // entity id
@@ -1485,7 +1485,7 @@ void rtc_translate_single_instruction() {
         case JVM_INSTANCEOF:
             ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
-            rtc_stackcache_clear_call_used_regs_before_native_function_call();
+            rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call();
             rtc_stackcache_pop_ref_into_fixed_reg(R22); // reference to the object
             emit_LDI(R24, jvm_operand_byte0); // infusion id
             emit_LDI(R25, jvm_operand_byte1); // entity id

@@ -26,7 +26,7 @@ void rtc_stackcache_pop_32bit_into_fixed_reg(uint8_t reg_base);         // Pops 
 void rtc_stackcache_pop_ref_into_fixed_reg(uint8_t reg_base);           // Pops a value into a specific range of consecutive regs. Panics if any reg is not marked IN USE.
 void rtc_stackcache_pop_ref_into_Z();                                   // Pops a value into Z.
 
-void rtc_stackcache_clear_call_used_regs_before_native_function_call(); // Pushes all call-used registers onto the stack, removing them from the cache (R18–R27, R30, R31)
+void rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call(); // Pushes all call-used registers onto the stack, removing them from the cache (R18–R27, R30, R31)
 
 void rtc_stackcache_flush_all_regs();                                   // Pushes all registers onto the stack, so the stack is in the state the next JVM method expects
 
