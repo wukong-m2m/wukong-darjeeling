@@ -384,11 +384,7 @@ void rtc_current_method_set_uses_reg_used_in_lightweight_invoke(uint8_t lightwei
 }
 
 bool rtc_method_get_uses_reg(uint8_t method, uint8_t reg) {
-#ifdef AOT_STRATEGY_MARKLOOP    
     return (rtc_ts->call_saved_registers_used_per_method[method] & 1<<((reg-2)/2)) != 0;
-#else // TODO: implement this optimisation for other strategies as well
-    return true;
-#endif
 }
 
 bool rtc_current_method_get_uses_reg(uint8_t reg) {

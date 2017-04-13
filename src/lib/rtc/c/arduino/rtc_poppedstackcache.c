@@ -259,14 +259,18 @@ uint8_t rtc_stackcache_getfree_pair() {
     }
     RTC_STACKCACHE_MARK_IN_USE(idx);
     RTC_STACKCACHE_CLEAR_VALUETAG(idx);
-    return ARRAY_INDEX_TO_REG(idx);
+    uint8_t reg = ARRAY_INDEX_TO_REG(idx);
+    rtc_current_method_set_uses_reg(reg);
+    return reg;
 }
 uint8_t rtc_stackcache_getfree_pair_but_only_if_we_wont_spill() {
     uint8_t idx = rtc_get_lru_available_index();
     if (idx != 0xFF) {
         RTC_STACKCACHE_MARK_IN_USE(idx);
         RTC_STACKCACHE_CLEAR_VALUETAG(idx);
-        return ARRAY_INDEX_TO_REG(idx);
+        uint8_t reg = ARRAY_INDEX_TO_REG(idx);
+        rtc_current_method_set_uses_reg(reg);
+        return reg;
     }
     return 0xFF;
 }
@@ -306,6 +310,7 @@ bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs) {
             // We're in luck.
             RTC_STACKCACHE_MARK_IN_USE(idx);
             RTC_STACKCACHE_CLEAR_VALUETAG(idx);
+            rtc_current_method_set_uses_reg(reg);
             regs[0] = reg;
             regs[1] = reg+1;
             return true;
@@ -474,6 +479,7 @@ void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack
             RTC_STACKCACHE_SET_VALUETAG(target_idx, RTC_VALUETAG_TO_INT_L(rtc_ts->current_instruction_valuetag));
         }
 
+        rtc_current_method_set_uses_reg(ARRAY_INDEX_TO_REG(target_idx));
         if (regs != NULL) {
             regs[0] = ARRAY_INDEX_TO_REG(target_idx);
             regs[1] = ARRAY_INDEX_TO_REG(target_idx)+1;
@@ -574,6 +580,7 @@ void rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags() {      
         } else {
             // There's also an available call-saved register, so move the value in the call-used reg there.
             emit_MOVW(ARRAY_INDEX_TO_REG(call_saved_reg_available_idx), ARRAY_INDEX_TO_REG(call_used_reg_on_stack_idx));
+            rtc_current_method_set_uses_reg(ARRAY_INDEX_TO_REG(call_saved_reg_available_idx));
             // Update the cache state and value tag
             RTC_STACKCACHE_MOVE_CACHE_ELEMENT(call_saved_reg_available_idx, call_used_reg_on_stack_idx);
             RTC_STACKCACHE_SET_VALUETAG(call_saved_reg_available_idx, RTC_STACKCACHE_GET_VALUETAG(call_used_reg_on_stack_idx));

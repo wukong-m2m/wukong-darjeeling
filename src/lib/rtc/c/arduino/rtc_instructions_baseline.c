@@ -609,6 +609,7 @@ void rtc_translate_single_instruction() {
         case JVM_PUTFIELD_A:
             ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
             emit_x_POP_REF(R16); // POP the value to store (store in in call-saved R16-R17)
+            rtc_current_method_set_uses_reg(R16); // This is a call saved register
             emit_x_POP_REF(R24); // POP the reference to the object to store it in.
 
             // First find the location of reference fields
@@ -624,6 +625,7 @@ void rtc_translate_single_instruction() {
             ts->pc += 4; // Skip operands (already read into jvm_operand_byte0)
             uint16_t targetRefOffset = get_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
 
+            rtc_current_method_set_uses_reg(R16); // This is a call saved register
             emit_x_POP_REF(R16); // POP the value to store (store in in call-saved R16-R17)
             emit_x_POP_REF(RZ); // POP the reference into Z
 

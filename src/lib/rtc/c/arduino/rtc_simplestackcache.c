@@ -166,15 +166,19 @@ void rtc_stackcache_init(bool is_lightweight) {
 
 uint8_t rtc_stackcache_getfree_pair() {
     // If there's an available register, use it
-    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+    for (int8_t idx=RTC_STACKCACHE_MAX_IDX-1; idx>=0; idx--) {
         if (RTC_STACKCACHE_IS_AVAILABLE(idx)) {
             RTC_STACKCACHE_MARK_IN_USE(idx);
-            return ARRAY_INDEX_TO_REG(idx);
+            uint8_t reg = ARRAY_INDEX_TO_REG(idx);
+            rtc_current_method_set_uses_reg(reg);
+            return reg;
         }
     }
     uint8_t freed_idx = rtc_stackcache_spill_deepest_pair();
     RTC_STACKCACHE_MARK_IN_USE(freed_idx);
-    return ARRAY_INDEX_TO_REG(freed_idx);
+    uint8_t reg = ARRAY_INDEX_TO_REG(freed_idx);
+    rtc_current_method_set_uses_reg(reg);
+    return reg;
 }
 void rtc_stackcache_getfree_16bit(uint8_t *regs) {
     uint8_t r = rtc_stackcache_getfree_pair();
@@ -204,6 +208,7 @@ bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs) {
             RTC_STACKCACHE_MARK_IN_USE(idx);
             regs[0] = reg;
             regs[1] = reg+1;
+            rtc_current_method_set_uses_reg(reg);
             return true;
         }
     }
@@ -330,8 +335,9 @@ uint8_t rtc_stackcache_pop_pair(uint8_t which_stack, uint8_t target_reg) {
         if (target_idx != REG_TO_ARRAY_INDEX(RX) && target_idx != REG_TO_ARRAY_INDEX(RZ)) { // Don't mark X or Z in use, because it should't become available after this instruction
             RTC_STACKCACHE_MARK_IN_USE(target_idx); // Target is now IN USE (if it wasn't already)
         }
-        return ARRAY_INDEX_TO_REG(target_idx);
 
+        rtc_current_method_set_uses_reg(ARRAY_INDEX_TO_REG(target_idx));
+        return ARRAY_INDEX_TO_REG(target_idx);
     }
 }
 void rtc_stackcache_pop_16bit(uint8_t *regs) {
@@ -417,6 +423,7 @@ void rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call() 
         } else {
             // There's also an available calls-saved register, so move the value in the call-used reg there.
             emit_MOVW(ARRAY_INDEX_TO_REG(call_saved_reg_available_idx), ARRAY_INDEX_TO_REG(call_used_reg_on_stack_idx));
+            rtc_current_method_set_uses_reg(ARRAY_INDEX_TO_REG(call_saved_reg_available_idx));
             // Update the cache state
             RTC_STACKCACHE_MOVE_CACHE_ELEMENT(call_saved_reg_available_idx, call_used_reg_on_stack_idx);
         }
