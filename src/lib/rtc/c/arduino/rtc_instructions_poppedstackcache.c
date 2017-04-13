@@ -1322,6 +1322,9 @@ void rtc_translate_single_instruction() {
 
             rtc_common_translate_invoke(ts, opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
         break;
+        case JVM_INVOKELIGHT:
+            rtc_common_translate_invokelight(jvm_operand_byte0, jvm_operand_byte1);
+        break;
         case JVM_NEW:
             rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references();
 

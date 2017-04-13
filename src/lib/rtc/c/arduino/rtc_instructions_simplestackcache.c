@@ -1399,6 +1399,10 @@ void rtc_translate_single_instruction() {
 
             rtc_common_translate_invoke(ts, opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
         break;
+        case JVM_INVOKELIGHT:
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            rtc_common_translate_invokelight(jvm_operand_byte0, jvm_operand_byte1);
+        break;
         case JVM_NEW:
             ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 

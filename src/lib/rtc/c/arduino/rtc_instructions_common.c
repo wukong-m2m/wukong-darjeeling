@@ -2,6 +2,7 @@
 #include "opcodes.h"
 #include "execution.h"
 #include "infusion.h"
+#include "panic.h"
 #include "program_mem.h"
 #include "asm.h"
 #include "rtc.h"
@@ -58,6 +59,57 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
 
     rtc_common_push_returnvalue_from_R22_if_necessary(rettype);
 }
+void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_operand_byte1) {
+    dj_local_id localId;
+    localId.infusion_id = jvm_operand_byte0;
+    localId.entity_id = jvm_operand_byte1;
+
+    if (localId.infusion_id != 0) {
+        // We don't (yet) support calling lightweight methods in other infusions.
+        // At least, R2 may have to be updated, and we'll have to save the used
+        // call saved registers per method in flash.
+        // But there may be other consequences, so have another good look at this
+        // when we need it.
+        dj_panic(DJ_PANIC_LIGHTWEIGHT_METHOD_MUST_BE_LOCAL);
+    }
+
+    rtc_current_method_set_uses_reg(R16);
+    rtc_current_method_set_uses_reg_used_in_lightweight_invoke(localId.entity_id);
+
+#if defined (AOT_STRATEGY_MARKLOOP)
+    rtc_flush_and_cleartags_ref(RTC_FILTER_ALL, RTC_FILTER_ALL); // Maybe this could be more selective using the information from the compiled method. But I doubt that will make a big difference, and may not be worth the code space to implement.
+
+    // If the invoke light happens in a MARKLOOP loop, the lightweight method might corrupt some pinned values, so we need to save them back to their variable slots first.
+    // If we're not in a MARKLOOP loop, this will be a noop.
+    rtc_markloop_emit_epilogue(true, localId.entity_id);
+#elif defined (AOT_STRATEGY_POPPEDSTACKCACHE)
+    rtc_stackcache_flush_all_regs();
+    rtc_poppedstackcache_clear_all_valuetags();
+#elif defined (AOT_STRATEGY_SIMPLESTACKCACHE)
+    rtc_stackcache_flush_all_regs();
+#elif defined (AOT_STRATEGY_BASELINE)  || defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)
+#else
+    this should not happen
+#endif
+
+    dj_global_id globalId = dj_global_id_resolve(rtc_ts->infusion,  localId);
+    native_method_function_t handler = rtc_ts->method_start_addresses[globalId.entity_id]; // Can't get the address from the infusion because the method addresses haven't been written to Flash yet
+    if (handler == NULL) {
+        dj_panic(DJ_PANIC_NO_ADDRESS_FOUND_FOR_LIGHTWEIGHT_METHOD);
+    }
+    dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(globalId);
+    uint8_t rettype = dj_di_methodImplementation_getReturnType(methodImpl);
+
+    emit_2_CALL((uint16_t)handler);
+    rtc_common_push_returnvalue_from_R22_if_necessary(rettype);
+
+#if defined (AOT_STRATEGY_MARKLOOP)
+    // If the invoke light happens in a MARKLOOP loop, the lightweight method might corrupt some pinned values, so we need to save them back to their variable slots first.
+    // If we're not in a MARKLOOP loop, this will be a noop.
+    rtc_markloop_emit_prologue(true, localId.entity_id);    
+#endif
+}
+
 
 void rtc_common_push_returnvalue_from_R22_if_necessary(uint8_t rettype) {
     // Will be VOID except for INVOKESTATIC calls that return something.

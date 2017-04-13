@@ -1212,6 +1212,10 @@ void rtc_translate_single_instruction() {
 
             rtc_common_translate_invoke(ts, opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
         break;
+        case JVM_INVOKELIGHT:
+            ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
+            rtc_common_translate_invokelight(jvm_operand_byte0, jvm_operand_byte1);
+        break;
         case JVM_NEW:
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack

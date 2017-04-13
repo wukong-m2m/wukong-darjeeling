@@ -2,7 +2,7 @@
 #define RTC_SIMPLESTACKCACHE_H
 #include <stdint.h>
 
-void rtc_stackcache_init();
+void rtc_stackcache_init(bool is_lightweight);
 
 void rtc_stackcache_getfree_16bit(uint8_t *regs);
 void rtc_stackcache_getfree_32bit(uint8_t *regs);

@@ -151,10 +151,10 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
 
     // If we're using stack caching, initialise the cache
 #ifdef AOT_STRATEGY_SIMPLESTACKCACHE    
-    rtc_stackcache_init();
+    rtc_stackcache_init(dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_LIGHTWEIGHT);
 #endif
 #ifdef AOT_STRATEGY_POPPEDSTACKCACHE    
-    rtc_stackcache_init();
+    rtc_stackcache_init(dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_LIGHTWEIGHT);
 #endif
 #ifdef AOT_STRATEGY_MARKLOOP
     rtc_ts->may_use_RZ = false;

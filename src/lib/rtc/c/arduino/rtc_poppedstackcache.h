@@ -5,7 +5,7 @@
 
 #define RTC_VALUETAG_TO_INT_L(tag)  ((tag) + 0x1000)
 
-void rtc_stackcache_init();
+void rtc_stackcache_init(bool is_lightweight);
 void rtc_stackcache_next_instruction();
 
 // GETFREE

@@ -176,7 +176,7 @@ uint8_t rtc_get_lru_available_index() {
 #ifndef RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE
 #define RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE RTC_NUMBER_OF_USABLE_REGS_PAIRS
 #endif
-void rtc_stackcache_init() {
+void rtc_stackcache_init(bool is_lightweight) {
     // First mark all regs as DISABLED.
     for (uint8_t i=0; i<RTC_STACKCACHE_MAX_IDX; i++) {
         RTC_STACKCACHE_MARK_DISABLED(i);
@@ -194,6 +194,10 @@ void rtc_stackcache_init() {
     for (uint8_t i=0; i<RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE; i++) {
         // uint8_t reg = registers_we_can_use[i];
         RTC_STACKCACHE_MARK_AVAILABLE(REG_TO_ARRAY_INDEX(R4+2*i));
+    }
+    if (is_lightweight) {
+        // For lightweight methods we use R18:R19 to pop the return address into (not that this only works for <=128K devices with 2 byte PC)
+        RTC_STACKCACHE_MARK_DISABLED(REG_TO_ARRAY_INDEX(R18));
     }
 }
 

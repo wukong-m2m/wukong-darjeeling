@@ -15,8 +15,15 @@ void rtc_emit_prologue() {
 		// We also don't need to PUSH the call saved registers that will be used in this method. (this would also hide the
 		// operands) We don't follow the normal avr-gcc ABI here. Lightweight methods can only be called from the context
 		// of an AOT compiled method, and the INVOKELIGHT instruction will guarantee all registers are not used.
+#if defined (AOT_STRATEGY_BASELINE)  || defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)
+		// Baseline uses hardcoded registers, which uses R18:R19 in some cases.
+		// Use R4:R5 for return address instead
+		emit_POP(R4);
+		emit_POP(R5);
+#else
 		emit_POP(R18);
-		emit_POP(R19);		
+		emit_POP(R19);
+#endif
 	} else {
 		if (rtc_current_method_get_uses_reg(R2)) {
 			emit_PUSH(R2);
@@ -64,8 +71,15 @@ void rtc_emit_prologue() {
 void rtc_emit_epilogue() {
 	if (rtc_current_method_is_lightweight()) {
 		// Push the return address back on the stack for lightweight methods.
+#if defined (AOT_STRATEGY_BASELINE)  || defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)
+		// Baseline uses hardcoded registers, which uses R18:R19 in some cases.
+		// Use R4:R5 for return address instead
+		emit_PUSH(R5);
+		emit_PUSH(R4);
+#else
 		emit_PUSH(R19);
 		emit_PUSH(R18);
+#endif
 	} else {
 		emit_POP(R29);
 		emit_POP(R28);
