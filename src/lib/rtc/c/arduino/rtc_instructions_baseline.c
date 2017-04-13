@@ -474,6 +474,22 @@ void rtc_translate_single_instruction() {
                 }
             }
         break;
+        case JVM_ISWAP_X:
+            m = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
+            n = m & 15;
+            m >>= 4;
+            if ((n != 1 && n != 2) || (m != 1 && m != 2)) {
+                dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
+            }
+            // example:
+            // 0Short,0Int                                                 ; 0Int,0Short
+            // m=2, n=1 (m=top, n=second)
+            // pop top(m), pop second(n), push top(m), push second(n)
+            if (m==1) { emit_x_POP_16bit(R24);  } else { emit_x_POP_32bit(R22); }
+            if (n==1) { emit_x_POP_16bit(R20);  } else { emit_x_POP_32bit(R18); }
+            if (m==1) { emit_x_PUSH_16bit(R24); } else { emit_x_PUSH_32bit(R22); }
+            if (n==1) { emit_x_PUSH_16bit(R20); } else { emit_x_PUSH_32bit(R18); }
+        break;
         case JVM_APOP:
             emit_x_POP_REF(R24);                
         break;

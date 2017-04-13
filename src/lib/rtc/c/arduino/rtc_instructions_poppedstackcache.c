@@ -507,6 +507,22 @@ void rtc_translate_single_instruction() {
                 }
             }
         break;
+        case JVM_ISWAP_X:
+            m = jvm_operand_byte0;
+            n = m & 15;
+            m >>= 4;
+            if ((n != 1 && n != 2) || (m != 1 && m != 2)) {
+                dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
+            }
+            // example:
+            // 0Short,0Int                                                 ; 0Int,0Short
+            // m=2, n=1 (m=top, n=second)
+            // pop top(m), pop second(n), push top(m), push second(n)
+            if (m==1) { rtc_stackcache_pop_nondestructive_16bit(operand_regs1); } else { rtc_stackcache_pop_nondestructive_32bit(operand_regs1); }
+            if (n==1) { rtc_stackcache_pop_nondestructive_16bit(operand_regs2); } else { rtc_stackcache_pop_nondestructive_32bit(operand_regs2); }
+            if (m==1) {               rtc_stackcache_push_16bit(operand_regs1); } else {               rtc_stackcache_push_32bit(operand_regs1); }
+            if (n==1) {               rtc_stackcache_push_16bit(operand_regs2); } else {               rtc_stackcache_push_32bit(operand_regs2); }
+        break;
         case JVM_APOP:
             rtc_stackcache_pop_nondestructive_ref(operand_regs1);
         break;
