@@ -1247,6 +1247,9 @@ void rtc_translate_single_instruction() {
             emit_LD_Z(R25);
             emit_x_PUSH_16bit(R24);
         break;
+        case JVM_ATHROW:
+            // TODO: fix exceptions
+        break;
         case JVM_CHECKCAST:
             // THIS WILL BREAK IF GC RUNS, BUT IT COULD ONLY RUN IF AN EXCEPTION IS THROWN, WHICH MEANS WE CRASH ANYWAY
 
@@ -1270,6 +1273,11 @@ void rtc_translate_single_instruction() {
 
             // push the result onto the stack
             emit_x_PUSH_16bit(R24);
+        break;
+        case JVM_MONITORENTER:
+        case JVM_MONITOREXIT:
+            // Since we don't support threads, there's no point in implementing these. But we still need to pop the reference.
+            emit_x_POP_REF(R24);
         break;
         // BRANCHES
         case JVM_SIFEQ:
