@@ -577,7 +577,8 @@ void rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags() {      
 
     // clear the all valuetags for all call-used registers, since the value may be gone after the function call returns,
     // and all references in call-saved registers since they may not be accurate if the garbage collector runs.
-    rtc_poppedstackcache_clear_all_callused_and_reference_valuetags();
+    rtc_poppedstackcache_clear_all_callused_valuetags();
+    rtc_poppedstackcache_clear_all_reference_valuetags();
 }
 bool rtc_stackcache_has_ref_in_cache() {
     for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
@@ -591,8 +592,7 @@ void rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references(
     rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
     rtc_poppedstackcache_clear_all_reference_valuetags();
     while (rtc_stackcache_has_ref_in_cache()) {
-        uint8_t idx = get_deepest_pair_idx();
-        rtc_stackcache_spill_pair(idx);
+        rtc_stackcache_spill_deepest_pair();
     }
 }
 void rtc_stackcache_flush_all_regs() {

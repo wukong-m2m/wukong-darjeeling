@@ -23,8 +23,10 @@ bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs);
 void rtc_stackcache_push_16bit(uint8_t *regs);
 void rtc_stackcache_push_32bit(uint8_t *regs);
 void rtc_stackcache_push_ref(uint8_t *regs);
+void rtc_stackcache_push_16bit_from_R22R23();
 void rtc_stackcache_push_16bit_from_R24R25();
 void rtc_stackcache_push_32bit_from_R22R25();
+void rtc_stackcache_push_ref_from_R22R23();
 void rtc_stackcache_push_ref_from_R24R25();
 
 // POP

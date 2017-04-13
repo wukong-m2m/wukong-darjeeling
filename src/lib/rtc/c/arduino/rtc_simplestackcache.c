@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "panic.h"
+#include "rtc.h"
 #include "rtc_simplestackcache.h"
 #include "asm.h"
 

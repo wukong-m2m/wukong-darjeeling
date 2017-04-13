@@ -1477,7 +1477,7 @@ void rtc_translate_single_instruction() {
             ts->pc += 4;
 
             // Pop the key value, and reserve some registers
-            rtc_stackcache_pop_destructive_32bit(R22);
+            emit_x_POP_32bit(R22);
 
             // Load the lower bound
             jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));

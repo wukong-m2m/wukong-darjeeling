@@ -255,7 +255,7 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_push_32bit(operand_regs1);
         break;
         case JVM_LDS:
-            rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references();
+            rtc_stackcache_clear_call_used_regs_before_native_function_call();
 
             ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
 
@@ -1684,7 +1684,7 @@ void rtc_translate_single_instruction() {
             ts->pc += 4;
 
             // Pop the key value, and reserve some registers
-            rtc_stackcache_pop_destructive_32bit(operand_regs1);
+            rtc_stackcache_pop_16bit(operand_regs1);
 
             // Load the lower bound
             jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ++(ts->pc));
