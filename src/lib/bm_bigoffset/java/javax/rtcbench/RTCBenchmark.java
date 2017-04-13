@@ -67,6 +67,7 @@ public class RTCBenchmark {
     public static testClass test_static_obj33;
 
     public static class testClass {
+        public short test_short1;
         public int test_int1;
         public int test_int2;
         public int test_int3;
@@ -84,6 +85,7 @@ public class RTCBenchmark {
         public int test_int15;
         public int test_int16;
         public int test_int17;
+        public short test_short17;
 
         public testClass test_obj1;
         public testClass test_obj2;
@@ -121,12 +123,69 @@ public class RTCBenchmark {
     }
 
     public static void setStuff(testClass c) {
-        c.test_int1 = 40;
-        c.test_int17 = 41;
+        c.test_int1 = 41;
+        c.test_int17 = 42;
+        c.test_short1 = 43;
+        c.test_short17 = 44;
         c.test_obj1 = c;
         c.test_obj33 = c;
-        test_static_int1 = 42;
-        test_static_int17 = 43;
+        test_static_int1 = 46;
+        test_static_int17 = 47;
+    }
+
+    public static void incStuff(testClass c) {
+        short test_short1 = 0;
+        int test_int1 = 0;
+        int test_int2 = 0;
+        int test_int3 = 0;
+        int test_int4 = 0;
+        int test_int5 = 0;
+        int test_int6 = 0;
+        int test_int7 = 0;
+        int test_int8 = 0;
+        int test_int9 = 0;
+        int test_int10 = 0;
+        int test_int11 = 0;
+        int test_int12 = 0;
+        int test_int13 = 0;
+        int test_int14 = 0;
+        int test_int15 = 0;
+        int test_int16 = 0;
+        int test_int17 = 0;
+        short test_short17 = 0;
+
+
+        test_int1 = c.test_int1;
+        test_short1 = c.test_short1;
+
+        test_int2 = test_int1;
+        test_int3 = test_int2;
+        test_int4 = test_int3;
+        test_int5 = test_int4;
+        test_int6 = test_int5;
+        test_int7 = test_int6;
+        test_int8 = test_int7;
+        test_int9 = test_int8;
+        test_int10 =test_int9;
+        test_int11 = test_int10;
+        test_int12 = test_int11;
+        test_int13 = test_int12;
+        test_int14 = test_int13;
+        test_int15 = test_int14;
+        test_int16 = test_int15;
+
+        test_int17 = c.test_int17;
+        test_short17 = c.test_short17;
+
+        test_int1++;
+        test_int17++;
+        test_short1++;
+        test_short17++;
+
+        c.test_int1 = test_int1;
+        c.test_int17 = test_int17;
+        c.test_short1 = test_short1;
+        c.test_short17 = test_short17;
     }
 
     public static boolean rtcbenchmark_measure_java_performance() {
@@ -135,12 +194,17 @@ public class RTCBenchmark {
         testClass c = new testClass();
 
         setStuff(c);
+        incStuff(c);
 
-        success = success && c.test_int1 == 40;
-        success = success && c.test_int17 == 41;
-        success = success && c.test_obj1.test_int1 == 40;
-        success = success && test_static_int1 == 42;
-        success = success && test_static_int17 == 43;
+        success = success && c.test_int1 == 42;
+        success = success && c.test_int17 == 43;
+        success = success && c.test_short1 == 44;
+        success = success && c.test_short17 == 45;
+        success = success && c.test_obj1.test_int1 == 42;
+        success = success && c.test_obj17 == null;
+        success = success && c.test_obj33.test_int1 == 42;
+        success = success && test_static_int1 == 46;
+        success = success && test_static_int17 == 47;
 
         return success;
     }
