@@ -1659,7 +1659,6 @@ void rtc_translate_single_instruction() {
 
             // Pop the key value, and reserve some registers
             rtc_stackcache_pop_nondestructive_32bit(operand_regs1);
-            rtc_stackcache_getfree_32bit(operand_regs2);
 
             uint16_t number_of_cases = (dj_di_getU8(ts->jvm_code_start + ts->pc + 1) << 8) | dj_di_getU8(ts->jvm_code_start + ts->pc + 2);
             ts->pc += 2;

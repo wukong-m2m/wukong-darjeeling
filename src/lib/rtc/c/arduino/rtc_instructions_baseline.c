@@ -1596,10 +1596,10 @@ void rtc_translate_single_instruction() {
                 // Get the branch target (and skip the branch address used by the interpreter)
                 jvm_operand_word0 = (dj_di_getU8(ts->jvm_code_start + ts->pc + 3) << 8) | dj_di_getU8(ts->jvm_code_start + ts->pc + 4);
                 ts->pc += 4;
-                emit_LDI(R21, jvm_operand_byte3); // Bytecode is big endian
-                emit_LDI(R20, jvm_operand_byte2);
-                emit_LDI(R19, jvm_operand_byte1);
-                emit_LDI(R18, jvm_operand_byte0);
+                emit_LDI(R18, jvm_operand_byte3); // Bytecode is big endian
+                emit_LDI(R19, jvm_operand_byte2);
+                emit_LDI(R20, jvm_operand_byte1);
+                emit_LDI(R21, jvm_operand_byte0);
                 emit_CP(R18, R22);
                 emit_CPC(R19, R23);
                 emit_CPC(R20, R24);
