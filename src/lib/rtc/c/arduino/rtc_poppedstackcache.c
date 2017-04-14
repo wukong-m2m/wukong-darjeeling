@@ -14,24 +14,24 @@
 
 #define RTC_STACKCACHE_INT_STACK_TYPE                0x00
 #define RTC_STACKCACHE_REF_STACK_TYPE                0x10
-#define RTC_STACKCACHE_IS_AVAILABLE(idx)             (rtc_stackcache_state[(idx)] == RTC_STACKCACHE_AVAILABLE)
-#define RTC_STACKCACHE_IS_IN_USE(idx)                (rtc_stackcache_state[(idx)] == RTC_STACKCACHE_IN_USE)
-#define RTC_STACKCACHE_IS_DISABLED(idx)              (rtc_stackcache_state[(idx)] == RTC_STACKCACHE_DISABLED)
-#define RTC_STACKCACHE_IS_ON_STACK(idx)              ((rtc_stackcache_state[(idx)] & 0x80) == 0)
-#define RTC_STACKCACHE_STACK_DEPTH_FOR_IDX(idx)      (RTC_STACKCACHE_IS_ON_STACK(idx) ? rtc_stackcache_state[(idx)] & 0x0F : 0xFF)
-#define RTC_STACKCACHE_IS_INT_STACK(idx)             ((rtc_stackcache_state[(idx)] & 0x10) == RTC_STACKCACHE_INT_STACK_TYPE)
-#define RTC_STACKCACHE_IS_REF_STACK(idx)             ((rtc_stackcache_state[(idx)] & 0x10) == RTC_STACKCACHE_REF_STACK_TYPE)
-#define RTC_STACKCACHE_IS_STACK_TYPE(idx, type)      ((rtc_stackcache_state[(idx)] & 0x10) == (type))
+#define RTC_STACKCACHE_IS_AVAILABLE(idx)             (rtc_ts->rtc_stackcache_state[(idx)] == RTC_STACKCACHE_AVAILABLE)
+#define RTC_STACKCACHE_IS_IN_USE(idx)                (rtc_ts->rtc_stackcache_state[(idx)] == RTC_STACKCACHE_IN_USE)
+#define RTC_STACKCACHE_IS_DISABLED(idx)              (rtc_ts->rtc_stackcache_state[(idx)] == RTC_STACKCACHE_DISABLED)
+#define RTC_STACKCACHE_IS_ON_STACK(idx)              ((rtc_ts->rtc_stackcache_state[(idx)] & 0x80) == 0)
+#define RTC_STACKCACHE_STACK_DEPTH_FOR_IDX(idx)      (RTC_STACKCACHE_IS_ON_STACK(idx) ? rtc_ts->rtc_stackcache_state[(idx)] & 0x0F : 0xFF)
+#define RTC_STACKCACHE_IS_INT_STACK(idx)             ((rtc_ts->rtc_stackcache_state[(idx)] & 0x10) == RTC_STACKCACHE_INT_STACK_TYPE)
+#define RTC_STACKCACHE_IS_REF_STACK(idx)             ((rtc_ts->rtc_stackcache_state[(idx)] & 0x10) == RTC_STACKCACHE_REF_STACK_TYPE)
+#define RTC_STACKCACHE_IS_STACK_TYPE(idx, type)      ((rtc_ts->rtc_stackcache_state[(idx)] & 0x10) == (type))
 
-#define RTC_STACKCACHE_INC_DEPTH(idx)                (rtc_stackcache_state[(idx)]++)
-#define RTC_STACKCACHE_DEC_DEPTH(idx)                (rtc_stackcache_state[(idx)]--)
-#define RTC_STACKCACHE_MARK_AVAILABLE(idx)           (rtc_stackcache_state[(idx)] = RTC_STACKCACHE_AVAILABLE)
-#define RTC_STACKCACHE_MARK_IN_USE(idx)              (rtc_stackcache_state[(idx)] = RTC_STACKCACHE_IN_USE)
-#define RTC_STACKCACHE_MARK_DISABLED(idx)            (rtc_stackcache_state[(idx)] = RTC_STACKCACHE_DISABLED)
-#define RTC_STACKCACHE_MARK_INT_STACK_DEPTH0(idx)    (rtc_stackcache_state[(idx)] = RTC_STACKCACHE_INT_STACK_TYPE)
-#define RTC_STACKCACHE_MARK_REF_STACK_DEPTH0(idx)    (rtc_stackcache_state[(idx)] = RTC_STACKCACHE_REF_STACK_TYPE)
-#define RTC_STACKCACHE_MOVE_CACHE_ELEMENT(dest, src) {rtc_stackcache_state[(dest)] = rtc_stackcache_state[(src)]; \
-                                                      rtc_stackcache_valuetags[(dest)] = rtc_stackcache_valuetags[(src)]; \
+#define RTC_STACKCACHE_INC_DEPTH(idx)                (rtc_ts->rtc_stackcache_state[(idx)]++)
+#define RTC_STACKCACHE_DEC_DEPTH(idx)                (rtc_ts->rtc_stackcache_state[(idx)]--)
+#define RTC_STACKCACHE_MARK_AVAILABLE(idx)           (rtc_ts->rtc_stackcache_state[(idx)] = RTC_STACKCACHE_AVAILABLE)
+#define RTC_STACKCACHE_MARK_IN_USE(idx)              (rtc_ts->rtc_stackcache_state[(idx)] = RTC_STACKCACHE_IN_USE)
+#define RTC_STACKCACHE_MARK_DISABLED(idx)            (rtc_ts->rtc_stackcache_state[(idx)] = RTC_STACKCACHE_DISABLED)
+#define RTC_STACKCACHE_MARK_INT_STACK_DEPTH0(idx)    (rtc_ts->rtc_stackcache_state[(idx)] = RTC_STACKCACHE_INT_STACK_TYPE)
+#define RTC_STACKCACHE_MARK_REF_STACK_DEPTH0(idx)    (rtc_ts->rtc_stackcache_state[(idx)] = RTC_STACKCACHE_REF_STACK_TYPE)
+#define RTC_STACKCACHE_MOVE_CACHE_ELEMENT(dest, src) {rtc_ts->rtc_stackcache_state[(dest)] = rtc_ts->rtc_stackcache_state[(src)]; \
+                                                      rtc_ts->rtc_stackcache_valuetags[(dest)] = rtc_ts->rtc_stackcache_valuetags[(src)]; \
                                                       RTC_STACKCACHE_MARK_IN_USE(src); }
 
 #define RTC_VALUETAG_TYPE_LOCAL     0x0000
@@ -46,15 +46,11 @@
 #define RTC_VALUETAG_IS_SHORT(tag)  (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_SHORT)
 #define RTC_VALUETAG_IS_INT(tag)    (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_INT)
 #define RTC_VALUETAG_IS_INT_L(tag)  (((tag) & 0x3000) == RTC_VALUETAG_DATATYPE_INT_L)
-#define RTC_STACKCACHE_SET_VALUETAG(idx, tag)       (rtc_stackcache_valuetags[(idx)] = tag)
-#define RTC_STACKCACHE_GET_VALUETAG(idx)            (rtc_stackcache_valuetags[(idx)])
-#define RTC_STACKCACHE_CLEAR_VALUETAG(idx)          (rtc_stackcache_valuetags[(idx)] = 0xFFFF)
-#define RTC_STACKCACHE_UPDATE_AGE(idx)               (rtc_stackcache_age[(idx)] = rtc_ts->pc)
-#define RTC_STACKCACHE_GET_AGE(idx)                  (rtc_stackcache_age[(idx)])
-
-uint8_t rtc_stackcache_state[RTC_STACKCACHE_MAX_IDX];
-uint16_t rtc_stackcache_valuetags[RTC_STACKCACHE_MAX_IDX];
-uint16_t rtc_stackcache_age[RTC_STACKCACHE_MAX_IDX];
+#define RTC_STACKCACHE_SET_VALUETAG(idx, tag)       (rtc_ts->rtc_stackcache_valuetags[(idx)] = tag)
+#define RTC_STACKCACHE_GET_VALUETAG(idx)            (rtc_ts->rtc_stackcache_valuetags[(idx)])
+#define RTC_STACKCACHE_CLEAR_VALUETAG(idx)          (rtc_ts->rtc_stackcache_valuetags[(idx)] = 0xFFFF)
+#define RTC_STACKCACHE_UPDATE_AGE(idx)               (rtc_ts->rtc_stackcache_age[(idx)] = rtc_ts->pc)
+#define RTC_STACKCACHE_GET_AGE(idx)                  (rtc_ts->rtc_stackcache_age[(idx)])
 
 // IMPORTANT: REGISTERS ARE ALWAYS ASSIGNED IN PAIRS:
 // AFTER getfreereg/pop_16bit(regs)
@@ -202,8 +198,8 @@ void rtc_stackcache_init(bool is_lightweight) {
 }
 
 void rtc_stackcache_next_instruction() {
-    avroraRTCTraceStackCacheState(rtc_stackcache_state); // Store it here so we can see what's IN USE
-    avroraRTCTraceStackCacheValuetags(rtc_stackcache_valuetags);
+    avroraRTCTraceStackCacheState(rtc_ts->rtc_stackcache_state); // Store it here so we can see what's IN USE
+    avroraRTCTraceStackCacheValuetags(rtc_ts->rtc_stackcache_valuetags);
     for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
         if (RTC_STACKCACHE_IS_IN_USE(idx)) {
             RTC_STACKCACHE_MARK_AVAILABLE(idx);

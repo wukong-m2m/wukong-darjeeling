@@ -191,7 +191,8 @@ let stringListToString (list : string list) =
 
 let summariseResults resultsDirectory =
     let resultFiles = Directory.GetFiles(resultsDirectory, "*.xml") |> Array.toList
-    let resultsXmlStrings = resultFiles |> List.map (fun filename -> File.ReadAllText(filename))
+    let resultsXmlStrings = resultFiles |> List.map (fun filename ->  printfn "Reading %s" (filename)
+                                                                      File.ReadAllText(filename))
     let results =
         resultsXmlStrings
             |> List.map (fun xml -> (SimulationResults.unPickleOfString xml))

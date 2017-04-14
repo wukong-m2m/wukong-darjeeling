@@ -68,9 +68,15 @@ typedef struct _rtc_translationstate {
 #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS)
     uint8_t do_CONST_SHIFT_optimisation;
 #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
+#ifdef AOT_STRATEGY_SIMPLESTACKCACHE
+    uint8_t rtc_stackcache_state[RTC_STACKCACHE_MAX_IDX];
+#endif // AOT_STRATEGY_SIMPLESTACKCACHE
 #ifdef AOT_STRATEGY_POPPEDSTACKCACHE
     uint16_t current_instruction_pc; // We may need this later, after the instruction already forwarded pc to skip over arguments
     uint16_t current_instruction_valuetag;
+    uint8_t rtc_stackcache_state[RTC_STACKCACHE_MAX_IDX];
+    uint16_t rtc_stackcache_valuetags[RTC_STACKCACHE_MAX_IDX];
+    uint16_t rtc_stackcache_age[RTC_STACKCACHE_MAX_IDX];
 #endif // AOT_STRATEGY_POPPEDSTACKCACHE
 #ifdef AOT_STRATEGY_MARKLOOP
     uint16_t current_instruction_pc; // We may need this later, after the instruction already forwarded pc to skip over arguments
