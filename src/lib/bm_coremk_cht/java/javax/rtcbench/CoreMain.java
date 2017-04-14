@@ -295,6 +295,9 @@ public class CoreMain {
 				}
 				total_errors+=results[i].err;
 			}
+		} else {
+			System.out.println("ERROR! known_id=" + known_id);
+			total_errors+=1;
 		}
 		// This is pointless to test in Java
 		// total_errors+=check_data_types();
