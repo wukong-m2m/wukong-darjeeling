@@ -1,10 +1,8 @@
-#r "binaries/fspickler.1.5.2/lib/net45/FsPickler.dll"
 #load "Datatypes.fsx"
 
 open System
 open System.IO
 open System.Linq
-open Nessos.FsPickler
 open Datatypes
 
 let getLDDSTBytesJVM (result : SimulationResults) =
@@ -187,14 +185,16 @@ let stringListToString (list : string list) =
                             String.Join(" ", tail |> List.map (fun x -> String.Format("{0,10}", x))))
     | [] -> ""
 
-let summariseResults resultsDirectory =
-    let xmlSerializer = FsPickler.CreateXmlSerializer(indent = true)
 
+
+
+
+let summariseResults resultsDirectory =
     let resultFiles = Directory.GetFiles(resultsDirectory, "*.xml") |> Array.toList
     let resultsXmlStrings = resultFiles |> List.map (fun filename -> File.ReadAllText(filename))
     let results =
         resultsXmlStrings
-            |> List.map (fun xml -> xmlSerializer.UnPickleOfString<SimulationResults> xml)
+            |> List.map (fun xml -> (SimulationResults.unPickleOfString xml))
             |> List.sortBy (fun r -> let sortorder = ["bsort16"; "bsort32"; "hsort16"; "hsort32"; "binsrch16"; "binsrch32"; "fft"; "xxtea"; "md5"; "rc5"; "sortX"; "hsortX"; "binsrchX"] in
                                      match sortorder |> List.tryFindIndex ((=) r.benchmark) with
                                      | Some (index) -> index

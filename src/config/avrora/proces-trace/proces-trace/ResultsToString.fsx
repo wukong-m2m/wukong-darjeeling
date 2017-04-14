@@ -1,5 +1,4 @@
 #r "binaries/FSharp.Data/FSharp.Data.dll"
-#r "binaries/fspickler.1.5.2/lib/net45/FsPickler.dll"
 
 #load "Datatypes.fsx"
 #load "Helpers.fsx"
@@ -12,7 +11,6 @@ open System.Linq
 open System.Text.RegularExpressions
 open System.Runtime.Serialization
 open FSharp.Data
-open Nessos.FsPickler
 open Datatypes
 open Helpers
 

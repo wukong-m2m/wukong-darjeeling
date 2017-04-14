@@ -2,7 +2,7 @@
 // dus de code size data uit de eerder traces halen
 
 #r "binaries/FSharp.Data/FSharp.Data.dll"
-#r "binaries/fspickler.1.5.2/lib/net45/FsPickler.dll"
+#r "binaries/fspickler.3.2.0/lib/net45/FsPickler.dll"
 #load "Datatypes.fsx"
 #load "AVR.fsx"
 
@@ -12,7 +12,7 @@ open System.Linq
 open System.Text.RegularExpressions
 open System.Runtime.Serialization
 open FSharp.Data
-open Nessos.FsPickler
+open MBrace.FsPickler
 open Datatypes
 
 let configurations = ["results_0BASE_R___P__CS0"; "results_0BASE_R___P__CS0_simple_opt"; "results_1SMPL_R11_P__CS0"; "results_2POPD_R11_P__CS0"; "results_3MARK_R11_P7_CS0"; "results_3MARK_R11_P7_CS4"]

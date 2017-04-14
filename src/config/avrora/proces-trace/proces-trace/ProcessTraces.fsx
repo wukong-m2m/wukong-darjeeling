@@ -1,5 +1,3 @@
-#r "binaries/fspickler.1.5.2/lib/net45/FsPickler.dll"
-
 #load "Datatypes.fsx"
 #load "Helpers.fsx"
 #load "AVR.fsx"
@@ -11,7 +9,6 @@ open System.IO
 open System.Linq
 open System.Text.RegularExpressions
 open System.Runtime.Serialization
-open Nessos.FsPickler
 open Datatypes
 open Helpers
 open ResultsToString
@@ -305,8 +302,7 @@ let ProcessTrace (outputType : string) (resultsdir : string) =
       File.WriteAllText (txtFilename, (resultsToString results))
       Console.Error.WriteLine ("Wrote output to " + txtFilename)
 
-      let xmlSerializer = FsPickler.CreateXmlSerializer(indent = true)
-      File.WriteAllText (xmlFilename, (xmlSerializer.PickleToString results))
+      File.WriteAllText (xmlFilename, results.pickleToString)
       Console.Error.WriteLine ("Wrote output to " + xmlFilename)
     | "profile" ->
       let benchmarkMethods = rtcdata.MethodImpls |> Seq.filter (fun methodImpl -> (methodImpl.MethodDefInfusion.StartsWith("bm_")))

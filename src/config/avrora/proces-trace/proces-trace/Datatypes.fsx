@@ -1,4 +1,5 @@
 #r "binaries/FSharp.Data/FSharp.Data.dll"
+#r "binaries/fspickler.3.2.0/lib/net45/FsPickler.dll"
 #load "Helpers.fsx"
 #load "AVR.fsx"
 #load "JVM.fsx"
@@ -6,6 +7,7 @@
 open Helpers
 open FSharp.Data
 open System.Web
+open MBrace.FsPickler
 
 type RtcdataXml = XmlProvider<"rtcdata-example.xml", Global=true>
 type Rtcdata = RtcdataXml.Methods
@@ -128,6 +130,15 @@ let groupOpcodesInCategoriesBytes (allCategories : string list) (results : (stri
                                 | Some (cat, cnt) -> (cat, cnt)
                                 | None -> (cat, 0))
 
+
+type IgnoreFSI_NamespaceConverter (?ignoreVersion : bool) =
+    let ignoreVersion = defaultArg ignoreVersion true
+    interface ITypeNameConverter with
+        member __.OfSerializedType (tI : TypeInfo) =
+            { tI with Name = "SimulationResults" }
+        member __.ToDeserializedType (tI : TypeInfo) =
+            { tI with Name = "SimulationResults" }
+
 type SimulationResults = {
     benchmark : string;
     jvmInstructions : ProcessedJvmInstruction list;
@@ -192,4 +203,12 @@ type SimulationResults = {
         |> List.map (fun jvm -> (jvm.counters.executions, jvm.counters.executions * (abs (jvm.djDebugData.stackSizeBefore - jvm.djDebugData.stackSizeAfter))))
         |> List.fold (fun (accCnt, accSum) (jvmCnt, jvmSum) -> (accCnt+jvmCnt, accSum+jvmSum)) (0, 0)
         |> (fun (cnt, sum) -> float sum / float cnt)
+
+    member this.pickleToString =
+        let xmlSerializer = FsPickler.CreateXmlSerializer(indent = true, typeConverter = new IgnoreFSI_NamespaceConverter())
+        xmlSerializer.PickleToString this
+    static member unPickleOfString s =
+        let xmlSerializer = FsPickler.CreateXmlSerializer(indent = true, typeConverter = new IgnoreFSI_NamespaceConverter())
+        xmlSerializer.UnPickleOfString<SimulationResults> s
+
 
