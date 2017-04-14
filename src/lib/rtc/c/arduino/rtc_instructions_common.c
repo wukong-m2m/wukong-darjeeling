@@ -20,6 +20,10 @@
 #endif
 
 void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8_t jvm_operand_byte0, uint8_t jvm_operand_byte1, uint8_t jvm_operand_byte2) {
+#if defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)
+    emit_flush_to_flash(); // To make sure we won't accidentally optimise addresses or branch labels
+#endif
+
     dj_local_id localId;
     localId.infusion_id = jvm_operand_byte0;
     localId.entity_id = jvm_operand_byte1;
@@ -60,6 +64,10 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
     rtc_common_push_returnvalue_from_R22_if_necessary(rettype);
 }
 void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_operand_byte1) {
+#if defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)
+    emit_flush_to_flash(); // To make sure we won't accidentally optimise addresses or branch labels
+#endif
+
     dj_local_id localId;
     localId.infusion_id = jvm_operand_byte0;
     localId.entity_id = jvm_operand_byte1;
