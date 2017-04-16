@@ -20,6 +20,12 @@ binaries.all {
     linker.args '-Wl,--gc-sections'
 }
 
+if (!project.hasProperty('no-rtc-guards')) {
+    binaries.all {
+        cCompiler.args '-DRTC_GUARDS=1'
+    }
+}
+
 // AVR tasks: transform infusion archives to c arrays
 // and add those C files to the application model
 task createCArrays {

@@ -124,12 +124,16 @@
 
 
 ////////////////////// HELPERS
+#ifdef RTC_GUARDS
 void rtc_panic(uint8_t panictype) {
     avroraRTCTraceStackCacheState(rtc_ts->rtc_stackcache_state); // Store it here so we can see what's IN USE
     avroraRTCTraceStackCacheValuetags(rtc_ts->rtc_stackcache_valuetags);
     avroraRTCTraceStackCachePinnedRegisters(rtc_ts->rtc_stackcache_pinned);
     dj_panic(panictype);
 }
+#else
+#define rtc_panic(panictype)
+#endif
 bool rtc_stackcache_is_call_used_idx(uint8_t idx) {
     uint8_t reg = ARRAY_INDEX_TO_REG(idx);
     return reg == R18 || reg == R20 || reg == R22 || reg == R24;
@@ -687,14 +691,6 @@ void rtc_stackcache_pop_destructive_ref_into_fixed_reg(uint8_t reg_base) {      
 }
 void rtc_stackcache_pop_destructive_ref_into_Z() {                                   // Pops a value into Z. Panics if any reg is not marked IN USE.
     rtc_stackcache_pop_pair(NULL, RTC_STACKCACHE_POP_DESTRUCTIVE, RTC_STACKCACHE_REF_STACK_TYPE, RZ);
-}
-
-void rtc_stackcache_assert_no_in_use() {
-    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
-        if (RTC_STACKCACHE_IS_IN_USE(idx)) {
-            rtc_panic(DJ_PANIC_AOT_STACKCACHE_IN_USE);
-        }
-    }
 }
 
 void rtc_stackcache_emit_MOVW_and_move_cache_state(uint8_t dest_reg, uint8_t src_reg) {

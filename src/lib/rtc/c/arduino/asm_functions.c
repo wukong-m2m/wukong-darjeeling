@@ -6,8 +6,7 @@
 #include "rtc_emit.h"
 #include "asm_functions.h"
 
-#define ASM_GUARDS // Define this for debugging to add some checks to the assembler.
-#ifdef ASM_GUARDS
+#ifdef RTC_GUARDS
 void asm_guard_assert(bool condition) {
     if (!condition) {
         while(true) { dj_panic(DJ_PANIC_AOT_ASM_ERROR); }
@@ -30,7 +29,7 @@ void asm_guard_check_regs(uint16_t opcode, uint8_t reg1, uint8_t reg2) {
             asm_guard_assert(false);
     }
 }
-#else // RTC_ASM_GUARDS
+#else // RTC_GUARDS
 #define asm_guard_check_regs(opcode, reg1, reg2)
 #endif
 
@@ -92,10 +91,12 @@ uint16_t emit_ADIW_if_necessary_to_bring_offset_in_range(uint8_t reg, uint16_t o
             + (((offset) & 0x20) << 8))
 // LDD                                  10q0 qq0d dddd yqqq, with d=dest register, q=offset from Y or Z, y=1 for Y 0 for Z
 void emit_LDD(uint8_t reg, uint8_t yz, uint16_t offset) {
+#ifdef RTC_GUARDS
     if (offset > 63) {
         avroraPrintInt16(offset);
         dj_panic(DJ_PANIC_AOT_ASM_ERROR_OFFSET_OUT_OF_RANGE);
     }
+#endif
     emit (OPCODE_LDD
              + ((reg) << 4)
              + ((yz) << 3)
@@ -103,9 +104,11 @@ void emit_LDD(uint8_t reg, uint8_t yz, uint16_t offset) {
 }
 // STD                                  10q0 qq1r rrrr yqqq, with r=source register, q=offset from Y or Z, y=1 for Y 0 for Z
 void emit_STD(uint8_t reg, uint8_t yz, uint16_t offset) {
+#ifdef RTC_GUARDS
     if (offset > 63) {
         dj_panic(DJ_PANIC_AOT_ASM_ERROR_OFFSET_OUT_OF_RANGE);
     }
+#endif
     emit ((OPCODE_STD
              + ((reg) << 4)
              + ((yz) << 3)
