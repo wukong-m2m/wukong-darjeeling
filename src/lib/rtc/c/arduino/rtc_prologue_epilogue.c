@@ -25,42 +25,19 @@ void rtc_emit_prologue() {
 		emit_POP(R19);
 #endif
 	} else {
-		if (rtc_current_method_get_uses_reg(R2)) {
-			emit_PUSH(R2);
-			emit_PUSH(R3);
-			uint16_t rtc_statics_start = (uint16_t)rtc_ts->infusion->staticReferenceFields;
-			emit_LDI(R20, rtc_statics_start&0xFF);
-			emit_LDI(R21, (rtc_statics_start>>8)&0xFF);
-			emit_MOVW(R2, R20);
+		for (uint8_t reg=R2; reg<=R16; reg+=2) {
+			if (rtc_current_method_get_uses_reg(reg)) {
+				emit_PUSH(reg);
+				emit_PUSH(reg+1);
+				if(reg==R2) {
+					uint16_t rtc_statics_start = (uint16_t)rtc_ts->infusion->staticReferenceFields;
+					emit_LDI(R20, rtc_statics_start&0xFF);
+					emit_LDI(R21, (rtc_statics_start>>8)&0xFF);
+					emit_MOVW(R2, R20);
+				}
+			}
 		}
-		if (rtc_current_method_get_uses_reg(R4)) {
-			emit_PUSH(R4);
-			emit_PUSH(R5);
-		}
-		if (rtc_current_method_get_uses_reg(R6)) {
-			emit_PUSH(R6);
-			emit_PUSH(R7);
-		}
-		if (rtc_current_method_get_uses_reg(R8)) {
-			emit_PUSH(R8);
-			emit_PUSH(R9);
-		}
-		if (rtc_current_method_get_uses_reg(R10)) {
-			emit_PUSH(R10);
-			emit_PUSH(R11);
-		}
-		if (rtc_current_method_get_uses_reg(R12)) {
-			emit_PUSH(R12);
-			emit_PUSH(R13);
-		}
-		if (rtc_current_method_get_uses_reg(R14)) {
-			emit_PUSH(R14);
-			emit_PUSH(R15);
-		}
-		if (rtc_current_method_get_uses_reg(R16)) {
-			emit_PUSH(R16);
-			emit_PUSH(R17);
-		}
+
 		emit_PUSH(R28);
 		emit_PUSH(R29);
 		emit_MOVW(R28, R24);
@@ -83,37 +60,13 @@ void rtc_emit_epilogue() {
 	} else {
 		emit_POP(R29);
 		emit_POP(R28);
-		if (rtc_current_method_get_uses_reg(R16)) {
-			emit_POP(R17);
-			emit_POP(R16);
-		}
-		if (rtc_current_method_get_uses_reg(R14)) {
-			emit_POP(R15);
-			emit_POP(R14);
-		}
-		if (rtc_current_method_get_uses_reg(R12)) {
-			emit_POP(R13);
-			emit_POP(R12);
-		}
-		if (rtc_current_method_get_uses_reg(R10)) {
-			emit_POP(R11);
-			emit_POP(R10);
-		}
-		if (rtc_current_method_get_uses_reg(R8)) {
-			emit_POP(R9);
-			emit_POP(R8);
-		}
-		if (rtc_current_method_get_uses_reg(R6)) {
-			emit_POP(R7);
-			emit_POP(R6);
-		}
-		if (rtc_current_method_get_uses_reg(R4)) {
-			emit_POP(R5);
-			emit_POP(R4);
-		}
-		if (rtc_current_method_get_uses_reg(R2)) {
-			emit_POP(R3);
-			emit_POP(R2);
+
+
+		for (uint8_t reg=R16; reg>=R2; reg-=2) {
+			if (rtc_current_method_get_uses_reg(reg)) {
+				emit_POP(reg+1);
+				emit_POP(reg);
+			}
 		}
 	}
 	emit_RET();
