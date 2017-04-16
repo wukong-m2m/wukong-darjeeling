@@ -1181,13 +1181,13 @@ void rtc_translate_single_instruction() {
         break;
         case JVM_SINC:
         case JVM_SINC_W:
-            rtc_common_translate_sinc(opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
+            rtc_common_translate_inc(opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
 
             rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(ts->current_instruction_valuetag); // Any cached value for this variable is now outdated.
         break;
         case JVM_IINC:
         case JVM_IINC_W:
-            rtc_common_translate_iinc(opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
+            rtc_common_translate_inc(opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
 
             rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(ts->current_instruction_valuetag); // Any cached value for this variable is now outdated.
             rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(RTC_VALUETAG_TO_INT_L(ts->current_instruction_valuetag)); // Also for the 2nd word

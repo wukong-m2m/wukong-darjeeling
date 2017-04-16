@@ -118,22 +118,30 @@ void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_ope
 #endif
 }
 
-void rtc_common_translate_sinc(uint8_t opcode, uint8_t jvm_operand_byte0, uint8_t jvm_operand_byte1, uint8_t jvm_operand_byte2) {
-    // -129 -> JVM_SINC_W
-    // -128 -> JVM_SINC
-    // +127 -> JVM_SINC
-    // +128 -> JVM_SINC_W
+void rtc_common_translate_inc(uint8_t opcode, uint8_t jvm_operand_byte0, uint8_t jvm_operand_byte1, uint8_t jvm_operand_byte2) {
+    // -129 -> JVM_S/IINC_W
+    // -128 -> JVM_S/IINC
+    // +127 -> JVM_S/IINC
+    // +128 -> JVM_S/IINC_W
     // jvm_operand_byte0: index of int local
     int16_t jvm_operand_signed_word;
     uint8_t operand_reg_load_into;
     uint8_t operand_reg_pointer_to_locals;
     uint8_t offset;
-    if (opcode == JVM_SINC) {
+    if (opcode == JVM_SINC || opcode == JVM_IINC) {
         jvm_operand_signed_word = (int8_t)jvm_operand_byte1;
     } else {
         jvm_operand_signed_word = (int16_t)(((uint16_t)jvm_operand_byte1 << 8) + jvm_operand_byte2);
     }
-    offset = offset_for_intlocal_short(rtc_ts->methodimpl, jvm_operand_byte0);
+    bool is_iinc;
+    if (opcode == JVM_IINC || opcode == JVM_IINC_W) {
+        is_iinc = true;
+        offset = offset_for_intlocal_int(rtc_ts->methodimpl, jvm_operand_byte0);
+    } else {
+        is_iinc = false;
+        offset = offset_for_intlocal_short(rtc_ts->methodimpl, jvm_operand_byte0);
+    }
+
     if (asm_needs_ADIW_to_bring_offset_in_range(offset)) {
         // Offset too large: copy Z to Y and ADIW it until we can reach the desired offset
         emit_MOVW(RZ, RY);
@@ -158,87 +166,20 @@ void rtc_common_translate_sinc(uint8_t opcode, uint8_t jvm_operand_byte0, uint8_
         emit_LDD(operand_reg_load_into, operand_reg_pointer_to_locals, offset);
         emit_INC(operand_reg_load_into);
         emit_STD(operand_reg_load_into, operand_reg_pointer_to_locals, offset);
-        emit_BRNE(6);
+        emit_BRNE(is_iinc ? 22 : 6); // For short inc we just need to jump 6, but for int we will generate more code below, so we need to jump farther
         emit_LDD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+1);
         emit_INC(operand_reg_load_into);
         emit_STD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+1);
-    } else {
-        uint8_t c0, c1;
-        if (jvm_operand_signed_word > 0) {
-            // Positive operand
-            c0 = -(jvm_operand_signed_word & 0xFF);
-            c1 = -((jvm_operand_signed_word >> 8) & 0xFF)-1;
-        } else {
-            // Negative operand
-            c0 = (-jvm_operand_signed_word) & 0xFF;
-            c1 = ((-jvm_operand_signed_word) >> 8) & 0xFF;
+        if (is_iinc) {
+            emit_BRNE(14);
+            emit_LDD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+2);
+            emit_INC(operand_reg_load_into);
+            emit_STD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+2);
+            emit_BRNE(6);
+            emit_LDD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+3);
+            emit_INC(operand_reg_load_into);
+            emit_STD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+3);
         }
-
-        emit_LDD(operand_reg_load_into, operand_reg_pointer_to_locals, offset);
-        emit_SUBI(operand_reg_load_into, c0);
-        emit_STD(operand_reg_load_into, operand_reg_pointer_to_locals, offset);
-
-        emit_LDD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+1);
-        emit_SBCI(operand_reg_load_into, c1);
-        emit_STD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+1);
-    }
-    if (operand_reg_load_into == R16) {
-        emit_POP(R16);
-    }
-}
-
-void rtc_common_translate_iinc(uint8_t opcode, uint8_t jvm_operand_byte0, uint8_t jvm_operand_byte1, uint8_t jvm_operand_byte2) {
-    // -129 -> JVM_IINC_W
-    // -128 -> JVM_IINC
-    // +127 -> JVM_IINC
-    // +128 -> JVM_IINC_W
-    // jvm_operand_byte0: index of int local
-    int16_t jvm_operand_signed_word;
-    uint8_t operand_reg_load_into;
-    uint8_t operand_reg_pointer_to_locals;
-    uint8_t offset;
-    if (opcode == JVM_IINC) {
-        jvm_operand_signed_word = (int8_t)jvm_operand_byte1;
-    } else {
-        jvm_operand_signed_word = (int16_t)(((uint16_t)jvm_operand_byte1 << 8) + jvm_operand_byte2);
-    }
-    offset = offset_for_intlocal_int(rtc_ts->methodimpl, jvm_operand_byte0);
-    if (asm_needs_ADIW_to_bring_offset_in_range(offset)) {
-        // Offset too large: copy Z to Y and ADIW it until we can reach the desired offset
-        emit_MOVW(RZ, RY);
-        offset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, offset);
-        operand_reg_pointer_to_locals = Z;
-        if (jvm_operand_signed_word == 1) {
-            operand_reg_load_into = R0; // The register to load the local into, one byte at a time.
-        } else {
-            // We will use SUBI/SBCI instead of INC to increment by more than 1, but we can't use
-            // R0 for that since these instructions need a register >= R16. Temporarily save R16 on
-            // the stack and use that instead.
-            emit_PUSH(R16);
-            operand_reg_load_into = R16; // The register to load the local into, one byte at a time.
-        }
-    } else {
-        // Offset in range: just use Y directly
-        operand_reg_pointer_to_locals = Y;
-        operand_reg_load_into = RZL; // The register to load the local into, one byte at a time.
-    }
-    if (jvm_operand_signed_word == 1) {
-        // Special case
-        emit_LDD(operand_reg_load_into, operand_reg_pointer_to_locals, offset);
-        emit_INC(operand_reg_load_into);
-        emit_STD(operand_reg_load_into, operand_reg_pointer_to_locals, offset);
-        emit_BRNE(22);
-        emit_LDD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+1);
-        emit_INC(operand_reg_load_into);
-        emit_STD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+1);
-        emit_BRNE(14);
-        emit_LDD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+2);
-        emit_INC(operand_reg_load_into);
-        emit_STD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+2);
-        emit_BRNE(6);
-        emit_LDD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+3);
-        emit_INC(operand_reg_load_into);
-        emit_STD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+3);
     } else {
         uint8_t c0, c1, c2, c3;
         if (jvm_operand_signed_word > 0) {
@@ -263,13 +204,15 @@ void rtc_common_translate_iinc(uint8_t opcode, uint8_t jvm_operand_byte0, uint8_
         emit_SBCI(operand_reg_load_into, c1);
         emit_STD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+1);
 
-        emit_LDD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+2);
-        emit_SBCI(operand_reg_load_into, c2);
-        emit_STD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+2);
+        if (is_iinc) {
+            emit_LDD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+2);
+            emit_SBCI(operand_reg_load_into, c2);
+            emit_STD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+2);
 
-        emit_LDD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+3);
-        emit_SBCI(operand_reg_load_into, c3);
-        emit_STD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+3);
+            emit_LDD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+3);
+            emit_SBCI(operand_reg_load_into, c3);
+            emit_STD(operand_reg_load_into, operand_reg_pointer_to_locals, offset+3);
+        }
     }
     if (operand_reg_load_into == R16) {
         emit_POP(R16);

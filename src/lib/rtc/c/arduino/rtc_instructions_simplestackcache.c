@@ -1254,7 +1254,7 @@ void rtc_translate_single_instruction() {
             } else {
                 ts->pc += 3; // Skip operand (already read into jvm_operand_byte0)
             }
-            rtc_common_translate_sinc(opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
+            rtc_common_translate_inc(opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
         break;
         case JVM_IINC:
         case JVM_IINC_W:
@@ -1263,7 +1263,7 @@ void rtc_translate_single_instruction() {
             } else {
                 ts->pc += 3; // Skip operand (already read into jvm_operand_byte0)
             }
-            rtc_common_translate_iinc(opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
+            rtc_common_translate_inc(opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
         break;
         case JVM_S2B:
         case JVM_S2C:
