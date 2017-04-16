@@ -92,8 +92,15 @@ typedef struct _rtc_translationstate {
 #endif // AOT_STRATEGY_MARKLOOP
 } rtc_translationstate;
 
+#ifdef RTC_TS_HARDCODED_AT_END_OF_HEAP
+// Hardcode rtc_ts to be the end of the heap. This will reduce code size by about 1KB because the address
+// is known at compile time so we don't need to follow the pointer.
+extern unsigned char mem[HEAPSIZE];
+#define rtc_ts ((rtc_translationstate *) (((void *)mem) + HEAPSIZE - sizeof(rtc_translationstate)))
+#else
 // Store a global pointer to the translation state. This will point to a big struct on the heap that
 // will contain all the state necessary for AOT translation.
 extern rtc_translationstate *rtc_ts;
+#endif
 
 #endif // RTC_H

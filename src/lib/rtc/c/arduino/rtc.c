@@ -27,9 +27,14 @@
 #include "rtc_markloop.h"
 #endif
 
-// Store a global pointer to the translation state. This will point to a big struct on the heap that
-// will contain all the state necessary for AOT translation.
-rtc_translationstate *rtc_ts;
+#ifdef RTC_TS_HARDCODED_AT_END_OF_HEAP
+    // Hardcode rtc_ts to be the end of the heap. This will reduce code size by about 1KB because the address
+    // is known at compile time so we don't need to follow the pointer.
+#else
+    // Store a global pointer to the translation state. This will point to a big struct on the heap that
+    // will contain all the state necessary for AOT translation.
+    rtc_translationstate *rtc_ts;
+#endif
 
 // This is placed at the very end of the .text section by the linker. There shouldn't be anything following this marker.
 // We will use all memory above MAX(rtc_rtc_start_of_compiled_code_marker, 65536) for AOT code. (so all compiled code
@@ -222,9 +227,14 @@ void rtc_compile_lib(dj_infusion *infusion) {
     avroraRTCSetCurrentInfusion(dj_di_header_getInfusionName(infusion->header));
 #endif
 
+#ifdef RTC_TS_HARDCODED_AT_END_OF_HEAP
+    // Hardcode rtc_ts to be the end of the heap. This will reduce code size by about 1KB because the address
+    // is known at compile time so we don't need to follow the pointer.
+#else
     // Allocate memory for translation state datastructure
     rtc_ts = dj_mem_checked_alloc(sizeof(rtc_translationstate), CHUNKID_RTC_TSSTATE);
     dj_mem_addSafePointer((void**)&rtc_ts); // GC shouldn't run during RTC, but just to be safe.
+#endif
 
     // uses 512bytes on the stack... maybe optimise this later
     // RTC code should always be in the 64K-128K segment.
@@ -294,10 +304,15 @@ void rtc_compile_lib(dj_infusion *infusion) {
     // empty slots in the handler table.
     rtc_update_method_pointers(infusion, method_start_addresses);
 
+#ifdef RTC_TS_HARDCODED_AT_END_OF_HEAP
+    // Hardcode rtc_ts to be the end of the heap. This will reduce code size by about 1KB because the address
+    // is known at compile time so we don't need to follow the pointer.
+#else
     // Free memory for translation state datastructure
     dj_mem_removeSafePointer((void**)&rtc_ts);
     dj_mem_free(rtc_ts);
     rtc_ts = NULL;
+#endif
 }
 
 uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode) {
