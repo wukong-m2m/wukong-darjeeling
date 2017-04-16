@@ -83,6 +83,7 @@ typedef struct _rtc_translationstate {
     uint16_t current_instruction_valuetag;
     uint8_t current_instruction_opcode;
     uint8_t current_instruction_opcodetype;
+    uint16_t pinned_reg_needs_load;
     uint16_t pinned_reg_needs_store;
     uint8_t rtc_stackcache_state[RTC_STACKCACHE_MAX_IDX];
     uint16_t rtc_stackcache_valuetags[RTC_STACKCACHE_MAX_IDX];

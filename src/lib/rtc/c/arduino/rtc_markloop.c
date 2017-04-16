@@ -29,9 +29,11 @@
 #define RTC_STACKCACHE_MARK_DISABLED(idx)            (rtc_ts->rtc_stackcache_state[(idx)] = RTC_STACKCACHE_DISABLED)
 #define RTC_STACKCACHE_MARK_INT_STACK_DEPTH0(idx)    (rtc_ts->rtc_stackcache_state[(idx)] = RTC_STACKCACHE_INT_STACK_TYPE)
 #define RTC_STACKCACHE_MARK_REF_STACK_DEPTH0(idx)    (rtc_ts->rtc_stackcache_state[(idx)] = RTC_STACKCACHE_REF_STACK_TYPE)
-#define RTC_STACKCACHE_MOVE_CACHE_STATE(dest, src)   {rtc_ts->rtc_stackcache_state[(dest)] = rtc_ts->rtc_stackcache_state[(src)]; \
-                                                      rtc_ts->rtc_stackcache_valuetags[(dest)] = rtc_ts->rtc_stackcache_valuetags[(src)]; \
-                                                      RTC_STACKCACHE_MARK_IN_USE(src); }
+void    RTC_STACKCACHE_MOVE_CACHE_STATE(uint8_t dest, uint8_t src) {
+    rtc_ts->rtc_stackcache_state[(dest)] = rtc_ts->rtc_stackcache_state[(src)];
+    rtc_ts->rtc_stackcache_valuetags[(dest)] = rtc_ts->rtc_stackcache_valuetags[(src)];
+    RTC_STACKCACHE_MARK_IN_USE(src);
+}
 
 #define RTC_VALUETAG_TYPE_LOCAL     0x0000
 #define RTC_VALUETAG_TYPE_STATIC    0x4000
@@ -57,13 +59,27 @@
 #define RTC_STACKCACHE_UPDATE_AGE(idx)              (rtc_ts->rtc_stackcache_age[(idx)] = rtc_ts->pc)
 #define RTC_STACKCACHE_GET_AGE(idx)                 (rtc_ts->rtc_stackcache_age[(idx)])
 
-#define RTC_MARKLOOP_PIN(idx, needs_store)          {rtc_ts->rtc_stackcache_pinned |= (1 << idx); if(needs_store) {RTC_MARKLOOP_SET_PINNED_REG_NEEDS_STORE(idx);} else {RTC_MARKLOOP_CLR_PINNED_REG_NEEDS_STORE(idx);}}
+#define RTC_MARKLOOP_CLR_PINNED_REGS_NEED_LOAD_STORE()    {rtc_ts->pinned_reg_needs_load=rtc_ts->pinned_reg_needs_store=0;}
+#define RTC_MARKLOOP_SET_PINNED_REG_NEEDS_LOAD(idx)    (rtc_ts->pinned_reg_needs_load  |= (1 << idx))
+#define RTC_MARKLOOP_SET_PINNED_REG_NEEDS_STORE(idx)   (rtc_ts->pinned_reg_needs_store |= (1 << idx))
+#define RTC_MARKLOOP_VALUETAG_NEEDS_LOAD(valuetag)     ((valuetag & 0x0800) == 0x0800)
+#define RTC_MARKLOOP_VALUETAG_NEEDS_STORE(valuetag)    ((valuetag & 0x0400) == 0x0400)
+#define RTC_MARKLOOP_STRIP_LOAD_STORE_BITS(valuetag)   (valuetag & 0xF3FF)
+#define RTC_MARKLOOP_PINNED_REG_NEEDS_STORE(idx)       (rtc_ts->pinned_reg_needs_store & (1 << idx))
+#define RTC_MARKLOOP_PINNED_REG_NEEDS_LOAD(idx)        (rtc_ts->pinned_reg_needs_load  & (1 << idx))
+
+void RTC_MARKLOOP_PIN(uint8_t idx, uint16_t valuetag) {
+    rtc_ts->rtc_stackcache_pinned |= (1 << idx);
+    if(RTC_MARKLOOP_VALUETAG_NEEDS_STORE(valuetag)) {
+        RTC_MARKLOOP_SET_PINNED_REG_NEEDS_STORE(idx);
+    }
+    if(RTC_MARKLOOP_VALUETAG_NEEDS_LOAD(valuetag)) {
+        RTC_MARKLOOP_SET_PINNED_REG_NEEDS_LOAD(idx);
+    }
+    RTC_STACKCACHE_SET_VALUETAG(idx, RTC_MARKLOOP_STRIP_LOAD_STORE_BITS(valuetag));
+}
 #define RTC_MARKLOOP_UNPIN(idx)                     (rtc_ts->rtc_stackcache_pinned &= ~(1 << idx))
 #define RTC_MARKLOOP_ISPINNED(idx)                  (rtc_ts->rtc_stackcache_pinned & (1 << idx))
-
-#define RTC_MARKLOOP_SET_PINNED_REG_NEEDS_STORE(idx)   (rtc_ts->pinned_reg_needs_store |= (1 << idx))
-#define RTC_MARKLOOP_CLR_PINNED_REG_NEEDS_STORE(idx)   (rtc_ts->pinned_reg_needs_store &= ~(1 << idx))
-#define RTC_MARKLOOP_PINNED_REG_NEEDS_STORE(idx)       (rtc_ts->pinned_reg_needs_store & (1 << idx))
 
 // IMPORTANT: REGISTERS ARE ALWAYS ASSIGNED IN PAIRS:
 // AFTER getfreereg/pop_16bit(regs)
@@ -94,7 +110,7 @@
 //          01 for a 16b short value
 //          10 for the high word of a 32b int value
 //          11 for the low word of a 32b int value
-//    l = needs load: only used in the markloop instructions to indicate we need to generate code in the prologue (the value is live)
+//    l = needs load : only used in the markloop instructions to indicate we need to generate code in the prologue (the value is live)
 //    s = needs store: only used in the markloop instructions to indicate we need to generate code in the epilogue (the value is live and may have changed)
 //    nn = the identifier: the index for locals
 //                         statics aren't implemented yet
@@ -1215,86 +1231,71 @@ uint8_t rtc_markloop_getfree_16bit_idx_callsaved_only() {
     rtc_stackcache_freeup_a_non_pinned_pair();
     return rtc_markloop_getfree_16bit_idx_callsaved_only();
 }
+
 void rtc_markloop_emit_prologue(bool called_from_invokelight, uint8_t lightweightmethod_id) {
-    if (called_from_invokelight) {
-        // Called from INVOKELIGHT: for all pinned registers, emit a load back from memory if the method we're about to call has corrupted the value.
-        // We should see if this can be refactored later to merge both cases (set the PINNED status if called from MARKLOOP_START, and then emit the
-        // required loads in a way similar to the loop in rtc_markloop_emit_epilogue).
-        for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
-            if (RTC_MARKLOOP_ISPINNED(idx)) {
-                uint16_t valuetag = RTC_STACKCACHE_GET_VALUETAG(idx);
+    // This method is used in two cases:
+    //   - from MARKLOOP_START (called_from_invokelight == false): we should first pin some registers and then generate loads for all values that are live at the beginning of the loop
+    //   - from INVOKELIGHT    (called_from_invokelight == true) : we should load all pinned values that were used by the lightweight method (they have been store before calling the lightweight method)
 
-                if (RTC_VALUETAG_IS_TYPE_LOCAL(valuetag) && (rtc_method_get_uses_reg(lightweightmethod_id, ARRAY_INDEX_TO_REG(idx)))) {
-                    uint8_t local_index = RTC_VALUETAG_GET_LOCAL_INDEX(valuetag);
-                    uint8_t offset = 0;
-                    if      (RTC_VALUETAG_IS_INT_H(valuetag)) offset = offset_for_intlocal_int(rtc_ts->methodimpl, local_index) + 2;
-                    else if (RTC_VALUETAG_IS_INT_L(valuetag)) offset = offset_for_intlocal_int(rtc_ts->methodimpl, local_index);
-                    else if (RTC_VALUETAG_IS_SHORT(valuetag)) offset = offset_for_intlocal_short(rtc_ts->methodimpl, local_index);
-                    else if (RTC_VALUETAG_IS_REF(valuetag))   offset = offset_for_reflocal(rtc_ts->methodimpl, local_index);
+    // First pin some registers if we're not called from invokelight
+    if (!called_from_invokelight) {
+        // Clear the state in rtc_ts.
+        RTC_MARKLOOP_CLR_PINNED_REGS_NEED_LOAD_STORE();
 
-                    uint8_t operand_regs[2];
-                    operand_regs[0] = ARRAY_INDEX_TO_REG(idx);
-                    operand_regs[1] = ARRAY_INDEX_TO_REG(idx)+1;
-
-                    // Can all be handled the same way here.
-                    emit_load_local_16bit(operand_regs, offset);
-                }
-            }
-        }
-    } else {
         // Normal MARKLOOP_START case:
         uint8_t number_idx_pinned = 0;
         uint8_t i = 0;
         uint8_t number_of_valuetags_in_instruction = dj_di_getU8(rtc_ts->jvm_code_start + rtc_ts->pc + 1);
+        dj_di_pointer ptr = rtc_ts->jvm_code_start + rtc_ts->pc + 2 + 2*i;
         while (number_idx_pinned < RTC_MARKLOOP_MAX_NUMBER_OF_IDX_TO_PIN && i < number_of_valuetags_in_instruction) {
             uint8_t idx_to_pin, idx_to_pin2;
             // While we have registers left, and valuetags in the instruction
-            uint16_t valuetag = (dj_di_getU8(rtc_ts->jvm_code_start + rtc_ts->pc + 2 + 2*i) << 8)
-                               | dj_di_getU8(rtc_ts->jvm_code_start + rtc_ts->pc + 3 + 2*i);
+            uint16_t valuetag = (dj_di_getU8(ptr++) << 8)
+                               | dj_di_getU8(ptr++);
             i++;
-
-            bool needs_load = ((valuetag & 0x0800) == 0x0800);
-            bool needs_store = ((valuetag & 0x0400) == 0x0400);
-            valuetag = valuetag & 0xF3FF;
 
             if (RTC_VALUETAG_IS_TYPE_LOCAL(valuetag)) {
                 idx_to_pin = rtc_markloop_getfree_16bit_idx_callsaved_only();
-                uint8_t operand_regs[4];
-                operand_regs[0] = ARRAY_INDEX_TO_REG(idx_to_pin);
-                operand_regs[1] = ARRAY_INDEX_TO_REG(idx_to_pin)+1;
-                uint8_t local_index = RTC_VALUETAG_GET_LOCAL_INDEX(valuetag);
 
                 if (RTC_VALUETAG_IS_INT(valuetag)) {
                     if (number_idx_pinned+1 < RTC_MARKLOOP_MAX_NUMBER_OF_IDX_TO_PIN) {
                         // Need to get an extra pair to pin an int
                         idx_to_pin2 = rtc_markloop_getfree_16bit_idx_callsaved_only();
-                        operand_regs[2] = ARRAY_INDEX_TO_REG(idx_to_pin2);
-                        operand_regs[3] = ARRAY_INDEX_TO_REG(idx_to_pin2)+1;
 
-                        if (needs_load)
-                        {
-                            emit_load_local_32bit(operand_regs, offset_for_intlocal_int(rtc_ts->methodimpl, local_index));
-                        }
-                        RTC_MARKLOOP_PIN(idx_to_pin, needs_store);
-                        RTC_MARKLOOP_PIN(idx_to_pin2, needs_store);
-                        RTC_STACKCACHE_SET_VALUETAG(idx_to_pin, RTC_VALUETAG_TO_INT_L(valuetag));
-                        RTC_STACKCACHE_SET_VALUETAG(idx_to_pin2, valuetag);
+                        RTC_MARKLOOP_PIN(idx_to_pin, RTC_VALUETAG_TO_INT_L(valuetag));
+                        RTC_MARKLOOP_PIN(idx_to_pin2, valuetag);
                         number_idx_pinned += 2;
                     } else {
                         RTC_STACKCACHE_MARK_AVAILABLE(idx_to_pin);
                     }
                 } else {
-                    // shorts and ref can be handled almost the same way here, since emit_load_local_ref is defined to be identical anyway.
-                    uint8_t offset = RTC_VALUETAG_IS_REF(valuetag) ? offset_for_reflocal(rtc_ts->methodimpl, local_index) : offset_for_intlocal_short(rtc_ts->methodimpl, local_index);
-
-                    if (needs_load)
-                    {
-                        emit_load_local_16bit(operand_regs, offset);
-                    }
-                    RTC_MARKLOOP_PIN(idx_to_pin, needs_store);
-                    RTC_STACKCACHE_SET_VALUETAG(idx_to_pin, valuetag);
+                    RTC_MARKLOOP_PIN(idx_to_pin, valuetag);
                     number_idx_pinned++;
                 }
+            }
+        }
+    }
+
+    // Then generate the required loads
+    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+        if (RTC_MARKLOOP_ISPINNED(idx)) {
+            uint16_t valuetag = RTC_STACKCACHE_GET_VALUETAG(idx);
+
+            if (RTC_VALUETAG_IS_TYPE_LOCAL(valuetag) && (   (!called_from_invokelight && RTC_MARKLOOP_PINNED_REG_NEEDS_LOAD(idx))
+                                                         || ( called_from_invokelight && rtc_method_get_uses_reg(lightweightmethod_id, ARRAY_INDEX_TO_REG(idx))))) {
+                uint8_t local_index = RTC_VALUETAG_GET_LOCAL_INDEX(valuetag);
+                uint8_t offset = 0;
+                if      (RTC_VALUETAG_IS_INT_H(valuetag)) offset = offset_for_intlocal_int(rtc_ts->methodimpl, local_index) + 2;
+                else if (RTC_VALUETAG_IS_INT_L(valuetag)) offset = offset_for_intlocal_int(rtc_ts->methodimpl, local_index);
+                else if (RTC_VALUETAG_IS_SHORT(valuetag)) offset = offset_for_intlocal_short(rtc_ts->methodimpl, local_index);
+                else if (RTC_VALUETAG_IS_REF(valuetag))   offset = offset_for_reflocal(rtc_ts->methodimpl, local_index);
+
+                uint8_t operand_regs[2];
+                operand_regs[0] = ARRAY_INDEX_TO_REG(idx);
+                operand_regs[1] = ARRAY_INDEX_TO_REG(idx)+1;
+
+                // Can all be handled the same way here.
+                emit_load_local_16bit(operand_regs, offset);
             }
         }
     }
