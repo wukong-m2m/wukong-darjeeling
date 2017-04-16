@@ -561,6 +561,7 @@ void rtc_translate_single_instruction() {
         break;
         case JVM_GETFIELD_A:
             rtc_pop_flush_and_cleartags_ref(R24, RTC_FILTER_CALLUSED, RTC_FILTER_CALLUSED);
+            rtc_stackcache_getfree_ref(operand_regs1);
 
             // First find the location of reference fields
             emit_x_CALL((uint16_t)&dj_object_getReferences);
@@ -568,10 +569,9 @@ void rtc_translate_single_instruction() {
             // R24:R25 now points to the location of the instance references
             emit_MOVW(RZ, R24); // Move the location to Z
             jvm_operand_word0 = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, jvm_operand_word0*2);
-            emit_LDD(R22, Z, (jvm_operand_word0)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
-            emit_LDD(R23, Z, (jvm_operand_word0)+1);
-            operand_regs1[0] = R22;
-            operand_regs1[1] = R23;
+            emit_LDD(operand_regs1[0], Z, (jvm_operand_word0)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
+            emit_LDD(operand_regs1[1], Z, (jvm_operand_word0)+1);
+
             rtc_stackcache_push_ref(operand_regs1);
         break;
         case JVM_GETFIELD_A_FIXED: {

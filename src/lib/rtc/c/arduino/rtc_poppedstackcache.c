@@ -324,9 +324,12 @@ bool rtc_stackcache_getfree_16bit_prefer_ge_R16(uint8_t *regs) {
 //    if the valuetag is set for the current instruction, record it
 void rtc_stackcache_push_pair(uint8_t reg_base, uint8_t which_stack, bool is_int_l) {
     uint8_t idx = REG_TO_ARRAY_INDEX(reg_base);
+
+#ifdef RTC_GUARDS
     if (RTC_STACKCACHE_IS_IN_USE(idx)
         || reg_base == R22 || reg_base == R24
         || (RTC_STACKCACHE_IS_AVAILABLE(idx) && (RTC_STACKCACHE_GET_VALUETAG(idx) == rtc_ts->current_instruction_valuetag || (RTC_STACKCACHE_GET_VALUETAG(idx) == RTC_VALUETAG_TO_INT_L(rtc_ts->current_instruction_valuetag) && is_int_l)))) {
+#endif
         // shift depth for all pairs on the stack
         for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
             if (RTC_STACKCACHE_IS_ON_STACK(idx)) {
@@ -349,9 +352,11 @@ void rtc_stackcache_push_pair(uint8_t reg_base, uint8_t which_stack, bool is_int
                 RTC_STACKCACHE_SET_VALUETAG(idx, rtc_ts->current_instruction_valuetag);            
             }
         }
+#ifdef RTC_GUARDS
     } else {
         dj_panic(DJ_PANIC_AOT_STACKCACHE_PUSHED_REG_NOT_IN_USE);
     }
+#endif
 }
 void rtc_stackcache_push_16bit(uint8_t *regs) {
     rtc_stackcache_push_pair(regs[0], RTC_STACKCACHE_INT_STACK_TYPE, false);
@@ -389,6 +394,7 @@ void rtc_stackcache_push_ref_from_R24R25() {
 #define RTC_STACKCACHE_POP_TO_STORE       3
 #define RTC_STACKCACHE_POP_TO_STORE_INT_L 4
 void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack, uint8_t target_reg) {
+#ifdef RTC_GUARDS
     if (target_reg != 0xFF
      && target_reg != R18
      && target_reg != R20
@@ -399,8 +405,10 @@ void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack
         while (true) {
          dj_panic(DJ_PANIC_AOT_STACKCACHE_INVALID_POP_TARGET); }
     }
-    uint8_t target_idx = (target_reg == 0xFF) ? 0xFF : REG_TO_ARRAY_INDEX(target_reg);
+#endif
 
+    uint8_t target_idx = (target_reg == 0xFF) ? 0xFF : REG_TO_ARRAY_INDEX(target_reg);
+    
     // The top element may be of the wrong stack type. This happens because of the way
     // Darjeeling transforms the single JVM stack into separate int and reference stacks.
     uint8_t depth = 0;

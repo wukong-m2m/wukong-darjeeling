@@ -325,22 +325,6 @@ void rtc_poppedstackcache_clear_all_except_pinned_with_valuetag(uint16_t valueta
         }
     }
 }
-void rtc_poppedstackcache_clear_all_callused_valuetags() {
-    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
-        // Is this a call-used register?
-        if (rtc_stackcache_is_call_used_idx(idx)) {
-            RTC_STACKCACHE_SET_VALUETAG(idx, RTC_VALUETAG_UNUSED);
-        }
-    }
-}
-void rtc_poppedstackcache_clear_all_reference_valuetags() {
-    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
-        // Is this a call-used register?
-        if (RTC_VALUETAG_IS_REF(RTC_STACKCACHE_GET_VALUETAG(idx))) {
-            RTC_STACKCACHE_SET_VALUETAG(idx, RTC_VALUETAG_UNUSED);
-        }
-    }
-}
 void rtc_poppedstackcache_clear_all_except_pinned_valuetags() {
     // At a branch target we can't make any assumption about the non-pinned register state since it will depend on the execution path.
     // The pinned registers should be kept however, since the infuser will guarantee there's only one exit from the current block,
@@ -477,33 +461,27 @@ void rtc_stackcache_push_pair(uint8_t reg_base, uint8_t which_stack, bool is_int
     }
 
     uint8_t idx = REG_TO_ARRAY_INDEX(reg_base);
-    if (RTC_STACKCACHE_IS_IN_USE(idx)
-    || (RTC_STACKCACHE_IS_AVAILABLE(idx) && (RTC_STACKCACHE_GET_VALUETAG(idx) == rtc_ts->current_instruction_valuetag
-                                             || (RTC_STACKCACHE_GET_VALUETAG(idx) == RTC_VALUETAG_TO_INT_L(rtc_ts->current_instruction_valuetag) && is_int_l)))) {
-        // shift depth for all pairs on the stack
-        for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
-            if (RTC_STACKCACHE_IS_ON_STACK(idx)) {
-                RTC_STACKCACHE_INC_DEPTH(idx);
-            }
+    // shift depth for all pairs on the stack
+    for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
+        if (RTC_STACKCACHE_IS_ON_STACK(idx)) {
+            RTC_STACKCACHE_INC_DEPTH(idx);
         }
-        // push this on the stack at depth 0
-        if (which_stack == RTC_STACKCACHE_INT_STACK_TYPE) {
-            RTC_STACKCACHE_MARK_INT_STACK_DEPTH0(idx);
-        } else {
-            RTC_STACKCACHE_MARK_REF_STACK_DEPTH0(idx);
-        }
-
-        // set the value tag for the pushed value if we have one
-        if (rtc_ts->current_instruction_valuetag != RTC_VALUETAG_UNUSED) {
-            if (RTC_VALUETAG_IS_INT(rtc_ts->current_instruction_valuetag) && is_int_l) {
-                // Special case when pushing the 2nd word of an int. Need to update the valuetag to be able to tell the high and low word apart.
-                RTC_STACKCACHE_SET_VALUETAG(idx, RTC_VALUETAG_TO_INT_L(rtc_ts->current_instruction_valuetag));
-            } else {
-                RTC_STACKCACHE_SET_VALUETAG(idx, rtc_ts->current_instruction_valuetag);            
-            }
-        }
+    }
+    // push this on the stack at depth 0
+    if (which_stack == RTC_STACKCACHE_INT_STACK_TYPE) {
+        RTC_STACKCACHE_MARK_INT_STACK_DEPTH0(idx);
     } else {
-        rtc_panic(DJ_PANIC_AOT_STACKCACHE_PUSHED_REG_NOT_IN_USE);
+        RTC_STACKCACHE_MARK_REF_STACK_DEPTH0(idx);
+    }
+
+    // set the value tag for the pushed value if we have one
+    if (rtc_ts->current_instruction_valuetag != RTC_VALUETAG_UNUSED && !RTC_MARKLOOP_ISPINNED(idx)) {
+        if (RTC_VALUETAG_IS_INT(rtc_ts->current_instruction_valuetag) && is_int_l) {
+            // Special case when pushing the 2nd word of an int. Need to update the valuetag to be able to tell the high and low word apart.
+            RTC_STACKCACHE_SET_VALUETAG(idx, RTC_VALUETAG_TO_INT_L(rtc_ts->current_instruction_valuetag));
+        } else {
+            RTC_STACKCACHE_SET_VALUETAG(idx, rtc_ts->current_instruction_valuetag);            
+        }
     }
 }
 void rtc_stackcache_push_16bit(uint8_t *regs) {
@@ -542,6 +520,7 @@ void rtc_stackcache_push_ref_from_R24R25() {
 #define RTC_STACKCACHE_POP_TO_STORE       3
 #define RTC_STACKCACHE_POP_TO_STORE_INT_L 4
 void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack, uint8_t target_reg) {
+#ifdef RTC_GUARDS
     if (target_reg != 0xFF
      && target_reg != R18
      && target_reg != R20
@@ -551,6 +530,8 @@ void rtc_stackcache_pop_pair(uint8_t *regs, uint8_t poptype, uint8_t which_stack
      && target_reg != RZ) {
          rtc_panic(DJ_PANIC_AOT_STACKCACHE_INVALID_POP_TARGET);
     }
+#endif
+
     uint8_t target_idx = (target_reg == 0xFF) ? 0xFF : REG_TO_ARRAY_INDEX(target_reg);
 
     // The top element may be of the wrong stack type. This happens because of the way
