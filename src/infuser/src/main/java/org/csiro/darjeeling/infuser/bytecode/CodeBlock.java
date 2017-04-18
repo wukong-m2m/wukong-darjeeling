@@ -88,6 +88,11 @@ public class CodeBlock
 	// types. These variables hold how many of each there are in this code
 	// block. They replace the Java maxLocals. 
 	private int referenceLocalVariableCount, integerLocalVariableCount;
+
+
+	// If this codeblock calls lightweight methods that use local variables,
+	// they
+	private int maxLightweightMethodLocalVariableCount;
 	
 	// The method implementation this code block belongs to.
 	// Used mostly to obtain things like the parameter list which is needed 
@@ -129,7 +134,15 @@ public class CodeBlock
 	{
 		return integerLocalVariableCount;
 	}
-	
+
+	/**
+	 * @return the maximum number of local variables used by lightweight methods called by this method
+	 */
+	public int getMaxLightweightMethodLocalVariableCount()
+	{
+		return maxLightweightMethodLocalVariableCount;
+	}
+
 	/**
 	 * @param the number of local variables that are of the reference type 
 	 */
@@ -144,6 +157,16 @@ public class CodeBlock
 	public void setIntegerLocalVariableCount(int integerLocalVariableCount)
 	{
 		this.integerLocalVariableCount = integerLocalVariableCount;
+	}
+		
+	/**
+	 * @param the maximum number of local variables used by lightweight methods called by this method
+	 */
+	public void updateMaxLightweightMethodLocalVariableCount(int maxLightweightMethodLocalVariableCount)
+	{
+		if (maxLightweightMethodLocalVariableCount > this.maxLightweightMethodLocalVariableCount) {
+			this.maxLightweightMethodLocalVariableCount = maxLightweightMethodLocalVariableCount;
+		}
 	}
 	
 	/**

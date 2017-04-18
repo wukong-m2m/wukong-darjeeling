@@ -54,7 +54,9 @@ public class AddInvokeLightweightInstructions extends CodeBlockTransformation
 
 				if (LightweightMethod.isLightweightMethod(className, methodName)) {
 					instruction.setOpcode(Opcode.INVOKELIGHT);
-					invoke.setLightweightMethod(LightweightMethod.getLightweightMethod(className, methodName));
+					LightweightMethod lightweightMethod = LightweightMethod.getLightweightMethod(className, methodName);
+					invoke.setLightweightMethod(lightweightMethod);
+					codeBlock.updateMaxLightweightMethodLocalVariableCount(lightweightMethod.getLocalVariableCount());
 				}
 			}
 		}
