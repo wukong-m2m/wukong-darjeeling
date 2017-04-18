@@ -109,6 +109,10 @@ public class LightweightMethodImplementations extends LightweightMethod {
 		};
 	}
 
+    public static LightweightMethod testLightweightJavaMethod() {
+        return new LightweightMethod("javax.rtcbench.RTCBenchmark", "testLightweightJavaMethod", true);
+    }
+
 	public static LightweightMethod testISWAP() {
 		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "testISWAP", false) {
 			@Override

@@ -21,6 +21,9 @@ public class RTCBenchmark {
     public static native boolean isNull(Object x);
     public static native short timesTenTestHighStackShort(short x);
     public static native short timesTenTestHighStackRef(Object x);
+    public static int testLightweightJavaMethod(int a, byte b) {
+        return a+b;
+    }
 
     public static boolean rtcbenchmark_measure_java_performance() {
         boolean success = true;
@@ -34,6 +37,7 @@ public class RTCBenchmark {
             System.out.println("round " + i);
             System.out.println("test to pin more regs " + (i*k)+j);
 
+            success = success && testLightweightJavaMethod(4200043, (byte) -1) == 4200042;
             success = success && testISWAP((short) 42, 4200000) == 4200042;
             success = success && testLOAD_STORE(4200000, (short) 42) == 4200042;
 

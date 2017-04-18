@@ -55,6 +55,7 @@ import static org.csiro.darjeeling.infuser.bytecode.Opcode.SLOAD_0;
 import static org.csiro.darjeeling.infuser.bytecode.Opcode.SLOAD_1;
 import static org.csiro.darjeeling.infuser.bytecode.Opcode.SLOAD_2;
 import static org.csiro.darjeeling.infuser.bytecode.Opcode.SLOAD_3;
+import static org.csiro.darjeeling.infuser.bytecode.Opcode.SSTORE;
 import static org.csiro.darjeeling.infuser.bytecode.Opcode.SSTORE_0;
 import static org.csiro.darjeeling.infuser.bytecode.Opcode.SSTORE_1;
 import static org.csiro.darjeeling.infuser.bytecode.Opcode.SSTORE_2;
@@ -74,8 +75,8 @@ public class LoadStoreInstruction extends LocalVariableInstruction
 	public LoadStoreInstruction(Opcode opcode, LocalVariable localVariable)
 	{
 		super(opcode, localVariable);
-		if ((opcode!=ALOAD)&&(opcode!=ASTORE)&&(opcode!=ILOAD)&&(opcode!=ISTORE)&&(opcode!=LLOAD)&&(opcode!=LSTORE))
-			throw new IllegalStateException("LoadStoreInstruction should be constructed with ISTORE, ILOAD, LSTORE, LLOAD, ASTORE or ALOAD");
+		if ((opcode!=SSTORE)&&(opcode!=ALOAD)&&(opcode!=ASTORE)&&(opcode!=ILOAD)&&(opcode!=ISTORE)&&(opcode!=LLOAD)&&(opcode!=LSTORE))
+			throw new IllegalStateException("LoadStoreInstruction should be constructed with SSTORE, ISTORE, ILOAD, LSTORE, LLOAD, ASTORE or ALOAD");
 	}
 	
 	@Override

@@ -64,8 +64,8 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 		
 		methodImpl.isSynchronized = method.isSynchronized();		
 
-		// Lightweight methods are marked native so we can detect if they're not filled in properly, but they're not really native.
-		methodImpl.isLightweight = method.isNative() && LightweightMethod.isLightweightMethod(parentClass.getName(), methodDef.getName());
+		// Hardcoded JVM lightweight methods are marked native so we can detect if they're not filled in properly, but they're not really native.
+		methodImpl.isLightweight = LightweightMethod.isLightweightMethod(parentClass.getName(), methodDef.getName());
 		methodImpl.isNative = method.isNative() && !methodImpl.isLightweight; 
 
 		for (Type type : method.getArgumentTypes())
@@ -80,13 +80,28 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 	
 	public void processCode(InternalInfusion infusion)
 	{
+		System.err.println("processing "  + this);
+		// We now have 3 types of methods:
+		// - Normal Java methods
+		// - Hardcoded Lightweight methods implemented in LightweightMethodImplementation.java
+		//   These are marked native in the java code that uses them and will be replaced by the infuser with the hardcoded JVM implementation (may be stack-only)
+		// - Java methods marked lightweight
+		//   These are implemented as normal Java methods but will be called as a lightweight method. This means the parameters will be on the stack when the method
+		//   is called and the infuser should generate the necessary dummy parameter instructions and STOREs to initialise the corresponding local variables.
+		//   Note that these methods may not trigger the garbage collector!
+
 		if (code!=null) {
-			codeBlock = CodeBlock.fromCode(code, this, infusion, new ConstantPoolGen(code.getConstantPool()));
+			codeBlock = CodeBlock.fromCode(code, this, infusion, new ConstantPoolGen(code.getConstantPool()), isLightweight);
 		} else if (isLightweight) {
 			LightweightMethod lightweightMethod = LightweightMethod.getLightweightMethod(this.parentClass.getName(), this.methodDefinition.getName());
 			System.err.println("Adding lightweight method " + lightweightMethod.className + "." + lightweightMethod.methodName);
 			codeBlock = CodeBlock.fromLightweightMethod(lightweightMethod, this);
-			lightweightMethod.setMethodImpl(this); // Set the implementation, so we can find it when processing INVOKELIGHT
+		}
+
+		// If it is a lightweight method, regardless hardcoded or Java, set the implementation, so we can find it when processing INVOKELIGHT
+		if (isLightweight) {
+			LightweightMethod lightweightMethod = LightweightMethod.getLightweightMethod(this.parentClass.getName(), this.methodDefinition.getName());
+			lightweightMethod.setMethodImpl(this);
 		}
 	}
 	

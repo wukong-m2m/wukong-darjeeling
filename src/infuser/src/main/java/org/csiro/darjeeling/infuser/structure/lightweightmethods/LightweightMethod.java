@@ -126,6 +126,7 @@ public class LightweightMethod {
 
         registerLightweightMethod(LightweightMethodImplementations.fft_FIX_MPY_lightweight());
         registerLightweightMethod(LightweightMethodImplementations.coremark_ee_isdigit_lightweight());
+		registerLightweightMethod(LightweightMethodImplementations.testLightweightJavaMethod());
         registerLightweightMethod(LightweightMethodImplementations.testISWAP());
         registerLightweightMethod(LightweightMethodImplementations.testLOAD_STORE());
 		registerLightweightMethod(LightweightMethodImplementations.isOddShort());

@@ -25,12 +25,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Stack;
 
 import org.apache.bcel.classfile.Code;
 import org.apache.bcel.classfile.CodeException;
 import org.apache.bcel.classfile.ConstantClass;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.csiro.darjeeling.infuser.bytecode.instructions.LocalIdInstruction;
+import org.csiro.darjeeling.infuser.bytecode.instructions.LoadStoreInstruction;
 import org.csiro.darjeeling.infuser.bytecode.transformations.AddBranchTargetInstructions;
 import org.csiro.darjeeling.infuser.bytecode.transformations.AddMarkLoopInstructions;
 import org.csiro.darjeeling.infuser.bytecode.transformations.AnalyseTypes;
@@ -236,6 +238,23 @@ public class CodeBlock
 		return count;
 	}
 	
+	private LightweightMethodParameterHandle getLightweightMethodParameterHandle(BaseType parameterType) {
+		switch (parameterType) {
+			case Byte:
+				return new LightweightMethodParameterHandle(Opcode.LIGHTWEIGHTMETHODPARAMETER_B);
+			case Char:
+				return new LightweightMethodParameterHandle(Opcode.LIGHTWEIGHTMETHODPARAMETER_C);
+			case Short:
+				return new LightweightMethodParameterHandle(Opcode.LIGHTWEIGHTMETHODPARAMETER_S);
+			case Int:
+				return new LightweightMethodParameterHandle(Opcode.LIGHTWEIGHTMETHODPARAMETER_I);
+			case Ref:
+				return new LightweightMethodParameterHandle(Opcode.LIGHTWEIGHTMETHODPARAMETER_A);
+			default:
+				throw new Error ("Unknown type in CodeBlock.getLightweightMethodParameterHandle: " + parameterType);
+		}
+	}
+
 	public static CodeBlock fromLightweightMethod(LightweightMethod lightweightMethod, InternalMethodImplementation methodImplementation) {
 		CodeBlock ret = new CodeBlock();
 
@@ -248,25 +267,8 @@ public class CodeBlock
 		// These won't emit any real code, but are just here so the stack state will be consistent from
 		// the Infuser's point of view. At runtime the parameters will already be on the stack when we
 		// enter the method.
-		for(BaseType type : methodImplementation.getMethodDefinition().getArgumentTypes()) {
-			LightweightMethodParameterHandle handle = null;
-			switch (type) {
-				case Byte:
-					handle = new LightweightMethodParameterHandle(Opcode.LIGHTWEIGHTMETHODPARAMETER_B);
-					break;
-				case Char:
-					handle = new LightweightMethodParameterHandle(Opcode.LIGHTWEIGHTMETHODPARAMETER_C);
-					break;
-				case Short:
-					handle = new LightweightMethodParameterHandle(Opcode.LIGHTWEIGHTMETHODPARAMETER_S);
-					break;
-				case Int:
-					handle = new LightweightMethodParameterHandle(Opcode.LIGHTWEIGHTMETHODPARAMETER_I);
-					break;
-				case Ref:
-					handle = new LightweightMethodParameterHandle(Opcode.LIGHTWEIGHTMETHODPARAMETER_A);
-					break;
-			}
+		for(BaseType parameterType : methodImplementation.getMethodDefinition().getArgumentTypes()) {
+			LightweightMethodParameterHandle handle = getLightweightMethodParameterHandle(parameterType);
 			ret.instructions.addInstructionHandle(handle);
 		}
 		// Get the instructions from the lightweight method
@@ -292,7 +294,7 @@ public class CodeBlock
 	 * @param cpg a BCEL ConstantPoolGen object 
 	 * @return a new CodeBlock object containing valid DVM byte code that is semantically equivalent to the input JVM byte code
 	 */
-	public static CodeBlock fromCode(Code code, InternalMethodImplementation methodImplementation, InternalInfusion infusion, ConstantPoolGen cpg)
+	public static CodeBlock fromCode(Code code, InternalMethodImplementation methodImplementation, InternalInfusion infusion, ConstantPoolGen cpg, boolean isJavaLightweightMethod)
 	{
 		CodeBlock ret = new CodeBlock();
 
@@ -323,6 +325,39 @@ public class CodeBlock
 			LocalVariable localVariable = ret.localVariables.get((isStatic?0:1)+pos); 
 			localVariable.setType(parameterTypes[i]);
 			pos += parameterTypes[i].isLongSized()?2:1;
+		}
+
+		if (isJavaLightweightMethod) {
+			// For lightweight Java methods, the parameters will be on the stack when the method is called.
+			// We need to emit STORE instructions to initialise the local variables.
+
+			Stack<LocalVariable> localVariables = new Stack<LocalVariable>();
+
+			// First emit dummy lightweight method parameter instructions to initialise the stack
+			pos = 0;
+			for (int i=0; i<parameterTypes.length; i++)
+			{
+				BaseType parameterType = parameterTypes[i];
+				LocalVariable localVariable = ret.localVariables.get((isStatic?0:1)+pos); 
+				LightweightMethodParameterHandle handle = getLightweightMethodParameterHandle(parameterType);
+				ret.instructions.addInstructionHandle(handle);
+				localVariables.push(localVariable); // Keep track of the local variables so we can generate stores in reverse order.
+				pos += parameterTypes[i].isLongSized()?2:1;
+			}
+
+			// Then store them in the appropriate local variables (needs to be in reverse order since we're popping them off the stack)
+			while(!localVariables.empty()) {
+				InstructionHandle handle;
+				LocalVariable localVariable = localVariables.pop();
+				if (localVariable.getTypes().contains(BaseType.Ref)) {
+					handle = new InstructionHandle(new LoadStoreInstruction(Opcode.ASTORE, localVariable));					
+				} else if (localVariable.getTypes().contains(BaseType.Int)) {
+					handle = new InstructionHandle(new LoadStoreInstruction(Opcode.ISTORE, localVariable));
+				} else {
+					handle = new InstructionHandle(new LoadStoreInstruction(Opcode.SSTORE, localVariable));					
+				}
+				ret.instructions.addInstructionHandle(handle);
+			}
 		}
 		
 		// the first n local variables are parameters that are passed from the caller, so they are
@@ -387,7 +422,7 @@ public class CodeBlock
 		return optimise(ret, false);
 	}
 	
-	private static CodeBlock optimise(CodeBlock ret, boolean isLightweight) {
+	private static CodeBlock optimise(CodeBlock ret, boolean isHardcodedLightweight) {
 		// thread states, creating incoming and outgoing links between instruction handles
 		ret.instructions.threadStates();
 
@@ -397,7 +432,7 @@ public class CodeBlock
 		new AddInvokeLightweightInstructions(ret).transform();
 
 		// insert BRTARGET instructions just before each branch target
-		if (!isLightweight) { // For lightweight methods, the branch targets are already there
+		if (!isHardcodedLightweight) { // For hardcoded lightweight methods, the branch targets are already there
 			new AddBranchTargetInstructions(ret).transform();
 		}
 		ret.instructions.reThreadStates();
