@@ -15,6 +15,7 @@ public class RTCBenchmark {
     }
     
     public static native int testISWAP(short a, int b);
+    public static native int testILOAD_ISTORE(short a, int b);
     public static native boolean isOddShort(short x);
     public static native boolean isOddInt(int x);
     public static native boolean isNull(Object x);

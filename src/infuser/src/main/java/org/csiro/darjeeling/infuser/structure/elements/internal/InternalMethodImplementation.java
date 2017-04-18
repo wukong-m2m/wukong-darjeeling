@@ -146,6 +146,12 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 			return codeBlock.getIntegerLocalVariableCount();
 	}
 
+	public int getMaxLightweightMethodLocalVariableCount()
+	{
+		if (codeBlock==null) return 0; else
+			return codeBlock.getMaxLightweightMethodLocalVariableCount();
+	}
+
 	@Override
 	public void accept(ElementVisitor visitor)
 	{

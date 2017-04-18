@@ -250,6 +250,10 @@ public class CodeBlock
 		for(InstructionHandle handle : lightweightMethod.getInstructionHandles()) {
 			ret.instructions.addInstructionHandle(handle);
 		}
+		// create LocalVariable objects for each of the local variables
+		for (LocalVariable localVariable : lightweightMethod.getLocalVariables()) {
+			ret.localVariables.add(localVariable);
+		}
 		
 		// We don't support exceptions in lightweight methods
 
