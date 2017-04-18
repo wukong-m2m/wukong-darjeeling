@@ -7,13 +7,18 @@ import org.csiro.darjeeling.infuser.bytecode.instructions.*;
 import org.csiro.darjeeling.infuser.structure.elements.internal.InternalMethodImplementation;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractMethodDefinition;
 
+// KNOWN ISSUES
+// - We currently don't support calling lightweight methods in another infusion. This just because we haven't implemented it yet since it's not necessary for our benchmarks, but there's no reason it couldn't be done.
+// - The lightweight methods need to come first in the infusion. We should modify the processing of methods to make sure it's done in the right order, but for our benchmarks we just do it by reorganising them in the class file.
+//   Again this is just to save some implementation time since it works well enough to do our experiments for now. 
+//   This causes problems when a method in a superclass invokes a lightweight method in a subclass, since the superclass' method will come first in the infusion.
+
 public class LightweightMethod {
 	public String className;
 	public String methodName;
 	private BaseType returnType;
 	private BaseType[] parameters;
-	private int maxIntStack;
-	private int maxRefStack;
+	private InternalMethodImplementation methodImpl = null;
 
 	public ArrayList<InstructionHandle> getInstructionHandles() { return null; }
 
@@ -40,8 +45,7 @@ public class LightweightMethod {
 		// Would be good to change this sometime 
 		this.returnType = returnType;
 		this.parameters = parameters;
-		this.maxIntStack = 1000000; // Will be set later in determineMaxStackDepth
-		this.maxRefStack = 1000000; // Will be set later in determineMaxStackDepth
+		this.methodImpl = null; // Will be set when we either generate the lightweight method from the definitions below, or from a normal method marked lightweight.
 	}
 
 	private static InstructionHandle addInstruction(ArrayList<InstructionHandle> instructionHandles, Instruction instruction) {
@@ -71,51 +75,26 @@ public class LightweightMethod {
 	}
 
 	public int getMaxIntStack() {
-		return maxIntStack;
+		if (this.methodImpl == null) {
+			System.err.println("No methodImpl set when calling getMaxIntStack in LightweightMethod.java. Did you forget -Pno-proguard or are the lightweight methods defined after the calling method in the Java class?");
+		}
+		return this.methodImpl.getMaxStack() - this.methodImpl.getMaxRefStack();
 	}
 
 	public int getMaxRefStack() {
-		return maxRefStack;
-	}
-
-	private class DummyMethodImplementation extends InternalMethodImplementation {
-		private class DummyMethodDefinition extends AbstractMethodDefinition {
-			private BaseType returnType;
-			private BaseType[] argumentTypes;
-
-			public DummyMethodDefinition(BaseType returnType, BaseType[] argumentTypes) {
-				super("","");
-				this.returnType = returnType;
-				this.argumentTypes = argumentTypes;
-			}
-
-			@Override
-			public BaseType[] getArgumentTypes() {
-				return argumentTypes;
-			}
-
-			@Override
-			public BaseType getReturnType() {
-				return returnType;
-			}
+		if (this.methodImpl == null) {
+			System.err.println("No methodImpl set when calling getMaxRefStack in LightweightMethod.java. Did you forget -Pno-proguard or are the lightweight methods defined after the calling method in the Java class?");
 		}
-
-		public DummyMethodImplementation(BaseType returnType, BaseType[] argumentTypes) {
-			this.methodDefinition = new DummyMethodDefinition(returnType, argumentTypes);
-		}
-	}
-
-	public void determineMaxStackDepth() {
-		InternalMethodImplementation dummyMethodImpl = new DummyMethodImplementation(this.returnType, this.parameters);
-		CodeBlock dummy = CodeBlock.fromLightweightMethod(this, dummyMethodImpl);
-		maxIntStack = dummy.getMaxStack() - dummy.getMaxRefStack();
-		maxRefStack = dummy.getMaxRefStack() - 1; // -1 because CalculateMaxStack does a +1 for unknown reasons. We should remove this -1 if that ever changes.
-		System.err.println("Stack depth for light method " + methodName + " int: " + maxIntStack + " ref: " + maxRefStack);
+		return this.methodImpl.getMaxRefStack();
 	}
 
 	public static void registerLightweightMethod(LightweightMethod l) {
-		l.determineMaxStackDepth();
 		lightweightMethods.add(l);
+	}
+
+	public void setMethodImpl(InternalMethodImplementation methodImpl) {
+		this.methodImpl = methodImpl;
+		System.err.println("Stack depth for light method " + methodImpl.toString() + " int: " + (methodImpl.getMaxStack() - this.methodImpl.getMaxRefStack()) + " ref: " + this.methodImpl.getMaxRefStack());
 	}
 
 	static {

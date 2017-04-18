@@ -86,6 +86,7 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 			LightweightMethod lightweightMethod = LightweightMethod.getLightweightMethod(this.parentClass.getName(), this.methodDefinition.getName());
 			System.err.println("Adding lightweight method " + lightweightMethod.className + "." + lightweightMethod.methodName);
 			codeBlock = CodeBlock.fromLightweightMethod(lightweightMethod, this);
+			lightweightMethod.setMethodImpl(this); // Set the implementation, so we can find it when processing INVOKELIGHT
 		}
 	}
 	
@@ -108,7 +109,7 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 	public int getMaxRefStack()
 	{
 		if (codeBlock==null) return 0; else
-			return codeBlock.getMaxStack();
+			return codeBlock.getMaxRefStack();
 	}
 
 	public boolean isNative()
