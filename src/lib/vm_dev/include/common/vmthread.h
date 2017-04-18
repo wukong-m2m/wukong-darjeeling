@@ -80,6 +80,7 @@ void dj_monitor_markRootSet(dj_monitor_block * monitor_block);
 #define dj_frame_getLocalIntegerVariables(frame, methodImpl)     ((int16_t*)((char*)frame + sizeof(dj_frame) + 2*(dj_di_methodImplementation_getNumberOfVariableSlots((uint16_t)methodImpl)-1)))
 #ifdef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 // If the interpreter is disabled, we'll never need to reserve an int stack in the stack frame, since we will use the real stack as int stack.
+// dj_di_methodImplementation_getNumberOfVariableSlots will return the amount of variable slots for this method's variables, plus any space that should be reserved for lightweight methods that will want to use this method's context to store locals.
 #define dj_frame_size(methodImpl)                                (sizeof(dj_frame) + 2*dj_di_methodImplementation_getNumberOfVariableSlots((uint16_t)methodImpl) +  2*dj_di_methodImplementation_getMaxRefStack(methodImpl))
 #else
 #define dj_frame_size(methodImpl)                                (sizeof(dj_frame) + 2*dj_di_methodImplementation_getNumberOfVariableSlots((uint16_t)methodImpl) +  2*dj_di_methodImplementation_getMaxStack(methodImpl))

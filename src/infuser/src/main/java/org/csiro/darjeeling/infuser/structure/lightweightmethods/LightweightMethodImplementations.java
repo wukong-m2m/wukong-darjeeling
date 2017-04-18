@@ -126,21 +126,25 @@ public class LightweightMethodImplementations extends LightweightMethod {
 			}
 		};
 	}
-	public static LightweightMethod testILOAD_ISTORE() {
-		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "testILOAD_ISTORE", BaseType.Int, new BaseType[] { BaseType.Short, BaseType.Int }) {
+	public static LightweightMethod testLOAD_STORE() {
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "testLOAD_STORE", BaseType.Int, new BaseType[] { BaseType.Int, BaseType.Short }) {
 			@Override
 			public void setupLightweightMethod() {
-				LocalVariable i0 = addLocalVariable(0, BaseType.Int);
+				LocalVariable shortVariable = addLocalVariable(0, BaseType.Short);
+				LocalVariable intVar = addLocalVariable(1, BaseType.Int);
 
+				// sstore_2
 				// istore_0
 				// s2i
 				// iload_0
 				// iadd
 				// ireturn
 
-                addInstruction(new LoadStoreInstruction(Opcode.ISTORE, i0));
+                addInstruction(new LoadStoreInstruction(Opcode.ISTORE, shortVariable));
+                addInstruction(new LoadStoreInstruction(Opcode.ISTORE, intVar));
+                addInstruction(new LoadStoreInstruction(Opcode.ILOAD, shortVariable));
 				addInstruction(new ArithmeticInstruction(Opcode.S2I));
-                addInstruction(new LoadStoreInstruction(Opcode.ILOAD, i0));
+                addInstruction(new LoadStoreInstruction(Opcode.ILOAD, intVar));
 				addInstruction(new ArithmeticInstruction(Opcode.IADD));
 				addInstruction(new SimpleInstruction(Opcode.IRETURN));
 			}

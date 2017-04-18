@@ -15,6 +15,7 @@ void asm_guard_assert(bool condition) {
 void asm_guard_check_regs(uint16_t opcode, uint8_t reg1, uint8_t reg2) {
     switch(opcode) {
         case OPCODE_ADIW: // r24, X(r26), Y(r28), Z(r30)
+        case OPCODE_SBIW: // r24, X(r26), Y(r28), Z(r30)
             asm_guard_assert(reg1==R24 || reg1==R26 || reg1==R28 || reg1==R30);
         break;
         case OPCODE_MOVW: // only even reg pairs
@@ -67,6 +68,14 @@ void emit_ADIW(uint8_t reg, uint8_t constant) {
 			 + ((constant) & 0x0F)
              + (((constant) & 0x30) << 2)));
 }
+// SBIW                                 1001 0110 KKdd KKKK, with d=r24, r26, r28, or r30
+void emit_SBIW(uint8_t reg, uint8_t constant) {
+    asm_guard_check_regs(OPCODE_SBIW, reg, 0);
+    emit ((OPCODE_SBIW
+             + ((((reg)-24)/2)<<4)
+             + ((constant) & 0x0F)
+             + (((constant) & 0x30) << 2)));
+}
 //                                      0000 00kk kkkk k000, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
 void emit_BRANCH(uint16_t opcode, uint8_t offset) {
     emit (opcode + makeBranchOffset(((offset)/2)));
@@ -76,8 +85,19 @@ uint16_t emit_ADIW_if_necessary_to_bring_offset_in_range(uint8_t reg, uint16_t o
     // LDD/STD can accept an offset up to 63, but since this may be the first LDD/STD of a
     // 32 bit int, we add a margin of 3 more bytes. Maybe we'll emit an ADIW too many in some
     // cases, but it keeps the rest of the code a little bit smaller and cleaner.
-    while (asm_needs_ADIW_to_bring_offset_in_range(offset)) {
+    while (asm_needs_ADIW_to_bring_offset_in_range(offset)) { // Works for LDD, STD, ADIW, and SBIW
         emit_ADIW(reg, 60);
+        offset -= 60;
+    }
+    return offset;
+}
+
+uint16_t emit_SBIW_if_necessary_to_bring_offset_in_range(uint8_t reg, uint16_t offset) {
+    // LDD/STD can accept an offset up to 63, but since this may be the first LDD/STD of a
+    // 32 bit int, we add a margin of 3 more bytes. Maybe we'll emit an ADIW too many in some
+    // cases, but it keeps the rest of the code a little bit smaller and cleaner.
+    while (asm_needs_SBIW_to_bring_offset_in_range(offset)) { // Works for LDD, STD, ADIW, and SBIW
+        emit_SBIW(reg, 60);
         offset -= 60;
     }
     return offset;

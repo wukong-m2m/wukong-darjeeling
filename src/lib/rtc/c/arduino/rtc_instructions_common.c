@@ -63,6 +63,7 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
 
     rtc_common_push_returnvalue_from_R22_if_necessary(rettype);
 }
+
 void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_operand_byte1) {
 #if defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)
     emit_flush_to_flash(); // To make sure we won't accidentally optimise addresses or branch labels
@@ -108,7 +109,27 @@ void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_ope
     dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(globalId);
     uint8_t rettype = dj_di_methodImplementation_getReturnType(methodImpl);
 
+    bool lightweightMethodUsesLocalVariables = (dj_di_methodImplementation_getNumberOfVariableSlots(methodImpl) > 0);
+    uint16_t bytesForCurrentMethodsOwnLocals = 2*(dj_di_methodImplementation_getReferenceLocalVariableCount(rtc_ts->methodimpl)+dj_di_methodImplementation_getIntegerLocalVariableCount(rtc_ts->methodimpl));
+    if (lightweightMethodUsesLocalVariables) {
+        // Target lightweight method uses local variables. It will use the extra space
+        // reserved in the current method's frame for such lightweight methods.
+        // We need to move the Y pointer, which points to the current method's locals
+        // to point to the reserved space, so the lightweight method can index locals
+        // as usual. (see notes.txt)
+        uint16_t bytesForCurrentMethodsOwnLocalsCopy = bytesForCurrentMethodsOwnLocals; // Make a copy bef
+        bytesForCurrentMethodsOwnLocalsCopy = emit_ADIW_if_necessary_to_bring_offset_in_range(RY, bytesForCurrentMethodsOwnLocalsCopy);
+        emit_ADIW(RY, bytesForCurrentMethodsOwnLocalsCopy);
+    }
+
     emit_2_CALL((uint16_t)handler);
+
+    if (lightweightMethodUsesLocalVariables) {
+        // If we moved Y forward before, move it back now. (we can't push/pop here, since there may be operands on the stack)
+        bytesForCurrentMethodsOwnLocals = emit_SBIW_if_necessary_to_bring_offset_in_range(RY, bytesForCurrentMethodsOwnLocals);
+        emit_SBIW(RY, bytesForCurrentMethodsOwnLocals);
+    }
+
     rtc_common_push_returnvalue_from_R22_if_necessary(rettype);
 
 #if defined (AOT_STRATEGY_MARKLOOP)

@@ -18,13 +18,17 @@ May be pinned by MARKLOOP: r4-r17
                              |  ref2       |             |
      referenceStackBase      |  ref1       |             | sizeof(dj_frame), stackStartOffset
                              +---------------------------+
-                             |              int1 16b     | stackLocalIntegerOffset
-                             | local ints   int2 32b,msb |      ^
-                             |              int2 32b,lsb |      | getReferenceLocalVariableCount*sizeof(ref_t)
-                             +---------------------------+      | + (getIntegerLocalVariableCount-1)*sizeof(int16_t)
-                             |                           |      |
-                             | local refs   ref2         |      v
-                             |              ref1         | getLocalRefVariables, localReferenceVariables, Y
+                             | space reserved for locals |                                                             ^
+                             |  of lightweight methods   |          dj_di_methodImplementation_getNumberOfVariableSlots|
+                             |  called by this method    |                                                             |
+                             +---------------------------+                                                             |
+                             |              int1 16b     | stackLocalIntegerOffset                                     |
+                             | local ints   int2 32b,msb |      ^                                                      |
+                             |              int2 32b,lsb |      | getReferenceLocalVariableCount*sizeof(ref_t).        |
+                             +---------------------------+      | + (getIntegerLocalVariableCount-1)*sizeof(int16_t)   |
+                             |                           |      |                                                      |
+                             | local refs   ref2         |      v                                                      |
+                             |              ref1         | getLocalRefVariables, localReferenceVariables, Y            v
                              +---------------------------+
                              | ref_t* saved_refStack     |
                              +---------------------------+

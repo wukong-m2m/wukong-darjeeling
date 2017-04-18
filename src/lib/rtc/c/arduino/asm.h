@@ -282,6 +282,10 @@
 #define OPCODE_SBCI                     0x4000
 #define emit_SBCI(reg, constant)        emit_SBCI(reg, constant)
 
+// SBIW                                 1001 0111 KKdd KKKK, with d=r24, r26, r28, or r30
+#define OPCODE_SBIW                     0x9700
+#define emit_SBIW(reg, constant)        emit_SBIW(reg, constant)
+
 // SBRC                                 1111 110r rrrr 0bbb, with r=a register and b=the bit to test
 #define OPCODE_SBRC                     0xFC00
 #define emit_SBRC(reg, bit)             emit(OPCODE_SBRC + (reg << 4) + bit)

@@ -15,7 +15,7 @@ public class RTCBenchmark {
     }
     
     public static native int testISWAP(short a, int b);
-    public static native int testILOAD_ISTORE(short a, int b);
+    public static native int testLOAD_STORE(int a, short b);
     public static native boolean isOddShort(short x);
     public static native boolean isOddInt(int x);
     public static native boolean isNull(Object x);
@@ -35,6 +35,7 @@ public class RTCBenchmark {
             System.out.println("test to pin more regs " + (i*k)+j);
 
             success = success && testISWAP((short) 42, 4200000) == 4200042;
+            success = success && testLOAD_STORE(4200000, (short) 42) == 4200042;
 
             success = success && isOddShort((short)2) == false;
             success = success && isOddShort((short)-3) == true;
