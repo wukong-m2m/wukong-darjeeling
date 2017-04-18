@@ -16,8 +16,7 @@ import org.csiro.darjeeling.infuser.structure.elements.AbstractMethodDefinition;
 public class LightweightMethod {
 	public String className;
 	public String methodName;
-	private BaseType returnType;
-	private BaseType[] parameters;
+	private boolean isJavaMethod;
 	private ArrayList<LocalVariable> localVariables;
 	private ArrayList<InstructionHandle> instructionHandles;
 	private InternalMethodImplementation methodImpl = null;
@@ -45,15 +44,14 @@ public class LightweightMethod {
 		return null;		
 	}
 
-	protected LightweightMethod(String className, String methodName, BaseType returnType, BaseType[] parameters) {
+	protected LightweightMethod(String className, String methodName, boolean isJavaMethod) {
+		this.isJavaMethod = isJavaMethod;
 		this.className = className;
 		this.methodName = methodName;
 		// It would be nice if we could determine this from the CodeBlock, but we need the information
 		// when we process the INVOKELIGHT instruction, and it's not guaranteed the Lightweight method
 		// will already have been processed at that time.
 		// Would be good to change this sometime 
-		this.returnType = returnType;
-		this.parameters = parameters;
 		localVariables = new ArrayList<LocalVariable>();
 		instructionHandles = new ArrayList<InstructionHandle>();
 		this.methodImpl = null; // Will be set when we either generate the lightweight method from the definitions below, or from a normal method marked lightweight.
@@ -82,19 +80,11 @@ public class LightweightMethod {
 	}
 
 	public int getParameterIntStack() {
-		int slots = 0;
-		for (BaseType p : this.parameters) {
-			slots += p.getNrIntegerSlots();
-		}
-		return slots;
+		return this.methodImpl.getIntegerArgumentCount();
 	}
 
 	public int getParameterRefStack() {
-		int slots = 0;
-		for (BaseType p : this.parameters) {
-			slots += p.getNrReferenceSlots();
-		}
-		return slots;
+		return this.methodImpl.getReferenceArgumentCount();
 	}
 
 	public int getMaxIntStack() {
@@ -125,6 +115,10 @@ public class LightweightMethod {
 	public void setMethodImpl(InternalMethodImplementation methodImpl) {
 		this.methodImpl = methodImpl;
 		System.err.println("Stack depth and locals for light method " + methodImpl.toString() + " int: " + this.getMaxIntStack() + " ref: " + this.getMaxRefStack() + " locals: " + this.getLocalVariableCount());
+	}
+
+	public boolean isJavaMethod() {
+		return this.isJavaMethod;
 	}
 
 	static {
