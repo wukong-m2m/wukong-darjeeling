@@ -179,6 +179,10 @@
 #define OPCODE_LD_DECX                  0x900E
 #define emit_LD_DECX(reg)               emit_opcodeWithSingleRegOperand(OPCODE_LD_DECX, reg)
 
+// LD Rd, -Y                            1001 000d dddd 1010, with d=dest register
+#define OPCODE_LD_DECY                  0x900A
+#define emit_LD_DECY(reg)               emit_opcodeWithSingleRegOperand(OPCODE_LD_DECY, reg)
+
 // LD Rd, X+                            1001 000d dddd 1101
 #define OPCODE_LD_XINC                  0x900D
 #define emit_LD_XINC(reg)               emit_opcodeWithSingleRegOperand(OPCODE_LD_XINC, reg)
@@ -301,6 +305,10 @@
 // ST X+, Rs                            1001 001r rrrr 1101, with r=the register to store
 #define OPCODE_ST_XINC                  0x920D
 #define emit_ST_XINC(reg)               emit_opcodeWithSingleRegOperand(OPCODE_ST_XINC, reg)
+
+// ST Y+, Rs                            1001 001r rrrr 1001, with r=the register to store
+#define OPCODE_ST_YINC                  0x9209
+#define emit_ST_YINC(reg)               emit_opcodeWithSingleRegOperand(OPCODE_ST_YINC, reg)
 
 // ST Z, Rs                             1000 001r rrrr 0000, with r=the register to store
 #define OPCODE_ST_Z                     0x8200

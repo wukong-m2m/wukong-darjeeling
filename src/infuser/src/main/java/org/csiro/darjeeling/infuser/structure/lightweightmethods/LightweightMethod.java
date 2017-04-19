@@ -28,8 +28,21 @@ public class LightweightMethod {
 
 	private static ArrayList<LightweightMethod> lightweightMethods;
 
+	// A common mistake is to put @Lightweight methods after the place where they're called in nested methods.
+	// The result is that the original INVOKESTATIC is not changed to INVOKELIGHT, which causes a crash at runtime.
+	// This list contains all methods for which isLightweightMethod has returned false before. If we're about to
+	// return true, this is a bug and we should stop.
+	private static ArrayList<String> checkedForLightweight = new ArrayList<String>();
 	public static boolean isLightweightMethod(String className, String methodName) {
-		return getLightweightMethod(className, methodName) != null;
+		String fullname = className + "." + methodName;
+		LightweightMethod lightweightMethod = getLightweightMethod(className, methodName);
+
+		if (lightweightMethod == null) {
+			checkedForLightweight.add(fullname);
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	public static LightweightMethod getLightweightMethod(String className, String methodName) {
@@ -96,20 +109,34 @@ public class LightweightMethod {
 		return this.methodImpl.getMaxRefStack();
 	}
 
-	public int getLocalVariableCount() {
+	public int getTotalLocalVariableSlots() {
 		if (this.methodImpl == null) {
 			System.err.println("No methodImpl set when calling getLocalVariableCount in LightweightMethod.java (" + this.className + "." + this.methodName + "). Did you forget -Pno-proguard?");
 		}
-		return this.methodImpl.getIntegerLocalVariableCount() + this.methodImpl.getReferenceLocalVariableCount();
+		return this.methodImpl.getIntegerLocalVariableCount()
+				+ this.methodImpl.getReferenceLocalVariableCount()
+				+ this.methodImpl.getMaxLightweightMethodLocalVariableCount()
+				+ (this.methodImpl.usesSIMULorINVOKELIGHT() ? 1 : 0); // If the lightweight method uses SIMUL or INVOKELIGHT, we need to reserve an extra slot since we can't store the return address in R18:R19. Instead we have to store it in the stack frame at a cost of 8 extra cycles.
+	}
+
+	public static void guardNeverReturnedFalseFromIsLightweightMethod(String className, String methodName) {
+		String fullname = className + "." + methodName;
+		for (String previouslyReturnedFalseForMethod : checkedForLightweight) {
+			if (fullname.equals(previouslyReturnedFalseForMethod)) {
+				throw new Error("About to register " + fullname + " as lightweight, while isLightweightMethod previously returned false. This means the previous INVOKESTATIC wasn't changed to INVOKELIGHT, which is a bug. Probably the method is defined after the point where it's called.");
+			}
+		}
 	}
 
 	public static LightweightMethod registerJavaLightweightMethod(String className, String methodName) {
+		guardNeverReturnedFalseFromIsLightweightMethod(className, methodName);
 		LightweightMethod l = new LightweightMethod(className, methodName);
 		lightweightMethods.add(l);
 		return l;
 	}
 
 	public static void registerHardcodedLightweightMethod(LightweightMethod l) {
+		guardNeverReturnedFalseFromIsLightweightMethod(l.className, l.methodName);
 		lightweightMethods.add(l);
 	}
 

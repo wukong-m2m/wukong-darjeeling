@@ -20,9 +20,29 @@ void rtc_emit_prologue() {
 		// Use R4:R5 for return address instead
 		emit_POP(R4);
 		emit_POP(R5);
+		if (dj_di_methodImplementation_getFlags(rtc_ts->methodimpl) & FLAGS_USES_SIMUL_OR_INVOKESTATIC) {
+			// The method calling this lightweight method will have reserved space for this method
+			// and moved Y to point at the start of it. If this method uses SIMUL or INVOKELIGHT,
+			// we cannot use R18:R19 to store the return address since it would be overwritten
+			// by those instructions.
+			// Instead we will store it at the beginning of the locals, and move Y forward another
+			// two bytes. The calling method will have reserved the extra two bytes for this.
+			emit_ST_YINC(R4);
+			emit_ST_YINC(R5);
+		}
 #else
 		emit_POP(R18);
 		emit_POP(R19);
+		if (dj_di_methodImplementation_getFlags(rtc_ts->methodimpl) & FLAGS_USES_SIMUL_OR_INVOKESTATIC) {
+			// The method calling this lightweight method will have reserved space for this method
+			// and moved Y to point at the start of it. If this method uses SIMUL or INVOKELIGHT,
+			// we cannot use R18:R19 to store the return address since it would be overwritten
+			// by those instructions.
+			// Instead we will store it at the beginning of the locals, and move Y forward another
+			// two bytes. The calling method will have reserved the extra two bytes for this.
+			emit_ST_YINC(R18);
+			emit_ST_YINC(R19);
+		}
 #endif
 	} else {
 		for (uint8_t reg=R2; reg<=R16; reg+=2) {
@@ -51,9 +71,19 @@ void rtc_emit_epilogue() {
 #if defined (AOT_STRATEGY_BASELINE)  || defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)
 		// Baseline uses hardcoded registers, which uses R18:R19 in some cases.
 		// Use R4:R5 for return address instead
+		if (dj_di_methodImplementation_getFlags(rtc_ts->methodimpl) & FLAGS_USES_SIMUL_OR_INVOKESTATIC) {
+			// See comment in prologue
+			emit_LD_DECY(R5);
+			emit_LD_DECY(R4);
+		}
 		emit_PUSH(R5);
 		emit_PUSH(R4);
 #else
+		if (dj_di_methodImplementation_getFlags(rtc_ts->methodimpl) & FLAGS_USES_SIMUL_OR_INVOKESTATIC) {
+			// See comment in prologue
+			emit_LD_DECY(R19);
+			emit_LD_DECY(R18);
+		}
 		emit_PUSH(R19);
 		emit_PUSH(R18);
 #endif

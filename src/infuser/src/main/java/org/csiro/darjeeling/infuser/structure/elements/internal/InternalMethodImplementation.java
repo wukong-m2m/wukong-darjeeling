@@ -120,6 +120,13 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 				codeBlock = CodeBlock.fromCode(code, this, infusion, new ConstantPoolGen(code.getConstantPool()));
 			}
 		}
+
+		// System.err.println("Processed " + this 
+		// 	             + " int slots: " + this.getIntegerLocalVariableCount()
+		// 	             + " ref slots: " +  + this.getReferenceLocalVariableCount()
+		// 	             + " reserved lw slots: " + this.getMaxLightweightMethodLocalVariableCount()
+		// 	             + (this.isLightweight() ? " (lightweight)" : "")
+		// 	             + (this.usesSIMULorINVOKELIGHT() ? " (uses simul or invokelight)" : ""));
 	}
 	
 	public CodeBlock getCodeBlock()
@@ -152,6 +159,12 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 	public boolean isLightweight()
 	{
 		return isLightweight;
+	}
+
+	public boolean usesSIMULorINVOKELIGHT()
+	{
+		if (codeBlock==null) return false; else
+			return codeBlock.usesSIMULorINVOKELIGHT();
 	}
 
 	public boolean usesStaticFields()

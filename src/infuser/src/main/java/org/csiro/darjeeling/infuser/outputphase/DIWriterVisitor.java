@@ -214,6 +214,7 @@ public class DIWriterVisitor extends DescendingVisitor
 			if (element.isStatic()) flags |= 2;
 			if (element.usesStaticFields()) flags |= 4;
 			if (element.isLightweight()) flags |= 8;
+			if (element.usesSIMULorINVOKELIGHT()) flags |= 16;
 			out.writeUINT8(flags);
 			
 			// Write return type

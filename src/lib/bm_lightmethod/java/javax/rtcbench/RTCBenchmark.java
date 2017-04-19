@@ -29,6 +29,9 @@ public class RTCBenchmark {
 
             success = success && testLightweightJavaMethod(4200043, (byte) -1) == 4200042;
             success = success && testLightweightJavaMethodWithLoop(42, (byte) 5) == 4200000;
+            success = success && testSIMUL((short)1000, (short)4200) == 4200000;
+            success = success && testNestedLightweight((short)1000, (short)4200) == 4200000;
+
             success = success && testISWAP((short) 42, 4200000) == 4200042;
             success = success && testLOAD_STORE(4200000, (short) 42) == 4200042;
 
@@ -115,5 +118,21 @@ public class RTCBenchmark {
             b--;
         }
         return a;
+    }
+    @Lightweight
+    public static int testSIMUL(short a, short b) {
+        return a*b;
+    }
+    @Lightweight
+    public static int testNestedLightweight3(short a, short b) {
+        return a*b;
+    }
+    @Lightweight
+    public static int testNestedLightweight2(short a, short b) {
+        return testNestedLightweight3(a, b);
+    }
+    @Lightweight
+    public static int testNestedLightweight(short a, short b) {
+        return testNestedLightweight2(a, b);
     }
 }

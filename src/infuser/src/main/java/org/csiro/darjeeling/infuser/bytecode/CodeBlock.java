@@ -196,9 +196,20 @@ public class CodeBlock
 		return localVariables.size();
 	}
 
-	/**
-	 * @return the number of branch targets
-	 */
+	public boolean usesSIMULorINVOKELIGHT()
+	{
+		for (int i=0; i<instructions.size(); i++)
+		{			
+			InstructionHandle handle = instructions.get(i);
+			Opcode opcode = handle.getInstruction().getOpcode();
+			if (opcode == Opcode.SIMUL ||
+					opcode == Opcode.INVOKELIGHT) {
+				return true;
+			}
+		}
+		return false;		
+	}
+
 	public boolean usesStaticFields()
 	{
 		for (int i=0; i<instructions.size(); i++)
