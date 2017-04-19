@@ -340,6 +340,7 @@ public class CodeBlock
 				BaseType parameterType = parameterTypes[i];
 				LocalVariable localVariable = ret.localVariables.get((isStatic?0:1)+pos); 
 				LightweightMethodParameterHandle handle = getLightweightMethodParameterHandle(parameterType);
+				handle.setPc(-1);
 				ret.instructions.addInstructionHandle(handle);
 				localVariables.push(localVariable); // Keep track of the local variables so we can generate stores in reverse order.
 				pos += parameterTypes[i].isLongSized()?2:1;
@@ -356,6 +357,7 @@ public class CodeBlock
 				} else {
 					handle = new InstructionHandle(new LoadStoreInstruction(Opcode.SSTORE, localVariable));					
 				}
+				handle.setPc(-1);
 				ret.instructions.addInstructionHandle(handle);
 			}
 		}

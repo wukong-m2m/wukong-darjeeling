@@ -28,6 +28,7 @@ public class RTCBenchmark {
             System.out.println("test to pin more regs " + (i*k)+j);
 
             success = success && testLightweightJavaMethod(4200043, (byte) -1) == 4200042;
+            success = success && testLightweightJavaMethodWithLoop(42, (byte) 5) == 4200000;
             success = success && testISWAP((short) 42, 4200000) == 4200042;
             success = success && testLOAD_STORE(4200000, (short) 42) == 4200042;
 
@@ -97,5 +98,18 @@ public class RTCBenchmark {
     @Lightweight
     public static int testLightweightJavaMethod(int a, byte b) {
         return a+b;
+    }
+    @Lightweight
+    public static int testLightweightJavaMethodWithLoop(int a, byte b) {
+        // Loop should be the first in the method to test if the BRTARGET isn't placed
+        // before the extra STORE instructions the infuser will prepend to the method.
+        while (b>0) {
+            int a_copy = a;
+            for (int i=0; i<9; i++) {
+                a += a_copy;
+            }
+            b--;
+        }
+        return a;
     }
 }
