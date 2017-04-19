@@ -109,8 +109,8 @@ void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_ope
     dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(globalId);
     uint8_t rettype = dj_di_methodImplementation_getReturnType(methodImpl);
 
-    bool lightweightMethodUsesLocalVariables = (dj_di_methodImplementation_getNumberOfVariableSlots(methodImpl) > 0);
-    uint16_t bytesForCurrentMethodsOwnLocals = 2*(dj_di_methodImplementation_getReferenceLocalVariableCount(rtc_ts->methodimpl)+dj_di_methodImplementation_getIntegerLocalVariableCount(rtc_ts->methodimpl));
+    bool lightweightMethodUsesLocalVariables = (dj_di_methodImplementation_getNumberOfTotalVariableSlots(methodImpl) > 0);
+    uint16_t bytesForCurrentMethodsOwnLocals = 2*(dj_di_methodImplementation_getNumberOfOwnVariableSlots(rtc_ts->methodimpl));
     if (lightweightMethodUsesLocalVariables) {
         // Target lightweight method uses local variables. It will use the extra space
         // reserved in the current method's frame for such lightweight methods.

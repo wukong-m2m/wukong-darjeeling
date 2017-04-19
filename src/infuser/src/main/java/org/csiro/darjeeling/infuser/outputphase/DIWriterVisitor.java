@@ -232,7 +232,8 @@ public class DIWriterVisitor extends DescendingVisitor
 													// + (sizeof(ref_t) * dj_di_methodImplementation_getReferenceLocalVariableCount(methodImpl)) \
 													// + (sizeof(int16_t) * (dj_di_methodImplementation_getIntegerLocalVariableCount(methodImpl)-1))
 			// (note the header now assumes 2 byte pointers, so VMs on larger architectures will need to do some extra work!)
-			out.writeUINT8(element.getReferenceLocalVariableCount() + element.getIntegerLocalVariableCount() + element.getMaxLightweightMethodLocalVariableCount());
+			out.writeUINT8(element.getReferenceLocalVariableCount() + element.getIntegerLocalVariableCount()); // Own slots
+			out.writeUINT8(element.getReferenceLocalVariableCount() + element.getIntegerLocalVariableCount() + element.getMaxLightweightMethodLocalVariableCount()); // Total slots, including space reserved for lightweight methods
 
 			// write code block
 			if (element.getCode()==null && !element.isLightweight()) // Lightweight methods don't have code, but do have a codeblock

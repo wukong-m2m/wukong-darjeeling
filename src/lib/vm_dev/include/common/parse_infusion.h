@@ -28,10 +28,10 @@
 
 #ifdef ARRAYINDEX_32BIT
  // Version 100: 32 bit index
-#define INFUSION_FORMAT_VERSION 118
+#define INFUSION_FORMAT_VERSION 120
 #else
  // Version 101: 16 bit index
-#define INFUSION_FORMAT_VERSION 119
+#define INFUSION_FORMAT_VERSION 121
 #endif
 
 enum ElementType
@@ -133,24 +133,25 @@ enum JavaTypeID
 #define dj_di_methodImplementation_getFlags(pointer) dj_di_getU8(pointer + 7)
 #define dj_di_methodImplementation_getReturnType(pointer) dj_di_getU8(pointer + 8)
 #define dj_di_methodImplementation_getNumberOfBranchTargets(pointer) dj_di_getU16(pointer + 9)
-#define dj_di_methodImplementation_getNumberOfVariableSlots(pointer) dj_di_getU8(pointer + 11)
-#define dj_di_methodImplementation_getLength(pointer) dj_di_getU16(pointer + 12)
-#define dj_di_methodImplementation_getData(pointer) (pointer + 14)
+#define dj_di_methodImplementation_getNumberOfOwnVariableSlots(pointer) dj_di_getU8(pointer + 11)
+#define dj_di_methodImplementation_getNumberOfTotalVariableSlots(pointer) dj_di_getU8(pointer + 12)
+#define dj_di_methodImplementation_getLength(pointer) dj_di_getU16(pointer + 13)
+#define dj_di_methodImplementation_getData(pointer) (pointer + 15)
 
 #define dj_di_methodImplementation_getNrExceptionHandlers(pointer) \
-	dj_di_getU8((pointer + 15 + dj_di_getU16(pointer + 13)))
+	dj_di_getU8((pointer + 16 + dj_di_getU16(pointer + 13)))
 
 #define dj_di_methodImplementation_getExceptionHandlerType(pointer, i) \
-	dj_di_getLocalId((pointer + 16 + dj_di_getU16(pointer + 13) + i * 8))
+	dj_di_getLocalId((pointer + 17 + dj_di_getU16(pointer + 13) + i * 8))
 
 #define dj_di_methodImplementation_getExceptionHandlerStartPC(pointer, i) \
-	dj_di_getU16((pointer + 16 + dj_di_getU16(pointer + 13) + i * 8 + 2))
+	dj_di_getU16((pointer + 17 + dj_di_getU16(pointer + 13) + i * 8 + 2))
 
 #define dj_di_methodImplementation_getExceptionHandlerEndPC(pointer, i) \
-	dj_di_getU16((pointer + 16 + dj_di_getU16(pointer + 13) + i * 8 + 4))
+	dj_di_getU16((pointer + 17 + dj_di_getU16(pointer + 13) + i * 8 + 4))
 
 #define dj_di_methodImplementation_getExceptionHandlerCatchPC(pointer, i) \
-	dj_di_getU16((pointer + 16 + dj_di_getU16(pointer + 13) + i * 8 + 6))
+	dj_di_getU16((pointer + 17 + dj_di_getU16(pointer + 13) + i * 8 + 6))
 
 // string table getters
 #define dj_di_stringtable_getNrElements(pointer) dj_di_getU16(pointer + 1)
