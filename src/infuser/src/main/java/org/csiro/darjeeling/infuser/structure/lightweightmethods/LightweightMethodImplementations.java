@@ -8,12 +8,12 @@ import org.csiro.darjeeling.infuser.structure.elements.internal.InternalMethodIm
 import org.csiro.darjeeling.infuser.structure.elements.AbstractMethodDefinition;
 
 public class LightweightMethodImplementations extends LightweightMethod {
-	private LightweightMethodImplementations(String className, String methodName, boolean isJavaMethod) {
-		super(className, methodName, isJavaMethod);
+	private LightweightMethodImplementations(String className, String methodName) {
+		super(className, methodName);
 	}
 
     public static LightweightMethod fft_FIX_MPY_lightweight() {
-        return new LightweightMethod("javax.rtcbench.RTCBenchmark", "FIX_MPY_lightweight", false) {
+        return new LightweightMethod("javax.rtcbench.RTCBenchmark", "FIX_MPY_lightweight") {
             @Override
             public void setupLightweightMethod() {
 
@@ -74,7 +74,7 @@ public class LightweightMethodImplementations extends LightweightMethod {
     }
 
 	public static LightweightMethod coremark_ee_isdigit_lightweight() {
-		return new LightweightMethod("javax.rtcbench.CoreState", "ee_isdigit_lightweight", false) {
+		return new LightweightMethod("javax.rtcbench.CoreState", "ee_isdigit_lightweight") {
 			@Override
 			public void setupLightweightMethod() {
 				InstructionHandle brtarget0 = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
@@ -109,12 +109,8 @@ public class LightweightMethodImplementations extends LightweightMethod {
 		};
 	}
 
-    public static LightweightMethod testLightweightJavaMethod() {
-        return new LightweightMethod("javax.rtcbench.RTCBenchmark", "testLightweightJavaMethod", true);
-    }
-
 	public static LightweightMethod testISWAP() {
-		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "testISWAP", false) {
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "testISWAP") {
 			@Override
 			public void setupLightweightMethod() {
 
@@ -131,7 +127,7 @@ public class LightweightMethodImplementations extends LightweightMethod {
 		};
 	}
 	public static LightweightMethod testLOAD_STORE() {
-		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "testLOAD_STORE", false) {
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "testLOAD_STORE") {
 			@Override
 			public void setupLightweightMethod() {
 				LocalVariable shortVariable = addLocalVariable(0, BaseType.Short);
@@ -155,7 +151,7 @@ public class LightweightMethodImplementations extends LightweightMethod {
 		};
 	}
 	public static LightweightMethod isOddShort() {
-		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "isOddShort", false) {
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "isOddShort") {
 			@Override
 			public void setupLightweightMethod() {
 				InstructionHandle brtarget0 = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
@@ -172,7 +168,7 @@ public class LightweightMethodImplementations extends LightweightMethod {
 	}
 
 	public static LightweightMethod isOddInt() {
-		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "isOddInt", false) {
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "isOddInt") {
 			@Override
 			public void setupLightweightMethod() {
 
@@ -190,7 +186,7 @@ public class LightweightMethodImplementations extends LightweightMethod {
 	}
 
 	public static LightweightMethod isNull() {
-		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "isNull", false) {
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "isNull") {
 			@Override
 			public void setupLightweightMethod() {
 				InstructionHandle brtarget0 = new InstructionHandle(new BranchTargetInstruction(Opcode.BRTARGET));
@@ -213,7 +209,7 @@ public class LightweightMethodImplementations extends LightweightMethod {
 	}
 
 	public static LightweightMethod timesTenTestHighStackShort() {
-		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "timesTenTestHighStackShort", false) {
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "timesTenTestHighStackShort") {
 			@Override
 			public void setupLightweightMethod() {
 
@@ -265,7 +261,7 @@ public class LightweightMethodImplementations extends LightweightMethod {
 	}
 
 	public static LightweightMethod timesTenTestHighStackRef() {
-		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "timesTenTestHighStackRef", false) {
+		return new LightweightMethod("javax.rtcbench.RTCBenchmark", "timesTenTestHighStackRef") {
 			@Override
 			public void setupLightweightMethod() {
 

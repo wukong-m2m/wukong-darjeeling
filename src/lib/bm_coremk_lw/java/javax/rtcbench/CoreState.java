@@ -1,5 +1,6 @@
 package javax.rtcbench;
 import javax.rtc.RTC;
+import javax.rtc.Lightweight;
 
 /*
 Author : Shay Gal-On, EEMBC
@@ -194,6 +195,7 @@ public class CoreState {
 		return p;
 	}
 
+	@Lightweight
 	native static boolean ee_isdigit_lightweight(byte c);
 
 	/* Function: core_state_transition

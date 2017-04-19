@@ -16,7 +16,6 @@ import org.csiro.darjeeling.infuser.structure.elements.AbstractMethodDefinition;
 public class LightweightMethod {
 	public String className;
 	public String methodName;
-	private boolean isJavaMethod;
 	private ArrayList<LocalVariable> localVariables;
 	private ArrayList<InstructionHandle> instructionHandles;
 	private InternalMethodImplementation methodImpl = null;
@@ -44,8 +43,7 @@ public class LightweightMethod {
 		return null;		
 	}
 
-	protected LightweightMethod(String className, String methodName, boolean isJavaMethod) {
-		this.isJavaMethod = isJavaMethod;
+	protected LightweightMethod(String className, String methodName) {
 		this.className = className;
 		this.methodName = methodName;
 		// It would be nice if we could determine this from the CodeBlock, but we need the information
@@ -89,50 +87,51 @@ public class LightweightMethod {
 
 	public int getMaxIntStack() {
 		if (this.methodImpl == null) {
-			System.err.println("No methodImpl set when calling getMaxIntStack in LightweightMethod.java. Did you forget -Pno-proguard or are the lightweight methods defined after the calling method in the Java class?");
+			System.err.println("No methodImpl set when calling getMaxIntStack in LightweightMethod.java (" + this.className + "." + this.methodName + "). Did you forget -Pno-proguard or are the lightweight methods defined after the calling method in the Java class?");
 		}
 		return this.methodImpl.getMaxStack() - this.methodImpl.getMaxRefStack();
 	}
 
 	public int getMaxRefStack() {
 		if (this.methodImpl == null) {
-			System.err.println("No methodImpl set when calling getMaxRefStack in LightweightMethod.java. Did you forget -Pno-proguard or are the lightweight methods defined after the calling method in the Java class?");
+			System.err.println("No methodImpl set when calling getMaxRefStack in LightweightMethod.java (" + this.className + "." + this.methodName + "). Did you forget -Pno-proguard or are the lightweight methods defined after the calling method in the Java class?");
 		}
 		return this.methodImpl.getMaxRefStack();
 	}
 
 	public int getLocalVariableCount() {
 		if (this.methodImpl == null) {
-			System.err.println("No methodImpl set when calling getLocalVariableCount in LightweightMethod.java. Did you forget -Pno-proguard or are the lightweight methods defined after the calling method in the Java class?");
+			System.err.println("No methodImpl set when calling getLocalVariableCount in LightweightMethod.java (" + this.className + "." + this.methodName + "). Did you forget -Pno-proguard or are the lightweight methods defined after the calling method in the Java class?");
 		}
 		return this.methodImpl.getIntegerLocalVariableCount() + this.methodImpl.getReferenceLocalVariableCount();
 	}
 
-	public static void registerLightweightMethod(LightweightMethod l) {
+	public static LightweightMethod registerJavaLightweightMethod(String className, String methodName) {
+		LightweightMethod l = new LightweightMethod(className, methodName);
+		lightweightMethods.add(l);
+		return l;
+	}
+
+	public static void registerHardcodedLightweightMethod(LightweightMethod l) {
 		lightweightMethods.add(l);
 	}
 
 	public void setMethodImpl(InternalMethodImplementation methodImpl) {
 		this.methodImpl = methodImpl;
-		System.err.println("Stack depth and locals for light method " + methodImpl.toString() + " int: " + this.getMaxIntStack() + " ref: " + this.getMaxRefStack() + " locals: " + this.getLocalVariableCount());
-	}
-
-	public boolean isJavaMethod() {
-		return this.isJavaMethod;
+		// System.err.println("Stack depth and locals for light method " + methodImpl.toString() + " int: " + this.getMaxIntStack() + " ref: " + this.getMaxRefStack() + " locals: " + this.getLocalVariableCount());
 	}
 
 	static {
 		lightweightMethods = new ArrayList<LightweightMethod>();
 
-        registerLightweightMethod(LightweightMethodImplementations.fft_FIX_MPY_lightweight());
-        registerLightweightMethod(LightweightMethodImplementations.coremark_ee_isdigit_lightweight());
-		registerLightweightMethod(LightweightMethodImplementations.testLightweightJavaMethod());
-        registerLightweightMethod(LightweightMethodImplementations.testISWAP());
-        registerLightweightMethod(LightweightMethodImplementations.testLOAD_STORE());
-		registerLightweightMethod(LightweightMethodImplementations.isOddShort());
-		registerLightweightMethod(LightweightMethodImplementations.isOddInt());
-		registerLightweightMethod(LightweightMethodImplementations.isNull());
-		registerLightweightMethod(LightweightMethodImplementations.timesTenTestHighStackShort());
-		registerLightweightMethod(LightweightMethodImplementations.timesTenTestHighStackRef());
+        registerHardcodedLightweightMethod(LightweightMethodImplementations.fft_FIX_MPY_lightweight());
+        registerHardcodedLightweightMethod(LightweightMethodImplementations.coremark_ee_isdigit_lightweight());
+        registerHardcodedLightweightMethod(LightweightMethodImplementations.testISWAP());
+        registerHardcodedLightweightMethod(LightweightMethodImplementations.testLOAD_STORE());
+		registerHardcodedLightweightMethod(LightweightMethodImplementations.isOddShort());
+		registerHardcodedLightweightMethod(LightweightMethodImplementations.isOddInt());
+		registerHardcodedLightweightMethod(LightweightMethodImplementations.isNull());
+		registerHardcodedLightweightMethod(LightweightMethodImplementations.timesTenTestHighStackShort());
+		registerHardcodedLightweightMethod(LightweightMethodImplementations.timesTenTestHighStackRef());
 	}
 }

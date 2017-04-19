@@ -238,7 +238,7 @@ public class CodeBlock
 		return count;
 	}
 	
-	private LightweightMethodParameterHandle getLightweightMethodParameterHandle(BaseType parameterType) {
+	private static LightweightMethodParameterHandle getLightweightMethodParameterHandle(BaseType parameterType) {
 		switch (parameterType) {
 			case Byte:
 				return new LightweightMethodParameterHandle(Opcode.LIGHTWEIGHTMETHODPARAMETER_B);
@@ -294,7 +294,7 @@ public class CodeBlock
 	 * @param cpg a BCEL ConstantPoolGen object 
 	 * @return a new CodeBlock object containing valid DVM byte code that is semantically equivalent to the input JVM byte code
 	 */
-	public static CodeBlock fromCode(Code code, InternalMethodImplementation methodImplementation, InternalInfusion infusion, ConstantPoolGen cpg, boolean isJavaLightweightMethod)
+	public static CodeBlock fromCode(Code code, InternalMethodImplementation methodImplementation, InternalInfusion infusion, ConstantPoolGen cpg)
 	{
 		CodeBlock ret = new CodeBlock();
 
@@ -327,7 +327,7 @@ public class CodeBlock
 			pos += parameterTypes[i].isLongSized()?2:1;
 		}
 
-		if (isJavaLightweightMethod) {
+		if (methodImplementation.isLightweight()) {
 			// For lightweight Java methods, the parameters will be on the stack when the method is called.
 			// We need to emit STORE instructions to initialise the local variables.
 

@@ -3,6 +3,7 @@ package javax.rtcbench;
 import javax.darjeeling.Stopwatch;
 
 import javax.rtc.RTC;
+import javax.rtc.Lightweight;
 
 //// UNITTEST
 
@@ -13,14 +14,24 @@ public class RTCBenchmark {
     public static boolean test_java() {
         return rtcbenchmark_measure_java_performance();
     }
-    
+
+    // Native lightweight methods have their implementation hardcoded in the infuser.    
+    @Lightweight
     public static native int testISWAP(short a, int b);
+    @Lightweight
     public static native int testLOAD_STORE(int a, short b);
+    @Lightweight
     public static native boolean isOddShort(short x);
+    @Lightweight
     public static native boolean isOddInt(int x);
+    @Lightweight
     public static native boolean isNull(Object x);
+    @Lightweight
     public static native short timesTenTestHighStackShort(short x);
+    @Lightweight
     public static native short timesTenTestHighStackRef(Object x);
+
+    @Lightweight
     public static int testLightweightJavaMethod(int a, byte b) {
         return a+b;
     }

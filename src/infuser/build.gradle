@@ -8,9 +8,9 @@ repositories {
 
 dependencies {
 	compile "org.apache.ant:ant:1.9.2@jar"
-	compile "org.apache.bcel:bcel:5.2@jar"
+	compile "org.apache.bcel:bcel:6.0@jar"
 	runtime "org.apache.ant:ant:1.9.2@jar"
-	runtime "org.apache.bcel:bcel:5.2@jar"
+	runtime "org.apache.bcel:bcel:6.0@jar"
 }
 
 version = 1.0

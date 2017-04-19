@@ -21,6 +21,7 @@
  
 package org.csiro.darjeeling.infuser.structure.elements.internal;
 
+import org.apache.bcel.classfile.AnnotationEntry;
 import org.apache.bcel.classfile.Code;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
@@ -64,8 +65,12 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 		
 		methodImpl.isSynchronized = method.isSynchronized();		
 
-		// Hardcoded JVM lightweight methods are marked native so we can detect if they're not filled in properly, but they're not really native.
-		methodImpl.isLightweight = LightweightMethod.isLightweightMethod(parentClass.getName(), methodDef.getName());
+		methodImpl.isLightweight = false;
+		for (AnnotationEntry entry : method.getAnnotationEntries()) {
+			if (entry.getAnnotationType().contains("Lightweight")) {
+				methodImpl.isLightweight = true;
+			}
+		}
 		methodImpl.isNative = method.isNative() && !methodImpl.isLightweight; 
 
 		for (Type type : method.getArgumentTypes())
@@ -80,7 +85,6 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 	
 	public void processCode(InternalInfusion infusion)
 	{
-		System.err.println("processing "  + this);
 		// We now have 3 types of methods:
 		// - Normal Java methods
 		// - Hardcoded Lightweight methods implemented in LightweightMethodImplementation.java
@@ -90,18 +94,27 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 		//   is called and the infuser should generate the necessary dummy parameter instructions and STOREs to initialise the corresponding local variables.
 		//   Note that these methods may not trigger the garbage collector!
 
-		if (code!=null) {
-			codeBlock = CodeBlock.fromCode(code, this, infusion, new ConstantPoolGen(code.getConstantPool()), isLightweight);
-		} else if (isLightweight) {
-			LightweightMethod lightweightMethod = LightweightMethod.getLightweightMethod(this.parentClass.getName(), this.methodDefinition.getName());
-			System.err.println("Adding lightweight method " + lightweightMethod.className + "." + lightweightMethod.methodName);
-			codeBlock = CodeBlock.fromLightweightMethod(lightweightMethod, this);
-		}
 
-		// If it is a lightweight method, regardless hardcoded or Java, set the implementation, so we can find it when processing INVOKELIGHT
 		if (isLightweight) {
-			LightweightMethod lightweightMethod = LightweightMethod.getLightweightMethod(this.parentClass.getName(), this.methodDefinition.getName());
+			System.err.println("Adding lightweight method " + this.parentClass.getName() + "." + this.methodDefinition.getName());
+			LightweightMethod lightweightMethod;
+			if (code!=null) {
+				// Java lightweight method
+				lightweightMethod = LightweightMethod.registerJavaLightweightMethod(this.parentClass.getName(), this.methodDefinition.getName());
+				codeBlock = CodeBlock.fromCode(code, this, infusion, new ConstantPoolGen(code.getConstantPool()));
+			} else {
+				// Hardcoded JVM lightweight method: this already has the hardcoded LightweightMethod object registered.
+				lightweightMethod = LightweightMethod.getLightweightMethod(this.parentClass.getName(), this.methodDefinition.getName());
+				codeBlock = CodeBlock.fromLightweightMethod(lightweightMethod, this);
+			}
+
+			// If it is a lightweight method, regardless hardcoded or Java, set the implementation, so we can find it when processing INVOKELIGHT
 			lightweightMethod.setMethodImpl(this);
+		} else {
+			// Normal method
+			if (code!=null) {
+				codeBlock = CodeBlock.fromCode(code, this, infusion, new ConstantPoolGen(code.getConstantPool()));
+			}
 		}
 	}
 	
