@@ -238,6 +238,7 @@ public class InfuserArguments
 				}
 			}
 		}
+		infusion.processAllFoundMethods();
 		
 		return infusion;
 	}

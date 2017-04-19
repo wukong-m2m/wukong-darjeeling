@@ -21,6 +21,9 @@
  
 package org.csiro.darjeeling.infuser.structure.elements.internal;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Collections;
 import org.apache.bcel.classfile.JavaClass;
 import org.csiro.darjeeling.infuser.structure.ElementVisitor;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractField;
@@ -56,6 +59,14 @@ public class InternalInfusion extends AbstractInfusion
 		return ret;		
 	}
 
+	private class MethodToAddData {
+		public InternalClassDefinition classDef;
+		public AbstractMethodDefinition methodDef;
+		public org.apache.bcel.classfile.Method classMethod;
+		public String sourceFileName;
+	}
+	ArrayList<MethodToAddData> methodsToAdd = new ArrayList<MethodToAddData>();
+
 	public void addJavaClass(JavaClass javaClass)
 	{
 		// add class to the class list
@@ -72,19 +83,13 @@ public class InternalInfusion extends AbstractInfusion
 			// if the class is not an interface, add its method implementations
 			if (!javaClass.isInterface())
 			{
-				AbstractMethodImplementation methodImpl = 
-					InternalMethodImplementation.fromMethod(classDef, methodDef, classMethod, javaClass.getSourceFileName());
-				methodImpl = methodImplementationList.add(methodImpl);
-
-				// hook these two together to form a method, but only if
-				// non-static and non-private
-				if ((!classMethod.isStatic()) && (!classMethod.isPrivate()))
-				{
-					InternalMethod method = new InternalMethod(methodDef, methodImpl);
-					classDef.add(method);
-				}
+				MethodToAddData data = new MethodToAddData();
+				data.classDef = classDef;
+				data.methodDef = methodDef;
+				data.classMethod = classMethod;
+				data.sourceFileName = javaClass.getSourceFileName();
+				methodsToAdd.add(data);
 			}
-
 		}
 
 		// extract static fields
@@ -97,6 +102,43 @@ public class InternalInfusion extends AbstractInfusion
 			}
 		}
 
+	}
+
+	// We need to delay processing methods because they need to be put in the right order (lightweights first)
+	// If an INVOKE to a lightweight method is done before the lightweight method itself is processed, two things may/will go wrong:
+	//  - if it is a Java lightweight method, but the infuser doesn't know yet that the method is lightweight, it won't use the INVOKELIGHTWEIGHT instruction
+	//  - if INVOKELIGHTWEIGHT is processed by the AOT compiler, it needs to know the address, but if the actual method comes later in the infusion this is not yet known
+	public void processAllFoundMethods() {
+		// Sort the methods, putting lightweight methods first
+		Collections.sort(this.methodsToAdd, new Comparator<MethodToAddData>() {
+		        @Override
+		        public int compare(MethodToAddData data1, MethodToAddData data2)
+		        {
+		        	int lw1 = InternalMethodImplementation.javaMethodIsLightweight(data1.classMethod) ? 1 : 0;
+		        	int lw2 = InternalMethodImplementation.javaMethodIsLightweight(data2.classMethod) ? 1 : 0;
+		        	return lw2-lw1;
+		        }
+		    });
+
+		// Then process them like we use to do in addJavaClass directly.
+		for (MethodToAddData methodData : this.methodsToAdd) {
+			InternalClassDefinition classDef = methodData.classDef;
+			AbstractMethodDefinition methodDef = methodData.methodDef;
+			org.apache.bcel.classfile.Method classMethod = methodData.classMethod;
+			String sourceFileName = methodData.sourceFileName;
+
+			AbstractMethodImplementation methodImpl = 
+				InternalMethodImplementation.fromMethod(classDef, methodDef, classMethod, sourceFileName);
+			methodImpl = methodImplementationList.add(methodImpl);
+
+			// hook these two together to form a method, but only if
+			// non-static and non-private
+			if ((!classMethod.isStatic()) && (!classMethod.isPrivate()))
+			{
+				InternalMethod method = new InternalMethod(methodDef, methodImpl);
+				classDef.add(method);
+			}
+		}
 	}
 
 	@Override

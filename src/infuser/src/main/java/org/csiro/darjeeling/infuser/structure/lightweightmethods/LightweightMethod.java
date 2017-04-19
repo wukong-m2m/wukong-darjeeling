@@ -9,9 +9,6 @@ import org.csiro.darjeeling.infuser.structure.elements.AbstractMethodDefinition;
 
 // KNOWN ISSUES
 // - We currently don't support calling lightweight methods in another infusion. This just because we haven't implemented it yet since it's not necessary for our benchmarks, but there's no reason it couldn't be done.
-// - The lightweight methods need to come first in the infusion. We should modify the processing of methods to make sure it's done in the right order, but for our benchmarks we just do it by reorganising them in the class file.
-//   Again this is just to save some implementation time since it works well enough to do our experiments for now. 
-//   This causes problems when a method in a superclass invokes a lightweight method in a subclass, since the superclass' method will come first in the infusion.
 
 public class LightweightMethod {
 	public String className;
@@ -87,21 +84,21 @@ public class LightweightMethod {
 
 	public int getMaxIntStack() {
 		if (this.methodImpl == null) {
-			System.err.println("No methodImpl set when calling getMaxIntStack in LightweightMethod.java (" + this.className + "." + this.methodName + "). Did you forget -Pno-proguard or are the lightweight methods defined after the calling method in the Java class?");
+			System.err.println("No methodImpl set when calling getMaxIntStack in LightweightMethod.java (" + this.className + "." + this.methodName + "). Did you forget -Pno-proguard?");
 		}
 		return this.methodImpl.getMaxStack() - this.methodImpl.getMaxRefStack();
 	}
 
 	public int getMaxRefStack() {
 		if (this.methodImpl == null) {
-			System.err.println("No methodImpl set when calling getMaxRefStack in LightweightMethod.java (" + this.className + "." + this.methodName + "). Did you forget -Pno-proguard or are the lightweight methods defined after the calling method in the Java class?");
+			System.err.println("No methodImpl set when calling getMaxRefStack in LightweightMethod.java (" + this.className + "." + this.methodName + "). Did you forget -Pno-proguard?");
 		}
 		return this.methodImpl.getMaxRefStack();
 	}
 
 	public int getLocalVariableCount() {
 		if (this.methodImpl == null) {
-			System.err.println("No methodImpl set when calling getLocalVariableCount in LightweightMethod.java (" + this.className + "." + this.methodName + "). Did you forget -Pno-proguard or are the lightweight methods defined after the calling method in the Java class?");
+			System.err.println("No methodImpl set when calling getLocalVariableCount in LightweightMethod.java (" + this.className + "." + this.methodName + "). Did you forget -Pno-proguard?");
 		}
 		return this.methodImpl.getIntegerLocalVariableCount() + this.methodImpl.getReferenceLocalVariableCount();
 	}

@@ -15,27 +15,6 @@ public class RTCBenchmark {
         return rtcbenchmark_measure_java_performance();
     }
 
-    // Native lightweight methods have their implementation hardcoded in the infuser.    
-    @Lightweight
-    public static native int testISWAP(short a, int b);
-    @Lightweight
-    public static native int testLOAD_STORE(int a, short b);
-    @Lightweight
-    public static native boolean isOddShort(short x);
-    @Lightweight
-    public static native boolean isOddInt(int x);
-    @Lightweight
-    public static native boolean isNull(Object x);
-    @Lightweight
-    public static native short timesTenTestHighStackShort(short x);
-    @Lightweight
-    public static native short timesTenTestHighStackRef(Object x);
-
-    @Lightweight
-    public static int testLightweightJavaMethod(int a, byte b) {
-        return a+b;
-    }
-
     public static boolean rtcbenchmark_measure_java_performance() {
         boolean success = true;
 
@@ -97,4 +76,26 @@ public class RTCBenchmark {
                                                                      (short)((short)x+
                                                                      (short)((short)x+
                                                                      (short)((short)x)))))))))); }
+
+    // Native lightweight methods have their implementation hardcoded in the infuser.
+    // (deliberately put at the bottom of the class to check if the infuser will move them to the start of the infusion)    
+    @Lightweight
+    public static native int testISWAP(short a, int b);
+    @Lightweight
+    public static native int testLOAD_STORE(int a, short b);
+    @Lightweight
+    public static native boolean isOddShort(short x);
+    @Lightweight
+    public static native boolean isOddInt(int x);
+    @Lightweight
+    public static native boolean isNull(Object x);
+    @Lightweight
+    public static native short timesTenTestHighStackShort(short x);
+    @Lightweight
+    public static native short timesTenTestHighStackRef(Object x);
+
+    @Lightweight
+    public static int testLightweightJavaMethod(int a, byte b) {
+        return a+b;
+    }
 }

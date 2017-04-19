@@ -49,6 +49,15 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 	{
 	}
 	
+	public static boolean javaMethodIsLightweight(Method method) {
+		for (AnnotationEntry entry : method.getAnnotationEntries()) {
+			if (entry.getAnnotationType().contains("Lightweight")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static InternalMethodImplementation fromMethod(InternalClassDefinition parentClass, AbstractMethodDefinition methodDef, Method method, String fileName)
 	{
 		InternalMethodImplementation methodImpl = new InternalMethodImplementation();
@@ -65,12 +74,7 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 		
 		methodImpl.isSynchronized = method.isSynchronized();		
 
-		methodImpl.isLightweight = false;
-		for (AnnotationEntry entry : method.getAnnotationEntries()) {
-			if (entry.getAnnotationType().contains("Lightweight")) {
-				methodImpl.isLightweight = true;
-			}
-		}
+		methodImpl.isLightweight = javaMethodIsLightweight(method);
 		methodImpl.isNative = method.isNative() && !methodImpl.isLightweight; 
 
 		for (Type type : method.getArgumentTypes())
