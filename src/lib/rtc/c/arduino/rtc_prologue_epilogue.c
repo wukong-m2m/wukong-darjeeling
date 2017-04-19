@@ -3,7 +3,7 @@
 #include "parse_infusion.h"
 
 bool rtc_current_method_is_lightweight() {
-	return dj_di_methodImplementation_getFlags(rtc_ts->methodimpl) & FLAGS_LIGHTWEIGHT;
+	return (rtc_ts->flags & FLAGS_LIGHTWEIGHT) != 0;
 }
 
 void rtc_emit_prologue() {
@@ -20,7 +20,7 @@ void rtc_emit_prologue() {
 		// Use R4:R5 for return address instead
 		emit_POP(R4);
 		emit_POP(R5);
-		if (dj_di_methodImplementation_getFlags(rtc_ts->methodimpl) & FLAGS_USES_SIMUL_OR_INVOKESTATIC) {
+		if (rtc_ts->flags & FLAGS_USES_SIMUL_OR_INVOKESTATIC) {
 			// The method calling this lightweight method will have reserved space for this method
 			// and moved Y to point at the start of it. If this method uses SIMUL or INVOKELIGHT,
 			// we cannot use R18:R19 to store the return address since it would be overwritten
@@ -33,7 +33,7 @@ void rtc_emit_prologue() {
 #else
 		emit_POP(R18);
 		emit_POP(R19);
-		if (dj_di_methodImplementation_getFlags(rtc_ts->methodimpl) & FLAGS_USES_SIMUL_OR_INVOKESTATIC) {
+		if (rtc_ts->flags & FLAGS_USES_SIMUL_OR_INVOKESTATIC) {
 			// The method calling this lightweight method will have reserved space for this method
 			// and moved Y to point at the start of it. If this method uses SIMUL or INVOKELIGHT,
 			// we cannot use R18:R19 to store the return address since it would be overwritten
@@ -71,7 +71,7 @@ void rtc_emit_epilogue() {
 #if defined (AOT_STRATEGY_BASELINE)  || defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)
 		// Baseline uses hardcoded registers, which uses R18:R19 in some cases.
 		// Use R4:R5 for return address instead
-		if (dj_di_methodImplementation_getFlags(rtc_ts->methodimpl) & FLAGS_USES_SIMUL_OR_INVOKESTATIC) {
+		if (rtc_ts->flags & FLAGS_USES_SIMUL_OR_INVOKESTATIC) {
 			// See comment in prologue
 			emit_LD_DECY(R5);
 			emit_LD_DECY(R4);
@@ -79,7 +79,7 @@ void rtc_emit_epilogue() {
 		emit_PUSH(R5);
 		emit_PUSH(R4);
 #else
-		if (dj_di_methodImplementation_getFlags(rtc_ts->methodimpl) & FLAGS_USES_SIMUL_OR_INVOKESTATIC) {
+		if (rtc_ts->flags & FLAGS_USES_SIMUL_OR_INVOKESTATIC) {
 			// See comment in prologue
 			emit_LD_DECY(R19);
 			emit_LD_DECY(R18);

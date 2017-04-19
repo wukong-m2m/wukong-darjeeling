@@ -147,7 +147,8 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
     rtc_ts->method_length = dj_di_methodImplementation_getLength(methodimpl);
     rtc_ts->branch_target_table_start_ptr = branch_target_table_start_ptr;
     rtc_ts->branch_target_count = 0;
-    if (dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_USESSTATICFIELDS) {
+    rtc_ts->flags = dj_di_methodImplementation_getFlags(methodimpl);
+    if (rtc_ts->flags & FLAGS_USESSTATICFIELDS) {
         rtc_current_method_set_uses_reg(R2);
     }
 #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS)
@@ -156,14 +157,14 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
 
     // If we're using stack caching, initialise the cache
 #ifdef AOT_STRATEGY_SIMPLESTACKCACHE    
-    rtc_stackcache_init(dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_LIGHTWEIGHT);
+    rtc_stackcache_init(rtc_ts->flags & FLAGS_LIGHTWEIGHT);
 #endif
 #ifdef AOT_STRATEGY_POPPEDSTACKCACHE    
-    rtc_stackcache_init(dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_LIGHTWEIGHT);
+    rtc_stackcache_init(rtc_ts->flags & FLAGS_LIGHTWEIGHT);
 #endif
 #ifdef AOT_STRATEGY_MARKLOOP
     rtc_ts->may_use_RZ = false;
-    rtc_stackcache_init(dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_LIGHTWEIGHT);
+    rtc_stackcache_init(rtc_ts->flags & FLAGS_LIGHTWEIGHT);
 #endif
 
     // translate the method
