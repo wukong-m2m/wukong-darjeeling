@@ -1,5 +1,6 @@
 package javax.rtcbench;
 import javax.rtc.RTC;
+import javax.rtc.Lightweight;
 
 /*
 Author : Shay Gal-On, EEMBC
@@ -70,6 +71,7 @@ public class CoreUtil {
 		Service functions to calculate 16b CRC code.
 
 	*/
+	@Lightweight
 	static short crc(int intdata, short crc, short number_of_bytes )
 	{
 		while (number_of_bytes > 0) {
