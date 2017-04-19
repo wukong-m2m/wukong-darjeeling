@@ -91,17 +91,20 @@ public class CoreUtil {
 			data >>>= 1;
 	    }
 		return crc;
-	} 
+	}
+	@Lightweight
 	static short crcu16(short newval, short crc) {
 		crc=crcu8((byte) (newval), crc);
 		crc=crcu8((byte) ((newval)>>>8), crc);
 		return crc;
 	}
+	@Lightweight
 	static short crcu32(int newval, short crc) {
 		crc=crc16((short) newval, crc);
 		crc=crc16((short) (newval>>>16), crc);
 		return crc;
 	}
+	@Lightweight
 	static short crc16(short newval, short crc) {
 		return crcu16((short)newval, crc);
 	}
