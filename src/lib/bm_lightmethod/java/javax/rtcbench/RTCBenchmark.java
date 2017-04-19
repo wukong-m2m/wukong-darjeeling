@@ -54,6 +54,10 @@ public class RTCBenchmark {
             success = success && (CoreState.ee_isdigit_lightweight((byte)'9') == true);  // 0x39
             success = success && (CoreState.ee_isdigit_lightweight((byte)':') == false); // 0x3a
 
+            success = success && ((short)CoreUtil.crc(0xF2345678,(short)0xFBCD,(short)1) == (short)0xb73a);
+            success = success && ((short)CoreUtil.crc(0xF2345678,(short)0xFBCD,(short)2) == (short)0x2db7);
+            success = success && ((short)CoreUtil.crc(0xF2345678,(short)0xFBCD,(short)4) == (short)0xa820);
+
             if (success) { System.out.println("ok"); } else { System.out.println("kaput"); }
         }
 
