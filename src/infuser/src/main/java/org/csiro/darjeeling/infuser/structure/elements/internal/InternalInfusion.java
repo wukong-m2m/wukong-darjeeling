@@ -114,9 +114,9 @@ public class InternalInfusion extends AbstractInfusion
 		        @Override
 		        public int compare(MethodToAddData data1, MethodToAddData data2)
 		        {
-		        	int lw1 = InternalMethodImplementation.javaMethodIsLightweight(data1.classMethod) ? 1 : 0;
-		        	int lw2 = InternalMethodImplementation.javaMethodIsLightweight(data2.classMethod) ? 1 : 0;
-		        	return lw2-lw1;
+		        	int lw1 = InternalMethodImplementation.javaMethodGetLightweightRank(data1.classMethod);
+		        	int lw2 = InternalMethodImplementation.javaMethodGetLightweightRank(data2.classMethod);
+		        	return lw1-lw2;
 		        }
 		    });
 

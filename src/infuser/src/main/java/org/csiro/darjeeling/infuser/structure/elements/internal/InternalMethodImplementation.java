@@ -22,6 +22,7 @@
 package org.csiro.darjeeling.infuser.structure.elements.internal;
 
 import org.apache.bcel.classfile.AnnotationEntry;
+import org.apache.bcel.classfile.ElementValuePair;
 import org.apache.bcel.classfile.Code;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
@@ -49,6 +50,22 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 	{
 	}
 	
+	public static int javaMethodGetLightweightRank(Method method) {
+		for (AnnotationEntry entry : method.getAnnotationEntries()) {
+			if (entry.getAnnotationType().contains("Lightweight")) {
+				for (ElementValuePair pair : entry.getElementValuePairs()) {
+					if (pair.getNameString().equals("rank")) {
+						return Integer.parseInt(pair.getValue().toString());
+					}
+				}
+				// If no rank is found return 0
+				return 0;
+			}
+		}
+		// If not a lightweight method, sort them at the end (in InternalInfusion.java)
+		return Integer.MAX_VALUE;
+	}
+
 	public static boolean javaMethodIsLightweight(Method method) {
 		for (AnnotationEntry entry : method.getAnnotationEntries()) {
 			if (entry.getAnnotationType().contains("Lightweight")) {

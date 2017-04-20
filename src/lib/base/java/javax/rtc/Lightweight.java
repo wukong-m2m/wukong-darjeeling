@@ -1,3 +1,5 @@
 package javax.rtc;
 
-public @interface Lightweight {}
+public @interface Lightweight {
+	int rank() default 0;
+}
