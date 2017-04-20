@@ -1,6 +1,7 @@
 package javax.rtcbench;
 
 import javax.rtc.RTC;
+import javax.rtc.Lightweight;
 
 // This is the benchmark that most clearly shows the differences between Java and C.
 // I see three possible options to port this
@@ -443,6 +444,7 @@ public class CoreListJoinB {
 		Found item, or NULL if not found.
 	*/
 	// list_head *core_list_find(list_head *list,list_data *info);
+	@Lightweight
 	static short core_list_find(short list, short info_data16, short info_idx) {
 		if (info_idx>=0) {
 			while (list != ListNULL && (ListData_GetIdx(ListHead_GetInfo(list)) != info_idx))

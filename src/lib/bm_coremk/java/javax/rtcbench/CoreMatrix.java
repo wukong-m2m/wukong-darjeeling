@@ -1,5 +1,6 @@
 package javax.rtcbench;
 import javax.rtc.RTC;
+import javax.rtc.Lightweight;
 
 /*
 Author : Shay Gal-On, EEMBC
@@ -182,6 +183,7 @@ public class CoreMatrix {
 		
 		Otherwise, reset the accumulator and add 10 to the result.
 	*/
+	@Lightweight
 	static short matrix_sum(short N, int[] C, short clipval) {
 		int tmp=0,prev=0,cur=0;
 		short ret=0;
