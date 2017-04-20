@@ -1,6 +1,7 @@
 package javax.rtcbench;
 
 import javax.darjeeling.Stopwatch;
+import javax.rtc.Lightweight;
 
 public class RTCBenchmark {
     public static String name = "XXTEA";
@@ -25,6 +26,7 @@ public class RTCBenchmark {
         return true;
     }
 
+    @Lightweight
     public static int MX(int z, int y, int sum, final int[] key, short p, short e) {
         return (((z>>>5^y<<2) + (y>>>3^z<<4)) ^ ((sum^y) + (key[(p&(short)3)^e] ^ z)));
     }

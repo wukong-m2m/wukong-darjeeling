@@ -1,0 +1,6 @@
+djlibsource {
+    bm_xxtea_lw {
+        cDependencies = [ 'darjeeling3' ]
+        javaDependencies = [ 'base', 'darjeeling3' ]
+    }
+}
