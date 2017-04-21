@@ -4,6 +4,7 @@ import javax.darjeeling.Stopwatch;
 import javax.rtc.*;
 
 public class RTCBenchmark {
+	@Lightweight
 	private native static byte FIX_MPY_lightweight(byte a, byte b);
     public static String name = "FIX_FFT LIGHTWEIGHT METHOD";
     public static native void test_native();

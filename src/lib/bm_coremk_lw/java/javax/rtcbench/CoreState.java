@@ -214,6 +214,7 @@ public class CoreState {
 	}
 
 	// State core_state_transition( ee_u8 **instr , int[] transition_count) {
+	@Lightweight
 	static byte core_state_transition(ShortWrapper indexWrapper, byte[] str, int[] transition_count) {
 		short index = indexWrapper.value;
 		byte NEXT_SYMBOL;
