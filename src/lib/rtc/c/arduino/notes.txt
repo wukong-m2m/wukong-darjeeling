@@ -18,9 +18,20 @@ May be pinned by MARKLOOP: r4-r17
                              |  ref2       |             |
      referenceStackBase      |  ref1       |             | sizeof(dj_frame), stackStartOffset
                              +---------------------------+
-                             | space reserved for locals |                                                             ^
-                             |  of lightweight methods   |          dj_di_methodImplementation_getNumberOfVariableSlots|
-                             |  called by this method    |                                                             |
+                             | reserved for locals of 3rd|                                                             ^
+                             |    lightweight method     |          dj_di_methodImplementation_getNumberOfVariableSlots|
+                             +---------------------------+                                                             |
+                             | reserved for locals of 2nd|                                                             |
+                             |          of second        |                                                             |
+                             |    lightweight method     |                                                             |
+                             |  -----------------------  |                                                             |
+                             |  RETURN ADDRESS TO 1st LW |                                                             |
+                             +---------------------------+                                                             |
+                             | reserved for locals of 1st|                                                             |
+                             |          of first         |                                                             |
+                             |    lightweight method     |                                                             |
+                             |  -----------------------  |                                                             |
+                             |  RETURN ADDRESS TO NORMAL |                                                             |
                              +---------------------------+                                                             |
                              |              int1 16b     | stackLocalIntegerOffset                                     |
                              | local ints   int2 32b,msb |      ^                                                      |
