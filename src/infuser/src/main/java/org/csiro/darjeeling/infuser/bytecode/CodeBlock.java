@@ -196,14 +196,15 @@ public class CodeBlock
 		return localVariables.size();
 	}
 
-	public boolean usesSIMULorINVOKELIGHT()
+	public boolean usesSIMUL_INVOKELIGHT_MARKLOOP()
 	{
 		for (int i=0; i<instructions.size(); i++)
 		{			
 			InstructionHandle handle = instructions.get(i);
 			Opcode opcode = handle.getInstruction().getOpcode();
 			if (opcode == Opcode.SIMUL ||
-					opcode == Opcode.INVOKELIGHT) {
+					opcode == Opcode.INVOKELIGHT ||
+					opcode == Opcode.MARKLOOP_START) {
 				return true;
 			}
 		}

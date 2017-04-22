@@ -143,7 +143,7 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 		// 	             + " ref slots: " +  + this.getReferenceLocalVariableCount()
 		// 	             + " reserved lw slots: " + this.getMaxLightweightMethodLocalVariableCount()
 		// 	             + (this.isLightweight() ? " (lightweight)" : "")
-		// 	             + (this.usesSIMULorINVOKELIGHT() ? " (uses simul or invokelight)" : ""));
+		// 	             + (this.usesSIMUL_INVOKELIGHT_MARKLOOP() ? " (uses simul or invokelight)" : ""));
 	}
 	
 	public CodeBlock getCodeBlock()
@@ -178,10 +178,10 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 		return isLightweight;
 	}
 
-	public boolean usesSIMULorINVOKELIGHT()
+	public boolean usesSIMUL_INVOKELIGHT_MARKLOOP()
 	{
 		if (codeBlock==null) return false; else
-			return codeBlock.usesSIMULorINVOKELIGHT();
+			return codeBlock.usesSIMUL_INVOKELIGHT_MARKLOOP();
 	}
 
 	public boolean usesStaticFields()

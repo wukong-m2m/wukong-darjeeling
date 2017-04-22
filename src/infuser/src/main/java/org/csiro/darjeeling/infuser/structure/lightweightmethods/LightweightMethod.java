@@ -116,7 +116,7 @@ public class LightweightMethod {
 		return this.methodImpl.getIntegerLocalVariableCount()
 				+ this.methodImpl.getReferenceLocalVariableCount()
 				+ this.methodImpl.getMaxLightweightMethodLocalVariableCount()
-				+ (this.methodImpl.usesSIMULorINVOKELIGHT() ? 1 : 0); // If the lightweight method uses SIMUL or INVOKELIGHT, we need to reserve an extra slot since we can't store the return address in R18:R19. Instead we have to store it in the stack frame at a cost of 8 extra cycles.
+				+ (this.methodImpl.usesSIMUL_INVOKELIGHT_MARKLOOP() ? 1 : 0); // If the lightweight method uses SIMUL or INVOKELIGHT, we need to reserve an extra slot since we can't store the return address in R18:R19. Instead we have to store it in the stack frame at a cost of 8 extra cycles.
 	}
 
 	public static void guardNeverReturnedFalseFromIsLightweightMethod(String className, String methodName) {

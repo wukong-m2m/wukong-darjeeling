@@ -164,7 +164,9 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
 #endif
 #ifdef AOT_STRATEGY_MARKLOOP
     rtc_ts->may_use_RZ = false;
-    rtc_stackcache_init(rtc_ts->flags & FLAGS_LIGHTWEIGHT);
+    // If a lightweight method uses markloop, we should store the return address in the stack frame instead of R18:R19. If we don’t and MARKLOOP pins the maximum of 7 register pairs, we only have 3 free pairs left, while some instructions require 4 free pairs.
+    // The loop means the extra overhead (8 cycles) will be relatively little compared to the runtime, and may even be outweight by the gains of having more free registers for stackcaching.
+    rtc_stackcache_init(rtc_ts->flags & FLAGS_LIGHTWEIGHT & FLAGS_USES_SIMUL_INVOKESTATIC_MARKLOOP);
 #endif
 
     // translate the method
