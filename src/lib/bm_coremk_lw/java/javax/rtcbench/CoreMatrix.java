@@ -50,7 +50,7 @@ public class CoreMatrix {
 	};
 
 	static short matrix_clip(short x, boolean y) { return (y ? (short)(x & 0x0ff) : (short)(x & 0x0ffff)); }
-	static short matrix_big(short x) { return (short)(0xf000 | x); }
+	// static short matrix_big(short x) { return (short)(0xf000 | x); }
 	// static int bit_extract(int x, byte from, byte to) { return ((x>>from) & (~(0xffffffff << to))); }
 
 	/* Function: core_bench_matrix
@@ -97,7 +97,8 @@ public class CoreMatrix {
 	*/
 	static short matrix_test(short N, int[] C, short[] A, short[] B, short val) {
 		short crc=0;
-		short clipval=matrix_big(val);
+		// short clipval=matrix_big(val);
+		short clipval=(short)(0xf000 | val);
 
 		matrix_add_const(N,A,val); /* make sure data changes  */
 
