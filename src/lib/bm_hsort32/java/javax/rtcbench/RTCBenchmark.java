@@ -46,7 +46,7 @@ public class RTCBenchmark {
                 root = child;
             }
             else
-                return;
+                break;
         }        
     }
 

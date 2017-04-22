@@ -16,6 +16,33 @@ import org.csiro.darjeeling.infuser.bytecode.instructions.WideIncreaseInstructio
 import org.csiro.darjeeling.infuser.bytecode.instructions.MarkLoopInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.BranchTargetInstruction;
 
+// TODO Known issue: In the example below, we originally used return to exit the loop, but the infuser won't add the MARKLOOP instructions if we do.
+//                   It does if we use break it does, but this is a temporary fix.
+    // @Lightweight
+    // public static void siftDown(int a[], short start, short end) {
+    //     short root = 0;
+    //     short child;
+    //     while ( (child = (short)((root << 1)+1)) < end ) {
+    //         short child_plus_one = (short)(child + 1);
+    //         if ((child_plus_one < end) && (a[child] < a[child_plus_one])) {
+    //             child += 1;
+    //         }
+    //         int a_root = a[root];
+    //         int a_child = a[child];
+    //         if (a_root < a_child) {
+    //             // SWAP( a[child], a[root] );
+    //             a[root] = a_child;
+    //             a[child] = a_root;
+
+    //             root = child;
+    //         }
+    //         else
+    //             break;
+    //     }        
+    // }
+
+
+
 public class AddMarkLoopInstructions extends CodeBlockTransformation
 {
     public AddMarkLoopInstructions(CodeBlock codeBlock)
