@@ -225,15 +225,32 @@ task disassemble(type:Exec, dependsOn: darjeeling) {
     }
 }
 
+task avr_nm(type:Exec, dependsOn: darjeeling) {
+    ext.nmFile = "${buildDir}/darjeeling.nm"
 
-task avrora_store_trace(type:Copy, dependsOn: [avrora_if_necessary, disassemble]) {
+    inputs.file architectureSpecificAssemble.djTargetElfFile
+    outputs.file nmFile
+
+    executable "avr-nm"
+    args '-S', '-l', architectureSpecificAssemble.djTargetElfFile
+
+    doFirst {
+        standardOutput = new FileOutputStream(nmFile)
+    }
+}
+
+task avrora_store_trace(type:Copy, dependsOn: [avrora_if_necessary, disassemble, avr_nm]) {
     from file("${buildDir}/infusion-bm_${project.ext.aotbm}/bm_${project.ext.aotbm}.dih")
     from file("${buildDir}/infusion-bm_${project.ext.aotbm}/jlib_bm_${project.ext.aotbm}.debug")
     from file(avrora_if_necessary.rtcdataFile)
     from file(avrora_if_necessary.profiledataFile)
     from file(avrora_if_necessary.stdoutlogFile)
     from file(disassemble.disasmFile)
-    into file("${project.rootDir}/config/${djConfigname}/${project.ext.aotTraceResultsDirName}/${project.ext.aotbm}")
+    from file(avr_nm.nmFile)
+    if (djConfigname == "coremk_c")
+        into file("${project.rootDir}/config/${djConfigname}/results_coremk_c")
+    else
+        into file("${project.rootDir}/config/${djConfigname}/${project.ext.aotTraceResultsDirName}/${project.ext.aotbm}")
 }
 
 task avrora_profile_trace(type:Exec, dependsOn: [avrora_store_trace]) {
