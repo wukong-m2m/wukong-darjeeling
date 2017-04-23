@@ -1,5 +1,5 @@
 djlibsource {
-    coremark_c {
+    bm_coremk_c {
         cDependencies = []
     }
 }

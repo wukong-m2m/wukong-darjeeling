@@ -1,6 +1,6 @@
 djConfig {
 	platform = 'arduino.avrora'
-	libraries = ['coremark_c']
+	libraries = ['bm_coremk_c']
 	app = 'emptyapp'
 	appArchiveSize = 0 // We won't reprogramme the app anyway, so just use exactly the required amount without reserving space to upload future apps.
 }
