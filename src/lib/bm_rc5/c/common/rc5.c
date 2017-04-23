@@ -193,7 +193,7 @@ int rc5_ecb_encrypt(const unsigned char *pt, unsigned char *ct, rc5_key *skey)
 //     return CRYPT_OK;
 // }
 
-void rc5_test_native(void)
+void javax_rtcbench_RTCBenchmark_void_test_native(void)
 {
     uint8_t NUMNUMBERS = 8;
     unsigned char test_key[] = { 0x91, 0x5f, 0x46, 0x19, 0xbe, 0x41, 0xb2, 0x51, 0x63, 0x55, 0xa5, 0x01, 0x10, 0xa9, 0xce, 0x91 };

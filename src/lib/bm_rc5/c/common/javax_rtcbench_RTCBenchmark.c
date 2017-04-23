@@ -3,7 +3,7 @@
 #include "darjeeling3.h"
 #include "rc5.h"
 
-void javax_rtcbench_RTCBenchmark_void_test_native() {
-	rc5_test_native();
-}
+// void javax_rtcbench_RTCBenchmark_void_test_native() {
+//      implemented in rc5.c
+// }
 

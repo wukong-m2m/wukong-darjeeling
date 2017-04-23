@@ -84,7 +84,10 @@ public class DebugVisitor extends DescendingVisitor
 
 	public void visit(InternalMethodImplementation element)
 	{
-		writer.println(String.format("\tmethod %s", element.getMethodDefinition().toString()));
+		writer.println(String.format("\tmethod %s.%s %s",
+									element.getParentClass().getName(),
+									element.getMethodDefinition().getName(),
+									element.getMethodDefinition().getSignature()));
 		writer.println("\t{");
 		writer.println("");
 		

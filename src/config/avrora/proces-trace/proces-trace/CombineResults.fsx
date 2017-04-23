@@ -39,16 +39,6 @@ let resultToStringList (result : SimulationResults) =
     let cyclesToOverhead2 cycles1 cycles2 =
         String.Format ("{0:0}%", float (cycles1-cycles2) / float cycles1 * 100.0)
 
-
-    // let overheadInCycles = result.cyclesStopwatchAOT-result.cyclesStopwatchC
-    // let overheadLoadStoreInCycles = ((getLDDSTBytesFromAVRPerCategoryAOT result)-(getLDDSTBytesFromAVRPerCategoryC result))*2
-    // let overheadPushPopInCycles =
-    //     let nativeCPushPopInCycles = (result.countersPerAvrOpcodeCategoryNativeC |> List.find (fun (cat, cnt) -> cat.StartsWith("04) Stack")) |> snd).cycles
-    //     result.cyclesPush.cycles + result.cyclesPop.cycles - nativeCPushPopInCycles
-    // let overheadMovwInCycles =
-    //     let nativeCMovInCycles = (result.countersPerAvrOpcodeCategoryNativeC |> List.find (fun (cat, cnt) -> cat.StartsWith("05) Register moves")) |> snd).cycles
-    //     result.cyclesMovw.cycles - nativeCMovInCycles
-
     let r1 =
         [
         ("BENCHMARK"            , result.benchmark);

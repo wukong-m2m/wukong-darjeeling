@@ -4,6 +4,7 @@
             methodDefId="1"
             methodDefInfusion="base"
             methodSignature="()V"
+            branchTableAddress="0x12345"
             startAddress="0x101a8"
             endAddress="0x101f8"
             branchCount="0"
@@ -121,6 +122,7 @@
             methodDefId="2"
             methodDefInfusion="base"
             methodSignature="()I"
+            branchTableAddress="0x12345"
             startAddress="0x101f8"
             endAddress="0x10254"
             branchCount="0"

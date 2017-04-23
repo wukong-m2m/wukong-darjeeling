@@ -299,6 +299,18 @@ let opcodeCategory opcode =
 let opcodeName (opcode, mask, name) =
     name
 
+let getTargetIfCALL inst =
+    match (is CALL inst) with
+    | false -> 0
+    | true ->
+        //                                   1001 010k kkkk 111k
+        // avr opcode CALL                   kkkk kkkk kkkk kkkk
+        // words in reversed order, ex: 0x865D940E is a CALL to 0x865D
+                                          // llll llll llll llll 0000 000h hhhh 000h
+        2*((((inst >>> 16) &&& 0xFFFF)                 // llll llll llll llll 0000 0000 0000 0000
+           + ((inst &&& 0x0001) <<< 16)   // 0000 0000 0000 0000 0000 0000 0000 000h
+           + ((inst &&& 0x01F0) <<< 13))) // 0000 0000 0000 0000 0000 000h hhhh 0000
+
 let instructionSize inst =
     let opcode = getOpcodeForInstruction inst (inst.ToString())
     if (opcode = CALL || opcode = JMP || opcode = LDS || opcode = STS) then 4 else 2

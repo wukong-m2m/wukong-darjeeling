@@ -105,21 +105,21 @@ let rec matchOptUnopt (optimisedAvr : AvrInstruction list) (unoptimisedAvr : (Av
 let addCountersAndDebugData (jvmInstructions : JvmInstruction list) (countersForAddressAndInst : int -> int -> ExecCounters) (matchedResults : (AvrInstruction option*AvrInstruction*JvmInstruction) list) (possiblyEmptyDjDebugDatas : DJDebugData list) =
     let djDebugDatas = match possiblyEmptyDjDebugDatas with
                        | [] -> jvmInstructions |> List.map (fun x -> DJDebugData.empty) // If we don't have debug data, just use a list of empty DJDebugDatas of equal length as jvmInstructions
-                       | _ -> (DJDebugData.empty :: possiblyEmptyDjDebugDatas)
+                       | _ -> (DJDebugData.empty :: possiblyEmptyDjDebugDatas) // Add empty line to match the preable in rtcdata.xml
     List.zip jvmInstructions djDebugDatas // Add an empty entry to debug data to match the method preamble
         |> List.map
         (fun (jvm, debugdata) ->
             let resultsForThisJvm = matchedResults |> List.filter (fun b -> let (_, _, jvm2) = b in jvm.index = jvm2.index) in
             let resultsWithCounters = resultsForThisJvm |> List.map (fun (opt, unopt, _) ->
                   let counters = match opt with
-                                 | None -> ExecCounters.empty
+                                 | None -> ExecCounters.Zero
                                  | Some(optValue) -> countersForAddressAndInst optValue.address optValue.opcode
                   { unopt = unopt; opt = opt; counters = counters }) in
-            let foldAvrCountersToJvmCounters a b =
-                { cycles = a.cycles+b.cycles; executions = (if a.executions > 0 then a.executions else b.executions); size = a.size+b.size; count = a.count+b.count }
+            let foldAvrCountersToJvmCounters (a : ExecCounters) (b : ExecCounters) =
+                { (a+b) with executions = (if a.executions > 0 then a.executions else b.executions) }
             { jvm = jvm
               avr = resultsWithCounters
-              counters = resultsWithCounters |> List.map (fun r -> r.counters) |> List.fold (foldAvrCountersToJvmCounters) ExecCounters.empty
+              counters = resultsWithCounters |> List.map (fun r -> r.counters) |> List.fold (foldAvrCountersToJvmCounters) ExecCounters.Zero
               djDebugData = debugdata })
 
 let getTimersFromStdout (stdoutlog : string list) =
@@ -129,8 +129,9 @@ let getTimersFromStdout (stdoutlog : string list) =
               |> List.map (fun regexmatch -> (regexmatch.Groups.[1].Value, Int32.Parse(regexmatch.Groups.[3].Value)))
               |> List.sortBy (fun (timer, cycles) -> match timer with "NATIVE" -> 1 | "AOT" -> 2 | "JAVA" -> 3 | _ -> 4)
 
-let getNativeInstructionsFromObjdump (objdumpOutput : string list) (countersForAddressAndInst : int -> int -> ExecCounters) =
-    let startIndex = objdumpOutput |> List.findIndex (fun line -> Regex.IsMatch(line, "^[0-9a-fA-F]+ <rtcbenchmark_measure_native_performance(\.constprop\.\d*)?>:$"))
+let getNativeInstructionsFromObjdump (name : string) (objdumpOutput : string list) (countersForAddressAndInst : int -> int -> ExecCounters) =
+    let pattern = "^[0-9a-fA-F]+ <" + name + ">:$"
+    let startIndex = objdumpOutput |> List.findIndex (fun line -> Regex.IsMatch(line, pattern))
     let disasmTail = objdumpOutput |> List.skip (startIndex + 1)
     let endIndex = disasmTail |> List.findIndex (fun line -> Regex.IsMatch(line, "^[0-9a-fA-F]+ <.*>:$"))
     let disasm = disasmTail |> List.take endIndex |> List.filter ((<>) "")
@@ -148,14 +149,17 @@ let getNativeInstructionsFromObjdump (objdumpOutput : string list) (countersForA
         })
     avrInstructions |> List.map (fun avr -> (avr, countersForAddressAndInst avr.address avr.opcode))
 
-let parseDJDebug (allLines : string list) =
+let parseDJDebug (name : string) (allLines : string list) =
   let regexLine = Regex("^\s*(?<byteOffset>\d\d\d\d);[^;]*;[^;]*;(?<text>[^;]*);(?<stackBefore>[^;]*);(?<stackAfter>[^;]*);.*")
   let regexStackElement = Regex("^(?<byteOffset>\d+)(?<datatype>[a-zA-Z]+)$")
 
-  let startIndex = allLines |> List.findIndex (fun line -> Regex.IsMatch(line, "^\s*method.*rtcbenchmark_measure_java_performance$"))
+  let startIndex = allLines |> List.findIndex (fun line -> Regex.IsMatch(line, "^\s*method.*" + Regex.Escape(name) + "$"))
   let linesTail = allLines |> List.skip (startIndex + 3)
   let endIndex = linesTail |> List.findIndex (fun line -> Regex.IsMatch(line, "^\s*}\s*$"))
-  let lines = linesTail |> List.take endIndex |> List.filter ((<>) "")
+  let lines = linesTail
+              |> List.take endIndex
+              |> List.filter ((<>) "")
+              |> List.filter (fun line -> not (line.Contains("lightweightmethodparameter"))) // These won't be in rtcdata since they don't generate any code.
 
   // System.Console.WriteLine (String.Join("\r\n", lines))
 
@@ -184,9 +188,8 @@ let parseDJDebug (allLines : string list) =
                                           stackBefore = (m.Groups.["stackBefore"].Value.Trim() |> stackStringToStack);
                                           stackAfter = (m.Groups.["stackAfter"].Value.Trim()  |> stackStringToStack) })
 
-// Process trace main function
-let processMethodTrace benchmark (methodImpl : MethodImpl) (countersForAddressAndInst : int -> int -> ExecCounters) (stdoutlog : string list) (disasm : string list) (djdebuglines : string list) =
-    printfn "Processing %s" (getMethodNameFromImpl methodImpl)
+let processJvmMethod benchmark (methodImpl : MethodImpl) (countersForAddressAndInst : int -> int -> ExecCounters) (djdebuglines : string list) =
+    printfn "Processing jvm method %s" (getClassAndMethodNameFromImpl methodImpl)
     let optimisedAvr = methodImpl.AvrInstructions |> Seq.map AvrInstructionFromXml |> Seq.toList
     let unoptimisedAvrWithJvmIndex =
         methodImpl.JavaInstructions |> Seq.map (fun jvm -> jvm.UnoptimisedAvr.AvrInstructions |> Seq.map (fun avr -> (AvrInstructionFromXml avr, JvmInstructionFromXml jvm)))
@@ -194,16 +197,13 @@ let processMethodTrace benchmark (methodImpl : MethodImpl) (countersForAddressAn
                                     |> Seq.toList
 
     let matchedResult = matchOptUnopt optimisedAvr unoptimisedAvrWithJvmIndex
-    let djdebugdata = match (methodImpl.Method.Contains("rtcbenchmark_measure_java_performance")) with
-                      | true -> parseDJDebug djdebuglines
-                      | false -> [] // We only need this for the detailed analysis report of small benchmarks. For full application profile just use an empty list.
+    let djdebugdata = parseDJDebug (getClassAndMethodNameFromImpl methodImpl) djdebuglines
     let processedJvmInstructions = addCountersAndDebugData (methodImpl.JavaInstructions |> Seq.map JvmInstructionFromXml |> Seq.toList) countersForAddressAndInst matchedResult djdebugdata
-    let stopwatchTimers = getTimersFromStdout stdoutlog
 
     let countersPerJvmOpcodeAOTJava =
         processedJvmInstructions
             |> List.filter (fun r -> r.jvm.text <> "Method preamble")
-            |> groupFold (fun r -> r.jvm.text.Split().First()) (fun r -> r.counters) (+) ExecCounters.empty
+            |> groupFold (fun r -> r.jvm.text.Split().First()) (fun r -> r.counters) (+) ExecCounters.Zero
             |> List.map (fun (opc, cnt) -> (JVM.getCategoryForJvmOpcode opc, opc, cnt))
             |> List.sortBy (fun (cat, opc, _) -> cat+opc)
 
@@ -213,15 +213,7 @@ let processMethodTrace benchmark (methodImpl : MethodImpl) (countersForAddressAn
             |> List.concat
             |> List.filter (fun avr -> avr.opt.IsSome)
             |> List.map (fun avr -> (AVR.getOpcodeForInstruction avr.opt.Value.opcode avr.opt.Value.text, avr.counters))
-            |> groupFold fst snd (+) ExecCounters.empty
-            |> List.map (fun (opc, cnt) -> (AVR.opcodeCategory opc, AVR.opcodeName opc, cnt))
-            |> List.sortBy (fun (cat, opc, _) -> cat+opc)
-
-    let nativeCInstructions = getNativeInstructionsFromObjdump disasm countersForAddressAndInst
-    let countersPerAvrOpcodeNativeC =
-        nativeCInstructions
-            |> List.map (fun (avr, cnt) -> (AVR.getOpcodeForInstruction avr.opcode avr.text, cnt))
-            |> groupFold fst snd (+) ExecCounters.empty
+            |> groupFold fst snd (+) ExecCounters.Zero
             |> List.map (fun (opc, cnt) -> (AVR.opcodeCategory opc, AVR.opcodeName opc, cnt))
             |> List.sortBy (fun (cat, opc, _) -> cat+opc)
 
@@ -235,22 +227,10 @@ let processMethodTrace benchmark (methodImpl : MethodImpl) (countersForAddressAn
     let codesizeAOT =
         let numberOfBranchTargets = methodImpl.BranchTargets |> Array.length
         methodImpl.AvrMethodSize - (4*numberOfBranchTargets) // We currently keep the branch table at the head of the method, but actually we don't need it anymore after code generation, so it shouldn't count for code size.
-    let codesizeC =
-        let startAddress = (nativeCInstructions |> List.head |> fst).address
-        let lastInList x = x |> List.reduce (fun _ x -> x)
-        let endAddress = (nativeCInstructions |> lastInList |> fst).address
-        endAddress - startAddress + 2 // assuming the function ends in a 2 byte opcode.
-    let getTimer timer =
-        match stopwatchTimers |> List.tryFind (fun (t,c) -> t=timer) with
-        | Some(x) -> x |> snd
-        | None -> 0
 
     {
-        benchmark = benchmark
-        jvmInstructions = processedJvmInstructions
-        nativeCInstructions = nativeCInstructions |> Seq.toList
-        passedTestJava = stdoutlog |> List.exists (fun line -> line.Contains("JAVA OK."))
-        passedTestAOT = stdoutlog |> List.exists (fun line -> line.Contains("RTC OK."))
+        JvmMethod.name = (getClassAndMethodNameFromImpl methodImpl)
+        instructions = processedJvmInstructions
 
         codesizeJava = codesizeJava
         codesizeJavaBranchCount = codesizeJavaBranchCount
@@ -260,68 +240,167 @@ let processMethodTrace benchmark (methodImpl : MethodImpl) (countersForAddressAn
         codesizeJavaWithoutBranchOverhead = codesizeJavaWithoutBranchOverhead
         codesizeJavaWithoutBranchMarkloopOverhead = codesizeJavaWithoutBranchMarkloopOverhead
         codesizeAOT = codesizeAOT
-        codesizeC = codesizeC
-
-        cyclesStopwatchJava = (getTimer "JAVA")
-        cyclesStopwatchAOT = (getTimer "AOT")
-        cyclesStopwatchC = (getTimer "NATIVE")
 
         countersPerJvmOpcodeAOTJava = countersPerJvmOpcodeAOTJava
         countersPerAvrOpcodeAOTJava = countersPerAvrOpcodeAOTJava
+    }
+
+let processCFunction (name : string) (countersForAddressAndInst : int -> int -> ExecCounters) (disasm : string list) =
+    printfn "Processing c function %s" (name)
+
+    let nativeCInstructions = getNativeInstructionsFromObjdump name disasm countersForAddressAndInst
+    let countersPerAvrOpcodeNativeC =
+        nativeCInstructions
+            |> List.map (fun (avr, cnt) -> (AVR.getOpcodeForInstruction avr.opcode avr.text, cnt))
+            |> groupFold fst snd (+) ExecCounters.Zero
+            |> List.map (fun (opc, cnt) -> (AVR.opcodeCategory opc, AVR.opcodeName opc, cnt))
+            |> List.sortBy (fun (cat, opc, _) -> cat+opc)
+
+    let codesizeC =
+        let startAddress = (nativeCInstructions |> List.head |> fst).address
+        let lastInList x = x |> List.reduce (fun _ x -> x)
+        let endAddress = (nativeCInstructions |> lastInList |> fst).address
+        endAddress - startAddress + 2 // assuming the function ends in a 2 byte opcode.
+
+    {
+        name = name
+        instructions = nativeCInstructions |> Seq.toList
+
+        codesizeC = codesizeC
+
         countersPerAvrOpcodeNativeC = countersPerAvrOpcodeNativeC
     }
 
-let ProcessTrace (outputType : string) (resultsdir : string) =
-    let benchmark = (Path.GetFileName(resultsdir))
-    let rtcdata = RtcdataXml.Load(String.Format("{0}/rtcdata.xml", resultsdir))
-    let profilerdata = ProfilerdataXml.Load(String.Format("{0}/profilerdata.xml", resultsdir)).Instructions |> Seq.toList
-    let stdoutlog = System.IO.File.ReadLines(String.Format("{0}/stdoutlog.txt", resultsdir)) |> Seq.toList
-    let disasm = System.IO.File.ReadLines(String.Format("{0}/darjeeling.S", resultsdir)) |> Seq.toList
-    let djdebuglines = System.IO.File.ReadLines(String.Format("{0}/jlib_bm_{1}.debug", resultsdir, benchmark)) |> Seq.toList
+let getCResultsdir (jvmResultsdir : string) =
+  jvmResultsdir // Modify this later so we can get C results from a different directory for coremark (which is too big for both versions to fit in a single library)
 
-    let profilerdataPerAddress = profilerdata |> List.map (fun x -> (Convert.ToInt32(x.Address.Trim(), 16), x))
-    let countersForAddressAndInst address inst =
+let getBenchmarkFunctionNamesAndAddressFromNm (cNm : string list) =
+  let selector (line : string list) =
+    match line with
+    | [address; size; symboltyp; name; fileAndLine] ->
+        let knownExclude = ["Sinewave"; "stab"] // Some symbols defined in benchmarks that aren't code.
+        symboltyp.Equals("T", System.StringComparison.CurrentCultureIgnoreCase) // only select text symbols (code)
+        && fileAndLine.Contains("src/lib/bm_")                                  // only select functions in the benchmark lib
+        && not ((name.StartsWith("bm_") && name.EndsWith("_init")))             // exclude the library's init function
+        && not (name.Equals"javax_rtcbench_RTCBenchmark_void_test_native")      // exclude javax_rtcbench_RTCBenchmark_void_test_native (which contains benchmark init code)
+        && not (knownExclude |> List.contains name)
+    | [_; _; _; name_or_fileAndLine] ->
+        if (name_or_fileAndLine.StartsWith("/"))
+        then false
+        else        
+          // Unfortunately, avr-nm doesn't add the source file for some symbols. Just hard code what to do with those for now.
+          let name = name_or_fileAndLine
+          let knownExclude = ["__do_clear_bss"; "__udivmodhi4"; "__ultoa_invert"; "asm_opcodeWithSingleRegOperand"; "dj_exec_setVM"; "fputc"; "memcpy"; "memmove"; "memset"; "strnlen"; "strnlen_P"; "vfprintf"; "vsnprintf"]
+          let knownInclude = ["siftDown"]
+          match (knownInclude |> List.contains name, knownExclude |> List.contains name) with
+          | (true, true)   -> failwith ("BUG in getBenchmarkFunctionNamesAndAddressFromNm. " + name + " can't be in both lists at the same time!")
+          | (false, false) -> failwith ("Don't know whether to include " + name + ". Please put it in the include or exclude list in getBenchmarkFunctionNamesAndAddressFromNm")
+          | (incl, _)      -> incl
+    | _ -> false // Only select lines with 5 columns
+  cNm |> List.map (fun line -> line.Split [|' '; '\t'|] |> Array.toList)
+      |> List.filter selector
+      |> List.map (fun line -> match line with
+                                 | [address; size; symboltyp; name; fileAndLine] -> (name, Convert.ToInt32(address, 16))
+                                 | [address; size; symboltyp; name]              -> (name, Convert.ToInt32(address, 16))
+                                 | _                                             -> ("shouldn't happen", 0))
+
+let processSingleBenchmarkResultsDir (resultsdir : string) =
+    let benchmark = (Path.GetFileName(resultsdir))
+
+    let jvmResultsdir = resultsdir
+    let jvmRtcdata = RtcdataXml.Load(String.Format("{0}/rtcdata.xml", jvmResultsdir))
+    let jvmDjdebuglines = System.IO.File.ReadLines(String.Format("{0}/jlib_bm_{1}.debug", jvmResultsdir, benchmark)) |> Seq.toList
+    let jvmProfilerdata = ProfilerdataXml.Load(String.Format("{0}/profilerdata.xml", jvmResultsdir)).Instructions |> Seq.toList
+    let jvmStdoutlog = System.IO.File.ReadLines(String.Format("{0}/stdoutlog.txt", jvmResultsdir)) |> Seq.toList
+    let jvmProfilerdataPerAddress = jvmProfilerdata |> List.map (fun x -> (Convert.ToInt32(x.Address.Trim(), 16), x))
+    let jvmMethodsImpls = jvmRtcdata.MethodImpls |> Seq.filter (fun methodImpl -> (methodImpl.MethodDefInfusion.StartsWith("bm_")))
+                                                 |> Seq.filter (fun methodImpl -> not ((getClassAndMethodNameFromImpl methodImpl).Contains("RTCBenchmark.test_java"))) // Filter out the benchmark setup code
+                                                 |> Seq.filter (fun methodImpl -> methodImpl.JavaInstructions.Length > 1) // Bug in RTC: abstract methods become just a method prologue
+                                                 |> Seq.toList
+    let jvmAddressesOfBenchmarkCalls = jvmMethodsImpls |> List.map (fun methodImpl -> Convert.ToInt32(methodImpl.StartAddress, 16))
+
+    let cResultsdir = (getCResultsdir resultsdir)
+    let cProfilerdata = ProfilerdataXml.Load(String.Format("{0}/profilerdata.xml", cResultsdir)).Instructions |> Seq.toList
+    let cStdoutlog = System.IO.File.ReadLines(String.Format("{0}/stdoutlog.txt", cResultsdir)) |> Seq.toList
+    let cDisasm = System.IO.File.ReadLines(String.Format("{0}/darjeeling.S", cResultsdir)) |> Seq.toList
+    let cNm = System.IO.File.ReadLines(String.Format("{0}/darjeeling.nm", cResultsdir)) |> Seq.toList
+    let cProfilerdataPerAddress = cProfilerdata |> List.map (fun x -> (Convert.ToInt32(x.Address.Trim(), 16), x))
+    let cBenchmarkFunctionNamesAndAddress = getBenchmarkFunctionNamesAndAddressFromNm cNm
+    let cFunctionNames = cBenchmarkFunctionNamesAndAddress |> List.map fst
+    let cAddressesOfBenchmarkCalls = cBenchmarkFunctionNamesAndAddress |> List.map snd
+
+    let countersForAddressAndInst (profilerdataPerAddress : (int * ProfiledInstruction) list) (addressesOfBenchmarkMethods : int list) address inst =
         match profilerdataPerAddress |> List.tryFind (fun (address2,inst) -> address = address2) with
         | None -> failwith (String.Format ("No profilerdata found for address {0}", address))
         | Some(_, profiledInstruction) ->
+          match (addressesOfBenchmarkMethods |> List.contains (AVR.getTargetIfCALL inst)) with
+          | true ->
             {
                 executions = profiledInstruction.Executions
-                cycles = (profiledInstruction.Cycles+profiledInstruction.CyclesSubroutine)
+                cycles = profiledInstruction.Cycles                                        // Since this is a call to another benchmark function or method, don't count the subroutine cycles since we would end up counting them double
+                cyclesSubroutine = profiledInstruction.CyclesSubroutine
                 count = 1
                 size = AVR.instructionSize inst
             }
-    match outputType with
-    | "normal" ->
-      // Find the benchmark method
-      let methodImpl = rtcdata.MethodImpls |> Seq.find (fun impl -> impl.Method.Contains("rtcbenchmark_measure_java_performance"))
-      let results = processMethodTrace benchmark methodImpl countersForAddressAndInst stdoutlog disasm djdebuglines
+          | false ->
+            {
+                executions = profiledInstruction.Executions
+                cycles = (profiledInstruction.Cycles+profiledInstruction.CyclesSubroutine) // Since this is a call to somewhere outside the benchmark, count all cycles for this instruction
+                cyclesSubroutine = 0
+                count = 1
+                size = AVR.instructionSize inst
+            }    
+    let jvmCountersForAddressAndInst = countersForAddressAndInst jvmProfilerdataPerAddress jvmAddressesOfBenchmarkCalls
+    let cCountersForAddressAndInst = countersForAddressAndInst cProfilerdataPerAddress cAddressesOfBenchmarkCalls
 
-      let txtFilename = resultsdir + ".txt"
-      let xmlFilename = resultsdir + ".xml"
+    let jvmMethods = jvmMethodsImpls |> List.map (fun methodImpl -> (processJvmMethod benchmark methodImpl jvmCountersForAddressAndInst jvmDjdebuglines))
 
-      File.WriteAllText (txtFilename, (resultsToString results))
-      Console.Error.WriteLine ("Wrote output to " + txtFilename)
+    let cFunctions = cFunctionNames |> List.map (fun name -> (processCFunction name cCountersForAddressAndInst cDisasm))
 
-      File.WriteAllText (xmlFilename, results.pickleToString)
-      Console.Error.WriteLine ("Wrote output to " + xmlFilename)
-    | "profile" ->
-      let benchmarkMethods = rtcdata.MethodImpls |> Seq.filter (fun methodImpl -> (methodImpl.MethodDefInfusion.StartsWith("bm_")))
-                                                 |> Seq.filter (fun methodImpl -> methodImpl.JavaInstructions.Length > 1) // Bug in RTC: abstract methods become just a method prologue
-      let allMethodResults = benchmarkMethods |> Seq.map (fun methodImpl -> (methodImpl, (processMethodTrace benchmark methodImpl countersForAddressAndInst stdoutlog disasm djdebuglines)))
-                                              |> Seq.toList
+    let getTimer stdoutlog timer =
+        let stopwatchTimers = getTimersFromStdout stdoutlog
+        match stopwatchTimers |> List.tryFind (fun (t,c) -> t=timer) with
+        | Some(x) -> x |> snd
+        | None -> 0
 
-      let report = multipleResultsToProfileReport allMethodResults
+    let results = {
+        benchmark = benchmark
 
-      let txtFilename = resultsdir + "_profile.txt"
+        passedTestAOT = jvmStdoutlog |> List.exists (fun line -> line.Contains("RTC OK."))
+        cyclesStopwatchAOT = (getTimer jvmStdoutlog "AOT")
+        cyclesStopwatchC = (getTimer cStdoutlog "NATIVE")
 
-      File.WriteAllText (txtFilename, report)
-    | _ -> failwith "unknown output type"
+        jvmMethods = jvmMethods
+        cFunctions = cFunctions
+    }
 
-let ProcessResultsDir (directory) =
+    let txtFilename = resultsdir + ".txt"
+    File.WriteAllText (txtFilename, (resultsToString results))
+    Console.Error.WriteLine ("Wrote output to " + txtFilename)
+
+    let xmlFilename = resultsdir + ".xml"
+    File.WriteAllText (xmlFilename, results.pickleToString)
+    Console.Error.WriteLine ("Wrote output to " + xmlFilename)
+
+
+let processConfigOrSingleBenchmarkResultsDir (directory) =
+    // src/config/avrora/
+    //     /results_0BASE_R___P__CS0
+    //        /binsrch32
+    //        /bsort32
+    //        /..
+    //     /results_1PEEP_R___P__CS0
+    //        /binsrch32
+    //        /bsort32
+    //        /..
+    //     /..
+
+    // This function can be called for either a results_* directory to process all benchmark results,
+    // or for a single benchmark directory like binsrch32, bsort32, etc.
     let subdirectories = (Directory.GetDirectories(directory))
     match subdirectories |> Array.length with
-    | 0 -> ProcessTrace "normal" directory
-    | _ -> subdirectories |> Array.iter (ProcessTrace "normal")
+    | 0 -> processSingleBenchmarkResultsDir directory
+    | _ -> subdirectories |> Array.iter processSingleBenchmarkResultsDir
 
 let main(args : string[]) =
     Console.Error.WriteLine ("START " + (DateTime.Now.ToString()))
@@ -331,12 +410,9 @@ let main(args : string[]) =
         let directory = (Array.get args 2)
         let subdirectories = (Directory.GetDirectories(directory))
         subdirectories |> Array.filter (fun d -> (Path.GetFileName(d).StartsWith("results_")))
-                       |> Array.iter ProcessResultsDir
-    | "profile" ->
-        // Generate a complete profile for a single directory. Maybe extend this later to include multiple dirs, but for now we only need one. (because we only use it for coremark)
-        let resultsdir = (Array.get args 2)
-        ProcessTrace "profile" resultsdir
-    | resultsbasedir -> ProcessResultsDir resultsbasedir
+                       |> Array.iter processConfigOrSingleBenchmarkResultsDir
+    | dir ->
+        processConfigOrSingleBenchmarkResultsDir dir
     Console.Error.WriteLine ("STOP " + (DateTime.Now.ToString()))
     1
 
