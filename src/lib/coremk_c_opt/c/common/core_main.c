@@ -20,6 +20,7 @@ El Dorado Hills, CA, 95762
 	This file contains the framework to acquire a block of memory, seed initial parameters, tun t he benchmark and report the results.
 */
 #include "coremark.h"
+#include "darjeeling3.h"
 
 /* Function: iterate
 	Run the benchmark for a specified number of iterations.
@@ -84,6 +85,13 @@ char *mem_name[3] = {"Static","Heap","Stack"};
 	4 - Iterations  : Special, if set to 0, iterations will be automatically determined such that the benchmark will run between 10 to 100 secs
 
 */
+
+void __attribute__((noinline)) rtcbenchmark_measure_native_performance(void *pres) {
+	avroraSetTimerNumber(101);
+	javax_darjeeling_Stopwatch_void_resetAndStart();
+	iterate(pres);
+	javax_darjeeling_Stopwatch_void_measure();
+}
 
 #if MAIN_HAS_NOARGC
 MAIN_RETURN_TYPE core_mark_main(void) {
@@ -226,7 +234,7 @@ MAIN_RETURN_TYPE core_mark_main(int argc, char *argv[]) {
 		core_stop_parallel(&results[i]);
 	}
 #else
-	iterate(&results[0]);
+	rtcbenchmark_measure_native_performance(&results[0]);
 #endif
 	stop_time();
 	total_time=get_time();

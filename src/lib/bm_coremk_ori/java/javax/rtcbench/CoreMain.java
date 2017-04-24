@@ -1,5 +1,6 @@
 package javax.rtcbench;
 import javax.rtc.RTC;
+import javax.darjeeling.Stopwatch;
 
 /*
 Author : Shay Gal-On, EEMBC
@@ -123,7 +124,13 @@ public class CoreMain {
 		return (short)CoreUtil.get_seed_32(x);
 	}
 
-	public static void core_mark_main() {
+	public static void rtcbenchmark_measure_java_performance(CoreResults pres) {
+		Stopwatch.resetAndStart();
+		iterate(pres);
+		Stopwatch.measure();
+	}
+
+	public static boolean core_mark_main() {
 		// int argc=0;
 		// char *argv[1];
 		short i,j=0,num_algorithms=0;
@@ -229,7 +236,7 @@ public class CoreMain {
 		// /* perform actual benchmark */
 		RTC.avroraStartCountingCalls();
 		RTC.coremark_start_time();
-		iterate(results[0]);
+		rtcbenchmark_measure_java_performance(results[0]);
 		RTC.coremark_stop_time();
 		total_time=RTC.coremark_get_time();
 		RTC.avroraStopCountingCalls();
@@ -348,5 +355,6 @@ public class CoreMain {
 		// portable_fini(&(results[0].port));
 
 		// return MAIN_RETURN_VAL;	
+		return total_errors==0;
 	}
 }

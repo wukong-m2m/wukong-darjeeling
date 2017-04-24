@@ -5,7 +5,7 @@ public class CorePortMe {
 	public static boolean PROFILE_RUN;
 	public static boolean PERFORMANCE_RUN;
 	public static boolean VALIDATION_RUN;
-	public static final int ITERATIONS                      = 1;
+	public static final int ITERATIONS                      = 50;
 
 	static {
 		if (!PROFILE_RUN && !PERFORMANCE_RUN && !VALIDATION_RUN) {

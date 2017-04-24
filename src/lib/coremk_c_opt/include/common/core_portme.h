@@ -20,7 +20,7 @@
 */
 
 // NR 20170215 should be supplied on command line in normal Core Mark
-#define ITERATIONS 1
+#define ITERATIONS 50
 
 #ifndef HAS_FLOAT 
 #define HAS_FLOAT 0
