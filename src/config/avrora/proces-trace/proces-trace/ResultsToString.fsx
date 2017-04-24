@@ -67,10 +67,8 @@ let resultsToString (results : SimulationResults) =
 
     let resultJavaListingToString totalCycles totalBytes (result : ProcessedJvmInstruction) =
         let (instruction, invokeTarget) =
-          match (result.jvm.text.Contains("INVOKE")) with
-          | true ->
-            let firstSpaceIndex = result.jvm.text.IndexOf(" ")
-            (result.jvm.text.Substring(0, firstSpaceIndex), "      TARGET" + result.jvm.text.Substring(firstSpaceIndex+1))
+          match (result.jvm.isInvoke) with
+          | true  -> (result.jvm.instructionOnly, "      TARGET " +  result.jvm.instructionDetails)
           | false -> (result.jvm.text, "")
         String.Format("{0,-60}{1} {2}->{3}:{4} {5}",
                       instruction,
@@ -136,10 +134,11 @@ let resultsToString (results : SimulationResults) =
         let combined = ("----own----", nonInvokeCounters) :: groupedInvokes @ [ ("---total---", totalCounters) ]
 
         combined |> List.map (fun (target, counters)
-                                    -> String.Format("{0,53} : {1}\n\r",
+                                    -> String.Format("{0,53} : {1}",
                                                      countersToStringInclSubroutines totalCyclesAOTJava totalBytesAOTJava counters,
                                                      target))
                  |> List.iter addLn
+        addLn ""
 
     let addJvmMethodDetails (jvmMethod : JvmMethod) =
       let totalCyclesAOTJava = jvmMethod.countersAOTTotal.cycles
@@ -229,10 +228,11 @@ let resultsToString (results : SimulationResults) =
         let combined = ("----own----", nonInvokeCounters) :: groupedInvokes @ [ ("---total---", totalCounters) ]
 
         combined |> List.map (fun (target, counters)
-                                    -> String.Format("{0,53} : {1}\n\r",
+                                    -> String.Format("{0,53} : {1}",
                                                      countersToStringInclSubroutines totalCyclesC totalBytesC counters,
                                                      target))
                  |> List.iter addLn
+        addLn ""
 
     let addCFunctionDetails (cFunction : CFunction) =
       let totalCyclesNativeC = cFunction.countersCTotal.cycles
@@ -282,7 +282,7 @@ let resultsToString (results : SimulationResults) =
     addLn (String.Format ("              mov(w)                     {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCMov)))
     addLn (String.Format ("              others                     {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCOthers)))
     addLn ("")
-    addLn (String.Format ("--- AOT      Cycles                      {0,12} (stopwatch {1}, ratio {2}) (difference probably caused by interrupts)", results.executedCyclesAOT, results.cyclesStopwatchAOT, (cyclesToSlowdown results.cyclesStopwatchAOT results.executedCyclesAOT)))
+    addLn (String.Format ("--- AOT      Cycles                      {0,12} (stopwatch {1}, ratio {2}) (difference probably caused by interrupts, or by invoke overhead which is hidden for bm methods. we miss the time between the call to callMethod and the start of the method's AOT code, about 500 cycles per call, but this is still counted in the stopwatch)", results.executedCyclesAOT, results.cyclesStopwatchAOT, (cyclesToSlowdown results.cyclesStopwatchAOT results.executedCyclesAOT)))
     addLn (String.Format ("             Bytes                       {0,12} (methodImpl.AvrMethodSize {1}, ratio {2})", totalBytesAOTJava, results.codesizeAOT, (cyclesToSlowdown results.codesizeAOT totalBytesAOTJava)))
     addLn ("                                           " + countersHeaderString)
     addLn (String.Format ("             Total                       {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTTotal)))
@@ -329,7 +329,8 @@ let resultsToString (results : SimulationResults) =
     addLn (" NOTE: cycles counter for method calls are timed at runtime.")
     addLn ("       this means time spent in interrupts is added to the current method,")
     addLn ("       so the totals printed here may be slightly higher than the total sum in the header. (which should be leading)")
-    let sortedJvmMethodResults = results.jvmMethods |> List.sortBy (fun (jvmMethod) -> 0-jvmMethod.countersAOTTotal.cycles)
+    addLn ("")
+    let sortedJvmMethodResults = results.jvmMethods |> List.sortBy (fun (jvmMethod) -> 0-jvmMethod.countersAOTTotal.cyclesInclSubroutine)
     sortedJvmMethodResults |> List.iter addJvmMethodCalledMethodsList
     addLn ("")
     sortedJvmMethodResults |> List.iter addJvmMethodDetails
@@ -340,7 +341,7 @@ let resultsToString (results : SimulationResults) =
 
     addLn ("============================================================== C LISTINGS ===================================================================")
     addLn ("")
-    let sortedCFunctionResults = results.cFunctions |> List.sortBy (fun (cFunction) -> 0-cFunction.countersCTotal.cycles)
+    let sortedCFunctionResults = results.cFunctions |> List.sortBy (fun (cFunction) -> 0-cFunction.countersCTotal.cyclesInclSubroutine)
     addLn ("------------------------------------------------------------- CALL OVERVIEW -----------------------------------------------------------------")
     sortedCFunctionResults |> List.iter addCFunctionCalledFunctionsList
     addLn ("")

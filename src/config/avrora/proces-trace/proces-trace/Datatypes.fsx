@@ -42,6 +42,18 @@ type AvrInstruction = {
 type JvmInstruction = {
     index : int
     text : string }
+    with
+    member this.isInvoke = this.text.StartsWith("JVM_INVOKE")
+    member this.instructionOnly =
+        let firstSpaceIndex = this.text.IndexOf(" ")
+        match firstSpaceIndex with
+        | -1    -> this.text                               // No space: return whole text
+        | index -> this.text.Substring(0, index)           // Strip whatever comes after the space from the instruction
+    member this.instructionDetails =
+        let firstSpaceIndex = this.text.IndexOf(" ")
+        match firstSpaceIndex with
+        | -1    -> ""                                      // No space: empty string
+        | index -> this.text.Substring(firstSpaceIndex+1)  // Return whatever comes after the space (which method is called, which field is loaded/stored, etc.)
 
 type ExecCounters = {
     executions : int

@@ -324,7 +324,7 @@ public class InstructionHandle implements Comparable<InstructionHandle>
 			pc,
 			buildIncomingHandlesString(),
 			buildOutgoingHandlesString(),
-			instruction,
+			instruction.toString().replace(";", ","),
 			preState,
 			postState,
 			generatesOverflow?"G":"",

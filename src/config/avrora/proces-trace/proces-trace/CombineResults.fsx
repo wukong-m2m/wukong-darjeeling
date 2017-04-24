@@ -61,12 +61,9 @@ let resultToStringList (result : SimulationResults) =
         ("STOPWATCHES"          , "");
         ("Native C"             , result.cyclesStopwatchC.ToString());
         ("AOT"                  , result.cyclesStopwatchAOT.ToString());
-        ("Java"                 , result.cyclesStopwatchJava.ToString());
         ("AOT/C"                , (cyclesToSlowdown result.cyclesStopwatchAOT result.cyclesStopwatchC));
         ("AOT overhead (%C)"    , (cyclesToOverhead1 result.cyclesStopwatchAOT result.cyclesStopwatchC));
         ("AOT overhead (%AOT)"  , (cyclesToOverhead2 result.cyclesStopwatchAOT result.cyclesStopwatchC));
-        ("Java/C"               , (cyclesToSlowdown result.cyclesStopwatchJava result.cyclesStopwatchC));
-        ("Java/AOT"             , (cyclesToSlowdown result.cyclesStopwatchJava result.cyclesStopwatchAOT));
         (""                     , "");
         ("CYCLE COUNTS"         , "");
         ("Native C total"       , String.Format("{0}", result.countersCTotal.cycles));
@@ -208,7 +205,7 @@ let main(args : string[]) =
     | "all" -> 
         let directory = (Array.get args 2)
         let subdirectories = (Directory.GetDirectories(directory))
-        subdirectories |> Array.filter (fun d -> (Path.GetFileName(d).StartsWith("results_")))
+        subdirectories |> Array.filter (fun d -> ((Path.GetFileName(d).StartsWith("results_")) && not (Path.GetFileName(d).StartsWith("results_coremk_c"))))
                        |> Array.iter summariseResults
     | resultsbasedir -> summariseResults resultsbasedir
     Console.Error.WriteLine ("STOP " + (DateTime.Now.ToString()))

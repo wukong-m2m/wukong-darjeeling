@@ -271,10 +271,20 @@ let processCFunction (name : string) (countersForAddressAndInst : int -> int -> 
         countersPerAvrOpcodeNativeC = countersPerAvrOpcodeNativeC
     }
 
-let getCResultsdir (jvmResultsdir : string) =
-  jvmResultsdir // Modify this later so we can get C results from a different directory for coremark (which is too big for both versions to fit in a single library)
+let getINVOKEHelperAddressesFromJvmNm (jvmNm : string list) =
+  let lookingFor = [ "RTC_INVOKESTATIC_FAST_NATIVE"; "RTC_INVOKESPECIAL_OR_STATIC_FAST_JAVA"; "RTC_INVOKEVIRTUAL_OR_INTERFACE" ]
+  let addresses =  jvmNm |> List.map (fun line -> line.Split [|' '; '\t'|] |> Array.toList)
+                         |> List.filter (fun line -> match line with
+                                                     | [address; size; symboltyp; name; fileAndLine] -> lookingFor |> List.contains name
+                                                     | _                                             -> false)
+                          |> List.map   (fun line -> match line with
+                                                     | [address; size; symboltyp; name; fileAndLine] -> Convert.ToInt32(address, 16)
+                                                     | _                                             -> failwith "shouldn't happen")
+  if (lookingFor |> List.length) = (addresses |> List.length)
+  then addresses
+  else failwith "Not all INVOKEHelperAddresses found."
 
-let getBenchmarkFunctionNamesAndAddressFromNm (cNm : string list) =
+let getBenchmarkFunctionNamesAndAddressesFromCNm (cNm : string list) =
   let selector (line : string list) =
     match line with
     | [address; size; symboltyp; name; fileAndLine] ->
@@ -290,11 +300,11 @@ let getBenchmarkFunctionNamesAndAddressFromNm (cNm : string list) =
         else        
           // Unfortunately, avr-nm doesn't add the source file for some symbols. Just hard code what to do with those for now.
           let name = name_or_fileAndLine
-          let knownExclude = ["__do_clear_bss"; "__udivmodhi4"; "__ultoa_invert"; "asm_opcodeWithSingleRegOperand"; "dj_exec_setVM"; "fputc"; "memcpy"; "memmove"; "memset"; "strnlen"; "strnlen_P"; "vfprintf"; "vsnprintf"]
-          let knownInclude = ["siftDown"]
+          let knownExclude = ["__do_clear_bss"; "__muluhisi3"; "avr_millis"; "__udivmodhi4"; "__ultoa_invert"; "asm_opcodeWithSingleRegOperand"; "dj_exec_setVM"; "fputc"; "memcpy"; "memmove"; "memset"; "strnlen"; "strnlen_P"; "vfprintf"; "vsnprintf"]
+          let knownInclude = ["siftDown"; "core_list_find"; "crc16"]
           match (knownInclude |> List.contains name, knownExclude |> List.contains name) with
-          | (true, true)   -> failwith ("BUG in getBenchmarkFunctionNamesAndAddressFromNm. " + name + " can't be in both lists at the same time!")
-          | (false, false) -> failwith ("Don't know whether to include " + name + ". Please put it in the include or exclude list in getBenchmarkFunctionNamesAndAddressFromNm")
+          | (true, true)   -> failwith ("BUG in getBenchmarkFunctionNamesAndAddressesFromCNm. " + name + " can't be in both lists at the same time!")
+          | (false, false) -> failwith ("Don't know whether to include " + name + ". Please put it in the include or exclude list in getBenchmarkFunctionNamesAndAddressesFromCNm")
           | (incl, _)      -> incl
     | _ -> false // Only select lines with 5 columns
   cNm |> List.map (fun line -> line.Split [|' '; '\t'|] |> Array.toList)
@@ -302,7 +312,16 @@ let getBenchmarkFunctionNamesAndAddressFromNm (cNm : string list) =
       |> List.map (fun line -> match line with
                                  | [address; size; symboltyp; name; fileAndLine] -> (name, Convert.ToInt32(address, 16))
                                  | [address; size; symboltyp; name]              -> (name, Convert.ToInt32(address, 16))
-                                 | _                                             -> ("shouldn't happen", 0))
+                                 | _                                             -> failwith "shouldn't happen")
+
+let getCResultsdir (jvmResultsdir : string) =
+  let indexOfLastSlash = jvmResultsdir.LastIndexOf("/");
+  match (jvmResultsdir.Substring(indexOfLastSlash).StartsWith("/coremk")) with
+  | false -> jvmResultsdir
+  | true ->
+    let indexOfSecondLastSlash = jvmResultsdir.LastIndexOf("/", indexOfLastSlash-1);
+    let directoryForCoreMarkCResults = jvmResultsdir.Substring(0, indexOfSecondLastSlash) + "/results_coremk_c"
+    directoryForCoreMarkCResults
 
 let processSingleBenchmarkResultsDir (resultsdir : string) =
     let benchmark = (Path.GetFileName(resultsdir))
@@ -312,11 +331,14 @@ let processSingleBenchmarkResultsDir (resultsdir : string) =
     let jvmDjdebuglines = System.IO.File.ReadLines(String.Format("{0}/jlib_bm_{1}.debug", jvmResultsdir, benchmark)) |> Seq.toList
     let jvmProfilerdata = ProfilerdataXml.Load(String.Format("{0}/profilerdata.xml", jvmResultsdir)).Instructions |> Seq.toList
     let jvmStdoutlog = System.IO.File.ReadLines(String.Format("{0}/stdoutlog.txt", jvmResultsdir)) |> Seq.toList
+    let jvmNm = System.IO.File.ReadLines(String.Format("{0}/darjeeling.nm", jvmResultsdir)) |> Seq.toList
     let jvmProfilerdataPerAddress = jvmProfilerdata |> List.map (fun x -> (Convert.ToInt32(x.Address.Trim(), 16), x))
+    let jvmExcludeList = [ "RTCBenchmark.test_java"; "CoreMain.core_mark_main" ]
     let jvmMethodsImpls = jvmRtcdata.MethodImpls |> Seq.filter (fun methodImpl -> (methodImpl.MethodDefInfusion.StartsWith("bm_")))
-                                                 |> Seq.filter (fun methodImpl -> not ((getClassAndMethodNameFromImpl methodImpl).Contains("RTCBenchmark.test_java"))) // Filter out the benchmark setup code
+                                                 |> Seq.filter (fun methodImpl -> not (jvmExcludeList |> List.exists (fun ex -> (getClassAndMethodNameFromImpl methodImpl).Contains(ex)))) // Filter out the benchmark setup code
                                                  |> Seq.filter (fun methodImpl -> methodImpl.JavaInstructions.Length > 1) // Bug in RTC: abstract methods become just a method prologue
                                                  |> Seq.toList
+    let jvmAddressesOfINVOKEHelperFunctions = getINVOKEHelperAddressesFromJvmNm jvmNm
     let jvmAddressesOfBenchmarkCalls = jvmMethodsImpls |> List.map (fun methodImpl -> Convert.ToInt32(methodImpl.StartAddress, 16))
 
     let cResultsdir = (getCResultsdir resultsdir)
@@ -325,7 +347,7 @@ let processSingleBenchmarkResultsDir (resultsdir : string) =
     let cDisasm = System.IO.File.ReadLines(String.Format("{0}/darjeeling.S", cResultsdir)) |> Seq.toList
     let cNm = System.IO.File.ReadLines(String.Format("{0}/darjeeling.nm", cResultsdir)) |> Seq.toList
     let cProfilerdataPerAddress = cProfilerdata |> List.map (fun x -> (Convert.ToInt32(x.Address.Trim(), 16), x))
-    let cBenchmarkFunctionNamesAndAddress = getBenchmarkFunctionNamesAndAddressFromNm cNm
+    let cBenchmarkFunctionNamesAndAddress = getBenchmarkFunctionNamesAndAddressesFromCNm cNm
     let cFunctionNames = cBenchmarkFunctionNamesAndAddress |> List.map fst
     let cAddressesOfBenchmarkCalls = cBenchmarkFunctionNamesAndAddress |> List.map snd
 
@@ -350,7 +372,7 @@ let processSingleBenchmarkResultsDir (resultsdir : string) =
                 count = 1
                 size = AVR.instructionSize inst
             }    
-    let jvmCountersForAddressAndInst = countersForAddressAndInst jvmProfilerdataPerAddress jvmAddressesOfBenchmarkCalls
+    let jvmCountersForAddressAndInst = countersForAddressAndInst jvmProfilerdataPerAddress (jvmAddressesOfBenchmarkCalls @ jvmAddressesOfINVOKEHelperFunctions)
     let cCountersForAddressAndInst = countersForAddressAndInst cProfilerdataPerAddress cAddressesOfBenchmarkCalls
 
     let jvmMethods = jvmMethodsImpls |> List.map (fun methodImpl -> (processJvmMethod benchmark methodImpl jvmCountersForAddressAndInst jvmDjdebuglines))
@@ -409,7 +431,7 @@ let main(args : string[]) =
     | "all" -> 
         let directory = (Array.get args 2)
         let subdirectories = (Directory.GetDirectories(directory))
-        subdirectories |> Array.filter (fun d -> (Path.GetFileName(d).StartsWith("results_")))
+        subdirectories |> Array.filter (fun d -> ((Path.GetFileName(d).StartsWith("results_")) && not (Path.GetFileName(d).StartsWith("results_coremk_c"))))
                        |> Array.iter processConfigOrSingleBenchmarkResultsDir
     | dir ->
         processConfigOrSingleBenchmarkResultsDir dir

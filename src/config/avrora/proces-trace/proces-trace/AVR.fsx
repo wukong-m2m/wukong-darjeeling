@@ -268,6 +268,9 @@ let SUB                           = (0x1800, MASK_DOUBLE_REG_OPERAND, "SUB")
 // avr opcode SUBI                  0101 KKKK dddd KKKK, with K a constant <= 255,d the destination register - 16
 let SUBI                          = (0x5000, 0xF000, "SUBI")
 
+// avr opcode SWAP                  1001 010d dddd 0010
+let SWAP                          = (0x9402, MASK_SINGLE_REG_OPERAND, "SWAP")
+
 let is (opcodeDefinition : int*int*string) inst =
     let (opcode, mask, name) = opcodeDefinition in
     (=) (inst &&& mask) opcode
@@ -284,7 +287,7 @@ let opcodeCategories =
      ("09) Bit shifts", [ ASR; ROR; LSR ]);
      ("10) Bit logic", [ AND; ANDI; EOR; OR; ORI ]);
      ("11) Subroutines", [ CALL; RCALL ]);
-     ("12) Others", [ BREAK; NOP; RET; COM; IJMP; IN; JMP; LDS; RJMP; STS; SET; SEI; CLI; CLT; OUT; IN; BLD; LPM; LPM_Z; LPM_ZINC ])] in
+     ("12) Others", [ BREAK; NOP; RET; COM; IJMP; IN; JMP; LDS; RJMP; STS; SET; SEI; CLI; CLT; OUT; IN; BLD; LPM; LPM_Z; LPM_ZINC; SWAP ])] in
 let allOpcodes = opcodeCategories |> List.map snd |> List.concat
 let getOpcodeForInstruction inst text =
     match allOpcodes |> List.tryFind (fun opcode -> is opcode inst) with

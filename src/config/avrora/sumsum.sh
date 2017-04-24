@@ -12,9 +12,10 @@ do
     head -n 1 ${summary} | tail -n 1 >> sumsum.txt
     if [ $# -eq 0 ]; then
         head -n 2 ${summary} | tail -n 1 >> sumsum.txt
-        head -n 8 ${summary} | tail -n 1 >> sumsum.txt
-        head -n 9 ${summary} | tail -n 1 >> sumsum.txt
-        head -n 10 ${summary} | tail -n 1 >> sumsum.txt
+        head -n 11 ${summary} | tail -n 1 >> sumsum.txt
+        head -n 12 ${summary} | tail -n 1 >> sumsum.txt
+        head -n 18 ${summary} | tail -n 1 >> sumsum.txt
+        head -n 21 ${summary} | tail -n 1 >> sumsum.txt
     else
         for line in "$@"
         do

@@ -3,7 +3,7 @@ alias gdj="gradle -b ../../build.gradle"
 
 # benchmarks=(sortX hsortX binsrchX)
 # benchmarks=(bsort16 bsort32 hsort16 hsort32 binsrch16 binsrch32 fft xxtea rc5 md5)
-benchmarks=(bsort32 hsort32 binsrch32 fft xxtea rc5 md5)
+benchmarks=(bsort32 hsort32 binsrch32 fft xxtea rc5 md5 coremk)
 
 gdj clean
 
@@ -85,6 +85,14 @@ do
         gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Paotstackcachesize=11                   -Paotmarkloopregs=${aotmarkloopregs} -Paotconstshiftoptimisation=gcc_like
     done
 done
+
+# Special case: CoreMark is too big to fit both Java and C versions in memory at the same time. Run the coremk_c config for the native CoreMark results, and then copy the result here.
+cd ../coremk_c
+rm -rf results_coremk_c
+gdj avrora_store_trace
+cd -
+rm -rf results_coremk_c
+cp -r ../coremk_c/results_coremk_c .
 
 ./analyseall.sh
 
