@@ -171,6 +171,9 @@ let parseDJDebug (name : string) (allLines : string list) =
                   |> List.map (fun x -> match x.IndexOf('(') with // Some elements are in the form 20Short(Byte) to indicate Darjeeling knows the short value only contains a byte. Strip this information for now.
                                         | -1 -> x
                                         | index -> x.Substring(0, index))
+                  |> List.map (fun x -> match x.IndexOf(':') with // Some elements are in the form 20Int:40Int to indicate a value on the stack may have come from either of two instructions. Strip this information too.
+                                        | -1 -> x
+                                        | index -> x.Substring(0, index))
                   |> List.filter ((<>) "")
       let regexElementMatches = split |> List.map (fun x -> regexStackElement.Match(x))
       // Temporarily just fill each index with 0 since the debug output from Darjeeling has a bug when instructions are replaced. The origin of each stack element is determined before replacing DUP and POP instructions.

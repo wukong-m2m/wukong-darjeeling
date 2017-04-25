@@ -97,7 +97,7 @@ let StackDatatypeFromString x =
     | "Char" -> Char
     | "Short" -> Short
     | "Int" -> Int
-    | _ -> failwith ("Unknown datatype " + x)
+    | _ -> failwith ("Unknown datatype '" + x + "'")
 
 type StackElement = {
     origin : int
