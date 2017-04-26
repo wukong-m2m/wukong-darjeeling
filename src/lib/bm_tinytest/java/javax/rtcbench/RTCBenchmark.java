@@ -1,6 +1,6 @@
 package javax.rtcbench;
 
-import javax.darjeeling.Stopwatch;
+import javax.rtc.RTC;
 
 public class RTCBenchmark {
     public static String name = "TINY TEST";
@@ -12,8 +12,8 @@ public class RTCBenchmark {
     //     return true;
     // }
     // public static void rtcbenchmark_measure_java_performance() {
-    //     Stopwatch.resetAndStart();
-    //     Stopwatch.measure();
+    //     RTC.startBenchmarkMeasurement_AOT();
+    //     RTC.stopBenchmarkMeasurement();
     // }
 
 
@@ -22,7 +22,7 @@ public class RTCBenchmark {
         return rtcbenchmark_measure_java_performance();
     }
     public static boolean rtcbenchmark_measure_java_performance() {
-        Stopwatch.resetAndStart();
+        RTC.startBenchmarkMeasurement_AOT();
 
         Object obj = new Object();
         Exception ex;
@@ -30,7 +30,7 @@ public class RTCBenchmark {
             throw new Exception();
             // ex = (Exception)obj;
         } catch (Exception ex2) {
-            Stopwatch.measure();
+            RTC.stopBenchmarkMeasurement();
             return true;
         }
     }

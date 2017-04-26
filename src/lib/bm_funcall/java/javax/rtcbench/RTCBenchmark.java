@@ -1,6 +1,6 @@
 package javax.rtcbench;
 
-import javax.darjeeling.Stopwatch;
+import javax.rtc.RTC;
 
 public class RTCBenchmark {
     public static String name = "FUNCALL";
@@ -12,7 +12,7 @@ public class RTCBenchmark {
 
     // 1000 single calls
     // public static void rtcbenchmark_measure_java_performance() {
-    //     Stopwatch.resetAndStart();
+    //     RTC.startBenchmarkMeasurement_AOT();
 
     //     for (short i=0; i<100; i++) {
     //         nothing23();
@@ -27,7 +27,7 @@ public class RTCBenchmark {
     //         nothing23();
     //     }
 
-    //     Stopwatch.measure();
+    //     RTC.stopBenchmarkMeasurement();
     // }
 
 
@@ -36,7 +36,7 @@ public class RTCBenchmark {
     // Remove pc from stack frame if interpreter is disabled              cycles: 1572437, max stack: 1044
     // Return retval from callMethod and push it on the stack in AOT code cycles: 1514136, max stack: 991
     public static void rtcbenchmark_measure_java_performance() {
-        Stopwatch.resetAndStart();
+        RTC.startBenchmarkMeasurement_AOT();
 
         for (short i=0; i<10; i++) {
             nothing0();
@@ -51,7 +51,7 @@ public class RTCBenchmark {
             nothing0();
         }
 
-        Stopwatch.measure();
+        RTC.stopBenchmarkMeasurement();
     }
 
     public static void nothing0() { nothing1(); }

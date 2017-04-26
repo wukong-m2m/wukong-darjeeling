@@ -1,10 +1,8 @@
 #!/bin/zsh
 alias gdj="gradle -b ../../build.gradle"
 
-# benchmarks=(sortX hsortX binsrchX)
 # benchmarks=(bsort16 bsort32 hsort16 hsort32 binsrch16 binsrch32 fft xxtea rc5 md5)
-# benchmarks=(bsort32 hsort32 binsrch32 fft xxtea rc5 md5 coremk coremk_cht)
-benchmarks=(coremk_cht)
+benchmarks=(bsort32 hsort32 binsrch32 fft xxtea rc5 md5 coremk coremk_cht)
 
 gdj clean
 

@@ -21,7 +21,6 @@
 
 import javax.rtc.*;
 import javax.rtctest.*;
-import javax.darjeeling.Stopwatch;
 
 public class RTCTestApp
 {

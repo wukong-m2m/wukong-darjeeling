@@ -6,7 +6,7 @@
 
 // Split into separate function to avoid the compiler just optimising away the whole test.
 void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint8_t input[], uint8_t inputLength, uint8_t output[]) {
-	javax_darjeeling_Stopwatch_void_resetAndStart();
+	javax_rtc_RTC_void_startBenchmarkMeasurement_Native();
         uint8_t i, j, len;
         uint8_t buffer[64];
         uint32_t x[16];
@@ -227,7 +227,7 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint8_t i
 
         }
 
-	javax_darjeeling_Stopwatch_void_measure();
+	javax_rtc_RTC_void_stopBenchmarkMeasurement();
 }
 
 void javax_rtcbench_RTCBenchmark_void_test_native() {

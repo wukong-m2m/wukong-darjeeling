@@ -87,10 +87,9 @@ char *mem_name[3] = {"Static","Heap","Stack"};
 */
 
 void __attribute__((noinline)) rtcbenchmark_measure_native_performance(void *pres) {
-	avroraSetTimerNumber(101);
-	javax_darjeeling_Stopwatch_void_resetAndStart();
+	javax_rtc_RTC_void_startBenchmarkMeasurement_Native();
 	iterate(pres);
-	javax_darjeeling_Stopwatch_void_measure();
+	javax_rtc_RTC_void_stopBenchmarkMeasurement();
 }
 
 #if MAIN_HAS_NOARGC

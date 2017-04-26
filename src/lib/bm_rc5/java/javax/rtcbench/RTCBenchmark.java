@@ -1,6 +1,6 @@
 package javax.rtcbench;
 
-import javax.darjeeling.Stopwatch;
+import javax.rtc.RTC;
 
 public class RTCBenchmark {
     public static String name = "RC5";
@@ -149,7 +149,7 @@ public class RTCBenchmark {
     }
     public static int rtcbenchmark_measure_java_performance(final byte[] pt, byte[] ct, int skey_rounds, int[] skey_K)
     {
-        Stopwatch.resetAndStart();
+        RTC.startBenchmarkMeasurement_AOT();
 
         // uint32_t A, B, *K;
         // K used to be a pointer to somewhere in skey->K.
@@ -206,7 +206,7 @@ public class RTCBenchmark {
         ct[(short)(4+3)] = (byte)(((B)>>>24)&255); ct[(short)(4+2)] = (byte)(((B)>>>16)&255); ct[(short)(4+1)] = (byte)(((B)>>>8)&255); ct[(short)(4+0)] = (byte)((B)&255);
         }
 
-        Stopwatch.measure();
+        RTC.stopBenchmarkMeasurement();
         return CRYPT_OK;
     }
 
@@ -217,7 +217,7 @@ public class RTCBenchmark {
     // // @return CRYPT_OK if successful
     // private static int rc5_ecb_decrypt(final byte[] ct, byte[] pt, int skey_rounds, int[] skey_K)
     // {
-    //     Stopwatch.resetAndStart();
+    //     RTC.startBenchmarkMeasurement_AOT();
 
     //     int A, B;
     //     int r, K;
@@ -259,7 +259,7 @@ public class RTCBenchmark {
     //     pt[3] = (byte)(((A)>>>24)&255); pt[2] = (byte)(((A)>>>16)&255); pt[1] = (byte)(((A)>>>8)&255); pt[0] = (byte)((A)&255);
     //     pt[4+3] = (byte)(((B)>>>24)&255); pt[4+2] = (byte)(((B)>>>16)&255); pt[4+1] = (byte)(((B)>>>8)&255); pt[4+0] = (byte)((B)&255);
 
-    //     Stopwatch.measure();
+    //     RTC.stopBenchmarkMeasurement();
     //     return CRYPT_OK;
     // }
 }

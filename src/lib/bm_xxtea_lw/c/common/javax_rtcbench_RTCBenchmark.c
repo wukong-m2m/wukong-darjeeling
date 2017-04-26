@@ -8,7 +8,7 @@
 
 // Split into separate function to avoid the compiler just optimising away the whole test.
 void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint32_t *v, uint8_t n, uint32_t const key[4]) {
-	javax_darjeeling_Stopwatch_void_resetAndStart();
+	javax_rtc_RTC_void_startBenchmarkMeasurement_Native();
 
 	uint32_t y, z, sum;
 	uint8_t p, rounds, e; // Setting n and p to be 8 bit means we can't handle large arrays, but on a sensor node that should be fine)
@@ -43,7 +43,7 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint32_t 
 		} while (--rounds);
 	}
 
-	javax_darjeeling_Stopwatch_void_measure();
+	javax_rtc_RTC_void_stopBenchmarkMeasurement();
 }
 
 void javax_rtcbench_RTCBenchmark_void_test_native() {

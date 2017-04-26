@@ -105,7 +105,7 @@ int rc5_setup(const unsigned char *key, int keylen, int num_rounds, rc5_key *ske
 */
 int __attribute__((noinline)) rtcbenchmark_measure_native_performance(const unsigned char *pt, unsigned char *ct, rc5_key *skey)
 {
-    javax_darjeeling_Stopwatch_void_resetAndStart();
+    javax_rtc_RTC_void_startBenchmarkMeasurement_Native();
 
     uint32_t A, B, *K;
     int r;
@@ -139,7 +139,7 @@ int __attribute__((noinline)) rtcbenchmark_measure_native_performance(const unsi
     STORE32L(B, &ct[4]);
     }
 
-    javax_darjeeling_Stopwatch_void_measure();
+    javax_rtc_RTC_void_stopBenchmarkMeasurement();
     return CRYPT_OK;
 }
 int rc5_ecb_encrypt(const unsigned char *pt, unsigned char *ct, rc5_key *skey)

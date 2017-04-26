@@ -14,6 +14,10 @@ public class RTC
 	public static native void beep(int number);
 	public static native void terminateOnException(short type);
     
+    public static native void startBenchmarkMeasurement_Native(); 
+    public static native void startBenchmarkMeasurement_AOT(); 
+    public static native void stopBenchmarkMeasurement(); 
+
     // For CoreMark
     /* Function : start_time
         This function will be called right before starting the timed portion of the benchmark.

@@ -1,6 +1,6 @@
 package javax.rtcbench;
 
-import javax.darjeeling.Stopwatch;
+import javax.rtc.RTC;
 
 public class RTCBenchmark {
     private final static short NUMNUMBERS = 256;
@@ -27,7 +27,7 @@ public class RTCBenchmark {
     }
 
     // public static void do_bubblesort_original(short[] numbers) {
-    //  Stopwatch.resetAndStart();
+    //  RTC.startBenchmarkMeasurement_AOT();
 
     //  for (int i=0; i<NUMNUMBERS; i++) {
     //      for (int j=0; j<NUMNUMBERS-i-1; j++) {
@@ -39,12 +39,12 @@ public class RTCBenchmark {
     //      }
     //  }
 
-    //  Stopwatch.measure();
+    //  RTC.stopBenchmarkMeasurement();
     // }
 
 
     public static void rtcbenchmark_measure_java_performance(short[] numbers) {
-        Stopwatch.resetAndStart();
+        RTC.startBenchmarkMeasurement_AOT();
 
         for (short i=0; i<NUMNUMBERS; i++) {
             short x=(short)(NUMNUMBERS-i-1); // This doesn't get optimised the way I expected it would. Without this extra variable, it will calculate NUMNUMBERS-i-1 on each interation of the inner loop! (speedup 14.7M -> 14.2M cycles)
@@ -60,6 +60,6 @@ public class RTCBenchmark {
             }
         }
 
-        Stopwatch.measure();
+        RTC.stopBenchmarkMeasurement();
     }
 }

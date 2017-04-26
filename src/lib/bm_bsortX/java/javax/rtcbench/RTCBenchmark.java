@@ -1,6 +1,6 @@
 package javax.rtcbench;
 
-import javax.darjeeling.Stopwatch;
+import javax.rtc.RTC;
 
 public class RTCBenchmark {
 	private final static short NUMNUMBERS = 256;
@@ -27,7 +27,7 @@ public class RTCBenchmark {
 	}
 
 	public static void rtcbenchmark_measure_java_performance(short[] numbers) {
-		Stopwatch.resetAndStart();
+		RTC.startBenchmarkMeasurement_AOT();
 
 		for (short i=0; i<NUMNUMBERS; i++) {
 			for (short j=0; j<NUMNUMBERS-i-1; j++) {
@@ -39,6 +39,6 @@ public class RTCBenchmark {
 			}
 		}
 
-		Stopwatch.measure();
+		RTC.stopBenchmarkMeasurement();
 	}
 }

@@ -1,6 +1,5 @@
 package javax.rtcbench;
 
-import javax.darjeeling.Stopwatch;
 
 import javax.rtc.RTC;
 

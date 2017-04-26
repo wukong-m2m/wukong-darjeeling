@@ -1,6 +1,6 @@
 package javax.rtcbench;
 
-import javax.darjeeling.Stopwatch;
+import javax.rtc.RTC;
 
 public class RTCBenchmark {
     private final static short NUMNUMBERS = 256;
@@ -27,7 +27,7 @@ public class RTCBenchmark {
     }
 
     public static void rtcbenchmark_measure_java_performance(short[] a) {
-        Stopwatch.resetAndStart();
+        RTC.startBenchmarkMeasurement_AOT();
 
         // Exact copy of http://rosettacode.org/wiki/Sorting_algorithms/Heapsort#C, but with SWAP and siftDown inlined to prevent expensive method calls
 
@@ -103,6 +103,6 @@ public class RTCBenchmark {
         //             return;
         //     }
         // }
-        Stopwatch.measure();
+        RTC.stopBenchmarkMeasurement();
     }
 }

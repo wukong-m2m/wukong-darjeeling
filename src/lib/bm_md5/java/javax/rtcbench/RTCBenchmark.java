@@ -1,6 +1,6 @@
 package javax.rtcbench;
 
-import javax.darjeeling.Stopwatch;
+import javax.rtc.RTC;
 
 public class RTCBenchmark {
     public static String name = "MD5";
@@ -24,7 +24,7 @@ public class RTCBenchmark {
 
     public static void rtcbenchmark_measure_java_performance(byte input[], byte output[])
     {
-        Stopwatch.resetAndStart();
+        RTC.startBenchmarkMeasurement_AOT();
 
         short i, j, len;
         short length = (short)input.length;
@@ -248,7 +248,7 @@ public class RTCBenchmark {
 
         }
 
-        Stopwatch.measure();
+        RTC.stopBenchmarkMeasurement();
     }
 }
     

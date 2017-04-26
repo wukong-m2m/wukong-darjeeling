@@ -52,18 +52,31 @@ void javax_rtc_RTC_void_terminateOnException_short() {
     avroraTerminateOnException(type);	
 }
 
+void javax_rtc_RTC_void_startBenchmarkMeasurement_Native() {
+    avroraSetTimerNumber(AVRORA_BENCH_NATIVE_TIMER);
+    avroraProfilerStartCounting();
+    avroraStartTimer();
+}
+void javax_rtc_RTC_void_startBenchmarkMeasurement_AOT() {
+    avroraSetTimerNumber(AVRORA_BENCH_AOT_TIMER);
+    avroraProfilerStartCounting();
+    avroraStartTimer();
+}
+void javax_rtc_RTC_void_stopBenchmarkMeasurement() {
+    avroraStopTimer();
+    avroraProfilerStopCounting();
+}
 
+// =========== COREMARK STUFF ===========
 dj_time_t CorePortMe_start;
 dj_time_t CorePortMe_stop;
 
 
 void javax_rtc_RTC_void_coremark_start_time_nat() {
     CorePortMe_start = dj_timer_getTimeMillis();
-    avroraProfilerResetAndStart();
 }
 
 void javax_rtc_RTC_void_coremark_stop_time() {
-    avroraProfilerStopCounting();
     CorePortMe_stop = dj_timer_getTimeMillis();
 }
 

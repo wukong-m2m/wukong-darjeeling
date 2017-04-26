@@ -13,7 +13,7 @@
 #define NOT_FOUND -1;
 
 void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t NUMNUMBERS, int16_t numbers[]) {
-    javax_darjeeling_Stopwatch_void_resetAndStart();
+    javax_rtc_RTC_void_startBenchmarkMeasurement_Native();
 
     int16_t toFind = numbers[NUMNUMBERS-1] + 1;
 
@@ -33,7 +33,7 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t 
         }
     }
 
-    javax_darjeeling_Stopwatch_void_measure();
+    javax_rtc_RTC_void_stopBenchmarkMeasurement();
 }
 
 void javax_rtcbench_RTCBenchmark_void_test_native() {

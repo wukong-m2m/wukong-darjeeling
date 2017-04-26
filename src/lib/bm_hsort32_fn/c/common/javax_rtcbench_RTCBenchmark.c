@@ -31,7 +31,7 @@ void siftDown( int32_t *a, int start, int end)
 }
 
 void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t count, int32_t a[]) {
-	javax_darjeeling_Stopwatch_void_resetAndStart();
+	javax_rtc_RTC_void_startBenchmarkMeasurement_Native();
 
 	// Then sort it
     int start, end;
@@ -46,7 +46,7 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t 
         siftDown(a, 0, end);
     }
 
-	javax_darjeeling_Stopwatch_void_measure();
+	javax_rtc_RTC_void_stopBenchmarkMeasurement();
 }
 
 void javax_rtcbench_RTCBenchmark_void_test_native() {

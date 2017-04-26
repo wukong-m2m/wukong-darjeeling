@@ -59,7 +59,6 @@ static CORETIMETYPE start_time_val, stop_time_val;
 */
 void start_time(void) {
 	GETMYTIME(&start_time_val );
-    avroraProfilerResetAndStart();
 }
 /* Function : stop_time
 	This function will be called right after ending the timed portion of the benchmark.
@@ -68,7 +67,6 @@ void start_time(void) {
 	or other system parameters - e.g. reading the current value of cpu cycles counter.
 */
 void stop_time(void) {
-    avroraProfilerStopCounting();
 	GETMYTIME(&stop_time_val );      
 }
 /* Function : get_time

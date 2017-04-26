@@ -33,6 +33,10 @@
 #include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraRTC.h"
 #include "/Users/nielsreijers/src/avrora/src/avrora/monitors/AvroraProfiler.h"
 
+void javax_rtc_RTC_void_startBenchmarkMeasurement_Native();
+void javax_rtc_RTC_void_startBenchmarkMeasurement_AOT();
+void javax_rtc_RTC_void_stopBenchmarkMeasurement();
+
 #define HEAPSIZE 512
 
 // 'Time slices' are 128 instructions

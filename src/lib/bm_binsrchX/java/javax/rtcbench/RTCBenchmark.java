@@ -1,6 +1,6 @@
 package javax.rtcbench;
 
-import javax.darjeeling.Stopwatch;
+import javax.rtc.RTC;
 
 // Based on binary search benchmark in TakaTuka.
 // http://sourceforge.net/p/takatuka/code/HEAD/tree/
@@ -27,7 +27,7 @@ public class RTCBenchmark {
     }
 
     public static void rtcbenchmark_measure_java_performance(short[] numbers) {
-        Stopwatch.resetAndStart();
+        RTC.startBenchmarkMeasurement_AOT();
 
         short toFind = (short)(numbers[0] - 1);
 
@@ -47,6 +47,6 @@ public class RTCBenchmark {
             }
         }
 
-        Stopwatch.measure();
+        RTC.stopBenchmarkMeasurement();
     }
 }

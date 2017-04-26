@@ -1,6 +1,6 @@
 package javax.rtcbench;
 import javax.rtc.RTC;
-import javax.darjeeling.Stopwatch;
+import javax.rtc.RTC;
 
 /*
 Author : Shay Gal-On, EEMBC
@@ -125,9 +125,9 @@ public class CoreMain {
 	}
 
 	public static void rtcbenchmark_measure_java_performance(CoreResults pres) {
-		Stopwatch.resetAndStart();
+		RTC.startBenchmarkMeasurement_AOT();
 		iterate(pres);
-		Stopwatch.measure();
+		RTC.stopBenchmarkMeasurement();
 	}
 
 	public static boolean core_mark_main() {
