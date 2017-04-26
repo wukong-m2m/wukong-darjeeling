@@ -28,7 +28,7 @@ let getLDDSTBytesFromAVRPerCategoryC (result : SimulationResults) =
 let resultToStringList (result : SimulationResults) =
     let toPercentage totalCycles cycles =
         String.Format ("{0,5:0.0}", 100.0 * float cycles / float totalCycles)
-    let cyclesToCPercentage = toPercentage result.countersCTotal.cycles
+    let cyclesToCPercentage = toPercentage result.cyclesStopwatchC
     let bytesToCPercentage = toPercentage result.countersCTotal.size
     let executedInstructionsJVM = result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> cnt.executions) |> List.reduce (+)
     let executionsToPercentage = toPercentage executedInstructionsJVM
@@ -45,6 +45,7 @@ let resultToStringList (result : SimulationResults) =
         ("Test"                 , if result.passedTestAOT then "PASSED" else "FAILED");
         (""                     , "");        
         ("PERF OVERHEAD"        , "cyc (%C)");
+        ("   stopwatch"         , (cyclesToCPercentage (result.cyclesStopwatchAOT - result.cyclesStopwatchC)));
         ("   total"             , (cyclesToCPercentage result.countersOverheadTotal.cycles));
         ("   load/store"        , (cyclesToCPercentage result.countersOverheadLoadStore.cycles));
         ("   push/pop"          , (cyclesToCPercentage result.countersOverheadPushPop.cycles));
@@ -183,7 +184,7 @@ let summariseResults resultsDirectory =
     let results =
         resultsXmlStrings
             |> List.map (fun xml -> (SimulationResults.unPickleOfString xml))
-            |> List.sortBy (fun r -> let sortorder = ["bsort16"; "bsort32"; "hsort16"; "hsort32"; "binsrch16"; "binsrch32"; "fft"; "xxtea"; "md5"; "rc5"; "sortX"; "hsortX"; "binsrchX"] in
+            |> List.sortBy (fun r -> let sortorder = ["bsort16"; "bsort32"; "hsort16"; "hsort32"; "binsrch16"; "binsrch32"; "fft"; "xxtea"; "md5"; "rc5"; "sortX"; "hsortX"; "binsrchX"; "coremk"; "coremk_cht"] in
                                      match sortorder |> List.tryFindIndex ((=) r.benchmark) with
                                      | Some (index) -> index
                                      | None -> 100)

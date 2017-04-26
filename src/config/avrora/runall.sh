@@ -3,7 +3,8 @@ alias gdj="gradle -b ../../build.gradle"
 
 # benchmarks=(sortX hsortX binsrchX)
 # benchmarks=(bsort16 bsort32 hsort16 hsort32 binsrch16 binsrch32 fft xxtea rc5 md5)
-benchmarks=(bsort32 hsort32 binsrch32 fft xxtea rc5 md5 coremk)
+# benchmarks=(bsort32 hsort32 binsrch32 fft xxtea rc5 md5 coremk coremk_cht)
+benchmarks=(coremk_cht)
 
 gdj clean
 
@@ -76,15 +77,15 @@ do
     done
 done
 
-# MARKLOOP+CONST SHIFT FOR DIFF NUMBERS OF PINNED REGISTERS
-for benchmark in ${benchmarks}
-do
-    markloopregs=(1 2 3 4 5 6 7)
-    for aotmarkloopregs in ${markloopregs}
-    do
-        gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Paotstackcachesize=11                   -Paotmarkloopregs=${aotmarkloopregs} -Paotconstshiftoptimisation=gcc_like
-    done
-done
+# # MARKLOOP+CONST SHIFT FOR DIFF NUMBERS OF PINNED REGISTERS
+# for benchmark in ${benchmarks}
+# do
+#     markloopregs=(1 2 3 4 5 6 7)
+#     for aotmarkloopregs in ${markloopregs}
+#     do
+#         gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Paotstackcachesize=11                   -Paotmarkloopregs=${aotmarkloopregs} -Paotconstshiftoptimisation=gcc_like
+#     done
+# done
 
 # Special case: CoreMark is too big to fit both Java and C versions in memory at the same time. Run the coremk_c config for the native CoreMark results, and then copy the result here.
 cd ../coremk_c
