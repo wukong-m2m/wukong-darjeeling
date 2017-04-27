@@ -55,6 +55,13 @@ public class CoreState {
 
 		Go over the input twice, once direct, and once after introducing some corruption. 
 	*/
+	static void core_state_transition_loop(ShortWrapper p, byte[] memblock, int[] track_counts, int[] final_counts) {
+		while (memblock[p.value]!=0) {
+			byte fstate=core_state_transition(p,memblock,track_counts);
+			final_counts[fstate]++;
+		}
+	}
+
 	static short core_bench_state(int blksize, byte[] memblock, 
 			short seed1, short seed2, short step, short crc) 
 	{
@@ -68,10 +75,7 @@ public class CoreState {
 			final_counts[i]=track_counts[i]=0;
 		}
 		/* run the state machine over the input */
-		while (memblock[p.value]!=0) {
-			byte fstate=core_state_transition(p,memblock,track_counts);
-			final_counts[fstate]++;
-		}
+		core_state_transition_loop(p,memblock,track_counts,final_counts);
 
 		// p=memblock;
 		pValue=0; // Stays within this method, so use pValue
@@ -83,10 +87,7 @@ public class CoreState {
 		// p=memblock;
 		p.value=0;
 		/* run the state machine over the input again */
-		while (memblock[p.value]!=0) {
-			byte fstate=core_state_transition(p,memblock,track_counts);
-			final_counts[fstate]++;
-		}
+		core_state_transition_loop(p,memblock,track_counts,final_counts);
 
 		// p=memblock;
 		pValue=0; // Stays within this method, so use pValue
