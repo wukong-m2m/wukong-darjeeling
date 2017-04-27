@@ -43,6 +43,8 @@ let resultsToString (results : SimulationResults) =
     let addLn s =
       sb.AppendLine(s) |> ignore
 
+    let asPercentage a b =
+      100.0 * float a / float b
     let totalCyclesAOTJava = results.countersAOTTotal.cycles
     let totalCyclesNativeC = results.countersCTotal.cycles
     let totalBytesAOTJava = results.countersAOTTotal.size
@@ -57,13 +59,13 @@ let resultsToString (results : SimulationResults) =
         // String.Format("cyc:{0,8} {1,5:0.0}% {2,5:0.0}%C exe:{3,8}  avg:{4,5:0.0} byt:{5,5} {6,5:0.0}% {7,5:0.0}%C",
         String.Format("{0,8} {1,5:0.0}% {2,5:0.0}%C {3,8} {4,5:0.0} | {5,5} {6,5:0.0}% {7,5:0.0}%C",
                       counters.cycles,
-                      100.0 * float (counters.cycles) / float totalCycles,
-                      100.0 * float (counters.cycles) / float totalCyclesNativeC,
+                      asPercentage counters.cycles totalCycles,
+                      asPercentage counters.cycles totalCyclesNativeC,
                       counters.executions,
                       counters.average,
                       counters.size,
-                      100.0 * float (counters.size) / float totalBytes,
-                      100.0 * float (counters.size) / float totalBytesNativeC)
+                      asPercentage counters.size totalBytes,
+                      asPercentage counters.size totalBytesNativeC)
 
     let resultJavaListingToString totalCycles totalBytes (result : ProcessedJvmInstruction) =
         let (instruction, invokeTarget) =
@@ -312,6 +314,17 @@ let resultsToString (results : SimulationResults) =
     addLn (String.Format ("              AOT stopwatch              {0,14}", results.cyclesStopwatchAOT))
     addLn (String.Format ("              AOT total counters + timer {0,14} (={1,14}+{2,14})", results.countersAOTTotalPlusTimer.cycles, results.countersAOTTotal.cycles, results.countersAOTTimer.cycles))
     addLn (String.Format ("              AOT ratio                  {0,14} (difference caused by interrupts or overhead in method calls not included in ProcessTraces.fsx countersAOTVM)", (cyclesToSlowdown results.countersAOTTotalPlusTimer.cycles results.cyclesStopwatchAOT)))
+    addLn ("")
+    addLn (String.Format ("--- EXECUTED JVM INSTRUCTIONS (executions, not cycles)"))
+    addLn (String.Format (" Load/Store               {0,10}      {1,5:0.0}%", results.countersJVMLoadStore.executions, asPercentage results.countersJVMLoadStore.executions results.countersJVMTotal.executions))
+    addLn (String.Format (" Constant load            {0,10}      {1,5:0.0}%", results.countersJVMConstantLoad.executions, asPercentage results.countersJVMConstantLoad.executions results.countersJVMTotal.executions))
+    addLn (String.Format (" Processing               {0,10}      {1,5:0.0}%", results.countersJVMProcessing.executions, asPercentage results.countersJVMProcessing.executions results.countersJVMTotal.executions))
+    addLn (String.Format ("     math                   {0,10}      {1,5:0.0}%", results.countersJVMProcessingMath.executions, asPercentage results.countersJVMProcessingMath.executions results.countersJVMTotal.executions))
+    addLn (String.Format ("     bit shift              {0,10}      {1,5:0.0}%", results.countersJVMProcessingBitShift.executions, asPercentage results.countersJVMProcessingBitShift.executions results.countersJVMTotal.executions))
+    addLn (String.Format ("     bit logic              {0,10}      {1,5:0.0}%", results.countersJVMProcessingBitLogic.executions, asPercentage results.countersJVMProcessingBitLogic.executions results.countersJVMTotal.executions))
+    addLn (String.Format (" Branches                 {0,10}      {1,5:0.0}%", results.countersJVMBranches.executions, asPercentage results.countersJVMBranches.executions results.countersJVMTotal.executions))
+    addLn (String.Format (" Others                   {0,10}      {1,5:0.0}%", results.countersJVMOthers.executions, asPercentage results.countersJVMOthers.executions results.countersJVMTotal.executions))
+    addLn (String.Format (" Total                    {0,10}      {1,5:0.0}%", results.countersJVMTotal.executions, asPercentage results.countersJVMTotal.executions results.countersJVMTotal.executions))
     addLn ("")
     addLn ("=============================================================== DETAILED COUNTERS ===========================================================")
     addLn ("--- SUMMED: PER JVM CATEGORY               " + countersHeaderString)

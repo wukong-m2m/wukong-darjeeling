@@ -186,6 +186,22 @@ type JvmMethod = {
     member this.countersPerJvmOpcodeCategoryAOTJava = groupOpcodesInCategoriesCycles JVM.getAllJvmOpcodeCategories this.countersPerJvmOpcodeAOTJava
     member this.countersPerAvrOpcodeCategoryAOTJava = groupOpcodesInCategoriesCycles AVR.getAllOpcodeCategories    this.countersPerAvrOpcodeAOTJava
 
+
+    member this.countersJVMLoadStore                = sumCyclesCategoryCounters this.countersPerJvmOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("ld/st"))
+    member this.countersJVMConstantLoad             = sumCyclesCategoryCounters this.countersPerJvmOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Constant load"))
+    member this.countersJVMProcessingMath           = sumCyclesCategoryCounters this.countersPerJvmOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Math"))
+    member this.countersJVMProcessingBitShift       = sumCyclesCategoryCounters this.countersPerJvmOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Bit shift"))
+    member this.countersJVMProcessingBitLogic       = sumCyclesCategoryCounters this.countersPerJvmOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Bit logic"))
+    member this.countersJVMProcessing               = this.countersJVMProcessingMath + this.countersJVMProcessingBitShift + this.countersJVMProcessingBitLogic
+    member this.countersJVMBranches                 = sumCyclesCategoryCounters this.countersPerJvmOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Branches"))
+    member this.countersJVMOthers                   = sumCyclesCategoryCounters this.countersPerJvmOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Conversions")
+                                                                                                                                       || cat.Contains("Markloop")
+                                                                                                                                       || cat.Contains("Invoke")
+                                                                                                                                       || cat.Contains("Others")
+                                                                                                                                       || cat.Contains("VM"))
+    member this.countersJVMTotal                    = this.countersPerJvmOpcodeCategoryAOTJava |> List.sumBy (fun (_, cnt) -> cnt)
+
+
     member this.countersAOTLoadStore                = sumCyclesCategoryCounters this.countersPerAvrOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("LD/ST rel to") && not (cat.Contains("LD/ST rel to X")))
     member this.countersAOTPushPopInt               = sumCyclesCategoryCounters this.countersPerAvrOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Stack push/pop"))
     member this.countersAOTPushPopRef               = sumCyclesCategoryCounters this.countersPerAvrOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("LD/ST rel to X"))
@@ -263,6 +279,16 @@ type SimulationResults = {
     member this.countersAOTOthers                   = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersAOTOthers)
     member this.countersAOTTotal                    =(this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersAOTTotal)) + this.countersAOTVM
     member this.countersAOTTotalPlusTimer           = this.countersAOTTotal + this.countersAOTTimer
+
+    member this.countersJVMLoadStore                = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersJVMLoadStore)
+    member this.countersJVMConstantLoad             = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersJVMConstantLoad)
+    member this.countersJVMProcessingMath           = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersJVMProcessingMath)
+    member this.countersJVMProcessingBitShift       = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersJVMProcessingBitShift)
+    member this.countersJVMProcessingBitLogic       = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersJVMProcessingBitLogic)
+    member this.countersJVMProcessing               = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersJVMProcessing)
+    member this.countersJVMBranches                 = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersJVMBranches)
+    member this.countersJVMOthers                   = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersJVMOthers)
+    member this.countersJVMTotal                    = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersJVMTotal)
 
     member this.countersOverheadLoadStore           = this.countersAOTLoadStore - this.countersCLoadStore;
     member this.countersOverheadPushPop             = this.countersAOTPushPop - this.countersCPushPop;

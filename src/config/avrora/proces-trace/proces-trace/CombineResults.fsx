@@ -97,12 +97,23 @@ let resultToStringList (result : SimulationResults) =
         ("Native C"             , result.codesizeC.ToString());
         ("AOT"                  , result.codesizeAOT.ToString());
         ("  Java (AOT)"                 , result.codesizeJavaForAOT.ToString());
-        ("   branch overhead"   , (result.codesizeJava - result.codesizeJavaWithoutBranchOverhead).ToString());
+        ("   branch overhead"   , (result.codesizeJavaForAOT - result.codesizeJavaWithoutBranchOverhead).ToString());
         ("   markloop overhead" , result.codesizeJavaMarkloopTotalSize.ToString());
         ("   Java ex. overhead" , result.codesizeJavaWithoutBranchMarkloopOverhead.ToString());
-        ("Java (interpreter)"   , result.codesizeJavaForInterpreter)
+        ("Java (interpreter)"   , result.codesizeJavaForInterpreter.ToString())
         ("AOT/C"                , (cyclesToSlowdown result.codesizeAOT result.codesizeC));
         ("AOT/Java"             , (cyclesToSlowdown result.codesizeAOT result.codesizeJavaForAOT));
+        (""                     , "");
+        ("JVM exec (not cyc)"   , "");
+        (" Load/Store"          , toPercentage result.countersJVMTotal.executions result.countersJVMLoadStore.executions)
+        (" Constant load"       , toPercentage result.countersJVMTotal.executions result.countersJVMConstantLoad.executions)
+        (" Processing"          , toPercentage result.countersJVMTotal.executions result.countersJVMProcessing.executions)
+        ("     math"            , toPercentage result.countersJVMTotal.executions result.countersJVMProcessingMath.executions)
+        ("     bit shift"       , toPercentage result.countersJVMTotal.executions result.countersJVMProcessingBitShift.executions)
+        ("     bit logic"       , toPercentage result.countersJVMTotal.executions result.countersJVMProcessingBitLogic.executions)
+        (" Branches"            , toPercentage result.countersJVMTotal.executions result.countersJVMBranches.executions)
+        (" Others"              , toPercentage result.countersJVMTotal.executions result.countersJVMOthers.executions)
+        (" Total"               , toPercentage result.countersJVMTotal.executions result.countersJVMTotal.executions)
         ]
     let r2 = 
         (""                     , "")
