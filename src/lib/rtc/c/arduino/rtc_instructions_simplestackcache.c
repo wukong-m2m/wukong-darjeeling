@@ -740,8 +740,9 @@ void rtc_translate_single_instruction() {
             } else {
                 // We need to read from another infusion. Get that infusion's address first.
                 // Load the address of the referenced infusion into operand_regs2[0]:operand_regs2[1]
-                offset = rtc_offset_for_referenced_infusion(ts->infusion, jvm_operand_byte0);
                 rtc_stackcache_getfree_16bit(operand_regs2);
+                offset = rtc_offset_for_referenced_infusion(ts->infusion, jvm_operand_byte0);
+                offset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, offset);
                 emit_LDD(operand_regs2[0], Z, offset);
                 emit_LDD(operand_regs2[1], Z, offset+1);
                 // Then move operand_regs2[0]:operand_regs2[1] to Z
