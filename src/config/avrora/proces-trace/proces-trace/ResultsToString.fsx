@@ -93,6 +93,7 @@ let resultsToString (results : SimulationResults) =
         String.Format("0x{0,6:X6}: {1}    {2}", inst.address, (countersToString totalCycles totalBytes counters), inst.text)
     let opcodeResultsToString totalCycles totalBytes opcodeResults =
             opcodeResults
+            |> List.sortBy (fun (category, opcode, counters) -> (category+opcode))
             |> List.map (fun (category, opcode, counters)
                              ->  String.Format("{0,-20}{1,-20} {2}",
                                                category,
@@ -100,6 +101,7 @@ let resultsToString (results : SimulationResults) =
                                                (countersToString totalCycles totalBytes counters)))
     let categoryResultsToString totalCycles totalBytes categoryResults =
             categoryResults
+            |> List.sortBy (fun (category, counters) -> category)
             |> List.map (fun (category, counters)
                              -> String.Format("{0,-40} {1}",
                                               category,
@@ -147,7 +149,8 @@ let resultsToString (results : SimulationResults) =
       addLn ("--------- JVM ----------- JVM ----------- JVM ----------- JVM ----------- JVM ----------- JVM ----------- JVM ----------- JVM -----------")
       addLn ("                                                              " + jvmMethod.name)
       addLn ("--------- JVM ----------- JVM ----------- JVM ----------- JVM ----------- JVM ----------- JVM ----------- JVM ----------- JVM -----------")
-
+      addLn ("")
+      addJvmMethodCalledMethodsList jvmMethod
       addLn ("--- SUMMED: PER JVM CATEGORY               " + jvmMethod.name)
       addLn ("                                           " + countersHeaderString)
       categoryResultsToString totalCyclesAOTJava totalBytesAOTJava jvmMethod.countersPerJvmOpcodeCategoryAOTJava
@@ -241,7 +244,8 @@ let resultsToString (results : SimulationResults) =
       addLn ("---------  C  -----------  C  -----------  C  -----------  C  -----------  C  -----------  C  -----------  C  -----------  C  -----------")
       addLn ("                                                              " + cFunction.name)
       addLn ("---------  C  -----------  C  -----------  C  -----------  C  -----------  C  -----------  C  -----------  C  -----------  C  -----------")
-
+      addLn ("")
+      addCFunctionCalledFunctionsList cFunction
       addLn ("--- SUMMED: PER AVR CATEGORY (NATIVE C)    " + cFunction.name)
       addLn ("                                           " + countersHeaderString)
       categoryResultsToString totalCyclesNativeC totalBytesNativeC cFunction.countersPerAvrOpcodeCategoryNativeC
@@ -263,27 +267,31 @@ let resultsToString (results : SimulationResults) =
     addLn ("================== " + results.benchmark + ": AOT " + testResultAOT + "=============================== ============================ CODE SIZE ===============================")
     addLn (String.Format ("--- STACK max                               {0,14}             --- CODE SIZE   Native C                    {1,14}", results.maxJvmStackInBytes, results.codesizeC))
     addLn (String.Format ("          avg/executed jvm                  {0,14:000.00}                             AOT                         {1,14}", results.avgJvmStackInBytes, results.codesizeAOT))
-    addLn (String.Format ("          avg change/exec jvm               {0,14:000.00}                             Java total                  {1,14}", results.avgJvmStackChangeInBytes, results.codesizeJava))
-    addLn (String.Format ("============================ STOPWATCHES =============================                      branch count           {0,14}", results.codesizeJavaBranchCount))
-    addLn (String.Format ("--- STOPWATCHES Native C                    {0,14}                                  branch target count    {1,14}", results.cyclesStopwatchC, results.codesizeJavaBranchTargetCount))
-    addLn (String.Format ("                AOT                         {0,14}                                  markloop count         {1,14}", results.cyclesStopwatchAOT, results.codesizeJavaMarkloopCount))
-    addLn (String.Format ("                AOT/C                       {0,14}                                  markloop size          {1,14}", cyclesToSlowdown results.cyclesStopwatchAOT results.cyclesStopwatchC, results.codesizeJavaMarkloopTotalSize))
-    addLn (String.Format ("                                                                                            total-branch overhead  {0,14}", results.codesizeJavaWithoutBranchOverhead))
-    addLn (String.Format ("                                                                                            total-br/mloop overh.  {0,14}", results.codesizeJavaWithoutBranchMarkloopOverhead))
+    addLn (String.Format ("          avg change/exec jvm               {0,14:000.00}                                 Java for AOT            {1,14}", results.avgJvmStackChangeInBytes, results.codesizeJavaForAOT))
+    addLn (String.Format ("============================ STOPWATCHES =============================                       branch count          {0,14}", results.codesizeJavaBranchCount))
+    addLn (String.Format ("--- STOPWATCHES Native C                    {0,14}                                   branch target count   {1,14}", results.cyclesStopwatchC, results.codesizeJavaBranchTargetCount))
+    addLn (String.Format ("                AOT                         {0,14}                                   markloop count        {1,14}", results.cyclesStopwatchAOT, results.codesizeJavaMarkloopCount))
+    addLn (String.Format ("                AOT/C                       {0,14}                                   markloop size         {1,14}", cyclesToSlowdown results.cyclesStopwatchAOT results.cyclesStopwatchC, results.codesizeJavaMarkloopTotalSize))
+    addLn (String.Format ("                                                                                             total-branch overhead {0,14}", results.codesizeJavaWithoutBranchOverhead))
+    addLn (String.Format ("                                                                                             total-br/mloop overh. {0,14}", results.codesizeJavaWithoutBranchMarkloopOverhead))
+    addLn (String.Format ("                                                                                       Java (for interpreter)      {0,14}", results.codesizeJavaForInterpreter))
     addLn (String.Format ("                                                                                       AOT/C                       {0,14}", cyclesToSlowdown results.codesizeAOT results.codesizeC))
-    addLn (String.Format ("                                                                                       AOT/Java                    {0,14}", cyclesToSlowdown results.codesizeAOT results.codesizeJava))
+    addLn (String.Format ("                                                                                       AOT/Java                    {0,14}", cyclesToSlowdown results.codesizeAOT results.codesizeJavaForInterpreter))
     addLn ("=============================================================== MAIN COUNTERS ===============================================================")
     addLn (String.Format ("--- NAT.C    Cycles                      {0,12} (stopwatch {1}, ratio {2}) (difference probably caused by interrupts)", results.executedCyclesC, results.cyclesStopwatchC, (cyclesToSlowdown results.cyclesStopwatchC results.executedCyclesC)))
     addLn (String.Format ("             Bytes                       {0,12} (address range {1}, ratio {2}) (off by 2 expected for methods ending in JMP)", totalBytesNativeC, results.codesizeC, (cyclesToSlowdown results.codesizeC totalBytesNativeC)))
+    addLn ("")
     addLn ("                                           " + countersHeaderString)
     addLn (String.Format ("             Total                       {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCTotal)))
     addLn (String.Format ("              load/store                 {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCLoadStore)))
     addLn (String.Format ("              push/pop int               {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCPushPop)))
     addLn (String.Format ("              mov(w)                     {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCMov)))
     addLn (String.Format ("              others                     {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCOthers)))
+    addLn (String.Format ("              timer interrupts           {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCTimer)))
     addLn ("")
-    addLn (String.Format ("--- AOT      Cycles                      {0,12} (stopwatch {1}, ratio {2}) (difference probably caused by interrupts, or by invoke overhead which is hidden for bm methods. we miss the time between the call to callMethod and the start of the method's AOT code, about 500 cycles per call, but this is still counted in the stopwatch)", results.executedCyclesAOT, results.cyclesStopwatchAOT, (cyclesToSlowdown results.cyclesStopwatchAOT results.executedCyclesAOT)))
+    addLn (String.Format ("--- AOT      Cycles                      {0,12} (stopwatch {1}, ratio {2}) (difference caused by interrupts or overhead in method calls not included in ProcessTraces.fsx countersAOTVM)", results.executedCyclesAOT, results.cyclesStopwatchAOT, (cyclesToSlowdown results.cyclesStopwatchAOT results.executedCyclesAOT)))
     addLn (String.Format ("             Bytes                       {0,12} (methodImpl.AvrMethodSize {1}, ratio {2})", totalBytesAOTJava, results.codesizeAOT, (cyclesToSlowdown results.codesizeAOT totalBytesAOTJava)))
+    addLn ("")
     addLn ("                                           " + countersHeaderString)
     addLn (String.Format ("             Total                       {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTTotal)))
     addLn (String.Format ("              load/store                 {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTLoadStore)))
@@ -291,6 +299,8 @@ let resultsToString (results : SimulationResults) =
     addLn (String.Format ("              push/pop ref               {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTPushPopRef)))
     addLn (String.Format ("              mov(w)                     {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTMov)))
     addLn (String.Format ("              others                     {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTOthers)))
+    addLn (String.Format ("              timer interrupts           {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTTimer)))
+    addLn (String.Format ("              spent in vm                {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTVM)))
     addLn ("")
     addLn ("                                           " + countersHeaderString)
     addLn (String.Format ("--- OVERHEAD Total                       {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadTotal)))
@@ -298,6 +308,8 @@ let resultsToString (results : SimulationResults) =
     addLn (String.Format ("              pushpop                    {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadPushPop)))
     addLn (String.Format ("              mov(w)                     {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadMov)))
     addLn (String.Format ("              others                     {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadOthers)))
+    addLn (String.Format ("              timer                      {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadTimer)))
+    addLn (String.Format ("              vm                         {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadVm)))
     addLn ("=============================================================== DETAILED COUNTERS ===========================================================")
     addLn ("--- SUMMED: PER JVM CATEGORY               " + countersHeaderString)
     categoryResultsToString totalCyclesAOTJava totalBytesAOTJava results.countersPerJvmOpcodeCategoryAOTJava
@@ -334,10 +346,6 @@ let resultsToString (results : SimulationResults) =
     sortedJvmMethodResults |> List.iter addJvmMethodCalledMethodsList
     addLn ("")
     sortedJvmMethodResults |> List.iter addJvmMethodDetails
-
-    // let jvmMethodToSummedPerOpcodeAndCategory (jvmMethod : JvmMethod) (addLn : string -> unit) =
-
-    // let cFunctionToSummedPerOpcodeAndCategory (cFunction : CFunction) (addLn : string -> unit) =
 
     addLn ("============================================================== C LISTINGS ===================================================================")
     addLn ("")

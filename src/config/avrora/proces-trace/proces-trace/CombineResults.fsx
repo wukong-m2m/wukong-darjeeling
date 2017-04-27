@@ -72,11 +72,17 @@ let resultToStringList (result : SimulationResults) =
         ("         push/pop"    , String.Format("{0}", result.countersCPushPop.cycles));
         ("         mov(w)"      , String.Format("{0}", result.countersCMov.cycles));
         ("         others"      , String.Format("{0}", result.countersCOthers.cycles));
+        ("         timer"       , String.Format("{0}", result.countersCTimer.cycles));
+        (""                     , "");
+        ("         stopw/count" , (cyclesToSlowdown result.cyclesStopwatchC result.countersCTotal.cycles));
+        (""                     , "");
         ("AOT      total"       , String.Format("{0}", result.countersAOTTotal.cycles));
         ("         load/store"  , String.Format("{0}", result.countersAOTLoadStore.cycles));
         ("         push/pop"    , String.Format("{0}", result.countersAOTPushPop.cycles));
         ("         mov(w)"      , String.Format("{0}", result.countersAOTMov.cycles));
         ("         others"      , String.Format("{0}", result.countersAOTOthers.cycles));
+        ("         timer"       , String.Format("{0}", result.countersAOTTimer.cycles));
+        ("         vm"          , String.Format("{0}", result.countersAOTVM.cycles));
         (""                     , "");
         ("         stopw/count" , (cyclesToSlowdown result.cyclesStopwatchAOT result.countersAOTTotal.cycles));
         (""                     , "");
@@ -92,12 +98,13 @@ let resultToStringList (result : SimulationResults) =
         ("CODE SIZE"            , "");
         ("Native C"             , result.codesizeC.ToString());
         ("AOT"                  , result.codesizeAOT.ToString());
-        ("Java"                 , result.codesizeJava.ToString());
-        ("  branch overhead"    , (result.codesizeJava - result.codesizeJavaWithoutBranchOverhead).ToString());
-        ("  markloop overhead"  , result.codesizeJavaMarkloopTotalSize.ToString());
-        ("  Java ex. overhead"  , result.codesizeJavaWithoutBranchMarkloopOverhead.ToString());
+        ("  Java (AOT)"                 , result.codesizeJavaForAOT.ToString());
+        ("   branch overhead"   , (result.codesizeJava - result.codesizeJavaWithoutBranchOverhead).ToString());
+        ("   markloop overhead" , result.codesizeJavaMarkloopTotalSize.ToString());
+        ("   Java ex. overhead" , result.codesizeJavaWithoutBranchMarkloopOverhead.ToString());
+        ("Java (interpreter)"   , result.codesizeJavaForInterpreter)
         ("AOT/C"                , (cyclesToSlowdown result.codesizeAOT result.codesizeC));
-        ("AOT/Java"             , (cyclesToSlowdown result.codesizeAOT result.codesizeJava));
+        ("AOT/Java"             , (cyclesToSlowdown result.codesizeAOT result.codesizeJavaForAOT));
         ]
     let r2 = 
         (""                     , "")
@@ -116,20 +123,20 @@ let resultToStringList (result : SimulationResults) =
         :: ("PERF Native C"     , "cyc (%C)")
         :: (result.countersPerAvrOpcodeCategoryNativeC |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
 
-    let r3 = 
+    let r6 = 
         (""                     , "")
         :: ("SIZE AOT per JVM"  , "byt (%C)")
         :: (result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (bytesToCPercentage cnt.size))))
-    let r4 = 
+    let r7 = 
         (""                     , "")
         :: ("SIZE AOT per AVR"  , "byt (%C)")
         :: (result.countersPerAvrOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (bytesToCPercentage cnt.size))))
-    let r5 = 
+    let r8 = 
         (""                     , "")
         :: ("SIZE Native C"     , "byt (%C)")
         :: (result.countersPerAvrOpcodeCategoryNativeC |> List.map (fun (cat, cnt) -> (cat, (bytesToCPercentage cnt.size))))
 
-    List.concat [ r1; r2; r3; r4; r5 ]
+    List.concat [ r1; r2; r3; r4; r5; r6; r7; r8 ]
 
 let flipTupleListsToStringList (benchmarks : (string * string) list list) =
     // Initialise the accumulator as a list of lists containing only the key names

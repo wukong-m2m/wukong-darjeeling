@@ -9,271 +9,277 @@ let MASK_BRANCH                         = 0xFC07
 //                                      1111 1111 1111 1111
 let MASK_NO_OPERANDS                    = 0xFFFF
 
+type AvrOpcode = {
+    opcode : int
+    mask : int
+    text : string }
+    with
+    member this.is (inst : int) =
+        (=) (inst &&& this.mask) this.opcode
+
+
 // avr opcode ADC                   0001 11rd dddd rrrr, with d=dest register, r=source register
-let ADC                           = (0x1C00, MASK_DOUBLE_REG_OPERAND, "ADC")
+let ADC                           = { opcode=0x1C00; mask=MASK_DOUBLE_REG_OPERAND; text="ADC" }
 
 // avr opcode ADD                   0000 11rd dddd rrrr, with d=dest register, r=source register
-let ADD                           = (0x0C00, MASK_DOUBLE_REG_OPERAND, "ADD")
+let ADD                           = { opcode=0x0C00; mask=MASK_DOUBLE_REG_OPERAND; text="ADD" }
 
 // avr opcode ADIW                  1001 0110 KKdd KKKK, with d=r24, r26, r28, or r30
-let ADIW                          = (0x9600, 0xFF00, "ADIW")
+let ADIW                          = { opcode=0x9600; mask=0xFF00; text="ADIW" }
 
 // avr opcode AND                   0010 00rd dddd rrrr, with d=dest register, r=source register
-let AND                           = (0x2000, MASK_DOUBLE_REG_OPERAND, "AND")
+let AND                           = { opcode=0x2000; mask=MASK_DOUBLE_REG_OPERAND; text="AND" }
 
 // avr opcode ANDI                  0111 KKKK dddd KKKK, with d=dest register-16, K=8 bit constant
-let ANDI                          = (0x7000, 0xF000, "ANDI")
+let ANDI                          = { opcode=0x7000; mask=0xF000; text="ANDI" }
 
 // avr opcode ASR                   1001 010d dddd 0101
-let ASR                           = (0x9405, MASK_SINGLE_REG_OPERAND, "ASR")
+let ASR                           = { opcode=0x9405; mask=MASK_SINGLE_REG_OPERAND; text="ASR" }
 
 // avr opcode BLD                   1111 100d dddd 0bbb, with d=dest register, 0<=b<=7
-let BLD                           = (0xF800, 0xFE08, "BLD")
+let BLD                           = { opcode=0xF800; mask=0xFE08; text="BLD" }
 
 // avr opcode BREAK                 1001 0101 1001 1000
-let BREAK                         = (0x9598, MASK_NO_OPERANDS, "BREAK")
+let BREAK                         = { opcode=0x9598; mask=MASK_NO_OPERANDS; text="BREAK" }
 
 // avr opcode BRCC                  1111 01kk kkkk k000
-let BRCC                          = (0xF400, MASK_BRANCH, "BRCC")
+let BRCC                          = { opcode=0xF400; mask=MASK_BRANCH; text="BRCC" }
 
 // avr opcode BRCS                  1111 00kk kkkk k000
-let BRCS                          = (0xF000, MASK_BRANCH, "BRCS")
+let BRCS                          = { opcode=0xF000; mask=MASK_BRANCH; text="BRCS" }
 
 // avr opcode BREQ                  1111 00kk kkkk k001, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
-let BREQ                          = (0xF001, MASK_BRANCH, "BREQ")
+let BREQ                          = { opcode=0xF001; mask=MASK_BRANCH; text="BREQ" }
 
 // avr opcode BRGE                  1111 01kk kkkk k100, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
-let BRGE                          = (0xF404, MASK_BRANCH, "BRGE")
+let BRGE                          = { opcode=0xF404; mask=MASK_BRANCH; text="BRGE" }
 
 // avr opcode BRLO                  1111 00kk kkkk k000, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
-let BRLO                          = (0xF000, MASK_BRANCH, "BRLO")
+let BRLO                          = { opcode=0xF000; mask=MASK_BRANCH; text="BRLO" }
 
 // avr opcode BRLT                  1111 00kk kkkk k100, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
-let BRLT                          = (0xF004, MASK_BRANCH, "BRLT")
+let BRLT                          = { opcode=0xF004; mask=MASK_BRANCH; text="BRLT" }
 
 // avr opcode BRNE                  1111 01kk kkkk k001, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
-let BRNE                          = (0xF401, MASK_BRANCH, "BRNE")
+let BRNE                          = { opcode=0xF401; mask=MASK_BRANCH; text="BRNE" }
 
 // avr opcode BRPL                  1111 01kk kkkk k010
-let BRPL                          = (0xF402, MASK_BRANCH, "BRPL")
+let BRPL                          = { opcode=0xF402; mask=MASK_BRANCH; text="BRPL" }
 
 // avr opcode BRSH                  1111 01kk kkkk k000, with k the signed offset to jump to, in WORDS, not bytes. If taken: PC <- PC + k + 1, if not taken: PC <- PC + 1
-let BRSH                          = (0xF400, MASK_BRANCH, "BRSH")
+let BRSH                          = { opcode=0xF400; mask=MASK_BRANCH; text="BRSH" }
 
 //                                  1001 010k kkkk 111k
 // avr opcode CALL                  kkkk kkkk kkkk kkkk
-let CALL                          = (0x940E, 0xFE0E, "CALL")
+let CALL                          = { opcode=0x940E; mask=0xFE0E; text="CALL" }
 
 // avr opcode COM                   1001 010d dddd 0000, with d=dest register
-let COM                           = (0x9400, MASK_SINGLE_REG_OPERAND, "COM")
+let COM                           = { opcode=0x9400; mask=MASK_SINGLE_REG_OPERAND; text="COM" }
 
 // avr opcode CLI                   1001 0100 1111 1000
-let CLI                           = (0x94F8, MASK_NO_OPERANDS, "CLI")
+let CLI                           = { opcode=0x94F8; mask=MASK_NO_OPERANDS; text="CLI" }
 
 // avr opcode CLT                   1001 0100 1110 1000
-let CLT                           = (0x94E8, MASK_NO_OPERANDS, "CLT")
+let CLT                           = { opcode=0x94E8; mask=MASK_NO_OPERANDS; text="CLT" }
 
 // avr opcode CP                    0001 01rd dddd rrrr, with r,d=the registers to compare
-let CP                            = (0x1400, MASK_DOUBLE_REG_OPERAND, "CP")
+let CP                            = { opcode=0x1400; mask=MASK_DOUBLE_REG_OPERAND; text="CP" }
 
 // avr opcode CPC                   0000 01rd dddd rrrr, with r,d=the registers to compare
-let CPC                           = (0x0400, MASK_DOUBLE_REG_OPERAND, "CPC")
+let CPC                           = { opcode=0x0400; mask=MASK_DOUBLE_REG_OPERAND; text="CPC" }
 
 // avr opcode CPI                   0011 KKKK dddd KKKK, with 16 ≤ d ≤ 31, 0≤ K ≤ 255
-let CPI                           = (0x3000, 0xF000, "CPI")
+let CPI                           = { opcode=0x3000; mask=0xF000; text="CPI" }
 
 // avr opcode CPSE                  0001 00rd dddd rrrr, with r,d=the registers to compare
-let CPSE                          = (0x1000, MASK_DOUBLE_REG_OPERAND, "CPSE")
+let CPSE                          = { opcode=0x1000; mask=MASK_DOUBLE_REG_OPERAND; text="CPSE" }
 
 // avr opcode DEC                   1001 010d dddd 1010
-let DEC                           = (0x940A, MASK_SINGLE_REG_OPERAND, "DEC")
+let DEC                           = { opcode=0x940A; mask=MASK_SINGLE_REG_OPERAND; text="DEC" }
 
 // avr opcode EOR                   0010 01rd dddd rrrr, with d=dest register, r=source register
-let EOR                           = (0x2400, MASK_DOUBLE_REG_OPERAND, "EOR")
+let EOR                           = { opcode=0x2400; mask=MASK_DOUBLE_REG_OPERAND; text="EOR" }
 
 // avr opcode IJMP                  1001 0100 0000 1001
-let IJMP                          = (0x9409, MASK_NO_OPERANDS, "IJMP")
+let IJMP                          = { opcode=0x9409; mask=MASK_NO_OPERANDS; text="IJMP" }
 
 // avr opcode IN                    1011 0AAd dddd AAAA, with d=dest register, A the address of the IO location to read 0<=A<=63 (63==0x3F)
-let IN                            = (0xB000, 0xF800, "IN")
+let IN                            = { opcode=0xB000; mask=0xF800; text="IN" }
 
 // avr opcode INC                   1001 010d dddd 0011, with d=dest register
-let INC                           = (0x9403, MASK_SINGLE_REG_OPERAND, "INC")
+let INC                           = { opcode=0x9403; mask=MASK_SINGLE_REG_OPERAND; text="INC" }
 
 //                                  1001 010k kkkk 110k
 // avr opcode JMP                   kkkk kkkk kkkk kkkk, with k the address in WORDS, not bytes. PC <- k
-let JMP                           = (0x940C, 0xFE0E, "JMP")
+let JMP                           = { opcode=0x940C; mask=0xFE0E; text="JMP" }
 
 // avr opcode LD Rd, X              1001 000d dddd 1100, with d=dest register
-let LD_X                          = (0x900C, MASK_SINGLE_REG_OPERAND, "LD_X")
+let LD_X                          = { opcode=0x900C; mask=MASK_SINGLE_REG_OPERAND; text="LD_X" }
 
 // avr opcode LD Rd, X+             1001 000d dddd 1101
-let LD_XINC                       = (0x900D, MASK_SINGLE_REG_OPERAND, "LD_XINC")
+let LD_XINC                       = { opcode=0x900D; mask=MASK_SINGLE_REG_OPERAND; text="LD_XINC" }
 
 // avr opcode LD Rd, -X             1001 000d dddd 1110, with d=dest register
-let LD_DECX                       = (0x900E, MASK_SINGLE_REG_OPERAND, "LD_DECX")
+let LD_DECX                       = { opcode=0x900E; mask=MASK_SINGLE_REG_OPERAND; text="LD_DECX" }
 
 // avr opcode LD Rd, Y              1000 000d dddd 1000, with d=dest register
-let LD_Y                          = (0x8008, MASK_SINGLE_REG_OPERAND, "LD_Y")
+let LD_Y                          = { opcode=0x8008; mask=MASK_SINGLE_REG_OPERAND; text="LD_Y" }
 
 // avr opcode LD Rd, Y+             1001 000d dddd 1001
-let LD_YINC                       = (0x9009, MASK_SINGLE_REG_OPERAND, "LD_YINC")
+let LD_YINC                       = { opcode=0x9009; mask=MASK_SINGLE_REG_OPERAND; text="LD_YINC" }
 
 // avr opcode LD Rd, -Y             1001 000d dddd 1010, with d=dest register
-let LD_DECY                       = (0x900A, MASK_SINGLE_REG_OPERAND, "LD_DECY")
+let LD_DECY                       = { opcode=0x900A; mask=MASK_SINGLE_REG_OPERAND; text="LD_DECY" }
 
 // avr opcode LDD_Y                 10q0 qq0d dddd 1qqq, with d=dest register, q=offset from Y
-let LDD_Y                         = (0x8008, 0xD208, "LDD_Y")
+let LDD_Y                         = { opcode=0x8008; mask=0xD208; text="LDD_Y" }
 
 // avr opcode LD Rd, Z              1000 000d dddd 0000, with d=dest register
-let LD_Z                          = (0x8000, MASK_SINGLE_REG_OPERAND, "LD_Z")
+let LD_Z                          = { opcode=0x8000; mask=MASK_SINGLE_REG_OPERAND; text="LD_Z" }
 
 // avr opcode LD Rd, Z+             1001 000d dddd 0001
-let LD_ZINC                       = (0x9001, MASK_SINGLE_REG_OPERAND, "LD_ZINC")
+let LD_ZINC                       = { opcode=0x9001; mask=MASK_SINGLE_REG_OPERAND; text="LD_ZINC" }
 
 // avr opcode LD Rd, -Z             1001 000d dddd 0010, with d=dest register
-let LD_DECZ                       = (0x9002, MASK_SINGLE_REG_OPERAND, "LD_DECZ")
+let LD_DECZ                       = { opcode=0x9002; mask=MASK_SINGLE_REG_OPERAND; text="LD_DECZ" }
 
 // avr opcode LDD_Z                 10q0 qq0d dddd 0qqq, with d=dest register, q=offset from Z
-let LDD_Z                         = (0x8000, 0xD208, "LDD_Z")
+let LDD_Z                         = { opcode=0x8000; mask=0xD208; text="LDD_Z" }
 
 // avr opcode LDI                   1110 KKKK dddd KKKK, with K=constant to load, d=dest register-16 (can only load to r16-r31)
-let LDI                           = (0xE000, 0xF000, "LDI")
+let LDI                           = { opcode=0xE000; mask=0xF000; text="LDI" }
 
 //                                  1001 000d dddd 0000
 // avr opcode LDS                   kkkk kkkk kkkk kkkk
-let LDS                           = (0x9000, MASK_SINGLE_REG_OPERAND, "LDS")
+let LDS                           = { opcode=0x9000; mask=MASK_SINGLE_REG_OPERAND; text="LDS" }
 
 // avr opcode LPM                   1001 0101 1100 1000, r0 <- Z
-let LPM                           = (0x95C8, MASK_NO_OPERANDS, "LPM")
+let LPM                           = { opcode=0x95C8; mask=MASK_NO_OPERANDS; text="LPM" }
 
 // avr opcode LPM_Z                 1001 000d dddd 0100, with d=dest register
-let LPM_Z                         = (0x9004, MASK_SINGLE_REG_OPERAND, "LPM_Z")
+let LPM_Z                         = { opcode=0x9004; mask=MASK_SINGLE_REG_OPERAND; text="LPM_Z" }
 
 // avr opcode LPM_ZINC              1001 000d dddd 0101, with d=dest register
-let LPM_ZINC                      = (0x9005, MASK_SINGLE_REG_OPERAND, "LPM_ZINC")
+let LPM_ZINC                      = { opcode=0x9005; mask=MASK_SINGLE_REG_OPERAND; text="LPM_ZINC" }
 
 // avr opcode LSR                   1001 010d dddd 0110
-let LSR                           = (0x9406, MASK_SINGLE_REG_OPERAND, "LSR")
+let LSR                           = { opcode=0x9406; mask=MASK_SINGLE_REG_OPERAND; text="LSR" }
 
 // avr opcode MOV                   0010 11rd dddd rrrr, with d=dest register, r=source register
-let MOV                           = (0x2C00, MASK_DOUBLE_REG_OPERAND, "MOV")
+let MOV                           = { opcode=0x2C00; mask=MASK_DOUBLE_REG_OPERAND; text="MOV" }
 
 // avr opcode MOVW                  0000 0001 dddd rrrr, with d=dest register/2, r=source register/2
-let MOVW                          = (0x0100, 0xFF00, "MOVW")
+let MOVW                          = { opcode=0x0100; mask=0xFF00; text="MOVW" }
 
 // avr opcode MUL                   1001 11rd dddd rrrr, with d=dest register, r=source register
-let MUL                           = (0x9C00, MASK_DOUBLE_REG_OPERAND, "MUL")
+let MUL                           = { opcode=0x9C00; mask=MASK_DOUBLE_REG_OPERAND; text="MUL" }
 
 // avr opcode MULS                  0000 0010 dddd rrrr, with d=source1 register-16, r=source2 register-16 (result in r1:r0)
-let MULS                          = (0x0200, 0xFF00, "MULS")
+let MULS                          = { opcode=0x0200; mask=0xFF00; text="MULS" }
 
 // avr opcode MULSU                 0000 0011 0ddd 0rrr, with d=source1 register-16 (r16-r23), r=source2 register-16 (r16-r23) (result in r1:r0)
-let MULSU                         = (0x0300, 0xFF88, "MULSU")
+let MULSU                         = { opcode=0x0300; mask=0xFF88; text="MULSU" }
 
 // avr opcode NEG                   1001 010d dddd 0001, with d=dest register
-let NEG                           = (0x9401, MASK_SINGLE_REG_OPERAND, "NEG")
+let NEG                           = { opcode=0x9401; mask=MASK_SINGLE_REG_OPERAND; text="NEG" }
 
 // avr opcode NOP                   0000 0000 0000 0000
-let NOP                           = (0x0000, MASK_NO_OPERANDS, "NOP")
+let NOP                           = { opcode=0x0000; mask=MASK_NO_OPERANDS; text="NOP" }
 
 // avr opcode OR                    0010 10rd dddd rrrr, with d=dest register, r=source register
-let OR                            = (0x2800, MASK_DOUBLE_REG_OPERAND, "OR")
+let OR                            = { opcode=0x2800; mask=MASK_DOUBLE_REG_OPERAND; text="OR" }
 
 // avr opcode ORI                   0110 KKKK dddd KKKK, with d=dest register-16, K=8 bit constant
-let ORI                           = (0x6000, 0xF000, "ORI")
+let ORI                           = { opcode=0x6000; mask=0xF000; text="ORI" }
 
 // avr opcode OUT                   1011 1AAd dddd AAAA, with d=dest register, A the address of the IO location to read 0<=A<=63 (63==0x3F)
-let OUT                           = (0xB800, 0xF800, "OUT")
+let OUT                           = { opcode=0xB800; mask=0xF800; text="OUT" }
 
 // avr opcode PUSH                  1001 001d dddd 1111, with d=source register
-let PUSH                          = (0x920F, MASK_SINGLE_REG_OPERAND, "PUSH")
+let PUSH                          = { opcode=0x920F; mask=MASK_SINGLE_REG_OPERAND; text="PUSH" }
 
 // avr opcode POP                   1001 000d dddd 1111
-let POP                           = (0x900F, MASK_SINGLE_REG_OPERAND, "POP")
+let POP                           = { opcode=0x900F; mask=MASK_SINGLE_REG_OPERAND; text="POP" }
 
 // avr opcode RCALL                 1101 kkkk kkkk kkkk, with k relative in words, not bytes. PC <- PC + k + 1
-let RCALL                         = (0xD000, 0xF000, "RCALL")
+let RCALL                         = { opcode=0xD000; mask=0xF000; text="RCALL" }
 
 // avr opcode RET                   1001 0101 0000 1000
-let RET                           = (0x9508, MASK_NO_OPERANDS, "RET")
+let RET                           = { opcode=0x9508; mask=MASK_NO_OPERANDS; text="RET" }
 
 // avr opcode RJMP                  1100 kkkk kkkk kkkk, with k the signed offset to jump to, in WORDS, not bytes. PC <- PC + k + 1
-let RJMP                          = (0xC000, 0xF000, "RJMP")
+let RJMP                          = { opcode=0xC000; mask=0xF000; text="RJMP" }
 
 // avr opcode ROR                   1001 010d dddd 0111
-let ROR                           = (0x9407, MASK_SINGLE_REG_OPERAND, "ROR")
+let ROR                           = { opcode=0x9407; mask=MASK_SINGLE_REG_OPERAND; text="ROR" }
 
 // avr opcode SBC                   0000 10rd dddd rrrr, with d=dest register, r=source register
-let SBC                           = (0x0800, MASK_DOUBLE_REG_OPERAND, "SBC")
+let SBC                           = { opcode=0x0800; mask=MASK_DOUBLE_REG_OPERAND; text="SBC" }
 
 // avr opcode SBCI                  0100 KKKK dddd KKKK, with K a constant <= 255,d the destination register - 16
-let SBCI                          = (0x4000, 0xF000, "SBCI")
+let SBCI                          = { opcode=0x4000; mask=0xF000; text="SBCI" }
 
 // avr opcode SBIW                  1001 0111 KKdd KKKK, with d∈{24,26,28,30},0≤K≤63
-let SBIW                          = (0x9700, 0xFF00, "SBIW")
+let SBIW                          = { opcode=0x9700; mask=0xFF00; text="SBIW" }
 
 // avr opcode SBRC                  1111 110r rrrr 0bbb, with r=a register and b=the bit to test
-let SBRC                          = (0xFC00, 0xFE08, "SBRC")
+let SBRC                          = { opcode=0xFC00; mask=0xFE08; text="SBRC" }
 
 // avr opcode SBRS                  1111 111r rrrr 0bbb, with r=a register and b=the bit to test
-let SBRS                          = (0xFE00, 0xFE08, "SBRS")
+let SBRS                          = { opcode=0xFE00; mask=0xFE08; text="SBRS" }
 
 // avr opcode SEI                   1001 0100 0111 1000
-let SEI                           = (0x9478, MASK_NO_OPERANDS, "SEI")
+let SEI                           = { opcode=0x9478; mask=MASK_NO_OPERANDS; text="SEI" }
 
 // avr opcode SET                   1001 0100 0110 1000
-let SET                           = (0x9468, MASK_NO_OPERANDS, "SET")
+let SET                           = { opcode=0x9468; mask=MASK_NO_OPERANDS; text="SET" }
 
 // avr opcode ST X, Rs              1001 001r rrrr 1100, with r=the register to store
-let ST_X                          = (0x920C, MASK_SINGLE_REG_OPERAND, "ST_XINC")
+let ST_X                          = { opcode=0x920C; mask=MASK_SINGLE_REG_OPERAND; text="ST_XINC" }
 
 // avr opcode ST X+, Rs             1001 001r rrrr 1101, with r=the register to store
-let ST_XINC                       = (0x920D, MASK_SINGLE_REG_OPERAND, "ST_XINC")
+let ST_XINC                       = { opcode=0x920D; mask=MASK_SINGLE_REG_OPERAND; text="ST_XINC" }
 
 // avr opcode ST -X, Rs             1001 001r rrrr 1110, with r=the register to store
-let ST_DECX                       = (0x920E, MASK_SINGLE_REG_OPERAND, "ST_DECX")
+let ST_DECX                       = { opcode=0x920E; mask=MASK_SINGLE_REG_OPERAND; text="ST_DECX" }
 
 // avr opcode ST Y, Rs              1000 001r rrrr 1000, with r=the register to store
-let ST_Y                          = (0x8208, MASK_SINGLE_REG_OPERAND, "ST_YINC")
+let ST_Y                          = { opcode=0x8208; mask=MASK_SINGLE_REG_OPERAND; text="ST_YINC" }
 
 // avr opcode ST Y+, Rs             1001 001r rrrr 1001, with r=the register to store
-let ST_YINC                       = (0x9209, MASK_SINGLE_REG_OPERAND, "ST_YINC")
+let ST_YINC                       = { opcode=0x9209; mask=MASK_SINGLE_REG_OPERAND; text="ST_YINC" }
 
 // avr opcode ST -Y, Rs             1001 001r rrrr 1010, with r=the register to store
-let ST_DECY                       = (0x920A, MASK_SINGLE_REG_OPERAND, "ST_DECY")
+let ST_DECY                       = { opcode=0x920A; mask=MASK_SINGLE_REG_OPERAND; text="ST_DECY" }
 
 // avr opcode STD                   10q0 qq1r rrrr 1qqq, with r=source register, q=offset from Y or Z
-let STD_Y                         = (0x8208, 0xD208, "STD_Y")
+let STD_Y                         = { opcode=0x8208; mask=0xD208; text="STD_Y" }
 
 // avr opcode ST Y, Rs              1000 001r rrrr 0000, with r=the register to store
-let ST_Z                          = (0x8200, MASK_SINGLE_REG_OPERAND, "ST_ZINC")
+let ST_Z                          = { opcode=0x8200; mask=MASK_SINGLE_REG_OPERAND; text="ST_ZINC" }
 
 // avr opcode ST Z+, Rs             1001 001r rrrr 0001, with r=the register to store
-let ST_ZINC                       = (0x9201, MASK_SINGLE_REG_OPERAND, "ST_ZINC")
+let ST_ZINC                       = { opcode=0x9201; mask=MASK_SINGLE_REG_OPERAND; text="ST_ZINC" }
 
 // avr opcode ST -Z, Rs             1001 001r rrrr 1010, with r=the register to store
-let ST_DECZ                       = (0x9202, MASK_SINGLE_REG_OPERAND, "ST_DECZ")
+let ST_DECZ                       = { opcode=0x9202; mask=MASK_SINGLE_REG_OPERAND; text="ST_DECZ" }
 
 // avr opcode STD                   10q0 qq1r rrrr 0qqq, with r=source register, q=offset from Y or Z
-let STD_Z                         = (0x8200, 0xD208, "STD_Z")
+let STD_Z                         = { opcode=0x8200; mask=0xD208; text="STD_Z" }
 
 //                                  1001 001d dddd 0000
 // avr opcode STS                   kkkk kkkk kkkk kkkk
-let STS                           = (0x9200, MASK_SINGLE_REG_OPERAND, "STS")
+let STS                           = { opcode=0x9200; mask=MASK_SINGLE_REG_OPERAND; text="STS" }
 
 // avr opcode SUB                   0001 10rd dddd rrrr, with d=dest register, r=source register
-let SUB                           = (0x1800, MASK_DOUBLE_REG_OPERAND, "SUB")
+let SUB                           = { opcode=0x1800; mask=MASK_DOUBLE_REG_OPERAND; text="SUB" }
 
 // avr opcode SUBI                  0101 KKKK dddd KKKK, with K a constant <= 255,d the destination register - 16
-let SUBI                          = (0x5000, 0xF000, "SUBI")
+let SUBI                          = { opcode=0x5000; mask=0xF000; text="SUBI" }
 
 // avr opcode SWAP                  1001 010d dddd 0010
-let SWAP                          = (0x9402, MASK_SINGLE_REG_OPERAND, "SWAP")
+let SWAP                          = { opcode=0x9402; mask=MASK_SINGLE_REG_OPERAND; text="SWAP" }
 
-let is (opcodeDefinition : int*int*string) inst =
-    let (opcode, mask, name) = opcodeDefinition in
-    (=) (inst &&& mask) opcode
 
 let opcodeCategories = 
     [("01) LD/ST rel to X", [ LD_X; LD_XINC; LD_DECX; ST_X; ST_XINC; ST_DECX ]);
@@ -289,21 +295,9 @@ let opcodeCategories =
      ("11) Subroutines", [ CALL; RCALL ]);
      ("12) Others", [ BREAK; NOP; RET; COM; IJMP; IN; JMP; LDS; RJMP; STS; SET; SEI; CLI; CLT; OUT; IN; BLD; LPM; LPM_Z; LPM_ZINC; SWAP ])] in
 let allOpcodes = opcodeCategories |> List.map snd |> List.concat
-let getOpcodeForInstruction inst text =
-    match allOpcodes |> List.tryFind (fun opcode -> is opcode inst) with
-    | Some(opcode) -> opcode
-    | None -> failwith (String.Format("No opcode found for 0x{0:X4} {1}", inst, text))
-
-let opcodeCategory opcode =
-    match opcodeCategories |> List.tryFind (fun (cat, opcodes) -> opcodes |> List.exists ((=) opcode)) with
-    | Some(cat, _) -> cat
-    | None -> "13) ????"
-
-let opcodeName (opcode, mask, name) =
-    name
 
 let getTargetIfCALL inst =
-    match (is CALL inst) with
+    match (CALL.is inst) with
     | false -> 0
     | true ->
         //                                   1001 010k kkkk 111k
@@ -314,8 +308,30 @@ let getTargetIfCALL inst =
            + ((inst &&& 0x0001) <<< 16)   // 0000 0000 0000 0000 0000 0000 0000 000h
            + ((inst &&& 0x01F0) <<< 13))) // 0000 0000 0000 0000 0000 000h hhhh 0000
 
+let getOpcodeForInstruction inst text (addressesOfMathFunctions : (string * int) list) =
+    match getTargetIfCALL inst with
+    | 0 -> match allOpcodes |> List.tryFind (fun opcode -> opcode.is inst) with // Not a call
+           | Some(opcode) -> opcode
+           | None -> failwith (String.Format("No opcode found for 0x{0:X4} {1}", inst, text))
+    | targetAddress ->
+        match addressesOfMathFunctions |> List.tryFind (fun (name, address) -> address = targetAddress) with
+        | None -> CALL // It's a call, but not to a math addressesOfMathFunctions
+        | Some(name, address) -> { CALL with text = "CALL " + name }
+
+let opcodeCategory opcode =
+    if opcode.opcode = CALL.opcode
+    then match opcode.text with
+         | "CALL" -> "11) Subroutines" // Just CALL : count as normal subroutine
+         | _ -> "08) Math"             // CALLs to math functions will have the name of the called function appended to the text
+    else match opcodeCategories |> List.tryFind (fun (cat, opcodes) -> opcodes |> List.exists ((=) opcode)) with
+         | Some(cat, _) -> cat
+         | None -> "13) ????"
+
+let opcodeName (opcode : AvrOpcode) =
+    opcode.text
+
 let instructionSize inst =
-    let opcode = getOpcodeForInstruction inst (inst.ToString())
+    let opcode = getOpcodeForInstruction inst (inst.ToString()) []
     if (opcode = CALL || opcode = JMP || opcode = LDS || opcode = STS) then 4 else 2
 
 let getAllOpcodeCategories =

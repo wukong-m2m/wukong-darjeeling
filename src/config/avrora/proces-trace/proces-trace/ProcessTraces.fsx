@@ -35,15 +35,15 @@ let AvrInstructionFromXml (xml : RtcdataXml.AvrInstruction) =
 // Returns: a list of tuples (optimised avr instruction, unoptimised avr instruction, corresponding jvm index)
 //          the optimised avr instruction may be None for instructions that were removed completely by the optimiser
 let rec matchOptUnopt (optimisedAvr : AvrInstruction list) (unoptimisedAvr : (AvrInstruction*JvmInstruction) list) =
-    let isAOT_PUSH x = AVR.is AVR.PUSH (x.opcode) || AVR.is AVR.ST_XINC (x.opcode) // AOT uses 2 stacks
-    let isAOT_POP x = AVR.is AVR.POP (x.opcode) || AVR.is AVR.LD_DECX (x.opcode)
-    let isMOV x = AVR.is AVR.MOV (x.opcode)
-    let isMOVW x = AVR.is AVR.MOVW (x.opcode)
-    let isBREAK x = AVR.is AVR.BREAK (x.opcode)
-    let isNOP x = AVR.is AVR.NOP (x.opcode)
-    let isJMP x = AVR.is AVR.JMP (x.opcode)
-    let isRJMP x = AVR.is AVR.RJMP (x.opcode)
-    let isBRANCH x = AVR.is AVR.BREQ (x.opcode) || AVR.is AVR.BRGE (x.opcode) || AVR.is AVR.BRLO (x.opcode) || AVR.is AVR.BRLT (x.opcode) || AVR.is AVR.BRNE (x.opcode) || AVR.is AVR.BRSH (x.opcode)
+    let isAOT_PUSH x = AVR.PUSH.is (x.opcode) || AVR.ST_XINC.is (x.opcode) // AOT uses 2 stacks
+    let isAOT_POP x = AVR.POP.is (x.opcode) || AVR.LD_DECX.is (x.opcode)
+    let isMOV x = AVR.MOV.is (x.opcode)
+    let isMOVW x = AVR.MOVW.is (x.opcode)
+    let isBREAK x = AVR.BREAK.is (x.opcode)
+    let isNOP x = AVR.NOP.is (x.opcode)
+    let isJMP x = AVR.JMP.is (x.opcode)
+    let isRJMP x = AVR.RJMP.is (x.opcode)
+    let isBRANCH x = AVR.BREQ.is (x.opcode) || AVR.BRGE.is (x.opcode) || AVR.BRLO.is (x.opcode) || AVR.BRLT.is (x.opcode) || AVR.BRNE.is (x.opcode) || AVR.BRSH.is (x.opcode)
     let isBRANCH_BY_BYTES x y = isBRANCH x && ((((x.opcode) &&& (0x03F8)) >>> 2) = y) // avr opcode BRxx 0000 00kk kkkk k000, with k the offset in WORDS (thus only shift right by 2, not 3, to get the number of bytes)
 
     let isMOV_MOVW_PUSH_POP x = isMOV x || isMOVW x || isAOT_PUSH x || isAOT_POP x
@@ -149,6 +149,8 @@ let getNativeInstructionsFromObjdump (name : string) (objdumpOutput : string lis
         })
     avrInstructions |> List.map (fun avr -> (avr, countersForAddressAndInst avr.address avr.opcode))
 
+
+
 let parseDJDebug (name : string) (allLines : string list) =
   let regexLine = Regex("^\s*(?<byteOffset>\d\d\d\d);[^;]*;[^;]*;(?<text>[^;]*);(?<stackBefore>[^;]*);(?<stackAfter>[^;]*);.*")
   let regexStackElement = Regex("^(?<byteOffset>\d+)(?<datatype>[a-zA-Z]+)$")
@@ -191,7 +193,7 @@ let parseDJDebug (name : string) (allLines : string list) =
                                           stackBefore = (m.Groups.["stackBefore"].Value.Trim() |> stackStringToStack);
                                           stackAfter = (m.Groups.["stackAfter"].Value.Trim()  |> stackStringToStack) })
 
-let processJvmMethod benchmark (methodImpl : MethodImpl) (countersForAddressAndInst : int -> int -> ExecCounters) (djdebuglines : string list) =
+let processJvmMethod benchmark (methodImpl : MethodImpl) (countersForAddressAndInst : int -> int -> ExecCounters) (djdebuglines : string list) (addressesOfMathFunctions : (string * int) list) =
     printfn "Processing jvm method %s" (getClassAndMethodNameFromImpl methodImpl)
     let optimisedAvr = methodImpl.AvrInstructions |> Seq.map AvrInstructionFromXml |> Seq.toList
     let unoptimisedAvrWithJvmIndex =
@@ -215,18 +217,19 @@ let processJvmMethod benchmark (methodImpl : MethodImpl) (countersForAddressAndI
             |> List.map (fun r -> r.avr)
             |> List.concat
             |> List.filter (fun avr -> avr.opt.IsSome)
-            |> List.map (fun avr -> (AVR.getOpcodeForInstruction avr.opt.Value.opcode avr.opt.Value.text, avr.counters))
+            |> List.map (fun avr -> (AVR.getOpcodeForInstruction avr.opt.Value.opcode avr.opt.Value.text addressesOfMathFunctions, avr.counters))
             |> groupFold fst snd (+) ExecCounters.Zero
             |> List.map (fun (opc, cnt) -> (AVR.opcodeCategory opc, AVR.opcodeName opc, cnt))
             |> List.sortBy (fun (cat, opc, _) -> cat+opc)
 
-    let codesizeJava = methodImpl.JvmMethodSize
+    let codesizeJavaForAOT = methodImpl.JvmMethodSize
     let codesizeJavaBranchCount = methodImpl.BranchCount
     let codesizeJavaBranchTargetCount = methodImpl.BranchTargets |> Array.length
     let codesizeJavaMarkloopCount = methodImpl.MarkloopCount
     let codesizeJavaMarkloopTotalSize = methodImpl.MarkloopTotalSize
-    let codesizeJavaWithoutBranchOverhead = codesizeJava - (2*codesizeJavaBranchCount) - codesizeJavaBranchTargetCount
-    let codesizeJavaWithoutBranchMarkloopOverhead = codesizeJava - (2*codesizeJavaBranchCount) - codesizeJavaBranchTargetCount - codesizeJavaMarkloopTotalSize
+    let codesizeJavaWithoutBranchOverhead = codesizeJavaForAOT - (2*codesizeJavaBranchCount) - codesizeJavaBranchTargetCount
+    let codesizeJavaWithoutBranchMarkloopOverhead = codesizeJavaForAOT - (2*codesizeJavaBranchCount) - codesizeJavaBranchTargetCount - codesizeJavaMarkloopTotalSize
+    let codesizeJavaForInterpreter = codesizeJavaWithoutBranchMarkloopOverhead
     let codesizeAOT =
         let numberOfBranchTargets = methodImpl.BranchTargets |> Array.length
         methodImpl.AvrMethodSize - (4*numberOfBranchTargets) // We currently keep the branch table at the head of the method, but actually we don't need it anymore after code generation, so it shouldn't count for code size.
@@ -235,26 +238,27 @@ let processJvmMethod benchmark (methodImpl : MethodImpl) (countersForAddressAndI
         JvmMethod.name = (getClassAndMethodNameFromImpl methodImpl)
         instructions = processedJvmInstructions
 
-        codesizeJava = codesizeJava
+        codesizeJavaForAOT = codesizeJavaForAOT
         codesizeJavaBranchCount = codesizeJavaBranchCount
         codesizeJavaBranchTargetCount = codesizeJavaBranchTargetCount
         codesizeJavaMarkloopCount = codesizeJavaMarkloopCount
         codesizeJavaMarkloopTotalSize = codesizeJavaMarkloopTotalSize
         codesizeJavaWithoutBranchOverhead = codesizeJavaWithoutBranchOverhead
         codesizeJavaWithoutBranchMarkloopOverhead = codesizeJavaWithoutBranchMarkloopOverhead
+        codesizeJavaForInterpreter = codesizeJavaForInterpreter
         codesizeAOT = codesizeAOT
 
         countersPerJvmOpcodeAOTJava = countersPerJvmOpcodeAOTJava
         countersPerAvrOpcodeAOTJava = countersPerAvrOpcodeAOTJava
     }
 
-let processCFunction (name : string) (countersForAddressAndInst : int -> int -> ExecCounters) (disasm : string list) =
+let processCFunction (name : string) (countersForAddressAndInst : int -> int -> ExecCounters) (disasm : string list) (addressesOfMathFunctions : (string * int) list) =
     printfn "Processing c function %s" (name)
 
     let nativeCInstructions = getNativeInstructionsFromObjdump name disasm countersForAddressAndInst
     let countersPerAvrOpcodeNativeC =
         nativeCInstructions
-            |> List.map (fun (avr, cnt) -> (AVR.getOpcodeForInstruction avr.opcode avr.text, cnt))
+            |> List.map (fun (avr, cnt) -> (AVR.getOpcodeForInstruction avr.opcode avr.text addressesOfMathFunctions, cnt))
             |> groupFold fst snd (+) ExecCounters.Zero
             |> List.map (fun (opc, cnt) -> (AVR.opcodeCategory opc, AVR.opcodeName opc, cnt))
             |> List.sortBy (fun (cat, opc, _) -> cat+opc)
@@ -266,7 +270,7 @@ let processCFunction (name : string) (countersForAddressAndInst : int -> int -> 
         endAddress - startAddress + 2 // assuming the function ends in a 2 byte opcode.
 
     {
-        name = name
+        CFunction.name = name
         instructions = nativeCInstructions |> Seq.toList
 
         codesizeC = codesizeC
@@ -274,48 +278,101 @@ let processCFunction (name : string) (countersForAddressAndInst : int -> int -> 
         countersPerAvrOpcodeNativeC = countersPerAvrOpcodeNativeC
     }
 
-let getINVOKEHelperAddressesFromJvmNm (jvmNm : string list) =
+let parseNm (nm : string list) =
+  // Possible formats:
+  // 00000001 a __zero_reg__
+  // 0000cc0a T _div /opt/local/var/macports/build/_opt_local_var_macports_sources_rsync.macports.org_release_tarballs_ports_cross_avr-gcc/avr-gcc/work/gcc-4.9.1/libgcc/config/avr/lib1funcs.S:1366
+  // 00009a44 0000000c T asm_opcodeWithSingleRegOperand
+  // 000099c8 00000058 T asm_guard_check_regs  /Users/nielsreijers/src/rtc/src/lib/rtc/c/arduino/asm_functions.c:15
+  nm |> List.map (fun line ->
+    let splitLine = line.Split [|' '; '\t'|] |> Array.toList
+    match splitLine with
+    | [ address; symbolType; name ] -> 
+        {
+          address = Convert.ToInt32(address, 16)
+          size = 0
+          symbolType = symbolType
+          name = name
+          file = ""
+        }
+    | [address; symbolType; name; file ] when file.StartsWith("/") ->
+        {
+          address = Convert.ToInt32(address, 16)
+          size = 0
+          symbolType = symbolType
+          name = name
+          file = file
+        }
+    | [address; size; symbolType; name ] -> 
+        {
+          address = Convert.ToInt32(address, 16)
+          size = Convert.ToInt32(size, 16)
+          symbolType = symbolType
+          name = name
+          file = ""
+        }
+    | [address; size; symbolType; name; file] -> 
+        {
+          address = Convert.ToInt32(address, 16)
+          size = Convert.ToInt32(size, 16)
+          symbolType = symbolType
+          name = name
+          file = file
+        }
+    | _ -> { address = 0; size = 0; symbolType = ""; name = line; file = "" })
+
+let getINVOKEHelperAddressesFromJvmNm (jvmNm : NmData list) =
   let lookingFor = [ "RTC_INVOKESTATIC_FAST_NATIVE"; "RTC_INVOKESPECIAL_OR_STATIC_FAST_JAVA"; "RTC_INVOKEVIRTUAL_OR_INTERFACE" ]
-  let addresses =  jvmNm |> List.map (fun line -> line.Split [|' '; '\t'|] |> Array.toList)
-                         |> List.filter (fun line -> match line with
-                                                     | [address; size; symboltyp; name; fileAndLine] -> lookingFor |> List.contains name
-                                                     | _                                             -> false)
-                          |> List.map   (fun line -> match line with
-                                                     | [address; size; symboltyp; name; fileAndLine] -> Convert.ToInt32(address, 16)
-                                                     | _                                             -> failwith "shouldn't happen")
+  let addresses =  jvmNm |> List.filter (fun data -> lookingFor |> List.contains data.name)
+                         |> List.map    (fun data -> data.address)
   if (lookingFor |> List.length) = (addresses |> List.length)
   then addresses
   else failwith "Not all INVOKEHelperAddresses found."
 
-let getBenchmarkFunctionNamesAndAddressesFromCNm (cNm : string list) =
-  let selector (line : string list) =
-    match line with
-    | [address; size; symboltyp; name; fileAndLine] ->
-        let knownExclude = ["Sinewave"; "stab"] // Some symbols defined in benchmarks that aren't code.
-        symboltyp.Equals("T", System.StringComparison.CurrentCultureIgnoreCase) // only select text symbols (code)
-        && fileAndLine.Contains("src/lib/bm_")                                  // only select functions in the benchmark lib
-        && not ((name.StartsWith("bm_") && name.EndsWith("_init")))             // exclude the library's init function
-        && not (name.Equals"javax_rtcbench_RTCBenchmark_void_test_native")      // exclude javax_rtcbench_RTCBenchmark_void_test_native (which contains benchmark init code)
-        && not (knownExclude |> List.contains name)
-    | [_; _; _; name_or_fileAndLine] ->
-        if (name_or_fileAndLine.StartsWith("/"))
-        then false
-        else        
-          // Unfortunately, avr-nm doesn't add the source file for some symbols. Just hard code what to do with those for now.
-          let name = name_or_fileAndLine
-          let knownExclude = ["__do_clear_bss"; "__muluhisi3"; "avr_millis"; "__udivmodhi4"; "__ultoa_invert"; "asm_opcodeWithSingleRegOperand"; "dj_exec_setVM"; "fputc"; "memcpy"; "memmove"; "memset"; "strnlen"; "strnlen_P"; "vfprintf"; "vsnprintf"]
-          let knownInclude = ["siftDown"; "core_list_find"; "crc16"]
-          match (knownInclude |> List.contains name, knownExclude |> List.contains name) with
-          | (true, true)   -> failwith ("BUG in getBenchmarkFunctionNamesAndAddressesFromCNm. " + name + " can't be in both lists at the same time!")
-          | (false, false) -> failwith ("Don't know whether to include " + name + ". Please put it in the include or exclude list in getBenchmarkFunctionNamesAndAddressesFromCNm")
-          | (incl, _)      -> incl
-    | _ -> false // Only select lines with 5 columns
-  cNm |> List.map (fun line -> line.Split [|' '; '\t'|] |> Array.toList)
-      |> List.filter selector
-      |> List.map (fun line -> match line with
-                                 | [address; size; symboltyp; name; fileAndLine] -> (name, Convert.ToInt32(address, 16))
-                                 | [address; size; symboltyp; name]              -> (name, Convert.ToInt32(address, 16))
-                                 | _                                             -> failwith "shouldn't happen")
+let getBenchmarkFunctionNamesAndAddressesFromCNm (cNm : NmData list) =
+  cNm |> List.filter (fun data ->
+          data.symbolType.Equals("T", System.StringComparison.CurrentCultureIgnoreCase) // only select text symbols (code)
+          && not (data.size=0)
+          && match data.file with
+             | "" ->
+                // Unfortunately, avr-nm doesn't add the source file for some symbols. Just hard code what to do with those for now.
+                let knownExclude = ["__do_clear_bss"; "__muluhisi3"; "avr_millis"; "__udivmodhi4"; "__ultoa_invert"; "asm_opcodeWithSingleRegOperand"; "dj_exec_setVM"; "fputc"; "memcpy"; "memmove"; "memset"; "strnlen"; "strnlen_P"; "vfprintf"; "vsnprintf"]
+                let knownInclude = ["siftDown"; "core_list_find"; "crc16"]
+                match (knownInclude |> List.contains data.name, knownExclude |> List.contains data.name) with
+                | (true, true)   -> failwith ("BUG in getBenchmarkFunctionNamesAndAddressesFromCNm. " + data.name + " can't be in both lists at the same time!")
+                | (false, false) -> failwith ("Don't know whether to include " + data.name + ". Please put it in the include or exclude list in getBenchmarkFunctionNamesAndAddressesFromCNm")
+                | (incl, _)      -> incl
+             | file ->
+                let knownExclude = ["Sinewave"; "stab"]                                      // Some symbols defined in benchmarks that aren't code.
+                data.file.Contains("src/lib/bm_")                                            // only select functions in the benchmark lib
+                && not ((data.name.StartsWith("bm_") && data.name.EndsWith("_init")))        // exclude the library's init function
+                && not (data.name.Equals"javax_rtcbench_RTCBenchmark_void_test_native")      // exclude javax_rtcbench_RTCBenchmark_void_test_native (which contains benchmark init code)
+                && not (knownExclude |> List.contains data.name))
+      |> List.map (fun data -> (data.name, data.address))
+
+let getMathFunctionAddressesFromNm (nm : NmData list) =
+  let mathFunctionNames = [ "__mulqi3"; "__mulqihi3"; "__umulqihi3"; "__mulhi3"; "__mulhisi3"; "__umulhisi3"; "__usmulhisi3"; "__mulshisi3"; "__muluhisi3"; "__mulohisi3"; "__mulsi3"; "__divmodqi4"; "__udivmodqi4"; "__divmodhi4"; "__udivmodhi4"; "__divmodsi4"; "__udivmodsi4"; "__fmul"; "__fmuls"; "__fmulsu" ]
+  let nmDatas = nm |> List.filter (fun data -> mathFunctionNames |> List.contains(data.name))
+  nmDatas |> List.map (fun data -> (data.name, data.address))
+
+let getCountersForSymbols (nmData : NmData list) (profilerdataPerAddress : (int * ProfiledInstruction) list) (symbols : string list) =
+  let addresses = symbols |> List.map (fun symbol -> 
+                                          let data = nmData |> List.find (fun data -> data.name.Equals(symbol))
+                                          (data.name, data.address, data.address+data.size))
+  let countersPerSymbol = addresses |> List.map (fun (name, fromAddress, toAddress) ->
+                                                       (name,
+                                                        profilerdataPerAddress |> List.filter (fun (address, _) -> fromAddress <= address && address < toAddress)
+                                                                               |> List.sumBy (fun (_, p) ->
+                                                                                  {
+                                                                                      executions = p.Executions
+                                                                                      cycles = p.Cycles                                        // Since this is a call to another benchmark function or method, don't count the subroutine cycles since we would end up counting them double
+                                                                                      cyclesSubroutine = p.CyclesSubroutine
+                                                                                      count = 1
+                                                                                      size = 0
+                                                                                  })))
+  // countersPerSymbol |> List.iter (fun (name, counters) ->
+  //     printfn "hallo %s %d" name counters.cycles)
+  countersPerSymbol |> List.sumBy (fun (_, counters) -> counters)
 
 let getCResultsdir (jvmResultsdir : string) =
   let indexOfLastSlash = jvmResultsdir.LastIndexOf("/");
@@ -334,7 +391,7 @@ let processSingleBenchmarkResultsDir (resultsdir : string) =
     let jvmDjdebuglines = System.IO.File.ReadLines(String.Format("{0}/jlib_bm_{1}.debug", jvmResultsdir, benchmark)) |> Seq.toList
     let jvmProfilerdata = ProfilerdataXml.Load(String.Format("{0}/profilerdata.xml", jvmResultsdir)).Instructions |> Seq.toList
     let jvmStdoutlog = System.IO.File.ReadLines(String.Format("{0}/stdoutlog.txt", jvmResultsdir)) |> Seq.toList
-    let jvmNm = System.IO.File.ReadLines(String.Format("{0}/darjeeling.nm", jvmResultsdir)) |> Seq.toList
+    let jvmNm = parseNm (System.IO.File.ReadLines(String.Format("{0}/darjeeling.nm", jvmResultsdir)) |> Seq.toList)
     let jvmProfilerdataPerAddress = jvmProfilerdata |> List.map (fun x -> (Convert.ToInt32(x.Address.Trim(), 16), x))
     let jvmExcludeList = [ "RTCBenchmark.test_java"; "CoreMain.core_mark_main" ]
     let jvmMethodsImpls = jvmRtcdata.MethodImpls |> Seq.filter (fun methodImpl -> (methodImpl.MethodDefInfusion.StartsWith("bm_")))
@@ -343,16 +400,18 @@ let processSingleBenchmarkResultsDir (resultsdir : string) =
                                                  |> Seq.toList
     let jvmAddressesOfINVOKEHelperFunctions = getINVOKEHelperAddressesFromJvmNm jvmNm
     let jvmAddressesOfBenchmarkCalls = jvmMethodsImpls |> List.map (fun methodImpl -> Convert.ToInt32(methodImpl.StartAddress, 16))
+    let jvmAddressesOfMathFunctions = getMathFunctionAddressesFromNm jvmNm
 
     let cResultsdir = (getCResultsdir resultsdir)
     let cProfilerdata = ProfilerdataXml.Load(String.Format("{0}/profilerdata.xml", cResultsdir)).Instructions |> Seq.toList
     let cStdoutlog = System.IO.File.ReadLines(String.Format("{0}/stdoutlog.txt", cResultsdir)) |> Seq.toList
     let cDisasm = System.IO.File.ReadLines(String.Format("{0}/darjeeling.S", cResultsdir)) |> Seq.toList
-    let cNm = System.IO.File.ReadLines(String.Format("{0}/darjeeling.nm", cResultsdir)) |> Seq.toList
+    let cNm = parseNm (System.IO.File.ReadLines(String.Format("{0}/darjeeling.nm", cResultsdir)) |> Seq.toList)
     let cProfilerdataPerAddress = cProfilerdata |> List.map (fun x -> (Convert.ToInt32(x.Address.Trim(), 16), x))
     let cBenchmarkFunctionNamesAndAddress = getBenchmarkFunctionNamesAndAddressesFromCNm cNm
     let cFunctionNames = cBenchmarkFunctionNamesAndAddress |> List.map fst
     let cAddressesOfBenchmarkCalls = cBenchmarkFunctionNamesAndAddress |> List.map snd
+    let cAddressesOfMathFunctions = getMathFunctionAddressesFromNm cNm
 
     let countersForAddressAndInst (profilerdataPerAddress : (int * ProfiledInstruction) list) (addressesOfBenchmarkMethods : int list) address inst =
         match profilerdataPerAddress |> List.tryFind (fun (address2,inst) -> address = address2) with
@@ -378,9 +437,9 @@ let processSingleBenchmarkResultsDir (resultsdir : string) =
     let jvmCountersForAddressAndInst = countersForAddressAndInst jvmProfilerdataPerAddress (jvmAddressesOfBenchmarkCalls @ jvmAddressesOfINVOKEHelperFunctions)
     let cCountersForAddressAndInst = countersForAddressAndInst cProfilerdataPerAddress cAddressesOfBenchmarkCalls
 
-    let jvmMethods = jvmMethodsImpls |> List.map (fun methodImpl -> (processJvmMethod benchmark methodImpl jvmCountersForAddressAndInst jvmDjdebuglines))
+    let jvmMethods = jvmMethodsImpls |> List.map (fun methodImpl -> (processJvmMethod benchmark methodImpl jvmCountersForAddressAndInst jvmDjdebuglines jvmAddressesOfMathFunctions))
 
-    let cFunctions = cFunctionNames |> List.map (fun name -> (processCFunction name cCountersForAddressAndInst cDisasm))
+    let cFunctions = cFunctionNames |> List.map (fun name -> (processCFunction name cCountersForAddressAndInst cDisasm cAddressesOfMathFunctions))
 
     let getTimer stdoutlog timer =
         let stopwatchTimers = getTimersFromStdout stdoutlog
@@ -388,12 +447,50 @@ let processSingleBenchmarkResultsDir (resultsdir : string) =
         | Some(x) -> x |> snd
         | None -> 0
 
+
+    let cyclesStopwatchAOT = (getTimer jvmStdoutlog "AOT")
+    let cyclesStopwatchC = (getTimer cStdoutlog "NATIVE")
+
+    let countersAOTVM =
+        // let pathsVMFunctions = [ "src/lib/rtc"; "src/lib/vm"; "src/lib/wkreprog"; "src/lib/base"; "src/core" ]
+        // let vmSymbols = jvmNm |> List.filter (fun nmData -> pathsVMFunctions |> List.exists (fun path -> nmData.file.Contains(path)))
+        //                       |> List.map (fun nmData -> nmData.name)
+        let vmSymbols = [ "callJavaMethod_setup"; "dj_global_id_lookupVirtualMethod"; "emit_x_postinvoke_code"; "emit_x_preinvoke_code"; "callJavaMethod"; "callMethodFast"; "callMethod"; "dj_infusion_getMethodImplementation"; "dj_global_id_getMethodImplementation"; "DO_INVOKEVIRTUAL"; "RTC_INVOKEVIRTUAL_OR_INTERFACE"; "RTC_INVOKESPECIAL_OR_STATIC_FAST_JAVA"; "callNativeMethod"; "RTC_INVOKESTATIC_FAST_NATIVE" ]
+        getCountersForSymbols jvmNm jvmProfilerdataPerAddress vmSymbols
+
+    let cyclesSpentOnTimer  = if jvmResultsdir = cResultsdir // For coremark we have two sets of results, for others only 1. here we want the total cycles spent in the timer
+                              then getCountersForSymbols jvmNm jvmProfilerdataPerAddress ["__vector_16"]
+                              else getCountersForSymbols jvmNm jvmProfilerdataPerAddress ["__vector_16"] + getCountersForSymbols cNm cProfilerdataPerAddress ["__vector_16"]
+    // Since we only hava a total, spread it evenly over AOT and C
+    let fractionAOT x = (int ((float x) * ((float cyclesStopwatchAOT) / (float (cyclesStopwatchAOT+cyclesStopwatchC)))))
+    let fractionC   x = (int ((float x) * ((float cyclesStopwatchC) / (float (cyclesStopwatchAOT+cyclesStopwatchC)))))
+    let countersAOTTimer = 
+            {
+                executions       = fractionAOT cyclesSpentOnTimer.executions
+                cycles           = fractionAOT cyclesSpentOnTimer.cycles
+                cyclesSubroutine = fractionAOT cyclesSpentOnTimer.cyclesSubroutine
+                count            = fractionAOT cyclesSpentOnTimer.count
+                size             = fractionAOT cyclesSpentOnTimer.size
+            }  
+    let countersCTimer = 
+            {
+                executions       = fractionC cyclesSpentOnTimer.executions
+                cycles           = fractionC cyclesSpentOnTimer.cycles
+                cyclesSubroutine = fractionC cyclesSpentOnTimer.cyclesSubroutine
+                count            = fractionC cyclesSpentOnTimer.count
+                size             = fractionC cyclesSpentOnTimer.size
+            }  
+
     let results = {
         benchmark = benchmark
 
         passedTestAOT = jvmStdoutlog |> List.exists (fun line -> line.Contains("RTC OK."))
-        cyclesStopwatchAOT = (getTimer jvmStdoutlog "AOT")
-        cyclesStopwatchC = (getTimer cStdoutlog "NATIVE")
+        cyclesStopwatchAOT = cyclesStopwatchAOT
+        cyclesStopwatchC = cyclesStopwatchC
+
+        countersAOTVM = countersAOTVM
+        countersAOTTimer = countersAOTTimer
+        countersCTimer = countersCTimer
 
         jvmMethods = jvmMethods
         cFunctions = cFunctions
