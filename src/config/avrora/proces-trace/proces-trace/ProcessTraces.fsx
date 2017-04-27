@@ -455,7 +455,7 @@ let processSingleBenchmarkResultsDir (resultsdir : string) =
         // let pathsVMFunctions = [ "src/lib/rtc"; "src/lib/vm"; "src/lib/wkreprog"; "src/lib/base"; "src/core" ]
         // let vmSymbols = jvmNm |> List.filter (fun nmData -> pathsVMFunctions |> List.exists (fun path -> nmData.file.Contains(path)))
         //                       |> List.map (fun nmData -> nmData.name)
-        let vmSymbols = [ "callJavaMethod_setup"; "dj_global_id_lookupVirtualMethod"; "emit_x_postinvoke_code"; "emit_x_preinvoke_code"; "callJavaMethod"; "callMethodFast"; "callMethod"; "dj_infusion_getMethodImplementation"; "dj_global_id_getMethodImplementation"; "DO_INVOKEVIRTUAL"; "RTC_INVOKEVIRTUAL_OR_INTERFACE"; "RTC_INVOKESPECIAL_OR_STATIC_FAST_JAVA"; "callNativeMethod"; "RTC_INVOKESTATIC_FAST_NATIVE" ]
+        let vmSymbols = [ "callJavaMethod"; "callJavaMethod_setup"; "callMethod"; "callMethodFast"; "callNativeMethod"; "dj_exec_getCurrentFrame"; "dj_exec_stackPeekDeepRef"; "dj_global_id_lookupVirtualMethod"; "dj_object_getRuntimeId"; "DO_INVOKEVIRTUAL"; "RTC_INVOKESPECIAL_OR_STATIC_FAST_JAVA"; "RTC_INVOKESTATIC_FAST_NATIVE"; "RTC_INVOKEVIRTUAL_OR_INTERFACE" ]
         { (getCountersForSymbols jvmNm jvmProfilerdataPerAddress vmSymbols) with executions = 0 }
 
     let cyclesSpentOnTimer  = if jvmResultsdir = cResultsdir // For coremark we have two sets of results, for others only 1. here we want the total cycles spent in the timer

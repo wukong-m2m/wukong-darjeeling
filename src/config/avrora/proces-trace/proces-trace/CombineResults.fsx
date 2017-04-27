@@ -84,6 +84,10 @@ let resultToStringList (result : SimulationResults) =
         (""                     , "");
         ("         stopw/count" , (cyclesToSlowdown result.cyclesStopwatchAOT result.countersAOTTotal.cycles));
         (""                     , "");
+        ("STOPW/(COUNT+TIMER)"  , "");
+        ("Native C"             , (cyclesToSlowdown result.cyclesStopwatchC result.countersCTotalPlusTimer.cycles));
+        ("AOT"                  , (cyclesToSlowdown result.cyclesStopwatchAOT result.countersAOTTotalPlusTimer.cycles));
+        (""                     , "");
         ("MEMORY TRAFFIC"       , "");
         ("Bytes LD/ST AOT"      , String.Format ("{0}", (getLDDSTBytesFromAVRPerCategoryAOT result)));
         ("Bytes LD/ST C"        , String.Format ("{0}", (getLDDSTBytesFromAVRPerCategoryC result)));
