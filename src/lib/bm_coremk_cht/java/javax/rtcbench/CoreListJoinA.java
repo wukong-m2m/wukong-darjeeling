@@ -161,6 +161,7 @@ public class CoreListJoinA {
 		- Single remove/reinsert
 		* At the end of this function, the list is back to original state
 	*/
+	public static ListData info=new ListData();
 	static short core_bench_list(CoreResults res, short finder_idx) {
 		short retval=0;
 		short found=0,missed=0;
@@ -168,7 +169,6 @@ public class CoreListJoinA {
 		short find_num=res.seed3;
 		ListHead this_find;
 		ListHead finder, remover;
-		ListData info=new ListData();
 		short i;
 
 		info.idx=finder_idx;
