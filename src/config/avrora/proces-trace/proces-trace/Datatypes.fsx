@@ -237,24 +237,23 @@ type SimulationResults = {
     }
     with
     member this.countersPerJvmOpcodeAOTJava         = (this.jvmMethods |> List.collect (fun (jvmMethod) -> jvmMethod.countersPerJvmOpcodeAOTJava) |> sumCountersPerOpcodeAndCategory) @
-                                                                                [ ("13) VM + timer", "", (this.countersAOTVM+this.countersAOTTimer)) ]
+                                                                                [ ("13) VM", "", (this.countersAOTVM)) ]
     member this.countersPerAvrOpcodeAOTJava         = (this.jvmMethods |> List.collect (fun (jvmMethod) -> jvmMethod.countersPerAvrOpcodeAOTJava) |> sumCountersPerOpcodeAndCategory) @
-                                                                                [ ("13) VM + timer", "", (this.countersAOTVM+this.countersAOTTimer)) ]
-    member this.countersPerAvrOpcodeNativeC         = (this.cFunctions |> List.collect (fun (cFunction) -> cFunction.countersPerAvrOpcodeNativeC) |> sumCountersPerOpcodeAndCategory) @
-                                                                                [ ("13) Timer", "", (this.countersCTimer)) ]
+                                                                                [ ("13) VM", "", (this.countersAOTVM)) ]
+    member this.countersPerAvrOpcodeNativeC         = (this.cFunctions |> List.collect (fun (cFunction) -> cFunction.countersPerAvrOpcodeNativeC) |> sumCountersPerOpcodeAndCategory)
 
     member this.countersPerJvmOpcodeCategoryAOTJava = (this.jvmMethods |> List.collect (fun (jvmMethod) -> jvmMethod.countersPerJvmOpcodeCategoryAOTJava) |> sumCountersPerCategory) @
-                                                                                [ ("13) VM + timer", (this.countersAOTVM+this.countersAOTTimer)) ]
+                                                                                [ ("13) VM", (this.countersAOTVM)) ]
     member this.countersPerAvrOpcodeCategoryAOTJava = (this.jvmMethods |> List.collect (fun (jvmMethod) -> jvmMethod.countersPerAvrOpcodeCategoryAOTJava) |> sumCountersPerCategory) @
-                                                                                [ ("13) VM + timer", (this.countersAOTVM+this.countersAOTTimer)) ]
-    member this.countersPerAvrOpcodeCategoryNativeC = (this.cFunctions |> List.collect (fun (cFunction) -> cFunction.countersPerAvrOpcodeCategoryNativeC) |> sumCountersPerCategory) @
-                                                                                [ ("13) Timer", (this.countersCTimer)) ]
+                                                                                [ ("13) VM", (this.countersAOTVM)) ]
+    member this.countersPerAvrOpcodeCategoryNativeC = (this.cFunctions |> List.collect (fun (cFunction) -> cFunction.countersPerAvrOpcodeCategoryNativeC) |> sumCountersPerCategory)
 
     member this.countersCLoadStore                  = this.cFunctions |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersCLoadStore)
     member this.countersCPushPop                    = this.cFunctions |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersCPushPop)
     member this.countersCMov                        = this.cFunctions |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersCMov)
     member this.countersCOthers                     = this.cFunctions |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersCOthers)
-    member this.countersCTotal                      =(this.cFunctions |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersCTotal)) + this.countersCTimer
+    member this.countersCTotal                      =(this.cFunctions |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersCTotal))
+    member this.countersCTotalPlusTimer             = this.countersCTotal + this.countersCTimer
 
     member this.countersAOTLoadStore                = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersAOTLoadStore)
     member this.countersAOTPushPopInt               = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersAOTPushPopInt)
@@ -262,13 +261,13 @@ type SimulationResults = {
     member this.countersAOTPushPop                  = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersAOTPushPop)
     member this.countersAOTMov                      = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersAOTMov)
     member this.countersAOTOthers                   = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersAOTOthers)
-    member this.countersAOTTotal                    =(this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersAOTTotal)) + this.countersAOTVM + this.countersAOTTimer
+    member this.countersAOTTotal                    =(this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersAOTTotal)) + this.countersAOTVM
+    member this.countersAOTTotalPlusTimer           = this.countersAOTTotal + this.countersAOTTimer
 
     member this.countersOverheadLoadStore           = this.countersAOTLoadStore - this.countersCLoadStore;
     member this.countersOverheadPushPop             = this.countersAOTPushPop - this.countersCPushPop;
     member this.countersOverheadMov                 = this.countersAOTMov - this.countersCMov;
     member this.countersOverheadOthers              = this.countersAOTOthers - this.countersCOthers;
-    member this.countersOverheadTimer               = this.countersAOTTimer - this.countersCTimer;
     member this.countersOverheadVm                  = this.countersAOTVM;
     member this.countersOverheadTotal               = this.countersAOTTotal - this.countersCTotal;
 

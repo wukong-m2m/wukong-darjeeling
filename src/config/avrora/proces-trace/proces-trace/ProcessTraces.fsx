@@ -456,7 +456,7 @@ let processSingleBenchmarkResultsDir (resultsdir : string) =
         // let vmSymbols = jvmNm |> List.filter (fun nmData -> pathsVMFunctions |> List.exists (fun path -> nmData.file.Contains(path)))
         //                       |> List.map (fun nmData -> nmData.name)
         let vmSymbols = [ "callJavaMethod_setup"; "dj_global_id_lookupVirtualMethod"; "emit_x_postinvoke_code"; "emit_x_preinvoke_code"; "callJavaMethod"; "callMethodFast"; "callMethod"; "dj_infusion_getMethodImplementation"; "dj_global_id_getMethodImplementation"; "DO_INVOKEVIRTUAL"; "RTC_INVOKEVIRTUAL_OR_INTERFACE"; "RTC_INVOKESPECIAL_OR_STATIC_FAST_JAVA"; "callNativeMethod"; "RTC_INVOKESTATIC_FAST_NATIVE" ]
-        getCountersForSymbols jvmNm jvmProfilerdataPerAddress vmSymbols
+        { (getCountersForSymbols jvmNm jvmProfilerdataPerAddress vmSymbols) with executions = 0 }
 
     let cyclesSpentOnTimer  = if jvmResultsdir = cResultsdir // For coremark we have two sets of results, for others only 1. here we want the total cycles spent in the timer
                               then getCountersForSymbols jvmNm jvmProfilerdataPerAddress ["__vector_16"]

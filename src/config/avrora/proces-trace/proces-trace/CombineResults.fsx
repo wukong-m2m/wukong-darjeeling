@@ -72,7 +72,6 @@ let resultToStringList (result : SimulationResults) =
         ("         push/pop"    , String.Format("{0}", result.countersCPushPop.cycles));
         ("         mov(w)"      , String.Format("{0}", result.countersCMov.cycles));
         ("         others"      , String.Format("{0}", result.countersCOthers.cycles));
-        ("         timer"       , String.Format("{0}", result.countersCTimer.cycles));
         (""                     , "");
         ("         stopw/count" , (cyclesToSlowdown result.cyclesStopwatchC result.countersCTotal.cycles));
         (""                     , "");
@@ -81,7 +80,6 @@ let resultToStringList (result : SimulationResults) =
         ("         push/pop"    , String.Format("{0}", result.countersAOTPushPop.cycles));
         ("         mov(w)"      , String.Format("{0}", result.countersAOTMov.cycles));
         ("         others"      , String.Format("{0}", result.countersAOTOthers.cycles));
-        ("         timer"       , String.Format("{0}", result.countersAOTTimer.cycles));
         ("         vm"          , String.Format("{0}", result.countersAOTVM.cycles));
         (""                     , "");
         ("         stopw/count" , (cyclesToSlowdown result.cyclesStopwatchAOT result.countersAOTTotal.cycles));
