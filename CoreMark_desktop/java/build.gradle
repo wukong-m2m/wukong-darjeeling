@@ -1,23 +1,30 @@
-defaultTasks 'jar'
+defaultTasks 'proguard'
 
 apply plugin: 'java'
 
-version = 1.0
+buildscript {
+    repositories {
+        flatDir dirs: '/Users/nielsreijers/src/proguard5.2.1/lib'
+    }
+    dependencies {
+        classpath ':proguard:'
+    }
+}
 
 if (!project.hasProperty('cm_version')) {
   throw new GradleException('Please specify the version to build. (-Pcm_version=[ori|opt|cht])')
 
 } else if (project.ext.cm_version == 'ori') {
   project.ext.cm_src_dir = '../../src/lib/bm_coremk_ori/java'
-  project.ext.target_jar = 'coremk_ori.jar'
+  project.ext.target_jar = 'coremk_ori'
 
 } else if (project.ext.cm_version == 'opt') {
   project.ext.cm_src_dir = '../../src/lib/bm_coremk/java'
-  project.ext.target_jar = 'coremk_opt.jar'
+  project.ext.target_jar = 'coremk_opt'
 
 } else if (project.ext.cm_version == 'cht') {
   project.ext.cm_src_dir = '../../src/lib/bm_coremk_cht/java'
-  project.ext.target_jar = 'coremk_cht.jar'
+  project.ext.target_jar = 'coremk_cht'
 }
 
 sourceSets {
@@ -35,6 +42,41 @@ jar {
     }
     baseName = project.ext.target_jar
 }
+
+task proguard(type: proguard.gradle.ProGuardTask) {
+  dependsOn(jar)
+  injars 'build/libs/' + project.ext.target_jar + '.jar'
+  outjars 'build/libs/pg_' + project.ext.target_jar + '.jar'
+
+  dontwarn
+  dontusemixedcaseclassnames
+  dontobfuscate
+  optimizations '!code/allocation/variable' // This is necessary because if two variables have non-overlapping live ranges, proguard may decide to put them in the same slot. This is fine for normal Java, but can cause errors in the infuser (probably when one variable is int and the other a short or byte)
+
+  // This is what we do for 'bm_' infusions  
+  keep 'class javax.rtcbench.RTCBenchmark { public static native void test_native(); }'
+  keep 'class Main { public static void  main(java.lang.String[]); }'
+  keepclassmembers 'class * { public static boolean test_java(); }'
+  keepclassmembers 'class * { public static <fields>; }'
+  keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(short[]); }'
+  keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(int[]); }'
+  keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(short[]); }'
+  keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(short[]); }'
+  keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(int[]); }'
+  keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(short[]); }'
+  keepclassmembers 'class * { public static short rtcbenchmark_measure_java_performance(); }'
+  keepclassmembers 'class * { public static short rtcbenchmark_measure_java_performance(byte[], byte[], short, boolean); }'
+  keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(short[]); }'
+  keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(int[]); }'
+  keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(short[]); }'
+  keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(byte[], byte[]); }'
+  keepclassmembers 'class * { public static int   rtcbenchmark_measure_java_performance(byte[], byte[], int, int[]); }'
+  keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(); }'
+  keepclassmembers 'class * { public static void  rtcbenchmark_measure_java_performance(int[], int[]); }'       
+
+  keepclassmembers 'class * { public static void  main(java.lang.String[]); }'
+}
+
 
 // task run(dependsOn: 'jar') {
 //   doLast {

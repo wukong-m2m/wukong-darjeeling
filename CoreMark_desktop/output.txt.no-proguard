@@ -1,0 +1,151 @@
+Fri Apr 28 12:20:46 CST 2017
+ori 1
+Total ticks      : 10350
+Total time (secs): 10
+Iterations/Sec   : 10628
+Iterations       : 110000
+ori 2
+Total ticks      : 10595
+Total time (secs): 10
+Iterations/Sec   : 10382
+Iterations       : 110000
+ori 3
+Total ticks      : 17437
+Total time (secs): 17
+Iterations/Sec   : 11469
+Iterations       : 200000
+ori 4
+Total ticks      : 17766
+Total time (secs): 17
+Iterations/Sec   : 11257
+Iterations       : 200000
+ori 5
+Total ticks      : 17169
+Total time (secs): 17
+Iterations/Sec   : 11648
+Iterations       : 200000
+ori 6
+Total ticks      : 18925
+Total time (secs): 18
+Iterations/Sec   : 10568
+Iterations       : 200000
+ori 7
+Total ticks      : 17480
+Total time (secs): 17
+Iterations/Sec   : 11441
+Iterations       : 200000
+ori 8
+Total ticks      : 17443
+Total time (secs): 17
+Iterations/Sec   : 11465
+Iterations       : 200000
+ori 9
+Total ticks      : 17525
+Total time (secs): 17
+Iterations/Sec   : 11412
+Iterations       : 200000
+ori 10
+Total ticks      : 17445
+Total time (secs): 17
+Iterations/Sec   : 11464
+Iterations       : 200000
+opt 1
+Total ticks      : 15249
+Total time (secs): 15
+Iterations/Sec   : 13115
+Iterations       : 200000
+opt 2
+Total ticks      : 14424
+Total time (secs): 14
+Iterations/Sec   : 13865
+Iterations       : 200000
+opt 3
+Total ticks      : 14588
+Total time (secs): 14
+Iterations/Sec   : 13709
+Iterations       : 200000
+opt 4
+Total ticks      : 13915
+Total time (secs): 13
+Iterations/Sec   : 14372
+Iterations       : 200000
+opt 5
+Total ticks      : 15489
+Total time (secs): 15
+Iterations/Sec   : 12912
+Iterations       : 200000
+opt 6
+Total ticks      : 14758
+Total time (secs): 14
+Iterations/Sec   : 13551
+Iterations       : 200000
+opt 7
+Total ticks      : 15160
+Total time (secs): 15
+Iterations/Sec   : 13192
+Iterations       : 200000
+opt 8
+Total ticks      : 14152
+Total time (secs): 14
+Iterations/Sec   : 14132
+Iterations       : 200000
+opt 9
+Total ticks      : 16240
+Total time (secs): 16
+Iterations/Sec   : 12315
+Iterations       : 200000
+opt 10
+Total ticks      : 15351
+Total time (secs): 15
+Iterations/Sec   : 13028
+Iterations       : 200000
+cht 1
+Total ticks      : 14780
+Total time (secs): 14
+Iterations/Sec   : 13531
+Iterations       : 200000
+cht 2
+Total ticks      : 14638
+Total time (secs): 14
+Iterations/Sec   : 13663
+Iterations       : 200000
+cht 3
+Total ticks      : 14322
+Total time (secs): 14
+Iterations/Sec   : 13964
+Iterations       : 200000
+cht 4
+Total ticks      : 14676
+Total time (secs): 14
+Iterations/Sec   : 13627
+Iterations       : 200000
+cht 5
+Total ticks      : 14241
+Total time (secs): 14
+Iterations/Sec   : 14043
+Iterations       : 200000
+cht 6
+Total ticks      : 14750
+Total time (secs): 14
+Iterations/Sec   : 13559
+Iterations       : 200000
+cht 7
+Total ticks      : 14228
+Total time (secs): 14
+Iterations/Sec   : 14056
+Iterations       : 200000
+cht 8
+Total ticks      : 14785
+Total time (secs): 14
+Iterations/Sec   : 13527
+Iterations       : 200000
+cht 9
+Total ticks      : 14714
+Total time (secs): 14
+Iterations/Sec   : 13592
+Iterations       : 200000
+cht 10
+Total ticks      : 14492
+Total time (secs): 14
+Iterations/Sec   : 13800
+Iterations       : 200000
