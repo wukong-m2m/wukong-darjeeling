@@ -1,0 +1,47 @@
+defaultTasks 'jar'
+
+apply plugin: 'java'
+
+version = 1.0
+
+if (!project.hasProperty('cm_version')) {
+  throw new GradleException('Please specify the version to build. (-Pcm_version=[ori|opt|cht])')
+
+} else if (project.ext.cm_version == 'ori') {
+  project.ext.cm_src_dir = '../../src/lib/bm_coremk_ori/java'
+  project.ext.target_jar = 'coremk_ori.jar'
+
+} else if (project.ext.cm_version == 'opt') {
+  project.ext.cm_src_dir = '../../src/lib/bm_coremk/java'
+  project.ext.target_jar = 'coremk_opt.jar'
+
+} else if (project.ext.cm_version == 'cht') {
+  project.ext.cm_src_dir = '../../src/lib/bm_coremk_cht/java'
+  project.ext.target_jar = 'coremk_cht.jar'
+}
+
+sourceSets {
+  main {
+    java {
+      srcDirs = [project.ext.cm_src_dir, './src/main/java']
+    }
+  }
+}
+
+jar {
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    manifest {
+        attributes 'Main-Class': 'Main'
+    }
+    baseName = project.ext.target_jar
+}
+
+// task run(dependsOn: 'jar') {
+//   doLast {
+//     print sourceSets.main.runtimeClasspath
+//     javaexec {
+//       main 'Main'
+//       classpath sourceSets.main.runtimeClasspath
+//     }
+//   }
+// }
