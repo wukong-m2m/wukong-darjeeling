@@ -38,4 +38,7 @@
 // cheat by refactoring crc to reduce funcalls
 #define CORE_OPTIMISATION_REDUCE_CRC_FUNCALLS
 
+// cheat to avoid NEW
+#define CORE_OPTIMISATION_AVOID_NEW
+
 #endif // CORE_OPTIMISATIONS_H

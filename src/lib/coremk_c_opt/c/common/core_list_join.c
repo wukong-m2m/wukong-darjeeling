@@ -133,6 +133,9 @@ void copy_info(list_data *to,list_data *from) {
 	- Single remove/reinsert
 	* At the end of this function, the list is back to original state
 */
+#ifdef CORE_OPTIMISATION_AVOID_NEW
+	list_data info;
+#endif
 ee_u16 core_bench_list(core_results *res, ee_s16 finder_idx) {
 	ee_u16 retval=0;
 	ee_u16 found=0,missed=0;
@@ -140,7 +143,9 @@ ee_u16 core_bench_list(core_results *res, ee_s16 finder_idx) {
 	ee_s16 find_num=res->seed3;
 	list_head *this_find;
 	list_head *finder, *remover;
+#ifndef CORE_OPTIMISATION_AVOID_NEW
 	list_data info;
+#endif
 	ee_s16 i;
 
 	info.idx=finder_idx;
