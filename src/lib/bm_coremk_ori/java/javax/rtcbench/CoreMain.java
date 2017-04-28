@@ -38,7 +38,7 @@ El Dorado Hills, CA, 95762
 
 public class CoreMain {
 	// NOT STANDARD COREMARK CODE: switch to select an implementation of CoreListJoin
-	private static final boolean useCoreListJoinA = false;
+	private static final boolean useCoreListJoinA = true;
 
 	// NOT STANDARD COREMARK CODE: make this into functions to prevent them taking up memory at runtime.
 	// not used during the benchmark so this won't influence the results.
