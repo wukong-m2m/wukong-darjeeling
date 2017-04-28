@@ -291,23 +291,23 @@ MAIN_RETURN_TYPE core_mark_main(int argc, char *argv[]) {
 	}
 	total_errors+=check_data_types();
 	/* and report results */
-	ee_printf("CoreMark Size    : %lu\n",(ee_u32)results[0].size);
-	ee_printf("Total ticks      : %lu\n",(ee_u32)total_time);
+	ee_printf("CoreMark Size    : %u\n",(ee_u32)results[0].size);
+	ee_printf("Total ticks      : %u\n",(ee_u32)total_time);
 #if HAS_FLOAT
 	ee_printf("Total time (secs): %f\n",time_in_secs(total_time));
 	if (time_in_secs(total_time) > 0)
 		ee_printf("Iterations/Sec   : %f\n",default_num_contexts*results[0].iterations/time_in_secs(total_time));
 #else 
-	ee_printf("Total time (secs): %lu\n",time_in_secs(total_time));
+	ee_printf("Total time (secs): %u\n",time_in_secs(total_time));
 	if (time_in_secs(total_time) > 0)
-		ee_printf("Iterations/Sec   : %lu\n",default_num_contexts*results[0].iterations/time_in_secs(total_time));
+		ee_printf("Iterations/Sec   : %u\n",default_num_contexts*results[0].iterations/time_in_secs(total_time));
 #endif
 	if (time_in_secs(total_time) < 10) {
 		ee_printf("ERROR! Must execute for at least 10 secs for a valid result!\n");
 		total_errors++;
 	}
 
-	ee_printf("Iterations       : %lu\n",(ee_u32)default_num_contexts*results[0].iterations);
+	ee_printf("Iterations       : %u\n",(ee_u32)default_num_contexts*results[0].iterations);
 	ee_printf("Compiler version : %s\n",COMPILER_VERSION);
 	// ee_printf("Compiler flags   : %s\n",COMPILER_FLAGS);
 #if (MULTITHREAD>1)

@@ -1,0 +1,2 @@
+#define javax_rtc_RTC_void_startBenchmarkMeasurement_Native()
+#define javax_rtc_RTC_void_stopBenchmarkMeasurement()
