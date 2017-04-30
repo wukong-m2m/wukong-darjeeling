@@ -91,7 +91,7 @@ public class CoreListJoinA {
 		Can be used by mergesort.
 	*/
 	private static class CmpComplex {
-		@Lightweight(rank=2) // Needs to come after crc
+		@Lightweight(rank=4) // Needs to come after crc
 		static short calc_func(ListData pdata, CoreResults res) {
 			short data=pdata.data16;
 			short retval;

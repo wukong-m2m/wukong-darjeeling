@@ -126,7 +126,7 @@ public class CoreListJoinB {
 		Can be used by mergesort.
 	*/
 	private static class CmpComplex extends AbstractListDataCompare {
-		@Lightweight(rank=2) // Needs to come after crc
+		@Lightweight(rank=4) // Needs to come after crc
 		static short calc_func(short pdata, CoreResults res) {
 			short data=ListData_GetData16(pdata);
 			short retval;

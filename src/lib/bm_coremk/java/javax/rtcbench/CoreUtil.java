@@ -71,7 +71,7 @@ public class CoreUtil {
 		Service functions to calculate 16b CRC code.
 
 	*/
-	@Lightweight
+	@Lightweight(rank=1)
 	static short crcu8(short data, short crc )
 	{
 		// for (short i = 0; i < 8; i++)
@@ -92,19 +92,19 @@ public class CoreUtil {
 	    }
 		return crc;
 	}
-	@Lightweight
+	@Lightweight(rank=2)
 	static short crcu16(short newval, short crc) {
 		crc=crcu8((byte) (newval), crc);
 		crc=crcu8((byte) ((newval)>>>8), crc);
 		return crc;
 	}
-	@Lightweight
+	@Lightweight(rank=4)
 	static short crcu32(int newval, short crc) {
 		crc=crc16((short) newval, crc);
 		crc=crc16((short) (newval>>>16), crc);
 		return crc;
 	}
-	@Lightweight
+	@Lightweight(rank=3)
 	static short crc16(short newval, short crc) {
 		return crcu16((short)newval, crc);
 	}

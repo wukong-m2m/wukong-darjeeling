@@ -71,7 +71,7 @@ public class CoreUtil {
 		Service functions to calculate 16b CRC code.
 
 	*/
-	@Lightweight
+	@Lightweight(rank=1)
 	static short crc(int intdata, short crc, short number_of_bytes )
 	{
 		while (number_of_bytes > 0) {
