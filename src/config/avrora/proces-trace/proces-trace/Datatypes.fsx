@@ -246,10 +246,11 @@ type SimulationResults = {
     countersAOTTimer : ExecCounters;
     countersCTimer : ExecCounters;
 
-
-
     jvmMethods : JvmMethod list;
     cFunctions : CFunction list;
+
+    jvmAllSymbolCounters : (string * ExecCounters) list
+    cAllSymbolCounters : (string * ExecCounters) list
     }
     with
     member this.countersPerJvmOpcodeAOTJava         = (this.jvmMethods |> List.collect (fun (jvmMethod) -> jvmMethod.countersPerJvmOpcodeAOTJava) |> sumCountersPerOpcodeAndCategory) @

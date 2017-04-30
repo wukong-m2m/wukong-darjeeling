@@ -374,6 +374,25 @@ let getCountersForSymbols (nmData : NmData list) (profilerdataPerAddress : (int 
   //     printfn "hallo %s %d" name counters.cycles)
   countersPerSymbol |> List.sumBy (fun (_, counters) -> counters)
 
+
+let getAllSymbolCounters (profilerdataPerAddress : (int * ProfiledInstruction) list) (nm : NmData list) =
+  let profilerdataAsCounters = profilerdataPerAddress |> List.map (fun (address,profiledInstruction) ->
+      (address, 
+       {
+          executions = profiledInstruction.Executions
+          cycles = profiledInstruction.Cycles
+          cyclesSubroutine = profiledInstruction.CyclesSubroutine
+          count = 1
+          size = 0
+       }))
+  nm |> List.sortBy (fun nm -> nm.address)
+     |> List.filter (fun nm -> nm.size > 0)
+     |> List.map    (fun nm ->
+        (nm.name, 
+         profilerdataAsCounters |> List.filter (fun (addr,cnt) -> nm.address <= addr && addr < (nm.address + nm.size))
+                                |> List.map (fun (_,cnt) -> cnt)
+                                |> List.fold (+) ExecCounters.Zero))
+
 let getCResultsdir (jvmResultsdir : string) =
   let indexOfLastSlash = jvmResultsdir.LastIndexOf("/");
   match (jvmResultsdir.Substring(indexOfLastSlash).StartsWith("/coremk")) with
@@ -494,6 +513,9 @@ let processSingleBenchmarkResultsDir (resultsdir : string) =
 
         jvmMethods = jvmMethods
         cFunctions = cFunctions
+
+        jvmAllSymbolCounters = getAllSymbolCounters jvmProfilerdataPerAddress jvmNm
+        cAllSymbolCounters   = getAllSymbolCounters cProfilerdataPerAddress cNm
     }
 
     let txtFilename = resultsdir + ".txt"

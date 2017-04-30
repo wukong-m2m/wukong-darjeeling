@@ -265,6 +265,11 @@ let resultsToString (results : SimulationResults) =
         |> List.iter addLn
       addLn ("")
 
+    let addCyclesForSymbols (symbolsAndCounters : (string * ExecCounters) list) =
+      symbolsAndCounters |> List.filter (fun (_, cnt) -> cnt.cycles > 0)
+                         |> List.iter (fun (name, cnt) -> addLn(String.Format("{0,12} cyc, {1,12} sub, {2,12} total in {1}", cnt.cycles, cnt.cyclesInclSubroutine, (cnt.cycles + cnt.cyclesInclSubroutine), name)))
+
+
     let testResultAOT = if results.passedTestAOT then "PASSED" else "FAILED"
     addLn ("================== " + results.benchmark + ": AOT " + testResultAOT + "=============================== ============================ CODE SIZE ===============================")
     addLn (String.Format ("--- STACK max                               {0,14}             --- CODE SIZE   Native C                    {1,14}", results.maxJvmStackInBytes, results.codesizeC))
@@ -370,6 +375,16 @@ let resultsToString (results : SimulationResults) =
     sortedCFunctionResults |> List.iter addCFunctionCalledFunctionsList
     addLn ("")
     sortedCFunctionResults |> List.iter addCFunctionDetails
+
+    addLn ("")
+    addLn ("============================================ COUNTERS FOR ALL SYMBOLS WHERE CYCLES>0 (JVM) ==================================================")
+    addCyclesForSymbols results.jvmAllSymbolCounters
+    addLn ("")
+
+    addLn ("")
+    addLn ("============================================ COUNTERS FOR ALL SYMBOLS WHERE CYCLES>0 (C) ==================================================")
+    addCyclesForSymbols results.cAllSymbolCounters
+    addLn ("")
 
     // addLn ("=========================================================== JVM FULL LISTINGS ===============================================================")
     // addLn ("")
