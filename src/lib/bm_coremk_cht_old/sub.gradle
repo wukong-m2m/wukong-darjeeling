@@ -1,6 +1,0 @@
-djlibsource {
-    bm_coremk_cht {
-        cDependencies = [ 'darjeeling3', 'vm_dev' ]
-        javaDependencies = [ 'base', 'darjeeling3' ]
-    }
-}
