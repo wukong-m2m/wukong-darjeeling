@@ -184,11 +184,6 @@ void dj_infusion_getName(dj_infusion * infusion, char * str, int strLength)
 
 }
 
-dj_di_pointer dj_infusion_getClassDefinition(dj_infusion * infusion, int entity_id)
-{
-	return dj_di_parentElement_getChild(infusion->classList, entity_id);
-}
-
 dj_di_pointer dj_infusion_getMethodImplementation(dj_infusion *infusion, int entity_id)
 {
 	return dj_di_parentElement_getChild(infusion->methodImplementationList, entity_id);

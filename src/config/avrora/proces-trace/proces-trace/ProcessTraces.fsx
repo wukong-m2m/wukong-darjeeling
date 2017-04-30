@@ -329,6 +329,8 @@ let getINVOKEHelperAddressesFromJvmNm (jvmNm : NmData list) =
   then addresses
   else failwith "Not all INVOKEHelperAddresses found."
 
+let mathFunctionNames = [ "__mulqi3"; "__mulqihi3"; "__umulqihi3"; "__mulhi3"; "__mulhisi3"; "__umulhisi3"; "__usmulhisi3"; "__mulshisi3"; "__muluhisi3"; "__mulohisi3"; "__mulsi3"; "__divmodqi4"; "__udivmodqi4"; "__divmodhi4"; "__udivmodhi4"; "__divmodsi4"; "__udivmodsi4"; "__fmul"; "__fmuls"; "__fmulsu" ]
+
 let getBenchmarkFunctionNamesAndAddressesFromCNm (cNm : NmData list) =
   cNm |> List.filter (fun data ->
           data.symbolType.Equals("T", System.StringComparison.CurrentCultureIgnoreCase) // only select text symbols (code)
@@ -336,7 +338,7 @@ let getBenchmarkFunctionNamesAndAddressesFromCNm (cNm : NmData list) =
           && match data.file with
              | "" ->
                 // Unfortunately, avr-nm doesn't add the source file for some symbols. Just hard code what to do with those for now.
-                let knownExclude = ["__do_clear_bss"; "__muluhisi3"; "avr_millis"; "__udivmodhi4"; "__ultoa_invert"; "asm_opcodeWithSingleRegOperand"; "dj_exec_setVM"; "fputc"; "memcpy"; "memmove"; "memset"; "strnlen"; "strnlen_P"; "vfprintf"; "vsnprintf"]
+                let knownExclude = mathFunctionNames @ ["__do_clear_bss"; "avr_millis"; "__ultoa_invert"; "asm_opcodeWithSingleRegOperand"; "dj_exec_setVM"; "fputc"; "memcpy"; "memmove"; "memset"; "strnlen"; "strnlen_P"; "vfprintf"; "vsnprintf"]
                 let knownInclude = ["siftDown"; "core_list_find"; "crc16"]
                 match (knownInclude |> List.contains data.name, knownExclude |> List.contains data.name) with
                 | (true, true)   -> failwith ("BUG in getBenchmarkFunctionNamesAndAddressesFromCNm. " + data.name + " can't be in both lists at the same time!")
@@ -351,7 +353,6 @@ let getBenchmarkFunctionNamesAndAddressesFromCNm (cNm : NmData list) =
       |> List.map (fun data -> (data.name, data.address))
 
 let getMathFunctionAddressesFromNm (nm : NmData list) =
-  let mathFunctionNames = [ "__mulqi3"; "__mulqihi3"; "__umulqihi3"; "__mulhi3"; "__mulhisi3"; "__umulhisi3"; "__usmulhisi3"; "__mulshisi3"; "__muluhisi3"; "__mulohisi3"; "__mulsi3"; "__divmodqi4"; "__udivmodqi4"; "__divmodhi4"; "__udivmodhi4"; "__divmodsi4"; "__udivmodsi4"; "__fmul"; "__fmuls"; "__fmulsu" ]
   let nmDatas = nm |> List.filter (fun data -> mathFunctionNames |> List.contains(data.name))
   nmDatas |> List.map (fun data -> (data.name, data.address))
 
@@ -474,7 +475,7 @@ let processSingleBenchmarkResultsDir (resultsdir : string) =
         // let pathsVMFunctions = [ "src/lib/rtc"; "src/lib/vm"; "src/lib/wkreprog"; "src/lib/base"; "src/core" ]
         // let vmSymbols = jvmNm |> List.filter (fun nmData -> pathsVMFunctions |> List.exists (fun path -> nmData.file.Contains(path)))
         //                       |> List.map (fun nmData -> nmData.name)
-        let vmSymbols = [ "callJavaMethod"; "callJavaMethod_setup"; "callMethod"; "callMethodFast"; "callNativeMethod"; "dj_exec_getCurrentFrame"; "dj_exec_stackPeekDeepRef"; "dj_global_id_lookupVirtualMethod"; "dj_object_getRuntimeId"; "DO_INVOKEVIRTUAL"; "RTC_INVOKESPECIAL_OR_STATIC_FAST_JAVA"; "RTC_INVOKESTATIC_FAST_NATIVE"; "RTC_INVOKEVIRTUAL_OR_INTERFACE" ]
+        let vmSymbols = [ "RTC_INVOKEVIRTUAL_OR_INTERFACE"; "RTC_INVOKESPECIAL_OR_STATIC_FAST_JAVA"; "RTC_INVOKESTATIC_FAST_NATIVE"; "DO_INVOKEVIRTUAL"; "dj_object_getRuntimeId"; "dj_object_getReferences"; "dj_global_id_mapToInfusion"; "dj_global_id_lookupVirtualMethod"; "dj_vm_getRuntimeClassForInvoke"; "dj_exec_stackPeekDeepRef"; "callJavaMethod_setup"; "callJavaMethod"; "callNativeMethod"; "callMethodFast"; "callMethod"; "dj_infusion_getReferencedInfusionIndex"; "memset" ]
         { (getCountersForSymbols jvmNm jvmProfilerdataPerAddress vmSymbols) with executions = 0 }
 
     let cyclesSpentOnTimer  = if jvmResultsdir = cResultsdir // For coremark we have two sets of results, for others only 1. here we want the total cycles spent in the timer

@@ -1067,6 +1067,41 @@ void dj_vm_removeMonitor(dj_vm *vm, dj_monitor * monitor)
 }
 
 
+// Split so we can tell the difference and know whether to count the cycles towards invoke overhead or not
+inline dj_global_id dj_vm_getRuntimeClassForInvoke(dj_vm *vm, runtime_id_t id)
+{
+	dj_global_id ret;
+	dj_infusion *infusion = vm->infusions;
+	runtime_id_t base = 0;
+
+	// TODO: optimize this! (binary search?)
+	// TODO: test for multiple loaded infusions
+	while (infusion!=NULL)
+	{
+		base = infusion->class_base;
+		if ((id>=base)&&(id<base + dj_di_parentElement_getListSize(infusion->classList)))
+		{
+			ret.infusion = infusion;
+			ret.entity_id = id - base;
+
+			return ret;
+		}
+		infusion = infusion->next;
+	}
+
+	// TODO raise error, class not found
+	DEBUG_LOG(DBG_DARJEELING, "error: class not found: %d\n", id);
+#ifdef DARJEELING_DEBUG_FRAME
+	dj_exec_debugCurrentFrame();
+#endif
+    dj_panic(DJ_PANIC_ILLEGAL_INTERNAL_STATE_NO_RUNTIME_CLASS);
+
+    // dead code to make compiler happy
+    ret.entity_id=255;
+    ret.infusion=NULL;
+    return ret;
+}
+
 inline dj_global_id dj_vm_getRuntimeClass(dj_vm *vm, runtime_id_t id)
 {
 	dj_global_id ret;

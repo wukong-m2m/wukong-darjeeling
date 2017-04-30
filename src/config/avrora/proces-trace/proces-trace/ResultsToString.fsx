@@ -50,7 +50,7 @@ let resultsToString (results : SimulationResults) =
     let totalBytesAOTJava = results.countersAOTTotal.size
     let totalBytesNativeC = results.countersCTotal.size
     let cyclesToSlowdown cycles1 cycles2 =
-        String.Format ("{0:0.00}", float cycles1 / float cycles2)
+        String.Format ("{0:0.000}", float cycles1 / float cycles2)
     let stackToString stack =
         String.Join(",", stack |> List.map (fun el -> el.datatype |> StackDatatypeToString))
 
@@ -267,7 +267,7 @@ let resultsToString (results : SimulationResults) =
 
     let addCyclesForSymbols (symbolsAndCounters : (string * ExecCounters) list) =
       symbolsAndCounters |> List.filter (fun (_, cnt) -> cnt.cycles > 0)
-                         |> List.iter (fun (name, cnt) -> addLn(String.Format("{0,12} cyc, {1,12} sub, {2,12} total in {1}", cnt.cycles, cnt.cyclesInclSubroutine, (cnt.cycles + cnt.cyclesInclSubroutine), name)))
+                         |> List.iter (fun (name, cnt) -> addLn(String.Format("{0,12} cyc, {1,12} sub, {2,12} total in {3}", cnt.cycles, cnt.cyclesInclSubroutine, (cnt.cycles + cnt.cyclesInclSubroutine), name)))
 
 
     let testResultAOT = if results.passedTestAOT then "PASSED" else "FAILED"
@@ -314,11 +314,11 @@ let resultsToString (results : SimulationResults) =
     addLn (String.Format ("--- STOPWATCH / COUNTERS RATIO"))
     addLn (String.Format ("              C   stopwatch              {0,14}", results.cyclesStopwatchC))
     addLn (String.Format ("              C   total counters + timer {0,14} (={1,14}+{2,14})", results.countersCTotalPlusTimer.cycles, results.countersCTotal.cycles, results.countersCTimer.cycles))
-    addLn (String.Format ("              C   ratio                  {0,14} (difference probably caused by interrupts)", (cyclesToSlowdown results.cyclesStopwatchC results.countersCTotalPlusTimer.cycles)))
+    addLn (String.Format ("              C   ratio                  {0,14} (cause of difference unknown)", (cyclesToSlowdown results.cyclesStopwatchC results.countersCTotalPlusTimer.cycles)))
     addLn ("")
     addLn (String.Format ("              AOT stopwatch              {0,14}", results.cyclesStopwatchAOT))
     addLn (String.Format ("              AOT total counters + timer {0,14} (={1,14}+{2,14})", results.countersAOTTotalPlusTimer.cycles, results.countersAOTTotal.cycles, results.countersAOTTimer.cycles))
-    addLn (String.Format ("              AOT ratio                  {0,14} (difference caused by interrupts or overhead in method calls not included in ProcessTraces.fsx countersAOTVM)", (cyclesToSlowdown results.cyclesStopwatchAOT results.countersAOTTotalPlusTimer.cycles)))
+    addLn (String.Format ("              AOT ratio                  {0,14} (cause of difference unknown, must be counting doubles somewhere)", (cyclesToSlowdown results.cyclesStopwatchAOT results.countersAOTTotalPlusTimer.cycles)))
     addLn ("")
     addLn (String.Format ("--- EXECUTED JVM INSTRUCTIONS (executions, not cycles)"))
     addLn (String.Format (" Load/Store               {0,10}      {1,5:0.0}%", results.countersJVMLoadStore.executions, asPercentage results.countersJVMLoadStore.executions results.countersJVMTotal.executions))

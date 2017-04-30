@@ -67,6 +67,7 @@ char dj_vm_schedule(dj_vm * vm);
 
 dj_di_pointer dj_vm_getRuntimeClassDefinition(dj_vm * vm, runtime_id_t id);
 dj_global_id dj_vm_getRuntimeClass(dj_vm * vm, runtime_id_t id);
+dj_global_id dj_vm_getRuntimeClassForInvoke(dj_vm * vm, runtime_id_t id);
 
 uint8_t dj_vm_getSysLibClassRuntimeId(dj_vm * vm, uint8_t entity_id);
 dj_object * dj_vm_createSysLibObject(dj_vm * vm, uint8_t entity_id);

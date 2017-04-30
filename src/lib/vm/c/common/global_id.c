@@ -337,7 +337,7 @@ dj_global_id dj_global_id_lookupVirtualMethod(dj_global_id resolvedMethodDefId, 
 
 	// resolve runtime class of the object
 	vm = dj_exec_getVM();
-	classId = dj_vm_getRuntimeClass(vm, dj_mem_getChunkId(object));
+	classId = dj_vm_getRuntimeClassForInvoke(vm, dj_mem_getChunkId(object));
 
 	while (true)
 	{
@@ -397,16 +397,6 @@ dj_global_id dj_global_id_lookupVirtualMethod(dj_global_id resolvedMethodDefId, 
 	}
 
 	return ret;
-}
-
-/**
- * Gets a class definition for a global id
- * @param class a global id pointing to a class
- * @return a pointer to the referenced class
- */
-dj_di_pointer dj_global_id_getClassDefinition(dj_global_id class)
-{
-	return dj_infusion_getClassDefinition(class.infusion, class.entity_id);
 }
 
 /**

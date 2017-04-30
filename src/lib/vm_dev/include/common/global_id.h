@@ -43,7 +43,6 @@ char dj_global_id_isJavaLangObject(dj_global_id class);
 dj_global_id dj_global_id_lookupVirtualMethod(dj_global_id resolvedMethodDefId, dj_object *object);
 runtime_id_t dj_global_id_getRuntimeClassId(dj_global_id dj_global_id);
 
-dj_di_pointer dj_global_id_getClassDefinition(dj_global_id class);
 dj_di_pointer dj_global_id_getMethodImplementation(dj_global_id dj_global_id);
 dj_di_pointer dj_global_id_getString(dj_global_id dj_global_id);
 
