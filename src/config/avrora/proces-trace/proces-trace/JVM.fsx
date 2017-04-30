@@ -15,7 +15,7 @@ let jvmOpcodeCategories =
 let getCategoryForJvmOpcode opcode =
     match jvmOpcodeCategories |> List.tryFind (fun (cat, opcodes) -> opcodes |> List.exists ((=) opcode)) with
     | Some(cat, _) -> cat
-    | None -> "11) ????"
+    | None -> "13) ????"
 
 let getAllJvmOpcodeCategories =
     jvmOpcodeCategories |> List.map (fun (cat, opcodes) -> cat)

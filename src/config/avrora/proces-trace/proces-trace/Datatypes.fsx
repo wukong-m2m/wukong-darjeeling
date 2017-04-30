@@ -194,9 +194,9 @@ type JvmMethod = {
     member this.countersJVMProcessingBitLogic       = sumCyclesCategoryCounters this.countersPerJvmOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Bit logic"))
     member this.countersJVMProcessing               = this.countersJVMProcessingMath + this.countersJVMProcessingBitShift + this.countersJVMProcessingBitLogic
     member this.countersJVMBranches                 = sumCyclesCategoryCounters this.countersPerJvmOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Branches"))
+    member this.countersJVMInvoke                   = sumCyclesCategoryCounters this.countersPerJvmOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Invoke"))
     member this.countersJVMOthers                   = sumCyclesCategoryCounters this.countersPerJvmOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Conversions")
                                                                                                                                        || cat.Contains("Markloop")
-                                                                                                                                       || cat.Contains("Invoke")
                                                                                                                                        || cat.Contains("Others")
                                                                                                                                        || cat.Contains("VM"))
     member this.countersJVMTotal                    = this.countersPerJvmOpcodeCategoryAOTJava |> List.sumBy (fun (_, cnt) -> cnt)
@@ -288,6 +288,7 @@ type SimulationResults = {
     member this.countersJVMProcessingBitLogic       = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersJVMProcessingBitLogic)
     member this.countersJVMProcessing               = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersJVMProcessing)
     member this.countersJVMBranches                 = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersJVMBranches)
+    member this.countersJVMInvoke                   = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersJVMInvoke)
     member this.countersJVMOthers                   = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersJVMOthers)
     member this.countersJVMTotal                    = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersJVMTotal)
 

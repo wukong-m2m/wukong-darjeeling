@@ -116,8 +116,11 @@ let resultToStringList (result : SimulationResults) =
         ("     bit shift"       , toPercentage result.countersJVMTotal.executions result.countersJVMProcessingBitShift.executions)
         ("     bit logic"       , toPercentage result.countersJVMTotal.executions result.countersJVMProcessingBitLogic.executions)
         (" Branches"            , toPercentage result.countersJVMTotal.executions result.countersJVMBranches.executions)
+        (" Invoke"              , toPercentage result.countersJVMTotal.executions result.countersJVMInvoke.executions)
         (" Others"              , toPercentage result.countersJVMTotal.executions result.countersJVMOthers.executions)
         (" Total"               , toPercentage result.countersJVMTotal.executions result.countersJVMTotal.executions)
+        (""                     , "");
+        (" Number of invokes"   , result.countersJVMInvoke.executions.ToString())
         ]
     let r2 = 
         (""                     , "")
