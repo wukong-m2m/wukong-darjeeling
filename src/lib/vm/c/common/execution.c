@@ -1292,7 +1292,7 @@ void dj_exec_throw(dj_object *obj, uint16_t throw_pc)
 
 	// get runtime class
 	runtime_id_t classRuntimeId = dj_mem_getChunkId(obj);
-	dj_global_id classGlobalId = dj_vm_getRuntimeClass(vm, classRuntimeId);
+	dj_global_id classGlobalId = dj_vm_getRuntimeClass(classRuntimeId);
 
 #ifdef DARJEELING_DEBUG
 	dj_infusion_getName(classGlobalId.infusion, name, 16);

@@ -89,7 +89,7 @@ void java_lang_Object_java_lang_String_toString()
 
 	// Get class definition
 	runtime_id_t classRuntimeId = dj_mem_getChunkId(obj);
-	dj_global_id classGlobalId = dj_vm_getRuntimeClass(dj_exec_getVM(), classRuntimeId);
+	dj_global_id classGlobalId = dj_vm_getRuntimeClass(classRuntimeId);
 
 	// Get class name
 	dj_di_pointer classDefinition = dj_global_id_getClassDefinition(classGlobalId);

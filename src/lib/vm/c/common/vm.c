@@ -579,7 +579,7 @@ dj_object * dj_vm_createSysLibObject(dj_vm *vm, uint8_t entity_id)
 {
 	dj_global_id class_id = (dj_global_id){vm->systemInfusion, entity_id};
 	uint8_t runtime_id = dj_global_id_getRuntimeClassId(class_id);
-	dj_di_pointer classDef = dj_vm_getRuntimeClassDefinition(vm, runtime_id);
+	dj_di_pointer classDef = dj_vm_getRuntimeClassDefinition(runtime_id);
 	return dj_object_create(runtime_id,
 			dj_di_classDefinition_getNrRefs(classDef),
 			dj_di_classDefinition_getOffsetOfFirstReference(classDef)
@@ -1068,10 +1068,10 @@ void dj_vm_removeMonitor(dj_vm *vm, dj_monitor * monitor)
 
 
 // Split so we can tell the difference and know whether to count the cycles towards invoke overhead or not
-inline dj_global_id dj_vm_getRuntimeClassForInvoke(dj_vm *vm, runtime_id_t id)
+inline dj_global_id dj_vm_getRuntimeClassForInvoke(runtime_id_t id)
 {
 	dj_global_id ret;
-	dj_infusion *infusion = vm->infusions;
+	dj_infusion *infusion = dj_exec_getVM()->infusions;
 	runtime_id_t base = 0;
 
 	// TODO: optimize this! (binary search?)
@@ -1102,10 +1102,10 @@ inline dj_global_id dj_vm_getRuntimeClassForInvoke(dj_vm *vm, runtime_id_t id)
     return ret;
 }
 
-inline dj_global_id dj_vm_getRuntimeClass(dj_vm *vm, runtime_id_t id)
+inline dj_global_id dj_vm_getRuntimeClass(runtime_id_t id)
 {
 	dj_global_id ret;
-	dj_infusion *infusion = vm->infusions;
+	dj_infusion *infusion = dj_exec_getVM()->infusions;
 	runtime_id_t base = 0;
 
 	// TODO: optimize this! (binary search?)
@@ -1136,9 +1136,9 @@ inline dj_global_id dj_vm_getRuntimeClass(dj_vm *vm, runtime_id_t id)
     return ret;
 }
 
-dj_di_pointer dj_vm_getRuntimeClassDefinition(dj_vm *vm, runtime_id_t id)
+dj_di_pointer dj_vm_getRuntimeClassDefinition(runtime_id_t id)
 {
-	dj_global_id global_id = dj_vm_getRuntimeClass(vm, id);
+	dj_global_id global_id = dj_vm_getRuntimeClass(id);
 	return dj_infusion_getClassDefinition(global_id.infusion, global_id.entity_id);
 }
 

@@ -12,7 +12,7 @@ dj_object * dj_jstring_create(dj_vm *vm, int length)
 
 	// create java String object
 	uint8_t runtime_id = dj_vm_getSysLibClassRuntimeId(vm, BASE_CDEF_java_lang_String);
-	dj_di_pointer classDef = dj_vm_getRuntimeClassDefinition(vm, runtime_id);
+	dj_di_pointer classDef = dj_vm_getRuntimeClassDefinition(runtime_id);
 	jstring = dj_object_create(runtime_id, dj_di_classDefinition_getNrRefs(classDef), dj_di_classDefinition_getOffsetOfFirstReference(classDef));
 
 	// throw OutOfMemoryError if dj_object_create returns NULL

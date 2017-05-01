@@ -273,7 +273,7 @@ char dj_global_id_testType(void *ref, dj_local_id localClassId)
             testClass = dj_global_id_resolve(dj_exec_getCurrentInfusion(), localClassId);
 
             // resolve array type
-            refClass = dj_vm_getRuntimeClass(dj_exec_getVM(), ((dj_ref_array*)ref)->runtime_class_id);
+            refClass = dj_vm_getRuntimeClass(((dj_ref_array*)ref)->runtime_class_id);
 
             result = dj_global_id_testClassType(refClass, testClass);
             DEBUG_EXIT_NEST(DBG_DARJEELING, "dj_global_id_testType()"); \
@@ -286,7 +286,7 @@ char dj_global_id_testType(void *ref, dj_local_id localClassId)
             testClass = dj_global_id_resolve(dj_exec_getCurrentInfusion(), localClassId);
 
             // resolve runtime class
-            refClass = dj_vm_getRuntimeClass(dj_exec_getVM(), dj_mem_getChunkId(ref));
+            refClass = dj_vm_getRuntimeClass(dj_mem_getChunkId(ref));
 
             result= dj_global_id_testClassType(refClass, testClass);
             DEBUG_EXIT_NEST(DBG_DARJEELING, "dj_global_id_testType()"); \
@@ -326,7 +326,6 @@ runtime_id_t dj_global_id_getRuntimeClassId(dj_global_id global_class_id)
 dj_global_id dj_global_id_lookupVirtualMethod(dj_global_id resolvedMethodDefId, dj_object *object)
 {
 	int i;
-	dj_vm * vm;
 	dj_global_id ret;
 	dj_di_pointer classDef;
 	dj_global_id classId;
@@ -336,8 +335,7 @@ dj_global_id dj_global_id_lookupVirtualMethod(dj_global_id resolvedMethodDefId, 
 	ret.infusion = NULL;
 
 	// resolve runtime class of the object
-	vm = dj_exec_getVM();
-	classId = dj_vm_getRuntimeClassForInvoke(vm, dj_mem_getChunkId(object));
+	classId = dj_vm_getRuntimeClassForInvoke(dj_mem_getChunkId(object));
 
 	while (true)
 	{

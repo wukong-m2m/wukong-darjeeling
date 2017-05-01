@@ -25,7 +25,7 @@ static inline void vm_mem_updateManagedReference(dj_vm * vm, heap_chunk *chunk)
 	if (chunk->id>=CHUNKID_JAVA_START)
 	{
 		// object
-                classDef = dj_vm_getRuntimeClassDefinition(vm, chunk->id);
+                classDef = dj_vm_getRuntimeClassDefinition(chunk->id);
                 //refs = dj_object_getReferences((dj_object*)chunk);
 		refs = dj_object_getReferences(dj_mem_getData(chunk));
 		for (i=0; i<dj_di_classDefinition_getNrRefs(classDef); i++)
@@ -165,7 +165,6 @@ void vm_mem_markRootSet(void *data)
 void vm_mem_markObject(void *data)
 {
 	heap_chunk *chunk = (heap_chunk *)data;
-	dj_vm *vm = dj_exec_getVM();
 	dj_di_pointer classDef;
 	dj_ref_array *refArray;
 	void * object;
@@ -178,7 +177,7 @@ void vm_mem_markObject(void *data)
 	// if it's a Java object, mark its children
 	if (chunk->id>=CHUNKID_JAVA_START)
 	{
-		classDef = dj_vm_getRuntimeClassDefinition(vm, chunk->id);
+		classDef = dj_vm_getRuntimeClassDefinition(chunk->id);
 		refs = dj_object_getReferences(object);
 		for (i=0; i<dj_di_classDefinition_getNrRefs(classDef); i++) {
 			DBG_PRINT_GC(0x10000102);

@@ -129,8 +129,8 @@ void java_lang_System_void_arraycopy_java_lang_Object_int_java_lang_Object_int_i
 
 		// test class compatibility
 		if (!dj_global_id_testClassType(
-				dj_vm_getRuntimeClass(dj_exec_getVM(), dstref->runtime_class_id),
-				dj_vm_getRuntimeClass(dj_exec_getVM(), srcref->runtime_class_id)
+				dj_vm_getRuntimeClass(dstref->runtime_class_id),
+				dj_vm_getRuntimeClass(srcref->runtime_class_id)
 				))
 		{
 			dj_exec_createAndThrow(BASE_CDEF_java_lang_ArrayStoreException);
