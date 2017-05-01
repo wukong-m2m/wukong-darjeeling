@@ -13,7 +13,7 @@ do
     if [ $# -eq 0 ]; then
         head -n 2 ${summary} | tail -n 1 >> sumsum.txt
         head -n 4 ${summary} | tail -n 1 >> sumsum.txt
-        head -n 5 ${summary} | tail -n 1 >> sumsum.txt
+        head -n 6 ${summary} | tail -n 1 >> sumsum.txt
         head -n 12 ${summary} | tail -n 1 >> sumsum.txt
         head -n 13 ${summary} | tail -n 1 >> sumsum.txt
     else
