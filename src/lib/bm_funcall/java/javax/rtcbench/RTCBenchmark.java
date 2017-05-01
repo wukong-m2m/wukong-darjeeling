@@ -10,72 +10,91 @@ public class RTCBenchmark {
         return true;
     }
 
-    // 1000 single calls
-    // public static void rtcbenchmark_measure_java_performance() {
-    //     RTC.startBenchmarkMeasurement_AOT();
-
-    //     for (short i=0; i<100; i++) {
-    //         nothing23();
-    //         nothing23();
-    //         nothing23();
-    //         nothing23();
-    //         nothing23();
-    //         nothing23();
-    //         nothing23();
-    //         nothing23();
-    //         nothing23();
-    //         nothing23();
-    //     }
-
-    //     RTC.stopBenchmarkMeasurement();
-    // }
-
-
-    // 100x16 nested calls
-    // Originally                                                         cycles: 1572437, max stack: 1100
-    // Remove pc from stack frame if interpreter is disabled              cycles: 1572437, max stack: 1044
-    // Return retval from callMethod and push it on the stack in AOT code cycles: 1514136, max stack: 991
+    // 10x10 x20 nested calls -> total 2000 calls
+    // Remember to compile with -Pno-proguard, or the entire benchmark will be optimised away by Proguard
     public static void rtcbenchmark_measure_java_performance() {
+        // test_static();
+        test_virtual(); // Need to reduce heap size in config.h to allow for slightly larger stack.
+    }
+
+    public static void test_static() {
         RTC.startBenchmarkMeasurement_AOT();
 
         for (short i=0; i<10; i++) {
-            nothing0();
-            nothing0();
-            nothing0();
-            nothing0();
-            nothing0();
-            nothing0();
-            nothing0();
-            nothing0();
-            nothing0();
-            nothing0();
+            static_nothing0();
+            static_nothing0();
+            static_nothing0();
+            static_nothing0();
+            static_nothing0();
+            static_nothing0();
+            static_nothing0();
+            static_nothing0();
+            static_nothing0();
+            static_nothing0();
         }
 
         RTC.stopBenchmarkMeasurement();
     }
 
-    public static void nothing0() { nothing1(); }
-    public static void nothing1() { nothing2(); }
-    public static void nothing2() { nothing3(); }
-    public static void nothing3() { nothing4(); }
-    public static void nothing4() { nothing5(); }
-    public static void nothing5() { nothing6(); }
-    public static void nothing6() { nothing7(); }
-    public static void nothing7() { nothing8(); }
-    public static void nothing8() { nothing9(); }
-    public static void nothing9() { nothing10(); }
-    public static void nothing10() { nothing11(); }
-    public static void nothing11() { nothing12(); }
-    public static void nothing12() { nothing13(); }
-    public static void nothing13() { nothing14(); }
-    public static void nothing14() { nothing15(); }
-    public static void nothing15() { nothing16(); }
-    public static void nothing16() { nothing17(); }
-    public static void nothing17() { nothing18(); }
-    public static void nothing18() { nothing19(); }
-    public static void nothing19() { nothing20(); }
-    public static void nothing20() { nothing21(); }
-    public static void nothing21() { nothing22(); }
-    public static void nothing22() { nothing23(); }
-    public static void nothing23() {}
-}
+    public static void test_virtual() {
+        RTCBenchmark obj = new RTCBenchmark();
+
+        RTC.startBenchmarkMeasurement_AOT();
+
+        for (short i=0; i<1; i++) {
+            obj.virtual_nothing0();
+            obj.virtual_nothing0();
+            obj.virtual_nothing0();
+            obj.virtual_nothing0();
+            obj.virtual_nothing0();
+            obj.virtual_nothing0();
+            obj.virtual_nothing0();
+            obj.virtual_nothing0();
+            obj.virtual_nothing0();
+            obj.virtual_nothing0();
+        }
+
+        RTC.stopBenchmarkMeasurement();
+    }
+    public static void static_nothing0() { static_nothing1(); }
+    public static void static_nothing1() { static_nothing2(); }
+    public static void static_nothing2() { static_nothing3(); }
+    public static void static_nothing3() { static_nothing4(); }
+    public static void static_nothing4() { static_nothing5(); }
+    public static void static_nothing5() { static_nothing6(); }
+    public static void static_nothing6() { static_nothing7(); }
+    public static void static_nothing7() { static_nothing8(); }
+    public static void static_nothing8() { static_nothing9(); }
+    public static void static_nothing9() { static_nothing10(); }
+    public static void static_nothing10() { static_nothing11(); }
+    public static void static_nothing11() { static_nothing12(); }
+    public static void static_nothing12() { static_nothing13(); }
+    public static void static_nothing13() { static_nothing14(); }
+    public static void static_nothing14() { static_nothing15(); }
+    public static void static_nothing15() { static_nothing16(); }
+    public static void static_nothing16() { static_nothing17(); }
+    public static void static_nothing17() { static_nothing18(); }
+    public static void static_nothing18() { static_nothing19(); }
+    public static void static_nothing19() {}
+
+
+    public void virtual_nothing0() { virtual_nothing1(); }
+    public void virtual_nothing1() { virtual_nothing2(); }
+    public void virtual_nothing2() { virtual_nothing3(); }
+    public void virtual_nothing3() { virtual_nothing4(); }
+    public void virtual_nothing4() { virtual_nothing5(); }
+    public void virtual_nothing5() { virtual_nothing6(); }
+    public void virtual_nothing6() { virtual_nothing7(); }
+    public void virtual_nothing7() { virtual_nothing8(); }
+    public void virtual_nothing8() { virtual_nothing9(); }
+    public void virtual_nothing9() { virtual_nothing10(); }
+    public void virtual_nothing10() { virtual_nothing11(); }
+    public void virtual_nothing11() { virtual_nothing12(); }
+    public void virtual_nothing12() { virtual_nothing13(); }
+    public void virtual_nothing13() { virtual_nothing14(); }
+    public void virtual_nothing14() { virtual_nothing15(); }
+    public void virtual_nothing15() { virtual_nothing16(); }
+    public void virtual_nothing16() { virtual_nothing17(); }
+    public void virtual_nothing17() { virtual_nothing18(); }
+    public void virtual_nothing18() { virtual_nothing19(); }
+    public void virtual_nothing19() {}}
