@@ -304,7 +304,12 @@ void rtc_translate_single_instruction() {
         case JVM_SALOAD:
         case JVM_IALOAD:
         case JVM_AALOAD:
+#ifdef ARRAYINDEX_32BIT
+            rtc_stackcache_pop_nondestructive_32bit(operand_regs2);
+            emit_MOVW(RZ, operand_regs2[0]);
+#else
             rtc_stackcache_pop_destructive_16bit_into_fixed_reg(RZ);
+#endif
             rtc_stackcache_pop_nondestructive_ref(operand_regs1);
 
             if (opcode==JVM_SALOAD || opcode==JVM_AALOAD) {
@@ -386,7 +391,12 @@ void rtc_translate_single_instruction() {
             }
 
             rtc_stackcache_pop_nondestructive_ref(operand_regs2);
+#ifdef ARRAYINDEX_32BIT
+            rtc_stackcache_pop_nondestructive_32bit(operand_regs3);
+            emit_MOVW(RZ, operand_regs3[0]);
+#else
             rtc_stackcache_pop_destructive_16bit_into_fixed_reg(RZ);
+#endif
 
             if (opcode==JVM_SASTORE || opcode==JVM_AASTORE) {
                 // Multiply the index by 2, since we're indexing 16 bit shorts.
