@@ -3,7 +3,7 @@
 
 // Split into separate function to avoid the compiler just optimising away the whole test.
 
-void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t NUMNUMBERS, int16_t numbers[]) {
+void __attribute__((noinline)) rtcbenchmark_measure_native_performance(int16_t NUMNUMBERS, uint32_t numbers[]) {
 	javax_rtc_RTC_void_startBenchmarkMeasurement_Native();
 
 	// Then sort it
@@ -11,7 +11,7 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t 
 		// uint16_t x=NUMNUMBERS-i-1; // Somehow this makes it a little slower at -Os. I expected no difference.
 		for (uint16_t j=0; j<NUMNUMBERS-i-1; j++) {
 			if (numbers[j]>numbers[j+1]) {
-				int16_t temp = numbers[j];
+				uint32_t temp = numbers[j];
 				numbers[j] = numbers[j+1];
 				numbers[j+1] = temp;
 			}

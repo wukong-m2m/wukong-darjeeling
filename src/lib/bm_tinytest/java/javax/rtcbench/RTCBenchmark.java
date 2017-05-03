@@ -16,6 +16,42 @@ public class RTCBenchmark {
     //     RTC.stopBenchmarkMeasurement();
     // }
 
+    // Example of lack of optimisations in javac: this will calculate b*c on each iteration
+    public static int test_loop(int a, int b, int c) {
+        while (a < b*c) {
+            a++;
+        }
+        return a;
+    }
+
+    public static boolean isEven(int a) {
+        return a%2==0;
+    }
+
+    public static boolean isEvenDontInline(int a) {
+        return a%2==0;
+    }
+
+    public static int test_no_inlining(int a) {
+        while (isEvenDontInline(a)) {
+            a++;
+        }
+        return a;
+    }
+
+    public static int test_pg_inlining(int a) {
+        while (isEven(a)) {
+            a++;
+        }
+        return a;
+    }
+
+    public static int test_manual_inlining(int a) {
+        while (a%2==0) {
+            a++;
+        }
+        return a;
+    }
 
     // CHECKCAST
     public static boolean test_java() {
