@@ -6,29 +6,20 @@ benchmarks=(bsort32 hsort32 binsrch32 fft xxtea rc5 md5 coremk coremk_cht)
 
 gdj clean
 
-# test
-# # BASELINE, plus 16 bit array index: different constant optimisation strategies
-# for benchmark in ${benchmarks}
-# do
-#     constshifts=(none by1 all_only_shift all_move_and_shift gcc_like)
-#     for aotconstshiftoptimisation in ${constshifts}
-#     do
-#         gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline -Paotconstshiftoptimisation=${aotconstshiftoptimisation}
-#     done
-# done
-
 ## All others use default "gcc_like" constant shift optimisation
+
+use32bitarrayindex=true
 
 # BASELINE
 for benchmark in ${benchmarks}
 do
-    gdj avrora_store_trace     -Paotbm=${benchmark} -Paotstrat=baseline         -Paotstackcachesize=0                    -Paotmarkloopregs=0                  -Paotconstshiftoptimisation=none
+    gdj avrora_store_trace     -Paotbm=${benchmark} -Paotstrat=baseline         -Paotstackcachesize=0                    -Paotmarkloopregs=0                  -Paotconstshiftoptimisation=none                         -Puse32bitarrayindex=${use32bitarrayindex}
 done
 
 # IMPROVED PEEPHOLE OPTIMISER
 for benchmark in ${benchmarks}
 do
-  gdj avrora_store_trace       -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Paotstackcachesize=0                    -Paotmarkloopregs=0                  -Paotconstshiftoptimisation=none
+  gdj avrora_store_trace       -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Paotstackcachesize=0                    -Paotmarkloopregs=0                  -Paotconstshiftoptimisation=none                         -Puse32bitarrayindex=${use32bitarrayindex}
 done
 
 # SIMPLE STACK CACHING
@@ -38,7 +29,7 @@ do
 	cachesizes=(11)
 	for aotstackcachesize in ${cachesizes}
 	do
-	    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Paotstackcachesize=${aotstackcachesize} -Paotmarkloopregs=0                  -Paotconstshiftoptimisation=none
+	    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Paotstackcachesize=${aotstackcachesize} -Paotmarkloopregs=0                  -Paotconstshiftoptimisation=none                         -Puse32bitarrayindex=${use32bitarrayindex}
 	done
 done
 
@@ -49,7 +40,7 @@ do
     cachesizes=(11)
     for aotstackcachesize in ${cachesizes}
     do
-        gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Paotstackcachesize=${aotstackcachesize} -Paotmarkloopregs=0                  -Paotconstshiftoptimisation=none
+        gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Paotstackcachesize=${aotstackcachesize} -Paotmarkloopregs=0                  -Paotconstshiftoptimisation=none                         -Puse32bitarrayindex=${use32bitarrayindex}
     done
 done
 
@@ -57,21 +48,32 @@ done
 for benchmark in ${benchmarks}
 do
     # markloopregs=(1 2 3 4 5 6 7)
-    markloopregs=(7)
+	if [[ ${use32bitarrayindex} -eq 'true' ]]; then
+	    markloopregs=(6)
+	else
+	    markloopregs=(7)
+	fi
+
     for aotmarkloopregs in ${markloopregs}
     do
-        gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Paotstackcachesize=11                   -Paotmarkloopregs=${aotmarkloopregs} -Paotconstshiftoptimisation=none
+        gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Paotstackcachesize=11                   -Paotmarkloopregs=${aotmarkloopregs} -Paotconstshiftoptimisation=none                         -Puse32bitarrayindex=${use32bitarrayindex}
     done
 done
 
 # CONST SHIFT
 for benchmark in ${benchmarks}
 do
+	if [[ ${use32bitarrayindex} -eq 'true' ]]; then
+	    aotmarkloopregs=(6)
+	else
+	    aotmarkloopregs=(7)
+	fi
+
     constshifts=(none gcc_like)
     # constshifts=(none by1 all_only_shift all_move_and_shift gcc_like)
     for aotconstshiftoptimisation in ${constshifts}
     do
-        gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Paotstackcachesize=11                   -Paotmarkloopregs=7                  -Paotconstshiftoptimisation=${aotconstshiftoptimisation} # -Paot32bitindex=true
+        gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Paotstackcachesize=11                   -Paotmarkloopregs=${aotmarkloopregs} -Paotconstshiftoptimisation=${aotconstshiftoptimisation} -Puse32bitarrayindex=${use32bitarrayindex}
     done
 done
 

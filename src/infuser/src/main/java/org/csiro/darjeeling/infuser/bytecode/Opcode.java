@@ -24,6 +24,7 @@ package org.csiro.darjeeling.infuser.bytecode;
 import java.util.Arrays;
 import java.util.List;
 
+import org.csiro.darjeeling.infuser.Infuser;
 import org.csiro.darjeeling.infuser.structure.BaseType;
 
 /**
@@ -87,16 +88,16 @@ public enum Opcode
 	ASTORE_1((short)49,"astore_1", null),
 	ASTORE_2((short)50,"astore_2", null),
 	ASTORE_3((short)51,"astore_3", null),
-	BALOAD((short)52,"baload", BaseType.Byte, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short),
-	CALOAD((short)53,"caload", BaseType.Char, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short),
-	SALOAD((short)54,"saload", BaseType.Short, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short),
-	IALOAD((short)55,"iaload", BaseType.Int, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short),
-	AALOAD((short)56,"aaload", BaseType.Ref, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short),
-	BASTORE((short)57,"bastore", null, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short, BaseType.Byte),
-	CASTORE((short)58,"castore", null, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short, BaseType.Char),
-	SASTORE((short)59,"sastore", null, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short, BaseType.Short),
-	IASTORE((short)60,"iastore", null, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short, BaseType.Int),
-	AASTORE((short)61,"aastore", null, Opcode.Use32BitArrayIndex ? BaseType.Int : BaseType.Short, BaseType.Ref),
+	BALOAD((short)52,"baload", BaseType.Byte, BaseType.ArrayIndex),
+	CALOAD((short)53,"caload", BaseType.Char, BaseType.ArrayIndex),
+	SALOAD((short)54,"saload", BaseType.Short, BaseType.ArrayIndex),
+	IALOAD((short)55,"iaload", BaseType.Int, BaseType.ArrayIndex),
+	AALOAD((short)56,"aaload", BaseType.Ref, BaseType.ArrayIndex),
+	BASTORE((short)57,"bastore", null, BaseType.ArrayIndex, BaseType.Byte),
+	CASTORE((short)58,"castore", null, BaseType.ArrayIndex, BaseType.Char),
+	SASTORE((short)59,"sastore", null, BaseType.ArrayIndex, BaseType.Short),
+	IASTORE((short)60,"iastore", null, BaseType.ArrayIndex, BaseType.Int),
+	AASTORE((short)61,"aastore", null, BaseType.ArrayIndex, BaseType.Ref),
 	IPOP((short)62,"ipop", null),
 	IPOP2((short)63,"ipop2", null),
 	IDUP((short)64,"idup", null),
@@ -282,8 +283,6 @@ public enum Opcode
 	S2S((short)-1,"s2s", BaseType.Short, BaseType.Short)
 	;
 	
-	public static final boolean Use32BitArrayIndex = false;
-
 	// Defines the group of conditional branch instructions. Membership testing on this group is used in the isConditionalBranch method.
 	private static List<Opcode> conditionalBranchInstructions = 
 		Arrays.asList(new Opcode[] {
@@ -340,13 +339,14 @@ public enum Opcode
 	private short opcode;
 	private String name;
 	private BaseType outputType;
-	private BaseType operandTypes[];
-	
-	private Opcode(short opcode, String name, BaseType outputType, BaseType ... operandTypes)
+	private BaseType operandTypesWithUndeterminedArrayIndexType[];
+	private BaseType operandTypes[] = null;
+
+	private Opcode(short opcode, String name, BaseType outputType, BaseType ... operandTypesWithUndeterminedArrayIndexType)
 	{
 		this.opcode = opcode;
 		this.name = name;
-		this.operandTypes = operandTypes;
+		this.operandTypesWithUndeterminedArrayIndexType = operandTypesWithUndeterminedArrayIndexType;
 		this.outputType = outputType;
 	}
 	
@@ -480,6 +480,14 @@ public enum Opcode
 	 */
 	public BaseType[] getOperandTypes()
 	{
+		if (operandTypes == null) {
+			operandTypes = new BaseType[operandTypesWithUndeterminedArrayIndexType.length];
+			for (int i=0; i<operandTypesWithUndeterminedArrayIndexType.length; i++) {
+				operandTypes[i] = operandTypesWithUndeterminedArrayIndexType[i] == BaseType.ArrayIndex
+					? (Infuser.getUse32BitArrayIndex() ? BaseType.Int : BaseType.Short)
+					: operandTypesWithUndeterminedArrayIndexType[i];
+			}
+		}
 		return operandTypes;
 	}
 	

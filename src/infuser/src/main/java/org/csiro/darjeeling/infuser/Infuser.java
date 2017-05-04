@@ -70,9 +70,6 @@ import org.w3c.dom.Document;
  */
 public class Infuser
 {
-	// Version of the infusion format. VM should check if it matches the VM's format
-	public static final int infusionFormatVersion = Opcode.Use32BitArrayIndex ? 120 : 121;
-
 	// never start with version 1.0.0 :-)
 	public static final String version = "1.1.12";
 	
@@ -80,8 +77,23 @@ public class Infuser
     public static final String greeting = String.format("This is Darjeeling Infuser v%s", version);
     
 	// Infuser argument instance
-    private InfuserArguments infuserArguments;
-    
+    private static InfuserArguments infuserArguments;
+
+	public static boolean getUse32BitArrayIndex()
+	{
+		return infuserArguments.getUse32BitArrayIndex();
+	}
+
+	public static boolean getUseConstantShiftOptimisation()
+	{
+		return infuserArguments.getUse32BitArrayIndex();
+	}
+
+	// Version of the infusion format. VM should check if it matches the VM's format
+	public static int getInfusionFormatVersion() {
+		return infuserArguments.getUse32BitArrayIndex() ? 120 : 121;
+	}
+
 	/** 
 	 * Constructs a new Infuser that outputs verbose messages to System.out 
 	 * @param infuserArguments InfuserArguments instance

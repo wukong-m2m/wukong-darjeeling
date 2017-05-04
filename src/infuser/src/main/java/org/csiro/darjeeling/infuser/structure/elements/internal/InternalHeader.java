@@ -30,7 +30,7 @@ public class InternalHeader extends AbstractHeader
 
 	public InternalHeader(String infusionName, int infusionVersion)
 	{
-		super(infusionName, Infuser.infusionFormatVersion, infusionVersion);
+		super(infusionName, Infuser.getInfusionFormatVersion(), infusionVersion);
 	}
 
 	@Override

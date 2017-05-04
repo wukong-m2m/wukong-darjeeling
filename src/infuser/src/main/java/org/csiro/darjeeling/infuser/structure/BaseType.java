@@ -60,7 +60,8 @@ public enum BaseType
 	
 	// Special cases 
 	Unknown(TypeClass.Void, 0, 0),
-	DontCare(TypeClass.Void, 0, 0)
+	DontCare(TypeClass.Void, 0, 0),
+	ArrayIndex(TypeClass.Void, 0, 0) // Will be replaced by the right type in Opcode.java
 	;
 	
 	private int size, t_type;

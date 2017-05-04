@@ -74,6 +74,12 @@ public class InfuserArguments
 	// Regexp pattern for -key=value style arguments 
 	private final static Pattern optionPattern = Pattern.compile("-(\\p{Alpha}+)=(.*)");
 	
+	// Use 32 instead of 16 bit array index
+	private boolean use32BitArrayIndex = false;
+
+	// Optimise constant shifts (gcc-style)
+	private boolean useConstantShiftOptimisation = false;
+
 	/**
 	 *  Creates a new, empty InfuserArguments instance. Can be used to programatically drive
 	 *  the infuser rather than through command line arguments. 
@@ -165,6 +171,8 @@ public class InfuserArguments
 				throw new ArgumentParseException("The value for option 'infusionversion' should be numeric");
 			}
 		}
+		if (name.equals("use32bitarrayindex")) { this.use32BitArrayIndex = true; return; }
+		if (name.equals("useconstantshiftoptimisation")) { this.useConstantShiftOptimisation = true; return; }
 
 		// unknown option
 		Logging.instance.printlnVerbose(ARGUMENTS_PARSING, String.format("Ignoring unknown option %s", name));
@@ -373,4 +381,23 @@ public class InfuserArguments
 		return debugOutputFile;
 	}
 
+	public void setUse32BitArrayIndex(boolean value)
+	{
+		this.use32BitArrayIndex = value;
+	}
+
+	public boolean getUse32BitArrayIndex()
+	{
+		return this.use32BitArrayIndex;
+	}
+
+	public void setUseConstantShiftOptimisation(boolean value)
+	{
+		this.useConstantShiftOptimisation = value;
+	}
+
+	public boolean getUseConstantShiftOptimisation()
+	{
+		return this.useConstantShiftOptimisation;
+	}
 }

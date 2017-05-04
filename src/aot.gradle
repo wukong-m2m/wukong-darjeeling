@@ -45,6 +45,9 @@ tasks.whenTaskAdded { task ->
 if (!project.hasProperty('aotstrat')) {
     project.ext.aotstrat = 'markloop'
 }
+if (project.ext.aotstrat == 'peephole') { project.ext.aotstrat = 'improvedpeephole' }
+if (project.ext.aotstrat == 'simple') { project.ext.aotstrat = 'simplestackcache' }
+if (project.ext.aotstrat == 'popped') { project.ext.aotstrat = 'poppedstackcache' }
 if (!project.hasProperty('aotbm')) {
     project.ext.aotbm = 'bsort32'
 }
@@ -54,8 +57,16 @@ if (!project.hasProperty('aotstackcachesize')) {
 if (!project.hasProperty('aotmarkloopregs')) {
     project.ext.aotmarkloopregs = '7'
 }
-if (!project.hasProperty('aot32bitindex')) {
-    project.ext.aot32bitindex = 'false'
+if (!project.hasProperty('use32bitarrayindex')) {
+    project.ext.use32bitarrayindex = 'false'
+} else {
+    if (project.ext.use32bitarrayindex == '') {
+        project.ext.use32bitarrayindex = 'true'        
+    }
+    if (project.ext.use32bitarrayindex != 'true'
+            && project.ext.use32bitarrayindex != 'false') {
+        throw new InvalidUserDataException("Invalid value for use32bitarrayindex" + project.ext.use32bitarrayindex)        
+    }
 }
 if (!project.hasProperty('aotconstshiftoptimisation')) {
     project.ext.aotconstshiftoptimisation = 'gcc_like'
@@ -87,7 +98,7 @@ binaries.all {
     if (project.ext.aotconstshiftoptimisation == 'gcc_like')
         cCompiler.args "-D AOT_OPTIMISE_CONSTANT_SHIFTS_GCC_LIKE"
 
-    if (project.ext.aot32bitindex == 'true')
+    if (project.ext.use32bitarrayindex == 'true')
         cCompiler.args "-D ARRAYINDEX_32BIT"
 }
 
@@ -120,8 +131,11 @@ def getOutputDirName() {
     def outdirPINNED=project.ext.aotmarkloopregs
 
     def outdir32bitindex=''
-    if (project.ext.aot32bitindex == 'true')
-        outdir32bitindex = '_32BITINDEX'
+    if (project.ext.use32bitarrayindex == 'true') {
+        outdir32bitindex = '_A32'
+    } else {
+        outdir32bitindex = '_A16'        
+    }
 
 
     if (project.ext.aotstrat == 'baseline') {

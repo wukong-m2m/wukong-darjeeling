@@ -213,6 +213,7 @@ class DjSourceSet {
             }
             inputs.file new File("${project.project.rootDir}/infuser/build/libs/infuser-1.0.jar")
             inputs.files project.fileTree(dir: infusionClassesSourceDir).include('**/*.class')
+            inputs.property("use32bitarrayindex", project.ext.use32bitarrayindex)
             outputs.dir infusionDir
             this.javaDependencies.each { jlibname ->
                 dependsOn("infusion_${jlibname}")
@@ -226,7 +227,8 @@ class DjSourceSet {
                         headerfile: "${infusionDir}/${this.name}.dih",
                         hfile: "${infusionDir}/jlib_${this.name}.h",
                         cfile: "${infusionDir}/jlib_${this.name}.c",
-                        debugfile: "${infusionDir}/jlib_${this.name}.debug") {
+                        debugfile: "${infusionDir}/jlib_${this.name}.debug",
+                        use32bitarrayindex: project.ext.use32bitarrayindex) {
                     fileset(dir: infusionClassesSourceDir, includes: '**/*.class')
                     javaDependencies.each { jlibname ->
                         fileset(dir: libToInfusionDir(jlibname), includes: "${jlibname}.dih")
