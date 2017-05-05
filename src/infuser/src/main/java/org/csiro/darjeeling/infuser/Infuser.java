@@ -86,7 +86,7 @@ public class Infuser
 
 	public static boolean getUseConstantShiftOptimisation()
 	{
-		return infuserArguments.getUse32BitArrayIndex();
+		return infuserArguments.getUseConstantShiftOptimisation();
 	}
 
 	// Version of the infusion format. VM should check if it matches the VM's format

@@ -151,10 +151,6 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
     if (rtc_ts->flags & FLAGS_USESSTATICFIELDS) {
         rtc_current_method_set_uses_reg(R2);
     }
-#if defined(AOT_OPTIMISE_CONSTANT_SHIFTS)
-    rtc_ts->do_CONST_SHIFT_optimisation = 0;
-#endif // AOT_OPTIMISE_CONSTANT_SHIFTS
-
     // If we're using stack caching, initialise the cache
 #ifdef AOT_STRATEGY_SIMPLESTACKCACHE    
     rtc_stackcache_init(rtc_ts->flags & FLAGS_LIGHTWEIGHT);
@@ -331,7 +327,13 @@ uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode) {
         || opcode == JVM_ASTORE
         || opcode == JVM_NEWARRAY
         || opcode == JVM_IDUP_X
-        || opcode == JVM_ISWAP_X) {
+        || opcode == JVM_ISWAP_X
+        || opcode == JVM_SSHL_CONST
+        || opcode == JVM_SSHR_CONST
+        || opcode == JVM_SUSHR_CONST
+        || opcode == JVM_ISHL_CONST
+        || opcode == JVM_ISHR_CONST
+        || opcode == JVM_IUSHR_CONST) {
         return 1;
     }
 

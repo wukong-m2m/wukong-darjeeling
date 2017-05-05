@@ -223,6 +223,12 @@ public class InterpreterState implements Comparable<InterpreterState>
 			case SNEG:
 			case INEG:
 			case LNEG:
+			case SSHL_CONST:
+			case SSHR_CONST:
+			case SUSHR_CONST:
+			case ISHL_CONST:
+			case ISHR_CONST:
+			case IUSHR_CONST:
 				ret.getStack().pop();
 				ret.getStack().push(handle);
 				break;

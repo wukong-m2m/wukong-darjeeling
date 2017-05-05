@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "darjeeling3.h"
+#include "config.h"
 
 // Split into separate function to avoid the compiler just optimising away the whole test.
 

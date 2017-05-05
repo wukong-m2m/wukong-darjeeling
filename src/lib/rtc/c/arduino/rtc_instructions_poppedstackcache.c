@@ -826,94 +826,63 @@ void rtc_translate_single_instruction() {
         case JVM_SSHL:
         case JVM_SSHR:
         case JVM_SUSHR:
-            #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS)
+        case JVM_SSHL_CONST:
+        case JVM_SSHR_CONST:
+        case JVM_SUSHR_CONST:
             {
+                bool emit_loop = opcode == JVM_SSHL || opcode == JVM_SSHR || opcode == JVM_SUSHR;
+                uint8_t bytes_to_shift = emit_loop ? 1 : jvm_operand_byte0;
 
-                // We have 3 flavors of optimisation for constant bit shifts:
-                // _ALL just unrolls the shift loop, which is twice faster than the loop, but increases code size
-                // _ALL_GENERATE_MOVS will generate a mov for each multiple of 8 bits, which generates smaller and faster code, but increases code size
-                // _GCC_LIKE, which will behave like ALL_GENERATE_MOVS, unless (x>2 && x%8!=0 && ((ISHL && x>8) ISHR || IUSHR)). There's no reason to want to do this, other than making a fair comparison to what's possible in native code, since avr-gcc could do better here.
-                // Since the last option only affect the 32 bit versions, we don't need to do anything special here.
-
-                bool emit_loop;
-                uint8_t bytes_to_shift; // = ts->do_CONST_SHIFT_optimisation > 0 ? ts->do_CONST_SHIFT_optimisation : 1;
-
-                if (ts->do_CONST_SHIFT_optimisation == 0) {
-                    emit_loop = true;
-                    bytes_to_shift = 1;
+                if (emit_loop) {
                     rtc_stackcache_pop_destructive_16bit(operand_regs1);
-                } else {
-                    emit_loop = false;
-                    bytes_to_shift = ts->do_CONST_SHIFT_optimisation;
                 }
 
                 rtc_stackcache_pop_destructive_16bit(operand_regs2); // pop the operand
+
                 // Emit code. Here we need emit_loop and bytes_to_shift to be set.
                 // If emit_loop is true, bytes_to_shift should be 1, and the loop reg should be in operand1[0]
                 if (emit_loop) {
                     emit_RJMP(4);
                 }
-                #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS_ALL_MOVE_AND_SHIFT) || defined (AOT_OPTIMISE_CONSTANT_SHIFTS_GCC_LIKE)
+
                 while (bytes_to_shift >= 8) {
-                    if (opcode == JVM_SSHL) {                
+                    if (opcode == JVM_SSHL || opcode == JVM_SSHL_CONST) {                
                         emit_MOV(operand_regs2[1], operand_regs2[0]);
                         emit_CLR(operand_regs2[0]);
-                    } else if (opcode == JVM_SSHR) {
+                    } else if (opcode == JVM_SSHR || opcode == JVM_SSHR_CONST) {
                         emit_CLR(RZL);
                         emit_SBRC(operand_regs2[1], 7);
                         emit_COM(RZL);
                         emit_MOV(operand_regs2[0], operand_regs2[1]);
                         emit_MOV(operand_regs2[1], RZL);
-                    } else if (opcode == JVM_SUSHR) {
+                    } else if (opcode == JVM_SUSHR || opcode == JVM_SUSHR_CONST) {
                         emit_MOV(operand_regs2[0], operand_regs2[1]);
                         emit_CLR(operand_regs2[1]);
                     }                    
                     bytes_to_shift -= 8;
                 }
-                #endif
+
                 while (bytes_to_shift > 0) {
-                    if (opcode == JVM_SSHL) {
+                    if (opcode == JVM_SSHL || opcode == JVM_SSHL_CONST) {
                         emit_LSL(operand_regs2[0]);
                         emit_ROL(operand_regs2[1]);
-                    } else if (opcode == JVM_SSHR) {
+                    } else if (opcode == JVM_SSHR || opcode == JVM_SSHR_CONST) {
                         emit_ASR(operand_regs2[1]);
                         emit_ROR(operand_regs2[0]);
-                    } else if (opcode == JVM_SUSHR) {
+                    } else if (opcode == JVM_SUSHR || opcode == JVM_SUSHR_CONST) {
                         emit_LSR(operand_regs2[1]);
                         emit_ROR(operand_regs2[0]);
                     }
                     bytes_to_shift--;
                 }
+
                 if (emit_loop) {
                     emit_DEC(operand_regs1[0]);
                     emit_BRPL(-8);
                 }
-                // Emit shift
+
                 rtc_stackcache_push_16bit(operand_regs2);
-                
-                // Clear optimisation var if it was set.
-                ts->do_CONST_SHIFT_optimisation = 0;
             }
-            #else // AOT_OPTIMISE_CONSTANT_SHIFTS
-            rtc_stackcache_pop_destructive_16bit(operand_regs1); // number of bits to shift
-            rtc_stackcache_pop_destructive_16bit(operand_regs2); // operand
-
-            emit_RJMP(4);
-            if (opcode == JVM_SSHL) {
-                emit_LSL(operand_regs2[0]);
-                emit_ROL(operand_regs2[1]);
-            } else if (opcode == JVM_SSHR) {
-                emit_ASR(operand_regs2[1]);
-                emit_ROR(operand_regs2[0]);
-            } else if (opcode == JVM_SUSHR) {
-                emit_LSR(operand_regs2[1]);
-                emit_ROR(operand_regs2[0]);
-            }
-            emit_DEC(operand_regs1[0]);
-            emit_BRPL(-8);
-
-            rtc_stackcache_push_16bit(operand_regs2);
-            #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
         break;
         case JVM_SAND:
             rtc_stackcache_pop_nondestructive_16bit(operand_regs1);
@@ -1024,60 +993,32 @@ void rtc_translate_single_instruction() {
         case JVM_ISHL:
         case JVM_ISHR:
         case JVM_IUSHR:
-            #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS)
+        case JVM_ISHL_CONST:
+        case JVM_ISHR_CONST:
+        case JVM_IUSHR_CONST:
             {
+                bool emit_loop = opcode == JVM_ISHL || opcode == JVM_ISHR || opcode == JVM_IUSHR;
+                uint8_t bytes_to_shift = emit_loop ? 1 : jvm_operand_byte0;
 
-                // We have 3 flavors of optimisation for constant bit shifts:
-                // _ALL just unrolls the shift loop, which is twice faster than the loop, but increases code size
-                // _ALL_GENERATE_MOVS will generate a mov for each multiple of 8 bits, which generates smaller and faster code, but increases code size
-                // _GCC_LIKE, which will behave like ALL_GENERATE_MOVS, unless (x>2 && x%8!=0 && ((ISHL && x>8) ISHR || IUSHR)). There's no reason to want to do this, other than making a fair comparison to what's possible in native code, since avr-gcc could do better here.
-
-                bool emit_loop;
-                uint8_t bytes_to_shift; // = ts->do_CONST_SHIFT_optimisation > 0 ? ts->do_CONST_SHIFT_optimisation : 1;
-
-                #ifdef AOT_OPTIMISE_CONSTANT_SHIFTS_GCC_LIKE
-                bytes_to_shift = ts->do_CONST_SHIFT_optimisation;
-                if (bytes_to_shift>2 && bytes_to_shift%8!=0 && ((opcode==JVM_ISHL && bytes_to_shift>8) || opcode==JVM_ISHR || opcode==JVM_IUSHR)) {
-                    // We should do the loop here because that's what gcc does, even though this is less efficient.
-                    // Load the constant in RZ and emit the loop as usual.
-                    emit_LDI(RZL, bytes_to_shift);
-                    operand_regs1[0] = RZL;
-                    ts->do_CONST_SHIFT_optimisation = 0;
-                    emit_loop = true;
-                    bytes_to_shift = 1;
-                } else if(bytes_to_shift == 0) {
-                    emit_loop = true;
-                    bytes_to_shift = 1;
+                if(emit_loop) {
                     rtc_stackcache_pop_destructive_16bit(operand_regs1);
-                } else {
-                    emit_loop = false;
-                    bytes_to_shift = ts->do_CONST_SHIFT_optimisation;
                 }
-                #else
-                if (ts->do_CONST_SHIFT_optimisation == 0) {
-                    emit_loop = true;
-                    bytes_to_shift = 1;
-                    rtc_stackcache_pop_destructive_16bit(operand_regs1);
-                } else {
-                    emit_loop = false;
-                    bytes_to_shift = ts->do_CONST_SHIFT_optimisation;
-                }
-                #endif
 
                 rtc_stackcache_pop_destructive_32bit(operand_regs2); // pop the operand
+
                 // Emit code. Here we need emit_loop and bytes_to_shift to be set.
                 // If emit_loop is true, bytes_to_shift should be 1, and the loop reg should be in operand1[0]
                 if (emit_loop) {
                     emit_RJMP(8);
                 }
-                #if defined(AOT_OPTIMISE_CONSTANT_SHIFTS_ALL_MOVE_AND_SHIFT) || defined (AOT_OPTIMISE_CONSTANT_SHIFTS_GCC_LIKE)
+
                 while (bytes_to_shift >= 8) {
-                    if (opcode == JVM_ISHL) {                
+                    if (opcode == JVM_ISHL || opcode == JVM_ISHL_CONST) {                
                         emit_MOV(operand_regs2[3], operand_regs2[2]);
                         emit_MOV(operand_regs2[2], operand_regs2[1]);
                         emit_MOV(operand_regs2[1], operand_regs2[0]);
                         emit_CLR(operand_regs2[0]);
-                    } else if (opcode == JVM_ISHR) {
+                    } else if (opcode == JVM_ISHR || opcode == JVM_ISHR_CONST) {
                         emit_CLR(RZL);
                         emit_SBRC(operand_regs2[3], 7);
                         emit_COM(RZL);
@@ -1085,7 +1026,7 @@ void rtc_translate_single_instruction() {
                         emit_MOV(operand_regs2[1], operand_regs2[2]);
                         emit_MOV(operand_regs2[2], operand_regs2[3]);
                         emit_MOV(operand_regs2[3], RZL);
-                    } else if (opcode == JVM_IUSHR) {
+                    } else if (opcode == JVM_IUSHR || opcode == JVM_IUSHR_CONST) {
                         emit_MOV(operand_regs2[0], operand_regs2[1]);
                         emit_MOV(operand_regs2[1], operand_regs2[2]);
                         emit_MOV(operand_regs2[2], operand_regs2[3]);
@@ -1093,19 +1034,19 @@ void rtc_translate_single_instruction() {
                     }                    
                     bytes_to_shift -= 8;
                 }
-                #endif
+
                 while (bytes_to_shift > 0) {
-                    if (opcode == JVM_ISHL) {                
+                    if (opcode == JVM_ISHL || opcode == JVM_ISHL_CONST) {                
                         emit_LSL(operand_regs2[0]);
                         emit_ROL(operand_regs2[1]);
                         emit_ROL(operand_regs2[2]);
                         emit_ROL(operand_regs2[3]);
-                    } else if (opcode == JVM_ISHR) {
+                    } else if (opcode == JVM_ISHR || opcode == JVM_ISHR_CONST) {
                         emit_ASR(operand_regs2[3]);
                         emit_ROR(operand_regs2[2]);
                         emit_ROR(operand_regs2[1]);
                         emit_ROR(operand_regs2[0]);
-                    } else if (opcode == JVM_IUSHR) {
+                    } else if (opcode == JVM_IUSHR || opcode == JVM_IUSHR_CONST) {
                         emit_LSR(operand_regs2[3]);
                         emit_ROR(operand_regs2[2]);
                         emit_ROR(operand_regs2[1]);
@@ -1113,42 +1054,14 @@ void rtc_translate_single_instruction() {
                     }
                     bytes_to_shift--;
                 }
+
                 if (emit_loop) {
                     emit_DEC(operand_regs1[0]);
                     emit_BRPL(-12);
                 }
-                // Emit shift
+
                 rtc_stackcache_push_32bit(operand_regs2);
-                
-                // Clear optimisation var if it was set.
-                ts->do_CONST_SHIFT_optimisation = 0;
             }
-            #else // AOT_OPTIMISE_CONSTANT_SHIFTS
-            rtc_stackcache_pop_destructive_16bit(operand_regs1);
-            rtc_stackcache_pop_destructive_32bit(operand_regs2);
-
-            emit_RJMP(8);
-            if (opcode == JVM_ISHL) {                
-                emit_LSL(operand_regs2[0]);
-                emit_ROL(operand_regs2[1]);
-                emit_ROL(operand_regs2[2]);
-                emit_ROL(operand_regs2[3]);
-            } else if (opcode == JVM_ISHR) {
-                emit_ASR(operand_regs2[3]);
-                emit_ROR(operand_regs2[2]);
-                emit_ROR(operand_regs2[1]);
-                emit_ROR(operand_regs2[0]);
-            } else if (opcode == JVM_IUSHR) {
-                emit_LSR(operand_regs2[3]);
-                emit_ROR(operand_regs2[2]);
-                emit_ROR(operand_regs2[1]);
-                emit_ROR(operand_regs2[0]);
-            }
-            emit_DEC(operand_regs1[0]);
-            emit_BRPL(-12);
-
-            rtc_stackcache_push_32bit(operand_regs2);
-            #endif // AOT_OPTIMISE_CONSTANT_SHIFTS
         break;
         case JVM_IAND:
             rtc_stackcache_pop_nondestructive_32bit(operand_regs1);

@@ -66,9 +66,6 @@ typedef struct _rtc_translationstate {
     uint8_t *call_saved_registers_used_per_method; // Used to generate the method prologue/epilogue and by INVOKELIGHT inside of a MARKLOOP loop to determine which pinned registers to save/restore.
     native_method_function_t *method_start_addresses; // Used by INVOKELIGHT to find the address of lightweight methods in the current infusion.
     uint8_t flags;
-#if defined(AOT_OPTIMISE_CONSTANT_SHIFTS)
-    uint8_t do_CONST_SHIFT_optimisation;
-#endif // AOT_OPTIMISE_CONSTANT_SHIFTS
 #ifdef AOT_STRATEGY_SIMPLESTACKCACHE
     uint8_t rtc_stackcache_state[RTC_STACKCACHE_MAX_IDX];
 #endif // AOT_STRATEGY_SIMPLESTACKCACHE

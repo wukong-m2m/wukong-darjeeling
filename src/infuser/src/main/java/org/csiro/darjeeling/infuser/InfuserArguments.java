@@ -78,7 +78,7 @@ public class InfuserArguments
 	private boolean use32BitArrayIndex = false;
 
 	// Optimise constant shifts (gcc-style)
-	private boolean useConstantShiftOptimisation = false;
+	private boolean useConstantShiftOptimisation = true;
 
 	/**
 	 *  Creates a new, empty InfuserArguments instance. Can be used to programatically drive

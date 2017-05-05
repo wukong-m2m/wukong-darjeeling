@@ -279,6 +279,13 @@ public enum Opcode
 
 	INVOKELIGHT((short)230,"invokelight", null),
 
+	SSHL_CONST((short)231,"sshl_const", BaseType.Short, BaseType.Short),
+	SSHR_CONST((short)232,"sshr_const", BaseType.Short, BaseType.Short),
+	SUSHR_CONST((short)233,"sushr_const", BaseType.Short, BaseType.Short),
+	ISHL_CONST((short)234,"ishl_const", BaseType.Int, BaseType.Int),
+	ISHR_CONST((short)235,"ishr_const", BaseType.Int, BaseType.Int),
+	IUSHR_CONST((short)236,"iushr_const", BaseType.Int, BaseType.Int),
+
 	// this is a dummy placeholder opcode, will not appear in the final output
 	S2S((short)-1,"s2s", BaseType.Short, BaseType.Short)
 	;

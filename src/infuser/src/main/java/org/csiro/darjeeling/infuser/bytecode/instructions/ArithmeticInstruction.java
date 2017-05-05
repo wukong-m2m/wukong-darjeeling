@@ -47,6 +47,8 @@ public class ArithmeticInstruction extends SimpleInstruction
 				break;
 
 			case INEG:
+			case ISHR_CONST:
+			case IUSHR_CONST:
 				preState.getStack().peek(0).setKeepOverflow(true);
 				break;
 				
@@ -148,6 +150,7 @@ public class ArithmeticInstruction extends SimpleInstruction
 				break;
 				
 			case INEG:
+			case ISHL_CONST:
 				a = preState.getStack().peek(0).getLogicalType();
 
 				// This instruction may cause overflow if the operand type is short

@@ -254,6 +254,12 @@
 #define JVM_LIGHTWEIGHTMETHODPARAMETER_I 228 // These are just here to keep the range continuous. They're not actually used in the bytecode.
 #define JVM_LIGHTWEIGHTMETHODPARAMETER_A 229 // These are just here to keep the range continuous. They're not actually used in the bytecode.
 #define JVM_INVOKELIGHT 230
+#define JVM_SSHL_CONST 231
+#define JVM_SSHR_CONST 232
+#define JVM_SUSHR_CONST 233
+#define JVM_ISHL_CONST 234
+#define JVM_ISHR_CONST 235
+#define JVM_IUSHR_CONST 236
 
 
 #endif // __opcodes__h

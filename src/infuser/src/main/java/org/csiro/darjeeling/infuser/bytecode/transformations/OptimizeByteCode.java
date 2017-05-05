@@ -83,6 +83,9 @@ public class OptimizeByteCode extends CodeBlockTransformation
 		optimisedOpcodes.put(Opcode.ISHL, Opcode.SSHL);
 		optimisedOpcodes.put(Opcode.ISHR, Opcode.SSHR);
 		optimisedOpcodes.put(Opcode.IUSHR, Opcode.SUSHR);
+		optimisedOpcodes.put(Opcode.ISHL_CONST, Opcode.SSHL_CONST);
+		optimisedOpcodes.put(Opcode.ISHR_CONST, Opcode.SSHR_CONST);
+		optimisedOpcodes.put(Opcode.IUSHR_CONST, Opcode.SUSHR_CONST);
 		optimisedOpcodes.put(Opcode.IAND, Opcode.SAND);
 		optimisedOpcodes.put(Opcode.IOR, Opcode.SOR);
 		optimisedOpcodes.put(Opcode.IXOR, Opcode.SXOR);
@@ -123,6 +126,7 @@ public class OptimizeByteCode extends CodeBlockTransformation
 				case INVOKEINTERFACE:
 				case INVOKESPECIAL:
 				case INVOKEVIRTUAL:
+				case INVOKELIGHT:
 					operandTypes = ((AbstractInvokeInstruction)instruction).getMethodDefinition().getArgumentTypes();
 					
 					for (int j=0; j<operandTypes.length; j++)
@@ -168,11 +172,19 @@ public class OptimizeByteCode extends CodeBlockTransformation
 				case ISHL:
 				case ISHR:
 				case IUSHR:
+				case ISHL_CONST:
+				case ISHR_CONST:
+				case IUSHR_CONST:
 					
 					if (!forceOptimise)
 					{
 						if (stack.peek(0).getLogicalType().getTypeClass()!=TypeClass.Short) break;
-						if (opcode!=Opcode.INEG && stack.peek(1).getLogicalType().getTypeClass()!=TypeClass.Short) break;
+						if (opcode!=Opcode.INEG
+								&& opcode!=Opcode.ISHL_CONST
+								&& opcode!=Opcode.ISHR_CONST
+								&& opcode!=Opcode.IUSHR_CONST
+								&& stack.peek(1).getLogicalType().getTypeClass()!=TypeClass.Short)
+							break;
 					}
 					
 					// never optimise if the requested output type of this instruction is not short, and the 
@@ -187,7 +199,11 @@ public class OptimizeByteCode extends CodeBlockTransformation
 					{
 						instruction.setOpcode(optimisedOpcodes.get(opcode));
 						handle.setOptimisationHint(0, BaseType.Short);
-						if (opcode!=Opcode.INEG) handle.setOptimisationHint(1, BaseType.Short);
+						if (opcode!=Opcode.INEG
+								&& opcode!=Opcode.ISHL_CONST
+								&& opcode!=Opcode.ISHR_CONST
+								&& opcode!=Opcode.IUSHR_CONST)
+							handle.setOptimisationHint(1, BaseType.Short);
 						
 						// reset :3
 						i=instructions.size()-1;
@@ -195,7 +211,7 @@ public class OptimizeByteCode extends CodeBlockTransformation
 					
 					
 					break;
-				
+
 				case ISTORE:
 				case ILOAD:
 				case LSTORE:

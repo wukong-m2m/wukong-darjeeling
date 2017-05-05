@@ -34,15 +34,16 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.csiro.darjeeling.infuser.bytecode.instructions.LocalIdInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.LoadStoreInstruction;
 import org.csiro.darjeeling.infuser.bytecode.transformations.AddBranchTargetInstructions;
+import org.csiro.darjeeling.infuser.bytecode.transformations.AddInvokeLightweightInstructions;
 import org.csiro.darjeeling.infuser.bytecode.transformations.AddMarkLoopInstructions;
 import org.csiro.darjeeling.infuser.bytecode.transformations.AnalyseTypes;
 import org.csiro.darjeeling.infuser.bytecode.transformations.CalculateMaxStack;
+import org.csiro.darjeeling.infuser.bytecode.transformations.ConvertConstantBitShifts;
 import org.csiro.darjeeling.infuser.bytecode.transformations.InsertExplicitCasts;
 import org.csiro.darjeeling.infuser.bytecode.transformations.OptimizeByteCode;
 import org.csiro.darjeeling.infuser.bytecode.transformations.ReMapLocalVariables;
 import org.csiro.darjeeling.infuser.bytecode.transformations.ReplaceStackInstructions;
 import org.csiro.darjeeling.infuser.bytecode.transformations.UseSINC;
-import org.csiro.darjeeling.infuser.bytecode.transformations.AddInvokeLightweightInstructions;
 import org.csiro.darjeeling.infuser.structure.BaseType;
 import org.csiro.darjeeling.infuser.structure.LocalId;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractClassDefinition;
@@ -437,6 +438,7 @@ public class CodeBlock
 	}
 	
 	private static CodeBlock optimise(CodeBlock ret, boolean isHardcodedLightweight) {
+
 		// thread states, creating incoming and outgoing links between instruction handles
 		ret.instructions.threadStates();
 
@@ -456,6 +458,11 @@ public class CodeBlock
 		new AnalyseTypes(ret).transform();
 
 		new OptimizeByteCode(ret).transform();
+		ret.instructions.reThreadStates();
+		ret.instructions.fixBranchAddresses();
+
+		// Replace constant push followed by a bit shift by a single constant bit shift
+		new ConvertConstantBitShifts(ret).transform();
 		ret.instructions.reThreadStates();
 		ret.instructions.fixBranchAddresses();
 			

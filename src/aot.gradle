@@ -68,17 +68,18 @@ if (!project.hasProperty('use32bitarrayindex')) {
         throw new InvalidUserDataException("Invalid value for use32bitarrayindex" + project.ext.use32bitarrayindex)        
     }
 }
-if (!project.hasProperty('aotconstshiftoptimisation')) {
-    project.ext.aotconstshiftoptimisation = 'gcc_like'
+if (!project.hasProperty('useconstantshiftoptimisation')) {
+    project.ext.useconstantshiftoptimisation = 'true'
 } else {
-    if (project.ext.aotconstshiftoptimisation != 'none'
-     && project.ext.aotconstshiftoptimisation != 'by1'
-     && project.ext.aotconstshiftoptimisation != 'all_only_shift'
-     && project.ext.aotconstshiftoptimisation != 'all_move_and_shift'
-     && project.ext.aotconstshiftoptimisation != 'gcc_like') {
-    throw new InvalidUserDataException("Invalid const/shift optimisation:" + project.ext.aotconstshiftoptimisation)        
+    if (project.ext.useconstantshiftoptimisation == '') {
+        project.ext.useconstantshiftoptimisation = 'true'        
+    }
+    if (project.ext.useconstantshiftoptimisation != 'true'
+            && project.ext.useconstantshiftoptimisation != 'false') {
+        throw new InvalidUserDataException("Invalid value for useconstantshiftoptimisation" + project.ext.useconstantshiftoptimisation)        
     }
 }
+
 
 if (project.ext.aotstackcachesize.toInteger() > 11) {
     throw new InvalidUserDataException("Max size for stack cache is 11 words")
@@ -88,15 +89,6 @@ binaries.all {
     cCompiler.args "-D AOT_STRATEGY_${project.ext.aotstrat.toUpperCase()}"
     cCompiler.args "-D RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE=${project.ext.aotstackcachesize}"
     cCompiler.args "-D RTC_MARKLOOP_MAX_NUMBER_OF_IDX_TO_PIN=${project.ext.aotmarkloopregs}"
-
-    if (project.ext.aotconstshiftoptimisation == 'by1')
-        cCompiler.args "-D AOT_OPTIMISE_CONSTANT_SHIFTS_BY1"
-    if (project.ext.aotconstshiftoptimisation == 'all_only_shift')
-        cCompiler.args "-D AOT_OPTIMISE_CONSTANT_SHIFTS_ALL_ONLY_SHIFT"
-    if (project.ext.aotconstshiftoptimisation == 'all_move_and_shift')
-        cCompiler.args "-D AOT_OPTIMISE_CONSTANT_SHIFTS_ALL_MOVE_AND_SHIFT"
-    if (project.ext.aotconstshiftoptimisation == 'gcc_like')
-        cCompiler.args "-D AOT_OPTIMISE_CONSTANT_SHIFTS_GCC_LIKE"
 
     if (project.ext.use32bitarrayindex == 'true')
         cCompiler.args "-D ARRAYINDEX_32BIT"
@@ -116,16 +108,10 @@ def getOutputDirName() {
         outdirSTRAT='4MARK'
 
     def outdirCONSTSHIFT='?'
-    if (project.ext.aotconstshiftoptimisation == 'none')
-        outdirCONSTSHIFT=0
-    if (project.ext.aotconstshiftoptimisation == 'by1')
+    if (project.ext.useconstantshiftoptimisation == 'true')
         outdirCONSTSHIFT=1
-    if (project.ext.aotconstshiftoptimisation == 'all_only_shift')
-        outdirCONSTSHIFT=2
-    if (project.ext.aotconstshiftoptimisation == 'all_move_and_shift')
-        outdirCONSTSHIFT=3
-    if (project.ext.aotconstshiftoptimisation == 'gcc_like')
-        outdirCONSTSHIFT=4
+    else
+        outdirCONSTSHIFT=0
 
     def outdirREGS=sprintf('%02d', project.ext.aotstackcachesize.toInteger())
     def outdirPINNED=project.ext.aotmarkloopregs
