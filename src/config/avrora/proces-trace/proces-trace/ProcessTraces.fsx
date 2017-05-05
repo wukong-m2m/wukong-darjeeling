@@ -367,7 +367,7 @@ let getCountersForSymbols (nmData : NmData list) (profilerdataPerAddress : (int 
                                                                                   {
                                                                                       executions = p.Executions
                                                                                       cycles = p.Cycles                                        // Since this is a call to another benchmark function or method, don't count the subroutine cycles since we would end up counting them double
-                                                                                      cyclesSubroutine = p.CyclesSubroutine
+                                                                                      cyclesSubroutine = 0
                                                                                       count = 1
                                                                                       size = 0
                                                                                   })))
@@ -382,7 +382,7 @@ let getAllSymbolCounters (profilerdataPerAddress : (int * ProfiledInstruction) l
        {
           executions = profiledInstruction.Executions
           cycles = profiledInstruction.Cycles
-          cyclesSubroutine = profiledInstruction.CyclesSubroutine
+          cyclesSubroutine = 0
           count = 1
           size = 0
        }))
@@ -489,16 +489,16 @@ let processSingleBenchmarkResultsDir (resultsdir : string) =
                 executions       = fractionAOT cyclesSpentOnTimer.executions
                 cycles           = fractionAOT cyclesSpentOnTimer.cycles
                 cyclesSubroutine = fractionAOT cyclesSpentOnTimer.cyclesSubroutine
-                count            = fractionAOT cyclesSpentOnTimer.count
-                size             = fractionAOT cyclesSpentOnTimer.size
+                count            = 0
+                size             = 0
             }  
     let countersCTimer = 
             {
                 executions       = fractionC cyclesSpentOnTimer.executions
                 cycles           = fractionC cyclesSpentOnTimer.cycles
                 cyclesSubroutine = fractionC cyclesSpentOnTimer.cyclesSubroutine
-                count            = fractionC cyclesSpentOnTimer.count
-                size             = fractionC cyclesSpentOnTimer.size
+                count            = 0
+                size             = 0
             }  
 
     let results = {

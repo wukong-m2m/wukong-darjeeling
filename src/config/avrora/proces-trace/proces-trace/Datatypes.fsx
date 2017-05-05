@@ -75,10 +75,11 @@ type ResultAvr = {
     opt : AvrInstruction option;
     counters : ExecCounters }
 
-type StackDatatype = Ref | Byte | Char | Short | Int
+type StackDatatype = Ref | Boolean | Byte | Char | Short | Int
 let StackDatatypeToSize x =
     match x with // stack slot width is 16 bit, so everything takes at least two bytes.
     | Ref -> 2
+    | Boolean -> 2
     | Byte -> 2
     | Char -> 2
     | Short -> 2
@@ -86,6 +87,7 @@ let StackDatatypeToSize x =
 let StackDatatypeToString x =
     match x with
     | Ref -> "Ref"
+    | Boolean -> "Boolean"
     | Byte -> "Byte"
     | Char -> "Char"
     | Short -> "Short"
@@ -93,6 +95,7 @@ let StackDatatypeToString x =
 let StackDatatypeFromString x =
     match x with
     | "Ref" -> Ref
+    | "Boolean" -> Boolean
     | "Byte" -> Byte
     | "Char" -> Char
     | "Short" -> Short
