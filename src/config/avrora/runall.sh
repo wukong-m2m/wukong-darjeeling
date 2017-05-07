@@ -7,16 +7,16 @@ gdj clean
 
 for benchmark in ${benchmarks}
 do
-    tf=(true false)
+    tf=(false true)
     for useconstshift in ${tf}
     do
-        for use32bitarrayindex in ${tf}
+        for use16bitarrayindex in ${tf}
         do
-            gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=${useconstshift} -Puse32bitarrayindex=${use32bitarrayindex}
-            gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=${useconstshift} -Puse32bitarrayindex=${use32bitarrayindex}
-            gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=${useconstshift} -Puse32bitarrayindex=${use32bitarrayindex}
-            gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=${useconstshift} -Puse32bitarrayindex=${use32bitarrayindex}
-            gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=${useconstshift} -Puse32bitarrayindex=${use32bitarrayindex}
+            gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=${useconstshift} -Puse16bitarrayindex=${use16bitarrayindex}
+            gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=${useconstshift} -Puse16bitarrayindex=${use16bitarrayindex}
+            gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=${useconstshift} -Puse16bitarrayindex=${use16bitarrayindex}
+            gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=${useconstshift} -Puse16bitarrayindex=${use16bitarrayindex}
+            gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=${useconstshift} -Puse16bitarrayindex=${use16bitarrayindex}
         done
     done
 done

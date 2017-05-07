@@ -66,7 +66,7 @@ if (!project.hasProperty('use16bitarrayindex')) {
     }
 }
 if (!project.hasProperty('aotmarkloopregs')) {
-    if (project.ext.use16bitarrayindex == 'false') {
+    if (project.ext.use16bitarrayindex == 'true') {
         project.ext.aotmarkloopregs = '7'
     } else {
         project.ext.aotmarkloopregs = '6' // because we may need one more during array stores
@@ -120,24 +120,24 @@ def getOutputDirName() {
     def outdirREGS=sprintf('%02d', project.ext.aotstackcachesize.toInteger())
     def outdirPINNED=project.ext.aotmarkloopregs
 
-    def outdir32bitindex=''
+    def outdir16bitindex=''
     if (project.ext.use16bitarrayindex == 'true') {
-        outdir32bitindex = '_A0'
+        outdir16bitindex = '_A1'        
     } else {
-        outdir32bitindex = '_A1'        
+        outdir16bitindex = '_A0'
     }
 
 
     if (project.ext.aotstrat == 'baseline') {
-        return "results_${outdirSTRAT}_R___P__CS${outdirCONSTSHIFT}${outdir32bitindex}"
+        return "results_${outdirSTRAT}_R___P__CS${outdirCONSTSHIFT}${outdir16bitindex}"
     } else if (project.ext.aotstrat == 'improvedpeephole') {
-        return "results_${outdirSTRAT}_R___P__CS${outdirCONSTSHIFT}${outdir32bitindex}"
+        return "results_${outdirSTRAT}_R___P__CS${outdirCONSTSHIFT}${outdir16bitindex}"
     } else if (project.ext.aotstrat == 'simplestackcache') {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P__CS${outdirCONSTSHIFT}${outdir32bitindex}"
+        return "results_${outdirSTRAT}_R${outdirREGS}_P__CS${outdirCONSTSHIFT}${outdir16bitindex}"
     } else if (project.ext.aotstrat == 'poppedstackcache') {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P__CS${outdirCONSTSHIFT}${outdir32bitindex}"
+        return "results_${outdirSTRAT}_R${outdirREGS}_P__CS${outdirCONSTSHIFT}${outdir16bitindex}"
     } else {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P${outdirPINNED}_CS${outdirCONSTSHIFT}${outdir32bitindex}"
+        return "results_${outdirSTRAT}_R${outdirREGS}_P${outdirPINNED}_CS${outdirCONSTSHIFT}${outdir16bitindex}"
     }
 }
 

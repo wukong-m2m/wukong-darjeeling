@@ -100,7 +100,7 @@ let resultToStringList (result : SimulationResults) =
         ("CODE SIZE"            , "");
         ("Native C"             , result.codesizeC.ToString());
         ("AOT"                  , result.codesizeAOT.ToString());
-        ("  Java (AOT)"                 , result.codesizeJavaForAOT.ToString());
+        ("Java (AOT)"           , result.codesizeJavaForAOT.ToString());
         ("   branch overhead"   , (result.codesizeJavaForAOT - result.codesizeJavaWithoutBranchOverhead).ToString());
         ("   markloop overhead" , result.codesizeJavaMarkloopTotalSize.ToString());
         ("   Java ex. overhead" , result.codesizeJavaWithoutBranchMarkloopOverhead.ToString());

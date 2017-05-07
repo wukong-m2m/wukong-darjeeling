@@ -274,7 +274,7 @@ let resultsToString (results : SimulationResults) =
     addLn ("================== " + results.benchmark + ": AOT " + testResultAOT + "=============================== ============================ CODE SIZE ===============================")
     addLn (String.Format ("--- STACK max                               {0,14}             --- CODE SIZE   Native C                    {1,14}", results.maxJvmStackInBytes, results.codesizeC))
     addLn (String.Format ("          avg/executed jvm                  {0,14:000.00}                             AOT                         {1,14}", results.avgJvmStackInBytes, results.codesizeAOT))
-    addLn (String.Format ("          avg change/exec jvm               {0,14:000.00}                                 Java for AOT            {1,14}", results.avgJvmStackChangeInBytes, results.codesizeJavaForAOT))
+    addLn (String.Format ("          avg change/exec jvm               {0,14:000.00}                             Java for AOT                {1,14}", results.avgJvmStackChangeInBytes, results.codesizeJavaForAOT))
     addLn (String.Format ("============================ STOPWATCHES =============================                       branch count          {0,14}", results.codesizeJavaBranchCount))
     addLn (String.Format ("--- STOPWATCHES Native C                    {0,14}                                   branch target count   {1,14}", results.cyclesStopwatchC, results.codesizeJavaBranchTargetCount))
     addLn (String.Format ("                AOT                         {0,14}                                   markloop count        {1,14}", results.cyclesStopwatchAOT, results.codesizeJavaMarkloopCount))

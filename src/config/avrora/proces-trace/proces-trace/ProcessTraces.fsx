@@ -413,7 +413,7 @@ let processSingleBenchmarkResultsDir (resultsdir : string) =
     let jvmStdoutlog = System.IO.File.ReadLines(String.Format("{0}/stdoutlog.txt", jvmResultsdir)) |> Seq.toList
     let jvmNm = parseNm (System.IO.File.ReadLines(String.Format("{0}/darjeeling.nm", jvmResultsdir)) |> Seq.toList)
     let jvmProfilerdataPerAddress = jvmProfilerdata |> List.map (fun x -> (Convert.ToInt32(x.Address.Trim(), 16), x))
-    let jvmExcludeList = [ "RTCBenchmark.test_java"; "CoreMain.core_mark_main" ]
+    let jvmExcludeList = [ "RTCBenchmark.test_java" ]
     let jvmMethodsImpls = jvmRtcdata.MethodImpls |> Seq.filter (fun methodImpl -> (methodImpl.MethodDefInfusion.StartsWith("bm_")))
                                                  |> Seq.filter (fun methodImpl -> not (jvmExcludeList |> List.exists (fun ex -> (getClassAndMethodNameFromImpl methodImpl).Contains(ex)))) // Filter out the benchmark setup code
                                                  |> Seq.filter (fun methodImpl -> methodImpl.JavaInstructions.Length > 1) // Bug in RTC: abstract methods become just a method prologue
