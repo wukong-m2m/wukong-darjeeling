@@ -491,7 +491,7 @@ public enum Opcode
 			operandTypes = new BaseType[operandTypesWithUndeterminedArrayIndexType.length];
 			for (int i=0; i<operandTypesWithUndeterminedArrayIndexType.length; i++) {
 				operandTypes[i] = operandTypesWithUndeterminedArrayIndexType[i] == BaseType.ArrayIndex
-					? (Infuser.getUse32BitArrayIndex() ? BaseType.Int : BaseType.Short)
+					? (Infuser.getUse16BitArrayIndex() ? BaseType.Short : BaseType.Int)
 					: operandTypesWithUndeterminedArrayIndexType[i];
 			}
 		}

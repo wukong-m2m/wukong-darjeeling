@@ -162,9 +162,9 @@ public class InfuserTask extends Task
 		infuserArguments.setDebugOutputFile(debug);
 	}
 
-	public void setUse32BitArrayIndex(boolean value)
+	public void setUse16BitArrayIndex(boolean value)
 	{
-		infuserArguments.setUse32BitArrayIndex(value);
+		infuserArguments.setUse16BitArrayIndex(value);
 	}
 	
 	public void setUseConstantShiftOptimisation(boolean value)

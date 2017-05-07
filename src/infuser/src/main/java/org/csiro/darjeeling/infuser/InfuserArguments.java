@@ -75,7 +75,7 @@ public class InfuserArguments
 	private final static Pattern optionPattern = Pattern.compile("-(\\p{Alpha}+)=(.*)");
 	
 	// Use 32 instead of 16 bit array index
-	private boolean use32BitArrayIndex = false;
+	private boolean use16BitArrayIndex = false;
 
 	// Optimise constant shifts (gcc-style)
 	private boolean useConstantShiftOptimisation = true;
@@ -171,7 +171,7 @@ public class InfuserArguments
 				throw new ArgumentParseException("The value for option 'infusionversion' should be numeric");
 			}
 		}
-		if (name.equals("use32bitarrayindex")) { this.use32BitArrayIndex = true; return; }
+		if (name.equals("use16bitarrayindex")) { this.use16BitArrayIndex = true; return; }
 		if (name.equals("useconstantshiftoptimisation")) { this.useConstantShiftOptimisation = true; return; }
 
 		// unknown option
@@ -381,14 +381,14 @@ public class InfuserArguments
 		return debugOutputFile;
 	}
 
-	public void setUse32BitArrayIndex(boolean value)
+	public void setUse16BitArrayIndex(boolean value)
 	{
-		this.use32BitArrayIndex = value;
+		this.use16BitArrayIndex = value;
 	}
 
-	public boolean getUse32BitArrayIndex()
+	public boolean getUse16BitArrayIndex()
 	{
-		return this.use32BitArrayIndex;
+		return this.use16BitArrayIndex;
 	}
 
 	public void setUseConstantShiftOptimisation(boolean value)

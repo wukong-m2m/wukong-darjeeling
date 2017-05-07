@@ -54,18 +54,22 @@ if (!project.hasProperty('aotbm')) {
 if (!project.hasProperty('aotstackcachesize')) {
     project.ext.aotstackcachesize = '11'
 }
-if (!project.hasProperty('aotmarkloopregs')) {
-    project.ext.aotmarkloopregs = '7'
-}
-if (!project.hasProperty('use32bitarrayindex')) {
-    project.ext.use32bitarrayindex = 'false'
+if (!project.hasProperty('use16bitarrayindex')) {
+    project.ext.use16bitarrayindex = 'true'
 } else {
-    if (project.ext.use32bitarrayindex == '') {
-        project.ext.use32bitarrayindex = 'true'        
+    if (project.ext.use16bitarrayindex == '') {
+        project.ext.use16bitarrayindex = 'true'        
     }
-    if (project.ext.use32bitarrayindex != 'true'
-            && project.ext.use32bitarrayindex != 'false') {
-        throw new InvalidUserDataException("Invalid value for use32bitarrayindex" + project.ext.use32bitarrayindex)        
+    if (project.ext.use16bitarrayindex != 'true'
+            && project.ext.use16bitarrayindex != 'false') {
+        throw new InvalidUserDataException("Invalid value for use16bitarrayindex" + project.ext.use16bitarrayindex)        
+    }
+}
+if (!project.hasProperty('aotmarkloopregs')) {
+    if (project.ext.use16bitarrayindex == 'false') {
+        project.ext.aotmarkloopregs = '7'
+    } else {
+        project.ext.aotmarkloopregs = '6' // because we may need one more during array stores
     }
 }
 if (!project.hasProperty('useconstantshiftoptimisation')) {
@@ -90,7 +94,7 @@ binaries.all {
     cCompiler.args "-D RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE=${project.ext.aotstackcachesize}"
     cCompiler.args "-D RTC_MARKLOOP_MAX_NUMBER_OF_IDX_TO_PIN=${project.ext.aotmarkloopregs}"
 
-    if (project.ext.use32bitarrayindex == 'true')
+    if (project.ext.use16bitarrayindex == 'false')
         cCompiler.args "-D ARRAYINDEX_32BIT"
 }
 
@@ -117,10 +121,10 @@ def getOutputDirName() {
     def outdirPINNED=project.ext.aotmarkloopregs
 
     def outdir32bitindex=''
-    if (project.ext.use32bitarrayindex == 'true') {
-        outdir32bitindex = '_A32'
+    if (project.ext.use16bitarrayindex == 'true') {
+        outdir32bitindex = '_A0'
     } else {
-        outdir32bitindex = '_A16'        
+        outdir32bitindex = '_A1'        
     }
 
 

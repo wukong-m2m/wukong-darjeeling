@@ -79,9 +79,9 @@ public class Infuser
 	// Infuser argument instance
     private static InfuserArguments infuserArguments;
 
-	public static boolean getUse32BitArrayIndex()
+	public static boolean getUse16BitArrayIndex()
 	{
-		return infuserArguments.getUse32BitArrayIndex();
+		return infuserArguments.getUse16BitArrayIndex();
 	}
 
 	public static boolean getUseConstantShiftOptimisation()
@@ -91,7 +91,7 @@ public class Infuser
 
 	// Version of the infusion format. VM should check if it matches the VM's format
 	public static int getInfusionFormatVersion() {
-		return infuserArguments.getUse32BitArrayIndex() ? 120 : 121;
+		return (!infuserArguments.getUse16BitArrayIndex()) ? 120 : 121;
 	}
 
 	/** 

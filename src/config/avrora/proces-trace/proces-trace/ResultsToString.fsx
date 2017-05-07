@@ -135,7 +135,7 @@ let resultsToString (results : SimulationResults) =
             jvmMethod.instructions |> List.filter (fun j -> (j.jvm.text.StartsWith("JVM_INVOKE")))
                                     |> List.map (fun j -> (getClassAndMethodNameFromFullName j.jvm.text, j.counters)) // This will work for now, since we just take the name from the second
                                     |> groupFold fst snd (+) ExecCounters.Zero
-        let combined = ("----own----", nonInvokeCounters) :: groupedInvokes @ [ ("---total---", totalCounters) ]
+        let combined = ("---total---", totalCounters) :: ("----own----", nonInvokeCounters) :: groupedInvokes
 
         combined |> List.map (fun (target, counters)
                                     -> String.Format("{0,53} : {1}",
@@ -230,7 +230,7 @@ let resultsToString (results : SimulationResults) =
             cFunction.instructions |> List.filter (fun (avr,cnt) -> (avr.text.StartsWith("call")))
                                    |> List.map (fun (avr,cnt) -> ((avr.text.Substring(21)), cnt)) // This will work for now, since we just take the name from the second
                                    |> groupFold fst snd (+) ExecCounters.Zero
-        let combined = ("----own----", nonInvokeCounters) :: groupedInvokes @ [ ("---total---", totalCounters) ]
+        let combined = ("---total---", totalCounters) :: ("----own----", nonInvokeCounters) :: groupedInvokes
 
         combined |> List.map (fun (target, counters)
                                     -> String.Format("{0,53} : {1}",
