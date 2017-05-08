@@ -214,6 +214,8 @@ class DjSourceSet {
             }
             inputs.file new File("${project.project.rootDir}/infuser/build/libs/infuser-1.0.jar")
             inputs.files project.fileTree(dir: infusionClassesSourceDir).include('**/*.class')
+            inputs.property("usesimul", project.ext.usesimul)
+            inputs.property("usegetfield_a_fixed", project.ext.usegetfield_a_fixed)
             inputs.property("use16bitarrayindex", project.ext.use16bitarrayindex)
             inputs.property("useconstantshiftoptimisation", project.ext.useconstantshiftoptimisation)
             outputs.dir infusionDir
@@ -230,6 +232,8 @@ class DjSourceSet {
                         hfile: "${infusionDir}/jlib_${this.name}.h",
                         cfile: "${infusionDir}/jlib_${this.name}.c",
                         debugfile: "${infusionDir}/jlib_${this.name}.debug",
+                        usesimul: project.ext.usesimul,
+                        usegetfield_a_fixed: project.ext.usegetfield_a_fixed,
                         use16bitarrayindex: project.ext.use16bitarrayindex,
                         useconstantshiftoptimisation: project.ext.useconstantshiftoptimisation) {
                     fileset(dir: infusionClassesSourceDir, includes: '**/*.class')

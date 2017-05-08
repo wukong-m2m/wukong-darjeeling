@@ -54,6 +54,14 @@ if (!project.hasProperty('aotbm')) {
 if (!project.hasProperty('aotstackcachesize')) {
     project.ext.aotstackcachesize = '11'
 }
+
+if (project.hasProperty('no-opcode-optimisations')) {
+    project.ext.use16bitarrayindex = 'false'
+    project.ext.useconstantshiftoptimisation = 'false'
+    project.ext.usesimul = 'false'
+    project.ext.usegetfield_a_fixed = 'false'
+}
+
 if (!project.hasProperty('use16bitarrayindex')) {
     project.ext.use16bitarrayindex = 'true'
 } else {
@@ -65,13 +73,7 @@ if (!project.hasProperty('use16bitarrayindex')) {
         throw new InvalidUserDataException("Invalid value for use16bitarrayindex" + project.ext.use16bitarrayindex)        
     }
 }
-if (!project.hasProperty('aotmarkloopregs')) {
-    if (project.ext.use16bitarrayindex == 'true') {
-        project.ext.aotmarkloopregs = '7'
-    } else {
-        project.ext.aotmarkloopregs = '6' // because we may need one more during array stores
-    }
-}
+
 if (!project.hasProperty('useconstantshiftoptimisation')) {
     project.ext.useconstantshiftoptimisation = 'true'
 } else {
@@ -84,6 +86,37 @@ if (!project.hasProperty('useconstantshiftoptimisation')) {
     }
 }
 
+if (!project.hasProperty('usesimul')) {
+    project.ext.usesimul = 'true'
+} else {
+    if (project.ext.usesimul == '') {
+        project.ext.usesimul = 'true'        
+    }
+    if (project.ext.usesimul != 'true'
+            && project.ext.usesimul != 'false') {
+        throw new InvalidUserDataException("Invalid value for usesimul" + project.ext.usesimul)        
+    }
+}
+
+if (!project.hasProperty('usegetfield_a_fixed')) {
+    project.ext.usegetfield_a_fixed = 'true'
+} else {
+    if (project.ext.usegetfield_a_fixed == '') {
+        project.ext.usegetfield_a_fixed = 'true'        
+    }
+    if (project.ext.usegetfield_a_fixed != 'true'
+            && project.ext.usegetfield_a_fixed != 'false') {
+        throw new InvalidUserDataException("Invalid value for usegetfield_a_fixed" + project.ext.usegetfield_a_fixed)        
+    }
+}
+
+if (!project.hasProperty('aotmarkloopregs')) {
+    if (project.ext.use16bitarrayindex == 'true') {
+        project.ext.aotmarkloopregs = '7'
+    } else {
+        project.ext.aotmarkloopregs = '6' // because we may need one more during array stores
+    }
+}
 
 if (project.ext.aotstackcachesize.toInteger() > 11) {
     throw new InvalidUserDataException("Max size for stack cache is 11 words")
@@ -111,33 +144,45 @@ def getOutputDirName() {
     if (project.ext.aotstrat == 'markloop')
         outdirSTRAT='4MARK'
 
-    def outdirCONSTSHIFT='?'
-    if (project.ext.useconstantshiftoptimisation == 'true')
-        outdirCONSTSHIFT=1
-    else
-        outdirCONSTSHIFT=0
 
     def outdirREGS=sprintf('%02d', project.ext.aotstackcachesize.toInteger())
     def outdirPINNED=project.ext.aotmarkloopregs
 
-    def outdir16bitindex=''
-    if (project.ext.use16bitarrayindex == 'true') {
-        outdir16bitindex = '_A1'        
+    def opt_simul=''
+    if (project.ext.usesimul == 'true') {
+        opt_simul = '_S1'        
     } else {
-        outdir16bitindex = '_A0'
+        opt_simul = '_S0'
     }
 
-
-    if (project.ext.aotstrat == 'baseline') {
-        return "results_${outdirSTRAT}_R___P__CS${outdirCONSTSHIFT}${outdir16bitindex}"
-    } else if (project.ext.aotstrat == 'improvedpeephole') {
-        return "results_${outdirSTRAT}_R___P__CS${outdirCONSTSHIFT}${outdir16bitindex}"
-    } else if (project.ext.aotstrat == 'simplestackcache') {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P__CS${outdirCONSTSHIFT}${outdir16bitindex}"
-    } else if (project.ext.aotstrat == 'poppedstackcache') {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P__CS${outdirCONSTSHIFT}${outdir16bitindex}"
+    def opt_getfield_a_fixed=''
+    if (project.ext.usegetfield_a_fixed == 'true') {
+        opt_getfield_a_fixed = '_G1'        
     } else {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P${outdirPINNED}_CS${outdirCONSTSHIFT}${outdir16bitindex}"
+        opt_getfield_a_fixed = '_G0'
+    }
+
+    def opt_16bitindex=''
+    if (project.ext.use16bitarrayindex == 'true') {
+        opt_16bitindex = '_A1'        
+    } else {
+        opt_16bitindex = '_A0'
+    }
+
+    def opt_constshift=''
+    if (project.ext.useconstantshiftoptimisation == 'true')
+        opt_constshift='_C1'
+    else
+        opt_constshift='_C0'
+
+
+
+    if (project.ext.aotstrat == 'baseline' || project.ext.aotstrat == 'improvedpeephole') {
+        return "results_${outdirSTRAT}_R___P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}"
+    } else if (project.ext.aotstrat == 'simplestackcache' || project.ext.aotstrat == 'poppedstackcache') {
+        return "results_${outdirSTRAT}_R${outdirREGS}_P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}"
+    } else {
+        return "results_${outdirSTRAT}_R${outdirREGS}_P${outdirPINNED}${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}"
     }
 }
 

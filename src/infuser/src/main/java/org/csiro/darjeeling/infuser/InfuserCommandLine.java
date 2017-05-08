@@ -36,6 +36,8 @@ public class InfuserCommandLine
 		System.out.println("\t-d=<file>\t\t\t\tOutput c definitions header file (.h)");
 		System.out.println("\t-name=<arg>\t\t\t\tInfusion name");
 		System.out.println("\t-infusionversion=<arg>\t\t\tInfusion version (integer)");
+		System.out.println("\t-useSIMUL\t\t\tUse 16x16 to 32 bit multiplication");		
+		System.out.println("\t-useGETFIELD_A_FIXED\t\t\tUse special GETFIELD_A_FIXED if the offset is known at compile time");		
 		System.out.println("\t-use16bitarrayindex\t\t\tUse 16 bit array indexes instead of 32 bit");		
 		System.out.println("\t-useconstantshiftoptimisation\t\t\tOptimise constant shifts (gcc-style)");		
 		System.out.println("");

@@ -79,6 +79,16 @@ public class Infuser
 	// Infuser argument instance
     private static InfuserArguments infuserArguments;
 
+	public static boolean getUseSIMUL()
+	{
+		return infuserArguments.getUseSIMUL();
+	}
+
+	public static boolean getUseGETFIELD_A_FIXED()
+	{
+		return infuserArguments.getUseGETFIELD_A_FIXED();
+	}
+
 	public static boolean getUse16BitArrayIndex()
 	{
 		return infuserArguments.getUse16BitArrayIndex();

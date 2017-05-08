@@ -162,6 +162,16 @@ public class InfuserTask extends Task
 		infuserArguments.setDebugOutputFile(debug);
 	}
 
+	public void setUseSIMUL(boolean value)
+	{
+		infuserArguments.setUseSIMUL(value);
+	}
+	
+	public void setUseGETFIELD_A_FIXED(boolean value)
+	{
+		infuserArguments.setUseGETFIELD_A_FIXED(value);
+	}
+	
 	public void setUse16BitArrayIndex(boolean value)
 	{
 		infuserArguments.setUse16BitArrayIndex(value);

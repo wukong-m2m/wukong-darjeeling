@@ -21,6 +21,12 @@ do
     done
 done
 
+# for benchmark in ${benchmarks}
+# do
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline   -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusegetfield_a_fixed=true -Pusesimul=false
+# done
+
+
 # # MARKLOOP FOR DIFF NUMBERS OF PINNED REGISTERS
 # for benchmark in ${benchmarks}
 # do

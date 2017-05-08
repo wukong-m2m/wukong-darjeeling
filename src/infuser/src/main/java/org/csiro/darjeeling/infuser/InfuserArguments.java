@@ -73,7 +73,13 @@ public class InfuserArguments
 	
 	// Regexp pattern for -key=value style arguments 
 	private final static Pattern optionPattern = Pattern.compile("-(\\p{Alpha}+)=(.*)");
-	
+
+	// Use SIMUL 16x16 to 32 bit multiplication
+	private boolean useSIMUL = true;
+
+	// Use special opcode for GETFIELD_A with fixed offset
+	private boolean useGETFIELD_A_FIXED = true;
+
 	// Use 32 instead of 16 bit array index
 	private boolean use16BitArrayIndex = false;
 
@@ -171,6 +177,8 @@ public class InfuserArguments
 				throw new ArgumentParseException("The value for option 'infusionversion' should be numeric");
 			}
 		}
+		if (name.equals("useSIMUL")) { this.useSIMUL = true; return; }
+		if (name.equals("useGETFIELD_A_FIXED")) { this.useGETFIELD_A_FIXED = true; return; }
 		if (name.equals("use16bitarrayindex")) { this.use16BitArrayIndex = true; return; }
 		if (name.equals("useconstantshiftoptimisation")) { this.useConstantShiftOptimisation = true; return; }
 
@@ -379,6 +387,26 @@ public class InfuserArguments
 	public String getDebugOutputFile()
 	{
 		return debugOutputFile;
+	}
+
+	public void setUseGETFIELD_A_FIXED(boolean value)
+	{
+		this.useGETFIELD_A_FIXED = value;
+	}
+
+	public boolean getUseGETFIELD_A_FIXED()
+	{
+		return this.useGETFIELD_A_FIXED;
+	}
+
+	public void setUseSIMUL(boolean value)
+	{
+		this.useSIMUL = value;
+	}
+
+	public boolean getUseSIMUL()
+	{
+		return this.useSIMUL;
 	}
 
 	public void setUse16BitArrayIndex(boolean value)

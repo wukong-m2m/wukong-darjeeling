@@ -39,6 +39,7 @@ import org.apache.bcel.generic.ObjectType;
 import org.apache.bcel.generic.PUTFIELD;
 import org.apache.bcel.generic.TABLESWITCH;
 import org.apache.bcel.generic.Type;
+import org.csiro.darjeeling.infuser.Infuser;
 import org.csiro.darjeeling.infuser.bytecode.instructions.ArithmeticInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.BranchInstruction;
 import org.csiro.darjeeling.infuser.bytecode.instructions.ConstantPushInstruction;
@@ -441,7 +442,8 @@ public class BCELInstructionAdapter
 		InternalClassDefinition classDef = (InternalClassDefinition)(infusion.lookupClassByName(className));
 
 		if (classDef.getSuperClassName().equals("java.lang.Object")
-				&& classDef.getJavaClass().isFinal()) {
+				&& classDef.getJavaClass().isFinal()
+				&& Infuser.getUseGETFIELD_A_FIXED()) {
 			// We can be sure of the runtime type, so use the
 			// optimised GETFIELD_A_FIXED
 			LocalId localId = getClassID(className);
