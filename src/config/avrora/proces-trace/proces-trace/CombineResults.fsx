@@ -28,7 +28,7 @@ let getLDDSTBytesFromAVRPerCategoryC (result : SimulationResults) =
 let resultToStringList (result : SimulationResults) =
     let toPercentage totalCycles cycles =
         String.Format ("{0,5:0.0}", 100.0 * float cycles / float totalCycles)
-    let cyclesToCPercentage = toPercentage result.cyclesStopwatchC
+    let cyclesToCPercentage = toPercentage result.countersCTotal.cycles
     let bytesToCPercentage = toPercentage result.countersCTotal.size
     let executedInstructionsJVM = result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> cnt.executions) |> List.reduce (+)
     let executionsToPercentage = toPercentage executedInstructionsJVM
@@ -41,16 +41,20 @@ let resultToStringList (result : SimulationResults) =
 
     let r1 =
         [
-        ("BENCHMARK"            , result.benchmark);
+        ("BENCHMARK x"          , result.benchmark);
         ("Test"                 , if result.passedTestAOT then "PASSED" else "FAILED");
         (""                     , "");        
         ("PERF OVERHEAD"        , "cyc (%C)");
-        ("   stopwatch"         , (cyclesToCPercentage (result.cyclesStopwatchAOT - result.cyclesStopwatchC)));
         ("   total"             , (cyclesToCPercentage result.countersOverheadTotal.cycles));
         ("   load/store"        , (cyclesToCPercentage result.countersOverheadLoadStore.cycles));
         ("   push/pop"          , (cyclesToCPercentage result.countersOverheadPushPop.cycles));
         ("   mov(w)"            , (cyclesToCPercentage result.countersOverheadMov.cycles));
+        ("   vm+other"          , (cyclesToCPercentage (result.countersOverheadVm.cycles + result.countersOverheadOthers.cycles)));
+        (""                     , "");
+        ("   vm"                , (cyclesToCPercentage result.countersOverheadVm.cycles));
         ("   other"             , (cyclesToCPercentage result.countersOverheadOthers.cycles));
+        (""                     , "");
+        ("   stopwatch"         , (cyclesToCPercentage (result.cyclesStopwatchAOT - result.cyclesStopwatchC)));
         (""                     , "");
         ("SIZE OVERHEAD"        , "byt (%C)");
         ("   total"             , (bytesToCPercentage result.countersOverheadTotal.size));
@@ -79,8 +83,8 @@ let resultToStringList (result : SimulationResults) =
         ("         load/store"  , String.Format("{0}", result.countersAOTLoadStore.cycles));
         ("         push/pop"    , String.Format("{0}", result.countersAOTPushPop.cycles));
         ("         mov(w)"      , String.Format("{0}", result.countersAOTMov.cycles));
-        ("         others"      , String.Format("{0}", result.countersAOTOthers.cycles));
         ("         vm"          , String.Format("{0}", result.countersAOTVM.cycles));
+        ("         others"      , String.Format("{0}", result.countersAOTOthers.cycles));
         (""                     , "");
         ("         stopw/count" , (cyclesToSlowdown result.cyclesStopwatchAOT result.countersAOTTotal.cycles));
         (""                     , "");
