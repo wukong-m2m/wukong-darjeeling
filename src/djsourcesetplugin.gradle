@@ -235,6 +235,7 @@ class DjSourceSet {
                         usesimul: project.ext.usesimul,
                         usegetfield_a_fixed: project.ext.usegetfield_a_fixed,
                         use16bitarrayindex: project.ext.use16bitarrayindex,
+                        nolightweightmethods: project.ext.nolightweightmethods,
                         useconstantshiftoptimisation: project.ext.useconstantshiftoptimisation) {
                     fileset(dir: infusionClassesSourceDir, includes: '**/*.class')
                     javaDependencies.each { jlibname ->

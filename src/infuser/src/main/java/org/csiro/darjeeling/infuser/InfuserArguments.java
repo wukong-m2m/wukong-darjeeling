@@ -86,6 +86,9 @@ public class InfuserArguments
 	// Optimise constant shifts (gcc-style)
 	private boolean useConstantShiftOptimisation = true;
 
+	// Don't transform lightweight methods
+	private boolean noLightweightMethods = false;
+
 	/**
 	 *  Creates a new, empty InfuserArguments instance. Can be used to programatically drive
 	 *  the infuser rather than through command line arguments. 
@@ -181,6 +184,7 @@ public class InfuserArguments
 		if (name.equals("useGETFIELD_A_FIXED")) { this.useGETFIELD_A_FIXED = true; return; }
 		if (name.equals("use16bitarrayindex")) { this.use16BitArrayIndex = true; return; }
 		if (name.equals("useconstantshiftoptimisation")) { this.useConstantShiftOptimisation = true; return; }
+		if (name.equals("noLightweightMethods")) { this.noLightweightMethods = true; return; }
 
 		// unknown option
 		Logging.instance.printlnVerbose(ARGUMENTS_PARSING, String.format("Ignoring unknown option %s", name));
@@ -427,5 +431,15 @@ public class InfuserArguments
 	public boolean getUseConstantShiftOptimisation()
 	{
 		return this.useConstantShiftOptimisation;
+	}
+
+	public void setNoLightweightMethods(boolean value)
+	{
+		this.noLightweightMethods = value;
+	}
+
+	public boolean getNoLightweightMethods()
+	{
+		return this.noLightweightMethods;
 	}
 }

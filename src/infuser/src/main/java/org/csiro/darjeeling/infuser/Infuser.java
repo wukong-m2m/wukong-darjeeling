@@ -99,6 +99,11 @@ public class Infuser
 		return infuserArguments.getUseConstantShiftOptimisation();
 	}
 
+	public static boolean getNoLightweightMethods()
+	{
+		return infuserArguments.getNoLightweightMethods();
+	}
+
 	// Version of the infusion format. VM should check if it matches the VM's format
 	public static int getInfusionFormatVersion() {
 		return (!infuserArguments.getUse16BitArrayIndex()) ? 120 : 121;

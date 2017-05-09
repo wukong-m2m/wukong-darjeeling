@@ -62,6 +62,18 @@ if (project.hasProperty('no-opcode-optimisations')) {
     project.ext.usegetfield_a_fixed = 'false'
 }
 
+if (!project.hasProperty('nolightweightmethods')) {
+    project.ext.nolightweightmethods = 'false'
+} else {
+    if (project.ext.nolightweightmethods == '') {
+        project.ext.nolightweightmethods = 'true'        
+    }
+    if (project.ext.nolightweightmethods != 'true'
+            && project.ext.nolightweightmethods != 'false') {
+        throw new InvalidUserDataException("Invalid value for nolightweightmethods" + project.ext.nolightweightmethods)        
+    }
+}
+
 if (!project.hasProperty('use16bitarrayindex')) {
     project.ext.use16bitarrayindex = 'true'
 } else {
@@ -175,14 +187,17 @@ def getOutputDirName() {
     else
         opt_constshift='_C0'
 
+    def opt_nolightweight=''
+    if (project.ext.nolightweightmethods == 'true')
+        opt_nolightweight='_NOLW'
 
 
     if (project.ext.aotstrat == 'baseline' || project.ext.aotstrat == 'improvedpeephole') {
-        return "results_${outdirSTRAT}_R___P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}"
+        return "results_${outdirSTRAT}_R___P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_nolightweight}"
     } else if (project.ext.aotstrat == 'simplestackcache' || project.ext.aotstrat == 'poppedstackcache') {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}"
+        return "results_${outdirSTRAT}_R${outdirREGS}_P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_nolightweight}"
     } else {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P${outdirPINNED}${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}"
+        return "results_${outdirSTRAT}_R${outdirREGS}_P${outdirPINNED}${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_nolightweight}"
     }
 }
 

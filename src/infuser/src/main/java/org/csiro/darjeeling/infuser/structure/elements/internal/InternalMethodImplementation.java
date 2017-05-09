@@ -27,6 +27,7 @@ import org.apache.bcel.classfile.Code;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.Type;
+import org.csiro.darjeeling.infuser.Infuser;
 import org.csiro.darjeeling.infuser.bytecode.CodeBlock;
 import org.csiro.darjeeling.infuser.structure.BaseType;
 import org.csiro.darjeeling.infuser.structure.ElementVisitor;
@@ -67,6 +68,11 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 	}
 
 	public static boolean javaMethodIsLightweight(Method method) {
+        if (Infuser.getNoLightweightMethods()) {
+            // Dan niet.
+            return false;
+        }
+
 		for (AnnotationEntry entry : method.getAnnotationEntries()) {
 			if (entry.getAnnotationType().contains("Lightweight")) {
 				return true;

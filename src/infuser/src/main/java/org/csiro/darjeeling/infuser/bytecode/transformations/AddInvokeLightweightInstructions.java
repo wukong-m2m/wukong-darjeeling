@@ -21,6 +21,7 @@
  
 package org.csiro.darjeeling.infuser.bytecode.transformations;
 
+import org.csiro.darjeeling.infuser.Infuser;
 import org.csiro.darjeeling.infuser.bytecode.CodeBlock;
 import org.csiro.darjeeling.infuser.bytecode.CodeBlockTransformation;
 import org.csiro.darjeeling.infuser.bytecode.InstructionHandle;
@@ -41,6 +42,11 @@ public class AddInvokeLightweightInstructions extends CodeBlockTransformation
 	@Override
 	protected void transformInternal()
 	{
+        if (Infuser.getNoLightweightMethods()) {
+            // Dan niet.
+            return;
+        }
+
 		for (InstructionHandle handle : codeBlock.getInstructions().getInstructionHandles())
 		{
 			Instruction instruction = handle.getInstruction();
