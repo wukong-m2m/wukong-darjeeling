@@ -60,7 +60,7 @@ void core_state_transition_loop(ee_u8 **p, ee_u32* track_counts, ee_u32* final_c
 }
 #endif
 
-ee_u16 core_bench_state(ee_u32 blksize, ee_u8 *memblock, 
+ee_u16 COREMARK_NOINLINE_BENCH core_bench_state(ee_u32 blksize, ee_u8 *memblock, 
 		ee_s16 seed1, ee_s16 seed2, ee_s16 step, ee_u16 crc) 
 {
 #ifndef CORE_OPTIMISATION_AVOID_NEWARRAY

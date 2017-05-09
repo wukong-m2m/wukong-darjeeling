@@ -78,7 +78,7 @@ void printmatC(MATRES *C, ee_u32 N, char *name) {
 	Iterate <matrix_test> N times, 
 	changing the matrix values slightly by a constant amount each time.
 */
-ee_u16 core_bench_matrix(mat_params *p, ee_s16 seed, ee_u16 crc) {
+ee_u16 COREMARK_NOINLINE_BENCH core_bench_matrix(mat_params *p, ee_s16 seed, ee_u16 crc) {
 	ee_u32 N=p->N;
 	MATRES *C=p->C;
 	MATDAT *A=p->A;

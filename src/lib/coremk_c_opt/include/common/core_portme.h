@@ -19,6 +19,10 @@
 	Define to 1 if the platform supports floating point.
 */
 
+// NOT STANDARD COREMARK CODE: Added noinline so we can easily distinguish the three main CoreMark components in the simulation output.
+//                             This doesn't affect the results significantly since the method is only called a few times.
+#define COREMARK_NOINLINE_BENCH __attribute__((noinline))
+
 // NR 20170215 should be supplied on command line in normal Core Mark
 #define ITERATIONS 50
 

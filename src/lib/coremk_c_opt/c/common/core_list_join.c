@@ -136,7 +136,7 @@ void copy_info(list_data *to,list_data *from) {
 #ifdef CORE_OPTIMISATION_AVOID_NEW
 	list_data info;
 #endif
-ee_u16 core_bench_list(core_results *res, ee_s16 finder_idx) {
+ee_u16 COREMARK_NOINLINE_BENCH core_bench_list(core_results *res, ee_s16 finder_idx) {
 	ee_u16 retval=0;
 	ee_u16 found=0,missed=0;
 	list_head *list=res->list;

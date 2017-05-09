@@ -40,7 +40,7 @@ Topic: Description
 
 	Go over the input twice, once direct, and once after introducing some corruption. 
 */
-ee_u16 core_bench_state(ee_u32 blksize, ee_u8 *memblock, 
+ee_u16 COREMARK_NOINLINE_BENCH core_bench_state(ee_u32 blksize, ee_u8 *memblock, 
 		ee_s16 seed1, ee_s16 seed2, ee_s16 step, ee_u16 crc) 
 {
 	ee_u32 final_counts[NUM_CORE_STATES];
