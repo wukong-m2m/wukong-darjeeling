@@ -1,6 +1,7 @@
 package javax.rtcbench;
 
 import javax.rtc.RTC;
+import javax.rtc.Lightweight;
 
 // This is the benchmark that most clearly shows the differences between Java and C.
 // I see three possible options to port this
@@ -93,6 +94,7 @@ public class CoreListJoinA {
 		Can be used by mergesort.
 	*/
 	private static class CmpComplex extends AbstractListDataCompare {
+		@Lightweight(rank=4) // Needs to come after crc
 		short calc_func(ListData pdata, CoreResults res) {
 			short data=pdata.data16;
 			short retval;
@@ -404,6 +406,7 @@ public class CoreListJoinA {
 		Found item, or null if not found.
 	*/
 	// list_head *core_list_find(list_head *list,list_data *info);
+	@Lightweight
 	static ListHead core_list_find(ListHead list, ListData info) {
 		if (info.idx>=0) {
 			while (list != null && (list.info.idx != info.idx))
