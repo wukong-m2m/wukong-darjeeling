@@ -54,10 +54,10 @@ let resultsToString (results : SimulationResults) =
     let stackToString stack =
         String.Join(",", stack |> List.map (fun el -> el.datatype |> StackDatatypeToString))
 
-    let countersHeaderString = "cycles                    exec   avg | bytes"
+    let countersHeaderString = "  cycles                      exec   avg | bytes"
     let countersToString totalCycles totalBytes (counters : ExecCounters) =
         // String.Format("cyc:{0,8} {1,5:0.0}% {2,5:0.0}%C exe:{3,8}  avg:{4,5:0.0} byt:{5,5} {6,5:0.0}% {7,5:0.0}%C",
-        String.Format("{0,8} {1,5:0.0}% {2,5:0.0}%C {3,8} {4,5:0.0} | {5,5} {6,5:0.0}% {7,5:0.0}%C",
+        String.Format("{0,10} {1,5:0.0}% {2,5:0.0}%C {3,10} {4,5:0.0} | {5,5} {6,5:0.0}% {7,5:0.0}%C",
                       counters.cycles,
                       asPercentage counters.cycles totalCycles,
                       asPercentage counters.cycles totalCyclesNativeC,
@@ -318,15 +318,15 @@ let resultsToString (results : SimulationResults) =
     addLn ("")
     addLn (String.Format ("              AOT stopwatch              {0,14}", results.cyclesStopwatchAOT))
     addLn (String.Format ("              AOT total counters + timer {0,14} (={1,14}+{2,14})", results.countersAOTTotalPlusTimer.cycles, results.countersAOTTotal.cycles, results.countersAOTTimer.cycles))
-    addLn (String.Format ("              AOT ratio                  {0,14} (cause of difference unknown, must be counting doubles somewhere)", (cyclesToSlowdown results.cyclesStopwatchAOT results.countersAOTTotalPlusTimer.cycles)))
+    addLn (String.Format ("              AOT ratio                  {0,14} (vm time calculated based on stopwatch, so this always matches now)", (cyclesToSlowdown results.cyclesStopwatchAOT results.countersAOTTotalPlusTimer.cycles)))
     addLn ("")
     addLn (String.Format ("--- EXECUTED JVM INSTRUCTIONS (executions, not cycles)"))
     addLn (String.Format (" Load/Store               {0,10}      {1,5:0.0}%", results.countersJVMLoadStore.executions, asPercentage results.countersJVMLoadStore.executions results.countersJVMTotal.executions))
     addLn (String.Format (" Constant load            {0,10}      {1,5:0.0}%", results.countersJVMConstantLoad.executions, asPercentage results.countersJVMConstantLoad.executions results.countersJVMTotal.executions))
     addLn (String.Format (" Processing               {0,10}      {1,5:0.0}%", results.countersJVMProcessing.executions, asPercentage results.countersJVMProcessing.executions results.countersJVMTotal.executions))
-    addLn (String.Format ("     math                   {0,10}      {1,5:0.0}%", results.countersJVMProcessingMath.executions, asPercentage results.countersJVMProcessingMath.executions results.countersJVMTotal.executions))
-    addLn (String.Format ("     bit shift              {0,10}      {1,5:0.0}%", results.countersJVMProcessingBitShift.executions, asPercentage results.countersJVMProcessingBitShift.executions results.countersJVMTotal.executions))
-    addLn (String.Format ("     bit logic              {0,10}      {1,5:0.0}%", results.countersJVMProcessingBitLogic.executions, asPercentage results.countersJVMProcessingBitLogic.executions results.countersJVMTotal.executions))
+    addLn (String.Format ("     math                 {0,10}      {1,5:0.0}%", results.countersJVMProcessingMath.executions, asPercentage results.countersJVMProcessingMath.executions results.countersJVMTotal.executions))
+    addLn (String.Format ("     bit shift            {0,10}      {1,5:0.0}%", results.countersJVMProcessingBitShift.executions, asPercentage results.countersJVMProcessingBitShift.executions results.countersJVMTotal.executions))
+    addLn (String.Format ("     bit logic            {0,10}      {1,5:0.0}%", results.countersJVMProcessingBitLogic.executions, asPercentage results.countersJVMProcessingBitLogic.executions results.countersJVMTotal.executions))
     addLn (String.Format (" Branches                 {0,10}      {1,5:0.0}%", results.countersJVMBranches.executions, asPercentage results.countersJVMBranches.executions results.countersJVMTotal.executions))
     addLn (String.Format (" Others                   {0,10}      {1,5:0.0}%", results.countersJVMOthers.executions, asPercentage results.countersJVMOthers.executions results.countersJVMTotal.executions))
     addLn (String.Format (" Total                    {0,10}      {1,5:0.0}%", results.countersJVMTotal.executions, asPercentage results.countersJVMTotal.executions results.countersJVMTotal.executions))

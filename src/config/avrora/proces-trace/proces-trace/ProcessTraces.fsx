@@ -471,13 +471,6 @@ let processSingleBenchmarkResultsDir (resultsdir : string) =
     let cyclesStopwatchAOT = (getTimer jvmStdoutlog "AOT")
     let cyclesStopwatchC = (getTimer cStdoutlog "NATIVE")
 
-    let countersAOTVM =
-        // let pathsVMFunctions = [ "src/lib/rtc"; "src/lib/vm"; "src/lib/wkreprog"; "src/lib/base"; "src/core" ]
-        // let vmSymbols = jvmNm |> List.filter (fun nmData -> pathsVMFunctions |> List.exists (fun path -> nmData.file.Contains(path)))
-        //                       |> List.map (fun nmData -> nmData.name)
-        let vmSymbols = [ "RTC_INVOKEVIRTUAL_OR_INTERFACE"; "RTC_INVOKESPECIAL_OR_STATIC_FAST_JAVA"; "RTC_INVOKESTATIC_FAST_NATIVE"; "DO_INVOKEVIRTUAL"; "dj_object_getRuntimeId"; "dj_object_getReferences"; "dj_global_id_mapToInfusion"; "dj_global_id_lookupVirtualMethod"; "dj_vm_getRuntimeClassForInvoke"; "dj_exec_stackPeekDeepRef"; "callJavaMethod_setup"; "callJavaMethod"; "callNativeMethod"; "callMethodFast"; "callMethod"; "dj_infusion_getReferencedInfusionIndex"; "memset" ]
-        { (getCountersForSymbols jvmNm jvmProfilerdataPerAddress vmSymbols) with executions = 0 }
-
     let cyclesSpentOnTimer  = if jvmResultsdir = cResultsdir // For coremark we have two sets of results, for others only 1. here we want the total cycles spent in the timer
                               then getCountersForSymbols jvmNm jvmProfilerdataPerAddress ["__vector_16"]
                               else getCountersForSymbols jvmNm jvmProfilerdataPerAddress ["__vector_16"] + getCountersForSymbols cNm cProfilerdataPerAddress ["__vector_16"]
@@ -499,7 +492,7 @@ let processSingleBenchmarkResultsDir (resultsdir : string) =
                 cyclesSubroutine = fractionC cyclesSpentOnTimer.cyclesSubroutine
                 count            = 0
                 size             = 0
-            }  
+            } 
 
     let results = {
         benchmark = benchmark
@@ -508,7 +501,6 @@ let processSingleBenchmarkResultsDir (resultsdir : string) =
         cyclesStopwatchAOT = cyclesStopwatchAOT
         cyclesStopwatchC = cyclesStopwatchC
 
-        countersAOTVM = countersAOTVM
         countersAOTTimer = countersAOTTimer
         countersCTimer = countersCTimer
 

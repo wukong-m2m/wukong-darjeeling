@@ -28,11 +28,6 @@
 #include "core.h"
 #include "panic.h"
 
-void array_create_memclear(void *b, size_t len) {
-	for (uint16_t i=0; i<len; i++)
-		((uint8_t *)b)[i] = 0;
-}
-
 /**
  * Creates a new integer array.
  * @param type integer type, one of T_BOOLEAN, T_CHAR, T_BYTE, T_SHORT,	T_INT, used for type checking (instanceof etc)
@@ -59,7 +54,7 @@ dj_int_array *dj_int_array_create(uint8_t type, uint16_t size)
 	if(arr == nullref) return NULL;
 
 	// init array to zeroes
-	array_create_memclear(arr->data.bytes, byteSize);
+	memset(arr->data.bytes, 0, byteSize);
 
 	// set array size
 	arr->array.length = size;
@@ -100,7 +95,7 @@ dj_ref_array *dj_ref_array_create(runtime_id_t runtime_class_id, uint16_t size)
 	arr->runtime_class_id = runtime_class_id;
 
 	// init array to zeroes
-	array_create_memclear(arr->refs, size*sizeof(ref_t));
+	memset(arr->refs, 0, size*sizeof(ref_t));
 
 	// C be a harsh mistress!
 	return arr;

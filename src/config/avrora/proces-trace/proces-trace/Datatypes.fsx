@@ -245,7 +245,6 @@ type SimulationResults = {
     cyclesStopwatchAOT : int;
     cyclesStopwatchC : int;
 
-    countersAOTVM : ExecCounters;
     countersAOTTimer : ExecCounters;
     countersCTimer : ExecCounters;
 
@@ -307,6 +306,21 @@ type SimulationResults = {
 
     member this.cyclesUnaccountedForAOT             = this.cyclesStopwatchAOT - this.countersAOTTotal.cycles
     member this.cyclesUnaccountedForC               = this.cyclesStopwatchC   - this.countersCTotal.cycles
+
+    member this.countersAOTVM                       =
+        // Originally we summed the total of these symbols (memset not used in array creation at that time):
+        //    [ "RTC_INVOKEVIRTUAL_OR_INTERFACE"; "RTC_INVOKESPECIAL_OR_STATIC_FAST_JAVA"; "RTC_INVOKESTATIC_FAST_NATIVE"; "DO_INVOKEVIRTUAL"; "dj_object_getRuntimeId"; "dj_object_getReferences"; "dj_global_id_mapToInfusion"; "dj_global_id_lookupVirtualMethod"; "dj_vm_getRuntimeClassForInvoke"; "dj_exec_stackPeekDeepRef"; "callJavaMethod_setup"; "callJavaMethod"; "callNativeMethod"; "callMethodFast"; "callMethod"; "dj_infusion_getReferencedInfusionIndex"; "memset" ]
+        // but this causes double counting somehow (apparently some of these are used in another call path in the VM somewhere?)
+        // We have to compare counters to determine the type of overhead (push/pop, ld/st, other). Since counting the mv method call overhead is too hard, we calculate it as follows:
+        //    (stopwatch total - (sum of other counters) - (cycles in timer))
+        // This makes the comparison between stopwatch and counter totals meaningless since they will always match, but we've seen enough correct reports now to know we're not missing any methods.
+                                                        {
+                                                            executions       = 0
+                                                            cycles           = this.cyclesStopwatchAOT - (this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersAOTTotal)).cycles - this.countersAOTTimer.cycles
+                                                            cyclesSubroutine = 0
+                                                            count            = 0
+                                                            size             = 0
+                                                        } 
 
     member this.maxJvmStackInBytes        =
         this.jvmMethods
