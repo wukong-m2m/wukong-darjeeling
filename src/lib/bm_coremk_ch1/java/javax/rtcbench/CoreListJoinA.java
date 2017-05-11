@@ -153,6 +153,7 @@ public class CoreListJoinA {
 	}
 	private static CmpIdx cmp_idx = new CmpIdx();
 
+	public static ListData info;
 
 	/* Benchmark for linked list:
 		- Try to find multiple data items.
@@ -168,7 +169,6 @@ public class CoreListJoinA {
 		short find_num=res.seed3;
 		ListHead this_find;
 		ListHead finder, remover;
-		ListData info=new ListData();
 		short i;
 
 		info.idx=finder_idx;
@@ -252,7 +252,7 @@ public class CoreListJoinA {
 		/* some useful variables */
 		int i;
 		ListHead finder, list=new ListHead();
-		ListData info=new ListData();
+		info=new ListData();
  
  		/* create a fake items for the list head and tail */
 		list.next=null;

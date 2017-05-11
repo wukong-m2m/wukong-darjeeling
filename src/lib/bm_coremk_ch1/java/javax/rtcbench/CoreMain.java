@@ -250,6 +250,10 @@ public class CoreMain {
 		results[0].statememblock3 = null;
 		results[0].list_CoreListJoinA = null;
 		CoreListJoinB.data = null;
+		CoreState.final_counts = null;
+		CoreState.track_counts = null;
+		CoreState.p_wrapper = null;
+		CoreListJoinA.info = null;
 
 		/* get a function of the input to report */
 		seedcrc=CoreUtil.crc16((short)results[0].seed1,seedcrc);
