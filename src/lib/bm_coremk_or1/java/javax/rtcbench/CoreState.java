@@ -195,11 +195,11 @@ public class CoreState {
 		return p;
 	}
 
-	static boolean ee_isdigit(byte c) {
-		boolean retval;
-		retval = ((c>='0') & (c<='9')) ? true : false;
-		return retval;
-	}
+	// static boolean ee_isdigit(byte c) {
+	// 	boolean retval;
+	// 	retval = ((c>='0') & (c<='9')) ? true : false;
+	// 	return retval;
+	// }
 
 	/* Function: core_state_transition
 		Actual state machine.
@@ -233,7 +233,7 @@ public class CoreState {
 			}
 			switch(state) {
 				case CORE_STATE_START:
-					if(ee_isdigit(NEXT_SYMBOL)) {
+					if((NEXT_SYMBOL>='0') && (NEXT_SYMBOL<='9')) {
 						state = CORE_STATE_INT;
 					}
 					else if( NEXT_SYMBOL == '+' || NEXT_SYMBOL == '-' ) {
@@ -249,7 +249,7 @@ public class CoreState {
 					transition_count[CORE_STATE_START]++;
 					break;
 				case CORE_STATE_S1:
-					if(ee_isdigit(NEXT_SYMBOL)) {
+					if((NEXT_SYMBOL>='0') && (NEXT_SYMBOL<='9')) {
 						state = CORE_STATE_INT;
 						transition_count[CORE_STATE_S1]++;
 					}
@@ -267,7 +267,7 @@ public class CoreState {
 						state = CORE_STATE_FLOAT;
 						transition_count[CORE_STATE_INT]++;
 					}
-					else if(!ee_isdigit(NEXT_SYMBOL)) {
+					else if(!((NEXT_SYMBOL>='0') && (NEXT_SYMBOL<='9'))) {
 						state = CORE_STATE_INVALID;
 						transition_count[CORE_STATE_INT]++;
 					}
@@ -277,7 +277,7 @@ public class CoreState {
 						state = CORE_STATE_S2;
 						transition_count[CORE_STATE_FLOAT]++;
 					}
-					else if(!ee_isdigit(NEXT_SYMBOL)) {
+					else if(!((NEXT_SYMBOL>='0') && (NEXT_SYMBOL<='9'))) {
 						state = CORE_STATE_INVALID;
 						transition_count[CORE_STATE_FLOAT]++;
 					}
@@ -293,7 +293,7 @@ public class CoreState {
 					}
 					break;
 				case CORE_STATE_EXPONENT:
-					if(ee_isdigit(NEXT_SYMBOL)) {
+					if((NEXT_SYMBOL>='0') && (NEXT_SYMBOL<='9')) {
 						state = CORE_STATE_SCIENTIFIC;
 						transition_count[CORE_STATE_EXPONENT]++;
 					}
@@ -303,7 +303,7 @@ public class CoreState {
 					}
 					break;
 				case CORE_STATE_SCIENTIFIC:
-					if(!ee_isdigit(NEXT_SYMBOL)) {
+					if(!((NEXT_SYMBOL>='0') && (NEXT_SYMBOL<='9'))) {
 						state = CORE_STATE_INVALID;
 						transition_count[CORE_STATE_INVALID]++;
 					}

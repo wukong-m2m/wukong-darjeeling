@@ -50,8 +50,8 @@ public class CoreMatrix {
 	};
 
 	static short matrix_clip(short x, boolean y) { return (y ? (short)(x & 0x0ff) : (short)(x & 0x0ffff)); }
-	static short matrix_big(short x) { return (short)(0xf000 | x); }
-	static int bit_extract(int x, byte from, byte to) { return ((x>>from) & (~(0xffffffff << to))); }
+	// static short matrix_big(short x) { return (short)(0xf000 | x); }
+	// static int bit_extract(int x, byte from, byte to) { return ((x>>from) & (~(0xffffffff << to))); }
 
 	/* Function: core_bench_matrix
 		Benchmark function
@@ -97,7 +97,8 @@ public class CoreMatrix {
 	*/
 	static short matrix_test(int N, int[] C, short[] A, short[] B, short val) {
 		short crc=0;
-		short clipval=matrix_big(val);
+		// short clipval=matrix_big(val);
+		short clipval=(short)(0xf000 | val);
 
 		matrix_add_const(N,A,val); /* make sure data changes  */
 
@@ -270,7 +271,12 @@ public class CoreMatrix {
 				for(k=0;k<N;k++)
 				{
 					int tmp=(int)A[i*N+k] * (int)B[k*N+j];
-					C[i*N+j]+=bit_extract(tmp,(byte)2,(byte)4)*bit_extract(tmp,(byte)5,(byte)7);
+
+					// C[i_times_N+j]+=bit_extract(tmp,(byte)2,(byte)4)*bit_extract(tmp,(byte)5,(byte)7);
+					// Good case where ProGuard inlining doesn't work: when bit_extract is a method, we save the call,
+					// but it doesn't realise 'from' and 'to' are now constants.
+
+					C[i*N+j]+= (short)((tmp>>2) & (~(0xffffffff << 4))) * (short)((tmp>>5) & (~(0xffffffff << 7)));
 				}
 			}
 		}
