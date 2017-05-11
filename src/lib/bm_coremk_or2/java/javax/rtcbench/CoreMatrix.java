@@ -43,7 +43,7 @@ public class CoreMatrix {
 	// C MATRES -> Java int
 
 	public static class MatParams {
-		public int N;
+		public short N;
 		public short[] A;
 		public short[] B;
 		public int[] C;
@@ -60,7 +60,7 @@ public class CoreMatrix {
 		changing the matrix values slightly by a constant amount each time.
 	*/
 	static short core_bench_matrix(MatParams p, short seed, short crc) {
-		int N=p.N;
+		short N=p.N;
 		int[] C=p.C;
 		short[] A=p.A;
 		short[] B=p.B;
@@ -95,7 +95,7 @@ public class CoreMatrix {
 
 		After the last step, matrix A is back to original contents.
 	*/
-	static short matrix_test(int N, int[] C, short[] A, short[] B, short val) {
+	static short matrix_test(short N, int[] C, short[] A, short[] B, short val) {
 		short crc=0;
 		// short clipval=matrix_big(val);
 		short clipval=(short)(0xf000 | val);
@@ -138,7 +138,7 @@ public class CoreMatrix {
 		short N=0;
 		short[] A;
 		short[] B;
-		int order=1;
+		short order=1;
 		short val;
 		short i=0,j=0;
 		if (seed==0)
@@ -183,7 +183,7 @@ public class CoreMatrix {
 		Otherwise, reset the accumulator and add 10 to the result.
 	*/
 	@Lightweight(rank=4) // Needs to come after crc
-	static short matrix_sum(int N, int[] C, short clipval) {
+	static short matrix_sum(short N, int[] C, short clipval) {
 		int tmp=0,prev=0,cur=0;
 		short ret=0;
 		short i,j;
@@ -207,8 +207,8 @@ public class CoreMatrix {
 		Multiply a matrix by a constant.
 		This could be used as a scaler for instance.
 	*/
-	static void matrix_mul_const(int N, int[] C, short[] A, short val) {
-		int i,j;
+	static void matrix_mul_const(short N, int[] C, short[] A, short val) {
+		short i,j;
 		for (i=0; i<N; i++) {
 			for (j=0; j<N; j++) {
 				C[i*N+j]=(int)A[i*N+j] * (int)val;
@@ -219,8 +219,8 @@ public class CoreMatrix {
 	/* Function: matrix_add_const
 		Add a constant value to all elements of a matrix.
 	*/
-	static void matrix_add_const(int N, short[] A, short val) {
-		int i,j;
+	static void matrix_add_const(short N, short[] A, short val) {
+		short i,j;
 		for (i=0; i<N; i++) {
 			for (j=0; j<N; j++) {
 				A[i*N+j] += val;
@@ -232,8 +232,8 @@ public class CoreMatrix {
 		Multiply a matrix by a vector.
 		This is common in many simple filters (e.g. fir where a vector of coefficients is applied to the matrix.)
 	*/
-	static void matrix_mul_vect(int N, int[] C, short[] A, short[] B) {
-		int i,j;
+	static void matrix_mul_vect(short N, int[] C, short[] A, short[] B) {
+		short i,j;
 		for (i=0; i<N; i++) {
 			C[i]=0;
 			for (j=0; j<N; j++) {
@@ -246,8 +246,8 @@ public class CoreMatrix {
 		Multiply a matrix by a matrix.
 		Basic code is used in many algorithms, mostly with minor changes such as scaling.
 	*/
-	static void matrix_mul_matrix(int N, int[] C, short[] A, short[] B) {
-		int i,j,k;
+	static void matrix_mul_matrix(short N, int[] C, short[] A, short[] B) {
+		short i,j,k;
 		for (i=0; i<N; i++) {
 			for (j=0; j<N; j++) {
 				C[i*N+j]=0;
@@ -263,8 +263,8 @@ public class CoreMatrix {
 		Multiply a matrix by a matrix, and extract some bits from the result.
 		Basic code is used in many algorithms, mostly with minor changes such as scaling.
 	*/
-	static void matrix_mul_matrix_bitextract(int N, int[] C, short[] A, short[] B) {
-		int i,j,k;
+	static void matrix_mul_matrix_bitextract(short N, int[] C, short[] A, short[] B) {
+		short i,j,k;
 		for (i=0; i<N; i++) {
 			for (j=0; j<N; j++) {
 				C[i*N+j]=0;
