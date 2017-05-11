@@ -285,6 +285,7 @@ public class CoreMain {
 		if (known_id>=0) {
 			for (i=0 ; i<CorePortMe.default_num_contexts; i++) {
 				results[i].err=0;
+
 				if ((results[i].execs & CoreMarkH.ID_LIST) != 0 && 
 					(results[i].crclist!=list_known_crc(known_id))) {
 					System.out.println("[" + i + "]ERROR! list crc 0x" + Integer.toHexString(results[i].crclist) + " - should be 0x" + Integer.toHexString(list_known_crc(known_id)));
@@ -302,6 +303,9 @@ public class CoreMain {
 				}
 				total_errors+=results[i].err;
 			}
+		} else {
+			System.out.println("ERROR! known_id=" + known_id);
+			total_errors+=1;
 		}
 		// This is pointless to test in Java
 		// total_errors+=check_data_types();

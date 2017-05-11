@@ -295,8 +295,8 @@ public class CoreListJoinB {
 		ListHead_SetInfo(list, datablock.value);
 		ListData_SetIdx(ListHead_GetInfo(list), (short)0x0000);
 		ListData_SetData16(ListHead_GetInfo(list), (short)0x8080);
-		memblock.value=((short)(memblock.value+2)); // +2 because we're counting shorts instead of structs
-		datablock.value=((short)(datablock.value+2)); // +2 because we're counting shorts instead of structs
+		memblock.value=(short)(memblock.value+2); // +2 because we're counting shorts instead of structs
+		datablock.value=(short)(datablock.value+2); // +2 because we're counting shorts instead of structs
 		info_idx=(short)0x7fff;
 		info_data16=(short)0xffff;
 		core_list_insert_new(list,info_data16,info_idx,memblock,datablock,memblock_end,datablock_end);
@@ -357,13 +357,13 @@ public class CoreListJoinB {
 			
 		newitem=memblock_val;
 		// (*memblock)++;
-		memblock.value=((short)(memblock_val+2)); // +2, see above
+		memblock.value=(short)(memblock_val+2); // +2, see above
 		ListHead_SetNext(newitem, ListHead_GetNext(insert_point));
 		ListHead_SetNext(insert_point, newitem);
 		
 		ListHead_SetInfo(newitem, datablock.value);
 		// (*datablock)++;
-		datablock.value=((short)(datablock_val+2)); // +2, see above
+		datablock.value=(short)(datablock_val+2); // +2, see above
 		// copy_info(newitem->info,info);
 		// void copy_info(list_data *to,list_data *from) {
 		// 	to->data16=from->data16;

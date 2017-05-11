@@ -95,7 +95,7 @@ public class CoreListJoinA {
 	*/
 	private static class CmpComplex extends AbstractListDataCompare {
 		@Lightweight(rank=4) // Needs to come after crc
-		short calc_func(ListData pdata, CoreResults res) {
+		static short calc_func(ListData pdata, CoreResults res) {
 			short data=pdata.data16;
 			short retval;
 			byte optype=(byte)((data>>7) & 1); /* bit 7 indicates if the function result has been cached */

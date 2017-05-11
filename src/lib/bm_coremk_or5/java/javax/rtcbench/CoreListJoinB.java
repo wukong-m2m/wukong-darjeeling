@@ -127,7 +127,7 @@ public class CoreListJoinB {
 	*/
 	private static class CmpComplex extends AbstractListDataCompare {
 		@Lightweight(rank=4) // Needs to come after crc
-		short calc_func(short pdata, CoreResults res) {
+		static short calc_func(short pdata, CoreResults res) {
 			short data=ListData_GetData16(pdata);
 			short retval;
 			byte optype=(byte)((data>>7) & 1); /* bit 7 indicates if the function result has been cached */
@@ -280,7 +280,6 @@ public class CoreListJoinB {
 		short memblock_end=(short)(size*2); // *2 because in the C version we count in pointers to list_head structs, which are 4 bytes, but in Java we count 2 byte shorts. So we need to reserve *2 as much memory.
 		ShortWrapper datablock = new ShortWrapper();
 		datablock.value = memblock_end;
-
 		short datablock_end=(short)(datablock.value+(size*2)); // *2 because in the C version we count in pointers to list_data structs, which are 4 bytes, but in Java we count 2 byte shorts. So we need to reserve *2 as much memory.
 
 		data = new short[datablock_end];
