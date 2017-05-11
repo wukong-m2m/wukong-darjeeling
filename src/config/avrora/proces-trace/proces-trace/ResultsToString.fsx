@@ -18,26 +18,6 @@ type RtcdataXml = XmlProvider<"rtcdata-example.xml", Global=true>
 type Rtcdata = RtcdataXml.Methods
 type MethodImpl = RtcdataXml.MethodImpl
 
-let countersToString totalCycles totalBytes (counters : ExecCounters) =
-    // String.Format("cyc:{0,8} {1,5:0.0}% {2,5:0.0}%C exe:{3,8}  avg:{4,5:0.0} byt:{5,5} {6,5:0.0}% {7,5:0.0}%C",
-    String.Format("{0,11:n0} {1,5:0.0}% {2,9:n0} {3,9:0.0} | {4,5} {5,5:0.0}%",
-                  counters.cycles,
-                  100.0 * float (counters.cycles) / float totalCycles,
-                  counters.executions,
-                  counters.average,
-                  counters.size,
-                  100.0 * float (counters.size) / float totalBytes)
-
-let countersToStringInclSubroutines totalCycles totalBytes (counters : ExecCounters) =
-    // String.Format("cyc:{0,8} {1,5:0.0}% {2,5:0.0}%C exe:{3,8}  avg:{4,5:0.0} byt:{5,5} {6,5:0.0}% {7,5:0.0}%C",
-    String.Format("{0,11:n0} {1,5:0.0}% {2,9:n0} {3,9:0.0} | {4,5} {5,5:0.0}%",
-                  counters.cyclesInclSubroutine,
-                  100.0 * float (counters.cyclesInclSubroutine) / float totalCycles,
-                  counters.executions,
-                  counters.average,
-                  counters.size,
-                  100.0 * float (counters.size) / float totalBytes)
-
 let resultsToString (results : SimulationResults) =
     let sb = new Text.StringBuilder(10000000)
     let addLn s =
@@ -47,8 +27,11 @@ let resultsToString (results : SimulationResults) =
       100.0 * float a / float b
     let totalCyclesAOTJava = results.countersAOTTotal.cycles
     let totalCyclesNativeC = results.countersCTotal.cycles
+    let totalCyclesOverhead = results.countersOverheadTotal.cycles
     let totalBytesAOTJava = results.countersAOTTotal.size
     let totalBytesNativeC = results.countersCTotal.size
+    let totalBytesOverhead = results.countersOverheadTotal.size
+
     let cyclesToSlowdown cycles1 cycles2 =
         String.Format ("{0:0.000}", float cycles1 / float cycles2)
     let stackToString stack =
@@ -67,6 +50,16 @@ let resultsToString (results : SimulationResults) =
                       asPercentage counters.size totalBytes,
                       asPercentage counters.size totalBytesNativeC)
 
+    let countersToStringInclSubroutines totalCycles totalBytes (counters : ExecCounters) =
+        // String.Format("cyc:{0,8} {1,5:0.0}% {2,5:0.0}%C exe:{3,8}  avg:{4,5:0.0} byt:{5,5} {6,5:0.0}% {7,5:0.0}%C",
+        String.Format("{0,11:n0} {1,5:0.0}% {2,9:n0} {3,9:0.0} | {4,5} {5,5:0.0}%",
+                      counters.cyclesInclSubroutine,
+                      100.0 * float (counters.cyclesInclSubroutine) / float totalCycles,
+                      counters.executions,
+                      counters.average,
+                      counters.size,
+                      100.0 * float (counters.size) / float totalBytes)
+        
     let resultJavaListingToString totalCycles totalBytes (result : ProcessedJvmInstruction) =
         let (instruction, invokeTarget) =
           match (result.jvm.isInvoke) with
@@ -304,12 +297,12 @@ let resultsToString (results : SimulationResults) =
     addLn (String.Format ("              others                     {0}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersAOTOthers)))
     addLn ("")
     addLn ("                                           " + countersHeaderString)
-    addLn (String.Format ("--- OVERHEAD Total                       {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadTotal)))
-    addLn (String.Format ("              load/store                 {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadLoadStore)))
-    addLn (String.Format ("              pushpop                    {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadPushPop)))
-    addLn (String.Format ("              mov(w)                     {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadMov)))
-    addLn (String.Format ("              spent in vm                {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadVm)))
-    addLn (String.Format ("              others                     {0,14}", (countersToString totalCyclesAOTJava totalBytesAOTJava results.countersOverheadOthers)))
+    addLn (String.Format ("--- OVERHEAD Total                       {0,14}", (countersToString totalCyclesOverhead totalBytesOverhead results.countersOverheadTotal)))
+    addLn (String.Format ("              load/store                 {0,14}", (countersToString totalCyclesOverhead totalBytesOverhead results.countersOverheadLoadStore)))
+    addLn (String.Format ("              pushpop                    {0,14}", (countersToString totalCyclesOverhead totalBytesOverhead results.countersOverheadPushPop)))
+    addLn (String.Format ("              mov(w)                     {0,14}", (countersToString totalCyclesOverhead totalBytesOverhead results.countersOverheadMov)))
+    addLn (String.Format ("              spent in vm                {0,14}", (countersToString totalCyclesOverhead totalBytesOverhead results.countersOverheadVm)))
+    addLn (String.Format ("              others                     {0,14}", (countersToString totalCyclesOverhead totalBytesOverhead results.countersOverheadOthers)))
     addLn ("")
     addLn (String.Format ("--- STOPWATCH / COUNTERS RATIO"))
     addLn (String.Format ("              C   stopwatch              {0,14}", results.cyclesStopwatchC))

@@ -5,42 +5,44 @@ benchmarks=(bsort32 hsort32 binsrch32 fft xxtea rc5 md5 coremk)
 
 gdj clean
 
-for benchmark in ${benchmarks}
-do
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
-    # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=false -Pusesimul=false
-    # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=false
-    # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
-
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
-    # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole --useconstantshiftoptimisation=true  -PPuse16bitarrayinde=false  Pusesimulx=false
-    # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
-    # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache --useconstantshiftoptimisation=true  -PPuse16bitarrayinde=false  Pusesimulx=false
-    # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
-    # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache --useconstantshiftoptimisation=true  -PPuse16bitarrayinde=false  Pusesimulx=false
-    # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
-
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=false -Pusesimul=false
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=false
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
-done
-
+# MAIN GRAPHS
 # for benchmark in ${benchmarks}
 # do
-#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline   -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusegetfield_a_fixed=true -Pusesimul=false
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
+#     # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=false -Pusesimul=false
+#     # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=false
+#     # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
+
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
+#     # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole --useconstantshiftoptimisation=true  -PPuse16bitarrayinde=false  Pusesimulx=false
+#     # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
+#     # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache --useconstantshiftoptimisation=true  -PPuse16bitarrayinde=false  Pusesimulx=false
+#     # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
+#     # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache --useconstantshiftoptimisation=true  -PPuse16bitarrayinde=false  Pusesimulx=false
+#     # gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
+
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=false -Pusesimul=false
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=false
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
+# done
+
+# ABSOLUTE BASELINE (CoreMark only)
+# for benchmark in ${benchmarks}
+# do
+#     gdj avrora_store_trace -Paotbm=coremk_ori -Paotstrat=baseline   -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Pnolightweightmethods=true
 # done
 
 
-# # MARKLOOP FOR DIFF NUMBERS OF PINNED REGISTERS
+# MARKLOOP + XXTEA FOR DIFF NUMBERS OF PINNED REGISTERS
 # for benchmark in ${benchmarks}
 # do
 #     markloopregs=(1 2 3 4 5 6 7)
 #     for aotmarkloopregs in ${markloopregs}
 #     do
-#         gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Paotstackcachesize=11                   -Paotmarkloopregs=${aotmarkloopregs} -Puseconstshiftoptimisation=gcc_like
+#         gdj avrora_store_trace -Paotbm=${benchmark} -Paotmarkloopregs=${aotmarkloopregs}
 #     done
 # done
 
