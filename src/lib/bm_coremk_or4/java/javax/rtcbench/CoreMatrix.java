@@ -247,10 +247,11 @@ public class CoreMatrix {
 		short i,j;
 		short i_times_N = 0;
 		for (i=0; i<N; i++) {
-			C[i]=0;
+			int C_value = 0;
 			for (j=0; j<N; j++) {
-				C[i]+=(int)A[i_times_N+j] * (int)B[j];
+				C_value+=A[i_times_N+j] * B[j];
 			}
+			C[i]=C_value;
 			i_times_N += N;
 		}
 	}
@@ -264,11 +265,12 @@ public class CoreMatrix {
 		short i_times_N = 0;
 		for (i=0; i<N; i++) {
 			for (j=0; j<N; j++) {
-				C[i_times_N+j]=0;
+				int C_value = 0;
 				for(k=0;k<N;k++)
 				{
-					C[i_times_N+j]+=(int)A[i_times_N+k] * (int)B[k*N+j];
+					C_value += A[i_times_N+k] * B[k*N+j];
 				}
+				C[i_times_N+j]=C_value;
 			}
 			i_times_N += N;
 		}
@@ -283,17 +285,18 @@ public class CoreMatrix {
 		short i_times_N = 0;
 		for (i=0; i<N; i++) {
 			for (j=0; j<N; j++) {
-				C[i_times_N+j]=0;
+				int C_value = 0;
 				for(k=0;k<N;k++)
 				{
-					int tmp=(int)A[i_times_N+k] * (int)B[k*N+j];
+					int tmp=A[i_times_N+k] * B[k*N+j];
 
 					// C[i_times_N+j]+=bit_extract(tmp,(byte)2,(byte)4)*bit_extract(tmp,(byte)5,(byte)7);
 					// Good case where ProGuard inlining doesn't work: when bit_extract is a method, we save the call,
 					// but it doesn't realise 'from' and 'to' are now constants.
 
-					C[i_times_N+j]+= (short)((tmp>>2) & (~(0xffffffff << 4))) * (short)((tmp>>5) & (~(0xffffffff << 7)));
+					C_value += (short)((tmp>>2) & (~(0xffffffff << 4))) * (short)((tmp>>5) & (~(0xffffffff << 7)));
 				}
+				C[i_times_N+j] = C_value;
 			}
 			i_times_N += N;
 		}
