@@ -1,0 +1,6 @@
+djlibsource {
+    bm_coremk_or3 {
+        cDependencies = [ 'darjeeling3', 'vm_dev' ]
+        javaDependencies = [ 'base', 'darjeeling3' ]
+    }
+}
