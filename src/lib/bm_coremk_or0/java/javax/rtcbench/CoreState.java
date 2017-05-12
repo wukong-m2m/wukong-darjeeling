@@ -195,6 +195,7 @@ public class CoreState {
 		return p;
 	}
 
+	@Lightweight
 	static boolean ee_isdigit(byte c) {
 		boolean retval;
 		retval = ((c>='0') & (c<='9')) ? true : false;

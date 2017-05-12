@@ -49,6 +49,7 @@ public class CoreMatrix {
 		public int[] C;
 	};
 
+	// No need to make Lightweight. These will be inlined by ProGuard.
 	static short matrix_clip(short x, boolean y) { return (y ? (short)(x & 0x0ff) : (short)(x & 0x0ffff)); }
 	static short matrix_big(short x) { return (short)(0xf000 | x); }
 	static int bit_extract(int x, byte from, byte to) { return ((x>>from) & (~(0xffffffff << to))); }
