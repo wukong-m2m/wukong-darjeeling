@@ -3,40 +3,37 @@ alias gdj="gradle -b ../../build.gradle"
 
 rm -f vmsize.txt
 
-echo -n "results_0BASE_R___P__CS0    " >> vmsize.txt
-gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=baseline -Paotstackcachesize=11 -Paotmarkloopregs=7 -Paotconstshiftoptimisation=none             | grep "AOT compiler" | head -n 1 >> vmsize.txt
+echo -n "results_0BASE_R___P__C0_A0_S0_G1    " >> vmsize.txt
+gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false | grep "AOT compiler" | head -n 1 >> vmsize.txt
 
-echo -n "results_0PEEP_R___P__CS0    " >> vmsize.txt
-gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=improvedpeephole -Paotstackcachesize=11 -Paotmarkloopregs=7 -Paotconstshiftoptimisation=none     | grep "AOT compiler" | head -n 1 >> vmsize.txt
+echo -n "results_1PEEP_R___P__C0_A0_S0_G1    " >> vmsize.txt
+gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false | grep "AOT compiler" | head -n 1 >> vmsize.txt
 
-echo -n "results_1SMPL_R11_P__CS0    " >> vmsize.txt
-gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=simplestackcache -Paotstackcachesize=11 -Paotmarkloopregs=7 -Paotconstshiftoptimisation=none     | grep "AOT compiler" | head -n 1 >> vmsize.txt
+echo -n "results_2SMPL_R11_P__C0_A0_S0_G1    " >> vmsize.txt
+gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false | grep "AOT compiler" | head -n 1 >> vmsize.txt
 
-echo -n "results_2POPD_R11_P__CS0    " >> vmsize.txt
-gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=poppedstackcache -Paotstackcachesize=11 -Paotmarkloopregs=7 -Paotconstshiftoptimisation=none     | grep "AOT compiler" | head -n 1 >> vmsize.txt
+echo -n "results_3POPD_R11_P__C0_A0_S0_G1    " >> vmsize.txt
+gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false | grep "AOT compiler" | head -n 1 >> vmsize.txt
 
-echo -n "results_3MARK_R11_P7_CS0    " >> vmsize.txt
-gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=markloop         -Paotstackcachesize=11 -Paotmarkloopregs=7 -Paotconstshiftoptimisation=none     | grep "AOT compiler" | head -n 1 >> vmsize.txt
+echo -n "results_4MARK_R11_P6_C0_A0_S0_G1    " >> vmsize.txt
+gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=markloop         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false | grep "AOT compiler" | head -n 1 >> vmsize.txt
 
-echo -n "results_3MARK_R11_P7_CS4    " >> vmsize.txt
-gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=markloop         -Paotstackcachesize=11 -Paotmarkloopregs=7 -Paotconstshiftoptimisation=gcc_like | grep "AOT compiler" | head -n 1 >> vmsize.txt
+echo -n "results_4MARK_R11_P6_C1_A0_S0_G1    " >> vmsize.txt
+gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=false -Pusesimul=false | grep "AOT compiler" | head -n 1 >> vmsize.txt
+
+echo -n "results_4MARK_R11_P7_C1_A1_S0_G1    " >> vmsize.txt
+gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=false | grep "AOT compiler" | head -n 1 >> vmsize.txt
+
+echo -n "results_4MARK_R11_P7_C1_A1_S1_G1    " >> vmsize.txt
+gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  | grep "AOT compiler" | head -n 1 >> vmsize.txt
 
 
 
-#echo -n "results_0BASE_R___P__CS1    " >> vmsize.txt
-#gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=baseline -Paotstackcachesize=11 -Paotmarkloopregs=7 -Paotconstshiftoptimisation=by1                  | grep "AOT compiler" | head -n 1 >> vmsize.txt
 
-#echo -n "results_0BASE_R___P__CS2    " >> vmsize.txt
-#gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=baseline -Paotstackcachesize=11 -Paotmarkloopregs=7 -Paotconstshiftoptimisation=all_only_shift       | grep "AOT compiler" | head -n 1 >> vmsize.txt
 
-#echo -n "results_0BASE_R___P__CS3    " >> vmsize.txt
-#gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=baseline -Paotstackcachesize=11 -Paotmarkloopregs=7 -Paotconstshiftoptimisation=all_move_and_shift   | grep "AOT compiler" | head -n 1 >> vmsize.txt
 
-# echo -n "results_0BASE_R___P__CS4    " >> vmsize.txt
-# gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=baseline -Paotstackcachesize=11 -Paotmarkloopregs=7 -Paotconstshiftoptimisation=gcc_like             | grep "AOT compiler" | head -n 1 >> vmsize.txt
 
-# echo -n "results_1SMPL_R11_P__CS4    " >> vmsize.txt
-# gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=simplestackcache -Paotstackcachesize=11 -Paotmarkloopregs=7 -Paotconstshiftoptimisation=gcc_like     | grep "AOT compiler" | head -n 1 >> vmsize.txt
 
-# echo -n "results_2POPD_R11_P__CS4    " >> vmsize.txt
-# gdj vm_size -Paotbm=md5 -Pno-rtc-guards -Paotstrat=poppedstackcache -Paotstackcachesize=11 -Paotmarkloopregs=7 -Paotconstshiftoptimisation=gcc_like     | grep "AOT compiler" | head -n 1 >> vmsize.txt
+
+
+

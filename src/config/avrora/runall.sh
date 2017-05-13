@@ -29,13 +29,6 @@ gdj clean
 #     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
 # done
 
-# ABSOLUTE BASELINE (CoreMark only)
-# for benchmark in ${benchmarks}
-# do
-#     gdj avrora_store_trace -Paotbm=coremk_ori -Paotstrat=baseline   -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Pnolightweightmethods=true
-# done
-
-
 # MARKLOOP + XXTEA FOR DIFF NUMBERS OF PINNED REGISTERS
 # for benchmark in ${benchmarks}
 # do
@@ -45,6 +38,31 @@ gdj clean
 #         gdj avrora_store_trace -Paotbm=${benchmark} -Paotmarkloopregs=${aotmarkloopregs}
 #     done
 # done
+
+# # CoreMark manual optimisations
+# 	# Absolute baseline: not optimised code, no lightweight methods, baseline translation, no instructionset optimisations
+# 	gdj avrora_store_trace -Paotbm=coremk_or0 -Paotstrat=baseline   -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Pnolightweightmethods=true
+
+# 	# Using our optimisations the original code can get as good as:
+# 	gdj avrora_store_trace -Paotbm=coremk_or0
+# 	# Step by step manual optimisation
+# 	gdj avrora_store_trace -Paotbm=coremk_or1
+# 	gdj avrora_store_trace -Paotbm=coremk_or2
+# 	gdj avrora_store_trace -Paotbm=coremk_or3
+# 	gdj avrora_store_trace -Paotbm=coremk_or4
+# 	gdj avrora_store_trace -Paotbm=coremk_or5
+# 	# Should be identical to normal CoreMark version
+# 	gdj avrora_store_trace -Paotbm=coremk
+# 	# Two 'unfair' optimisations
+# 	gdj avrora_store_trace -Paotbm=coremk_ch1
+# 	gdj avrora_store_trace -Paotbm=coremk_ch2
+
+
+# Breakdown of executed JVM instructions (executions, not cycles. for the top of the performance table). Get these with 16 bit indexes enabled, otherwise we get lots of I2S conversions since the code uses shorts.
+for benchmark in ${benchmarks}
+do
+	gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=true -Pusesimul=false
+done
 
 # Special case: CoreMark is too big to fit both Java and C versions in memory at the same time. Run the coremk_c config for the native CoreMark results, and then copy the result here.
 cd ../coremk_c
