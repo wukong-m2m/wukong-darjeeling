@@ -588,6 +588,7 @@ void rtc_translate_single_instruction() {
             operand_regs1[1] = R23;
             rtc_stackcache_push_ref(operand_regs1);
         break;
+#ifndef NO_GETFIELD_A_FIXED
         case JVM_GETFIELD_A_FIXED: {
             uint16_t targetRefOffset = get_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
 
@@ -601,6 +602,7 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_push_ref(operand_regs1);
         }
         break;
+#endif
         case JVM_PUTFIELD_B:
         case JVM_PUTFIELD_C:
             rtc_stackcache_pop_nondestructive_16bit(operand_regs1);
@@ -643,6 +645,7 @@ void rtc_translate_single_instruction() {
             emit_STD(operand_regs1[0], Z, (jvm_operand_word0)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
             emit_STD(operand_regs1[1], Z, (jvm_operand_word0)+1);
         break;
+#ifndef NO_GETFIELD_A_FIXED
         case JVM_PUTFIELD_A_FIXED: {
             uint16_t targetRefOffset = get_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
 
@@ -655,6 +658,7 @@ void rtc_translate_single_instruction() {
             emit_STD(operand_regs1[1], Z, targetRefOffset+1);
         }
         break;
+#endif
         case JVM_GETSTATIC_B:
         case JVM_GETSTATIC_C:
         case JVM_GETSTATIC_S:
@@ -826,13 +830,19 @@ void rtc_translate_single_instruction() {
         case JVM_SSHL:
         case JVM_SSHR:
         case JVM_SUSHR:
+#ifndef NO_CONSTSHIFT 
         case JVM_SSHL_CONST:
         case JVM_SSHR_CONST:
         case JVM_SUSHR_CONST:
             {
                 bool emit_loop = opcode == JVM_SSHL || opcode == JVM_SSHR || opcode == JVM_SUSHR;
                 uint8_t bytes_to_shift = emit_loop ? 1 : jvm_operand_byte0;
-
+#else
+            {
+                 // If we turn off this optimisation, just set these to fixed values and let the compiler take care of removing unnecessary code. (tested. it does.)
+                bool emit_loop = true;
+                uint8_t bytes_to_shift = 1;
+#endif
                 if (emit_loop) {
                     rtc_stackcache_pop_destructive_16bit(operand_regs1);
                 }
@@ -933,6 +943,7 @@ void rtc_translate_single_instruction() {
 
             rtc_stackcache_push_32bit(operand_regs2);
         break;
+#ifndef NO_SIMUL
         case JVM_SIMUL:
             // Note that __mulhisi3 needs one of the operands in RX (R26:R27)
 
@@ -951,6 +962,7 @@ void rtc_translate_single_instruction() {
 
             emit_MOVW(RX, RZ);
         break;
+#endif
         case JVM_IMUL: // to read later: https://mekonik.wordpress.com/2009/03/18/arduino-avr-gcc-multiplication/
             rtc_stackcache_flush_call_used_regs_and_clear_call_used_valuetags();
             rtc_stackcache_pop_destructive_32bit_into_fixed_reg(R22);
@@ -993,13 +1005,19 @@ void rtc_translate_single_instruction() {
         case JVM_ISHL:
         case JVM_ISHR:
         case JVM_IUSHR:
+#ifndef NO_CONSTSHIFT 
         case JVM_ISHL_CONST:
         case JVM_ISHR_CONST:
         case JVM_IUSHR_CONST:
             {
                 bool emit_loop = opcode == JVM_ISHL || opcode == JVM_ISHR || opcode == JVM_IUSHR;
                 uint8_t bytes_to_shift = emit_loop ? 1 : jvm_operand_byte0;
-
+#else
+            {
+                 // If we turn off this optimisation, just set these to fixed values and let the compiler take care of removing unnecessary code. (tested. it does.)
+                bool emit_loop = true;
+                uint8_t bytes_to_shift = 1;
+#endif
                 if(emit_loop) {
                     rtc_stackcache_pop_destructive_16bit(operand_regs1);
                 }
@@ -1173,9 +1191,11 @@ void rtc_translate_single_instruction() {
 
             rtc_common_translate_invoke(ts, opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
         break;
+#ifndef NO_LIGHTWEIGHT_METHODS
         case JVM_INVOKELIGHT:
             rtc_common_translate_invokelight(jvm_operand_byte0, jvm_operand_byte1);
         break;
+#endif
         case JVM_NEW:
             rtc_stackcache_flush_regs_and_clear_valuetags_for_call_used_and_references();
 

@@ -62,15 +62,15 @@ if (project.hasProperty('no-opcode-optimisations')) {
     project.ext.usegetfield_a_fixed = 'false'
 }
 
-if (!project.hasProperty('nolightweightmethods')) {
-    project.ext.nolightweightmethods = 'false'
+if (!project.hasProperty('uselightweightmethods')) {
+    project.ext.uselightweightmethods = 'true'
 } else {
-    if (project.ext.nolightweightmethods == '') {
-        project.ext.nolightweightmethods = 'true'        
+    if (project.ext.uselightweightmethods == '') {
+        project.ext.uselightweightmethods = 'true'        
     }
-    if (project.ext.nolightweightmethods != 'true'
-            && project.ext.nolightweightmethods != 'false') {
-        throw new InvalidUserDataException("Invalid value for nolightweightmethods" + project.ext.nolightweightmethods)        
+    if (project.ext.uselightweightmethods != 'true'
+            && project.ext.uselightweightmethods != 'false') {
+        throw new InvalidUserDataException("Invalid value for uselightweightmethods" + project.ext.uselightweightmethods)        
     }
 }
 
@@ -139,8 +139,21 @@ binaries.all {
     cCompiler.args "-D RTC_STACKCACHE_NUMBER_OF_CACHE_REG_PAIRS_TO_USE=${project.ext.aotstackcachesize}"
     cCompiler.args "-D RTC_MARKLOOP_MAX_NUMBER_OF_IDX_TO_PIN=${project.ext.aotmarkloopregs}"
 
-    if (project.ext.use16bitarrayindex == 'false')
+    if (project.ext.useconstantshiftoptimisation == 'false') {
+        cCompiler.args "-D NO_CONSTSHIFT"
+    }
+    if (project.ext.use16bitarrayindex == 'false') {
         cCompiler.args "-D ARRAYINDEX_32BIT"
+    }
+    if (project.ext.usesimul == 'false') {
+        cCompiler.args "-D NO_SIMUL"
+    }
+    if (project.ext.usegetfield_a_fixed == 'false') {
+        cCompiler.args "-D NO_GETFIELD_A_FIXED"
+    }
+    if (project.ext.uselightweightmethods == 'false') {
+        cCompiler.args "-D NO_LIGHTWEIGHT_METHODS"
+    }
 }
 
 def getOutputDirName() {
@@ -187,17 +200,17 @@ def getOutputDirName() {
     else
         opt_constshift='_C0'
 
-    def opt_nolightweight=''
-    if (project.ext.nolightweightmethods == 'true')
-        opt_nolightweight='_NOLW'
+    def opt_lightweight=''
+    if (project.ext.uselightweightmethods == 'false')
+        opt_lightweight='_NOLW'
 
 
     if (project.ext.aotstrat == 'baseline' || project.ext.aotstrat == 'improvedpeephole') {
-        return "results_${outdirSTRAT}_R___P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_nolightweight}"
+        return "results_${outdirSTRAT}_R___P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_lightweight}"
     } else if (project.ext.aotstrat == 'simplestackcache' || project.ext.aotstrat == 'poppedstackcache') {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_nolightweight}"
+        return "results_${outdirSTRAT}_R${outdirREGS}_P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_lightweight}"
     } else {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P${outdirPINNED}${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_nolightweight}"
+        return "results_${outdirSTRAT}_R${outdirREGS}_P${outdirPINNED}${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_lightweight}"
     }
 }
 

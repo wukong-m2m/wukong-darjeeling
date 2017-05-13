@@ -68,7 +68,7 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 	}
 
 	public static boolean javaMethodIsLightweight(Method method) {
-        if (Infuser.getNoLightweightMethods()) {
+        if (!Infuser.getUseLightweightMethods()) {
             // Dan niet.
             return false;
         }

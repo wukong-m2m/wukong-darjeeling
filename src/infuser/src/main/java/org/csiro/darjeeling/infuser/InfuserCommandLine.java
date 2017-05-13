@@ -40,7 +40,7 @@ public class InfuserCommandLine
 		System.out.println("\t-useGETFIELD_A_FIXED\t\t\tUse special GETFIELD_A_FIXED if the offset is known at compile time");		
 		System.out.println("\t-use16bitarrayindex\t\t\tUse 16 bit array indexes instead of 32 bit");		
 		System.out.println("\t-useconstantshiftoptimisation\t\t\tOptimise constant shifts (gcc-style)");		
-		System.out.println("\t-noLightweightMethods\t\t\tDon't use lightweight methods");
+		System.out.println("\t-useLightweightMethods\t\t\tUse lightweight methods");
 		System.out.println("");
 		System.out.println("Examples:");
 		System.out.println("\tinfuser include/sys.dih HelloWorld.class -name=hello -o test.di");

@@ -182,8 +182,8 @@ public class InfuserTask extends Task
 		infuserArguments.setUseConstantShiftOptimisation(value);
 	}
 
-	public void setNoLightweightMethods(boolean value)
+	public void setUseLightweightMethods(boolean value)
 	{
-		infuserArguments.setNoLightweightMethods(value);
+		infuserArguments.setUseLightweightMethods(value);
 	}
 }

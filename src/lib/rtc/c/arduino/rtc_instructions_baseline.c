@@ -530,6 +530,7 @@ void rtc_translate_single_instruction() {
             emit_LDD(R25, Z, (jvm_operand_word0)+1);
             emit_x_PUSH_REF(R24);
         break;
+#ifndef NO_GETFIELD_A_FIXED
         case JVM_GETFIELD_A_FIXED: {
             ts->pc += 4; // Skip operands (already read into jvm_operand_byte0)
             uint16_t targetRefOffset = get_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
@@ -543,6 +544,7 @@ void rtc_translate_single_instruction() {
             emit_x_PUSH_REF(R24);
         }
         break;
+#endif
         case JVM_PUTFIELD_B:
         case JVM_PUTFIELD_C:
             ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
@@ -584,6 +586,7 @@ void rtc_translate_single_instruction() {
             emit_STD(R16, Z, (jvm_operand_word0)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
             emit_STD(R17, Z, (jvm_operand_word0)+1);
         break;
+#ifndef NO_GETFIELD_A_FIXED
         case JVM_PUTFIELD_A_FIXED: {
             ts->pc += 4; // Skip operands (already read into jvm_operand_byte0)
             uint16_t targetRefOffset = get_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
@@ -598,6 +601,7 @@ void rtc_translate_single_instruction() {
             emit_STD(R17, Z, targetRefOffset+1);
         }
         break;
+#endif
         case JVM_GETSTATIC_B:
         case JVM_GETSTATIC_C:
         case JVM_GETSTATIC_S:
@@ -761,9 +765,14 @@ void rtc_translate_single_instruction() {
         case JVM_SSHR:
         case JVM_SUSHR:
             {
+#ifndef NO_CONSTSHIFT 
                 bool emit_loop = opcode == JVM_SSHL || opcode == JVM_SSHR || opcode == JVM_SUSHR;
                 uint8_t bytes_to_shift = emit_loop ? 1 : jvm_operand_byte0;
-
+#else
+                 // If we turn off this optimisation, just set these to fixed values and let the compiler take care of removing unnecessary code. (tested. it does.)
+                bool emit_loop = true;
+                uint8_t bytes_to_shift = 1;
+#endif
                 if (emit_loop) {
                     emit_x_POP_16bit(R22);
                 }
@@ -854,6 +863,7 @@ void rtc_translate_single_instruction() {
             emit_SBC(R21, R25);
             emit_x_PUSH_32bit(R18);
         break;
+#ifndef NO_SIMUL
         case JVM_SIMUL:
             // Note that __mulhisi3 needs one of the operands in RX (R26:R27)
 
@@ -872,6 +882,7 @@ void rtc_translate_single_instruction() {
 
             emit_MOVW(RX, RZ);
         break;
+#endif
         case JVM_IMUL:
             emit_x_POP_32bit(R22);
             emit_x_POP_32bit(R18);
@@ -908,9 +919,14 @@ void rtc_translate_single_instruction() {
         case JVM_ISHR:
         case JVM_IUSHR:
            {
+#ifndef NO_CONSTSHIFT 
                 bool emit_loop = opcode == JVM_ISHL || opcode == JVM_ISHR || opcode == JVM_IUSHR;
                 uint8_t bytes_to_shift = emit_loop ? 1 : jvm_operand_byte0;
-
+#else
+                 // If we turn off this optimisation, just set these to fixed values and let the compiler take care of removing unnecessary code. (tested. it does.)
+                bool emit_loop = true;
+                uint8_t bytes_to_shift = 1;
+#endif
                 if(emit_loop) {
                     emit_x_POP_16bit(R18);
                 }
@@ -1074,10 +1090,12 @@ void rtc_translate_single_instruction() {
 
             rtc_common_translate_invoke(ts, opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
         break;
+#ifndef NO_LIGHTWEIGHT_METHODS
         case JVM_INVOKELIGHT:
             ts->pc += 2; // Skip operand (already read into jvm_operand_byte0)
             rtc_common_translate_invokelight(jvm_operand_byte0, jvm_operand_byte1);
         break;
+#endif
         case JVM_NEW:
             // Pre possible GC: need to store X in refStack: for INVOKEs to pass the references, for other cases just to make sure the GC will update the pointer if it runs.
             emit_2_STS((uint16_t)&(refStack), RXL); // Store X into refStack

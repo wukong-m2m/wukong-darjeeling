@@ -42,7 +42,7 @@ public class AddInvokeLightweightInstructions extends CodeBlockTransformation
 	@Override
 	protected void transformInternal()
 	{
-        if (Infuser.getNoLightweightMethods()) {
+        if (!Infuser.getUseLightweightMethods()) {
             // Dan niet.
             return;
         }

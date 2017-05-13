@@ -99,9 +99,9 @@ public class Infuser
 		return infuserArguments.getUseConstantShiftOptimisation();
 	}
 
-	public static boolean getNoLightweightMethods()
+	public static boolean getUseLightweightMethods()
 	{
-		return infuserArguments.getNoLightweightMethods();
+		return infuserArguments.getUseLightweightMethods();
 	}
 
 	// Version of the infusion format. VM should check if it matches the VM's format

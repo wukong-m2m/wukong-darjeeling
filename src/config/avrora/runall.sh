@@ -58,11 +58,18 @@ gdj clean
 # 	gdj avrora_store_trace -Paotbm=coremk_ch2
 
 
-# Breakdown of executed JVM instructions (executions, not cycles. for the top of the performance table). Get these with 16 bit indexes enabled, otherwise we get lots of I2S conversions since the code uses shorts.
+# # Breakdown of executed JVM instructions (executions, not cycles. for the top of the performance table). Get these with 16 bit indexes enabled, otherwise we get lots of I2S conversions since the code uses shorts.
+# for benchmark in ${benchmarks}
+# do
+# 	gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=true -Pusesimul=false
+# done
+
+# Run all without lightweight methods
 for benchmark in ${benchmarks}
 do
-	gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=true -Pusesimul=false
+	gdj avrora_store_trace -Paotbm=${benchmark} -Puselightweightmethods=false
 done
+
 
 # Special case: CoreMark is too big to fit both Java and C versions in memory at the same time. Run the coremk_c config for the native CoreMark results, and then copy the result here.
 cd ../coremk_c

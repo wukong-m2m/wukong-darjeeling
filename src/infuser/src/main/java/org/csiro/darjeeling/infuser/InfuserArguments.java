@@ -81,13 +81,13 @@ public class InfuserArguments
 	private boolean useGETFIELD_A_FIXED = true;
 
 	// Use 32 instead of 16 bit array index
-	private boolean use16BitArrayIndex = false;
+	private boolean use16BitArrayIndex = true;
 
 	// Optimise constant shifts (gcc-style)
 	private boolean useConstantShiftOptimisation = true;
 
 	// Don't transform lightweight methods
-	private boolean noLightweightMethods = false;
+	private boolean useLightweightMethods = true;
 
 	/**
 	 *  Creates a new, empty InfuserArguments instance. Can be used to programatically drive
@@ -184,7 +184,7 @@ public class InfuserArguments
 		if (name.equals("useGETFIELD_A_FIXED")) { this.useGETFIELD_A_FIXED = true; return; }
 		if (name.equals("use16bitarrayindex")) { this.use16BitArrayIndex = true; return; }
 		if (name.equals("useconstantshiftoptimisation")) { this.useConstantShiftOptimisation = true; return; }
-		if (name.equals("noLightweightMethods")) { this.noLightweightMethods = true; return; }
+		if (name.equals("useLightweightMethods")) { this.useLightweightMethods = true; return; }
 
 		// unknown option
 		Logging.instance.printlnVerbose(ARGUMENTS_PARSING, String.format("Ignoring unknown option %s", name));
@@ -433,13 +433,13 @@ public class InfuserArguments
 		return this.useConstantShiftOptimisation;
 	}
 
-	public void setNoLightweightMethods(boolean value)
+	public void setUseLightweightMethods(boolean value)
 	{
-		this.noLightweightMethods = value;
+		this.useLightweightMethods = value;
 	}
 
-	public boolean getNoLightweightMethods()
+	public boolean getUseLightweightMethods()
 	{
-		return this.noLightweightMethods;
+		return this.useLightweightMethods;
 	}
 }
