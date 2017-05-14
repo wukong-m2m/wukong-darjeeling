@@ -64,11 +64,27 @@ gdj clean
 # 	gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=true -Pusesimul=false
 # done
 
-# Run all without lightweight methods
-for benchmark in ${benchmarks}
-do
-	gdj avrora_store_trace -Paotbm=${benchmark} -Puselightweightmethods=false
-done
+# # Run all without lightweight methods
+# for benchmark in ${benchmarks}
+# do
+# 	gdj avrora_store_trace -Paotbm=${benchmark} -Puselightweightmethods=false
+# done
+
+# Data for lightweight method evaluation
+	# Normal versions
+	gdj avrora_store_trace -Paotbm=coremk 
+	gdj avrora_store_trace -Paotbm=fft
+	gdj avrora_store_trace -Paotbm=hsort32
+	gdj avrora_store_trace -Paotbm=coremk_lw     # Coremk with ee_isdigit as a lightweight instead of inlined
+	gdj avrora_store_trace -Paotbm=coremk_fn     # Coremk with only functions (ee_isdigit not inlined)
+	gdj avrora_store_trace -Paotbm=coremk_f2     # Coremk with only functions (but ee_isdigit still inlined)
+	gdj avrora_store_trace -Paotbm=fft_lw        # FFT with FIX__MPY as a hardcoded Lightweight method, and SIN8/COS8 inlined by ProGuard
+	gdj avrora_store_trace -Paotbm=fft_fn        # FFT with FIX__MPY as a normal method, and SIN8/COS8 inlined by ProGuard
+
+	# Heap sort with 
+	gdj avrora_store_trace -Paotbm=hsort32_fn    # Heap sort with siftDown as a normal method
+	gdj avrora_store_trace -Paotbm=hsort32_cht   # Heap sort with siftDown manually inlined
+
 
 
 # Special case: CoreMark is too big to fit both Java and C versions in memory at the same time. Run the coremk_c config for the native CoreMark results, and then copy the result here.

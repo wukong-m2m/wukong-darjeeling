@@ -217,6 +217,7 @@ class DjSourceSet {
             inputs.property("usesimul", project.ext.usesimul)
             inputs.property("usegetfield_a_fixed", project.ext.usegetfield_a_fixed)
             inputs.property("use16bitarrayindex", project.ext.use16bitarrayindex)
+            inputs.property("uselightweightmethods", project.ext.uselightweightmethods)
             inputs.property("useconstantshiftoptimisation", project.ext.useconstantshiftoptimisation)
             outputs.dir infusionDir
             this.javaDependencies.each { jlibname ->
