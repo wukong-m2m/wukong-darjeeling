@@ -46,8 +46,8 @@ let resultToStringList (result : SimulationResults) =
         (""                     , "");        
         ("PERF OVERHEAD"        , "cyc (%C)");
         ("   total"             , (cyclesToCPercentage result.countersOverheadTotal.cycles));
-        ("   load/store"        , (cyclesToCPercentage result.countersOverheadLoadStore.cycles));
         ("   push/pop"          , (cyclesToCPercentage result.countersOverheadPushPop.cycles));
+        ("   load/store"        , (cyclesToCPercentage result.countersOverheadLoadStore.cycles));
         ("   mov(w)"            , (cyclesToCPercentage result.countersOverheadMov.cycles));
         ("   vm+other"          , (cyclesToCPercentage (result.countersOverheadVm.cycles + result.countersOverheadOthers.cycles)));
         (""                     , "");
@@ -58,8 +58,8 @@ let resultToStringList (result : SimulationResults) =
         (""                     , "");
         ("SIZE OVERHEAD"        , "byt (%C)");
         ("   total"             , (bytesToCPercentage result.countersOverheadTotal.size));
-        ("   load/store"        , (bytesToCPercentage result.countersOverheadLoadStore.size));
         ("   push/pop"          , (bytesToCPercentage result.countersOverheadPushPop.size));
+        ("   load/store"        , (bytesToCPercentage result.countersOverheadLoadStore.size));
         ("   mov(w)"            , (bytesToCPercentage result.countersOverheadMov.size));
         ("   other"             , (bytesToCPercentage result.countersOverheadOthers.size));
         (""                     , "");
@@ -72,16 +72,16 @@ let resultToStringList (result : SimulationResults) =
         (""                     , "");
         ("CYCLE COUNTS"         , "");
         ("Native C total"       , String.Format("{0}", result.countersCTotal.cycles));
-        ("         load/store"  , String.Format("{0}", result.countersCLoadStore.cycles));
         ("         push/pop"    , String.Format("{0}", result.countersCPushPop.cycles));
+        ("         load/store"  , String.Format("{0}", result.countersCLoadStore.cycles));
         ("         mov(w)"      , String.Format("{0}", result.countersCMov.cycles));
         ("         others"      , String.Format("{0}", result.countersCOthers.cycles));
         (""                     , "");
         ("         stopw/count" , (cyclesToSlowdown result.cyclesStopwatchC result.countersCTotal.cycles));
         (""                     , "");
         ("AOT      total"       , String.Format("{0}", result.countersAOTTotal.cycles));
-        ("         load/store"  , String.Format("{0}", result.countersAOTLoadStore.cycles));
         ("         push/pop"    , String.Format("{0}", result.countersAOTPushPop.cycles));
+        ("         load/store"  , String.Format("{0}", result.countersAOTLoadStore.cycles));
         ("         mov(w)"      , String.Format("{0}", result.countersAOTMov.cycles));
         ("         vm"          , String.Format("{0}", result.countersAOTVM.cycles));
         ("         others"      , String.Format("{0}", result.countersAOTOthers.cycles));
