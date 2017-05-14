@@ -65,6 +65,9 @@ type ExecCounters = {
     static member (+) (x, y) = { executions = x.executions + y.executions ; cycles = x.cycles + y.cycles ; cyclesSubroutine = x.cyclesSubroutine + y.cyclesSubroutine ; count = x.count + y.count ; size = x.size + y.size }
     static member (-) (x, y) = { executions = x.executions - y.executions ; cycles = x.cycles - y.cycles ; cyclesSubroutine = x.cyclesSubroutine - y.cyclesSubroutine ; count = x.count - y.count ; size = x.size - y.size }
     member this.cyclesInclSubroutine = this.cycles + this.cyclesSubroutine
+    member this.averageInclSubroutine = if this.executions > 0
+                                        then float this.cyclesInclSubroutine / float this.executions
+                                        else 0.0
     member this.average = if this.executions > 0
                           then float this.cycles / float this.executions
                           else 0.0
