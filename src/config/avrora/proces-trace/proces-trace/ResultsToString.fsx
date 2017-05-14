@@ -56,7 +56,7 @@ let resultsToString (results : SimulationResults) =
                       counters.cyclesInclSubroutine,
                       100.0 * float (counters.cyclesInclSubroutine) / float totalCycles,
                       counters.executions,
-                      counters.averageInclSubroutines,
+                      counters.averageInclSubroutine,
                       counters.size,
                       100.0 * float (counters.size) / float totalBytes)
         
