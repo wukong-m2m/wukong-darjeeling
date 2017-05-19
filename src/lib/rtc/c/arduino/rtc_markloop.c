@@ -1172,9 +1172,12 @@ uint8_t rtc_markloop_getfree_16bit_idx_callsaved_only() {
 }
 
 void rtc_markloop_emit_prologue(bool called_from_invokelight, uint8_t lightweightmethod_id) {
+#ifdef NO_LIGHTWEIGHT_METHODS
+    called_from_invokelight = false; // let the optimiser take care of removing unnecessary code.
+#endif
     // This method is used in two cases:
     //   - from MARKLOOP_START (called_from_invokelight == false): we should first pin some registers and then generate loads for all values that are live at the beginning of the loop
-    //   - from INVOKELIGHT    (called_from_invokelight == true) : we should load all pinned values that were used by the lightweight method (they have been store before calling the lightweight method)
+    //   - from INVOKELIGHT    (called_from_invokelight == true) : we should load all pinned values that were used by the lightweight method (they have been stored before calling the lightweight method)
 
     // First pin some registers if we're not called from invokelight
     if (!called_from_invokelight) {
@@ -1241,6 +1244,10 @@ void rtc_markloop_emit_prologue(bool called_from_invokelight, uint8_t lightweigh
 }
 
 void rtc_markloop_emit_epilogue(bool called_from_invokelight, uint8_t lightweightmethod_id) {
+#ifdef NO_LIGHTWEIGHT_METHODS
+    called_from_invokelight = false; // let the optimiser take care of removing unnecessary code.
+#endif
+
     for (uint8_t idx=0; idx<RTC_STACKCACHE_MAX_IDX; idx++) {
         if (RTC_MARKLOOP_ISPINNED(idx)) {
             uint16_t valuetag = RTC_STACKCACHE_GET_VALUETAG(idx);
