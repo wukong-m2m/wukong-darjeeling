@@ -258,7 +258,7 @@ task avrora_profile_trace(type:Exec, dependsOn: [avrora_store_trace]) {
     def tracesOutputDir = new File("${project.rootDir}/config/${djConfigname}/${project.ext.aotTraceResultsDirName}/${project.ext.aotbm}")
 
     executable "fsharpi"
-    args '--exec', fsxScript, "profile", tracesOutputDir
+    args '--exec', fsxScript, tracesOutputDir
 }
 
 task avrora_analyse_trace(type:Exec, dependsOn: [avrora_store_trace]) {
