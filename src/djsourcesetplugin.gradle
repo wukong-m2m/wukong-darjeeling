@@ -154,6 +154,7 @@ class DjSourceSet {
                 keepclassmembers 'class * { public static void    rtcbenchmark_measure_java_performance(int[]); }'
                 keepclassmembers 'class * { public static void    rtcbenchmark_measure_java_performance(short[]); }'
                 keepclassmembers 'class * { public static short   rtcbenchmark_measure_java_performance(); }'
+                keepclassmembers 'class * { public static boolean rtcbenchmark_measure_java_performance(); }'
                 keepclassmembers 'class * { public static short   rtcbenchmark_measure_java_performance(byte[], byte[], short, boolean); }'
                 keepclassmembers 'class * { public static void    rtcbenchmark_measure_java_performance(short[]); }'
                 keepclassmembers 'class * { public static void    rtcbenchmark_measure_java_performance(int[]); }'

@@ -1,0 +1,6 @@
+djlibsource {
+    bm_floattest {
+        cDependencies = [ 'darjeeling3' ]
+        javaDependencies = [ 'base', 'darjeeling3' ]
+    }
+}
