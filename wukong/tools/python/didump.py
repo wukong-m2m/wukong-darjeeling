@@ -41,7 +41,11 @@ def print_class_list_element(rawdata):
 	print "\t\tforward pointers:", forward_pointers
 	for i in range(count):
 		print "\t\t\tclass ", i, elements[i]
+		if classdefs is not None:
+			classdef = classdefs[i]
+			print "\t\t\t%s" % (classdef['name'])
 		classdata = elements[i]
+		print "\t\t\tclassdef length, incl fwd pointers:", len(classdata)+2
 		# print class definition (InternalClassDefinition)
 		print "\t\t\treference field count:", classdata.pop(0)
 		print "\t\t\tnon-reference field size:", classdata.pop(0)
@@ -71,12 +75,17 @@ def print_method_impl_list(rawdata):
 			methodimpl = methodimpls[i]
 			methoddef = methodimpl['methoddef']
 			if methoddef is not None:
-				print "\t\t\t%s: %s" % (methoddef['name'], methoddef['signature'])
+				classdef = methodimpl['parentclass']
+				if classdef is not None:
+					print "\t\t\t%s.%s: %s" % (classdef['name'], methoddef['name'], methoddef['signature'])
+				else:
+					print "\t\t\t%s: %s" % (methoddef['name'], methoddef['signature'])
 			else:
 				print "\t\t\tmethoddef %s in infusion %s" % (methodimpl['methoddef.entity_id'], methodimpl['methoddef.infusion'])
 		else:
 			print "\t\t\tNO INFUSION HEADER FOUND"
 		methoddata = elements[i]
+		print "\t\t\tlength incl header and fwd pointers:", len(methoddata) + 2
 		print "\t\t\treference argument count:", methoddata.pop(0)
 		print "\t\t\tinteger argument count:", methoddata.pop(0)
 		print "\t\t\treflocvar-refarg-isstatic:", methoddata.pop(0)
@@ -90,6 +99,8 @@ def print_method_impl_list(rawdata):
 		number_of_branch_targets = little_endian(methoddata[0:2])
 		print "\t\t\tnumber of branch targets:", number_of_branch_targets
 		methoddata = methoddata[2:]
+		print "\t\t\town variable slots:", methoddata.pop(0)
+		print "\t\t\ttotal variable slots:", methoddata.pop(0)
 		code_length = little_endian(methoddata[0:2])
 		print "\t\t\tcode length:", code_length
 		print "\t\t\tcode:", methoddata[2:2+code_length]
@@ -175,19 +186,22 @@ if os.path.isfile(headerfilename):
 	dih = doc.getroot()
 	infusion = dih.find('infusion')
 	infusionname = infusion.find('header').attrib['name']
-	methoddeflist = infusion.find('methoddeflist')
+	classdefs = [{'entity_id': int(x.attrib['entity_id']), 'name': x.attrib['name']}
+				   for x in infusion.find('classlist')]
 	methoddefs = [{'entity_id': int(x.attrib['entity_id']), 'name': x.attrib['name'], 'signature': x.attrib['signature']}
-				   for x in list(methoddeflist.iter())
-				   if x is not methoddeflist]
-	methodimpllist = infusion.find('methodimpllist')
+				   for x in infusion.find('methoddeflist')]
 	methodimpls = [{'entity_id': int(x.attrib['entity_id']),
 					'methoddef.entity_id': x.attrib['methoddef.entity_id'],
 					'methoddef.infusion': x.attrib['methoddef.infusion'],
 					'methoddef': first_or_default(methoddefs, lambda(d): d['entity_id'] == int(x.attrib['methoddef.entity_id']))
 									if x.attrib['methoddef.infusion'] == infusionname
+									else None,
+					'parentclass.entity_id': x.attrib['parentclass.entity_id'],
+					'parentclass.infusion': x.attrib['parentclass.infusion'],
+					'parentclass': first_or_default(classdefs, lambda(d): d['entity_id'] == int(x.attrib['parentclass.entity_id']))
+									if x.attrib['parentclass.infusion'] == infusionname
 									else None}
-				   for x in list(methodimpllist.iter())
-				   if x is not methodimpllist]
+				   for x in infusion.find('methodimpllist')]
 
 with open(infusionfilename, "rb") as f:
 	rawdata = [ord(x) for x in f.read()]
