@@ -35,6 +35,54 @@ package java.lang;
  */
 public final class Byte
 {
+
+	/**
+	 * The minimum value a Byte can have.
+	 */
+	public static final byte MIN_VALUE = -128;
+
+	/**
+	 * The maximum value a Byte can have.
+	 */
+	public static final byte MAX_VALUE = 127;
+
+	/**
+	 * Assuming the specified String represents a byte, returns that byte's
+	 * value. Throws an exception if the String cannot be parsed as a byte. The
+	 * radix is assumed to be 10.
+	 * 
+	 * @param s
+	 *            the String containing the byte
+	 * @return the parsed value of the byte
+	 * @exception NumberFormatException
+	 *                If the string does not contain a parsable byte.
+	 */
+	public static byte parseByte(String s) throws NumberFormatException
+	{
+		return parseByte(s, 10);
+	}
+
+	/**
+	 * Assuming the specified String represents a byte, returns that byte's
+	 * value. Throws an exception if the String cannot be parsed as a byte.
+	 * 
+	 * @param s
+	 *            the String containing the byte
+	 * @param radix
+	 *            the radix to be used
+	 * @return the parsed value of the byte
+	 * @exception NumberFormatException
+	 *                If the String does not contain a parsable byte.
+	 */
+	public static byte parseByte(String s, int radix)
+			throws NumberFormatException
+	{
+		int i = Integer.parseInt(s, radix);
+		if (i < MIN_VALUE || i > MAX_VALUE)
+			throw new NumberFormatException();
+		return (byte) i;
+	}
+
 	/**
 	 * The value of the Byte.
 	 */
@@ -69,4 +117,34 @@ public final class Byte
 		// return String.valueOf((int)value);
 		return null;
 	}
+
+	/**
+	 * Returns a hashcode for this Byte.
+	 */
+	public int hashCode()
+	{
+		return (int) value;
+	}
+	
+	public static Byte valueOf(byte b)
+	{
+		return new Byte(b);
+	}
+
+	/**
+	 * Compares this object to the specified object.
+	 * 
+	 * @param obj
+	 *            the object to compare with
+	 * @return true if the objects are the same; false otherwise.
+	 */
+	public boolean equals(Object obj)
+	{
+		if (obj instanceof Byte)
+		{
+			return value == ((Byte) obj).byteValue();
+		}
+		return false;
+	}
+
 }

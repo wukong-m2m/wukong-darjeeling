@@ -5,6 +5,8 @@
  */
 package java.lang;
 
+import javax.rtc.RTC;
+
 /**
  * <code>RuntimeException</code> is the superclass of those exceptions that can
  * be thrown during the normal operation of the Java Virtual Machine.
@@ -20,25 +22,16 @@ package java.lang;
  */
 public class RuntimeException extends Exception
 {
-
-	/**
-	 * Constructs a <code>RuntimeException</code> with no detail message.
-	 */
-	public RuntimeException()
+	public RuntimeException(short type)
 	{
-		super();
+		// super(type);
+		RTC.terminateOnException(type);
 	}
 
-	/**
-	 * Constructs a <code>RuntimeException</code> with the specified detail
-	 * message.
-	 * 
-	 * @param s
-	 *            the detail message.
-	 */
-	public RuntimeException(String s)
+	public RuntimeException(short type, int number)
 	{
-		super(s);
+		// super(type, Integer.toString(number));
+		RTC.avroraPrintInt(number);
+		RTC.terminateOnException(type);
 	}
-	
 }

@@ -22,17 +22,27 @@ package java.lang;
  * @since   JDK1.0, CLDC 1.0
  */
 public final class Integer {
+
+    /**
+     * The smallest value of type <code>int</code>. The constant
+     * value of this field is <tt>-2147483648</tt>.
+     */
+    public static final int MIN_VALUE = 0x80000000;
+    /**
+     * The largest value of type <code>int</code>. The constant
+     * value of this field is <tt>2147483647</tt>.
+     */
+    public static final int MAX_VALUE = 0x7fffffff;
     /**
      * All possible chars for representing a number as a String
      */
     final static char[] digits = {
         '0', '1', '2', '3', '4', '5',
         '6', '7', '8', '9', 'a', 'b',
-        'c', 'd', 'e', 'f'
-        // , 'g', 'h',
-        // 'i', 'j', 'k', 'l', 'm', 'n',
-        // 'o', 'p', 'q', 'r', 's', 't',
-        // 'u', 'v', 'w', 'x', 'y', 'z'
+        'c', 'd', 'e', 'f', 'g', 'h',
+        'i', 'j', 'k', 'l', 'm', 'n',
+        'o', 'p', 'q', 'r', 's', 't',
+        'u', 'v', 'w', 'x', 'y', 'z'
     };
 
     /**
@@ -73,13 +83,12 @@ public final class Integer {
      * @see     java.lang.Character#MIN_RADIX
      */
     public static String toString(int i, int radix) {
-        // if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX) {
-        if (radix < 2 || radix > 16) {
+        if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX) {
             radix = 10;
         }
         char buf[] = new char[33];
         boolean negative = (i < 0);
-        short charPos = 32;
+        int charPos = 32;
         if (!negative) {
             i = -i;
         }
@@ -91,7 +100,7 @@ public final class Integer {
         if (negative) {
             buf[--charPos] = '-';
         }
-        return new String(buf, charPos, (short)(33 - charPos));
+        return new String(buf, charPos, (33 - charPos));
     }
 
     /**
@@ -179,14 +188,14 @@ public final class Integer {
      */
     private static String toUnsignedString(int i, int shift) {
         char[] buf = new char[32];
-        short charPos = 32;
+        int charPos = 32;
         int radix = 1 << shift;
         int mask = radix - 1;
         do {
             buf[--charPos] = digits[i & mask];
             i >>>= shift;
         } while (i != 0);
-        return new String(buf, charPos, (short)(32 - charPos));
+        return new String(buf, charPos, (32 - charPos));
     }
 
     /**
@@ -202,6 +211,183 @@ public final class Integer {
         return toString(i, 10);
     }
 
+    /**
+     * Parses the string argument as a signed integer in the radix
+     * specified by the second argument. The characters in the string
+     * must all be digits of the specified radix (as determined by
+     * whether {@link java.lang.Character#digit(char, int)} returns a
+     * nonnegative value), except that the first character may be an
+     * ASCII minus sign <code>'-'</code> (<code>'&#92;u002d'</code>) to
+     * indicate a negative value. The resulting integer value is returned.
+     * <p>
+     * An exception of type <tt>NumberFormatException</tt> is thrown if any
+     * of the following situations occurs:
+     * <ul>
+     * <li>The first argument is <tt>null</tt> or is a string of length zero.
+     * <li>The radix is either smaller than
+     * {@link java.lang.Character#MIN_RADIX} or
+     * larger than {@link java.lang.Character#MAX_RADIX}.
+     * <li>Any character of the string is not a digit of the specified radix,
+     * except that the first character may be a minus sign <tt>'-'</tt>
+     * (<tt>'&#92;u002d'</tt>) provided that the string is longer than length 1.
+     * <li>The integer value represented by the string is not a value of type
+     * <tt>int</tt>.
+     * </ul><p>
+     * Examples:
+     * <blockquote><pre>
+     * parseInt("0", 10) returns 0
+     * parseInt("473", 10) returns 473
+     * parseInt("-0", 10) returns 0
+     * parseInt("-FF", 16) returns -255
+     * parseInt("1100110", 2) returns 102
+     * parseInt("2147483647", 10) returns 2147483647
+     * parseInt("-2147483648", 10) returns -2147483648
+     * parseInt("2147483648", 10) throws a NumberFormatException
+     * parseInt("99", 8) throws a NumberFormatException
+     * parseInt("Kona", 10) throws a NumberFormatException
+     * parseInt("Kona", 27) returns 411787
+     * </pre></blockquote>
+     *
+     * @param      s   the <code>String</code> containing the integer.
+     * @param      radix   the radix to be used.
+     * @return     the integer represented by the string argument in the
+     *             specified radix.
+     * @exception  NumberFormatException  if the string does not contain a
+     *               parsable integer.
+     */
+    public static int parseInt(String s, int radix) throws NumberFormatException {
+        if (s == null) {
+            throw new NumberFormatException("null");
+        }
+        if (radix < Character.MIN_RADIX) {
+            throw new NumberFormatException("radix " + radix +
+                    " less than Character.MIN_RADIX");
+        }
+        if (radix > Character.MAX_RADIX) {
+            throw new NumberFormatException("radix " + radix +
+                    " greater than Character.MAX_RADIX");
+        }
+        int result = 0;
+        boolean negative = false;
+        int i = 0, max = s.length();
+        int limit;
+        int multmin;
+        int digit;
+        if (max > 0) {
+            if (s.charAt(0) == '-') {
+                negative = true;
+                limit = Integer.MIN_VALUE;
+                i++;
+            } else {
+                limit = -Integer.MAX_VALUE;
+            }
+            multmin = limit / radix;
+            if (i < max) {
+                digit = Character.digit(s.charAt(i++), radix);
+                if (digit < 0) {
+                    throw new NumberFormatException(s);
+                } else {
+                    result = -digit;
+                }
+            }
+            while (i < max) {
+                // Accumulating negatively avoids surprises near MAX_VALUE
+                digit = Character.digit(s.charAt(i++), radix);
+                if (digit < 0) {
+                    throw new NumberFormatException(s);
+                }
+                if (result < multmin) {
+                    throw new NumberFormatException(s);
+                }
+                result *= radix;
+                if (result < limit + digit) {
+                    throw new NumberFormatException(s);
+                }
+                result -= digit;
+            }
+        } else {
+            throw new NumberFormatException(s);
+        }
+        if (negative) {
+            if (i > 1) {
+                return result;
+            } else {    // Only got "-" 
+                throw new NumberFormatException(s);
+            }
+        } else {
+            return -result;
+        }
+    }
+
+    /**
+     * Parses the string argument as a signed decimal integer. The
+     * characters in the string must all be decimal digits, except that
+     * the first character may be an ASCII minus sign <code>'-'</code>
+     * (<tt>'&#92;u002d'</tt>) to indicate a negative value. The resulting
+     * integer value is returned, exactly as if the argument and the radix
+     * 10 were given as arguments to the
+     * {@link #parseInt(java.lang.String, int)} method.
+     *
+     * @param      s   a string.
+     * @return     the integer represented by the argument in decimal.
+     * @exception  NumberFormatException  if the string does not contain a
+     *               parsable integer.
+     */
+    public static int parseInt(String s) throws NumberFormatException {
+        return parseInt(s, 10);
+    }
+
+    /**
+     * Returns a new Integer object initialized to the value of the
+     * specified String. The first argument is interpreted as representing
+     * a signed integer in the radix specified by the second argument,
+     * exactly as if the arguments were given to the
+     * {@link #parseInt(java.lang.String, int)} method. The result is an
+     * <code>Integer</code> object that represents the integer value
+     * specified by the string.
+     * <p>
+     * In other words, this method returns an <code>Integer</code> object
+     * equal to the value of:
+     * <blockquote><pre>
+     * new Integer(Integer.parseInt(s, radix))
+     * </pre></blockquote>
+     *
+     * @param      s   the string to be parsed.
+     * @param      radix the radix of the integer represented by string
+     *             <tt>s</tt>
+     * @return     a newly constructed <code>Integer</code> initialized to the
+     *             value represented by the string argument in the specified
+     *             radix.
+     * @exception  NumberFormatException  if the String cannot be
+     *             parsed as an <code>int</code>.
+     */
+    public static Integer valueOf(String s, int radix) throws NumberFormatException {
+        return new Integer(parseInt(s, radix));
+    }
+
+    /**
+     * Returns a new Integer object initialized to the value of the
+     * specified String. The argument is interpreted as representing a
+     * signed decimal integer, exactly as if the argument were given to
+     * the {@link #parseInt(java.lang.String)} method. The result is an
+     * <tt>Integer</tt> object that represents the integer value specified
+     * by the string.
+     * <p>
+     * In other words, this method returns an <tt>Integer</tt> object equal
+     * to the value of:
+     * <blockquote><pre>
+     * new Integer(Integer.parseInt(s))
+     * </pre></blockquote>
+     *
+     * @param      s   the string to be parsed.
+     * @return     a newly constructed <code>Integer</code> initialized to the
+     *             value represented by the string argument.
+     * @exception  NumberFormatException  if the string cannot be parsed
+     *             as an integer.
+     */
+    public static Integer valueOf(String s) throws NumberFormatException {
+        return new Integer(parseInt(s, 10));
+    }
     /**
      * The value of the Integer.
      *
@@ -220,6 +406,28 @@ public final class Integer {
     }
 
     /**
+     * Returns the value of this Integer as a byte.
+     *
+     * @return the value of this Integer as a byte.
+     *
+     * @since   JDK1.1
+     */
+    public byte byteValue() {
+        return (byte) value;
+    }
+
+    /**
+     * Returns the value of this Integer as a short.
+     *
+     * @return the value of this Integer as a short.
+     *
+     * @since   JDK1.1
+     */
+    public short shortValue() {
+        return (short) value;
+    }
+
+    /**
      * Returns the value of this Integer as an int.
      *
      * @return  the <code>int</code> value represented by this object.
@@ -228,6 +436,41 @@ public final class Integer {
         return value;
     }
 
+    /**
+     * Returns the value of this Integer as a <tt>long</tt>.
+     *
+     * @return  the <code>int</code> value represented by this object that is
+     *          converted to type <code>long</code> and the result of the
+     *          conversion is returned.
+     */
+    public long longValue() {
+        return (long) value;
+    }
+
+    /**
+     * Returns the value of this Integer as a <tt>float</tt>.
+     *
+     * @return  the <code>int</code> value represented by this object is
+     *          converted to type <code>float</code> and the result of the
+     *          conversion is returned.
+     * @since   CLDC 1.1
+     */
+/*    public float floatValue() {
+        return (float) value;
+    }
+*/
+    /**
+     * Returns the value of this Integer as a <tt>double</tt>.
+     *
+     * @return  the <code>int</code> value represented by this object is
+     *          converted to type <code>double</code> and the result of the
+     *          conversion is returned.
+     * @since   CLDC 1.1
+     */
+/*    public double doubleValue() {
+        return (double) value;
+    }
+*/
     /**
      * Returns a String object representing this Integer's value. The
      * value is converted to signed decimal representation and returned
@@ -239,6 +482,34 @@ public final class Integer {
      */
     public String toString() {
         return String.valueOf(value);
+    }
+
+    /**
+     * Returns a hashcode for this Integer.
+     *
+     * @return  a hash code value for this object, equal to the
+     *          primitive <tt>int</tt> value represented by this
+     *          <tt>Integer</tt> object.
+     */
+    public int hashCode() {
+        return value;
+    }
+
+    /**
+     * Compares this object to the specified object.
+     * The result is <code>true</code> if and only if the argument is not
+     * <code>null</code> and is an <code>Integer</code> object that contains
+     * the same <code>int</code> value as this object.
+     *
+     * @param   obj   the object to compare with.
+     * @return  <code>true</code> if the objects are the same;
+     *          <code>false</code> otherwise.
+     */
+    public boolean equals(Object obj) {
+        if (obj instanceof Integer) {
+            return value == ((Integer) obj).intValue();
+        }
+        return false;
     }
 }
 

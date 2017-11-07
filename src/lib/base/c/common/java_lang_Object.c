@@ -99,7 +99,7 @@ void java_lang_Object_java_lang_String_toString()
 	dj_object * string = dj_jstring_createFromGlobalId(dj_exec_getVM(), classNameGlobalId);
 
 	if (string==NULL)
-		dj_exec_createAndThrow(OUTOFMEMORY_ERROR);
+		dj_exec_createAndThrow(BASE_CDEF_java_lang_OutOfMemoryError);
 	else
 		dj_exec_stackPushRef(VOIDP_TO_REF(string));
 

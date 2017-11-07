@@ -52,7 +52,7 @@ public class Darjeeling
 	 */
 	public static void print(String str)
 	{
-		if (str==null) throw new RuntimeException(Exception.NULLPOINTER_EXCEPTION);
+		// if (str==null) throw new RuntimeException(Exception.NULLPOINTER_EXCEPTION);
 		_print(str);
 	}
 

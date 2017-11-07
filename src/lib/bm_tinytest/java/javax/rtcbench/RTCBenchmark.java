@@ -1,6 +1,6 @@
 package javax.rtcbench;
 
-import javax.rtc.RTC;
+// import javax.rtc.RTC;
 
 public class RTCBenchmark {
     public static String name = "TINY TEST";
@@ -58,7 +58,7 @@ public class RTCBenchmark {
         return rtcbenchmark_measure_java_performance();
     }
     public static boolean rtcbenchmark_measure_java_performance() {
-        RTC.startBenchmarkMeasurement_AOT();
+        // RTC.startBenchmarkMeasurement_AOT();
 
         Object obj = new Object();
         Exception ex;
@@ -66,7 +66,7 @@ public class RTCBenchmark {
             throw new Exception();
             // ex = (Exception)obj;
         } catch (Exception ex2) {
-            RTC.stopBenchmarkMeasurement();
+            // RTC.stopBenchmarkMeasurement();
             return true;
         }
     }

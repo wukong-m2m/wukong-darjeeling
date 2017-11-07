@@ -82,9 +82,9 @@ public final class String
 	/** The value is used for character storage. */
 	private char value[];
 	/** The offset is the first index of the storage that is used. */
-	private int offset;
+	private short offset;
 	/** The count is the number of characters in the String. */
-	private int count;
+	private short count;
 
 	/**
 	 * Initializes a newly created <code>String</code> object so that it
@@ -107,7 +107,7 @@ public final class String
 	{
 		count = value.length();
 		this.value = new char[count];
-		value.getChars(0, count, this.value, 0);
+		value.getChars((short)0, count, this.value, (short)0);
 	}
 
 	/**
@@ -123,9 +123,9 @@ public final class String
 	 */
 	public String(char value[])
 	{
-		this.count = value.length;
+		this.count = (short)value.length;
 		this.value = new char[count];
-		System.arraycopy(value, 0, this.value, 0, count);
+		System.arraycopy(value, (short)0, this.value, (short)0, count);
 	}
 
 	/**
@@ -149,70 +149,70 @@ public final class String
 	 * @exception NullPointerException
 	 *                if <code>value</code> is <code>null</code>.
 	 */
-	public String(char value[], int offset, int count)
+	public String(char value[], short offset, short count)
 	{
 		if (offset < 0)
 		{
-			throw new StringIndexOutOfBoundsException(offset);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, offset);
 		}
 		if (count < 0)
 		{
-			throw new StringIndexOutOfBoundsException(count);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, count);
 		}
 		// Note: offset or count might be near -1>>>1.
 		if (offset > value.length - count)
 		{
-			throw new StringIndexOutOfBoundsException(offset + count);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, offset + count);
 		}
 
 		this.value = new char[count];
 		this.count = count;
-		System.arraycopy(value, offset, this.value, 0, count);
+		System.arraycopy(value, offset, this.value, (short)0, count);
 	}
 
-	/**
-	 * Construct a new <code>String</code> by converting the specified subarray
-	 * of bytes using the specified character encoding. The length of the new
-	 * <code>String</code> is a function of the encoding, and hence may not be
-	 * equal to the length of the subarray.
-	 * 
-	 * @param bytes
-	 *            The bytes to be converted into characters
-	 * @param off
-	 *            Index of the first byte to convert
-	 * @param len
-	 *            Number of bytes to convert
-	 * @param enc
-	 *            The name of a character encoding
-	 * 
-	 * @exception UnsupportedEncodingException
-	 *                If the named encoding is not supported
-	 * @since JDK1.1
-	 */
-	public String(byte bytes[], int off, int len, String enc)
-	{
-		// TODO implement
-	}
+	// /**
+	//  * Construct a new <code>String</code> by converting the specified subarray
+	//  * of bytes using the specified character encoding. The length of the new
+	//  * <code>String</code> is a function of the encoding, and hence may not be
+	//  * equal to the length of the subarray.
+	//  * 
+	//  * @param bytes
+	//  *            The bytes to be converted into characters
+	//  * @param off
+	//  *            Index of the first byte to convert
+	//  * @param len
+	//  *            Number of bytes to convert
+	//  * @param enc
+	//  *            The name of a character encoding
+	//  * 
+	//  * @exception UnsupportedEncodingException
+	//  *                If the named encoding is not supported
+	//  * @since JDK1.1
+	//  */
+	// public String(byte bytes[], int off, int len, String enc)
+	// {
+	// 	// TODO implement
+	// }
 
-	/**
-	 * Construct a new <code>String</code> by converting the specified array of
-	 * bytes using the specified character encoding. The length of the new
-	 * <code>String</code> is a function of the encoding, and hence may not be
-	 * equal to the length of the byte array.
-	 * 
-	 * @param bytes
-	 *            The bytes to be converted into characters
-	 * @param enc
-	 *            The name of a supported character encoding
-	 * 
-	 * @exception UnsupportedEncodingException
-	 *                If the named encoding is not supported
-	 * @since JDK1.1
-	 */
-	public String(byte bytes[], String enc)
-	{
-		this(bytes, 0, bytes.length, enc);
-	}
+	// /**
+	//  * Construct a new <code>String</code> by converting the specified array of
+	//  * bytes using the specified character encoding. The length of the new
+	//  * <code>String</code> is a function of the encoding, and hence may not be
+	//  * equal to the length of the byte array.
+	//  * 
+	//  * @param bytes
+	//  *            The bytes to be converted into characters
+	//  * @param enc
+	//  *            The name of a supported character encoding
+	//  * 
+	//  * @exception UnsupportedEncodingException
+	//  *                If the named encoding is not supported
+	//  * @since JDK1.1
+	//  */
+	// public String(byte bytes[], String enc)
+	// {
+	// 	this(bytes, 0, (short)bytes.length, enc);
+	// }
 
 	/**
 	 * Construct a new <code>String</code> by converting the specified subarray
@@ -228,12 +228,12 @@ public final class String
 	 *            Number of bytes to convert
 	 * @since JDK1.1
 	 */
-	public String(byte bytes[], int off, int len)
+	public String(byte bytes[], short off, short len)
 	{
 		this.count = len;
 		this.value = new char[len];
 
-		for (int i = 0; i <= len - 1; i++)
+		for (short i = 0; i <= len - 1; i++)
 		{
 			this.value[i] = (char) bytes[i + off];
 		}
@@ -253,7 +253,7 @@ public final class String
 	 */
 	public String(byte bytes[])
 	{
-		this(bytes, 0, bytes.length);
+		this(bytes, (short)0, (short)bytes.length);
 	}
 
 	/**
@@ -274,12 +274,12 @@ public final class String
 			buffer.setShared();
 			this.value = buffer.getValue();
 			this.offset = 0;
-			this.count = buffer.length();
+			this.count = (short)buffer.length();
 		}
 	}
 
 	// Package private constructor which shares value array for speed.
-	String(int offset, int count, char value[])
+	String(short offset, short count, char value[])
 	{
 		this.value = value;
 		this.offset = offset;
@@ -293,7 +293,7 @@ public final class String
 	 * @return the length of the sequence of characters represented by this
 	 *         object.
 	 */
-	public int length()
+	public short length()
 	{
 		return count;
 	}
@@ -313,11 +313,11 @@ public final class String
 	 *                than the length of this string.
 	 */
 	// public native char charAt(int index);
-	public char charAt(int index)
+	public char charAt(short index)
 	{
 		if ((index < 0) || (index >= count))
 		{
-			throw new StringIndexOutOfBoundsException(index);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, index);
 		}
 		return value[index + offset];
 	}
@@ -360,22 +360,21 @@ public final class String
 	 * @exception NullPointerException
 	 *                if <code>dst</code> is <code>null</code>
 	 */
-	public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin)
+	public void getChars(short srcBegin, short srcEnd, char dst[], short dstBegin)
 	{
 		if (srcBegin < 0)
 		{
-			throw new StringIndexOutOfBoundsException(srcBegin);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, srcBegin);
 		}
 		if (srcEnd > count)
 		{
-			throw new StringIndexOutOfBoundsException(srcEnd);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, srcEnd);
 		}
 		if (srcBegin > srcEnd)
 		{
-			throw new StringIndexOutOfBoundsException(srcEnd - srcBegin);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, srcEnd - srcBegin);
 		}
-		System.arraycopy(value, offset + srcBegin, dst, dstBegin, srcEnd
-				- srcBegin);
+		System.arraycopy(value, (short)(offset + srcBegin), dst, dstBegin, (short)(srcEnd - srcBegin));
 	}
 
 	/**
@@ -405,7 +404,7 @@ public final class String
 	public byte[] getBytes()
 	{
 		byte[] result = new byte[count];
-		for (int i = 0; i <= count - 1; i++)
+		for (short i = 0; i <= (short)(count - 1); i++)
 		{
 			result[i] = (byte) (value[i] & 0xFF);
 		}
@@ -436,13 +435,13 @@ public final class String
 		if (anObject instanceof String)
 		{
 			String anotherString = (String) anObject;
-			int n = count;
+			short n = count;
 			if (n == anotherString.count)
 			{
 				char v1[] = value;
 				char v2[] = anotherString.value;
-				int i = offset;
-				int j = anotherString.offset;
+				short i = offset;
+				short j = anotherString.offset;
 				while (n-- != 0)
 				{
 					if (v1[i++] != v2[j++])
@@ -456,38 +455,38 @@ public final class String
 		return false;
 	}
 
-	/**
-	 * Compares this <code>String</code> to another <code>String</code>,
-	 * ignoring case considerations. Two strings are considered equal ignoring
-	 * case if they are of the same length, and corresponding characters in the
-	 * two strings are equal ignoring case.
-	 * <p>
-	 * Two characters <code>c1</code> and <code>c2</code> are considered the
-	 * same, ignoring case if at least one of the following is true:
-	 * <ul>
-	 * <li>The two characters are the same (as compared by the <code>==</code>
-	 * operator).
-	 * <li>Applying the method {@link java.lang.Character#toUpperCase(char)} to
-	 * each character produces the same result.
-	 * <li>Applying the method {@link java.lang.Character#toLowerCase(char)} to
-	 * each character produces the same result.
-	 * </ul>
-	 * 
-	 * @param anotherString
-	 *            the <code>String</code> to compare this <code>String</code>
-	 *            against.
-	 * @return <code>true</code> if the argument is not <code>null</code> and
-	 *         the <code>String</code>s are equal, ignoring case;
-	 *         <code>false</code> otherwise.
-	 * @see #equals(Object)
-	 * @see java.lang.Character#toLowerCase(char)
-	 * @see java.lang.Character#toUpperCase(char)
-	 */
-	public boolean equalsIgnoreCase(String anotherString)
-	{
-		return (anotherString != null) && (anotherString.count == count)
-				&& regionMatches(true, 0, anotherString, 0, count);
-	}
+	// /**
+	//  * Compares this <code>String</code> to another <code>String</code>,
+	//  * ignoring case considerations. Two strings are considered equal ignoring
+	//  * case if they are of the same length, and corresponding characters in the
+	//  * two strings are equal ignoring case.
+	//  * <p>
+	//  * Two characters <code>c1</code> and <code>c2</code> are considered the
+	//  * same, ignoring case if at least one of the following is true:
+	//  * <ul>
+	//  * <li>The two characters are the same (as compared by the <code>==</code>
+	//  * operator).
+	//  * <li>Applying the method {@link java.lang.Character#toUpperCase(char)} to
+	//  * each character produces the same result.
+	//  * <li>Applying the method {@link java.lang.Character#toLowerCase(char)} to
+	//  * each character produces the same result.
+	//  * </ul>
+	//  * 
+	//  * @param anotherString
+	//  *            the <code>String</code> to compare this <code>String</code>
+	//  *            against.
+	//  * @return <code>true</code> if the argument is not <code>null</code> and
+	//  *         the <code>String</code>s are equal, ignoring case;
+	//  *         <code>false</code> otherwise.
+	//  * @see #equals(Object)
+	//  * @see java.lang.Character#toLowerCase(char)
+	//  * @see java.lang.Character#toUpperCase(char)
+	//  */
+	// public boolean equalsIgnoreCase(String anotherString)
+	// {
+	// 	return (anotherString != null) && (anotherString.count == count)
+	// 			&& regionMatches(true, 0, anotherString, 0, count);
+	// }
 
 	/**
 	 * Compares two strings lexicographically. The comparison is based on the
@@ -537,27 +536,27 @@ public final class String
 	 * @exception java.lang.NullPointerException
 	 *                if <code>anotherString</code> is <code>null</code>.
 	 */
-	public int compareTo(String anotherString)
+	public short compareTo(String anotherString)
 	{
-		int len1 = count;
-		int len2 = anotherString.count;
-		int n = Math.min(len1, len2);
+		short len1 = count;
+		short len2 = anotherString.count;
+		short n = len1<len2 ? len1 : len2; // Math.min(len1, len2);
 		char v1[] = value;
 		char v2[] = anotherString.value;
-		int i = offset;
-		int j = anotherString.offset;
+		short i = offset;
+		short j = anotherString.offset;
 
 		if (i == j)
 		{
-			int k = i;
-			int lim = n + i;
+			short k = i;
+			short lim = (short)(n + i);
 			while (k < lim)
 			{
 				char c1 = v1[k];
 				char c2 = v2[k];
 				if (c1 != c2)
 				{
-					return c1 - c2;
+					return (short)(c1 - c2);
 				}
 				k++;
 			}
@@ -569,11 +568,11 @@ public final class String
 				char c2 = v2[j++];
 				if (c1 != c2)
 				{
-					return c1 - c2;
+					return (short)(c1 - c2);
 				}
 			}
 		}
-		return len1 - len2;
+		return (short)(len1 - len2);
 	}
 
 	/**
@@ -636,18 +635,18 @@ public final class String
 	 *         <code>false</code> otherwise. Whether the matching is exact or
 	 *         case insensitive depends on the <code>ignoreCase</code> argument.
 	 */
-	public boolean regionMatches(boolean ignoreCase, int toffset, String other,
-			int ooffset, int len)
+	public boolean regionMatches(boolean ignoreCase, short toffset, String other,
+			short ooffset, short len)
 	{
 		char ta[] = value;
-		int to = offset + toffset;
-		int tlim = offset + count;
+		short to = (short)(offset + toffset);
+		short tlim = (short)(offset + count);
 		char pa[] = other.value;
-		int po = other.offset + ooffset;
+		short po = (short)(other.offset + ooffset);
 
 		// Note: toffset, ooffset, or len might be near -1>>>1.
-		if ((ooffset < 0) || (toffset < 0) || (toffset > (long) count - len)
-				|| (ooffset > (long) other.count - len))
+		if ((ooffset < 0) || (toffset < 0) || (toffset > count - len)
+				|| (ooffset > other.count - len))
 		{
 			return false;
 		}
@@ -659,27 +658,27 @@ public final class String
 			{
 				continue;
 			}
-			if (ignoreCase)
-			{
-				// If characters don't match but case may be ignored,
-				// try converting both characters to uppercase.
-				// If the results match, then the comparison scan should
-				// continue.
-				char u1 = Character.toUpperCase(c1);
-				char u2 = Character.toUpperCase(c2);
-				if (u1 == u2)
-				{
-					continue;
-				}
-				// Unfortunately, conversion to uppercase does not work properly
-				// for the Georgian alphabet, which has strange rules about case
-				// conversion. So we need to make one last check before
-				// exiting.
-				if (Character.toLowerCase(u1) == Character.toLowerCase(u2))
-				{
-					continue;
-				}
-			}
+			// if (ignoreCase)
+			// {
+			// 	// If characters don't match but case may be ignored,
+			// 	// try converting both characters to uppercase.
+			// 	// If the results match, then the comparison scan should
+			// 	// continue.
+			// 	char u1 = Character.toUpperCase(c1);
+			// 	char u2 = Character.toUpperCase(c2);
+			// 	if (u1 == u2)
+			// 	{
+			// 		continue;
+			// 	}
+			// 	// Unfortunately, conversion to uppercase does not work properly
+			// 	// for the Georgian alphabet, which has strange rules about case
+			// 	// conversion. So we need to make one last check before
+			// 	// exiting.
+			// 	if (Character.toLowerCase(u1) == Character.toLowerCase(u2))
+			// 	{
+			// 		continue;
+			// 	}
+			// }
 			return false;
 		}
 		return true;
@@ -706,16 +705,16 @@ public final class String
 	 * @exception java.lang.NullPointerException
 	 *                if <code>prefix</code> is <code>null</code>.
 	 */
-	public boolean startsWith(String prefix, int toffset)
+	public boolean startsWith(String prefix, short toffset)
 	{
 		char ta[] = value;
-		int to = offset + toffset;
-		int tlim = offset + count;
+		short to = (short)(offset + toffset);
+		short tlim = (short)(offset + count);
 		char pa[] = prefix.value;
-		int po = prefix.offset;
-		int pc = prefix.count;
+		short po = prefix.offset;
+		short pc = prefix.count;
 		// Note: toffset might be near -1>>>1.
-		if ((toffset < 0) || (toffset > count - pc))
+		if ((toffset < 0) || (toffset > (short)(count - pc)))
 		{
 			return false;
 		}
@@ -746,7 +745,7 @@ public final class String
 	 */
 	public boolean startsWith(String prefix)
 	{
-		return startsWith(prefix, 0);
+		return startsWith(prefix, (short)0);
 	}
 
 	/**
@@ -765,7 +764,7 @@ public final class String
 	 */
 	public boolean endsWith(String suffix)
 	{
-		return startsWith(suffix, count - suffix.count);
+		return startsWith(suffix, (short)(count - suffix.count));
 	}
 
 	/**
@@ -818,10 +817,10 @@ public final class String
 	 *         if the character does not occur.
 	 */
 	// public native int indexOf(int ch);
-	public int indexOf(int ch)
+	/*public int indexOf(int ch)
 	{
 		return indexOf(ch, 0);
-	}
+	}*/
 
 	/**
 	 * Returns the index within this string of the first occurrence of the
@@ -856,9 +855,9 @@ public final class String
 	 *         the character does not occur.
 	 */
 	// public native int indexOf(int ch, int fromIndex);
-	public int indexOf(int ch, int fromIndex)
+	public short indexOf(short ch, short fromIndex)
 	{
-		int max = offset + count;
+		short max = (short)(offset + count);
 		char v[] = value;
 
 		if (fromIndex < 0)
@@ -869,11 +868,11 @@ public final class String
 			// Note: fromIndex might be near -1>>>1.
 			return -1;
 		}
-		for (int i = offset + fromIndex; i < max; i++)
+		for (short i = (short)(offset + fromIndex); i < max; i++)
 		{
 			if (v[i] == ch)
 			{
-				return i - offset;
+				return (short)(i - offset);
 			}
 		}
 		return -1;
@@ -897,10 +896,10 @@ public final class String
 	 *         character sequence represented by this object, or <code>-1</code>
 	 *         if the character does not occur.
 	 */
-	public int lastIndexOf(int ch)
+	/*public int lastIndexOf(int ch)
 	{
 		return lastIndexOf(ch, count - 1);
-	}
+	}*/
 
 	/**
 	 * Returns the index within this string of the last occurrence of the
@@ -928,19 +927,19 @@ public final class String
 	 *         or equal to <code>fromIndex</code>, or <code>-1</code> if the
 	 *         character does not occur before that point.
 	 */
-	public int lastIndexOf(int ch, int fromIndex)
+	public short lastIndexOf(int ch, short fromIndex)
 	{
-		int min = offset;
+		short min = offset;
 		char v[] = value;
 
-		for (int i = offset + ((fromIndex >= count) ? count - 1 : fromIndex); i >= min; i--)
+		for (short i = (short)(offset + ((fromIndex >= count) ? count - 1 : fromIndex)); i >= min; i--)
 		{
 			if (v[i] == ch)
 			{
-				return i - offset;
+				return (short)(i - offset);
 			}
 		}
-		return -1;
+		return (short)-1;
 	}
 
 	/**
@@ -963,10 +962,10 @@ public final class String
 	 * @exception java.lang.NullPointerException
 	 *                if <code>str</code> is <code>null</code>.
 	 */
-	public int indexOf(String str)
+	/*public int indexOf(String str)
 	{
 		return indexOf(str, 0);
-	}
+	}*/
 
 	/**
 	 * Returns the index within this string of the first occurrence of the
@@ -997,11 +996,11 @@ public final class String
 	 * @exception java.lang.NullPointerException
 	 *                if <code>str</code> is <code>null</code>
 	 */
-	public int indexOf(String str, int fromIndex)
+	public short indexOf(String str, short fromIndex)
 	{
 		char v1[] = value;
 		char v2[] = str.value;
-		int max = offset + (count - str.count);
+		short max = (short)(offset + (count - str.count));
 		if (fromIndex >= count)
 		{
 			if (count == 0 && fromIndex == 0 && str.count == 0)
@@ -1021,9 +1020,9 @@ public final class String
 			return fromIndex;
 		}
 
-		int strOffset = str.offset;
+		short strOffset = str.offset;
 		char first = v2[strOffset];
-		int i = offset + fromIndex;
+		short i = (short)(offset + fromIndex);
 
 		startSearchForFirstChar: while (true)
 		{
@@ -1039,9 +1038,9 @@ public final class String
 			}
 
 			/* Found first character, now look at the rest of v2 */
-			int j = i + 1;
-			int end = j + str.count - 1;
-			int k = strOffset + 1;
+			short j = (short)(i + 1);
+			short end = (short)(j + str.count - 1);
+			short k = (short)(strOffset + 1);
 			while (j < end)
 			{
 				if (v1[j++] != v2[k++])
@@ -1051,7 +1050,7 @@ public final class String
 					continue startSearchForFirstChar;
 				}
 			}
-			return i - offset; /* Found whole string. */
+			return (short)(i - offset); /* Found whole string. */
 		}
 	}
 
@@ -1077,10 +1076,10 @@ public final class String
 	 *                if <code>beginIndex</code> is negative or larger than the
 	 *                length of this <code>String</code> object.
 	 */
-	public String substring(int beginIndex)
+	/*public String substring(int beginIndex)
 	{
 		return substring(beginIndex, count);
-	}
+	}*/
 
 	/**
 	 * Returns a new string that is a substring of this string. The substring
@@ -1108,22 +1107,22 @@ public final class String
 	 *                <code>String</code> object, or <code>beginIndex</code> is
 	 *                larger than <code>endIndex</code>.
 	 */
-	public String substring(int beginIndex, int endIndex)
+	public String substring(short beginIndex, short endIndex)
 	{
 		if (beginIndex < 0)
 		{
-			throw new StringIndexOutOfBoundsException(beginIndex);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, beginIndex);
 		}
 		if (endIndex > count)
 		{
-			throw new StringIndexOutOfBoundsException(endIndex);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, endIndex);
 		}
 		if (beginIndex > endIndex)
 		{
-			throw new StringIndexOutOfBoundsException(endIndex - beginIndex);
+			throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, endIndex - beginIndex);
 		}
 		return ((beginIndex == 0) && (endIndex == count)) ? this : new String(
-				offset + beginIndex, endIndex - beginIndex, value);
+				(short)(offset + beginIndex), (short)(endIndex - beginIndex), value);
 	}
 
 	/**
@@ -1155,15 +1154,15 @@ public final class String
 	 */
 	public String concat(String str)
 	{
-		int otherLen = str.length();
+		short otherLen = str.length();
 		if (otherLen == 0)
 		{
 			return this;
 		}
 		char buf[] = new char[count + otherLen];
-		getChars(0, count, buf, 0);
-		str.getChars(0, otherLen, buf, count);
-		return new String(0, count + otherLen, buf);
+		getChars((short)0, count, buf, (short)0);
+		str.getChars((short)0, otherLen, buf, count);
+		return new String((short)0, (short)(count + otherLen), buf);
 	}
 
 	/**
@@ -1199,14 +1198,14 @@ public final class String
 	 * @return a string derived from this string by replacing every occurrence
 	 *         of <code>oldChar</code> with <code>newChar</code>.
 	 */
-	public String replace(char oldChar, char newChar)
+	/*public String replace(char oldChar, char newChar)
 	{
 		if (oldChar != newChar)
 		{
 			int len = count;
 			int i = -1;
-			char[] val = value; /* avoid getfield opcode */
-			int off = offset; /* avoid getfield opcode */
+			char[] val = value; // avoid getfield opcode
+			int off = offset; // avoid getfield opcode
 
 			while (++i < len)
 			{
@@ -1232,77 +1231,77 @@ public final class String
 			}
 		}
 		return this;
-	}
+	}*/
 
-	/**
-	 * Converts all of the characters in this <code>String</code> to lower case.
-	 * 
-	 * @return the String, converted to lowercase.
-	 * @see Character#toLowerCase
-	 * @see String#toUpperCase
-	 */
-	public String toLowerCase()
-	{
-		int i;
+	// /**
+	//  * Converts all of the characters in this <code>String</code> to lower case.
+	//  * 
+	//  * @return the String, converted to lowercase.
+	//  * @see Character#toLowerCase
+	//  * @see String#toUpperCase
+	//  */
+	// public String toLowerCase()
+	// {
+	// 	int i;
 
-		scan:
-		{
-			for (i = 0; i < count; i++)
-			{
-				char c = value[offset + i];
-				if (c != Character.toLowerCase(c))
-				{
-					break scan;
-				}
-			}
-			return this;
-		}
+	// 	scan:
+	// 	{
+	// 		for (i = 0; i < count; i++)
+	// 		{
+	// 			char c = value[offset + i];
+	// 			if (c != Character.toLowerCase(c))
+	// 			{
+	// 				break scan;
+	// 			}
+	// 		}
+	// 		return this;
+	// 	}
 
-		char buf[] = new char[count];
+	// 	char buf[] = new char[count];
 
-		System.arraycopy(value, offset, buf, 0, i);
+	// 	System.arraycopy(value, offset, buf, 0, i);
 
-		for (; i < count; i++)
-		{
-			buf[i] = Character.toLowerCase(value[offset + i]);
-		}
-		return new String(0, count, buf);
-	}
+	// 	for (; i < count; i++)
+	// 	{
+	// 		buf[i] = Character.toLowerCase(value[offset + i]);
+	// 	}
+	// 	return new String(0, count, buf);
+	// }
 
-	/**
-	 * Converts all of the characters in this <code>String</code> to upper case.
-	 * 
-	 * @return the String, converted to uppercase.
-	 * @see Character#toLowerCase
-	 * @see String#toUpperCase
-	 */
-	public String toUpperCase()
-	{
-		int i;
+	// *
+	//  * Converts all of the characters in this <code>String</code> to upper case.
+	//  * 
+	//  * @return the String, converted to uppercase.
+	//  * @see Character#toLowerCase
+	//  * @see String#toUpperCase
+	 
+	// public String toUpperCase()
+	// {
+	// 	int i;
 
-		scan:
-		{
-			for (i = 0; i < count; i++)
-			{
-				char c = value[offset + i];
-				if (c != Character.toUpperCase(c))
-				{
-					break scan;
-				}
-			}
-			return this;
-		}
+	// 	scan:
+	// 	{
+	// 		for (i = 0; i < count; i++)
+	// 		{
+	// 			char c = value[offset + i];
+	// 			if (c != Character.toUpperCase(c))
+	// 			{
+	// 				break scan;
+	// 			}
+	// 		}
+	// 		return this;
+	// 	}
 
-		char buf[] = new char[count];
+	// 	char buf[] = new char[count];
 
-		System.arraycopy(value, offset, buf, 0, i);
+	// 	System.arraycopy(value, offset, buf, 0, i);
 
-		for (; i < count; i++)
-		{
-			buf[i] = Character.toUpperCase(value[offset + i]);
-		}
-		return new String(0, count, buf);
-	}
+	// 	for (; i < count; i++)
+	// 	{
+	// 		buf[i] = Character.toUpperCase(value[offset + i]);
+	// 	}
+	// 	return new String(0, count, buf);
+	// }
 
 	/**
 	 * Removes white space from both ends of this string.
@@ -1332,9 +1331,9 @@ public final class String
 	 */
 	public String trim()
 	{
-		int len = count;
-		int st = 0;
-		int off = offset; /* avoid getfield opcode */
+		short len = count;
+		short st = 0;
+		short off = offset; /* avoid getfield opcode */
 		char[] val = value; /* avoid getfield opcode */
 
 		while ((st < len) && (val[off + st] <= ' '))
@@ -1368,7 +1367,7 @@ public final class String
 	public char[] toCharArray()
 	{
 		char result[] = new char[count];
-		getChars(0, count, result, 0);
+		getChars((short)0, count, result, (short)0);
 		return result;
 	}
 
@@ -1428,7 +1427,7 @@ public final class String
 	 *                is negative, or <code>offset+count</code> is larger than
 	 *                <code>data.length</code>.
 	 */
-	public static String valueOf(char data[], int offset, int count)
+	public static String valueOf(char data[], short offset, short count)
 	{
 		return new String(data, offset, count);
 	}
@@ -1458,7 +1457,7 @@ public final class String
 	public static String valueOf(char c)
 	{
 		char data[] = { c };
-		return new String(0, 1, data);
+		return new String((short)0, (short)1, data);
 	}
 
 	/**
@@ -1478,22 +1477,22 @@ public final class String
 		return Integer.toString(i, 10);
 	}
 
-	/**
-	 * Returns the string representation of the <code>long</code> argument.
-	 * <p>
-	 * The representation is exactly the one returned by the
-	 * <code>Long.toString</code> method of one argument.
-	 * 
-	 * @param l
-	 *            a <code>long</code>.
-	 * @return a newly allocated string containing a string representation of
-	 *         the <code>long</code> argument.
-	 * @see java.lang.Long#toString(long)
-	 */
-	public static String valueOf(long l)
-	{
-		return Long.toString(l, 10);
-	}
+	// /**
+	//  * Returns the string representation of the <code>long</code> argument.
+	//  * <p>
+	//  * The representation is exactly the one returned by the
+	//  * <code>Long.toString</code> method of one argument.
+	//  * 
+	//  * @param l
+	//  *            a <code>long</code>.
+	//  * @return a newly allocated string containing a string representation of
+	//  *         the <code>long</code> argument.
+	//  * @see java.lang.Long#toString(long)
+	//  */
+	// public static String valueOf(long l)
+	// {
+	// 	return Long.toString(l, 10);
+	// }
 
 	/**
 	 * Returns the string representation of the <code>float</code> argument.

@@ -19,7 +19,7 @@
  * along with Darjeeling.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import javax.rtc.*;
+// import javax.rtc.*;
 import javax.rtcbench.*;
 import javax.darjeeling.Stopwatch;
 
@@ -28,7 +28,7 @@ public class RTCBenchApp
 	public static void main(String args[])
 	{
 		runBenchmark();
-		RTC.avroraBreak();
+		// RTC.avroraBreak();
 	}
 
 	public static void nop() {}
@@ -59,7 +59,7 @@ public class RTCBenchApp
 		// }
 
 		System.out.println("rtc:");
-		RTC.useRTC(true);
+		// RTC.useRTC(true);
 		if (RTCBenchmark.test_java()) {
 			System.out.println("RTC OK.\r\n");
 		} else {

@@ -17,20 +17,20 @@ package java.lang;
  */
 public class Error extends Throwable {
 
-    // /**
-    //  * Constructs an <code>Error</code> with no specified detail message. 
-    //  */
-    // public Error() {
-    //     super();
-    // }
+    /**
+     * Constructs an <code>Error</code> with no specified detail message. 
+     */
+    public Error() {
+        super();
+    }
 
-    // /**
-    //  * Constructs an <code>Error</code> with the specified detail message. 
-    //  *
-    //  * @param   s   the detail message.
-    //  */
-    // public Error(String s) {
-    //     super(s);
-    // }
+    /**
+     * Constructs an <code>Error</code> with the specified detail message. 
+     *
+     * @param   s   the detail message.
+     */
+    public Error(String s) {
+        super(s);
+    }
 }
 

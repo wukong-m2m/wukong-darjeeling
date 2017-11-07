@@ -1,1 +1,0 @@
-void base_init(void) {}

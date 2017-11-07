@@ -74,7 +74,7 @@ public final class StringBuilder {
     /** 
      * The count is the number of characters in the buffer.
      */
-    private short count;
+    private int count;
     /**
      * A flag indicating whether the buffer is shared 
      */
@@ -85,7 +85,7 @@ public final class StringBuilder {
      * initial capacity of 16 characters. 
      */
     public StringBuilder() {
-        this((short)16);
+        this(16);
     }
 
     /**
@@ -96,7 +96,7 @@ public final class StringBuilder {
      * @exception  NegativeArraySizeException  if the <code>length</code>
      *               argument is less than <code>0</code>.
      */
-    public StringBuilder(short length) {
+    public StringBuilder(int length) {
         value = new char[length];
         shared = false;
     }
@@ -111,7 +111,7 @@ public final class StringBuilder {
      * @param   str   the initial contents of the buffer.
      */
     public StringBuilder(String str) {
-        this((short)(str.length() + 16));
+        this(str.length() + 16);
         append(str);
     }
 
@@ -142,7 +142,7 @@ public final class StringBuilder {
      */
     private final void copy() {
         char newValue[] = new char[value.length];
-        System.arraycopy(value, (short)0, newValue, (short)0, count);
+        System.arraycopy(value, 0, newValue, 0, count);
         value = newValue;
         shared = false;
     }
@@ -162,7 +162,7 @@ public final class StringBuilder {
      *
      * @param   minimumCapacity   the minimum desired capacity.
      */
-    public void ensureCapacity(short minimumCapacity) {
+    public void ensureCapacity(int minimumCapacity) {
 		synchronized (this) {
 			if (minimumCapacity > value.length) {
 				expandCapacity(minimumCapacity);
@@ -177,18 +177,16 @@ public final class StringBuilder {
      *
      * @see java.lang.StringBuffer#ensureCapacity(int)
      */
-    private void expandCapacity(short minimumCapacity) {
+    private void expandCapacity(int minimumCapacity) {
         int newCapacity = (value.length + 1) * 2;
-        // This would never happen on a sensor node since we would be out of memory long before hitting Interger.MAX_VALUE (which I've just removed to save memory)
-        // if (newCapacity < 0) {
-        //     newCapacity = Integer.MAX_VALUE;
-        // } else
-        if (minimumCapacity > newCapacity) {
+        if (newCapacity < 0) {
+            newCapacity = Integer.MAX_VALUE;
+        } else if (minimumCapacity > newCapacity) {
             newCapacity = minimumCapacity;
         }
 
         char newValue[] = new char[newCapacity];
-        System.arraycopy(value, (short)0, newValue, (short)0, count);
+        System.arraycopy(value, 0, newValue, 0, count);
         value = newValue;
         shared = false;
     }
@@ -221,10 +219,10 @@ public final class StringBuilder {
      *               <code>newLength</code> argument is negative.
      * @see        java.lang.StringBuffer#length()
      */
-    public void setLength(short newLength) {
+    public void setLength(int newLength) {
         synchronized (this) {
 			if (newLength < 0) {
-				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, newLength);
+				throw new StringIndexOutOfBoundsException(newLength);
 			}
 			if (newLength > value.length) {
 				expandCapacity(newLength);
@@ -268,10 +266,10 @@ public final class StringBuilder {
      *             negative or greater than or equal to <code>length()</code>.
      * @see        java.lang.StringBuffer#length()
      */
-    public char charAt(short index) {
+    public char charAt(int index) {
         synchronized (this) {
 			if ((index < 0) || (index >= count)) {
-				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, index);
+				throw new StringIndexOutOfBoundsException(index);
 			}
 			return value[index];
 		}
@@ -308,18 +306,18 @@ public final class StringBuilder {
      *             <code>dst.length</code>
      *             </ul>
      */
-    public void getChars(short srcBegin, short srcEnd, char dst[], short dstBegin) {
+    public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
         synchronized (this) {
 			if (srcBegin < 0) {
-				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, srcBegin);
+				throw new StringIndexOutOfBoundsException(srcBegin);
 			}
 			if ((srcEnd < 0) || (srcEnd > count)) {
-				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, srcEnd);
+				throw new StringIndexOutOfBoundsException(srcEnd);
 			}
 			if (srcBegin > srcEnd) {
-				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, -1);
+				throw new StringIndexOutOfBoundsException("srcBegin > srcEnd");
 			}
-			System.arraycopy(value, srcBegin, dst, dstBegin, (short)(srcEnd - srcBegin));
+			System.arraycopy(value, srcBegin, dst, dstBegin, srcEnd - srcBegin);
 		}
     }
 
@@ -342,7 +340,7 @@ public final class StringBuilder {
     public void setCharAt(int index, char ch) {
         synchronized (this) {
 			if ((index < 0) || (index >= count)) {
-				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, index);
+				throw new StringIndexOutOfBoundsException(index);
 			}
 			if (shared) {
 				copy();
@@ -396,12 +394,12 @@ public final class StringBuilder {
 			if (str == null) {
 				str = String.valueOf(str);
 			}
-			short len = str.length();
-			short newcount = (short)(count + len);
+			int len = str.length();
+			int newcount = count + len;
 			if (newcount > value.length) {
 				expandCapacity(newcount);
 			}
-			str.getChars((short)0, len, value, (short)count);
+			str.getChars(0, len, value, count);
 			count = newcount;
 			return this;
 		}
@@ -425,12 +423,12 @@ public final class StringBuilder {
      */
     public StringBuilder append(char str[]) {
         synchronized (this) {
-			short len = (short)str.length;
-			short newcount = (short)(count + len);
+			int len = str.length;
+			int newcount = count + len;
 			if (newcount > value.length) {
 				expandCapacity(newcount);
 			}
-			System.arraycopy(str, (short)0, value, count, len);
+			System.arraycopy(str, 0, value, count, len);
 			count = newcount;
 			return this;
 		}
@@ -455,9 +453,9 @@ public final class StringBuilder {
      * @param   len      the number of characters to append.
      * @return  a reference to this <code>StringBuffer</code> object.
      */
-    public StringBuilder append(char str[], short offset, short len) {
+    public StringBuilder append(char str[], int offset, int len) {
         synchronized (this) {
-			short newcount = (short)(count + len);
+			int newcount = count + len;
 			if (newcount > value.length) {
 				expandCapacity(newcount);
 			}
@@ -501,7 +499,7 @@ public final class StringBuilder {
      */
     public StringBuilder append(char c) {
         synchronized (this) {
-			short newcount = (short)(count + 1);
+			int newcount = count + 1;
 			if (newcount > value.length) {
 				expandCapacity(newcount);
 			}
@@ -542,9 +540,9 @@ public final class StringBuilder {
      * @see     java.lang.String#valueOf(long)
      * @see     java.lang.StringBuffer#append(java.lang.String)
      */
-    // public StringBuilder append(long l) {
-    //     return append(String.valueOf(l));
-    // }
+    public StringBuilder append(long l) {
+        return append(String.valueOf(l));
+    }
 
     /**
      * Appends the string representation of the <code>float</code>
@@ -597,16 +595,16 @@ public final class StringBuilder {
      *             greater than <code>end</code>.
      * @since      JDK1.2
      */
-/*    public StringBuilder delete(int start, int end) {
+    public StringBuilder delete(int start, int end) {
         synchronized (this) {
 			if (start < 0) {
-				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, start);
+				throw new StringIndexOutOfBoundsException(start);
 			}
 			if (end > count) {
 				end = count;
 			}
 			if (start > end) {
-				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION);
+				throw new StringIndexOutOfBoundsException();
 			}
 			int len = end - start;
 			if (len > 0) {
@@ -619,7 +617,7 @@ public final class StringBuilder {
 			return this;
 		}
     }
-*/
+
     /**
      * Removes the character at the specified position in this
      * <code>StringBuffer</code> (shortening the <code>StringBuffer</code>
@@ -632,10 +630,10 @@ public final class StringBuilder {
      *              <code>length()</code>.
      * @since       JDK1.2
      */
-/*    public StringBuilder deleteCharAt(int index) {
+    public StringBuilder deleteCharAt(int index) {
         synchronized (this) {
 			if ((index < 0) || (index >= count)) {
-				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION);
+				throw new StringIndexOutOfBoundsException();
 			}
 			if (shared) {
 				copy();
@@ -645,7 +643,7 @@ public final class StringBuilder {
 			return this;
 		}
     }
-*/
+
     /**
      * Inserts the string representation of the <code>Object</code> 
      * argument into this string buffer. 
@@ -667,11 +665,11 @@ public final class StringBuilder {
      * @see        java.lang.StringBuffer#insert(int, java.lang.String)
      * @see        java.lang.StringBuffer#length()
      */
-/*    public StringBuilder insert(int offset, Object obj) {
+    public StringBuilder insert(int offset, Object obj) {
         synchronized (this) {
 			return insert(offset, String.valueOf(obj));
 		}
-    }*/
+    }
 
     /**
      * Inserts the string into this string buffer. 
@@ -705,10 +703,10 @@ public final class StringBuilder {
      * @exception  StringIndexOutOfBoundsException  if the offset is invalid.
      * @see        java.lang.StringBuffer#length()
      */
-/*    public StringBuilder insert(int offset, String str) {
+    public StringBuilder insert(int offset, String str) {
         synchronized (this) {
 			if ((offset < 0) || (offset > count)) {
-				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION);
+				throw new StringIndexOutOfBoundsException();
 			}
 			if (str == null) {
 				str = String.valueOf(str);
@@ -726,7 +724,7 @@ public final class StringBuilder {
 			return this;
 		}
     }
-*/
+
     /**
      * Inserts the string representation of the <code>char</code> array 
      * argument into this string buffer. 
@@ -748,10 +746,10 @@ public final class StringBuilder {
      * @return     a reference to this <code>StringBuffer</code> object.
      * @exception  StringIndexOutOfBoundsException  if the offset is invalid.
      */
-/*    public StringBuilder insert(int offset, char str[]) {
+    public StringBuilder insert(int offset, char str[]) {
         synchronized (this) {
 			if ((offset < 0) || (offset > count)) {
-				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION);
+				throw new StringIndexOutOfBoundsException();
 			}
 			int len = str.length;
 			int newcount = count + len;
@@ -766,7 +764,7 @@ public final class StringBuilder {
 			return this;
 		}
     }
-*/
+
     /**
      * Inserts the string representation of the <code>boolean</code> 
      * argument into this string buffer. 
@@ -788,10 +786,10 @@ public final class StringBuilder {
      * @see        java.lang.StringBuffer#insert(int, java.lang.String)
      * @see        java.lang.StringBuffer#length()
      */
-/*    public StringBuilder insert(int offset, boolean b) {
+    public StringBuilder insert(int offset, boolean b) {
         return insert(offset, String.valueOf(b));
     }
-*/
+
     /**
      * Inserts the string representation of the <code>char</code> 
      * argument into this string buffer. 
@@ -816,7 +814,7 @@ public final class StringBuilder {
      * @exception  IndexOutOfBoundsException  if the offset is invalid.
      * @see        java.lang.StringBuffer#length()
      */
-/*    public StringBuilder insert(int offset, char c) {
+    public StringBuilder insert(int offset, char c) {
         synchronized (this) {
 			int newcount = count + 1;
 			if (newcount > value.length) {
@@ -830,7 +828,7 @@ public final class StringBuilder {
 			return this;
 		}
     }
-*/
+
     /**
      * Inserts the string representation of the second <code>int</code> 
      * argument into this string buffer. 
@@ -852,10 +850,10 @@ public final class StringBuilder {
      * @see        java.lang.StringBuffer#insert(int, java.lang.String)
      * @see        java.lang.StringBuffer#length()
      */
-/*    public StringBuilder insert(int offset, int i) {
+    public StringBuilder insert(int offset, int i) {
         return insert(offset, String.valueOf(i));
     }
-*/
+
     /**
      * Inserts the string representation of the <code>long</code> 
      * argument into this string buffer. 
@@ -877,9 +875,9 @@ public final class StringBuilder {
      * @see        java.lang.StringBuffer#insert(int, java.lang.String)
      * @see        java.lang.StringBuffer#length()
      */
-    // public StringBuilder insert(int offset, long l) {
-    //     return insert(offset, String.valueOf(l));
-    // }
+    public StringBuilder insert(int offset, long l) {
+        return insert(offset, String.valueOf(l));
+    }
 
     /**
      * Inserts the string representation of the <code>float</code>
@@ -946,7 +944,7 @@ public final class StringBuilder {
      * @return  a reference to this <code>StringBuffer</code> object..
      * @since   JDK1.0.2
      */
-/*    public StringBuilder reverse() {
+    public StringBuilder reverse() {
         synchronized (this) {
 			if (shared) {
 				copy();
@@ -960,7 +958,7 @@ public final class StringBuilder {
 			return this;
 		}
     }
-*/
+
     /**
      * Converts to a string representing the data in this string buffer.
      * A new <code>String</code> object is allocated and initialized to 

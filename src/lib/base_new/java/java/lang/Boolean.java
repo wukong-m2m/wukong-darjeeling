@@ -16,17 +16,6 @@ package java.lang;
  * @since   JDK1.0, CLDC 1.0
  */
 public final class Boolean {
-
-    /**
-     * The <code>Boolean</code> object corresponding to the primitive 
-     * value <code>true</code>. 
-     */
-    public static final Boolean TRUE = new Boolean(true);
-    /** 
-     * The <code>Boolean</code> object corresponding to the primitive 
-     * value <code>false</code>. 
-     */
-    public static final Boolean FALSE = new Boolean(false);
     /**
      * The value of the Boolean.
      */
@@ -62,34 +51,6 @@ public final class Boolean {
      */
     public String toString() {
         return value ? "true" : "false";
-    }
-
-    /**
-     * Returns a hash code for this <tt>Boolean</tt> object.
-     *
-     * @return  the integer <tt>1231</tt> if this object represents
-     * <tt>true</tt>; returns the integer <tt>1237</tt> if this
-     * object represents <tt>false</tt>.
-     */
-    public int hashCode()
-    {
-        return value ? 1231 : 1237;
-    }
-
-    /**
-     * Returns <code>true</code> if and only if the argument is not
-     * <code>null</code> and is a <code>Boolean </code>object that
-     * represents the same <code>boolean</code> value as this object.
-     *
-     * @param   obj   the object to compare with.
-     * @return  <code>true</code> if the Boolean objects represent the
-     *          same value; <code>false</code> otherwise.
-     */
-    public boolean equals(Object obj) {
-        if (obj instanceof Boolean) {
-            return value == ((Boolean) obj).booleanValue();
-        }
-        return false;
     }
 }
 

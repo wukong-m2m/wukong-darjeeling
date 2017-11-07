@@ -1645,7 +1645,8 @@ void rtc_translate_single_instruction() {
         // Not implemented
         default:
             DEBUG_LOG(DBG_RTC, "Unimplemented Java opcode %d at pc=%d\n", opcode, ts->pc);
-            dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
+            // avroraPrintInt16(opcode);
+            // dj_panic(DJ_PANIC_UNSUPPORTED_OPCODE);
         break;
     }
     }
