@@ -79,7 +79,7 @@ void emit_x_avroraPrintRegs() {
 // a call is 24 bit, so we need to pop/push 3 bytes at the beginning
 // and end of the fragments below.
 // (POP R18; POP19 -> POP R18; POP R19; POP R20)
-const uint16_t PROGMEM emit_x_preinvoke_code[] =
+const uint16_t PROGMEM __attribute__ ((aligned (2))) emit_x_preinvoke_code[] =
 { asm_const_POP(R18),
   asm_const_POP(R19),
 
@@ -110,7 +110,7 @@ void emit_x_preinvoke() {
     emit_2_CALL(((uint16_t)emit_x_preinvoke_code)/2);
 }
 
-const uint16_t PROGMEM emit_x_postinvoke_code[] =
+const uint16_t PROGMEM __attribute__ ((aligned (2))) emit_x_postinvoke_code[] =
 { asm_const_POP(R18),
   asm_const_POP(R19),
 
