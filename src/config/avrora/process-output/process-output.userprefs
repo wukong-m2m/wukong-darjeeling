@@ -1,0 +1,14 @@
+﻿<Properties StartupConfiguration="{D7D163B1-E58B-4D63-8D13-9B3BDA4AE026}|Default">
+  <MonoDevelop.Ide.Workbench ActiveDocument="process-output/Program.fs">
+    <Files>
+      <File FileName="process-output/Program.fs" Line="1" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.ItemProperties.process-output PreferredExecutionTarget="MonoDevelop.Default" />
+</Properties>
