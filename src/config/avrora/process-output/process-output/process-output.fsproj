@@ -50,6 +50,17 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Program.fs" />
     <None Include="packages.config" />
+    <Compile Include="AVR.fs" />
+    <Compile Include="CombineResults.fs" />
+    <Compile Include="Datatypes.fs" />
+    <Compile Include="Helpers.fs" />
+    <Compile Include="JVM.fs" />
+    <Compile Include="ProcessTraces.fs" />
+    <Compile Include="ResultsToString.fs" />
+    <None Include="examples\infusionheader-example.dih" />
+    <None Include="examples\output-example.xml" />
+    <None Include="examples\profilerdata-example.xml" />
+    <None Include="examples\rtcdata-example.xml" />
   </ItemGroup>
   <Import Project="$(FSharpTargetsPath)" />
 </Project>
