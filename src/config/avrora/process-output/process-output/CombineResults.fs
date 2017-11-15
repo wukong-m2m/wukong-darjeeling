@@ -227,17 +227,14 @@ module CombineResults =
         File.WriteAllText (summaryFilename, String.Join("\r\n", resultLines))
         Console.Error.WriteLine ("Wrote output to " + summaryFilename)
 
-    let main(args : string[]) =
+    let main(args : string list) =
         Console.Error.WriteLine ("START " + (DateTime.Now.ToString()))
-        let arg = (Array.get args 1)
-        match arg with
-        | "all" -> 
-            let directory = (Array.get args 2)
+        match args with
+        | [ "all"; directory ] -> 
             let subdirectories = (Directory.GetDirectories(directory))
             subdirectories |> Array.filter (fun d -> ((Path.GetFileName(d).StartsWith("results_")) && not (Path.GetFileName(d).StartsWith("results_coremk_c"))))
                            |> Array.iter summariseResults
-        | resultsbasedir -> summariseResults resultsbasedir
+        | [ directory ] -> summariseResults directory
+        | _ -> failwith "specify either a specific directory, or 'all <parent directory>'"
         Console.Error.WriteLine ("STOP " + (DateTime.Now.ToString()))
         1
-
-    //main(fsi.CommandLineArgs)

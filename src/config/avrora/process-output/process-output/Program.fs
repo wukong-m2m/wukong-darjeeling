@@ -1,7 +1,11 @@
-﻿// Learn more about F# at http://fsharp.org
-// See the 'F# Tutorial' project for more help.
+﻿open ProcessOutput.ProcessTraces 
+open ProcessOutput.CombineResults
 
 [<EntryPoint>]
 let main argv = 
-    printfn "%A" argv
-    0 // return an integer exit code
+    match (Array.toList argv) with
+    | head::tail -> match head with
+                    | "process" -> (ProcessOutput.ProcessTraces.main tail)
+                    | "combine" -> (ProcessOutput.CombineResults.main tail)
+                    | other -> failwithf "Illegal option: %s. Should be either 'process' or 'combine'" other
+    | _ -> failwith "Usage: process-output [process|combine] parameters"

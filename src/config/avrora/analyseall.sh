@@ -1,4 +1,4 @@
 #!/bin/zsh
 
-fsharpi --exec proces-trace/proces-trace/ProcessTraces.fsx all `pwd`
-fsharpi --exec proces-trace/proces-trace/CombineResults.fsx all `pwd`
+mono process-output/process-output/bin/Debug/process-output.exe process all `pwd`
+mono process-output/process-output/bin/Debug/process-output.exe combine all `pwd`

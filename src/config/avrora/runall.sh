@@ -29,6 +29,12 @@ gdj clean
 #     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
 # done
 
+# BEST CASE ONLY
+for benchmark in ${benchmarks}
+do
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
+done
+
 # MARKLOOP + XXTEA FOR DIFF NUMBERS OF PINNED REGISTERS
 # for benchmark in ${benchmarks}
 # do
@@ -70,20 +76,20 @@ gdj clean
 # 	gdj avrora_store_trace -Paotbm=${benchmark} -Puselightweightmethods=false
 # done
 
-# Data for lightweight method evaluation
-	# Normal versions
-	gdj avrora_store_trace -Paotbm=coremk 
-	gdj avrora_store_trace -Paotbm=fft
-	gdj avrora_store_trace -Paotbm=hsort32
-	gdj avrora_store_trace -Paotbm=coremk_lw     # Coremk with ee_isdigit as a lightweight instead of inlined
-	gdj avrora_store_trace -Paotbm=coremk_fn     # Coremk with only functions (ee_isdigit not inlined)
-	gdj avrora_store_trace -Paotbm=coremk_f2     # Coremk with only functions (but ee_isdigit still inlined)
-	gdj avrora_store_trace -Paotbm=fft_lw        # FFT with FIX__MPY as a hardcoded Lightweight method, and SIN8/COS8 inlined by ProGuard
-	gdj avrora_store_trace -Paotbm=fft_fn        # FFT with FIX__MPY as a normal method, and SIN8/COS8 inlined by ProGuard
+# # Data for lightweight method evaluation
+# 	# Normal versions
+# 	gdj avrora_store_trace -Paotbm=coremk 
+# 	gdj avrora_store_trace -Paotbm=fft
+# 	gdj avrora_store_trace -Paotbm=hsort32
+# 	gdj avrora_store_trace -Paotbm=coremk_lw     # Coremk with ee_isdigit as a lightweight instead of inlined
+# 	gdj avrora_store_trace -Paotbm=coremk_fn     # Coremk with only functions (ee_isdigit not inlined)
+# 	gdj avrora_store_trace -Paotbm=coremk_f2     # Coremk with only functions (but ee_isdigit still inlined)
+# 	gdj avrora_store_trace -Paotbm=fft_lw        # FFT with FIX__MPY as a hardcoded Lightweight method, and SIN8/COS8 inlined by ProGuard
+# 	gdj avrora_store_trace -Paotbm=fft_fn        # FFT with FIX__MPY as a normal method, and SIN8/COS8 inlined by ProGuard
 
-	# Heap sort with 
-	gdj avrora_store_trace -Paotbm=hsort32_fn    # Heap sort with siftDown as a normal method
-	gdj avrora_store_trace -Paotbm=hsort32_cht   # Heap sort with siftDown manually inlined
+# 	# Heap sort with 
+# 	gdj avrora_store_trace -Paotbm=hsort32_fn    # Heap sort with siftDown as a normal method
+# 	gdj avrora_store_trace -Paotbm=hsort32_cht   # Heap sort with siftDown manually inlined
 
 
 
