@@ -39,6 +39,19 @@ module CombineResults =
             String.Format ("{0:0}%", float (cycles1-cycles2) / float cycles2 * 100.0)
         let cyclesToOverhead2 cycles1 cycles2 =
             String.Format ("{0:0}%", float (cycles1-cycles2) / float cycles1 * 100.0)
+        
+        let safetyCost =
+            [
+            ("best: mcn", 22,  4)
+            ("rin",        7, 16)
+            ("ria",        5, 12)
+            ("min",       15, 32)
+            ("mia",        9, 20)
+            ("rcn",       14,  4)
+            ("rca",       12,  4)
+            ("mcn",       22,  4)
+            ("mca",       16,  4)
+            ]
 
         let r1 =
             [
@@ -126,38 +139,65 @@ module CombineResults =
             (" Total"               , toPercentage result.countersJVMTotal.executions result.countersJVMTotal.executions)
             (""                     , "");
             (" Number of invokes"   , result.countersJVMInvoke.executions.ToString())
+            (""                     , "");
+            ("MEM SAFETY COST EST"  , "");
+            (" arr/obj write exec"  , result.arrayOrObjectWriteCounters.executions.ToString())
+            (" arr/obj write cnt"   , result.arrayOrObjectWriteCounters.count.ToString())
+            (""                     , "");
+            (" total AOT cycles"    , result.countersAOTTotal.cycles.ToString())
+            (" total AOT bytes"     , result.countersAOTTotal.size.ToString());
+            (""                     , "");
+            (" original perf overh" , (cyclesToCPercentage result.countersOverheadTotal.cycles));
+            (" original size overh" , (bytesToCPercentage result.countersOverheadTotal.size));
             ]
-        let r2 = 
+        let r2 = safetyCost |> List.map (fun (approach, cycleCost, sizeCost) ->
+                let executions = result.arrayOrObjectWriteCounters.executions
+                let count = result.arrayOrObjectWriteCounters.count
+                let totalSafeCycleCost = result.arrayOrObjectWriteCounters.executions * cycleCost
+                let totalSafeSizeCost = result.arrayOrObjectWriteCounters.count * sizeCost
+                let totalSafeCycles = result.countersAOTTotal.cycles + totalSafeCycleCost
+                let totalSafeSize = result.countersAOTTotal.size + totalSafeSizeCost
+                [
+                    (""                     , "");
+                    (sprintf " %s" approach , "");
+                    (" saf.ck. cycles"      , totalSafeCycleCost.ToString())
+                    (" saf.ck. bytes"       , totalSafeSizeCost.ToString())
+                    (" perf overh AOT"      , (cyclesToOverhead1 totalSafeCycles result.countersAOTTotal.cycles))
+                    (" size overh AOT"      , (cyclesToOverhead1 totalSafeSize result.countersAOTTotal.size))
+                    (" perf overh C"        , (cyclesToOverhead1 totalSafeCycles result.countersCTotal.cycles))
+                    (" size overh C"        , (cyclesToOverhead1 totalSafeSize result.countersCTotal.size))
+                ]) |> List.concat
+        let r3 = 
             (""                     , "")
             :: ("PERF AOT per JVM"  , "exe")
             :: (result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (executionsToPercentage cnt.executions))))
-        let r3 = 
+        let r4 = 
             (""                     , "")
             :: ("PERF AOT per JVM"  , "cyc (%C)")
             :: (result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
-        let r4 = 
+        let r5 = 
             (""                     , "")
             :: ("PERF AOT per AVR"  , "cyc (%C)")
             :: (result.countersPerAvrOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
-        let r5 = 
+        let r6 = 
             (""                     , "")
             :: ("PERF Native C"     , "cyc (%C)")
             :: (result.countersPerAvrOpcodeCategoryNativeC |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
 
-        let r6 = 
+        let r7 = 
             (""                     , "")
             :: ("SIZE AOT per JVM"  , "byt (%C)")
             :: (result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (bytesToCPercentage cnt.size))))
-        let r7 = 
+        let r8 = 
             (""                     , "")
             :: ("SIZE AOT per AVR"  , "byt (%C)")
             :: (result.countersPerAvrOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (bytesToCPercentage cnt.size))))
-        let r8 = 
+        let r9 = 
             (""                     , "")
             :: ("SIZE Native C"     , "byt (%C)")
             :: (result.countersPerAvrOpcodeCategoryNativeC |> List.map (fun (cat, cnt) -> (cat, (bytesToCPercentage cnt.size))))
 
-        List.concat [ r1; r2; r3; r4; r5; r6; r7; r8 ]
+        List.concat [ r1; r2; r3; r4; r5; r6; r7; r8; r9 ]
 
     let flipTupleListsToStringList (benchmarks : (string * string) list list) =
         // Initialise the accumulator as a list of lists containing only the key names

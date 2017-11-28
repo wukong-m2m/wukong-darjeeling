@@ -1,9 +1,9 @@
 ﻿<Properties StartupConfiguration="{D7D163B1-E58B-4D63-8D13-9B3BDA4AE026}|Default">
   <MonoDevelop.Ide.Workbench ActiveDocument="process-output/CombineResults.fs">
     <Files>
-      <File FileName="process-output/Program.fs" Line="9" Column="71" />
-      <File FileName="process-output/ProcessTraces.fs" Line="548" Column="16" />
-      <File FileName="process-output/CombineResults.fs" Line="230" Column="32" />
+      <File FileName="process-output/Datatypes.fs" Line="57" Column="9" />
+      <File FileName="process-output/CombineResults.fs" Line="150" Column="1" />
+      <File FileName="process-output/Program.fs" Line="12" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />

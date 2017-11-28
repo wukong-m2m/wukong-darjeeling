@@ -350,6 +350,15 @@ module Datatypes =
         member this.codesizeAOT                               = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.codesizeAOT)
         member this.codesizeC                                 = this.cFunctions |> List.sumBy (fun (jvmMethod) -> jvmMethod.codesizeC)
 
+        // SAFETY RELATED CODE
+        member this.arrayOrObjectWriteCounters               = this.countersPerJvmOpcodeAOTJava
+                                                               |> List.filter (fun (cat, opcode, counters) -> (opcode.StartsWith("JVM_PUTFIELD")
+                                                                                                              || (List.contains opcode ["JVM_BASTORE"; "JVM_CASTORE"; "JVM_SASTORE"; "JVM_IASTORE"; "JVM_AASTORE"])))
+                                                               |> List.map (fun (_, _, counters) -> counters)
+                                                               |> List.fold (+) ExecCounters.Zero
+
+
+
         member this.pickleToString =
             let xmlSerializer = FsPickler.CreateXmlSerializer(indent = true, typeConverter = new IgnoreFSI_NamespaceConverter())
             xmlSerializer.PickleToString this

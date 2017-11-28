@@ -11,6 +11,7 @@ import javax.rtc.RTC;
 public class RTCBenchmark {
     private final static short NUMNUMBERS = 100;
 
+    public static short dummy = 0;
     public static String name = "BINARY SEARCH OPTIMISED";
     public static native void test_native();
     public static boolean test_java() {
@@ -59,6 +60,6 @@ public class RTCBenchmark {
         }
 
         RTC.stopBenchmarkMeasurement();
-        numbers[0]=mid; // This is just here to prevent proguard from optimising away the whole method
+        dummy=mid; // This is just here to prevent proguard from optimising away the whole method
     }
 }
