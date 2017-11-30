@@ -14,6 +14,7 @@
 #include "rtc_branches.h"
 #include "rtc_emit.h"
 #include "rtc_prologue_epilogue.h"
+#include "rtc_safetychecks.h"
 #include "opcodes.h"
 #include <avr/pgmspace.h>
 #include <avr/boot.h>
@@ -170,11 +171,19 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
                         && ((rtc_ts->flags & FLAGS_USES_SIMUL_INVOKESTATIC_MARKLOOP) == 0));
 #endif
 
+#ifdef AOT_SAFETY_CHECKS
+    rtc_safety_method_starts();
+#endif // AOT_SAFETY_CHECKS
+
     // translate the method
     DEBUG_LOG(DBG_RTC, "[rtc] method length %d\n", ts.method_length);
     while (rtc_ts->pc < rtc_ts->method_length) {
         rtc_translate_single_instruction();
     }
+
+#ifdef AOT_SAFETY_CHECKS
+    rtc_safety_method_ends();
+#endif // AOT_SAFETY_CHECKS
 
     rtc_mark_branchtarget(); // Mark the location of the epilogue
     rtc_emit_epilogue(); // Emit epilogue for used registers only

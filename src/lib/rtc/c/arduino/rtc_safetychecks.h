@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+void rtc_safety_method_starts();
 void rtc_safety_process_opcode(uint8_t opcode);
 void rtc_safety_method_ends();
 
