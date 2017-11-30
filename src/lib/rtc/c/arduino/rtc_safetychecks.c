@@ -81,6 +81,10 @@ void rtc_safety_method_ends() {
           || RTC_OPCODE_IS_BRANCH(rtc_ts->last_opcode))) {
         rtc_safety_abort_with_error(RTC_SAFETYCHECK_METHOD_SHOULD_END_IN_BRANCH_OR_RETURN);
     }
+
+    if (dj_di_methodImplementation_getNumberOfBranchTargets(rtc_ts->methodimpl) != rtc_ts->branch_target_count) {
+        rtc_safety_abort_with_error(RTC_SAFETYCHECK_BRANCHTARGET_COUNT_MISMATCH_WITH_METHOD_HEADER);        
+    }
 }
 
 #endif // AOT_SAFETY_CHECKS
