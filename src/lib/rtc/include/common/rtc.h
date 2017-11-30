@@ -97,7 +97,7 @@ typedef struct _rtc_translationstate {
     uint8_t jvm_operand_byte4;
     uint8_t current_int_stack;
     uint8_t current_ref_stack;
-    uint8_t last_opcode;
+    uint8_t current_opcode;
 #endif //AOT_SAFETY_CHECKS
 } rtc_translationstate;
 

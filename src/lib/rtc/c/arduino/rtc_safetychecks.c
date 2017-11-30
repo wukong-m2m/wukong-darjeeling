@@ -56,7 +56,7 @@ void rtc_safety_check_and_update_stack_depth(uint8_t opcode) {
 }
 
 void rtc_safety_process_opcode(uint8_t opcode) {
-    rtc_ts->last_opcode = opcode;
+    rtc_ts->current_opcode = opcode;
 
     rtc_safety_check_and_update_stack_depth(opcode);
 
@@ -76,9 +76,9 @@ void rtc_safety_process_opcode(uint8_t opcode) {
 }
 
 void rtc_safety_method_ends() {
-    avroraPrintInt16(rtc_ts->last_opcode);
-    if (!(RTC_OPCODE_IS_RETURN(rtc_ts->last_opcode)
-          || RTC_OPCODE_IS_BRANCH(rtc_ts->last_opcode))) {
+    avroraPrintInt16(rtc_ts->current_opcode);
+    if (!(RTC_OPCODE_IS_RETURN(rtc_ts->current_opcode)
+          || RTC_OPCODE_IS_BRANCH(rtc_ts->current_opcode))) {
         rtc_safety_abort_with_error(RTC_SAFETYCHECK_METHOD_SHOULD_END_IN_BRANCH_OR_RETURN);
     }
 
