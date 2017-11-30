@@ -76,9 +76,11 @@ void rtc_safety_process_opcode(uint8_t opcode) {
 }
 
 void rtc_safety_method_ends() {
-    // if (!RTC_OPCODE_IS_BRANCH_OR_RETURN(rtc_ts->last_opcode)) {
-    //     rtc_safety_abort_with_error(RTC_SAFETYCHECK_METHOD_SHOULD_END_IN_BRANCH_OR_RETURN);
-    // }
+    avroraPrintInt16(rtc_ts->last_opcode);
+    if (!(RTC_OPCODE_IS_RETURN(rtc_ts->last_opcode)
+          || RTC_OPCODE_IS_BRANCH(rtc_ts->last_opcode))) {
+        rtc_safety_abort_with_error(RTC_SAFETYCHECK_METHOD_SHOULD_END_IN_BRANCH_OR_RETURN);
+    }
 }
 
 #endif // AOT_SAFETY_CHECKS
