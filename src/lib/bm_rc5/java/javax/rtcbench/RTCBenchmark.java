@@ -120,7 +120,12 @@ public class RTCBenchmark {
         }
 
         /* mix buffer */
-        s = 3 * ( ((t)>(j))?(t):(j) );
+        // s = 3 * ( ((t)>(j))?(t):(j) );
+        if ((t)>(j)) {
+            s = 3 * t;
+        } else {
+            s = 3 * j;
+        }
         l = j;
         for (A = B = i = j = v = 0; v < s; v++) {
             // #define ROL(x, y)  ( (((uint32_t)(x)<<(uint32_t)((y)&31)) | (((uint32_t)(x)&0xFFFFFFFFUL)>>(uint32_t)(32-((y)&31)))) & 0xFFFFFFFFUL)
