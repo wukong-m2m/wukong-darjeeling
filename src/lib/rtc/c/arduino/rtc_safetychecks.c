@@ -23,6 +23,28 @@ void rtc_safety_method_starts() {
     }
 }
 
+void rtc_safety_check_offset_valid_for_local_variable(uint16_t offset) {
+    if (offset >= (2 * dj_di_methodImplementation_getNumberOfTotalVariableSlots(rtc_ts->methodimpl))) {
+        rtc_safety_abort_with_error(RTC_SAFETYCHECK_STORE_TO_NONEXISTANT_LOCAL_VARIABLE);
+    }
+}
+
+uint16_t rtc_safety_check_offset_valid_for_static_variable(dj_infusion *infusion_ptr, uint8_t size, volatile uint16_t offset) {
+    // the layout of the infusion data structure is like this:
+    //  struct dj_infusion
+    //  static ref fields
+    //  static byte fields
+    //  static short fields
+    //  static int fields
+    //  pointers to referenced infusions
+    uint16_t sizeOfStaticFields = (void*)(infusion_ptr->referencedInfusions) - (void*)(infusion_ptr->staticReferenceFields);
+
+    if (offset + size > sizeOfStaticFields) {
+        rtc_safety_abort_with_error(RTC_SAFETYCHECK_STORE_TO_NONEXISTANT_STATIC_VARIABLE);        
+    }
+    return offset;
+}
+
 void rtc_safety_check_and_update_stack_depth(uint8_t opcode) {
     uint8_t stack_cons_int = rtc_get_stack_effect(opcode, RTC_STACK_CONS_INT);
     uint8_t stack_cons_ref = rtc_get_stack_effect(opcode, RTC_STACK_CONS_REF);
@@ -76,7 +98,6 @@ void rtc_safety_process_opcode(uint8_t opcode) {
 }
 
 void rtc_safety_method_ends() {
-    avroraPrintInt16(rtc_ts->current_opcode);
     if (!(RTC_OPCODE_IS_RETURN(rtc_ts->current_opcode)
           || RTC_OPCODE_IS_BRANCH(rtc_ts->current_opcode))) {
         rtc_safety_abort_with_error(RTC_SAFETYCHECK_METHOD_SHOULD_END_IN_BRANCH_OR_RETURN);

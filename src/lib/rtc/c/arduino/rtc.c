@@ -46,11 +46,19 @@ const unsigned char __attribute__((section (".rtc_code_marker"))) __attribute__ 
 uint16_t rtc_start_of_next_method;
 
 // Offsets for static variables in an infusion, relative to the start of infusion->staticReferencesFields. (referenced infusion pointers follow the static variables)
+#ifdef AOT_SAFETY_CHECKS
+uint16_t rtc_offset_for_static_ref(dj_infusion *infusion_ptr, uint8_t variable_index)   { return rtc_safety_check_offset_valid_for_static_variable(infusion_ptr, 2, (uint16_t)((void*)(&((infusion_ptr)->staticReferenceFields[variable_index])) - (void *)((infusion_ptr)->staticReferenceFields))); }
+uint16_t rtc_offset_for_static_byte(dj_infusion *infusion_ptr, uint8_t variable_index)  { return rtc_safety_check_offset_valid_for_static_variable(infusion_ptr, 1, (uint16_t)((void*)(&((infusion_ptr)->staticByteFields[variable_index]))      - (void *)((infusion_ptr)->staticReferenceFields))); }
+uint16_t rtc_offset_for_static_short(dj_infusion *infusion_ptr, uint8_t variable_index) { return rtc_safety_check_offset_valid_for_static_variable(infusion_ptr, 2, (uint16_t)((void*)(&((infusion_ptr)->staticShortFields[variable_index]))     - (void *)((infusion_ptr)->staticReferenceFields))); }
+uint16_t rtc_offset_for_static_int(dj_infusion *infusion_ptr, uint8_t variable_index)   { return rtc_safety_check_offset_valid_for_static_variable(infusion_ptr, 4, (uint16_t)((void*)(&((infusion_ptr)->staticIntFields[variable_index]))       - (void *)((infusion_ptr)->staticReferenceFields))); }
+uint16_t rtc_offset_for_static_long(dj_infusion *infusion_ptr, uint8_t variable_index)  { return rtc_safety_check_offset_valid_for_static_variable(infusion_ptr, 8, (uint16_t)((void*)(&((infusion_ptr)->staticLongFields[variable_index]))      - (void *)((infusion_ptr)->staticReferenceFields))); }
+#else // AOT_SAFETY_CHECKS
 uint16_t rtc_offset_for_static_ref(dj_infusion *infusion_ptr, uint8_t variable_index)   { return ((uint16_t)((void*)(&((infusion_ptr)->staticReferenceFields[variable_index])) - (void *)((infusion_ptr)->staticReferenceFields))); }
 uint16_t rtc_offset_for_static_byte(dj_infusion *infusion_ptr, uint8_t variable_index)  { return ((uint16_t)((void*)(&((infusion_ptr)->staticByteFields[variable_index]))      - (void *)((infusion_ptr)->staticReferenceFields))); }
 uint16_t rtc_offset_for_static_short(dj_infusion *infusion_ptr, uint8_t variable_index) { return ((uint16_t)((void*)(&((infusion_ptr)->staticShortFields[variable_index]))     - (void *)((infusion_ptr)->staticReferenceFields))); }
 uint16_t rtc_offset_for_static_int(dj_infusion *infusion_ptr, uint8_t variable_index)   { return ((uint16_t)((void*)(&((infusion_ptr)->staticIntFields[variable_index]))       - (void *)((infusion_ptr)->staticReferenceFields))); }
 uint16_t rtc_offset_for_static_long(dj_infusion *infusion_ptr, uint8_t variable_index)  { return ((uint16_t)((void*)(&((infusion_ptr)->staticLongFields[variable_index]))      - (void *)((infusion_ptr)->staticReferenceFields))); }
+#endif // AOT_SAFETY_CHECKS
 uint16_t rtc_offset_for_referenced_infusion(dj_infusion *infusion_ptr, uint8_t ref_inf) { return ((uint16_t)((void*)(&((infusion_ptr)->referencedInfusions[ref_inf-1]))        - (void *)((infusion_ptr)->staticReferenceFields))); }
 
                              // +---------------------------+
@@ -453,6 +461,10 @@ void emit_load_local_32bit(uint8_t *regs, uint16_t offset) {
     emit_load_local_16bit(regs+2, offset+2);
 }
 void emit_store_local_16bit(uint8_t *regs, uint16_t offset) {
+#ifdef AOT_SAFETY_CHECKS
+    rtc_safety_check_offset_valid_for_local_variable(offset + 1); // +1 because we will write two bytes at this offset and both need to fit in the space reserved for local variables.
+#endif //AOT_SAFETY_CHECKS
+
     if (asm_needs_ADIW_to_bring_offset_in_range(offset)) {
         // Offset too large: copy Z to Y and ADIW it until we can reach the desired offset
         emit_MOVW(RZ, RY);

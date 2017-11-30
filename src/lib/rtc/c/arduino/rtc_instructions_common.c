@@ -8,6 +8,7 @@
 #include "rtc.h"
 #include "rtc_complex_instructions.h"
 #include "rtc_instructions_common.h"
+#include "rtc_safetychecks.h"
 
 #ifdef AOT_STRATEGY_SIMPLESTACKCACHE
 #include "rtc_simplestackcache.h"
@@ -160,9 +161,15 @@ void rtc_common_translate_inc(uint8_t opcode, uint8_t jvm_operand_byte0, uint8_t
     if (opcode == JVM_IINC || opcode == JVM_IINC_W) {
         is_iinc = true;
         offset = offset_for_intlocal_int(rtc_ts->methodimpl, jvm_operand_byte0);
+#ifdef AOT_SAFETY_CHECKS
+        rtc_safety_check_offset_valid_for_local_variable(offset + 3); // +3 because we will write four bytes at this offset and both need to fit in the space reserved for local variables.
+#endif //AOT_SAFETY_CHECKS
     } else {
         is_iinc = false;
         offset = offset_for_intlocal_short(rtc_ts->methodimpl, jvm_operand_byte0);
+#ifdef AOT_SAFETY_CHECKS
+        rtc_safety_check_offset_valid_for_local_variable(offset + 1); // +1 because we will write four bytes at this offset and both need to fit in the space reserved for local variables.
+#endif //AOT_SAFETY_CHECKS
     }
 
     if (asm_needs_ADIW_to_bring_offset_in_range(offset)) {
