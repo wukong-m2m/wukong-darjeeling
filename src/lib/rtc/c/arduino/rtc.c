@@ -148,6 +148,9 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
     rtc_ts->branch_target_table_start_ptr = branch_target_table_start_ptr;
     rtc_ts->branch_target_count = 0;
     rtc_ts->flags = dj_di_methodImplementation_getFlags(methodimpl);
+    #ifdef AOT_SAFETY_CHECKS
+    rtc_ts->current_int_stack = rtc_ts->current_ref_stack = 0;
+    #endif //AOT_SAFETY_CHECKS
     if (rtc_ts->flags & FLAGS_USESSTATICFIELDS) {
         rtc_current_method_set_uses_reg(R2);
     }
@@ -282,6 +285,7 @@ void rtc_compile_lib(dj_infusion *infusion) {
 
 #ifdef AVRORA
         avroraRTCTraceStartMethod(i, wkreprog_get_raw_position());
+        avroraRTCTraceSetMethodImplAddress(methodimpl);
 #endif
 
         rtc_ts->current_method_index = i;
@@ -355,10 +359,20 @@ uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode) {
 
     if (opcode == JVM_SINC_W
         || opcode == JVM_IINC_W
+#ifndef AOT_SAFETY_CHECKS
         || opcode == JVM_INVOKEVIRTUAL
-        || opcode == JVM_INVOKEINTERFACE) {
+        || opcode == JVM_INVOKEINTERFACE
+#endif // AOT_SAFETY_CHECKS
+        ) {
         return 3;
     }
+
+#ifdef AOT_SAFETY_CHECKS
+    if (opcode == JVM_INVOKEVIRTUAL
+        || opcode == JVM_INVOKEINTERFACE) {
+        return 5;
+    }
+#endif // AOT_SAFETY_CHECKS
 
     if (opcode == JVM_IIPUSH
         || opcode == JVM_GETFIELD_A_FIXED
@@ -367,7 +381,6 @@ uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode) {
         || (opcode >= JVM_SIFEQ && opcode <= JVM_SIFLE)) {
         return 4;
     }
-
 
     // JVM_TABLESWITCH
     // JVM_LOOKUPSWITCH

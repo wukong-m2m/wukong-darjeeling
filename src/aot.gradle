@@ -62,6 +62,18 @@ if (project.hasProperty('no-opcode-optimisations')) {
     project.ext.usegetfield_a_fixed = 'false'
 }
 
+if (!project.hasProperty('addsafetychecks')) {
+    project.ext.addsafetychecks = 'true'
+} else {
+    if (project.ext.addsafetychecks == '') {
+        project.ext.addsafetychecks = 'true'        
+    }
+    if (project.ext.addsafetychecks != 'true'
+            && project.ext.addsafetychecks != 'false') {
+        throw new InvalidUserDataException("Invalid value for addsafetychecks" + project.ext.addsafetychecks)        
+    }
+}
+
 if (!project.hasProperty('uselightweightmethods')) {
     project.ext.uselightweightmethods = 'true'
 } else {
@@ -154,6 +166,9 @@ binaries.all {
     if (project.ext.uselightweightmethods == 'false') {
         cCompiler.args "-D NO_LIGHTWEIGHT_METHODS"
     }
+    if (project.ext.addsafetychecks == 'true') {
+        cCompiler.args "-D AOT_SAFETY_CHECKS"
+    }
 }
 
 def getOutputDirName() {
@@ -204,13 +219,16 @@ def getOutputDirName() {
     if (project.ext.uselightweightmethods == 'false')
         opt_lightweight='_NOLW'
 
+    def opt_safety=''
+    if (project.ext.addsafetychecks == 'true')
+        opt_safety='_SAFE'
 
     if (project.ext.aotstrat == 'baseline' || project.ext.aotstrat == 'improvedpeephole') {
-        return "results_${outdirSTRAT}_R___P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_lightweight}"
+        return "results_${outdirSTRAT}_R___P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_lightweight}${opt_safety}"
     } else if (project.ext.aotstrat == 'simplestackcache' || project.ext.aotstrat == 'poppedstackcache') {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_lightweight}"
+        return "results_${outdirSTRAT}_R${outdirREGS}_P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_lightweight}${opt_safety}"
     } else {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P${outdirPINNED}${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_lightweight}"
+        return "results_${outdirSTRAT}_R${outdirREGS}_P${outdirPINNED}${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_lightweight}${opt_safety}"
     }
 }
 

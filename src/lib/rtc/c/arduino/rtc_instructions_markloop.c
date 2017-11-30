@@ -14,6 +14,7 @@
 #include "rtc_instructions_common.h"
 #include "asm.h"
 #include "rtc_markloop.h"
+#include "rtc_safetychecks.h"
 
 // NOTE: Function pointers are a "PC address", so already divided by 2 since the PC counts in words, not bytes.
 // avr-libgcc functions used by translation
@@ -30,22 +31,38 @@ void rtc_translate_single_instruction() {
     int8_t i;
 
 #ifdef AVRORA
-    avroraRTCTraceDarjeelingOpcodeInProgmem(ts->jvm_code_start + ts->pc);
+#ifdef AOT_SAFETY_CHECKS
+    avroraRTCTraceDarjeelingOpcodeInProgmem(ts->jvm_code_start + ts->pc, rtc_ts->current_int_stack, rtc_ts->current_ref_stack);
+#else
+    avroraRTCTraceDarjeelingOpcodeInProgmem(ts->jvm_code_start + ts->pc, 0, 0);
+#endif
 #endif
 
     uint8_t opcode = dj_di_getU8(ts->jvm_code_start + ts->pc);
     DEBUG_LOG(DBG_RTCTRACE, "[rtc] JVM opcode %d (pc=%d, method length=%d)\n", opcode, ts->pc, ts->method_length);
 
     // Load possible operands. May waste some time if we don't need then, but saves some space.
+#ifdef AOT_SAFETY_CHECKS
+    uint8_t jvm_operand_byte0 = rtc_ts->jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ts->pc + 1);
+    uint8_t jvm_operand_byte1 = rtc_ts->jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + ts->pc + 2);
+    uint8_t jvm_operand_byte2 = rtc_ts->jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ts->pc + 3);
+    uint8_t jvm_operand_byte3 = rtc_ts->jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ts->pc + 4);
+                                rtc_ts->jvm_operand_byte4 = dj_di_getU8(ts->jvm_code_start + ts->pc + 5);
+#else // AOT_SAFETY_CHECKS
     uint8_t jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ts->pc + 1);
     uint8_t jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + ts->pc + 2);
     uint8_t jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ts->pc + 3);
     uint8_t jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ts->pc + 4);
+#endif // AOT_SAFETY_CHECKS
     uint16_t jvm_operand_word0 = (jvm_operand_byte0 << 8) | jvm_operand_byte1;
     uint16_t jvm_operand_word1 = (jvm_operand_byte2 << 8) | jvm_operand_byte3;
     uint8_t operand_regs1[12];
     uint8_t *operand_regs2 = operand_regs1 + 4;
     uint8_t *operand_regs3 = operand_regs1 + 8;
+
+#ifdef AOT_SAFETY_CHECKS
+    rtc_safety_process_opcode(opcode);
+#endif
 
     if (!rtc_poppedstackcache_can_I_skip_this()) {
     // rtc_poppedstackcache will check if the result of the current instruction

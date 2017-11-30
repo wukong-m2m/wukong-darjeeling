@@ -25,8 +25,9 @@
 #include "types.h"
 #include "program_mem.h"
 
-
-#ifdef ARRAYINDEX_32BIT
+#ifdef AOT_SAFETY_CHECKS
+#define INFUSION_FORMAT_VERSION 125
+#elif defined(ARRAYINDEX_32BIT)
  // Version 100: 32 bit index
 #define INFUSION_FORMAT_VERSION 120
 #else

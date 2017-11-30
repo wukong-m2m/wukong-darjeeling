@@ -1,6 +1,17 @@
+#ifdef AOT_SAFETY_CHECKS
+
 #include <stdint.h>
 #include "program_mem.h"
+#include "opcodes.h"
+#include "parse_infusion.h"
+#include "global_id.h"
+#include "rtc.h"
 #include "rtc_safetychecks_opcodes.h"
+
+#define RTC_STACK_EFFECT_ENCODED_SPECIAL_CASE ((14 << 4) + 14)
+
+#define RTC_CONSUMES_I_R_AND_PRODUCES_I_R(cons_i, cons_r, prod_i, prod_r) ((RTC_STACK_EFFECT_ENCODE_I_R(cons_i, cons_r) << 4) + (RTC_STACK_EFFECT_ENCODE_I_R(prod_i, prod_r)))
+
 
 const DJ_PROGMEM uint8_t rtc_stack_effect_per_opcode[] = {
 
@@ -168,7 +179,7 @@ RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 0 , 0 , 0 , 1 ), // opcode 160 new           
 RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 1 , 0 , 0 , 1 ), // opcode 161 newarray                     : consumes( 1 , 0 ) produces ( 0 , 1 )
 RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 1 , 0 , 0 , 1 ), // opcode 162 anewarray                    : consumes( 1 , 0 ) produces ( 0 , 1 )
 RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 0 , 1 , 1 , 0 ), // opcode 163 arraylength                  : consumes( 0 , 1 ) produces ( 1 , 0 )
-                                                 0, // opcode 164 athrow                       : not implemented
+RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 0 , 1 , 0 , 0 ), // opcode 164 athrow                       : not implemented
 RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 0 , 1 , 0 , 1 ), // opcode 165 checkcast                    : consumes( 0 , 1 ) produces ( 0 , 1 )
 RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 0 , 1 , 1 , 0 ), // opcode 166 instanceof                   : consumes( 0 , 1 ) produces ( 1 , 0 )
 RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 0 , 1 , 0 , 0 ), // opcode 167 monitorenter                 : consumes( 0 , 1 ) produces ( 0 , 0 )
@@ -262,20 +273,94 @@ RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 2 , 0 , 2 , 0 ), // opcode 236 iushr_const   
                                                  0, // opcode 255                              : not used
 };
 
-
 // This could be smaller, but for now I'd prefer to keep the encoding/decoding tables as #defines
-uint8_t rtc_get_stack_effect_cons_i(uint8_t opcode) {
-    return RTC_STACK_EFFECT_DECODE_I(rtc_stack_effect_per_opcode[opcode] >> 4);
+uint8_t rtc_get_stack_effect(uint8_t opcode, uint8_t what) {
+    if (opcode == JVM_ISWAP_X) {
+        switch (what) {
+            case RTC_STACK_CONS_REF:
+            case RTC_STACK_PROD_REF:
+                return 0;
+            case RTC_STACK_CONS_INT:
+            case RTC_STACK_PROD_INT:
+                return (rtc_ts->jvm_operand_byte0 & 15) + (rtc_ts->jvm_operand_byte0 >> 4); // n and m stored in high and low nibbles, but only values 1 and 2 are supported
+        }
+    } else if (opcode == JVM_IDUP_X) {
+        switch (what) {
+            case RTC_STACK_CONS_REF:
+            case RTC_STACK_PROD_REF:
+                return 0;
+            case RTC_STACK_CONS_INT:
+                return (rtc_ts->jvm_operand_byte0 & 15);
+            case RTC_STACK_PROD_INT:
+                return (rtc_ts->jvm_operand_byte0 & 15) + (rtc_ts->jvm_operand_byte0 >> 4);
+        }
+    } else if (opcode == JVM_INVOKEVIRTUAL || opcode == JVM_INVOKEINTERFACE) {
+        switch (what) {
+            case RTC_STACK_CONS_INT:
+                return rtc_ts->jvm_operand_byte3;
+            case RTC_STACK_CONS_REF:
+                return rtc_ts->jvm_operand_byte2 + 1; // Add +1 for instance reference
+            case RTC_STACK_PROD_INT:
+                switch (rtc_ts->jvm_operand_byte4) {
+                    case JTID_BOOLEAN:
+                    case JTID_CHAR:
+                    case JTID_BYTE:
+                    case JTID_SHORT:
+                        return 1;
+                    case JTID_INT:
+                        return 2;
+                    default:
+                        return 0;
+                }
+            case RTC_STACK_PROD_REF:
+                return rtc_ts->jvm_operand_byte4 == JTID_REF ? 1 : 0;
+        }
+    } else if (opcode == JVM_INVOKESTATIC || opcode == JVM_INVOKESPECIAL || opcode == JVM_INVOKELIGHT) {
+        dj_local_id localId;
+        localId.infusion_id = rtc_ts->jvm_operand_byte0;
+        localId.entity_id = rtc_ts->jvm_operand_byte1;
+        dj_global_id globalId = dj_global_id_resolve(rtc_ts->infusion,  localId);
+        dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(globalId);
+
+        switch (what) {
+            case RTC_STACK_CONS_INT:
+                return dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
+            case RTC_STACK_CONS_REF:
+                return opcode == JVM_INVOKESPECIAL
+                       ? dj_di_methodImplementation_getReferenceArgumentCount(methodImpl) + 1 // Add +1 for instance reference
+                       : dj_di_methodImplementation_getReferenceArgumentCount(methodImpl);
+            case RTC_STACK_PROD_INT:
+                switch (dj_di_methodImplementation_getReturnType(methodImpl)) {
+                    case JTID_BOOLEAN:
+                    case JTID_CHAR:
+                    case JTID_BYTE:
+                    case JTID_SHORT:
+                        return 1;
+                    case JTID_INT:
+                        return 2;
+                    default:
+                        return 0;
+                }            
+            case RTC_STACK_PROD_REF:
+                return dj_di_methodImplementation_getReturnType(methodImpl) == JTID_REF ? 1 : 0;
+        }
+    } else {
+        uint8_t encoded_cons = rtc_stack_effect_per_opcode[opcode] >> 4;
+        uint8_t encoded_prod = rtc_stack_effect_per_opcode[opcode] & 0x0F;
+
+        switch (what) {
+            case RTC_STACK_CONS_INT:
+                return RTC_STACK_EFFECT_DECODE_I(encoded_cons);
+            case RTC_STACK_CONS_REF:
+                return RTC_STACK_EFFECT_DECODE_R(encoded_cons);
+            case RTC_STACK_PROD_INT:
+                return RTC_STACK_EFFECT_DECODE_I(encoded_prod);
+            case RTC_STACK_PROD_REF:
+                return RTC_STACK_EFFECT_DECODE_R(encoded_prod);
+        }
+    }
+
+    return 0;
 }
 
-uint8_t rtc_get_stack_effect_cons_r(uint8_t opcode) {
-    return RTC_STACK_EFFECT_DECODE_R(rtc_stack_effect_per_opcode[opcode] >> 4);
-}
-
-uint8_t rtc_get_stack_effect_prod_i(uint8_t opcode) {
-    return RTC_STACK_EFFECT_DECODE_I(rtc_stack_effect_per_opcode[opcode] & 0x0F);
-}
-
-uint8_t rtc_get_stack_effect_prod_r(uint8_t opcode) {
-    return RTC_STACK_EFFECT_DECODE_R(rtc_stack_effect_per_opcode[opcode] & 0x0F);
-}
+#endif // AOT_SAFETY_CHECKS

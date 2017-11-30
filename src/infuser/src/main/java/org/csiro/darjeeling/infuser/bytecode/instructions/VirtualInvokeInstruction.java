@@ -24,6 +24,7 @@ package org.csiro.darjeeling.infuser.bytecode.instructions;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.csiro.darjeeling.infuser.Infuser;
 import org.csiro.darjeeling.infuser.bytecode.Opcode;
 import org.csiro.darjeeling.infuser.structure.LocalId;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractMethodDefinition;
@@ -40,6 +41,10 @@ public class VirtualInvokeInstruction extends AbstractInvokeInstruction
 	{
 		super.dump(out);
 		out.write(methodDefinition.getReferenceParameterCount());
+		if(Infuser.getAddSafetyChecksData()) {
+			out.write(methodDefinition.getIntegerParameterSlotCount());
+			out.write(methodDefinition.getReturnType().getTType());
+		}
 	}
 	
 	public int getLength()
