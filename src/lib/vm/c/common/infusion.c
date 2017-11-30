@@ -31,6 +31,9 @@
 //platform-specific header
 #include "config.h"
 
+#ifdef AOT_SAFETY_CHECKS
+#include "rtc_safetychecks_fail.h"
+#endif
 
 /**
  * Creates a new infusion.
@@ -194,3 +197,16 @@ dj_di_pointer dj_infusion_getString(dj_infusion * infusion, int entity_id)
 	return dj_di_stringtable_getElementBytes(infusion->stringTable, entity_id);
 }
 
+dj_infusion * dj_infusion_resolve(dj_infusion *infusion, int id)
+{
+    if (id==0) {
+    	return infusion;
+    } else {
+#ifdef AOT_SAFETY_CHECKS
+    	if (id > infusion->nr_referenced_infusions) { // id's count from 1, not 0 since 0 refers to the current infusion, so we use > instead of >= here.
+	        rtc_safety_abort_with_error(RTC_SAFETYCHECK_ILLEGAL_REFERENCED_INFUSION_IN_GLOBAL_ID);
+	    }
+#endif //AOT_SAFETY_CHECKS
+    	return infusion->referencedInfusions[id-1];
+    }
+}

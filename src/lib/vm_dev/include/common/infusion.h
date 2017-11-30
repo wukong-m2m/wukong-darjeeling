@@ -38,12 +38,6 @@ void dj_infusion_getName(dj_infusion * infusion, char * str, int strLength);
 dj_di_pointer dj_infusion_getMethodImplementation(dj_infusion *infusion, int entity_id);
 dj_di_pointer dj_infusion_getString(dj_infusion * infusion, int entity_id);
 
-// functions that need to be quick and should be inlined
-static inline dj_infusion * dj_infusion_resolve(dj_infusion *infusion, int id)
-{
-    dj_infusion *result;
-	result=(id==0)?infusion:infusion->referencedInfusions[id-1];
-    return result;
-}
+dj_infusion * dj_infusion_resolve(dj_infusion *infusion, int id);
 
 #endif
