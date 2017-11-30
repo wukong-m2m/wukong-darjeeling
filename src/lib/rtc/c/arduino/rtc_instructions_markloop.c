@@ -701,7 +701,7 @@ void rtc_translate_single_instruction() {
                 // Then move operand_regs2[0]:operand_regs2[1] to Z
                 emit_MOVW(RZ, operand_regs2[0]);
                 // Find the target infusion to calculate the right offset in the next step
-                target_infusion = dj_infusion_resolve(dj_exec_getCurrentInfusion(), jvm_operand_byte0);
+                target_infusion = dj_infusion_resolve(ts->infusion, jvm_operand_byte0);
                 offset = sizeof(dj_infusion); // Initialise offset to sizeof(dj_infusion) because Z now points to the target infusion, but below we will calculate the offset relative to the start of the static variables, which follow the dj_infusion struct in memory.
             }
             switch (opcode) {
