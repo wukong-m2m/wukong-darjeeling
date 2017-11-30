@@ -78,7 +78,12 @@ public final class Integer {
             radix = 10;
         }
         char buf[] = new char[33];
-        boolean negative = (i < 0);
+        boolean negative;
+        if (i < 0) {
+            negative = true;
+        } else {
+            negative = false;
+        }
         short charPos = 32;
         if (!negative) {
             i = -i;
