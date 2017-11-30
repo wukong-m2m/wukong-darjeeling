@@ -163,11 +163,11 @@ public final class StringBuilder {
      * @param   minimumCapacity   the minimum desired capacity.
      */
     public void ensureCapacity(short minimumCapacity) {
-		synchronized (this) {
+		// synchronized (this) {
 			if (minimumCapacity > value.length) {
 				expandCapacity(minimumCapacity);
 			}
-		}
+		// }
     }
 
     /**
@@ -222,7 +222,7 @@ public final class StringBuilder {
      * @see        java.lang.StringBuffer#length()
      */
     public void setLength(short newLength) {
-        synchronized (this) {
+        // synchronized (this) {
 			if (newLength < 0) {
 				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, newLength);
 			}
@@ -249,7 +249,7 @@ public final class StringBuilder {
 					}
 				}
 			}
-		}
+		// }
     }
 
     /**
@@ -269,12 +269,12 @@ public final class StringBuilder {
      * @see        java.lang.StringBuffer#length()
      */
     public char charAt(short index) {
-        synchronized (this) {
+        // synchronized (this) {
 			if ((index < 0) || (index >= count)) {
 				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, index);
 			}
 			return value[index];
-		}
+		// }
     }
 
     /**
@@ -309,7 +309,7 @@ public final class StringBuilder {
      *             </ul>
      */
     public void getChars(short srcBegin, short srcEnd, char dst[], short dstBegin) {
-        synchronized (this) {
+        // synchronized (this) {
 			if (srcBegin < 0) {
 				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, srcBegin);
 			}
@@ -320,7 +320,7 @@ public final class StringBuilder {
 				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, -1);
 			}
 			System.arraycopy(value, srcBegin, dst, dstBegin, (short)(srcEnd - srcBegin));
-		}
+		// }
     }
 
     /**
@@ -340,7 +340,7 @@ public final class StringBuilder {
      * @see        java.lang.StringBuffer#length()
      */
     public void setCharAt(int index, char ch) {
-        synchronized (this) {
+        // synchronized (this) {
 			if ((index < 0) || (index >= count)) {
 				throw new RuntimeException(Exception.STRINGINDEXOUTOFBOUNDS_EXCEPTION, index);
 			}
@@ -348,7 +348,7 @@ public final class StringBuilder {
 				copy();
 			}
 			value[index] = ch;
-		}
+		// }
     }
 
     /**
@@ -365,9 +365,9 @@ public final class StringBuilder {
      * @see     java.lang.StringBuffer#append(java.lang.String)
      */
     public StringBuilder append(Object obj) {
-        synchronized (this) {
+        // synchronized (this) {
 			return append(String.valueOf(obj));
-		}
+		// }
     }
 
     /**
@@ -392,7 +392,7 @@ public final class StringBuilder {
      */
     //public native synchronized StringBuffer append(String str);
     public StringBuilder append(String str) {
-        synchronized (str) {
+        // synchronized (str) {
 			if (str == null) {
 				str = String.valueOf(str);
 			}
@@ -404,7 +404,7 @@ public final class StringBuilder {
 			str.getChars((short)0, len, value, (short)count);
 			count = newcount;
 			return this;
-		}
+		// }
     }
 
     /**
@@ -424,7 +424,7 @@ public final class StringBuilder {
      * @return  a reference to this <code>StringBuffer</code> object.
      */
     public StringBuilder append(char str[]) {
-        synchronized (this) {
+        // synchronized (this) {
 			short len = (short)str.length;
 			short newcount = (short)(count + len);
 			if (newcount > value.length) {
@@ -433,7 +433,7 @@ public final class StringBuilder {
 			System.arraycopy(str, (short)0, value, count, len);
 			count = newcount;
 			return this;
-		}
+		// }
     }
 
     /**
@@ -456,7 +456,7 @@ public final class StringBuilder {
      * @return  a reference to this <code>StringBuffer</code> object.
      */
     public StringBuilder append(char str[], short offset, short len) {
-        synchronized (this) {
+        // synchronized (this) {
 			short newcount = (short)(count + len);
 			if (newcount > value.length) {
 				expandCapacity(newcount);
@@ -464,7 +464,7 @@ public final class StringBuilder {
 			System.arraycopy(str, offset, value, count, len);
 			count = newcount;
 			return this;
-		}
+		// }
     }
 
     /**
@@ -500,7 +500,7 @@ public final class StringBuilder {
      * @return  a reference to this <code>StringBuffer</code> object.
      */
     public StringBuilder append(char c) {
-        synchronized (this) {
+        // synchronized (this) {
 			short newcount = (short)(count + 1);
 			if (newcount > value.length) {
 				expandCapacity(newcount);
@@ -508,7 +508,7 @@ public final class StringBuilder {
 			value[count] = c;
             count++; // If we put count++ in the array access, the infuser will fail using 16 bit array indexes, because it wants to cast a stack element that isn't the top element.
 			return this;
-		}
+		// }
     }
 
     /**
