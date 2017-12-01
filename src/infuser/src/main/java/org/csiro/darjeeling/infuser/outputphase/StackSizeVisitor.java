@@ -74,7 +74,7 @@ public class StackSizeVisitor extends DescendingVisitor
 			methodImplementation.getReferenceLocalVariableCount() - methodImplementation.getReferenceArgumentCount() - (methodImplementation.isStatic()?0:1) + 
 			methodImplementation.getIntegerLocalVariableCount() - methodImplementation.getIntegerArgumentCount();
 
-		int dvmStack = methodImplementation.getMaxStack() * 2;
+		int dvmStack = methodImplementation.getMaxTotalStack() * 2;
 		int dvmLocals = localVariables * 2;
 
 		int jvmStack = code.getMaxStack() * 4;

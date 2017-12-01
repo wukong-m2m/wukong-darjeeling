@@ -162,10 +162,16 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 		return code;
 	}
 	
-	public int getMaxStack()
+	public int getMaxTotalStack()
 	{
 		if (codeBlock==null) return 0; else
-			return codeBlock.getMaxStack();
+			return codeBlock.getMaxTotalStack();
+	}
+
+	public int getMaxIntStack()
+	{
+		if (codeBlock==null) return 0; else
+			return codeBlock.getMaxIntStack();
 	}
 
 	public int getMaxRefStack()

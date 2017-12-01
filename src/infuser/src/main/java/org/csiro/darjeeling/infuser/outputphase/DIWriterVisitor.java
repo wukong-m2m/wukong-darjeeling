@@ -203,7 +203,8 @@ public class DIWriterVisitor extends DescendingVisitor
 			// total number of parameters (including 'this')
 			out.writeUINT8(element.getMethodDefinition().getParameterCount() + (element.isStatic()?0:1));
 			
-			out.writeUINT8(element.getMaxStack());
+			out.writeUINT8(element.getMaxTotalStack());
+			out.writeUINT8(element.getMaxIntStack());
 			out.writeUINT8(element.getMaxRefStack());
 
 			CodeBlock code = element.getCodeBlock();
