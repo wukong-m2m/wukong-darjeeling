@@ -62,10 +62,10 @@ void rtc_safety_check_and_update_stack_depth(uint8_t opcode) {
     rtc_ts->current_int_stack += stack_prod_int;
     rtc_ts->current_ref_stack += stack_prod_ref;
 
-    if (rtc_ts->current_int_stack > dj_di_methodImplementation_getMaxStack(rtc_ts->methodimpl)) {
+    if (rtc_ts->current_int_stack > dj_di_methodImplementation_getMaxIntStack(rtc_ts->methodimpl)) {
         rtc_safety_abort_with_error(RTC_SAFETYCHECK_INT_STACK_OVERFLOW);
     }
-    if (rtc_ts->current_ref_stack > dj_di_methodImplementation_getMaxStack(rtc_ts->methodimpl)) {
+    if (rtc_ts->current_ref_stack > dj_di_methodImplementation_getMaxRefStack(rtc_ts->methodimpl)) {
         rtc_safety_abort_with_error(RTC_SAFETYCHECK_REF_STACK_OVERFLOW);
     }    
 }
