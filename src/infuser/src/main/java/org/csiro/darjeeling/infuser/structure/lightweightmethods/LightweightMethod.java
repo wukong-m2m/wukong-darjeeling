@@ -99,7 +99,7 @@ public class LightweightMethod {
 		if (this.methodImpl == null) {
 			System.err.println("No methodImpl set when calling getMaxIntStack in LightweightMethod.java (" + this.className + "." + this.methodName + "). Did you forget -Pno-proguard?");
 		}
-		return this.methodImpl.getMaxStack() - this.methodImpl.getMaxRefStack();
+		return this.methodImpl.getMaxIntStack();
 	}
 
 	public int getMaxRefStack() {

@@ -67,7 +67,7 @@ void dj_monitor_block_updatePointers(dj_monitor_block * monitor_block);
 void dj_monitor_markRootSet(dj_monitor_block * monitor_block);
 
 // +2 because the stack should start AFTER the first (= highest) int variable
-#define dj_frame_stackStartOffset(methodImpl)                    (2*dj_di_methodImplementation_getNumberOfTotalVariableSlots((uint16_t)methodImpl) + 2)
+#define dj_frame_stackStartOffset(methodImpl)                    (2*dj_di_methodImplementation_getNumberOfTotalVariableSlots((uint16_t)methodImpl))
 #define dj_frame_stackEndOffset(methodImpl)                      (dj_frame_stackStartOffset(methodImpl) + sizeof(int16_t) * dj_di_methodImplementation_getMaxStack(methodImpl))
 #define dj_frame_getStackStart(frame, methodImpl)				 ((void*)((uint16_t)frame + sizeof(dj_frame) + (uint16_t)dj_frame_stackStartOffset(methodImpl)))
 #define dj_frame_getStackEnd(frame, methodImpl)                  ((void*)((uint16_t)frame + sizeof(dj_frame) + (uint16_t)dj_frame_stackEndOffset(methodImpl)))
@@ -82,9 +82,9 @@ void dj_monitor_markRootSet(dj_monitor_block * monitor_block);
 #ifdef EXECUTION_DISABLEINTERPRETER_COMPLETELY
 // If the interpreter is disabled, we'll never need to reserve an int stack in the stack frame, since we will use the real stack as int stack.
 // dj_di_methodImplementation_getNumberOfVariableSlots will return the amount of variable slots for this method's variables, plus any space that should be reserved for lightweight methods that will want to use this method's context to store locals.
-#define dj_frame_size(methodImpl)                                (sizeof(dj_frame) + 2*dj_di_methodImplementation_getNumberOfTotalVariableSlots((uint16_t)methodImpl) +  2*dj_di_methodImplementation_getMaxRefStack(methodImpl))
+#define dj_frame_size(methodImpl)                                (sizeof(dj_frame) + 2*dj_di_methodImplementation_getNumberOfTotalVariableSlots((uint16_t)methodImpl) + 2*dj_di_methodImplementation_getMaxRefStack(methodImpl))
 #else
-#define dj_frame_size(methodImpl)                                (sizeof(dj_frame) + 2*dj_di_methodImplementation_getNumberOfTotalVariableSlots((uint16_t)methodImpl) +  2*dj_di_methodImplementation_getMaxStack(methodImpl))
+#define dj_frame_size(methodImpl)                                (sizeof(dj_frame) + 2*dj_di_methodImplementation_getNumberOfTotalVariableSlots((uint16_t)methodImpl) + 2*dj_di_methodImplementation_getMaxStack(methodImpl))
 
 #endif // EXECUTION_DISABLEINTERPRETER_COMPLETELY
 

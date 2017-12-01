@@ -43,7 +43,8 @@ public class CalculateMaxStack extends CodeBlockTransformation
 	@Override
 	protected void transformInternal()
 	{
-		int maxStack = 0;
+		int maxTotalStack = 0;
+		int maxIntStack = 0;
 		int maxRefStack = 0;
 
 		for (InstructionHandle handle : codeBlock.getInstructions().getInstructionHandles())
@@ -51,7 +52,7 @@ public class CalculateMaxStack extends CodeBlockTransformation
 			
 			InterpreterState state = handle.getPreState();
 			InterpreterStack stack = state.getStack();
-			int stackSize = 0, refStackSize = 0;
+			int totalStackSize = 0, intStackSize = 0, refStackSize = 0;
 			for (int i=0; i<stack.size(); i++)
 			{
 				BaseType type = stack.peek(i).getType();
@@ -67,7 +68,8 @@ public class CalculateMaxStack extends CodeBlockTransformation
 						throw new IllegalStateException("Type inference error");
 				}
 				
-				stackSize += type.getNrIntegerSlots() + type.getNrReferenceSlots();
+				totalStackSize += type.getNrIntegerSlots() + type.getNrReferenceSlots();
+				intStackSize += type.getNrIntegerSlots();
 				refStackSize += type.getNrReferenceSlots();
 			}
 
@@ -81,19 +83,24 @@ public class CalculateMaxStack extends CodeBlockTransformation
 				int extraIntSlots = l.getMaxIntStack() - l.getParameterIntStack();
 				int extraRefSlots = l.getMaxRefStack() - l.getParameterRefStack();
 				int extraSlots = extraIntSlots + extraRefSlots;
+				if (extraIntSlots > 0) {
+					intStackSize += extraIntSlots;
+				}
 				if (extraRefSlots > 0) {
 					refStackSize += extraRefSlots;
 				}
 				if (extraSlots > 0) {
-					stackSize += extraSlots;
+					totalStackSize += extraSlots;
 				}
 			}
 
-			maxStack = stackSize>maxStack?stackSize:maxStack;
+			maxTotalStack = totalStackSize>maxTotalStack?totalStackSize:maxTotalStack;
+			maxIntStack = intStackSize>maxIntStack?intStackSize:maxIntStack;
 			maxRefStack = refStackSize>maxRefStack?refStackSize:maxRefStack;
 		}
-		codeBlock.setMaxStack(maxStack+1);
-		codeBlock.setMaxRefStack(maxRefStack+1); // Why +1? Don't know, but if it ever changes we should remove the -1 from LightweightMethod.determineMaxStackDepth to avoid reserving too little stack space!
+		codeBlock.setMaxTotalStack(maxTotalStack);
+		codeBlock.setMaxIntStack(maxIntStack);
+		codeBlock.setMaxRefStack(maxRefStack); // Why +1? Don't know, but if it ever changes we should remove the -1 from LightweightMethod.determineMaxStackDepth to avoid reserving too little stack space!
 	}
 
 }
