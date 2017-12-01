@@ -9,10 +9,44 @@
 // max stack should be limited to 240 bytes to prevent counters from wrapping, for example for IDUP_X (just to be on the safe side)
 
 void rtc_safety_method_starts() {
-    if (dj_di_methodImplementation_getFlags(rtc_ts->methodimpl) & FLAGS_LIGHTWEIGHT) {
-        // Stack depths are initialised to 0, but for lightweight methods the arguments are passed on the stack.
-        rtc_ts->current_int_stack = dj_di_methodImplementation_getIntegerArgumentCount(rtc_ts->methodimpl);
-        rtc_ts->current_ref_stack = dj_di_methodImplementation_getReferenceArgumentCount(rtc_ts->methodimpl);
+    uint8_t ref_args      = dj_di_methodImplementation_getReferenceArgumentCount(rtc_ts->methodimpl);
+    uint8_t int_args      = dj_di_methodImplementation_getIntegerArgumentCount(rtc_ts->methodimpl);
+    uint8_t ref_vars      = dj_di_methodImplementation_getReferenceLocalVariableCount(rtc_ts->methodimpl);
+    uint8_t int_vars      = dj_di_methodImplementation_getIntegerLocalVariableCount(rtc_ts->methodimpl);
+    // uint8_t max_stack     = dj_di_methodImplementation_getMaxStack(rtc_ts->methodimpl);
+    // uint8_t max_ref_stack = dj_di_methodImplementation_getMaxRefStack(rtc_ts->methodimpl);
+    // uint8_t max_int_stack = dj_di_methodImplementation_getMaxIntStack(rtc_ts->methodimpl);
+    uint8_t flags         = dj_di_methodImplementation_getFlags(rtc_ts->methodimpl);
+    // uint8_t ret_type      = dj_di_methodImplementation_getReturnType(rtc_ts->methodimpl);
+    // uint16_t brtargets    = dj_di_methodImplementation_getNumberOfBranchTargets(rtc_ts->methodimpl);
+    uint8_t own_vars      = dj_di_methodImplementation_getNumberOfOwnVariableSlots(rtc_ts->methodimpl);
+    uint8_t total_vars    = dj_di_methodImplementation_getNumberOfTotalVariableSlots(rtc_ts->methodimpl);
+    uint16_t length       = dj_di_methodImplementation_getLength(rtc_ts->methodimpl);
+
+    // Stack depths are initialised to 0, but for lightweight methods the arguments are passed on the stack.
+    if (flags & FLAGS_LIGHTWEIGHT) {
+        rtc_ts->current_int_stack = int_args;
+        rtc_ts->current_ref_stack = ref_args;
+    }
+
+    // Check method header fields make sense
+    if  ((flags & FLAGS_STATIC) && length == 0) {
+        // Static methods can't be abstract
+        rtc_safety_abort_with_error(RTC_SAFETYCHECK_RETURN_INCORRECT_METHOD_HEADER);
+    }
+    if (length > 0 // Skip abstract methods
+        && (
+            // Can't have more ref arguments than ref local variables
+            (ref_args > ref_vars)
+            // Can't have more int arguments than int local variables
+            || (int_args > int_vars)
+            // Number of own variable slots must be sum of ref and int slots
+            || (own_vars = ref_vars + int_vars)
+            // Number of total variable slots must be >= own variable slots (extras are used for lightweight methods)
+            || (own_vars > total_vars)
+            )
+    ) {
+        rtc_safety_abort_with_error(RTC_SAFETYCHECK_RETURN_INCORRECT_METHOD_HEADER);
     }
 }
 
