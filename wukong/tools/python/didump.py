@@ -95,7 +95,8 @@ def print_method_impl_list(rawdata):
 		print "\t\t\tmax int stack:", methoddata.pop(0)
 		print "\t\t\tmax ref stack:", methoddata.pop(0)
 		flags = methoddata.pop(0)
-		print "\t\t\tflags:", ("NATIVE" if flags & 1 != 0 else ""), ("STATIC" if flags & 2 != 0 else ""), ("USESSTATICFIELDS" if flags & 4 != 0 else "")
+		print "\t\t\tflags:", ("NATIVE" if flags & 1 != 0 else ""), ("STATIC" if flags & 2 != 0 else ""), ("USESSTATICFIELDS" if flags & 4 != 0 else ""), ("LIGHTWEIGHT" if flags & 8 != 0 else ""), ("USES_SIMUL_INVOKESTATIC_MARKLOOP" if flags & 16 != 0 else "")
+
 		print "\t\t\treturn type:", methoddata.pop(0)
 		number_of_branch_targets = little_endian(methoddata[0:2])
 		print "\t\t\tnumber of branch targets:", number_of_branch_targets
