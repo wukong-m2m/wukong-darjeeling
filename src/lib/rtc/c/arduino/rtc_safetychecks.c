@@ -1,17 +1,10 @@
 #ifdef AOT_SAFETY_CHECKS
 
-#include "panic.h"
 #include "parse_infusion.h"
 #include "rtc.h"
 #include "rtc_safetychecks.h"
 #include "rtc_safetychecks_opcodes.h"
-
-void rtc_safety_abort_with_error(uint8_t error) {
-    avroraPrintHex32(0xDEADC0DE);
-    avroraPrintHex32(0xDEADC0DE);
-    avroraPrintInt16(error);
-    dj_panic(DJ_PANIC_UNSAFE_CODE_REJECTED);
-}
+#include "rtc_safetychecks_fail.h"
 
 // max stack should be limited to 240 bytes to prevent counters from wrapping, for example for IDUP_X (just to be on the safe side)
 
