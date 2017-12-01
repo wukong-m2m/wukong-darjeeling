@@ -86,14 +86,13 @@ def print_method_impl_list(rawdata):
 			print "\t\t\tNO INFUSION HEADER FOUND"
 		methoddata = elements[i]
 		print "\t\t\tlength incl header and fwd pointers:", len(methoddata) + 2
-		print "\t\t\treference argument count:", methoddata.pop(0)
-		print "\t\t\tinteger argument count:", methoddata.pop(0)
-		print "\t\t\treflocvar-refarg-isstatic:", methoddata.pop(0)
-		print "\t\t\tintlocvar-intarg:", methoddata.pop(0)
-		print "\t\t\ttotal number of parameters:", methoddata.pop(0)
+		print "\t\t\tref argument count:", methoddata.pop(0)
+		print "\t\t\tint argument count:", methoddata.pop(0)
+		print "\t\t\tref local vars:", methoddata.pop(0)
+		print "\t\t\tint local vars:", methoddata.pop(0)
 		print "\t\t\tmax total stack:", methoddata.pop(0)
-		print "\t\t\tmax int stack:", methoddata.pop(0)
 		print "\t\t\tmax ref stack:", methoddata.pop(0)
+		print "\t\t\tmax int stack:", methoddata.pop(0)
 		flags = methoddata.pop(0)
 		print "\t\t\tflags:", ("NATIVE" if flags & 1 != 0 else ""), ("STATIC" if flags & 2 != 0 else ""), ("USESSTATICFIELDS" if flags & 4 != 0 else ""), ("LIGHTWEIGHT" if flags & 8 != 0 else ""), ("USES_SIMUL_INVOKESTATIC_MARKLOOP" if flags & 16 != 0 else "")
 
