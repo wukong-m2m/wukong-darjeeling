@@ -199,13 +199,10 @@ public class DIWriterVisitor extends DescendingVisitor
 			// can index all locals directly.
 			out.writeUINT8(element.getReferenceLocalVariableCount());
 			out.writeUINT8(element.getIntegerLocalVariableCount());
-
-			// total number of parameters (including 'this')
-			out.writeUINT8(element.getMethodDefinition().getParameterCount() + (element.isStatic()?0:1));
 			
 			out.writeUINT8(element.getMaxTotalStack());
-			out.writeUINT8(element.getMaxIntStack());
 			out.writeUINT8(element.getMaxRefStack());
+			out.writeUINT8(element.getMaxIntStack());
 
 			CodeBlock code = element.getCodeBlock();
 
