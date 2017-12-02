@@ -32,7 +32,7 @@ void rtc_translate_single_instruction() {
 
 #ifdef AVRORA
 #ifdef AOT_SAFETY_CHECKS
-    avroraRTCTraceDarjeelingOpcodeInProgmemWithStackDepth(ts->jvm_code_start + ts->pc, rtc_ts->current_int_stack, rtc_ts->current_ref_stack);
+    avroraRTCTraceDarjeelingOpcodeInProgmemWithStackDepth(ts->jvm_code_start + ts->pc, rtc_ts->pre_instruction_int_stack, rtc_ts->pre_instruction_ref_stack);
 #else
     avroraRTCTraceDarjeelingOpcodeInProgmem(ts->jvm_code_start + ts->pc);
 #endif

@@ -4,6 +4,7 @@
 #include "infusion.h"
 #include "panic.h"
 #include "program_mem.h"
+#include "parse_infusion.h"
 #include "asm.h"
 #include "rtc.h"
 #include "rtc_complex_instructions.h"
@@ -108,11 +109,47 @@ void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_ope
     if (handler == NULL) {
         dj_panic(DJ_PANIC_NO_ADDRESS_FOUND_FOR_LIGHTWEIGHT_METHOD);
     }
-    dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(globalId);
-    uint8_t rettype = dj_di_methodImplementation_getReturnType(methodImpl);
 
-    bool lightweightMethodUsesLocalVariables = (dj_di_methodImplementation_getNumberOfTotalVariableSlots(methodImpl) > 0);
-    uint16_t bytesForCurrentMethodsOwnLocals = 2*(dj_di_methodImplementation_getNumberOfOwnVariableSlots(rtc_ts->methodimpl));
+    dj_di_pointer callerMethodImpl = rtc_ts->methodimpl;
+    dj_di_pointer calleeMethodImpl = dj_global_id_getMethodImplementation(globalId);
+
+#ifdef AOT_SAFETY_CHECKS
+    // A lightweight method will reuse the caller's stackframe. We need to check if enough space has been reserved in the
+    // current method's frame to accomodate the callee's:
+    //   - local variables
+    //   - reference stack
+    //   - integer stack
+    // Note that the callee's max stack and total local variables will include space for any nested lightweight methods calls,
+    // so these will have been checked in the callee's safety checks already.
+    uint8_t calleeRefArgs = dj_di_methodImplementation_getReferenceArgumentCount(calleeMethodImpl);
+    uint8_t calleeIntArgs = dj_di_methodImplementation_getIntegerArgumentCount(calleeMethodImpl);
+
+    uint8_t spaceOnRefStack = dj_di_methodImplementation_getMaxRefStack(callerMethodImpl) - rtc_ts->pre_instruction_ref_stack + calleeRefArgs;
+    uint8_t spaceOnIntStack = dj_di_methodImplementation_getMaxIntStack(callerMethodImpl) - rtc_ts->pre_instruction_int_stack + calleeIntArgs;
+    uint8_t spaceForLocalVariables = dj_di_methodImplementation_getNumberOfTotalVariableSlots(callerMethodImpl) - dj_di_methodImplementation_getNumberOfOwnVariableSlots(callerMethodImpl);
+
+    uint8_t calleeMaxRefStack = dj_di_methodImplementation_getMaxRefStack(calleeMethodImpl);
+    uint8_t calleeMaxIntStack = dj_di_methodImplementation_getMaxIntStack(calleeMethodImpl);
+    uint8_t calleeLocalVariables = dj_di_methodImplementation_getNumberOfTotalVariableSlots(calleeMethodImpl);
+    uint8_t calleeReservedSpaceForReturnValue = (dj_di_methodImplementation_getFlags(calleeMethodImpl) & FLAGS_USES_SIMUL_INVOKESTATIC_MARKLOOP) ? 1 : 0;
+
+    avroraPrintHex32(0xfeb0feb0);
+    avroraPrintInt16(calleeLocalVariables);
+    avroraPrintInt16(calleeReservedSpaceForReturnValue);
+    avroraPrintInt16(spaceForLocalVariables);
+    avroraPrintHex32(0xfeb0feb0);
+
+    if ((calleeMaxRefStack > spaceOnRefStack)
+            || (calleeMaxIntStack > spaceOnIntStack)
+            || ((calleeLocalVariables + calleeReservedSpaceForReturnValue) > spaceForLocalVariables)) {
+        rtc_safety_abort_with_error(RTC_SAFETYCHECK_NOT_ENOUGH_SPACE_IN_FRAME_FOR_LW_CALL);
+    }
+#endif // AOT_SAFETY_CHECKS
+
+    uint8_t rettype = dj_di_methodImplementation_getReturnType(calleeMethodImpl);
+
+    bool lightweightMethodUsesLocalVariables = (dj_di_methodImplementation_getNumberOfTotalVariableSlots(calleeMethodImpl) > 0);
+    uint16_t bytesForCurrentMethodsOwnLocals = 2*(dj_di_methodImplementation_getNumberOfOwnVariableSlots(callerMethodImpl));
     if (lightweightMethodUsesLocalVariables) {
         // Target lightweight method uses local variables. It will use the extra space
         // reserved in the current method's frame for such lightweight methods.

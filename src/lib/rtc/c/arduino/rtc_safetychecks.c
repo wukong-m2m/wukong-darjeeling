@@ -25,8 +25,8 @@ void rtc_safety_method_starts() {
 
     // Stack depths are initialised to 0, but for lightweight methods the arguments are passed on the stack.
     if (flags & FLAGS_LIGHTWEIGHT) {
-        rtc_ts->current_int_stack = int_args;
-        rtc_ts->current_ref_stack = ref_args;
+        rtc_ts->post_instruction_int_stack = int_args;
+        rtc_ts->post_instruction_ref_stack = ref_args;
     }
 
     // Check method header fields make sense
@@ -84,22 +84,25 @@ void rtc_safety_check_and_update_stack_depth(uint8_t opcode) {
     // avroraPrintInt16(stack_prod_int);
     // avroraPrintInt16(stack_prod_ref);
 
-    if (rtc_ts->current_int_stack < stack_cons_int) {
+    if (rtc_ts->post_instruction_int_stack < stack_cons_int) {
         rtc_safety_abort_with_error(RTC_SAFETYCHECK_INT_STACK_UNDERFLOW);
     }
-    if (rtc_ts->current_ref_stack < stack_cons_ref) {
+    if (rtc_ts->post_instruction_ref_stack < stack_cons_ref) {
         rtc_safety_abort_with_error(RTC_SAFETYCHECK_REF_STACK_UNDERFLOW);
     }
 
-    rtc_ts->current_int_stack -= stack_cons_int;
-    rtc_ts->current_ref_stack -= stack_cons_ref;
-    rtc_ts->current_int_stack += stack_prod_int;
-    rtc_ts->current_ref_stack += stack_prod_ref;
+    rtc_ts->pre_instruction_int_stack = rtc_ts->post_instruction_int_stack;
+    rtc_ts->pre_instruction_ref_stack = rtc_ts->post_instruction_ref_stack;
 
-    if (rtc_ts->current_int_stack > dj_di_methodImplementation_getMaxIntStack(rtc_ts->methodimpl)) {
+    rtc_ts->post_instruction_int_stack -= stack_cons_int;
+    rtc_ts->post_instruction_ref_stack -= stack_cons_ref;
+    rtc_ts->post_instruction_int_stack += stack_prod_int;
+    rtc_ts->post_instruction_ref_stack += stack_prod_ref;
+
+    if (rtc_ts->post_instruction_int_stack > dj_di_methodImplementation_getMaxIntStack(rtc_ts->methodimpl)) {
         rtc_safety_abort_with_error(RTC_SAFETYCHECK_INT_STACK_OVERFLOW);
     }
-    if (rtc_ts->current_ref_stack > dj_di_methodImplementation_getMaxRefStack(rtc_ts->methodimpl)) {
+    if (rtc_ts->post_instruction_ref_stack > dj_di_methodImplementation_getMaxRefStack(rtc_ts->methodimpl)) {
         rtc_safety_abort_with_error(RTC_SAFETYCHECK_REF_STACK_OVERFLOW);
     }    
 }
@@ -109,7 +112,7 @@ void rtc_safety_process_opcode(uint8_t opcode) {
 
     rtc_safety_check_and_update_stack_depth(opcode);
 
-    if (rtc_ts->current_int_stack != 0 || rtc_ts->current_ref_stack != 0) {
+    if (rtc_ts->post_instruction_int_stack != 0 || rtc_ts->post_instruction_ref_stack != 0) {
         if (RTC_OPCODE_IS_RETURN(opcode)) {
             rtc_safety_abort_with_error(RTC_SAFETYCHECK_STACK_NOT_EMPTY_AFTER_RETURN);
         }
