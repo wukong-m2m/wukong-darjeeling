@@ -133,12 +133,6 @@ void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_ope
     uint8_t calleeLocalVariables = dj_di_methodImplementation_getNumberOfTotalVariableSlots(calleeMethodImpl);
     uint8_t calleeReservedSpaceForReturnValue = (dj_di_methodImplementation_getFlags(calleeMethodImpl) & FLAGS_USES_SIMUL_INVOKESTATIC_MARKLOOP) ? 1 : 0;
 
-    avroraPrintHex32(0xfeb0feb0);
-    avroraPrintInt16(calleeLocalVariables);
-    avroraPrintInt16(calleeReservedSpaceForReturnValue);
-    avroraPrintInt16(spaceForLocalVariables);
-    avroraPrintHex32(0xfeb0feb0);
-
     if ((calleeMaxRefStack > spaceOnRefStack)
             || (calleeMaxIntStack > spaceOnIntStack)
             || ((calleeLocalVariables + calleeReservedSpaceForReturnValue) > spaceForLocalVariables)) {
