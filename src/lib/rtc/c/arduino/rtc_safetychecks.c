@@ -41,8 +41,8 @@ void rtc_safety_method_starts() {
             // Can't have more int arguments than int local variables
             || (int_args > int_vars)
             // Number of own variable slots must be sum of ref and int slots
-            || (own_vars = ref_vars + int_vars)
-            // Number of total variable slots must be >= own variable slots (extras are used for lightweight methods)
+            || (own_vars != ref_vars + int_vars)
+            // Number of own variable slots must be <= total variable slots (extras are used for lightweight methods)
             || (own_vars > total_vars)
             )
     ) {
