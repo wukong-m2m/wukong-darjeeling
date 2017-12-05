@@ -1,5 +1,6 @@
 #include "panic.h"
-#include "rtc_safetychecks_fail.h"
+#include "heap.h"
+#include "rtc_safetychecks_vm_part.h"
 
 void rtc_safety_abort_with_error(uint8_t error) {
     avroraPrintHex32(0xDEADC0DE);
@@ -7,3 +8,4 @@ void rtc_safety_abort_with_error(uint8_t error) {
     avroraPrintInt16(error);
     dj_panic(DJ_PANIC_UNSAFE_CODE_REJECTED);
 }
+

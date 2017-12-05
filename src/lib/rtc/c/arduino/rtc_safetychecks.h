@@ -2,7 +2,7 @@
 #define RTC_SAFETYCHECKS_H
 
 #include <stdint.h>
-#include "rtc_safetychecks_fail.h"
+#include "rtc_safetychecks_vm_part.h"
 
 void rtc_safety_method_starts();
 void rtc_safety_process_opcode(uint8_t opcode);

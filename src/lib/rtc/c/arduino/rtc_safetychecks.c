@@ -4,7 +4,6 @@
 #include "rtc.h"
 #include "rtc_safetychecks.h"
 #include "rtc_safetychecks_opcodes.h"
-#include "rtc_safetychecks_fail.h"
 
 // max stack should be limited to 240 bytes to prevent counters from wrapping, for example for IDUP_X (just to be on the safe side)
 
