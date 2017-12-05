@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+extern uint16_t heap_lowbound;
+void rtc_safetychecks_mem_check_mark_heap_bounds();
+
 void rtc_safety_abort_with_error(uint8_t error);
 
 #define RTC_SAFETYCHECK_METHOD_SHOULD_END_IN_BRANCH_OR_RETURN          0

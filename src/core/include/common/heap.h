@@ -32,6 +32,10 @@ extern dj_hook *dj_mem_markObjectHook;
 extern dj_hook *dj_mem_updateReferenceHook;
 extern dj_hook *dj_mem_postGCHook;
 
+#ifdef AOT_SAFETY_CHECKS
+extern void *left_pointer, *right_pointer;
+#endif
+
 #define SAFE_POINTER_POOL_SIZE 4
 
 /**

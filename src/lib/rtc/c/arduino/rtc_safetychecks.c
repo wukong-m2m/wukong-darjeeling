@@ -146,4 +146,28 @@ void rtc_safety_method_ends() {
     }
 }
 
+
+void rtc_safety_mem_check() {
+
+    asm volatile("   lds  r0, heap_lowbound" "\n\r"
+                 "   cp   r30, r0" "\n\r"
+                 "   lds  r0, heap_lowbound+1" "\n\r"
+                 "   cpc  r31, r0" "\n\r"
+                 "   brlo 1f" "\n\r"
+                 "   lds  r0, right_pointer" "\n\r"
+                 "   cp   r0, r30" "\n\r"
+                 "   lds  r0, right_pointer+1" "\n\r"
+                 "   cpc  r0, r31" "\n\r"
+                 "   brlo 1f" "\n\r"
+                 "   ret" "\n\r"
+                 "1: ldi  r24, %[errorcode]" "\n\r"
+                 "   push r16" "\n\r" // avroraPrintRegs
+                 "   ldi  r16, %[printreg]" "\n\r"
+                 "   sts  debugbuf1, r16" "\n\r"
+                 "   pop  r16" "\n\r"
+                 "   call rtc_safety_abort_with_error" "\n\r"
+             :: [errorcode] "M" (RTC_SAFETYCHECK_ILLEGAL_MEMORY_ACCESS), [printreg] "M" (0xE));
+}
+
 #endif // AOT_SAFETY_CHECKS
+
