@@ -96,7 +96,7 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 	// current lowest free address in the heap and the end of the heap.
 	// We use the current lowest free address instead of the start of the heap because there will be some
 	// system objects at the bottom of the heap that should also be protected from bad writes.
-	rtc_safetychecks_mem_check_mark_heap_bounds();
+	rtc_safety_mark_heap_bounds();
 #endif
 
 	// run class initialisers

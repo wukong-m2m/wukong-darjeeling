@@ -72,16 +72,10 @@ uint16_t rtc_safety_check_offset_valid_for_static_variable(dj_infusion *infusion
 }
 
 void rtc_safety_check_and_update_stack_depth(uint8_t opcode) {
-    uint8_t stack_cons_int = rtc_get_stack_effect(opcode, RTC_STACK_CONS_INT);
-    uint8_t stack_cons_ref = rtc_get_stack_effect(opcode, RTC_STACK_CONS_REF);
-    uint8_t stack_prod_int = rtc_get_stack_effect(opcode, RTC_STACK_PROD_INT);
-    uint8_t stack_prod_ref = rtc_get_stack_effect(opcode, RTC_STACK_PROD_REF);
-
-    // avroraPrintHex32(0xABCDEFFF);
-    // avroraPrintInt16(stack_cons_int);
-    // avroraPrintInt16(stack_cons_ref);
-    // avroraPrintInt16(stack_prod_int);
-    // avroraPrintInt16(stack_prod_ref);
+    uint8_t stack_cons_int = rtc_safety_get_stack_effect(opcode, RTC_STACK_CONS_INT);
+    uint8_t stack_cons_ref = rtc_safety_get_stack_effect(opcode, RTC_STACK_CONS_REF);
+    uint8_t stack_prod_int = rtc_safety_get_stack_effect(opcode, RTC_STACK_PROD_INT);
+    uint8_t stack_prod_ref = rtc_safety_get_stack_effect(opcode, RTC_STACK_PROD_REF);
 
     if (rtc_ts->post_instruction_int_stack < stack_cons_int) {
         rtc_safety_abort_with_error(RTC_SAFETYCHECK_INT_STACK_UNDERFLOW);
@@ -149,9 +143,9 @@ void rtc_safety_method_ends() {
 
 void rtc_safety_mem_check() {
 
-    asm volatile("   lds  r0, heap_lowbound" "\n\r"
+    asm volatile("   lds  r0, rtc_safety_heap_lowbound" "\n\r"
                  "   cp   r30, r0" "\n\r"
-                 "   lds  r0, heap_lowbound+1" "\n\r"
+                 "   lds  r0, rtc_safety_heap_lowbound+1" "\n\r"
                  "   cpc  r31, r0" "\n\r"
                  "   brlo 1f" "\n\r"
                  "   lds  r0, right_pointer" "\n\r"

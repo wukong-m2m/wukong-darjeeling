@@ -13,7 +13,7 @@
 #define RTC_CONSUMES_I_R_AND_PRODUCES_I_R(cons_i, cons_r, prod_i, prod_r) ((RTC_STACK_EFFECT_ENCODE_I_R(cons_i, cons_r) << 4) + (RTC_STACK_EFFECT_ENCODE_I_R(prod_i, prod_r)))
 
 
-const DJ_PROGMEM uint8_t rtc_stack_effect_per_opcode[] = {
+const DJ_PROGMEM uint8_t rtc_safety_stack_effect_per_opcode[] = {
 
 RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 0 , 0 , 0 , 0 ), // opcode 0 nop                            : consumes( 0 , 0 ) produces ( 0 , 0 )
 RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 0 , 0 , 1 , 0 ), // opcode 1 sconst_m1                      : consumes( 0 , 0 ) produces ( 1 , 0 )
@@ -273,8 +273,38 @@ RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 2 , 0 , 2 , 0 ), // opcode 236 iushr_const   
                                                  0, // opcode 255                              : not used
 };
 
+const DJ_PROGMEM uint8_t rtc_safety_stack_decode_i[] = {
+	0,
+	0,
+	0,
+	1,
+	1,
+	1,
+	2,
+	2,
+	3,
+	3,
+	4,
+	14,
+};
+
+const DJ_PROGMEM uint8_t rtc_safety_stack_decode_r[] = {
+	0,
+	1,
+	2,
+	0,
+	1,
+	2,
+	0,
+	1,
+	0,
+	1,
+	0,
+	14,
+};
+
 // This could be smaller, but for now I'd prefer to keep the encoding/decoding tables as #defines
-uint8_t rtc_get_stack_effect(uint8_t opcode, uint8_t what) {
+uint8_t rtc_safety_get_stack_effect(uint8_t opcode, uint8_t what) {
     if (opcode == JVM_ISWAP_X) {
         switch (what) {
             case RTC_STACK_CONS_REF:
@@ -326,9 +356,8 @@ uint8_t rtc_get_stack_effect(uint8_t opcode, uint8_t what) {
             case RTC_STACK_CONS_INT:
                 return dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
             case RTC_STACK_CONS_REF:
-                return opcode == JVM_INVOKESPECIAL
-                       ? dj_di_methodImplementation_getReferenceArgumentCount(methodImpl) + 1 // Add +1 for instance reference
-                       : dj_di_methodImplementation_getReferenceArgumentCount(methodImpl);
+                return dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
+                		+ (opcode == JVM_INVOKESPECIAL ? 1 : 0); // Add +1 for instance reference
             case RTC_STACK_PROD_INT:
                 switch (dj_di_methodImplementation_getReturnType(methodImpl)) {
                     case JTID_BOOLEAN:
@@ -345,18 +374,18 @@ uint8_t rtc_get_stack_effect(uint8_t opcode, uint8_t what) {
                 return dj_di_methodImplementation_getReturnType(methodImpl) == JTID_REF ? 1 : 0;
         }
     } else {
-        uint8_t encoded_cons = rtc_stack_effect_per_opcode[opcode] >> 4;
-        uint8_t encoded_prod = rtc_stack_effect_per_opcode[opcode] & 0x0F;
+        uint8_t encoded_cons = rtc_safety_stack_effect_per_opcode[opcode] >> 4;
+        uint8_t encoded_prod = rtc_safety_stack_effect_per_opcode[opcode] & 0x0F;
 
-        switch (what) {
-            case RTC_STACK_CONS_INT:
-                return RTC_STACK_EFFECT_DECODE_I(encoded_cons);
-            case RTC_STACK_CONS_REF:
-                return RTC_STACK_EFFECT_DECODE_R(encoded_cons);
-            case RTC_STACK_PROD_INT:
-                return RTC_STACK_EFFECT_DECODE_I(encoded_prod);
-            case RTC_STACK_PROD_REF:
-                return RTC_STACK_EFFECT_DECODE_R(encoded_prod);
+        #define RTC_STACK_EFFECT_REF_MASK  1
+        uint8_t encoded = (what & RTC_STACK_EFFECT_PROD_MASK) 
+        				? encoded_prod
+        				: encoded_cons;
+
+        if (what & RTC_STACK_EFFECT_REF_MASK) {
+            return rtc_safety_stack_decode_r[encoded];
+        } else {
+            return rtc_safety_stack_decode_i[encoded];
         }
     }
 

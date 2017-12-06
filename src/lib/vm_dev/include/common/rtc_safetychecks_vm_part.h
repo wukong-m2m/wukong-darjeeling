@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-extern uint16_t heap_lowbound;
-void rtc_safetychecks_mem_check_mark_heap_bounds();
+extern uint16_t rtc_safety_heap_lowbound;
+void rtc_safety_mark_heap_bounds();
 
 void rtc_safety_abort_with_error(uint8_t error);
 
