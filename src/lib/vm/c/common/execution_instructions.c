@@ -7,6 +7,8 @@
 // generated at infusion time
 #include "jlib_base.h"
 
+#include "rtc_safetychecks_vm_part.h"
+
 ref_t DO_LDS(dj_local_id localStringId) {
 	// resolve the string id
 	dj_global_id globalStringId = dj_global_id_resolve(dj_exec_getCurrentInfusion(), localStringId);
@@ -45,16 +47,26 @@ void DO_INVOKEVIRTUAL(dj_global_id globalMethodDefId, uint8_t nr_ref_args) {
 	// lookup the virtual method
 	dj_global_id methodImplId = dj_global_id_lookupVirtualMethod(globalMethodDefId, object);
 
+// #ifdef AOT_SAFETY_CHECKS
+// 	// Safety check
+// 	dj_global_id anyMethodImplId = dj_global_id_lookupAnyVirtualMethod(globalMethodDefId);
+// 	niels
+// #endif
+
+
 	DEBUG_LOG(DBG_DARJEELING, ">>>>> invokevirtual METHOD IMPL %p.%d\n", methodImplId.infusion, methodImplId.entity_id);
 
 	// check if method not found, and throw an error if this is the case. else, invoke the method
 	if (methodImplId.infusion==NULL)
 	{
+#ifdef AOT_SAFETY_CHECKS
+		rtc_safety_abort_with_error(RTC_SAFETYCHECK_NO_IMPL_FOUND_FOR_INVOKEVIRTUAL);
+#else // AOT_SAFETY_CHECKS
 		DEBUG_LOG(DBG_DARJEELING, "methodImplId.infusion is NULL at INVOKEVIRTUAL %p.%d\n", resolvedMethodDefId.infusion, resolvedMethodDefId.entity_id);
 
 		dj_exec_createAndThrow(VIRTUALMACHINE_ERROR);
-	} else
-	{
+#endif // AOT_SAFETY_CHECKS
+	} else {
 		callMethod(methodImplId, true);
 	}
 }

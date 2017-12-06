@@ -26,5 +26,6 @@ void rtc_safety_abort_with_error(uint8_t error);
 #define RTC_SAFETYCHECK_RETURN_INCORRECT_METHOD_HEADER                15
 #define RTC_SAFETYCHECK_NOT_ENOUGH_SPACE_IN_FRAME_FOR_LW_CALL         16
 #define RTC_SAFETYCHECK_ILLEGAL_MEMORY_ACCESS                         17
+#define RTC_SAFETYCHECK_NO_IMPL_FOUND_FOR_INVOKEVIRTUAL               18
 
 #endif // RTC_SAFETYCHECKS_VM_PART_H
