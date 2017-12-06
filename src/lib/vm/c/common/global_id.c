@@ -322,10 +322,48 @@ runtime_id_t dj_global_id_getRuntimeClassId(dj_global_id global_class_id)
 	return global_class_id.infusion->class_base + global_class_id.entity_id;
 }
 
+dj_global_id dj_global_id_lookupMethodImplInClassDef(dj_infusion *infusion, dj_local_id methodDefLocalId, dj_di_pointer classDef) {
+	dj_global_id ret;
+	ret.infusion = NULL;
+
+	// get method table for the current class
+	dj_di_pointer methodTable = dj_di_classDefinition_getMethodTable(classDef);
+
+	// scan the method table for the desired method
+	for (int i=0; i<dj_di_methodTable_getSize(methodTable); i++)
+	{
+
+		dj_di_pointer methodTableEntry = dj_di_methodTable_getEntry(methodTable, i);
+
+		DEBUG_LOG(DBG_DARJEELING, "Method lookup: %d.%d ?= %d.%d\n",
+				dj_di_methodTableEntry_getDefinitionEntity(methodTableEntry),
+				dj_di_methodTableEntry_getDefinitionInfusion(methodTableEntry),
+				methodDefLocalId.entity_id, methodDefLocalId.infusion_id
+				);
+
+		if ( (dj_di_methodTableEntry_getDefinitionEntity(methodTableEntry)==methodDefLocalId.entity_id) &&
+			(dj_di_methodTableEntry_getDefinitionInfusion(methodTableEntry)==methodDefLocalId.infusion_id) )
+		{
+			// found method, resolve method definition
+			ret = dj_global_id_resolve(infusion, dj_di_methodTableEntry_getImplementation(methodTableEntry));
+
+#ifdef DARJEELING_DEBUG
+				char name[16];
+
+				dj_infusion_getName(ret.infusion, name, 16);
+				DEBUG_LOG(DBG_DARJEELING, "Found %s %d\n", name, ret.entity_id);
+#endif
+
+			return ret;
+		}
+	}
+
+	return ret;
+}
+
 // TODO holy zombiejesus this is ugly
 dj_global_id dj_global_id_lookupVirtualMethod(dj_global_id resolvedMethodDefId, dj_object *object)
 {
-	int i;
 	dj_global_id ret;
 	dj_di_pointer classDef;
 	dj_global_id classId;
@@ -339,7 +377,6 @@ dj_global_id dj_global_id_lookupVirtualMethod(dj_global_id resolvedMethodDefId, 
 
 	while (true)
 	{
-
 		// Map the resolved method ID to the global ID space of the class' infusion.
 		// We will check if this global ID is found in the class' method table.
 		methodDefLocalId = dj_global_id_mapToInfusion(resolvedMethodDefId, classId.infusion);
@@ -347,39 +384,7 @@ dj_global_id dj_global_id_lookupVirtualMethod(dj_global_id resolvedMethodDefId, 
 		// get class definition for the class we're scanning
 		classDef = dj_global_id_getClassDefinition(classId);
 
-		// get method table for the current class
-		dj_di_pointer methodTable = dj_di_classDefinition_getMethodTable(classDef);
-
-		// scan the method table for the desired method
-		for (i=0; i<dj_di_methodTable_getSize(methodTable); i++)
-		{
-
-			dj_di_pointer methodTableEntry = dj_di_methodTable_getEntry(methodTable, i);
-
-			DEBUG_LOG(DBG_DARJEELING, "Method lookup: %d.%d ?= %d.%d\n",
-					dj_di_methodTableEntry_getDefinitionEntity(methodTableEntry),
-					dj_di_methodTableEntry_getDefinitionInfusion(methodTableEntry),
-					methodDefLocalId.entity_id, methodDefLocalId.infusion_id
-					);
-
-			if ( (dj_di_methodTableEntry_getDefinitionEntity(methodTableEntry)==methodDefLocalId.entity_id) &&
-				(dj_di_methodTableEntry_getDefinitionInfusion(methodTableEntry)==methodDefLocalId.infusion_id) )
-			{
-
-				// found method, resolve method definition
-				ret = dj_global_id_resolve(classId.infusion, dj_di_methodTableEntry_getImplementation(methodTableEntry));
-
-#ifdef DARJEELING_DEBUG
-				char name[16];
-
-				dj_infusion_getName(ret.infusion, name, 16);
-				DEBUG_LOG(DBG_DARJEELING, "Found %s %d\n", name, ret.entity_id);
-#endif
-
-				// no need to scan the rest of the table
-				break;
-			}
-		}
+		ret = dj_global_id_lookupMethodImplInClassDef(classId.infusion, methodDefLocalId, classDef);
 
 		// if we found a method at this point, we don't need to keep looking in
 		// parent classes
