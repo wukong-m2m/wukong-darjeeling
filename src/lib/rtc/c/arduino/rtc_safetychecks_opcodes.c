@@ -324,32 +324,18 @@ uint8_t rtc_safety_get_stack_effect(uint8_t opcode, uint8_t what) {
             case RTC_STACK_PROD_INT:
                 return (rtc_ts->jvm_operand_byte0 & 15) + (rtc_ts->jvm_operand_byte0 >> 4);
         }
-    } else if (opcode == JVM_INVOKEVIRTUAL || opcode == JVM_INVOKEINTERFACE) {
-        switch (what) {
-            case RTC_STACK_CONS_INT:
-                return rtc_ts->jvm_operand_byte3;
-            case RTC_STACK_CONS_REF:
-                return rtc_ts->jvm_operand_byte2 + 1; // Add +1 for instance reference
-            case RTC_STACK_PROD_INT:
-                switch (rtc_ts->jvm_operand_byte4) {
-                    case JTID_BOOLEAN:
-                    case JTID_CHAR:
-                    case JTID_BYTE:
-                    case JTID_SHORT:
-                        return 1;
-                    case JTID_INT:
-                        return 2;
-                    default:
-                        return 0;
-                }
-            case RTC_STACK_PROD_REF:
-                return rtc_ts->jvm_operand_byte4 == JTID_REF ? 1 : 0;
-        }
-    } else if (opcode == JVM_INVOKESTATIC || opcode == JVM_INVOKESPECIAL || opcode == JVM_INVOKELIGHT) {
+    } else if (opcode == JVM_INVOKEVIRTUAL || opcode == JVM_INVOKEINTERFACE || opcode == JVM_INVOKESTATIC || opcode == JVM_INVOKESPECIAL || opcode == JVM_INVOKELIGHT) {
         dj_local_id localId;
         localId.infusion_id = rtc_ts->jvm_operand_byte0;
         localId.entity_id = rtc_ts->jvm_operand_byte1;
+
         dj_global_id globalId = dj_global_id_resolve(rtc_ts->infusion,  localId);
+        if (opcode == JVM_INVOKEVIRTUAL || opcode == JVM_INVOKEINTERFACE) {
+            // The ID in the opcode is the id of a method DEFINITION. Replace it with any IMPLEMENTATION we can find.
+            // At runtime, we will check each invoke resolves to an implementation with the same signature.
+            globalId = dj_global_id_lookupAnyVirtualMethod(globalId);
+        }
+
         dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(globalId);
 
         switch (what) {
@@ -357,7 +343,7 @@ uint8_t rtc_safety_get_stack_effect(uint8_t opcode, uint8_t what) {
                 return dj_di_methodImplementation_getIntegerArgumentCount(methodImpl);
             case RTC_STACK_CONS_REF:
                 return dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)
-                		+ (opcode == JVM_INVOKESPECIAL ? 1 : 0); // Add +1 for instance reference
+                        + (opcode == JVM_INVOKESPECIAL || opcode == JVM_INVOKEINTERFACE || opcode == JVM_INVOKEVIRTUAL ? 1 : 0); // Add +1 for instance reference
             case RTC_STACK_PROD_INT:
                 switch (dj_di_methodImplementation_getReturnType(methodImpl)) {
                     case JTID_BOOLEAN:

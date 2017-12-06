@@ -56,6 +56,17 @@ typedef struct _dj_infusion dj_infusion;
 typedef struct _dj_vm dj_vm;
 typedef struct _dj_named_native_handler dj_named_native_handler;
 
+#ifdef AOT_SAFETY_CHECKS
+typedef struct _rtc_safety_method_signature rtc_safety_method_signature;
+struct  _rtc_safety_method_signature
+{
+	uint8_t nr_int_args;
+	uint8_t nr_ref_args;
+	uint8_t return_type;
+};
+#endif // AOT_SAFETY_CHECKS
+
+
 /**
  * A two-byte typle that references entities. The infusion_id points to an infusion and the entity_id indexes
  * a certain entity within that infusion. The local ID is called 'local' because it only makes sense within the context of

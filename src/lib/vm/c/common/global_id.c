@@ -27,6 +27,7 @@
 #include "execution.h"
 #include "object.h"
 #include "debug.h"
+#include "parse_infusion.h"
 
 #include "jlib_base.h"
 
@@ -401,6 +402,38 @@ dj_global_id dj_global_id_lookupVirtualMethod(dj_global_id resolvedMethodDefId, 
 
 	return ret;
 }
+
+#ifdef AOT_SAFETY_CHECKS
+dj_global_id dj_global_id_lookupAnyVirtualMethod(dj_global_id resolvedMethodDefId)
+{
+	dj_global_id ret;
+	// mark not found
+	ret.infusion = NULL;
+
+	dj_infusion *infusion = currentVm->infusions;
+
+	while (infusion != NULL)
+	{
+		// Map the resolved method ID to the global ID space of the class' infusion.
+		// We will check if this global ID is found in any class' method table.
+		dj_local_id methodDefLocalId = dj_global_id_mapToInfusion(resolvedMethodDefId, infusion);
+
+		for (int i=0; i<dj_infusion_getNumberOfClassDefinitions(infusion); i++) {
+			// get class definition for the class we're scanning
+			dj_di_pointer classDef = dj_infusion_getClassDefinition(infusion, i);
+
+			ret = dj_global_id_lookupMethodImplInClassDef(infusion, methodDefLocalId, classDef);
+
+			if (ret.infusion!=NULL) {
+				return ret;
+			}
+		}
+		infusion = infusion->next;
+	}
+
+	return ret;
+}
+#endif // AOT_SAFETY_CHECKS
 
 /**
  * Gets a method implementation for a global id

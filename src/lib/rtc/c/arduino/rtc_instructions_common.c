@@ -40,7 +40,20 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
     emit_LDI(R24, globalId.entity_id);
 
     if (opcode == JVM_INVOKEVIRTUAL || opcode == JVM_INVOKEINTERFACE) {
+
+#ifdef AOT_SAFETY_CHECKS
+        // The ID in the opcode is the id of a method DEFINITION. Lookup the same IMPLEMENTATION that was used to
+        // determine the stack effect for this invoke in the safety checks.
+        // We will put the arguments and return type in the INVOKE, so we can check at runtime the actual implementation
+        // that will be invoke has the right signature.
+        dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(dj_global_id_lookupAnyVirtualMethod(globalId));
+
+        emit_LDI(R18, dj_di_methodImplementation_getIntegerArgumentCount(methodImpl)); // nr_int_args
+        emit_LDI(R19, dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)); // nr_ref_args
+        emit_LDI(R20, dj_di_methodImplementation_getReturnType(methodImpl)); // return_type
+#else
         emit_LDI(R20, jvm_operand_byte2); // nr_ref_args
+#endif // AOT_SAFETY_CHECKS
         emit_2_CALL((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE);
     } else { // JVM_INVOKESPECIAL or JVM_INVOKESTATIC
         dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(globalId);

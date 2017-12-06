@@ -69,6 +69,7 @@ struct _dj_global_id_with_flags
 
 // Original interface
 void callMethod(dj_global_id methodImplId, bool virtualCall);
+void callMethodFast(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t flags, bool virtualCall);
 // Optimised versions to use when the target impl is known at compile time
 void callNativeMethod(dj_global_id methodImplId, dj_di_pointer methodImpl, bool virtualCall);
 uint32_t callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer methodImpl, uint16_t frame_size);

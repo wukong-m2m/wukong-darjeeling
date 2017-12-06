@@ -952,7 +952,6 @@ bool dj_exec_currentMethodIsRTCCompiled() {
  * case of a virtual call the object the method belongs to is on the stack and
  * should be handled as an additional parameter. Should be either 1 or 0.
  */
-void callMethodFast(dj_global_id methodImplId, dj_di_pointer methodImpl, uint8_t flags, bool virtualCall);
 void callMethod(dj_global_id methodImplId, bool virtualCall)
 {
 	// get a pointer in program space to the method implementation block

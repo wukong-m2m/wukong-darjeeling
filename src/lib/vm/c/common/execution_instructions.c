@@ -24,7 +24,13 @@ ref_t DO_LDS(dj_local_id localStringId) {
 }
 
 
+#ifdef AOT_SAFETY_CHECKS
+void DO_INVOKEVIRTUAL(dj_global_id globalMethodDefId, rtc_safety_method_signature signature_info) {
+	uint8_t nr_ref_args = signature_info.nr_ref_args;
+#else
 void DO_INVOKEVIRTUAL(dj_global_id globalMethodDefId, uint8_t nr_ref_args) {
+#endif
+
 	// peek the object on the stack
 	dj_object *object = REF_TO_VOIDP(dj_exec_stackPeekDeepRef(nr_ref_args));
 
@@ -46,13 +52,19 @@ void DO_INVOKEVIRTUAL(dj_global_id globalMethodDefId, uint8_t nr_ref_args) {
 
 	// lookup the virtual method
 	dj_global_id methodImplId = dj_global_id_lookupVirtualMethod(globalMethodDefId, object);
+	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(methodImplId);
 
-// #ifdef AOT_SAFETY_CHECKS
-// 	// Safety check
-// 	dj_global_id anyMethodImplId = dj_global_id_lookupAnyVirtualMethod(globalMethodDefId);
-// 	niels
-// #endif
+#ifdef AOT_SAFETY_CHECKS
+	// Safety check: grab the first implementation of this methodDef, regardless of the object
 
+	// This will be the same implementation used to check the stack effects of the invoke instruction.
+	// The signature should match the actual implementation found above.
+	if ((dj_di_methodImplementation_getReferenceArgumentCount(methodImpl) != signature_info.nr_ref_args)
+			|| (dj_di_methodImplementation_getIntegerArgumentCount(methodImpl) != signature_info.nr_int_args)
+			|| (dj_di_methodImplementation_getReturnType(methodImpl) != signature_info.return_type)) {
+		rtc_safety_abort_with_error(RTC_SAFETYCHECK_VIRTUAL_IMPLEMENTATION_SIGNATURE_MISMATCH);
+	}
+#endif
 
 	DEBUG_LOG(DBG_DARJEELING, ">>>>> invokevirtual METHOD IMPL %p.%d\n", methodImplId.infusion, methodImplId.entity_id);
 
@@ -67,7 +79,8 @@ void DO_INVOKEVIRTUAL(dj_global_id globalMethodDefId, uint8_t nr_ref_args) {
 		dj_exec_createAndThrow(VIRTUALMACHINE_ERROR);
 #endif // AOT_SAFETY_CHECKS
 	} else {
-		callMethod(methodImplId, true);
+		uint8_t flags = dj_di_methodImplementation_getFlags(methodImpl);
+		callMethodFast(methodImplId, methodImpl, flags, true);
 	}
 }
 
