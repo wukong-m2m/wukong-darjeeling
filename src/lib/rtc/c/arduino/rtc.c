@@ -158,7 +158,7 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
     rtc_ts->branch_target_count = 0;
     rtc_ts->flags = dj_di_methodImplementation_getFlags(methodimpl);
     #ifdef AOT_SAFETY_CHECKS
-    rtc_ts->pre_instruction_int_stack = rtc_ts->pre_instruction_ref_stack = rtc_ts->post_instruction_int_stack = rtc_ts->post_instruction_ref_stack = 0;
+    rtc_ts->pre_instruction_int_stack = rtc_ts->pre_instruction_ref_stack = 0;
     #endif //AOT_SAFETY_CHECKS
     if (rtc_ts->flags & FLAGS_USESSTATICFIELDS) {
         rtc_current_method_set_uses_reg(R2);

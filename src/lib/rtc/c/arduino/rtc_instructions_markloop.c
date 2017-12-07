@@ -61,7 +61,7 @@ void rtc_translate_single_instruction() {
     uint8_t *operand_regs3 = operand_regs1 + 8;
 
 #ifdef AOT_SAFETY_CHECKS
-    rtc_safety_process_opcode(opcode);
+    rtc_ts->current_opcode = opcode;
 #endif
 
     if (!rtc_poppedstackcache_can_I_skip_this()) {
@@ -1685,6 +1685,10 @@ void rtc_translate_single_instruction() {
         break;
     }
     }
+
+#ifdef AOT_SAFETY_CHECKS
+    rtc_safety_check_opcode(opcode);
+#endif
 
     rtc_stackcache_next_instruction();
     ts->pc += rtc_number_of_operandbytes_for_opcode(opcode);

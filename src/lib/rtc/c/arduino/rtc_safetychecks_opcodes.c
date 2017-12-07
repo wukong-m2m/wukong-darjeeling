@@ -285,7 +285,6 @@ const DJ_PROGMEM uint8_t rtc_safety_stack_decode_i[] = {
 	3,
 	3,
 	4,
-	14,
 };
 
 const DJ_PROGMEM uint8_t rtc_safety_stack_decode_r[] = {
@@ -300,7 +299,6 @@ const DJ_PROGMEM uint8_t rtc_safety_stack_decode_r[] = {
 	0,
 	1,
 	0,
-	14,
 };
 
 // This could be smaller, but for now I'd prefer to keep the encoding/decoding tables as #defines
