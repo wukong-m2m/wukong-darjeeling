@@ -8,6 +8,8 @@ void rtc_safety_mark_heap_bounds();
 
 void rtc_safety_abort_with_error(uint8_t error);
 
+#define RTC_SAFETY_MIN_GAP_BETWEEN_STACK_AND_HEAP                    150
+
 #define RTC_SAFETYCHECK_METHOD_SHOULD_END_IN_BRANCH_OR_RETURN          0
 #define RTC_SAFETYCHECK_INT_STACK_UNDERFLOW                            1
 #define RTC_SAFETYCHECK_REF_STACK_UNDERFLOW                            2
@@ -30,5 +32,6 @@ void rtc_safety_abort_with_error(uint8_t error);
 #define RTC_SAFETYCHECK_VIRTUAL_IMPLEMENTATION_SIGNATURE_MISMATCH     19
 #define RTC_SAFETYCHECK_NO_IMPLEMENTATION_FOR_VIRTUAL_FOUND           20
 #define RTC_SAFETYCHECK_VIRTUAL_METHOD_RESOLVED_TO_ABSTRACT_METHOD    21
+#define RTC_SAFETYCHECK_NATIVE_STACK_OVERFLOW                         22
 
 #endif // RTC_SAFETYCHECKS_VM_PART_H

@@ -75,6 +75,8 @@
 #include "opcodes.h"
 #include "opcodes.c"
 
+#include "rtc_safetychecks_vm_part.h"
+
 // currently selected Virtual Machine context
 dj_vm *currentVm;
 dj_thread *dj_currentThread;
@@ -1103,6 +1105,20 @@ uint32_t callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer meth
 	dj_frame *frame = dj_frame_create_fast(methodImplId, methodImpl);
 #endif // EXECUTION_FRAME_ON_STACK
 // avroraCallMethodTimerMark(11);
+
+#ifdef AOT_SAFETY_CHECKS
+	// When allocating a new java stack frame we need to make sure there is
+	// enough space between the frame and the heap for the Java int stack to
+	// grow, and for the native frames to start the AOT compiled code
+	// (returnFromMethod and callJavaMethod_setup).
+	// For native methods that may be called we could either reserve enough
+	// space to guarantee they can execute, or check on each call, or a
+	// combination of both (only check for expensive methods)
+
+	if (((uint16_t)frame) - dj_di_methodImplementation_getMaxIntStack(methodImpl) - RTC_SAFETY_MIN_GAP_BETWEEN_STACK_AND_HEAP < (uint16_t)right_pointer) {
+		rtc_safety_abort_with_error(RTC_SAFETYCHECK_NATIVE_STACK_OVERFLOW);
+	}
+#endif
 
 	// This will create the frame, pass parameters, etc. For AOT compiled methods it will also call the method and return the return value.
 	// It always returns a 32 bit int, but for short/refs the high two bytes are garbage. For voids the whole return value should be ignored.
