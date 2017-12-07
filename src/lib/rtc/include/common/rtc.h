@@ -2,6 +2,7 @@
 #define RTC_H
 
 #include "types.h"
+#include "parse_infusion.h"
 #include "config.h"
 
 #define RTC_START_OF_COMPILED_CODE_SPACE (GET_FAR_ADDRESS(rtc_start_of_compiled_code_marker))
@@ -29,10 +30,10 @@ uint16_t rtc_offset_for_static_short(dj_infusion *infusion_ptr, uint8_t variable
 uint16_t rtc_offset_for_static_int(dj_infusion *infusion_ptr, uint8_t variable_index);
 uint16_t rtc_offset_for_static_long(dj_infusion *infusion_ptr, uint8_t variable_index);
 uint16_t rtc_offset_for_referenced_infusion(dj_infusion *infusion_ptr, uint8_t ref_inf);
-uint8_t offset_for_intlocal_short(dj_di_pointer methodimpl, uint8_t local);
-uint8_t offset_for_intlocal_int(dj_di_pointer methodimpl, uint8_t local);
-uint8_t offset_for_intlocal_long(dj_di_pointer methodimpl, uint8_t local);
-uint8_t offset_for_reflocal(dj_di_pointer methodimpl, uint8_t local);
+uint8_t offset_for_intlocal_short(uint8_t local);
+uint8_t offset_for_intlocal_int(uint8_t local);
+uint8_t offset_for_intlocal_long(uint8_t local);
+uint8_t offset_for_reflocal(uint8_t local);
 uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode);
 void rtc_current_method_set_uses_reg(uint8_t reg);
 void rtc_current_method_set_uses_reg_used_in_lightweight_invoke(uint8_t lightweightmethod_id);
@@ -54,9 +55,9 @@ void emit_store_local_32bit(uint8_t *regs, uint16_t offset);
 typedef struct _rtc_translationstate {
 	dj_infusion *infusion;
 	dj_di_pointer methodimpl;
+    dj_methodImplementation methodimpl_header;
     dj_di_pointer jvm_code_start;
     uint16_t pc;
-    uint16_t method_length;
 	uint_farptr_t branch_target_table_start_ptr;
     uint16_t branch_target_count; // Keep track of how many branch targets we've seen
     uint16_t codebuffer[RTC_CODEBUFFER_SIZE];
@@ -65,7 +66,7 @@ typedef struct _rtc_translationstate {
     uint8_t current_method_index;
     uint8_t *call_saved_registers_used_per_method; // Used to generate the method prologue/epilogue and by INVOKELIGHT inside of a MARKLOOP loop to determine which pinned registers to save/restore.
     native_method_function_t *method_start_addresses; // Used by INVOKELIGHT to find the address of lightweight methods in the current infusion.
-    uint8_t flags;
+
 #ifdef AOT_STRATEGY_SIMPLESTACKCACHE
     uint8_t rtc_stackcache_state[RTC_STACKCACHE_MAX_IDX];
 #endif // AOT_STRATEGY_SIMPLESTACKCACHE

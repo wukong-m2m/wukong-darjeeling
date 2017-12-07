@@ -250,7 +250,7 @@ void rtc_translate_single_instruction() {
             else
                 jvm_operand_byte0 = opcode - JVM_SLOAD_0;
             rtc_stackcache_getfree_16bit(operand_regs1);
-            emit_load_local_16bit(operand_regs1, offset_for_intlocal_short(ts->methodimpl, jvm_operand_byte0));
+            emit_load_local_16bit(operand_regs1, offset_for_intlocal_short(jvm_operand_byte0));
             rtc_stackcache_push_16bit(operand_regs1);
         break;
         case JVM_ILOAD:
@@ -263,7 +263,7 @@ void rtc_translate_single_instruction() {
             else
                 jvm_operand_byte0 = opcode - JVM_ILOAD_0;
             rtc_stackcache_getfree_32bit(operand_regs1);
-            emit_load_local_32bit(operand_regs1, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0));
+            emit_load_local_32bit(operand_regs1, offset_for_intlocal_int(jvm_operand_byte0));
             rtc_stackcache_push_32bit(operand_regs1);
         break;
         case JVM_ALOAD:
@@ -276,7 +276,7 @@ void rtc_translate_single_instruction() {
             else
                 jvm_operand_byte0 = opcode - JVM_ALOAD_0;
             rtc_stackcache_getfree_ref(operand_regs1);
-            emit_load_local_ref(operand_regs1, offset_for_reflocal(ts->methodimpl, jvm_operand_byte0));
+            emit_load_local_ref(operand_regs1, offset_for_reflocal(jvm_operand_byte0));
             rtc_stackcache_push_ref(operand_regs1);
         break;
         case JVM_SSTORE:
@@ -289,7 +289,7 @@ void rtc_translate_single_instruction() {
             else
                 jvm_operand_byte0 = opcode - JVM_SSTORE_0;
             rtc_stackcache_pop_16bit(operand_regs1);
-            emit_store_local_16bit(operand_regs1, offset_for_intlocal_short(ts->methodimpl, jvm_operand_byte0));
+            emit_store_local_16bit(operand_regs1, offset_for_intlocal_short(jvm_operand_byte0));
         break;
         case JVM_ISTORE:
         case JVM_ISTORE_0:
@@ -301,7 +301,7 @@ void rtc_translate_single_instruction() {
             else
                 jvm_operand_byte0 = opcode - JVM_ISTORE_0;
             rtc_stackcache_pop_32bit(operand_regs1);
-            emit_store_local_32bit(operand_regs1, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0));
+            emit_store_local_32bit(operand_regs1, offset_for_intlocal_int(jvm_operand_byte0));
         break;
         case JVM_ASTORE:
         case JVM_ASTORE_0:
@@ -313,7 +313,7 @@ void rtc_translate_single_instruction() {
             else
                 jvm_operand_byte0 = opcode - JVM_ASTORE_0;
             rtc_stackcache_pop_ref(operand_regs1);
-            emit_store_local_ref(operand_regs1, offset_for_reflocal(ts->methodimpl, jvm_operand_byte0));
+            emit_store_local_ref(operand_regs1, offset_for_reflocal(jvm_operand_byte0));
         break;
         case JVM_BALOAD:
         case JVM_CALOAD:
@@ -1194,21 +1194,21 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call(); // To make sure the return registers are available
             // NOTE THAT THIS IS NOT STANDARD avr-gcc ABI, WHICH EXPECTS 16 bit VALUES IN R24:R25, BUT THIS ALLOWS FOR MORE EFFICIENT HANDLING IN CALLMETHOD.
             rtc_stackcache_pop_16bit_into_fixed_reg(R22);
-            emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
+            emit_x_branchtag(OPCODE_RJMP, ts->methodimpl_header.nr_branch_targets); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_IRETURN:
             rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call(); // To make sure the return registers are available
             rtc_stackcache_pop_32bit_into_fixed_reg(R22);
-            emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
+            emit_x_branchtag(OPCODE_RJMP, ts->methodimpl_header.nr_branch_targets); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_ARETURN:
             rtc_stackcache_clear_call_used_regs_and_refs_before_native_function_call(); // To make sure the return registers are available
             // NOTE THAT THIS IS NOT STANDARD avr-gcc ABI, WHICH EXPECTS 16 bit VALUES IN R24:R25, BUT THIS ALLOWS FOR MORE EFFICIENT HANDLING IN CALLMETHOD.
             rtc_stackcache_pop_ref_into_fixed_reg(R22);
-            emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
+            emit_x_branchtag(OPCODE_RJMP, ts->methodimpl_header.nr_branch_targets); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_RETURN:
-            emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
+            emit_x_branchtag(OPCODE_RJMP, ts->methodimpl_header.nr_branch_targets); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_INVOKEVIRTUAL:
         case JVM_INVOKESPECIAL:

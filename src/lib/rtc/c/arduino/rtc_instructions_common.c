@@ -55,19 +55,21 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
         emit_2_CALL((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE);
     } else { // JVM_INVOKESPECIAL or JVM_INVOKESTATIC
         dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(globalId);
-        uint8_t flags = dj_di_methodImplementation_getFlags(methodImpl);
+
+        dj_methodImplementation target_methodimpl_header;
+        dj_di_read_methodImplHeader(&target_methodimpl_header, methodImpl);
 
         emit_LDI(R20, ((uint16_t)methodImpl) & 0xFF);
         emit_LDI(R21, (((uint16_t)methodImpl) >> 8) & 0xFF);
 
-        if ((flags & FLAGS_NATIVE) != 0) {
+        if ((target_methodimpl_header.flags & FLAGS_NATIVE) != 0) {
             emit_2_CALL((uint16_t)&RTC_INVOKESTATIC_FAST_NATIVE);
         } else {
-            rettype = dj_di_methodImplementation_getReturnType(methodImpl); // By setting rettype here, the code past postinvoke will push any return value onto the stack (using stack caching if possible). This shouldn't be done for native methods, since they will push the return value onto the stack directly!!!!
+            rettype = target_methodimpl_header.return_type; // By setting rettype here, the code past postinvoke will push any return value onto the stack (using stack caching if possible). This shouldn't be done for native methods, since they will push the return value onto the stack directly!!!!
             uint16_t frame_size = dj_frame_size(methodImpl);
             emit_LDI(R18, frame_size & 0xFF);
             emit_LDI(R19, (frame_size >> 8) & 0xFF);
-            emit_LDI(R25, flags);
+            emit_LDI(R25, target_methodimpl_header.flags);
             emit_2_CALL((uint16_t)&RTC_INVOKESPECIAL_OR_STATIC_FAST_JAVA);
         }
     }
@@ -154,7 +156,8 @@ void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_ope
     uint8_t rettype = dj_di_methodImplementation_getReturnType(calleeMethodImpl);
 
     bool lightweightMethodUsesLocalVariables = (dj_di_methodImplementation_getNumberOfTotalVariableSlots(calleeMethodImpl) > 0);
-    uint16_t bytesForCurrentMethodsOwnLocals = 2*(dj_di_methodImplementation_getNumberOfOwnVariableSlots(callerMethodImpl));
+    uint16_t bytesForCurrentMethodsOwnLocals = 2*(rtc_ts->methodimpl_header.nr_own_var_slots);
+
     if (lightweightMethodUsesLocalVariables) {
         // Target lightweight method uses local variables. It will use the extra space
         // reserved in the current method's frame for such lightweight methods.
@@ -202,13 +205,13 @@ void rtc_common_translate_inc(uint8_t opcode, uint8_t jvm_operand_byte0, uint8_t
     bool is_iinc;
     if (opcode == JVM_IINC || opcode == JVM_IINC_W) {
         is_iinc = true;
-        offset = offset_for_intlocal_int(rtc_ts->methodimpl, jvm_operand_byte0);
+        offset = offset_for_intlocal_int(jvm_operand_byte0);
 #ifdef AOT_SAFETY_CHECKS
         rtc_safety_check_offset_valid_for_local_variable(offset + 3); // +3 because we will write four bytes at this offset and both need to fit in the space reserved for local variables.
 #endif //AOT_SAFETY_CHECKS
     } else {
         is_iinc = false;
-        offset = offset_for_intlocal_short(rtc_ts->methodimpl, jvm_operand_byte0);
+        offset = offset_for_intlocal_short(jvm_operand_byte0);
 #ifdef AOT_SAFETY_CHECKS
         rtc_safety_check_offset_valid_for_local_variable(offset + 1); // +1 because we will write four bytes at this offset and both need to fit in the space reserved for local variables.
 #endif //AOT_SAFETY_CHECKS
