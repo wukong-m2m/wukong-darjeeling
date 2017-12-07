@@ -41,9 +41,7 @@ char dj_global_id_testType(void * ref, dj_local_id localClassId);
 char dj_global_id_isJavaLangObject(dj_global_id class);
 
 dj_global_id dj_global_id_lookupVirtualMethod(dj_global_id resolvedMethodDefId, dj_object *object);
-#ifdef AOT_SAFETY_CHECKS
 dj_global_id dj_global_id_lookupAnyVirtualMethod(dj_global_id resolvedMethodDefId);
-#endif
 runtime_id_t dj_global_id_getRuntimeClassId(dj_global_id dj_global_id);
 
 dj_di_pointer dj_global_id_getMethodImplementation(dj_global_id dj_global_id);

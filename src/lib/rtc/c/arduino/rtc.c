@@ -370,26 +370,16 @@ uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode) {
         || opcode == JVM_NEW
         || opcode == JVM_ANEWARRAY
         || opcode == JVM_CHECKCAST
-        || opcode == JVM_INSTANCEOF) {
+        || opcode == JVM_INSTANCEOF
+        || opcode == JVM_INVOKEVIRTUAL
+        || opcode == JVM_INVOKEINTERFACE) {
         return 2;
     }
 
     if (opcode == JVM_SINC_W
-        || opcode == JVM_IINC_W
-#ifndef AOT_SAFETY_CHECKS
-        || opcode == JVM_INVOKEVIRTUAL
-        || opcode == JVM_INVOKEINTERFACE
-#endif // AOT_SAFETY_CHECKS
-        ) {
+        || opcode == JVM_IINC_W) {
         return 3;
     }
-
-#ifdef AOT_SAFETY_CHECKS
-    if (opcode == JVM_INVOKEVIRTUAL
-        || opcode == JVM_INVOKEINTERFACE) {
-        return 5;
-    }
-#endif // AOT_SAFETY_CHECKS
 
     if (opcode == JVM_IIPUSH
         || opcode == JVM_GETFIELD_A_FIXED

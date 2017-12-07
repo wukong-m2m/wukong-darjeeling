@@ -333,7 +333,6 @@ dj_global_id dj_global_id_lookupMethodImplInClassDef(dj_infusion *infusion, dj_l
 	// scan the method table for the desired method
 	for (int i=0; i<dj_di_methodTable_getSize(methodTable); i++)
 	{
-
 		dj_di_pointer methodTableEntry = dj_di_methodTable_getEntry(methodTable, i);
 
 		DEBUG_LOG(DBG_DARJEELING, "Method lookup: %d.%d ?= %d.%d\n",
@@ -403,7 +402,6 @@ dj_global_id dj_global_id_lookupVirtualMethod(dj_global_id resolvedMethodDefId, 
 	return ret;
 }
 
-#ifdef AOT_SAFETY_CHECKS
 dj_global_id dj_global_id_lookupAnyVirtualMethod(dj_global_id resolvedMethodDefId)
 {
 	dj_global_id ret;
@@ -430,10 +428,9 @@ dj_global_id dj_global_id_lookupAnyVirtualMethod(dj_global_id resolvedMethodDefI
 		}
 		infusion = infusion->next;
 	}
-
+	
 	return ret;
 }
-#endif // AOT_SAFETY_CHECKS
 
 /**
  * Gets a method implementation for a global id

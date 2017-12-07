@@ -40,11 +40,6 @@ public class VirtualInvokeInstruction extends AbstractInvokeInstruction
 	public void dump(DataOutputStream out) throws IOException
 	{
 		super.dump(out);
-		out.write(methodDefinition.getReferenceParameterCount());
-		if(Infuser.getAddSafetyChecksData()) {
-			out.write(methodDefinition.getIntegerParameterSlotCount());
-			out.write(methodDefinition.getReturnType().getTType());
-		}
 	}
 	
 	public int getLength()

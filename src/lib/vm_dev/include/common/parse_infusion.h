@@ -25,14 +25,12 @@
 #include "types.h"
 #include "program_mem.h"
 
-#ifdef AOT_SAFETY_CHECKS
-#define INFUSION_FORMAT_VERSION 125
-#elif defined(ARRAYINDEX_32BIT)
+#if defined(ARRAYINDEX_32BIT)
  // Version 100: 32 bit index
-#define INFUSION_FORMAT_VERSION 120
+#define INFUSION_FORMAT_VERSION 122
 #else
  // Version 101: 16 bit index
-#define INFUSION_FORMAT_VERSION 121
+#define INFUSION_FORMAT_VERSION 123
 #endif
 
 enum ElementType
