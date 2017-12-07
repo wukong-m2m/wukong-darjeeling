@@ -38,7 +38,8 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
     emit_LDI(R24, globalId.entity_id);
 
     if (opcode == JVM_INVOKEVIRTUAL || opcode == JVM_INVOKEINTERFACE) {
-        emit_LDI(R20, jvm_operand_byte2); // nr_ref_args
+        dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(dj_global_id_lookupAnyVirtualMethod(globalId));
+        emit_LDI(R20, dj_di_methodImplementation_getReferenceArgumentCount(methodImpl));
         emit_2_CALL((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE);
     } else { // JVM_INVOKESPECIAL or JVM_INVOKESTATIC
         dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(globalId);

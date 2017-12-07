@@ -39,7 +39,6 @@ public class VirtualInvokeInstruction extends AbstractInvokeInstruction
 	public void dump(DataOutputStream out) throws IOException
 	{
 		super.dump(out);
-		out.write(methodDefinition.getReferenceParameterCount());
 	}
 	
 	public int getLength()
