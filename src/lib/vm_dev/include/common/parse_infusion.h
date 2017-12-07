@@ -124,6 +124,25 @@ enum JavaTypeID
 #define dj_di_classDefinition_getMethodTable(pointer) ((dj_di_pointer)(pointer) + 8 + dj_di_classDefinition_getNrInterfaces(pointer) * 2)
 
 // method implementation getters
+typedef struct _dj_methodImplementation dj_methodImplementation; 
+struct  _dj_methodImplementation 
+{ 
+  uint8_t nr_int_args; 
+  uint8_t nr_ref_args; 
+  uint8_t nr_int_vars; 
+  uint8_t nr_ref_vars; 
+  uint8_t max_stack; 
+  uint8_t max_ref_stack; 
+  uint8_t max_int_stack; 
+  uint8_t flags; 
+  uint8_t return_type; 
+  uint16_t nr_branch_targets;
+  uint8_t nr_own_var_slots;
+  uint8_t nr_total_var_slots;
+  uint16_t length;
+}; 
+void dj_di_read_methodImplHeader(dj_methodImplementation *header_data, dj_di_pointer methodimpl); 
+
 #define dj_di_methodImplementation_getReferenceArgumentCount(pointer) dj_di_getU8(pointer + 0)
 #define dj_di_methodImplementation_getIntegerArgumentCount(pointer) dj_di_getU8(pointer + 1)
 #define dj_di_methodImplementation_getReferenceLocalVariableCount(pointer) dj_di_getU8(pointer + 2)

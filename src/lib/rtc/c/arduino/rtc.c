@@ -62,9 +62,9 @@ uint16_t rtc_offset_for_referenced_infusion(dj_infusion *infusion_ptr, uint8_t r
                              // |1             ref1         | getLocalRefVariables, stackEndOffset
                              // +---------------------------+
 
-uint8_t offset_for_intlocal_short(dj_di_pointer methodimpl, uint8_t local) {
-    uint32_t offset = (dj_di_methodImplementation_getReferenceLocalVariableCount(methodimpl) * sizeof(ref_t))
-                        + ((dj_di_methodImplementation_getIntegerLocalVariableCount(methodimpl)-1) * sizeof(int16_t))
+uint8_t offset_for_intlocal_short(uint8_t local) {
+    uint32_t offset = (rtc_ts->methodimpl_header.nr_ref_vars * sizeof(ref_t))
+                        + ((rtc_ts->methodimpl_header.nr_int_vars - 1) * sizeof(int16_t))
                         - (local * sizeof(int16_t));
     if (offset > 63) {
         dj_panic(DJ_PANIC_OFFSET_TOO_LARGE);
@@ -72,20 +72,20 @@ uint8_t offset_for_intlocal_short(dj_di_pointer methodimpl, uint8_t local) {
     return offset;
 }
 
-uint8_t offset_for_intlocal_int(dj_di_pointer methodimpl, uint8_t local) {
+uint8_t offset_for_intlocal_int(uint8_t local) {
     // Local integer slots grow down, but the bytecode will point at the slot with the lowest index, which is the top one.
     // For example, look at the 32bit short "int2" in the drawing above. The bytecode will indicate slot 2 as the start,
     // since the 32 bit int is stored in slots 3 and 2. However, slot 3's address is the start of the int in memory,
     // so we need to substract one slot from the pointer.
-    return offset_for_intlocal_short(methodimpl, local) - 1*sizeof(int16_t);
+    return offset_for_intlocal_short(local) - 1*sizeof(int16_t);
 }
 
-uint8_t offset_for_intlocal_long(dj_di_pointer methodimpl, uint8_t local) {
+uint8_t offset_for_intlocal_long(uint8_t local) {
     // Same as for ints, only need to substract 3 slots since a long occupies 4.
-    return offset_for_intlocal_short(methodimpl, local) - 3*sizeof(int16_t);
+    return offset_for_intlocal_short(local) - 3*sizeof(int16_t);
 }
 
-uint8_t offset_for_reflocal(dj_di_pointer methodimpl, uint8_t local) {
+uint8_t offset_for_reflocal(uint8_t local) {
     return (local * sizeof(ref_t));
 }
 
@@ -143,33 +143,32 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
 
     rtc_ts->pc = 0;
     rtc_ts->methodimpl = methodimpl;
+    dj_di_read_methodImplHeader(&(rtc_ts->methodimpl_header), methodimpl);
     rtc_ts->jvm_code_start = dj_di_methodImplementation_getData(methodimpl);
-    rtc_ts->method_length = dj_di_methodImplementation_getLength(methodimpl);
     rtc_ts->branch_target_table_start_ptr = branch_target_table_start_ptr;
     rtc_ts->branch_target_count = 0;
-    rtc_ts->flags = dj_di_methodImplementation_getFlags(methodimpl);
-    if (rtc_ts->flags & FLAGS_USESSTATICFIELDS) {
+    if (rtc_ts->methodimpl_header.flags & FLAGS_USESSTATICFIELDS) {
         rtc_current_method_set_uses_reg(R2);
     }
     // If we're using stack caching, initialise the cache
 #ifdef AOT_STRATEGY_SIMPLESTACKCACHE    
-    rtc_stackcache_init(rtc_ts->flags & FLAGS_LIGHTWEIGHT);
+    rtc_stackcache_init(rtc_ts->methodimpl_header.flags & FLAGS_LIGHTWEIGHT);
 #endif
 #ifdef AOT_STRATEGY_POPPEDSTACKCACHE    
-    rtc_stackcache_init(rtc_ts->flags & FLAGS_LIGHTWEIGHT);
+    rtc_stackcache_init(rtc_ts->methodimpl_header.flags & FLAGS_LIGHTWEIGHT);
 #endif
 #ifdef AOT_STRATEGY_MARKLOOP
     rtc_ts->may_use_RZ = false;
     // If a lightweight method uses markloop, we should store the return address in the stack frame instead of R18:R19. If we don’t and MARKLOOP pins the maximum of 7 register pairs, we only have 3 free pairs left, while some instructions require 4 free pairs.
     // The loop means the extra overhead (8 cycles) will be relatively little compared to the runtime, and may even be outweight by the gains of having more free registers for stackcaching.
     // If we DON'T save the return address in the frame, but keep it in R18:R19, we shouldn't use those register for stack caching.
-    rtc_stackcache_init(   ((rtc_ts->flags & FLAGS_LIGHTWEIGHT) != 0)
-                        && ((rtc_ts->flags & FLAGS_USES_SIMUL_INVOKESTATIC_MARKLOOP) == 0));
+    rtc_stackcache_init(   ((rtc_ts->methodimpl_header.flags & FLAGS_LIGHTWEIGHT) != 0)
+                        && ((rtc_ts->methodimpl_header.flags & FLAGS_USES_SIMUL_INVOKESTATIC_MARKLOOP) == 0));
 #endif
 
     // translate the method
     DEBUG_LOG(DBG_RTC, "[rtc] method length %d\n", ts.method_length);
-    while (rtc_ts->pc < rtc_ts->method_length) {
+    while (rtc_ts->pc < rtc_ts->methodimpl_header.length) {
         rtc_translate_single_instruction();
     }
 

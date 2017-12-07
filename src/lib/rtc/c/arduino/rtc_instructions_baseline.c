@@ -192,7 +192,7 @@ void rtc_translate_single_instruction() {
                 ts->pc += 1; // Skip operand (already read into jvm_operand_byte0)
             else
                 jvm_operand_byte0 = opcode - JVM_SLOAD_0;
-            emit_load_local_16bit_baseline_wrapper(R24, offset_for_intlocal_short(ts->methodimpl, jvm_operand_byte0));
+            emit_load_local_16bit_baseline_wrapper(R24, offset_for_intlocal_short(jvm_operand_byte0));
             emit_x_PUSH_16bit(R24);
         break;
         case JVM_ILOAD:
@@ -204,7 +204,7 @@ void rtc_translate_single_instruction() {
                 ts->pc += 1; // Skip operand (already read into jvm_operand_byte0)
             else
                 jvm_operand_byte0 = opcode - JVM_ILOAD_0;
-            emit_load_local_32bit_baseline_wrapper(R22, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0));
+            emit_load_local_32bit_baseline_wrapper(R22, offset_for_intlocal_int(jvm_operand_byte0));
             emit_x_PUSH_32bit(R22);
         break;
         case JVM_ALOAD:
@@ -216,7 +216,7 @@ void rtc_translate_single_instruction() {
                 ts->pc += 1; // Skip operand (already read into jvm_operand_byte0)
             else
                 jvm_operand_byte0 = opcode - JVM_ALOAD_0;
-            emit_load_local_ref_baseline_wrapper(R24, offset_for_reflocal(ts->methodimpl, jvm_operand_byte0));
+            emit_load_local_ref_baseline_wrapper(R24, offset_for_reflocal(jvm_operand_byte0));
             emit_x_PUSH_REF(R24);
         break;
         case JVM_SSTORE:
@@ -229,7 +229,7 @@ void rtc_translate_single_instruction() {
             else
                 jvm_operand_byte0 = opcode - JVM_SSTORE_0;
             emit_x_POP_16bit(R24);
-            emit_store_local_16bit_baseline_wrapper(R24, offset_for_intlocal_short(ts->methodimpl, jvm_operand_byte0));
+            emit_store_local_16bit_baseline_wrapper(R24, offset_for_intlocal_short(jvm_operand_byte0));
         break;
         case JVM_ISTORE:
         case JVM_ISTORE_0:
@@ -241,7 +241,7 @@ void rtc_translate_single_instruction() {
             else
                 jvm_operand_byte0 = opcode - JVM_ISTORE_0;
             emit_x_POP_32bit(R22);
-            emit_store_local_32bit_baseline_wrapper(R22, offset_for_intlocal_int(ts->methodimpl, jvm_operand_byte0));
+            emit_store_local_32bit_baseline_wrapper(R22, offset_for_intlocal_int(jvm_operand_byte0));
         break;
         case JVM_ASTORE:
         case JVM_ASTORE_0:
@@ -253,7 +253,7 @@ void rtc_translate_single_instruction() {
             else
                 jvm_operand_byte0 = opcode - JVM_ASTORE_0;
             emit_x_POP_REF(R24);
-            emit_store_local_ref_baseline_wrapper(R24, offset_for_reflocal(ts->methodimpl, jvm_operand_byte0));
+            emit_store_local_ref_baseline_wrapper(R24, offset_for_reflocal(jvm_operand_byte0));
         break;
         case JVM_BALOAD:
         case JVM_CALOAD:
@@ -1064,19 +1064,19 @@ void rtc_translate_single_instruction() {
         case JVM_SRETURN:
             // NOTE THAT THIS IS NOT STANDARD avr-gcc ABI, WHICH EXPECTS 16 bit VALUES IN R24:R25, BUT THIS ALLOWS FOR MORE EFFICIENT HANDLING IN CALLMETHOD.
             emit_x_POP_16bit(R22);
-            emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
+            emit_x_branchtag(OPCODE_RJMP, ts->methodimpl_header.nr_branch_targets); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_IRETURN:
             emit_x_POP_32bit(R22);
-            emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
+            emit_x_branchtag(OPCODE_RJMP, ts->methodimpl_header.nr_branch_targets); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_ARETURN:
             // NOTE THAT THIS IS NOT STANDARD avr-gcc ABI, WHICH EXPECTS 16 bit VALUES IN R24:R25, BUT THIS ALLOWS FOR MORE EFFICIENT HANDLING IN CALLMETHOD.
             emit_x_POP_REF(R22);
-            emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
+            emit_x_branchtag(OPCODE_RJMP, ts->methodimpl_header.nr_branch_targets); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_RETURN:
-            emit_x_branchtag(OPCODE_RJMP, dj_di_methodImplementation_getNumberOfBranchTargets(ts->methodimpl)); // We add a final branchtag at the end of the method as the exit point.
+            emit_x_branchtag(OPCODE_RJMP, ts->methodimpl_header.nr_branch_targets); // We add a final branchtag at the end of the method as the exit point.
         break;
         case JVM_INVOKEVIRTUAL:
         case JVM_INVOKESPECIAL:
