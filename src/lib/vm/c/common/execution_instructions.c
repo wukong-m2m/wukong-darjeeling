@@ -57,14 +57,17 @@ void DO_INVOKEVIRTUAL(dj_global_id globalMethodDefId, uint8_t nr_ref_args) {
 #ifdef AOT_SAFETY_CHECKS
 	// Safety check: grab the first implementation of this methodDef, regardless of the object
 
+    dj_methodImplementation callee_methodimpl_header;
+    dj_di_read_methodImplHeader(&callee_methodimpl_header, methodImpl);
+
 	// This will be the same implementation used to check the stack effects of the invoke instruction.
 	// The signature should match the actual implementation found above.
-	if ((dj_di_methodImplementation_getReferenceArgumentCount(methodImpl) != signature_info.nr_ref_args)
-			|| (dj_di_methodImplementation_getIntegerArgumentCount(methodImpl) != signature_info.nr_int_args)
-			|| (dj_di_methodImplementation_getReturnType(methodImpl) != signature_info.return_type)) {
+	if ((callee_methodimpl_header.nr_ref_args != signature_info.nr_ref_args)
+			|| (callee_methodimpl_header.nr_int_args != signature_info.nr_int_args)
+			|| (callee_methodimpl_header.return_type != signature_info.return_type)) {
 		rtc_safety_abort_with_error(RTC_SAFETYCHECK_VIRTUAL_IMPLEMENTATION_SIGNATURE_MISMATCH);
 	}
-    if (dj_di_methodImplementation_getLength(methodImpl) == 0) {
+    if (callee_methodimpl_header.length == 0) {
         rtc_safety_abort_with_error(RTC_SAFETYCHECK_VIRTUAL_METHOD_RESOLVED_TO_ABSTRACT_METHOD);
     }
 #endif

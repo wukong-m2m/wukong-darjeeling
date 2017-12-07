@@ -47,7 +47,6 @@ void rtc_translate_single_instruction() {
     uint8_t jvm_operand_byte1 = rtc_ts->jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + ts->pc + 2);
     uint8_t jvm_operand_byte2 = rtc_ts->jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ts->pc + 3);
     uint8_t jvm_operand_byte3 = rtc_ts->jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ts->pc + 4);
-                                rtc_ts->jvm_operand_byte4 = dj_di_getU8(ts->jvm_code_start + ts->pc + 5);
 #else // AOT_SAFETY_CHECKS
     uint8_t jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ts->pc + 1);
     uint8_t jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + ts->pc + 2);

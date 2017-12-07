@@ -126,10 +126,10 @@ enum JavaTypeID
 typedef struct _dj_methodImplementation dj_methodImplementation; 
 struct  _dj_methodImplementation 
 { 
-  uint8_t nr_int_args; 
   uint8_t nr_ref_args; 
-  uint8_t nr_int_vars; 
+  uint8_t nr_int_args; 
   uint8_t nr_ref_vars; 
+  uint8_t nr_int_vars; 
   uint8_t max_stack; 
   uint8_t max_ref_stack; 
   uint8_t max_int_stack; 

@@ -95,7 +95,6 @@ typedef struct _rtc_translationstate {
     uint8_t jvm_operand_byte1;
     uint8_t jvm_operand_byte2;
     uint8_t jvm_operand_byte3;
-    uint8_t jvm_operand_byte4;
     uint8_t pre_instruction_int_stack;
     uint8_t pre_instruction_ref_stack;
     uint8_t current_opcode;

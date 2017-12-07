@@ -41,7 +41,7 @@ void emit_x_branchtag(uint16_t opcode, uint16_t target) {
 
 #ifdef AOT_SAFETY_CHECKS
     if (!RTC_OPCODE_IS_RETURN(rtc_ts->current_opcode) // For returns we use an extra branchtarget added to the end of each method. Since returns only jump to this target, they are always safe.
-            && target >= dj_di_methodImplementation_getNumberOfBranchTargets(rtc_ts->methodimpl)) {
+            && target >= rtc_ts->methodimpl_header.nr_branch_targets) {
         rtc_safety_abort_with_error(RTC_SAFETYCHECK_BRANCH_TO_NONEXISTANT_BRTARGET);
     }
 #endif //AOT_SAFETY_CHECKS

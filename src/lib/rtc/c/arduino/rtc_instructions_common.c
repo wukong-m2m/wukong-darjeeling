@@ -123,8 +123,9 @@ void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_ope
         dj_panic(DJ_PANIC_NO_ADDRESS_FOUND_FOR_LIGHTWEIGHT_METHOD);
     }
 
-    dj_di_pointer callerMethodImpl = rtc_ts->methodimpl;
     dj_di_pointer calleeMethodImpl = dj_global_id_getMethodImplementation(globalId);
+    dj_methodImplementation callee_methodimpl_header;
+    dj_di_read_methodImplHeader(&callee_methodimpl_header, calleeMethodImpl);
 
 #ifdef AOT_SAFETY_CHECKS
     // A lightweight method will reuse the caller's stackframe. We need to check if enough space has been reserved in the
@@ -134,28 +135,22 @@ void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_ope
     //   - integer stack
     // Note that the callee's max stack and total local variables will include space for any nested lightweight methods calls,
     // so these will have been checked in the callee's safety checks already.
-    uint8_t calleeRefArgs = dj_di_methodImplementation_getReferenceArgumentCount(calleeMethodImpl);
-    uint8_t calleeIntArgs = dj_di_methodImplementation_getIntegerArgumentCount(calleeMethodImpl);
+    uint8_t spaceOnRefStack = rtc_ts->methodimpl_header.max_ref_stack - rtc_ts->pre_instruction_ref_stack + callee_methodimpl_header.nr_ref_args;
+    uint8_t spaceOnIntStack = rtc_ts->methodimpl_header.max_int_stack - rtc_ts->pre_instruction_int_stack + callee_methodimpl_header.nr_int_args;
+    uint8_t spaceForLocalVariables = rtc_ts->methodimpl_header.nr_total_var_slots - rtc_ts->methodimpl_header.nr_own_var_slots;
 
-    uint8_t spaceOnRefStack = dj_di_methodImplementation_getMaxRefStack(callerMethodImpl) - rtc_ts->pre_instruction_ref_stack + calleeRefArgs;
-    uint8_t spaceOnIntStack = dj_di_methodImplementation_getMaxIntStack(callerMethodImpl) - rtc_ts->pre_instruction_int_stack + calleeIntArgs;
-    uint8_t spaceForLocalVariables = dj_di_methodImplementation_getNumberOfTotalVariableSlots(callerMethodImpl) - dj_di_methodImplementation_getNumberOfOwnVariableSlots(callerMethodImpl);
+    uint8_t calleeLocalVariables = callee_methodimpl_header.nr_total_var_slots;
+    uint8_t calleeReservedSpaceForReturnValue = (callee_methodimpl_header.flags & FLAGS_USES_SIMUL_INVOKESTATIC_MARKLOOP) ? 1 : 0;
 
-    uint8_t calleeMaxRefStack = dj_di_methodImplementation_getMaxRefStack(calleeMethodImpl);
-    uint8_t calleeMaxIntStack = dj_di_methodImplementation_getMaxIntStack(calleeMethodImpl);
-    uint8_t calleeLocalVariables = dj_di_methodImplementation_getNumberOfTotalVariableSlots(calleeMethodImpl);
-    uint8_t calleeReservedSpaceForReturnValue = (dj_di_methodImplementation_getFlags(calleeMethodImpl) & FLAGS_USES_SIMUL_INVOKESTATIC_MARKLOOP) ? 1 : 0;
-
-    if ((calleeMaxRefStack > spaceOnRefStack)
-            || (calleeMaxIntStack > spaceOnIntStack)
+    if ((callee_methodimpl_header.max_ref_stack > spaceOnRefStack)
+            || (callee_methodimpl_header.max_int_stack > spaceOnIntStack)
             || ((calleeLocalVariables + calleeReservedSpaceForReturnValue) > spaceForLocalVariables)) {
         rtc_safety_abort_with_error(RTC_SAFETYCHECK_NOT_ENOUGH_SPACE_IN_FRAME_FOR_LW_CALL);
     }
 #endif // AOT_SAFETY_CHECKS
 
-    uint8_t rettype = dj_di_methodImplementation_getReturnType(calleeMethodImpl);
+    bool lightweightMethodUsesLocalVariables = (callee_methodimpl_header.nr_total_var_slots > 0);
 
-    bool lightweightMethodUsesLocalVariables = (dj_di_methodImplementation_getNumberOfTotalVariableSlots(calleeMethodImpl) > 0);
     uint16_t bytesForCurrentMethodsOwnLocals = 2*(rtc_ts->methodimpl_header.nr_own_var_slots);
 
     if (lightweightMethodUsesLocalVariables) {
@@ -177,7 +172,7 @@ void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_ope
         emit_SBIW(RY, bytesForCurrentMethodsOwnLocals);
     }
 
-    rtc_common_push_returnvalue_from_R22_if_necessary(rettype);
+    rtc_common_push_returnvalue_from_R22_if_necessary(callee_methodimpl_header.return_type);
 
 #if defined (AOT_STRATEGY_MARKLOOP)
     // If the invoke light happens in a MARKLOOP loop, the lightweight method might corrupt some pinned values, so we need to save them back to their variable slots first.
