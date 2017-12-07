@@ -64,6 +64,9 @@ void DO_INVOKEVIRTUAL(dj_global_id globalMethodDefId, uint8_t nr_ref_args) {
 			|| (dj_di_methodImplementation_getReturnType(methodImpl) != signature_info.return_type)) {
 		rtc_safety_abort_with_error(RTC_SAFETYCHECK_VIRTUAL_IMPLEMENTATION_SIGNATURE_MISMATCH);
 	}
+    if (dj_di_methodImplementation_getLength(methodImpl) == 0) {
+        rtc_safety_abort_with_error(RTC_SAFETYCHECK_VIRTUAL_METHOD_RESOLVED_TO_ABSTRACT_METHOD);
+    }
 #endif
 
 	DEBUG_LOG(DBG_DARJEELING, ">>>>> invokevirtual METHOD IMPL %p.%d\n", methodImplId.infusion, methodImplId.entity_id);
