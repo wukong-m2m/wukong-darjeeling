@@ -91,9 +91,9 @@ static uint16_t pc;
 static dj_di_pointer code;
 #endif
 
-int16_t __attribute__((section (".intStackSection"))) *intStack;
-ref_t   __attribute__((section (".refStackSection"))) *refStack;
-ref_t   __attribute__((section (".localReferenceVariablesSection"))) *localReferenceVariables;
+int16_t *intStack;
+ref_t *refStack;
+ref_t *localReferenceVariables;
 
 
 bool dj_exec_use_rtc = true;
