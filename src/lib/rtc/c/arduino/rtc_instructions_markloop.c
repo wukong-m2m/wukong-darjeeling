@@ -439,7 +439,7 @@ void rtc_translate_single_instruction() {
             }
 
 #ifdef AOT_SAFETY_CHECKS
-            emit_x_CALL((uint16_t)&rtc_safety_mem_check);
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
 #endif
 
             // Now Z points to the target element
@@ -625,7 +625,7 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_pop_destructive_ref_into_Z();
             jvm_operand_word0 = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, jvm_operand_word0);
 #ifdef AOT_SAFETY_CHECKS
-            emit_x_CALL((uint16_t)&rtc_safety_mem_check);
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
 #endif            
             emit_STD(operand_regs1[0], Z, jvm_operand_word0);
         break;
@@ -634,7 +634,7 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_pop_destructive_ref_into_Z();
             jvm_operand_word0 = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, jvm_operand_word0);
 #ifdef AOT_SAFETY_CHECKS
-            emit_x_CALL((uint16_t)&rtc_safety_mem_check);
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
 #endif            
             emit_STD(operand_regs1[0], Z, jvm_operand_word0);
             emit_STD(operand_regs1[1], Z, jvm_operand_word0+1);
@@ -644,7 +644,7 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_pop_destructive_ref_into_Z();
             jvm_operand_word0 = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, jvm_operand_word0);
 #ifdef AOT_SAFETY_CHECKS
-            emit_x_CALL((uint16_t)&rtc_safety_mem_check);
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
 #endif            
             emit_STD(operand_regs1[0], Z, jvm_operand_word0);
             emit_STD(operand_regs1[1], Z, jvm_operand_word0+1);
@@ -669,7 +669,7 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_pop_nondestructive_ref(operand_regs1); // POP the value to store again
             jvm_operand_word0 = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, jvm_operand_word0*2);
 #ifdef AOT_SAFETY_CHECKS
-            emit_x_CALL((uint16_t)&rtc_safety_mem_check);
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
 #endif            
             emit_STD(operand_regs1[0], Z, (jvm_operand_word0)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
             emit_STD(operand_regs1[1], Z, (jvm_operand_word0)+1);
@@ -684,7 +684,7 @@ void rtc_translate_single_instruction() {
             targetRefOffset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, targetRefOffset);
 
 #ifdef AOT_SAFETY_CHECKS
-            emit_x_CALL((uint16_t)&rtc_safety_mem_check);
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
 #endif            
             emit_STD(operand_regs1[0], Z, targetRefOffset); // targetRefOffset is an index in the (16 bit) array, so multiply by 2
             emit_STD(operand_regs1[1], Z, targetRefOffset+1);
