@@ -32,8 +32,12 @@ gdj clean
 # BEST CASE ONLY
 for benchmark in ${benchmarks}
 do
+    # SAFE
     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
+    # UNSAFE
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true -Paddsafetychecks=false
 done
+
 
 # MARKLOOP + XXTEA FOR DIFF NUMBERS OF PINNED REGISTERS
 # for benchmark in ${benchmarks}
