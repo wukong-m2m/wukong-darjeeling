@@ -62,15 +62,15 @@ if (project.hasProperty('no-opcode-optimisations')) {
     project.ext.usegetfield_a_fixed = 'false'
 }
 
-if (!project.hasProperty('addsafetychecks')) {
-    project.ext.addsafetychecks = 'true'
+if (!project.hasProperty('safe')) {
+    project.ext.safe = 'false'
 } else {
-    if (project.ext.addsafetychecks == '') {
-        project.ext.addsafetychecks = 'true'        
+    if (project.ext.safe == '') {
+        project.ext.safe = 'true'        
     }
-    if (project.ext.addsafetychecks != 'true'
-            && project.ext.addsafetychecks != 'false') {
-        throw new InvalidUserDataException("Invalid value for addsafetychecks" + project.ext.addsafetychecks)        
+    if (project.ext.safe != 'true'
+            && project.ext.safe != 'false') {
+        throw new InvalidUserDataException("Invalid value for safe" + project.ext.safe)        
     }
 }
 
@@ -166,7 +166,7 @@ binaries.all {
     if (project.ext.uselightweightmethods == 'false') {
         cCompiler.args "-D NO_LIGHTWEIGHT_METHODS"
     }
-    if (project.ext.addsafetychecks == 'true') {
+    if (project.ext.safe == 'true') {
         cCompiler.args "-D AOT_SAFETY_CHECKS"
     }
 }
@@ -220,7 +220,7 @@ def getOutputDirName() {
         opt_lightweight='_NOLW'
 
     def opt_safety=''
-    if (project.ext.addsafetychecks == 'true')
+    if (project.ext.safe == 'true')
         opt_safety='_SAFE'
 
     if (project.ext.aotstrat == 'baseline' || project.ext.aotstrat == 'improvedpeephole') {
