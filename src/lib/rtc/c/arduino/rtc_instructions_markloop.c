@@ -353,6 +353,9 @@ void rtc_translate_single_instruction() {
             }
 
             // Now Z points to the target element
+#ifdef AOT_SAFETY_CHECKS_READS
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
+#endif            
             // We could load into operand_regs1, but this contains the array reference, which we may want to preserve.
             // Ask the stack cache for an available register pair, but it shouldn't spill to memory if nothing is available.
             rtc_stackcache_getfree_16bit_for_array_load(operand_regs1);
@@ -557,6 +560,9 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_pop_destructive_ref_into_Z();
 
             jvm_operand_word0 = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, jvm_operand_word0);
+#ifdef AOT_SAFETY_CHECKS_READS
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
+#endif            
             emit_LDD(operand_regs1[0], Z, jvm_operand_word0);
             // need to extend the sign to push it as a short
             emit_CLR(operand_regs1[1]);
@@ -571,6 +577,9 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_pop_destructive_ref_into_Z();
 
             jvm_operand_word0 = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, jvm_operand_word0);
+#ifdef AOT_SAFETY_CHECKS_READS
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
+#endif            
             emit_LDD(operand_regs1[0], Z, jvm_operand_word0);
             emit_LDD(operand_regs1[1], Z, jvm_operand_word0+1);
 
@@ -582,6 +591,9 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_pop_destructive_ref_into_Z();
 
             jvm_operand_word0 = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, jvm_operand_word0);
+#ifdef AOT_SAFETY_CHECKS_READS
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
+#endif            
             emit_LDD(operand_regs1[0], Z, jvm_operand_word0);
             emit_LDD(operand_regs1[1], Z, jvm_operand_word0+1);
             emit_LDD(operand_regs1[2], Z, jvm_operand_word0+2);
@@ -599,6 +611,9 @@ void rtc_translate_single_instruction() {
             // R24:R25 now points to the location of the instance references
             emit_MOVW(RZ, R24); // Move the location to Z
             jvm_operand_word0 = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, jvm_operand_word0*2);
+#ifdef AOT_SAFETY_CHECKS_READS
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
+#endif            
             emit_LDD(operand_regs1[0], Z, (jvm_operand_word0)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
             emit_LDD(operand_regs1[1], Z, (jvm_operand_word0)+1);
 
@@ -612,6 +627,9 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_pop_destructive_ref_into_Z(); // POP the reference into Z
 
             targetRefOffset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, targetRefOffset);
+#ifdef AOT_SAFETY_CHECKS_READS
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
+#endif            
             emit_LDD(operand_regs1[0], Z, targetRefOffset);
             emit_LDD(operand_regs1[1], Z, targetRefOffset+1);
 

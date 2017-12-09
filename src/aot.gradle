@@ -62,6 +62,21 @@ if (project.hasProperty('no-opcode-optimisations')) {
     project.ext.usegetfield_a_fixed = 'false'
 }
 
+if (!project.hasProperty('safer')) {
+    project.ext.safer = 'false'
+} else {
+    if (project.ext.safer == '') {
+        project.ext.safer = 'true'        
+    }
+    if (project.ext.safer != 'true'
+            && project.ext.safer != 'false') {
+        throw new InvalidUserDataException("Invalid value for safer" + project.ext.safer)        
+    }
+    if (project.ext.safer == 'true') {
+        project.ext.safe = 'true'        
+    }
+}
+
 if (!project.hasProperty('safe')) {
     project.ext.safe = 'false'
 } else {
@@ -169,6 +184,9 @@ binaries.all {
     if (project.ext.safe == 'true') {
         cCompiler.args "-D AOT_SAFETY_CHECKS"
     }
+    if (project.ext.safer == 'true') {
+        cCompiler.args "-D AOT_SAFETY_CHECKS_READS"
+    }
 }
 
 def getOutputDirName() {
@@ -222,6 +240,9 @@ def getOutputDirName() {
     def opt_safety=''
     if (project.ext.safe == 'true')
         opt_safety='_SAFE'
+    if (project.ext.safer == 'true')
+        opt_safety+='R'
+
 
     if (project.ext.aotstrat == 'baseline' || project.ext.aotstrat == 'improvedpeephole') {
         return "results_${outdirSTRAT}_R___P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_lightweight}${opt_safety}"

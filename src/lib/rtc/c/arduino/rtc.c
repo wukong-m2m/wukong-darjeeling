@@ -433,6 +433,10 @@ bool rtc_current_method_get_uses_reg(uint8_t reg) {
 }
 
 void emit_load_local_16bit(uint8_t *regs, uint16_t offset) {
+#ifdef AOT_SAFETY_CHECKS_READS
+    rtc_safety_check_offset_valid_for_local_variable(offset + 1); // +1 because we will write two bytes at this offset and both need to fit in the space reserved for local variables.
+#endif //AOT_SAFETY_CHECKS_READS
+
     if (asm_needs_ADIW_to_bring_offset_in_range(offset)) {
         // Offset too large: copy Z to Y and ADIW it until we can reach the desired offset
         emit_MOVW(RZ, RY);
