@@ -56,7 +56,15 @@ public class AbstractMethodDefinition extends Element
 			if (type==BaseType.Ref) ret++;
 		return ret;
 	}
-	
+
+	public int getIntegerParameterSlotCount()
+	{
+		int ret = 0;
+		for (BaseType type : getArgumentTypes())
+			if (type!=BaseType.Ref) ret+=type.getNrIntegerSlots();
+		return ret;
+	}
+
 	public BaseType getReturnType()
 	{
 		return BaseType.fromBCELType(Type.getReturnType(descriptor));

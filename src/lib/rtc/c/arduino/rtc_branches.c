@@ -3,9 +3,12 @@
 #include "program_mem.h"
 #include "wkreprog.h"
 #include "asm.h"
+#include "parse_infusion.h"
 #include "rtc.h"
 #include "rtc_emit.h"
 #include "rtc_branches.h"
+#include "rtc_safetychecks.h"
+#include "rtc_safetychecks_opcodes.h"
 #include "config.h"
 
 
@@ -35,6 +38,13 @@ void emit_x_branchtag(uint16_t opcode, uint16_t target) {
     emit(opcode);
     emit_raw_word(target);
     emit_flush_to_flash(); // To make sure we won't accidentally optimise addresses or branch labels
+
+#ifdef AOT_SAFETY_CHECKS
+    if (!RTC_OPCODE_IS_RETURN(rtc_ts->current_opcode) // For returns we use an extra branchtarget added to the end of each method. Since returns only jump to this target, they are always safe.
+            && target >= rtc_ts->methodimpl_header.nr_branch_targets) {
+        rtc_safety_abort_with_error(RTC_SAFETYCHECK_BRANCH_TO_NONEXISTANT_BRTARGET);
+    }
+#endif //AOT_SAFETY_CHECKS
 }
 
 #define RTC_STARTADDRESS_BRTARGET_TABLE_1 (branch_target_table_start_ptr)

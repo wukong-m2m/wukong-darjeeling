@@ -11,12 +11,17 @@
 extern int16_t *intStack;
 extern ref_t *refStack;
 
-void RTC_INVOKEVIRTUAL_OR_INTERFACE(dj_global_id globalId, uint8_t nr_ref_args) {
+#ifdef AOT_SAFETY_CHECKS
+void RTC_INVOKEVIRTUAL_OR_INTERFACE(dj_global_id globalId, rtc_safety_method_signature signature_info)
+#else
+void RTC_INVOKEVIRTUAL_OR_INTERFACE(dj_global_id globalId, uint8_t signature_info) // signature_info only contains the nr_ref_args when compiling without safety checks
+#endif
+{
     AVRORATRACE_DISABLE();
-	DEBUG_LOG(DBG_RTC, "RTC_INVOKEVIRTUAL_OR_INTERFACE %d %d %d\n", localId.infusion_id, localId.entity_id, nr_ref_args);
+	DEBUG_LOG(DBG_RTC, "RTC_INVOKEVIRTUAL_OR_INTERFACE %d %d %d\n", localId.infusion_id, localId.entity_id, signature_info);
 	DEBUG_LOG(DBG_RTC, "RTC_INVOKEVIRTUAL_OR_INTERFACE %p %p\n", intStack, refStack);
 
-	DO_INVOKEVIRTUAL(globalId, nr_ref_args);
+	DO_INVOKEVIRTUAL(globalId, signature_info);
 
 #ifndef EXECUTION_DISABLEINTERPRETER_COMPLETELY
     // If we called a JVM method, run until it's done.

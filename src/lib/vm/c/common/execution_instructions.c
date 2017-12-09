@@ -7,6 +7,8 @@
 // generated at infusion time
 #include "jlib_base.h"
 
+#include "rtc_safetychecks_vm_part.h"
+
 ref_t DO_LDS(dj_local_id localStringId) {
 	// resolve the string id
 	dj_global_id globalStringId = dj_global_id_resolve(dj_exec_getCurrentInfusion(), localStringId);
@@ -22,7 +24,13 @@ ref_t DO_LDS(dj_local_id localStringId) {
 }
 
 
+#ifdef AOT_SAFETY_CHECKS
+void DO_INVOKEVIRTUAL(dj_global_id globalMethodDefId, rtc_safety_method_signature signature_info) {
+	uint8_t nr_ref_args = signature_info.nr_ref_args;
+#else
 void DO_INVOKEVIRTUAL(dj_global_id globalMethodDefId, uint8_t nr_ref_args) {
+#endif
+
 	// peek the object on the stack
 	dj_object *object = REF_TO_VOIDP(dj_exec_stackPeekDeepRef(nr_ref_args));
 
@@ -44,18 +52,41 @@ void DO_INVOKEVIRTUAL(dj_global_id globalMethodDefId, uint8_t nr_ref_args) {
 
 	// lookup the virtual method
 	dj_global_id methodImplId = dj_global_id_lookupVirtualMethod(globalMethodDefId, object);
+	dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(methodImplId);
+
+#ifdef AOT_SAFETY_CHECKS
+	// Safety check: grab the first implementation of this methodDef, regardless of the object
+
+    dj_methodImplementation callee_methodimpl_header;
+    dj_di_read_methodImplHeader(&callee_methodimpl_header, methodImpl);
+
+	// This will be the same implementation used to check the stack effects of the invoke instruction.
+	// The signature should match the actual implementation found above.
+	if ((callee_methodimpl_header.nr_ref_args != signature_info.nr_ref_args)
+			|| (callee_methodimpl_header.nr_int_args != signature_info.nr_int_args)
+			|| (callee_methodimpl_header.return_type != signature_info.return_type)) {
+		rtc_safety_abort_with_error(RTC_SAFETYCHECK_VIRTUAL_IMPLEMENTATION_SIGNATURE_MISMATCH);
+	}
+    if (callee_methodimpl_header.length == 0) {
+        rtc_safety_abort_with_error(RTC_SAFETYCHECK_VIRTUAL_METHOD_RESOLVED_TO_ABSTRACT_METHOD);
+    }
+#endif
 
 	DEBUG_LOG(DBG_DARJEELING, ">>>>> invokevirtual METHOD IMPL %p.%d\n", methodImplId.infusion, methodImplId.entity_id);
 
 	// check if method not found, and throw an error if this is the case. else, invoke the method
 	if (methodImplId.infusion==NULL)
 	{
+#ifdef AOT_SAFETY_CHECKS
+		rtc_safety_abort_with_error(RTC_SAFETYCHECK_NO_IMPL_FOUND_FOR_INVOKEVIRTUAL);
+#else // AOT_SAFETY_CHECKS
 		DEBUG_LOG(DBG_DARJEELING, "methodImplId.infusion is NULL at INVOKEVIRTUAL %p.%d\n", resolvedMethodDefId.infusion, resolvedMethodDefId.entity_id);
 
 		dj_exec_createAndThrow(VIRTUALMACHINE_ERROR);
-	} else
-	{
-		callMethod(methodImplId, true);
+#endif // AOT_SAFETY_CHECKS
+	} else {
+		uint8_t flags = dj_di_methodImplementation_getFlags(methodImpl);
+		callMethodFast(methodImplId, methodImpl, flags, true);
 	}
 }
 

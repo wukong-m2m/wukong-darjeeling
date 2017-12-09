@@ -90,6 +90,15 @@ typedef struct _rtc_translationstate {
     uint16_t rtc_stackcache_pinned;
     bool may_use_RZ;
 #endif // AOT_STRATEGY_MARKLOOP
+#ifdef AOT_SAFETY_CHECKS
+    uint8_t jvm_operand_byte0;
+    uint8_t jvm_operand_byte1;
+    uint8_t jvm_operand_byte2;
+    uint8_t jvm_operand_byte3;
+    uint8_t pre_instruction_int_stack;
+    uint8_t pre_instruction_ref_stack;
+    uint8_t current_opcode;
+#endif //AOT_SAFETY_CHECKS
 } rtc_translationstate;
 
 #ifdef RTC_TS_HARDCODED_AT_END_OF_HEAP

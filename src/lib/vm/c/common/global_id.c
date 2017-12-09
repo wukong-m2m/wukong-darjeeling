@@ -27,6 +27,7 @@
 #include "execution.h"
 #include "object.h"
 #include "debug.h"
+#include "parse_infusion.h"
 
 #include "jlib_base.h"
 

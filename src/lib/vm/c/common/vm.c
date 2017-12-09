@@ -32,6 +32,7 @@
 #include "core.h"
 #include "vm_gc.h"
 #include "jlib_base.h"
+#include "rtc_safetychecks_vm_part.h"
 
 /**
  *
@@ -88,6 +89,15 @@ void dj_vm_main(dj_di_pointer di_lib_infusions_archive_data,
 	// some garbage that would cause the infusion object for a next infusion to move if the GC runs.
 	// (leading to bugs that just took me a whole day to find)
 	dj_mem_gc();
+
+
+#ifdef AOT_SAFETY_CHECKS
+	// Start protecting memory. Instance variable or array writes should stay within the array between the
+	// current lowest free address in the heap and the end of the heap.
+	// We use the current lowest free address instead of the start of the heap because there will be some
+	// system objects at the bottom of the heap that should also be protected from bad writes.
+	rtc_safety_mark_heap_bounds();
+#endif
 
 	// run class initialisers
 	// infusions get added in a linked list in the order in which they are loaded (see dj_vm_addInfusion)

@@ -269,13 +269,13 @@ public final class String
 	 */
 	public String(StringBuilder buffer)
 	{
-		synchronized (buffer)
-		{
+		// synchronized (buffer)
+		// {
 			buffer.setShared();
 			this.value = buffer.getValue();
 			this.offset = 0;
 			this.count = (short)buffer.length();
-		}
+		// }
 	}
 
 	// Package private constructor which shares value array for speed.
@@ -540,7 +540,12 @@ public final class String
 	{
 		short len1 = count;
 		short len2 = anotherString.count;
-		short n = len1<len2 ? len1 : len2; // Math.min(len1, len2);
+		short n;
+		if (len1<len2) { // Math.min(len1, len2);
+			n = len1;
+		} else {
+			n = len2;
+		}
 		char v1[] = value;
 		char v2[] = anotherString.value;
 		short i = offset;
@@ -932,7 +937,13 @@ public final class String
 		short min = offset;
 		char v[] = value;
 
-		for (short i = (short)(offset + ((fromIndex >= count) ? count - 1 : fromIndex)); i >= min; i--)
+		short initial_value;
+		if (fromIndex >= count) {
+			initial_value = (short)(count - 1);
+		} else {
+			initial_value = fromIndex;
+		}
+		for (short i = (short)(offset + initial_value); i >= min; i--)
 		{
 			if (v[i] == ch)
 			{

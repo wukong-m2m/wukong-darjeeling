@@ -220,6 +220,7 @@ class DjSourceSet {
             inputs.property("use16bitarrayindex", project.ext.use16bitarrayindex)
             inputs.property("uselightweightmethods", project.ext.uselightweightmethods)
             inputs.property("useconstantshiftoptimisation", project.ext.useconstantshiftoptimisation)
+            inputs.property("safe", project.ext.safe)
             outputs.dir infusionDir
             this.javaDependencies.each { jlibname ->
                 dependsOn("infusion_${jlibname}")
@@ -238,7 +239,8 @@ class DjSourceSet {
                         usegetfield_a_fixed: project.ext.usegetfield_a_fixed,
                         use16bitarrayindex: project.ext.use16bitarrayindex,
                         uselightweightmethods: project.ext.uselightweightmethods,
-                        useconstantshiftoptimisation: project.ext.useconstantshiftoptimisation) {
+                        useconstantshiftoptimisation: project.ext.useconstantshiftoptimisation,
+                        addsafetychecksdata: project.ext.safe) {
                     fileset(dir: infusionClassesSourceDir, includes: '**/*.class')
                     javaDependencies.each { jlibname ->
                         fileset(dir: libToInfusionDir(jlibname), includes: "${jlibname}.dih")

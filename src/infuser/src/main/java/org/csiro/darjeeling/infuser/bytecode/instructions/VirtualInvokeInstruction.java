@@ -24,6 +24,7 @@ package org.csiro.darjeeling.infuser.bytecode.instructions;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.csiro.darjeeling.infuser.Infuser;
 import org.csiro.darjeeling.infuser.bytecode.Opcode;
 import org.csiro.darjeeling.infuser.structure.LocalId;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractMethodDefinition;

@@ -86,8 +86,11 @@ public class InfuserArguments
 	// Optimise constant shifts (gcc-style)
 	private boolean useConstantShiftOptimisation = true;
 
-	// Don't transform lightweight methods
+	// Transform lightweight methods
 	private boolean useLightweightMethods = true;
+
+	// Add data used by safety checks
+	private boolean addSafetyChecksData = true;
 
 	/**
 	 *  Creates a new, empty InfuserArguments instance. Can be used to programatically drive
@@ -185,6 +188,7 @@ public class InfuserArguments
 		if (name.equals("use16bitarrayindex")) { this.use16BitArrayIndex = true; return; }
 		if (name.equals("useconstantshiftoptimisation")) { this.useConstantShiftOptimisation = true; return; }
 		if (name.equals("useLightweightMethods")) { this.useLightweightMethods = true; return; }
+		if (name.equals("addSafetyChecksData")) { this.addSafetyChecksData = true; return; }
 
 		// unknown option
 		Logging.instance.printlnVerbose(ARGUMENTS_PARSING, String.format("Ignoring unknown option %s", name));
@@ -441,5 +445,15 @@ public class InfuserArguments
 	public boolean getUseLightweightMethods()
 	{
 		return this.useLightweightMethods;
+	}
+
+	public void setAddSafetyChecksData(boolean value)
+	{
+		this.addSafetyChecksData = value;
+	}
+
+	public boolean getAddSafetyChecksData()
+	{
+		return this.addSafetyChecksData;
 	}
 }

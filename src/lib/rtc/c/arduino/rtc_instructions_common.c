@@ -4,10 +4,12 @@
 #include "infusion.h"
 #include "panic.h"
 #include "program_mem.h"
+#include "parse_infusion.h"
 #include "asm.h"
 #include "rtc.h"
 #include "rtc_complex_instructions.h"
 #include "rtc_instructions_common.h"
+#include "rtc_safetychecks.h"
 
 #ifdef AOT_STRATEGY_SIMPLESTACKCACHE
 #include "rtc_simplestackcache.h"
@@ -38,8 +40,18 @@ void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8
     emit_LDI(R24, globalId.entity_id);
 
     if (opcode == JVM_INVOKEVIRTUAL || opcode == JVM_INVOKEINTERFACE) {
+        // The ID in the opcode is the id of a method DEFINITION. Lookup the same IMPLEMENTATION that was used to
+        // determine the stack effect for this invoke in the safety checks.
+        // We will put the arguments and return type in the INVOKE, so we can check at runtime the actual implementation
+        // that will be invoke has the right signature.
         dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(dj_global_id_lookupAnyVirtualMethod(globalId));
+#ifdef AOT_SAFETY_CHECKS
+        emit_LDI(R18, dj_di_methodImplementation_getIntegerArgumentCount(methodImpl)); // nr_int_args
+        emit_LDI(R19, dj_di_methodImplementation_getReferenceArgumentCount(methodImpl)); // nr_ref_args
+        emit_LDI(R20, dj_di_methodImplementation_getReturnType(methodImpl)); // return_type
+#else
         emit_LDI(R20, dj_di_methodImplementation_getReferenceArgumentCount(methodImpl));
+#endif // AOT_SAFETY_CHECKS
         emit_2_CALL((uint16_t)&RTC_INVOKEVIRTUAL_OR_INTERFACE);
     } else { // JVM_INVOKESPECIAL or JVM_INVOKESTATIC
         dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(globalId);
@@ -110,11 +122,37 @@ void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_ope
     if (handler == NULL) {
         dj_panic(DJ_PANIC_NO_ADDRESS_FOUND_FOR_LIGHTWEIGHT_METHOD);
     }
-    dj_di_pointer methodImpl = dj_global_id_getMethodImplementation(globalId);
-    uint8_t rettype = dj_di_methodImplementation_getReturnType(methodImpl);
 
-    bool lightweightMethodUsesLocalVariables = (dj_di_methodImplementation_getNumberOfTotalVariableSlots(methodImpl) > 0);
+    dj_di_pointer calleeMethodImpl = dj_global_id_getMethodImplementation(globalId);
+    dj_methodImplementation callee_methodimpl_header;
+    dj_di_read_methodImplHeader(&callee_methodimpl_header, calleeMethodImpl);
+
+#ifdef AOT_SAFETY_CHECKS
+    // A lightweight method will reuse the caller's stackframe. We need to check if enough space has been reserved in the
+    // current method's frame to accomodate the callee's:
+    //   - local variables
+    //   - reference stack
+    //   - integer stack
+    // Note that the callee's max stack and total local variables will include space for any nested lightweight methods calls,
+    // so these will have been checked in the callee's safety checks already.
+    uint8_t spaceOnRefStack = rtc_ts->methodimpl_header.max_ref_stack - rtc_ts->pre_instruction_ref_stack + callee_methodimpl_header.nr_ref_args;
+    uint8_t spaceOnIntStack = rtc_ts->methodimpl_header.max_int_stack - rtc_ts->pre_instruction_int_stack + callee_methodimpl_header.nr_int_args;
+    uint8_t spaceForLocalVariables = rtc_ts->methodimpl_header.nr_total_var_slots - rtc_ts->methodimpl_header.nr_own_var_slots;
+
+    uint8_t calleeLocalVariables = callee_methodimpl_header.nr_total_var_slots;
+    uint8_t calleeReservedSpaceForReturnValue = (callee_methodimpl_header.flags & FLAGS_USES_SIMUL_INVOKESTATIC_MARKLOOP) ? 1 : 0;
+
+    if ((callee_methodimpl_header.max_ref_stack > spaceOnRefStack)
+            || (callee_methodimpl_header.max_int_stack > spaceOnIntStack)
+            || ((calleeLocalVariables + calleeReservedSpaceForReturnValue) > spaceForLocalVariables)) {
+        rtc_safety_abort_with_error(RTC_SAFETYCHECK_NOT_ENOUGH_SPACE_IN_FRAME_FOR_LW_CALL);
+    }
+#endif // AOT_SAFETY_CHECKS
+
+    bool lightweightMethodUsesLocalVariables = (callee_methodimpl_header.nr_total_var_slots > 0);
+
     uint16_t bytesForCurrentMethodsOwnLocals = 2*(rtc_ts->methodimpl_header.nr_own_var_slots);
+
     if (lightweightMethodUsesLocalVariables) {
         // Target lightweight method uses local variables. It will use the extra space
         // reserved in the current method's frame for such lightweight methods.
@@ -134,7 +172,7 @@ void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_ope
         emit_SBIW(RY, bytesForCurrentMethodsOwnLocals);
     }
 
-    rtc_common_push_returnvalue_from_R22_if_necessary(rettype);
+    rtc_common_push_returnvalue_from_R22_if_necessary(callee_methodimpl_header.return_type);
 
 #if defined (AOT_STRATEGY_MARKLOOP)
     // If the invoke light happens in a MARKLOOP loop, the lightweight method might corrupt some pinned values, so we need to save them back to their variable slots first.
@@ -163,9 +201,15 @@ void rtc_common_translate_inc(uint8_t opcode, uint8_t jvm_operand_byte0, uint8_t
     if (opcode == JVM_IINC || opcode == JVM_IINC_W) {
         is_iinc = true;
         offset = offset_for_intlocal_int(jvm_operand_byte0);
+#ifdef AOT_SAFETY_CHECKS
+        rtc_safety_check_offset_valid_for_local_variable(offset + 3); // +3 because we will write four bytes at this offset and both need to fit in the space reserved for local variables.
+#endif //AOT_SAFETY_CHECKS
     } else {
         is_iinc = false;
         offset = offset_for_intlocal_short(jvm_operand_byte0);
+#ifdef AOT_SAFETY_CHECKS
+        rtc_safety_check_offset_valid_for_local_variable(offset + 1); // +1 because we will write four bytes at this offset and both need to fit in the space reserved for local variables.
+#endif //AOT_SAFETY_CHECKS
     }
 
     if (asm_needs_ADIW_to_bring_offset_in_range(offset)) {

@@ -14,6 +14,7 @@
 #include "rtc_instructions_common.h"
 #include "asm.h"
 #include "rtc_markloop.h"
+#include "rtc_safetychecks.h"
 
 // NOTE: Function pointers are a "PC address", so already divided by 2 since the PC counts in words, not bytes.
 // avr-libgcc functions used by translation
@@ -30,22 +31,37 @@ void rtc_translate_single_instruction() {
     int8_t i;
 
 #ifdef AVRORA
+#ifdef AOT_SAFETY_CHECKS
+    avroraRTCTraceDarjeelingOpcodeInProgmemWithStackDepth(ts->jvm_code_start + ts->pc, rtc_ts->pre_instruction_int_stack, rtc_ts->pre_instruction_ref_stack);
+#else
     avroraRTCTraceDarjeelingOpcodeInProgmem(ts->jvm_code_start + ts->pc);
+#endif
 #endif
 
     uint8_t opcode = dj_di_getU8(ts->jvm_code_start + ts->pc);
     DEBUG_LOG(DBG_RTCTRACE, "[rtc] JVM opcode %d (pc=%d, method length=%d)\n", opcode, ts->pc, ts->method_length);
 
     // Load possible operands. May waste some time if we don't need then, but saves some space.
+#ifdef AOT_SAFETY_CHECKS
+    uint8_t jvm_operand_byte0 = rtc_ts->jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ts->pc + 1);
+    uint8_t jvm_operand_byte1 = rtc_ts->jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + ts->pc + 2);
+    uint8_t jvm_operand_byte2 = rtc_ts->jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ts->pc + 3);
+    uint8_t jvm_operand_byte3 = rtc_ts->jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ts->pc + 4);
+#else // AOT_SAFETY_CHECKS
     uint8_t jvm_operand_byte0 = dj_di_getU8(ts->jvm_code_start + ts->pc + 1);
     uint8_t jvm_operand_byte1 = dj_di_getU8(ts->jvm_code_start + ts->pc + 2);
     uint8_t jvm_operand_byte2 = dj_di_getU8(ts->jvm_code_start + ts->pc + 3);
     uint8_t jvm_operand_byte3 = dj_di_getU8(ts->jvm_code_start + ts->pc + 4);
+#endif // AOT_SAFETY_CHECKS
     uint16_t jvm_operand_word0 = (jvm_operand_byte0 << 8) | jvm_operand_byte1;
     uint16_t jvm_operand_word1 = (jvm_operand_byte2 << 8) | jvm_operand_byte3;
     uint8_t operand_regs1[12];
     uint8_t *operand_regs2 = operand_regs1 + 4;
     uint8_t *operand_regs3 = operand_regs1 + 8;
+
+#ifdef AOT_SAFETY_CHECKS
+    rtc_ts->current_opcode = opcode;
+#endif
 
     if (!rtc_poppedstackcache_can_I_skip_this()) {
     // rtc_poppedstackcache will check if the result of the current instruction
@@ -422,6 +438,10 @@ void rtc_translate_single_instruction() {
                 emit_ADIW(RZ, 3); 
             }
 
+#ifdef AOT_SAFETY_CHECKS
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
+#endif
+
             // Now Z points to the target element
             switch (opcode) {
                 case JVM_BASTORE:
@@ -604,12 +624,18 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_pop_nondestructive_16bit(operand_regs1);
             rtc_stackcache_pop_destructive_ref_into_Z();
             jvm_operand_word0 = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, jvm_operand_word0);
+#ifdef AOT_SAFETY_CHECKS
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
+#endif            
             emit_STD(operand_regs1[0], Z, jvm_operand_word0);
         break;
         case JVM_PUTFIELD_S:
             rtc_stackcache_pop_nondestructive_16bit(operand_regs1);
             rtc_stackcache_pop_destructive_ref_into_Z();
             jvm_operand_word0 = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, jvm_operand_word0);
+#ifdef AOT_SAFETY_CHECKS
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
+#endif            
             emit_STD(operand_regs1[0], Z, jvm_operand_word0);
             emit_STD(operand_regs1[1], Z, jvm_operand_word0+1);
         break;
@@ -617,6 +643,9 @@ void rtc_translate_single_instruction() {
             rtc_stackcache_pop_nondestructive_32bit(operand_regs1);
             rtc_stackcache_pop_destructive_ref_into_Z();
             jvm_operand_word0 = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, jvm_operand_word0);
+#ifdef AOT_SAFETY_CHECKS
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
+#endif            
             emit_STD(operand_regs1[0], Z, jvm_operand_word0);
             emit_STD(operand_regs1[1], Z, jvm_operand_word0+1);
             emit_STD(operand_regs1[2], Z, jvm_operand_word0+2);
@@ -639,6 +668,9 @@ void rtc_translate_single_instruction() {
 
             rtc_stackcache_pop_nondestructive_ref(operand_regs1); // POP the value to store again
             jvm_operand_word0 = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, jvm_operand_word0*2);
+#ifdef AOT_SAFETY_CHECKS
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
+#endif            
             emit_STD(operand_regs1[0], Z, (jvm_operand_word0)); // jvm_operand_word0 is an index in the (16 bit) array, so multiply by 2
             emit_STD(operand_regs1[1], Z, (jvm_operand_word0)+1);
         break;
@@ -651,6 +683,9 @@ void rtc_translate_single_instruction() {
 
             targetRefOffset = emit_ADIW_if_necessary_to_bring_offset_in_range(RZ, targetRefOffset);
 
+#ifdef AOT_SAFETY_CHECKS
+            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
+#endif            
             emit_STD(operand_regs1[0], Z, targetRefOffset); // targetRefOffset is an index in the (16 bit) array, so multiply by 2
             emit_STD(operand_regs1[1], Z, targetRefOffset+1);
         }
@@ -1649,6 +1684,10 @@ void rtc_translate_single_instruction() {
         break;
     }
     }
+
+#ifdef AOT_SAFETY_CHECKS
+    rtc_safety_check_opcode(opcode);
+#endif
 
     rtc_stackcache_next_instruction();
     ts->pc += rtc_number_of_operandbytes_for_opcode(opcode);

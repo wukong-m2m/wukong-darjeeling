@@ -25,8 +25,7 @@
 #include "types.h"
 #include "program_mem.h"
 
-
-#ifdef ARRAYINDEX_32BIT
+#if defined(ARRAYINDEX_32BIT)
  // Version 100: 32 bit index
 #define INFUSION_FORMAT_VERSION 122
 #else
@@ -127,10 +126,10 @@ enum JavaTypeID
 typedef struct _dj_methodImplementation dj_methodImplementation; 
 struct  _dj_methodImplementation 
 { 
-  uint8_t nr_int_args; 
   uint8_t nr_ref_args; 
-  uint8_t nr_int_vars; 
+  uint8_t nr_int_args; 
   uint8_t nr_ref_vars; 
+  uint8_t nr_int_vars; 
   uint8_t max_stack; 
   uint8_t max_ref_stack; 
   uint8_t max_int_stack; 
@@ -178,8 +177,7 @@ void dj_di_read_methodImplHeader(dj_methodImplementation *header_data, dj_di_poi
 #define dj_di_stringtable_getElementLength(pointer, i) dj_di_getU16(pointer + dj_di_getU16(pointer+3+2*i))
 #define dj_di_stringtable_getElementBytes(pointer, i) (pointer + dj_di_getU16(pointer+3+2*i) + 2)
 
-
-#define dj_infusion_getNumberOfClassDefinitions(infusion) (dj_di_parentElement_getListSize(infusion->classList)) 
+#define dj_infusion_getNumberOfClassDefinitions(infusion) (dj_di_parentElement_getListSize(infusion->classList))
 #define dj_infusion_getClassDefinition(infusion, entity_id) (dj_di_parentElement_getChild(infusion->classList, entity_id))
 #define dj_global_id_getClassDefinition(class) dj_infusion_getClassDefinition((class.infusion), (class.entity_id))
 

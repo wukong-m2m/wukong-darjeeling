@@ -82,7 +82,7 @@ static uint16_t heap_size;
 
 static void ** safePointerPool[SAFE_POINTER_POOL_SIZE];
 
-static void *left_pointer, *right_pointer;
+void *left_pointer, *right_pointer;
 
 #ifdef DARJEELING_DEBUG_MEM_TRACE
 static int nrTrace = 0;

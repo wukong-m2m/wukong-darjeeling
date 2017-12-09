@@ -186,4 +186,9 @@ public class InfuserTask extends Task
 	{
 		infuserArguments.setUseLightweightMethods(value);
 	}
+
+	public void setAddSafetyChecksData(boolean value)
+	{
+		infuserArguments.setAddSafetyChecksData(value);
+	}
 }
