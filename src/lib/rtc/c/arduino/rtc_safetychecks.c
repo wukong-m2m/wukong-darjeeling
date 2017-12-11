@@ -90,14 +90,6 @@ void rtc_safety_check_opcode(uint8_t opcode) {
             rtc_safety_abort_with_error(RTC_SAFETYCHECK_STACK_NOT_EMPTY_AFTER_RETURN_OR_BRANCH);
         }
     }
-
-    uint8_t rettype = rtc_ts->methodimpl_header.return_type;
-    if (       (opcode == JVM_SRETURN && rettype != JTID_BOOLEAN && rettype != JTID_CHAR && rettype != JTID_BYTE && rettype != JTID_SHORT)
-            || (opcode == JVM_IRETURN && rettype != JTID_INT)
-            || (opcode == JVM_ARETURN && rettype != JTID_REF)
-            || (opcode == JVM_RETURN  && rettype != JTID_VOID)) {
-        rtc_safety_abort_with_error(RTC_SAFETYCHECK_RETURN_INSTRUCTION_DOESNT_MATCH_RETURN_TYPE);        
-    }
 }
 
 void rtc_safety_method_ends() {
