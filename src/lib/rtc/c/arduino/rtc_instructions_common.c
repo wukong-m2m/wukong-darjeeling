@@ -120,7 +120,11 @@ void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_ope
     dj_global_id globalId = dj_global_id_resolve(rtc_ts->infusion,  localId);
     native_method_function_t handler = rtc_ts->method_start_addresses[globalId.entity_id]; // Can't get the address from the infusion because the method addresses haven't been written to Flash yet
     if (handler == NULL) {
+#ifdef AOT_SAFETY_CHECKS
+        rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_TRANSLATED_LIGHTWEIGHTMETHOD_NOT_FOUND);
+#else
         dj_panic(DJ_PANIC_NO_ADDRESS_FOUND_FOR_LIGHTWEIGHT_METHOD);
+#endif
     }
 
     dj_di_pointer calleeMethodImpl = dj_global_id_getMethodImplementation(globalId);
@@ -145,7 +149,7 @@ void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_ope
     if ((callee_methodimpl_header.max_ref_stack > spaceOnRefStack)
             || (callee_methodimpl_header.max_int_stack > spaceOnIntStack)
             || ((calleeLocalVariables + calleeReservedSpaceForReturnValue) > spaceForLocalVariables)) {
-        rtc_safety_abort_with_error(RTC_SAFETYCHECK_NOT_ENOUGH_SPACE_IN_FRAME_FOR_LW_CALL);
+        rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_NOT_ENOUGH_SPACE_IN_FRAME_FOR_LW_CALL);
     }
 #endif // AOT_SAFETY_CHECKS
 

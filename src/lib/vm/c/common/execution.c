@@ -1116,7 +1116,7 @@ uint32_t callJavaMethod(dj_global_id_with_flags methodImplId, dj_di_pointer meth
 	// combination of both (only check for expensive methods)
 
 	if (((uint16_t)frame) - dj_di_methodImplementation_getMaxIntStack(methodImpl) - RTC_SAFETY_MIN_GAP_BETWEEN_STACK_AND_HEAP < (uint16_t)right_pointer) {
-		rtc_safety_abort_with_error(RTC_SAFETYCHECK_NATIVE_STACK_OVERFLOW);
+		rtc_safety_abort_with_error(RTC_SAFETY_RUNTIMECHECK_NATIVE_STACK_OVERFLOW);
 	}
 #endif
 

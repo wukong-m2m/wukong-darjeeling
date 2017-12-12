@@ -17,7 +17,7 @@ void rtc_safety_method_starts() {
     // Check method header fields make sense
     if  ((rtc_ts->methodimpl_header.flags & FLAGS_STATIC) && rtc_ts->methodimpl_header.length == 0) {
         // Static methods can't be abstract
-        rtc_safety_abort_with_error(RTC_SAFETYCHECK_RETURN_INCORRECT_METHOD_HEADER);
+        rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_INCORRECT_METHOD_HEADER);
     }
     if (rtc_ts->methodimpl_header.length > 0 // Skip abstract methods
         && (
@@ -31,13 +31,13 @@ void rtc_safety_method_starts() {
             || (rtc_ts->methodimpl_header.nr_own_var_slots > rtc_ts->methodimpl_header.nr_total_var_slots)
             )
     ) {
-        rtc_safety_abort_with_error(RTC_SAFETYCHECK_RETURN_INCORRECT_METHOD_HEADER);
+        rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_INCORRECT_METHOD_HEADER);
     }
 }
 
 void rtc_safety_check_offset_valid_for_local_variable(uint16_t offset) {
     if (offset >= (2 * rtc_ts->methodimpl_header.nr_total_var_slots)) {
-        rtc_safety_abort_with_error(RTC_SAFETYCHECK_STORE_TO_NONEXISTANT_LOCAL_VARIABLE);
+        rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_STORE_TO_NONEXISTANT_LOCAL_VARIABLE);
     }
 }
 
@@ -52,7 +52,7 @@ uint16_t rtc_safety_check_offset_valid_for_static_variable(dj_infusion *infusion
     uint16_t sizeOfStaticFields = (void*)(infusion_ptr->referencedInfusions) - (void*)(infusion_ptr->staticReferenceFields);
 
     if (offset + size > sizeOfStaticFields) {
-        rtc_safety_abort_with_error(RTC_SAFETYCHECK_STORE_TO_NONEXISTANT_STATIC_VARIABLE);        
+        rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_STORE_TO_NONEXISTANT_STATIC_VARIABLE);        
     }
     return offset;
 }
@@ -65,10 +65,10 @@ void rtc_safety_check_opcode(uint8_t opcode) {
 
     // Check for stack underflow
     if (rtc_ts->pre_instruction_int_stack < stack_cons_int) {
-        rtc_safety_abort_with_error(RTC_SAFETYCHECK_INT_STACK_UNDERFLOW);
+        rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_INT_STACK_UNDERFLOW);
     }
     if (rtc_ts->pre_instruction_ref_stack < stack_cons_ref) {
-        rtc_safety_abort_with_error(RTC_SAFETYCHECK_REF_STACK_UNDERFLOW);
+        rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_REF_STACK_UNDERFLOW);
     }
 
     // Set pre instruction value for the next instruction (it's now this instruction's post value)
@@ -79,15 +79,15 @@ void rtc_safety_check_opcode(uint8_t opcode) {
 
     // Check for stack overflow
     if (rtc_ts->pre_instruction_int_stack > rtc_ts->methodimpl_header.max_int_stack) {
-        rtc_safety_abort_with_error(RTC_SAFETYCHECK_INT_STACK_OVERFLOW);
+        rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_INT_STACK_OVERFLOW);
     }
     if (rtc_ts->pre_instruction_ref_stack > rtc_ts->methodimpl_header.max_ref_stack) {
-        rtc_safety_abort_with_error(RTC_SAFETYCHECK_REF_STACK_OVERFLOW);
+        rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_REF_STACK_OVERFLOW);
     }    
 
     if (rtc_ts->pre_instruction_int_stack != 0 || rtc_ts->pre_instruction_ref_stack != 0) {
         if (RTC_OPCODE_IS_RETURN(opcode) || RTC_OPCODE_IS_BRANCH(opcode) || RTC_OPCODE_IS_BRTARGET(opcode)) {
-            rtc_safety_abort_with_error(RTC_SAFETYCHECK_STACK_NOT_EMPTY_AFTER_RETURN_OR_BRANCH);
+            rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_STACK_NOT_EMPTY_AFTER_RETURN_OR_BRANCH);
         }
     }
 }
@@ -95,11 +95,11 @@ void rtc_safety_check_opcode(uint8_t opcode) {
 void rtc_safety_method_ends() {
     if (!(RTC_OPCODE_IS_RETURN(rtc_ts->current_opcode)
           || RTC_OPCODE_IS_BRANCH(rtc_ts->current_opcode))) {
-        rtc_safety_abort_with_error(RTC_SAFETYCHECK_METHOD_SHOULD_END_IN_BRANCH_OR_RETURN);
+        rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_METHOD_SHOULD_END_IN_BRANCH_OR_RETURN);
     }
 
     if (rtc_ts->methodimpl_header.nr_branch_targets != rtc_ts->branch_target_count) {
-        rtc_safety_abort_with_error(RTC_SAFETYCHECK_BRANCHTARGET_COUNT_MISMATCH_WITH_METHOD_HEADER);        
+        rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_BRANCHTARGET_COUNT_MISMATCH_WITH_METHOD_HEADER);        
     }
 }
 
@@ -123,7 +123,7 @@ void rtc_safety_mem_check() {
                  "   sts  debugbuf1, r16" "\n\r"
                  "   pop  r16" "\n\r"
                  "   call rtc_safety_abort_with_error" "\n\r"
-             :: [errorcode] "M" (RTC_SAFETYCHECK_ILLEGAL_MEMORY_ACCESS), [printreg] "M" (0xE));
+             :: [errorcode] "M" (RTC_SAFETY_RUNTIMECHECK_ILLEGAL_MEMORY_ACCESS), [printreg] "M" (0xE));
 }
 
 #endif // AOT_SAFETY_CHECKS

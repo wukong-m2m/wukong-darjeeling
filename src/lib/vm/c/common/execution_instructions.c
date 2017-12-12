@@ -65,10 +65,10 @@ void DO_INVOKEVIRTUAL(dj_global_id globalMethodDefId, uint8_t nr_ref_args) {
 	if ((callee_methodimpl_header.nr_ref_args != signature_info.nr_ref_args)
 			|| (callee_methodimpl_header.nr_int_args != signature_info.nr_int_args)
 			|| (callee_methodimpl_header.return_type != signature_info.return_type)) {
-		rtc_safety_abort_with_error(RTC_SAFETYCHECK_VIRTUAL_IMPLEMENTATION_SIGNATURE_MISMATCH);
+		rtc_safety_abort_with_error(RTC_SAFETY_RUNTIMECHECK_VIRTUAL_IMPLEMENTATION_SIGNATURE_MISMATCH);
 	}
     if (callee_methodimpl_header.length == 0) {
-        rtc_safety_abort_with_error(RTC_SAFETYCHECK_VIRTUAL_METHOD_RESOLVED_TO_ABSTRACT_METHOD);
+        rtc_safety_abort_with_error(RTC_SAFETY_RUNTIMECHECK_NO_IMPLEMENTATION_FOUND_FOR_INVOKEVIRTUAL);
     }
 #endif
 
@@ -78,7 +78,7 @@ void DO_INVOKEVIRTUAL(dj_global_id globalMethodDefId, uint8_t nr_ref_args) {
 	if (methodImplId.infusion==NULL)
 	{
 #ifdef AOT_SAFETY_CHECKS
-		rtc_safety_abort_with_error(RTC_SAFETYCHECK_NO_IMPL_FOUND_FOR_INVOKEVIRTUAL);
+		rtc_safety_abort_with_error(RTC_SAFETY_RUNTIMECHECK_NO_IMPLEMENTATION_FOUND_FOR_INVOKEVIRTUAL);
 #else // AOT_SAFETY_CHECKS
 		DEBUG_LOG(DBG_DARJEELING, "methodImplId.infusion is NULL at INVOKEVIRTUAL %p.%d\n", resolvedMethodDefId.infusion, resolvedMethodDefId.entity_id);
 

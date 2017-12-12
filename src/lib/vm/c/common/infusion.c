@@ -191,7 +191,7 @@ dj_di_pointer dj_infusion_getMethodImplementation(dj_infusion *infusion, int ent
 {
 #ifdef AOT_SAFETY_CHECKS
         if (entity_id >= dj_di_parentElement_getListSize(infusion->methodImplementationList)) {
-            rtc_safety_abort_with_error(RTC_SAFETYCHECK_REFERENCE_TO_NONEXISTANT_METHODIMPL);
+            rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_NO_IMPLEMENTATION_FOUND_FOR_INVOKESTATIC);
         }
 #endif //AOT_SAFETY_CHECKS
 
@@ -210,7 +210,7 @@ dj_infusion * dj_infusion_resolve(dj_infusion *infusion, int id)
     } else {
 #ifdef AOT_SAFETY_CHECKS
         if (id > infusion->nr_referenced_infusions) { // id's count from 1, not 0 since 0 refers to the current infusion, so we use > instead of >= here.
-            rtc_safety_abort_with_error(RTC_SAFETYCHECK_ILLEGAL_REFERENCED_INFUSION_IN_GLOBAL_ID);
+            rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_ILLEGAL_REFERENCED_INFUSION_IN_GLOBAL_ID);
         }
 #endif //AOT_SAFETY_CHECKS
         return infusion->referencedInfusions[id-1];
