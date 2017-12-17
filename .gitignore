@@ -41,3 +41,4 @@ src/config/avrora/results_*
 src/config/avrora/allresults
 sumsum.txt
 src/config/coremk_c/results_*
+process-output.userprefs
