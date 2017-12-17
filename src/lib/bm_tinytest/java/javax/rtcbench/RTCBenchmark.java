@@ -12,8 +12,6 @@ public class RTCBenchmark {
     //     return true;
     // }
     // public static void rtcbenchmark_measure_java_performance() {
-    //     RTC.startBenchmarkMeasurement_AOT();
-    //     RTC.stopBenchmarkMeasurement();
     // }
 
     // Example of lack of optimisations in javac: this will calculate b*c on each iteration
@@ -58,15 +56,12 @@ public class RTCBenchmark {
         return rtcbenchmark_measure_java_performance();
     }
     public static boolean rtcbenchmark_measure_java_performance() {
-        RTC.startBenchmarkMeasurement_AOT();
-
         Object obj = new Object();
         Exception ex;
         try {
             throw new Exception();
             // ex = (Exception)obj;
         } catch (Exception ex2) {
-            RTC.stopBenchmarkMeasurement();
             return true;
         }
     }

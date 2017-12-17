@@ -21,6 +21,7 @@ El Dorado Hills, CA, 95762
 */
 #include "coremark.h"
 #include "darjeeling3.h"
+#include "rtc_measure.h"
 
 /* Function: iterate
 	Run the benchmark for a specified number of iterations.
@@ -87,9 +88,9 @@ char *mem_name[3] = {"Static","Heap","Stack"};
 */
 
 void __attribute__((noinline)) rtcbenchmark_measure_native_performance(void *pres) {
-	javax_rtc_RTC_void_startBenchmarkMeasurement_Native();
+	rtc_startBenchmarkMeasurement_Native();
 	iterate(pres);
-	javax_rtc_RTC_void_stopBenchmarkMeasurement();
+	rtc_stopBenchmarkMeasurement();
 }
 
 #if MAIN_HAS_NOARGC

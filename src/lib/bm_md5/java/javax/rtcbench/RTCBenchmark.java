@@ -24,8 +24,6 @@ public class RTCBenchmark {
 
     public static void rtcbenchmark_measure_java_performance(byte input[], byte output[])
     {
-        RTC.startBenchmarkMeasurement_AOT();
-
         short i, j, len;
         short length = (short)input.length;
         byte[] buffer = new byte[64];
@@ -247,8 +245,6 @@ public class RTCBenchmark {
         //////// Decode/Transform/Encode : End Encode (int array result to byte array)
 
         }
-
-        RTC.stopBenchmarkMeasurement();
     }
 }
     

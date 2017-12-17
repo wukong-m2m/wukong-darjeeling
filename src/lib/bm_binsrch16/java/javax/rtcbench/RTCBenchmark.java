@@ -27,8 +27,6 @@ public class RTCBenchmark {
     }
 
     public static void rtcbenchmark_measure_java_performance(short[] numbers) {
-        RTC.startBenchmarkMeasurement_AOT();
-
         short toFind = (short)(numbers[0] - 1);
 
         short mid=0;
@@ -59,7 +57,6 @@ public class RTCBenchmark {
             }
         }
 
-        RTC.stopBenchmarkMeasurement();
         numbers[0]=mid; // This is just here to prevent proguard from optimising away the whole method
     }
 }

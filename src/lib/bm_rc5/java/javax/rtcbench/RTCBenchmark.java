@@ -154,8 +154,6 @@ public class RTCBenchmark {
     }
     public static int rtcbenchmark_measure_java_performance(final byte[] pt, byte[] ct, int skey_rounds, int[] skey_K)
     {
-        RTC.startBenchmarkMeasurement_AOT();
-
         // uint32_t A, B, *K;
         // K used to be a pointer to somewhere in skey->K.
         // But since Java doesn't allow the same pointer trick, I'll use K as an offset to add when indexing skey->K instead.
@@ -211,7 +209,6 @@ public class RTCBenchmark {
         ct[(short)(4+3)] = (byte)(((B)>>>24)&255); ct[(short)(4+2)] = (byte)(((B)>>>16)&255); ct[(short)(4+1)] = (byte)(((B)>>>8)&255); ct[(short)(4+0)] = (byte)((B)&255);
         }
 
-        RTC.stopBenchmarkMeasurement();
         return CRYPT_OK;
     }
 
@@ -222,8 +219,6 @@ public class RTCBenchmark {
     // // @return CRYPT_OK if successful
     // private static int rc5_ecb_decrypt(final byte[] ct, byte[] pt, int skey_rounds, int[] skey_K)
     // {
-    //     RTC.startBenchmarkMeasurement_AOT();
-
     //     int A, B;
     //     int r, K;
     //     // LTC_ARGCHK(skey != NULL);
@@ -264,7 +259,6 @@ public class RTCBenchmark {
     //     pt[3] = (byte)(((A)>>>24)&255); pt[2] = (byte)(((A)>>>16)&255); pt[1] = (byte)(((A)>>>8)&255); pt[0] = (byte)((A)&255);
     //     pt[4+3] = (byte)(((B)>>>24)&255); pt[4+2] = (byte)(((B)>>>16)&255); pt[4+1] = (byte)(((B)>>>8)&255); pt[4+0] = (byte)((B)&255);
 
-    //     RTC.stopBenchmarkMeasurement();
     //     return CRYPT_OK;
     // }
 }

@@ -15,6 +15,7 @@
 #include "asm.h"
 #include "rtc_markloop.h"
 #include "rtc_safetychecks.h"
+#include "rtc_measure.h"
 
 // NOTE: Function pointers are a "PC address", so already divided by 2 since the PC counts in words, not bytes.
 // avr-libgcc functions used by translation
@@ -1707,6 +1708,14 @@ void rtc_translate_single_instruction() {
         break;
         case JVM_MARKLOOP_END:
             rtc_markloop_emit_epilogue(false, 0);
+        break;
+
+        // Special opcodes to start AOT measurement traces
+        case JVM_START_AOT_MEASUREMENT:
+            emit_x_CALL((uint16_t)&rtc_startBenchmarkMeasurement_AOT);
+        break;
+        case JVM_STOP_AOT_MEASUREMENT:
+            emit_x_CALL((uint16_t)&rtc_stopBenchmarkMeasurement);
         break;
 
         // Not implemented

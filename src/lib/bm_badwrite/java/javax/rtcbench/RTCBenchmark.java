@@ -13,17 +13,12 @@ public class RTCBenchmark {
     }
 
     public static boolean rtcbenchmark_measure_java_performance() {
-        RTC.startBenchmarkMeasurement_AOT();
-
         byte numbers[] = new byte[100];
         for (short i=0; i<30000; i++) {
             RTC.avroraPrintInt(i);
             numbers[-i] = (byte)0;
         }
 
-        RTC.stopBenchmarkMeasurement();
-
         return true;
     }
-
 }

@@ -1,5 +1,5 @@
 djlibsource {
     rtc {
-        cDependencies = [ 'vm_dev', 'vm', 'wkreprog' ]
+        cDependencies = [ 'darjeeling3', 'vm_dev', 'vm', 'wkreprog' ]
     }
 }

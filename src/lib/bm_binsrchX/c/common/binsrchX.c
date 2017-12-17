@@ -1,8 +1,9 @@
 #include <stdint.h>
 #include "config.h"
+#include "rtc_measure.h"
 
 void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t NUMNUMBERS, int16_t numbers[]) {
-    javax_rtc_RTC_void_startBenchmarkMeasurement_Native();
+    rtc_startBenchmarkMeasurement_Native();
 
     int16_t toFind = numbers[NUMNUMBERS-1] + 1;
 
@@ -22,5 +23,5 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t 
         }
     }
 
-    javax_rtc_RTC_void_stopBenchmarkMeasurement();
+    rtc_stopBenchmarkMeasurement();
 }

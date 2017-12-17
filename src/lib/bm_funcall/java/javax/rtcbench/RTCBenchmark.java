@@ -18,8 +18,6 @@ public class RTCBenchmark {
     }
 
     public static void test_static() {
-        RTC.startBenchmarkMeasurement_AOT();
-
         for (short i=0; i<10; i++) {
             static_nothing0();
             static_nothing0();
@@ -32,14 +30,10 @@ public class RTCBenchmark {
             static_nothing0();
             static_nothing0();
         }
-
-        RTC.stopBenchmarkMeasurement();
     }
 
     public static void test_virtual() {
         RTCBenchmark obj = new RTCBenchmark();
-
-        RTC.startBenchmarkMeasurement_AOT();
 
         for (short i=0; i<1; i++) {
             obj.virtual_nothing0();
@@ -53,8 +47,6 @@ public class RTCBenchmark {
             obj.virtual_nothing0();
             obj.virtual_nothing0();
         }
-
-        RTC.stopBenchmarkMeasurement();
     }
     public static void static_nothing0() { static_nothing1(); }
     public static void static_nothing1() { static_nothing2(); }

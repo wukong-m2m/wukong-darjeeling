@@ -3,6 +3,7 @@
 #include "darjeeling3.h"
 #include "fix_fft.h"
 #include "config.h"
+#include "rtc_measure.h"
 
 // #define TEST_FFT_WINDOWING
 
@@ -178,7 +179,7 @@ void fft_windowing(char f[], int16_t m)
 // int16_t fix_fft(char fr[], char fi[], int m, int inverse)
 int16_t __attribute__((noinline)) rtcbenchmark_measure_native_performance(char fr[], char fi[], int m, int inverse)
 {
-	javax_rtc_RTC_void_startBenchmarkMeasurement_Native();
+	rtc_startBenchmarkMeasurement_Native();
 
 	int16_t mr, nn, i, j, l, k, istep, n, scale, shift;			//int is 16-bit on Arduino (32bit on original system
 	char qr, qi, tr, ti, wr, wi;					// char is 8-bit signed
@@ -187,7 +188,7 @@ int16_t __attribute__((noinline)) rtcbenchmark_measure_native_performance(char f
 
 	/* max FFT size = N_WAVE */
 	if (n > N_WAVE) {
-	 	javax_rtc_RTC_void_stopBenchmarkMeasurement();
+	 	rtc_stopBenchmarkMeasurement();
 		return -1;
 	}
 
@@ -279,7 +280,7 @@ int16_t __attribute__((noinline)) rtcbenchmark_measure_native_performance(char f
 		l = istep;
 	}
 
- 	javax_rtc_RTC_void_stopBenchmarkMeasurement();
+ 	rtc_stopBenchmarkMeasurement();
 	return scale;
 }
 

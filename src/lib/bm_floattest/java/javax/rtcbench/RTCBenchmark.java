@@ -12,8 +12,6 @@ public class RTCBenchmark {
         return rtcbenchmark_measure_java_performance();
     }
     public static boolean rtcbenchmark_measure_java_performance() {
-        RTC.startBenchmarkMeasurement_AOT();
-        RTC.stopBenchmarkMeasurement();
         return true;
     }
 }

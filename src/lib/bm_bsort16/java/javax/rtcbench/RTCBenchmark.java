@@ -27,8 +27,6 @@ public class RTCBenchmark {
     }
 
     // public static void do_bubblesort_original(short[] numbers) {
-    //  RTC.startBenchmarkMeasurement_AOT();
-
     //  for (int i=0; i<NUMNUMBERS; i++) {
     //      for (int j=0; j<NUMNUMBERS-i-1; j++) {
     //          if (numbers[j]>numbers[j+1]) {
@@ -38,14 +36,10 @@ public class RTCBenchmark {
     //          }
     //      }
     //  }
-
-    //  RTC.stopBenchmarkMeasurement();
     // }
 
 
     public static void rtcbenchmark_measure_java_performance(short[] numbers) {
-        RTC.startBenchmarkMeasurement_AOT();
-
         for (short i=0; i<NUMNUMBERS; i++) {
             short x=(short)(NUMNUMBERS-i-1); // This doesn't get optimised the way I expected it would. Without this extra variable, it will calculate NUMNUMBERS-i-1 on each interation of the inner loop! (speedup 14.7M -> 14.2M cycles)
             short j_plus_one = 1; // Same goes for "j+1"
@@ -59,7 +53,5 @@ public class RTCBenchmark {
                 j_plus_one++;
             }
         }
-
-        RTC.stopBenchmarkMeasurement();
     }
 }

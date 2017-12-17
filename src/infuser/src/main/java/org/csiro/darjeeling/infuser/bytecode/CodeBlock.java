@@ -44,6 +44,7 @@ import org.csiro.darjeeling.infuser.bytecode.transformations.OptimizeByteCode;
 import org.csiro.darjeeling.infuser.bytecode.transformations.ReMapLocalVariables;
 import org.csiro.darjeeling.infuser.bytecode.transformations.ReplaceStackInstructions;
 import org.csiro.darjeeling.infuser.bytecode.transformations.UseSINC;
+import org.csiro.darjeeling.infuser.bytecode.transformations.AddStartStopAOTMeasurement;
 import org.csiro.darjeeling.infuser.structure.BaseType;
 import org.csiro.darjeeling.infuser.structure.LocalId;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractClassDefinition;
@@ -451,6 +452,9 @@ public class CodeBlock
 		if (!isHardcodedLightweight) { // For hardcoded lightweight methods, the branch targets are already there
 			new AddBranchTargetInstructions(ret).transform();
 		}
+		// Add instructions to start and stop AOT measurements
+		new AddStartStopAOTMeasurement(ret).transform();
+
 		ret.instructions.reThreadStates();
 		ret.instructions.fixBranchAddresses();
 		

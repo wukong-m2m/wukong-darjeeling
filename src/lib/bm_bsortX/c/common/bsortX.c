@@ -1,10 +1,11 @@
 #include <stdint.h>
 #include "config.h"
+#include "rtc_measure.h"
 
 // Split into separate function to avoid the compiler just optimising away the whole test.
 
 void __attribute__((noinline)) rtcbenchmark_measure_native_performance(int16_t NUMNUMBERS, uint32_t numbers[]) {
-	javax_rtc_RTC_void_startBenchmarkMeasurement_Native();
+	rtc_startBenchmarkMeasurement_Native();
 
 	// Then sort it
 	for (uint16_t i=0; i<NUMNUMBERS; i++) {
@@ -18,5 +19,5 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(int16_t N
 		}
 	}
 
-	javax_rtc_RTC_void_stopBenchmarkMeasurement();
+	rtc_stopBenchmarkMeasurement();
 }

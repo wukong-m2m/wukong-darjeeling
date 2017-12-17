@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "darjeeling3.h"
 #include "config.h"
+#include "rtc_measure.h"
 
 // Split into separate function to avoid the compiler just optimising away the whole test.
 
@@ -25,7 +26,7 @@ float __attribute__((noinline)) negative(float a) {
 }
 
 void __attribute__((noinline)) rtcbenchmark_measure_native_performance(float a, float b) {
-	javax_rtc_RTC_void_startBenchmarkMeasurement_Native();
+	rtc_startBenchmarkMeasurement_Native();
 
 	// Hopefully enough to prevent the optimiser from removing all of this.
 	if (add(a, b) + substract(a, b) + multiply(a, b) + divide(a, b) + negative(a) < 0) {
@@ -34,7 +35,7 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(float a, 
 		avroraPrintInt32(1);		
 	}
 
-	javax_rtc_RTC_void_stopBenchmarkMeasurement();
+	rtc_stopBenchmarkMeasurement();
 }
 
 void javax_rtcbench_RTCBenchmark_void_test_native() {

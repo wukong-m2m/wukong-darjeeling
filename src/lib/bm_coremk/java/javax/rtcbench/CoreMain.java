@@ -125,9 +125,7 @@ public class CoreMain {
 	}
 
 	public static void rtcbenchmark_measure_java_performance(CoreResults pres) {
-		RTC.startBenchmarkMeasurement_AOT();
 		iterate(pres);
-		RTC.stopBenchmarkMeasurement();
 	}
 
 	public static boolean core_mark_main() {

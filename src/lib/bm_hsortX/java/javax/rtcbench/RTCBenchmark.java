@@ -27,8 +27,6 @@ public class RTCBenchmark {
     }
 
     public static void rtcbenchmark_measure_java_performance(short[] a) {
-        RTC.startBenchmarkMeasurement_AOT();
-
         // Exact copy of http://rosettacode.org/wiki/Sorting_algorithms/Heapsort#C, but with SWAP and siftDown inlined to prevent expensive method calls
 
         short count = (short)a.length;
@@ -103,6 +101,5 @@ public class RTCBenchmark {
         //             return;
         //     }
         // }
-        RTC.stopBenchmarkMeasurement();
     }
 }

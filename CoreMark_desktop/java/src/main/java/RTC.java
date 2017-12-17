@@ -14,10 +14,6 @@ public class RTC
 	public static void beep(int number) {}
 	public static void terminateOnException(short type) {}
 
-    public static void startBenchmarkMeasurement_Native() {}
-    public static void startBenchmarkMeasurement_AOT() {}
-    public static void stopBenchmarkMeasurement() {}
-
     // For CoreMark
     private static long CorePortMe_start;
     private static long CorePortMe_stop;

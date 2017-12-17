@@ -27,8 +27,6 @@ public class RTCBenchmark {
     
     // do btea
     public static void rtcbenchmark_measure_java_performance(int[] v, final int[] key) {
-        RTC.startBenchmarkMeasurement_AOT();
-
         final int DELTA = 0x9e3779b9;
         short n = (byte)v.length; // Setting n to be 8 bit means we can't handle large arrays, but on a sensor node that should be fine)
 
@@ -67,7 +65,6 @@ public class RTCBenchmark {
                 sum -= DELTA;
             } while (--rounds != 0);
         }
-        RTC.stopBenchmarkMeasurement();
     }
 }
 
