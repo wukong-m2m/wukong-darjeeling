@@ -1255,7 +1255,7 @@ void rtc_translate_single_instruction() {
             // and all references in call-saved registers since they may not be accurate if the garbage collector runs.
             rtc_flush_and_cleartags_ref(RTC_FILTER_ALL, RTC_FILTER_CALLUSED_AND_REFERENCE);
 
-            rtc_common_translate_invoke(ts, opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
+            rtc_common_translate_invoke(ts, opcode, jvm_operand_byte0, jvm_operand_byte1);
         break;
 #ifndef NO_LIGHTWEIGHT_METHODS
         case JVM_INVOKELIGHT:

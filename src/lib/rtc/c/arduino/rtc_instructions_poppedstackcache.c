@@ -1203,7 +1203,7 @@ void rtc_translate_single_instruction() {
             rtc_poppedstackcache_clear_all_callused_valuetags();
             rtc_poppedstackcache_clear_all_reference_valuetags();
 
-            rtc_common_translate_invoke(ts, opcode, jvm_operand_byte0, jvm_operand_byte1, jvm_operand_byte2);
+            rtc_common_translate_invoke(ts, opcode, jvm_operand_byte0, jvm_operand_byte1);
         break;
 #ifndef NO_LIGHTWEIGHT_METHODS
         case JVM_INVOKELIGHT:
