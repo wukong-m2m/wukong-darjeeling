@@ -21,7 +21,7 @@
 #include "rtc_markloop.h"
 #endif
 
-void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8_t jvm_operand_byte0, uint8_t jvm_operand_byte1, uint8_t jvm_operand_byte2) {
+void rtc_common_translate_invoke(rtc_translationstate *ts, uint8_t opcode, uint8_t jvm_operand_byte0, uint8_t jvm_operand_byte1) {
 #if defined (AOT_STRATEGY_IMPROVEDPEEPHOLE)
     emit_flush_to_flash(); // To make sure we won't accidentally optimise addresses or branch labels
 #endif
