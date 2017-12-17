@@ -1,9 +1,10 @@
 ﻿<Properties StartupConfiguration="{D7D163B1-E58B-4D63-8D13-9B3BDA4AE026}|Default">
-  <MonoDevelop.Ide.Workbench ActiveDocument="process-output/CombineResults.fs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="process-output/ProcessTraces.fs">
     <Files>
       <File FileName="process-output/Datatypes.fs" Line="57" Column="9" />
       <File FileName="process-output/CombineResults.fs" Line="150" Column="1" />
       <File FileName="process-output/Program.fs" Line="12" Column="1" />
+      <File FileName="process-output/ProcessTraces.fs" Line="405" Column="9" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
@@ -11,6 +12,12 @@
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MultiItemStartupConfigurations />
+  <MultiItemStartupConfigurations>
+    <MultiItemSolutionRunConfiguration Id="analyse_traces" Name="analyse_traces">
+      <Items>
+        <StartupItem ItemId="{D7D163B1-E58B-4D63-8D13-9B3BDA4AE026}" ItemName="process-output" ConfigurationId="Default" />
+      </Items>
+    </MultiItemSolutionRunConfiguration>
+  </MultiItemStartupConfigurations>
   <MonoDevelop.Ide.ItemProperties.process-output PreferredExecutionTarget="MonoDevelop.Default" />
 </Properties>
