@@ -18,7 +18,6 @@ public class AddStartStopAOTMeasurement extends CodeBlockTransformation
 	@Override
 	protected void transformInternal()
 	{
-		System.err.println("AddStartStopAOTMeasurement " + codeBlock.getMethodImplementation().getMethodDefinition().getName());
 		if (codeBlock.getMethodImplementation().getMethodDefinition().getName().equals("rtcbenchmark_measure_java_performance")) {
 			InstructionList instructions = codeBlock.getInstructions();
 
@@ -30,13 +29,8 @@ public class AddStartStopAOTMeasurement extends CodeBlockTransformation
 
 			for (int i=0; i<instructions.size(); i++)
 			{
-
-
 				handle = instructions.get(i);
 				Instruction instruction = handle.getInstruction();
-
-		System.err.println("   " + instruction.getOpcode());
-
 				
 				if (instruction.getOpcode().isReturn()) {
 					InstructionHandle stopMeasurementHandle = handle.copyToNewHandleWithSameStateAndLiveVariables(new SimpleInstruction (Opcode.STOP_AOT_MEASUREMENT));
