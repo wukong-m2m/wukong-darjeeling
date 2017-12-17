@@ -393,6 +393,9 @@ module ProcessTraces =
         let benchmark = (Path.GetFileName(resultsdir))
         Console.Error.WriteLine ("PROCESSING " + resultsdir)
 
+        let jvmExcludeList = [ "RTCBenchmark.test_java" ]
+        let cExcludeList = [ "check_data_types"; "core_init_matrix"; "core_init_state"; "core_list_init"; "core_mark_main"; "get_seed_32"; "get_time"; "portable_fini"; "portable_init"; "start_time"; "stop_time"; "time_in_secs" ]
+
         let jvmResultsdir = resultsdir
         let jvmRtcdata = RtcdataXml.Load(String.Format("{0}/rtcdata.xml", jvmResultsdir))
         let jvmDjdebuglines = System.IO.File.ReadLines(String.Format("{0}/jlib_bm_{1}.debug", jvmResultsdir, benchmark)) |> Seq.toList
@@ -400,9 +403,7 @@ module ProcessTraces =
         let jvmStdoutlog = System.IO.File.ReadLines(String.Format("{0}/stdoutlog.txt", jvmResultsdir)) |> Seq.toList
         let jvmNm = parseNm (System.IO.File.ReadLines(String.Format("{0}/darjeeling.nm", jvmResultsdir)) |> Seq.toList)
         let jvmProfilerdataPerAddress = jvmProfilerdata |> List.map (fun x -> (Convert.ToInt32(x.Address.Trim(), 16), x))
-        let jvmExcludeList = [ "RTCBenchmark.test_java" ]
         let jvmMethodsImpls = jvmRtcdata.MethodImpls |> Seq.filter (fun methodImpl -> (methodImpl.MethodDefInfusion.StartsWith("bm_")))
-                                                     |> Seq.filter (fun methodImpl -> not (jvmExcludeList |> List.exists (fun ex -> (getClassAndMethodNameFromImpl methodImpl).Contains(ex)))) // Filter out the benchmark setup code
                                                      |> Seq.filter (fun methodImpl -> methodImpl.JavaInstructions.Length > 1) // Bug in RTC: abstract methods become just a method prologue
                                                      |> Seq.toList
         let jvmAddressesOfINVOKEHelperFunctions = getINVOKEHelperAddressesFromJvmNm jvmNm
@@ -444,9 +445,12 @@ module ProcessTraces =
         let jvmCountersForAddressAndInst = countersForAddressAndInst jvmProfilerdataPerAddress (jvmAddressesOfBenchmarkCalls @ jvmAddressesOfINVOKEHelperFunctions)
         let cCountersForAddressAndInst = countersForAddressAndInst cProfilerdataPerAddress cAddressesOfBenchmarkCalls
 
-        let jvmMethods = jvmMethodsImpls |> List.map (fun methodImpl -> (processJvmMethod benchmark methodImpl jvmCountersForAddressAndInst jvmDjdebuglines jvmAddressesOfMathFunctions))
-
-        let cFunctions = cFunctionNames |> List.map (fun name -> (processCFunction name cCountersForAddressAndInst cDisasm cAddressesOfMathFunctions))
+        let jvmMethods = jvmMethodsImpls 
+                             |> List.map (fun methodImpl -> (processJvmMethod benchmark methodImpl jvmCountersForAddressAndInst jvmDjdebuglines jvmAddressesOfMathFunctions))
+                             |> List.filter (fun f -> f.countersAOTTotal.cycles > 0) // Exclude methods not used in the benchmark
+        let cFunctions = cFunctionNames
+                           |> List.map (fun name -> (processCFunction name cCountersForAddressAndInst cDisasm cAddressesOfMathFunctions))
+                           |> List.filter (fun f -> f.countersCTotal.cycles > 0) // Exclude methods not used in the benchmark
 
         let getTimer stdoutlog timer =
             let stopwatchTimers = getTimersFromStdout stdoutlog
