@@ -145,6 +145,10 @@
 #define OPCODE_CPC                      0x0400
 #define emit_CPC(destreg, srcreg)       emit_opcodeWithSrcAndDestRegOperand(OPCODE_CPC, destreg, srcreg)
 
+// CPI                                  0011 KKKK dddd KKKK
+#define OPCODE_CPI                      0x3000
+#define emit_CPI(reg, constant)         emit_LDI_SBCI_SUBI_CPI(OPCODE_CPI, reg, constant)
+
 // DEC                                  1001 010d dddd 1010
 #define OPCODE_DEC                      0x940A
 #define emit_DEC(reg)                   emit_opcodeWithSingleRegOperand(OPCODE_DEC, reg)
@@ -201,7 +205,7 @@
 
 // LDI                                  1110 KKKK dddd KKKK, with K=constant to load, d=dest register-16 (can only load to r16-r31)
 #define OPCODE_LDI                      0xE000
-#define emit_LDI(reg, constant)         emit_LDI(reg, constant)
+#define emit_LDI(reg, constant)         emit_LDI_SBCI_SUBI_CPI(OPCODE_LDI, reg, constant)
 
 // LDS                                  1001 000d dddd 0000
 //                                      kkkk kkkk kkkk kkkk
@@ -284,7 +288,7 @@
 
 // SBCI                                 0100 KKKK dddd KKKK, with K a constant <= 255,d the destination register - 16
 #define OPCODE_SBCI                     0x4000
-#define emit_SBCI(reg, constant)        emit_SBCI(reg, constant)
+#define emit_SBCI(reg, constant)        emit_LDI_SBCI_SUBI_CPI(OPCODE_SBCI, reg, constant)
 
 // SBIW                                 1001 0111 KKdd KKKK, with d=r24, r26, r28, or r30
 #define OPCODE_SBIW                     0x9700
@@ -333,6 +337,6 @@
 
 // SUBI                                 0101 KKKK dddd KKKK, with K a constant <= 255,d the destination register - 16
 #define OPCODE_SUBI                     0x5000
-#define emit_SUBI(reg, constant)        emit_SUBI(reg, constant)
+#define emit_SUBI(reg, constant)        emit_LDI_SBCI_SUBI_CPI(OPCODE_SUBI, reg, constant)
 
 #endif // ASM_H

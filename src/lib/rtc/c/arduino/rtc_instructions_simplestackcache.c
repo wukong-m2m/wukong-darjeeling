@@ -865,11 +865,11 @@ void rtc_translate_single_instruction() {
             {
 #ifndef NO_CONSTSHIFT 
                 bool emit_loop = opcode == JVM_SSHL || opcode == JVM_SSHR || opcode == JVM_SUSHR;
-                uint8_t bytes_to_shift = emit_loop ? 1 : jvm_operand_byte0;
+                uint8_t bits_to_shift = emit_loop ? 1 : jvm_operand_byte0;
 #else
                  // If we turn off this optimisation, just set these to fixed values and let the compiler take care of removing unnecessary code. (tested. it does.)
                 bool emit_loop = true;
-                uint8_t bytes_to_shift = 1;
+                uint8_t bits_to_shift = 1;
 #endif
 
                 if (emit_loop) {
@@ -878,13 +878,13 @@ void rtc_translate_single_instruction() {
 
                 rtc_stackcache_pop_16bit(operand_regs2); // pop the operand
 
-                // Emit code. Here we need emit_loop and bytes_to_shift to be set.
-                // If emit_loop is true, bytes_to_shift should be 1, and the loop reg should be in operand1[0]
+                // Emit code. Here we need emit_loop and bits_to_shift to be set.
+                // If emit_loop is true, bits_to_shift should be 1, and the loop reg should be in operand1[0]
                 if (emit_loop) {
                     emit_RJMP(4);
                 }
 
-                while (bytes_to_shift >= 8) {
+                while (bits_to_shift >= 8) {
                     if (opcode == JVM_SSHL || opcode == JVM_SSHL_CONST) {                
                         emit_MOV(operand_regs2[1], operand_regs2[0]);
                         emit_CLR(operand_regs2[0]);
@@ -898,10 +898,10 @@ void rtc_translate_single_instruction() {
                         emit_MOV(operand_regs2[0], operand_regs2[1]);
                         emit_CLR(operand_regs2[1]);
                     }                    
-                    bytes_to_shift -= 8;
+                    bits_to_shift -= 8;
                 }
 
-                while (bytes_to_shift > 0) {
+                while (bits_to_shift > 0) {
                     if (opcode == JVM_SSHL || opcode == JVM_SSHL_CONST) {
                         emit_LSL(operand_regs2[0]);
                         emit_ROL(operand_regs2[1]);
@@ -912,7 +912,7 @@ void rtc_translate_single_instruction() {
                         emit_LSR(operand_regs2[1]);
                         emit_ROR(operand_regs2[0]);
                     }
-                    bytes_to_shift--;
+                    bits_to_shift--;
                 }
 
                 if (emit_loop) {
@@ -1041,11 +1041,11 @@ void rtc_translate_single_instruction() {
            {
 #ifndef NO_CONSTSHIFT 
                 bool emit_loop = opcode == JVM_ISHL || opcode == JVM_ISHR || opcode == JVM_IUSHR;
-                uint8_t bytes_to_shift = emit_loop ? 1 : jvm_operand_byte0;
+                uint8_t bits_to_shift = emit_loop ? 1 : jvm_operand_byte0;
 #else
                  // If we turn off this optimisation, just set these to fixed values and let the compiler take care of removing unnecessary code. (tested. it does.)
                 bool emit_loop = true;
-                uint8_t bytes_to_shift = 1;
+                uint8_t bits_to_shift = 1;
 #endif
                 if(emit_loop) {
                     rtc_stackcache_pop_16bit(operand_regs1);
@@ -1053,36 +1053,50 @@ void rtc_translate_single_instruction() {
 
                 rtc_stackcache_pop_32bit(operand_regs2); // pop the operand
 
-                // Emit code. Here we need emit_loop and bytes_to_shift to be set.
-                // If emit_loop is true, bytes_to_shift should be 1, and the loop reg should be in operand1[0]
+                // Emit code. Here we need emit_loop and bits_to_shift to be set.
+                // If emit_loop is true, bits_to_shift should be 1, and the loop reg should be in operand1[0]
                 if (emit_loop) {
                     emit_RJMP(8);
                 }
 
-                while (bytes_to_shift >= 8) {
-                    if (opcode == JVM_ISHL || opcode == JVM_ISHL_CONST) {                
-                        emit_MOV(operand_regs2[3], operand_regs2[2]);
-                        emit_MOV(operand_regs2[2], operand_regs2[1]);
-                        emit_MOV(operand_regs2[1], operand_regs2[0]);
-                        emit_CLR(operand_regs2[0]);
-                    } else if (opcode == JVM_ISHR || opcode == JVM_ISHR_CONST) {
+                if (bits_to_shift >= 8) {
+                    uint8_t bytes_to_shift = bits_to_shift / 8;
+                    bits_to_shift = bits_to_shift % 8;
+                    uint8_t extension_reg = R1;
+                    if (opcode == JVM_ISHR_CONST) {
                         emit_CLR(RZL);
                         emit_SBRC(operand_regs2[3], 7);
                         emit_COM(RZL);
-                        emit_MOV(operand_regs2[0], operand_regs2[1]);
-                        emit_MOV(operand_regs2[1], operand_regs2[2]);
-                        emit_MOV(operand_regs2[2], operand_regs2[3]);
-                        emit_MOV(operand_regs2[3], RZL);
-                    } else if (opcode == JVM_IUSHR || opcode == JVM_IUSHR_CONST) {
-                        emit_MOV(operand_regs2[0], operand_regs2[1]);
-                        emit_MOV(operand_regs2[1], operand_regs2[2]);
-                        emit_MOV(operand_regs2[2], operand_regs2[3]);
-                        emit_CLR(operand_regs2[3]);
-                    }                    
-                    bytes_to_shift -= 8;
+                        extension_reg = RZL;
+                    }
+
+                    uint8_t *target_reg;
+                    uint8_t *source_reg;
+                    int8_t step;
+                    if (opcode == JVM_ISHL_CONST) {
+                        target_reg = &(operand_regs2[3]);
+                        source_reg = target_reg - bytes_to_shift;
+                        step = -1;
+                    } else { // JVM_I[U]SHR
+                        target_reg = &(operand_regs2[0]);
+                        source_reg = target_reg + bytes_to_shift;
+                        step = 1;
+                    }
+
+                    uint8_t bytes_to_clear = bytes_to_shift;
+                    uint8_t bytes_to_move = 4 - bytes_to_shift;
+                    while (bytes_to_move-- > 0) {
+                        emit_MOV(*target_reg, *source_reg);
+                        target_reg += step;
+                        source_reg += step;
+                    }
+                    while (bytes_to_clear-- > 0) {
+                        emit_MOV(*target_reg, extension_reg);
+                        target_reg += step;
+                    }
                 }
 
-                while (bytes_to_shift > 0) {
+                while (bits_to_shift > 0) {
                     if (opcode == JVM_ISHL || opcode == JVM_ISHL_CONST) {                
                         emit_LSL(operand_regs2[0]);
                         emit_ROL(operand_regs2[1]);
@@ -1099,7 +1113,7 @@ void rtc_translate_single_instruction() {
                         emit_ROR(operand_regs2[1]);
                         emit_ROR(operand_regs2[0]);
                     }
-                    bytes_to_shift--;
+                    bits_to_shift--;
                 }
 
                 if (emit_loop) {

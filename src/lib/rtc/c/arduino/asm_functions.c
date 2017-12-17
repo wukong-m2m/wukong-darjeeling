@@ -139,7 +139,8 @@ void emit_STD(uint8_t reg, uint8_t yz, uint16_t offset) {
 // LDI                                  1110 KKKK dddd KKKK, with K=constant to load, d=dest register-16 (can only load to r16-r31)
 // SBCI                                 0100 KKKK dddd KKKK, with K a constant <= 255,d the destination register - 16
 // SUBI                                 0101 KKKK dddd KKKK, with K a constant <= 255,d the destination register - 16
-void emit_LDI_SBCI_SUBI(uint16_t opcode, uint8_t reg, uint8_t constant) {
+// CPI                                  0011 KKKK dddd KKKK, with K a constant <= 255,d the destination register - 16
+void emit_LDI_SBCI_SUBI_CPI(uint16_t opcode, uint8_t reg, uint8_t constant) {
     asm_guard_check_regs(opcode, reg, 0);
     uint16_t encoded_constant = (constant & 0x0F) + ((constant & 0xF0) << 4); // 0000 KKKK 0000 KKKK
     emit (opcode
@@ -147,9 +148,6 @@ void emit_LDI_SBCI_SUBI(uint16_t opcode, uint8_t reg, uint8_t constant) {
              + encoded_constant);
 
 }
-void emit_LDI(uint8_t reg, uint8_t constant) { emit_LDI_SBCI_SUBI(OPCODE_LDI, reg, constant); }
-void emit_SBCI(uint8_t reg, uint8_t constant) { emit_LDI_SBCI_SUBI(OPCODE_SBCI, reg, constant); }
-void emit_SUBI(uint8_t reg, uint8_t constant) { emit_LDI_SBCI_SUBI(OPCODE_SUBI, reg, constant); }
 
 uint16_t asm_MOVW(uint8_t destreg, uint8_t srcreg) {
     asm_guard_check_regs(OPCODE_MOVW, destreg, srcreg);

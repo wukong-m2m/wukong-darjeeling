@@ -16,9 +16,7 @@ void emit_SBIW(uint8_t reg, uint8_t constant);
 void emit_BRANCH(uint16_t opcode, uint8_t offset);
 void emit_LDD(uint8_t reg, uint8_t yz, uint16_t offset);
 void emit_STD(uint8_t reg, uint8_t yz, uint16_t offset);
-void emit_LDI(uint8_t reg, uint8_t constant);
-void emit_SBCI(uint8_t reg, uint8_t constant);
-void emit_SUBI(uint8_t reg, uint8_t constant);
+void emit_LDI_SBCI_SUBI_CPI(uint16_t opcode, uint8_t reg, uint8_t constant);
 uint16_t asm_MOVW(uint8_t destreg, uint8_t srcreg);
 void emit_MOVW(uint8_t destreg, uint8_t srcreg);
 
