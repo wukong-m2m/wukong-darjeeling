@@ -29,9 +29,9 @@ public class ArrayTest
 	/**
 	 * Tests the array implementation. Exercises the following opcodes:
 	 * <p>
-	 * BALOAD/BASTORE<br>
-	 * SALOAD/SASTORE<br>
-	 * IALOAD/IASTORE<br>
+	 * GETARRAY_B/PUTARRAY_B<br>
+	 * GETARRAY_S/PUTARRAY_S<br>
+	 * GETARRAY_I/PUTARRAY_I<br>
 	 * NEWARRAY<br>
 	 * ARRAYLENGTH
 	 * <p>

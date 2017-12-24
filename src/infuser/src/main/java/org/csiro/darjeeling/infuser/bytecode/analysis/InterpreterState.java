@@ -141,23 +141,23 @@ public class InterpreterState implements Comparable<InterpreterState>
 				ret.getStack().pop();
 				break;
 				
-			case BASTORE:
-			case CASTORE:
-			case SASTORE:
-			case IASTORE:
-			case LASTORE:
-			case AASTORE:
+			case PUTARRAY_B:
+			case PUTARRAY_C:
+			case PUTARRAY_S:
+			case PUTARRAY_I:
+			case PUTARRAY_L:
+			case PUTARRAY_A:
 				ret.getStack().pop();
 				ret.getStack().pop();
 				ret.getStack().pop();
 				break;
 			
-			case BALOAD:
-			case CALOAD:
-			case SALOAD:
-			case IALOAD:
-			case LALOAD:
-			case AALOAD:
+			case GETARRAY_B:
+			case GETARRAY_C:
+			case GETARRAY_S:
+			case GETARRAY_I:
+			case GETARRAY_L:
+			case GETARRAY_A:
 				ret.getStack().pop();
 				ret.getStack().pop();
 				ret.getStack().push(handle);

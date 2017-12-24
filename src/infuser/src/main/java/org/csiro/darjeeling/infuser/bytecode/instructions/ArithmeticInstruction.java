@@ -85,19 +85,19 @@ public class ArithmeticInstruction extends SimpleInstruction
 				preState.getStack().peek(0).setKeepOverflow(true);
 				break;
 
-			case BALOAD:
-			case CALOAD:
-			case SALOAD:
-			case IALOAD:
-			case AALOAD:
+			case GETARRAY_B:
+			case GETARRAY_C:
+			case GETARRAY_S:
+			case GETARRAY_I:
+			case GETARRAY_A:
 				preState.getStack().peek(0).setKeepOverflow(true);
 				break;
 				
-			case BASTORE:
-			case CASTORE:
-			case SASTORE:
-			case IASTORE:
-			case AASTORE:
+			case PUTARRAY_B:
+			case PUTARRAY_C:
+			case PUTARRAY_S:
+			case PUTARRAY_I:
+			case PUTARRAY_A:
 				preState.getStack().peek(1).setKeepOverflow(true);
 				break;
 				

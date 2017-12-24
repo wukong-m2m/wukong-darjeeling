@@ -1802,19 +1802,19 @@ int dj_exec_run(int nrOpcodes)
 		case JVM_ANEWARRAY: ANEWARRAY(); break;
 		case JVM_ARRAYLENGTH: ARRAYLENGTH(); break;
 
-		case JVM_BASTORE: BASTORE(); break;
-		case JVM_CASTORE: CASTORE(); break;
-		case JVM_SASTORE: SASTORE(); break;
-		case JVM_IASTORE: IASTORE(); break;
+		case JVM_PUTARRAY_B: BASTORE(); break;
+		case JVM_PUTARRAY_C: CASTORE(); break;
+		case JVM_PUTARRAY_S: SASTORE(); break;
+		case JVM_PUTARRAY_I: IASTORE(); break;
 		case JVM_LASTORE: LASTORE(); break;
-		case JVM_AASTORE: AASTORE(); break;
+		case JVM_PUTARRAY_A: AASTORE(); break;
 
-		case JVM_BALOAD: BALOAD(); break;
-		case JVM_CALOAD: CALOAD(); break;
-		case JVM_SALOAD: SALOAD(); break;
-		case JVM_IALOAD: IALOAD(); break;
+		case JVM_GETARRAY_B: BALOAD(); break;
+		case JVM_GETARRAY_C: CALOAD(); break;
+		case JVM_GETARRAY_S: SALOAD(); break;
+		case JVM_GETARRAY_I: IALOAD(); break;
 		case JVM_LALOAD: LALOAD(); break;
-		case JVM_AALOAD: AALOAD(); break;
+		case JVM_GETARRAY_A: AALOAD(); break;
 
 		// Static variables
 		case JVM_GETSTATIC_B: GETSTATIC_B(); break;

@@ -256,22 +256,22 @@ void rtc_translate_single_instruction() {
             emit_x_POP_REF(R24);
             emit_store_local_ref_baseline_wrapper(R24, offset_for_reflocal(jvm_operand_byte0));
         break;
-        case JVM_BALOAD:
-        case JVM_CALOAD:
-        case JVM_SALOAD:
-        case JVM_IALOAD:
-        case JVM_AALOAD:
+        case JVM_GETARRAY_B:
+        case JVM_GETARRAY_C:
+        case JVM_GETARRAY_S:
+        case JVM_GETARRAY_I:
+        case JVM_GETARRAY_A:
 #ifdef ARRAYINDEX_32BIT
             emit_x_POP_32bit(R22);
 
             // POP the array reference into Z.
             emit_x_POP_REF(RZ); // Z now pointer to the base of the array object.
 
-            if (opcode==JVM_SALOAD || opcode==JVM_AALOAD) {
+            if (opcode==JVM_GETARRAY_S || opcode==JVM_GETARRAY_A) {
                 // Multiply the index by 2, since we're indexing 16 bit shorts.
                 emit_LSL(R22);
                 emit_ROL(R23);
-            } else if (opcode==JVM_IALOAD) {
+            } else if (opcode==JVM_GETARRAY_I) {
                 // Multiply the index by 4, since we're indexing 16 bit shorts.
                 emit_LSL(R22);
                 emit_ROL(R23);
@@ -288,11 +288,11 @@ void rtc_translate_single_instruction() {
             // POP the array reference into Z.
             emit_x_POP_REF(RZ); // Z now pointer to the base of the array object.
 
-            if (opcode==JVM_SALOAD || opcode==JVM_AALOAD) {
+            if (opcode==JVM_GETARRAY_S || opcode==JVM_GETARRAY_A) {
                 // Multiply the index by 2, since we're indexing 16 bit shorts.
                 emit_LSL(R24);
                 emit_ROL(R25);
-            } else if (opcode==JVM_IALOAD) {
+            } else if (opcode==JVM_GETARRAY_I) {
                 // Multiply the index by 4, since we're indexing 16 bit shorts.
                 emit_LSL(R24);
                 emit_ROL(R25);
@@ -305,7 +305,7 @@ void rtc_translate_single_instruction() {
             emit_ADC(RZH, R25);
 #endif
 
-            if (opcode == JVM_AALOAD) {
+            if (opcode == JVM_GETARRAY_A) {
                 // Add 4 to skip 2 bytes for array length and 2 bytes for array type.
                 emit_ADIW(RZ, 4); 
             } else { // all types of int array
@@ -315,49 +315,49 @@ void rtc_translate_single_instruction() {
 
             // Now Z points to the target element
             switch (opcode) {
-                case JVM_BALOAD:
-                case JVM_CALOAD:
+                case JVM_GETARRAY_B:
+                case JVM_GETARRAY_C:
                     emit_LD_Z(R24);
                     emit_CLR(R25);
                     emit_SBRC(R24, 7); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
                     emit_COM(R25); // otherwise: flip R24 to 0xFF to extend the sign
                     emit_x_PUSH_16bit(R24);
                 break;
-                case JVM_SALOAD:
+                case JVM_GETARRAY_S:
                     emit_LD_ZINC(R24);
                     emit_LD_Z(R25);
                     emit_x_PUSH_16bit(R24);
                 break;
-                case JVM_IALOAD:
+                case JVM_GETARRAY_I:
                     emit_LD_ZINC(R22);
                     emit_LD_ZINC(R23);
                     emit_LD_ZINC(R24);
                     emit_LD_Z(R25);
                     emit_x_PUSH_32bit(R22);
                 break;
-                case JVM_AALOAD:
+                case JVM_GETARRAY_A:
                     emit_LD_ZINC(R24);
                     emit_LD_Z(R25);
                     emit_x_PUSH_REF(R24);
                 break;
             }
         break;
-        case JVM_BASTORE:
-        case JVM_CASTORE:
-        case JVM_SASTORE:
-        case JVM_IASTORE:
-        case JVM_AASTORE:
+        case JVM_PUTARRAY_B:
+        case JVM_PUTARRAY_C:
+        case JVM_PUTARRAY_S:
+        case JVM_PUTARRAY_I:
+        case JVM_PUTARRAY_A:
             // Pop the value we need to store in the array.
             switch (opcode) {
-                case JVM_BASTORE:
-                case JVM_CASTORE:
-                case JVM_SASTORE:
+                case JVM_PUTARRAY_B:
+                case JVM_PUTARRAY_C:
+                case JVM_PUTARRAY_S:
                     emit_x_POP_16bit(R24);
                 break;
-                case JVM_IASTORE:
+                case JVM_PUTARRAY_I:
                     emit_x_POP_32bit(R22);
                 break;
-                case JVM_AASTORE:
+                case JVM_PUTARRAY_A:
                     emit_x_POP_REF(R24);
                 break;
             }
@@ -371,11 +371,11 @@ void rtc_translate_single_instruction() {
             // POP the array reference into Z.
             emit_x_POP_REF(RZ); // Z now pointer to the base of the array object.
 
-            if (opcode==JVM_SASTORE || opcode==JVM_AASTORE) {
+            if (opcode==JVM_PUTARRAY_S || opcode==JVM_PUTARRAY_A) {
                 // Multiply the index by 2, since we're indexing 16 bit shorts.
                 emit_LSL(R18);
                 emit_ROL(R19);
-            } else if (opcode==JVM_IASTORE) {
+            } else if (opcode==JVM_PUTARRAY_I) {
                 // Multiply the index by 4, since we're indexing 16 bit shorts.
                 emit_LSL(R18);
                 emit_ROL(R19);
@@ -387,7 +387,7 @@ void rtc_translate_single_instruction() {
             emit_ADD(RZL, R18);
             emit_ADC(RZH, R19);
 
-            if (opcode == JVM_AASTORE) {
+            if (opcode == JVM_PUTARRAY_A) {
                 // Add 4 to skip 2 bytes for array length and 2 bytes for array type.
                 emit_ADIW(RZ, 4); 
             } else { // all types of int array
@@ -397,16 +397,16 @@ void rtc_translate_single_instruction() {
 
             // Now Z points to the target element
             switch (opcode) {
-                case JVM_BASTORE:
-                case JVM_CASTORE:
+                case JVM_PUTARRAY_B:
+                case JVM_PUTARRAY_C:
                     emit_ST_Z(R24);
                 break;
-                case JVM_SASTORE:
-                case JVM_AASTORE:
+                case JVM_PUTARRAY_S:
+                case JVM_PUTARRAY_A:
                     emit_ST_ZINC(R24);
                     emit_ST_Z(R25);
                 break;
-                case JVM_IASTORE:
+                case JVM_PUTARRAY_I:
                     emit_ST_ZINC(R22);
                     emit_ST_ZINC(R23);
                     emit_ST_ZINC(R24);
