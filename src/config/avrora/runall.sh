@@ -5,6 +5,15 @@ benchmarks=(bsort32 hsort32 binsrch32 fft xxtea rc5 md5 coremk)
 
 gdj clean
 
+# # BASELINE OPTIMISED JAVA
+# for benchmark in ${benchmarks}
+# do
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false -Pusegetfield_a_fixed=false
+# done
+
+# BASELINE UNOPTIMISED COREMARK
+gdj avrora_store_trace -Paotbm=coremk_or0 -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false -Pusegetfield_a_fixed=true
+
 # MAIN GRAPHS
 # for benchmark in ${benchmarks}
 # do
@@ -29,16 +38,16 @@ gdj clean
 #     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
 # done
 
-# BEST CASE ONLY
-for benchmark in ${benchmarks}
-do
-    # UNSAFE
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
-    # SAFE
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true -Psafe=true
-    # SAFE READS
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true -Psafer=true
-done
+# # BEST CASE ONLY
+# for benchmark in ${benchmarks}
+# do
+#     # UNSAFE
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
+#     # SAFE
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true -Psafe=true
+#     # SAFE READS
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true -Psafer=true
+# done
 
 
 # MARKLOOP + XXTEA FOR DIFF NUMBERS OF PINNED REGISTERS

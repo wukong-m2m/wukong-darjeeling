@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
     # <property name="djarchive_type_lib_infusion" value="0"/>
     # <property name="djarchive_type_app_infusion" value="1"/>
     # <property name="djarchive_type_wkpf_link_table" value="2"/>
