@@ -1,0 +1,6 @@
+djlibsource {
+    bm_fillarray16 {
+        cDependencies = [ 'darjeeling3' ]
+        javaDependencies = [ 'base', 'darjeeling3' ]
+    }
+}
