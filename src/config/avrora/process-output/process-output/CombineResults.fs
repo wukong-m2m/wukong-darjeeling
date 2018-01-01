@@ -244,28 +244,41 @@ module CombineResults =
 
 
 
+    let summariseResults results =
+        let resultsSummaryAsTupleLists = results |> List.map resultToStringList
+        let resultsSummary = resultsSummaryAsTupleLists |> flipTupleListsToStringList
+        let resultsSummaryWithAvg = resultsSummary |> addAverages
+        let resultLines = resultsSummaryWithAvg |> List.map stringListToString
+        resultLines
 
-    let summariseResults resultsDirectory =
+    let summariseResultsDirectory resultsDirectory =
         let resultFiles = Directory.GetFiles(resultsDirectory, "*.xml") |> Array.toList
         let resultsXmlStrings = resultFiles |> List.map (fun filename ->  printfn "Reading %s" (filename)
                                                                           File.ReadAllText(filename))
-        let results =
+        let allResults =
             resultsXmlStrings
                 |> List.map (fun xml -> (SimulationResults.unPickleOfString xml))
                 |> List.sortBy (fun r -> let sortorder = ["bsort16"; "bsort32"; "hsort16"; "hsort32"; "binsrch16"; "binsrch32"; "fft"; "xxtea"; "md5"; "rc5"; "sortX"; "hsortX"; "binsrchX"; "coremk"; "coremk_cht"] in
                                          match sortorder |> List.tryFindIndex ((=) r.benchmark) with
                                          | Some (index) -> index
                                          | None -> 100)
-        let resultsSummaryAsTupleLists = results |> List.map resultToStringList
-        let resultsSummary = resultsSummaryAsTupleLists |> flipTupleListsToStringList
-        let resultsSummaryWithAvg = resultsSummary |> addAverages
-        let resultLines = resultsSummaryWithAvg |> List.map stringListToString
+        let mainBenchmarks = ["bsort32"; "hsort32"; "binsrch32"; "fft"; "xxtea"; "md5"; "rc5"; "coremk"]
+        let mainResults =
+            allResults
+                |> List.filter (fun r -> mainBenchmarks |> List.exists ((=) r.benchmark))
+        
+        let allResultsSummary = summariseResults allResults
+        let mainResultsSummary = summariseResults mainResults
 
-        let summaryFilename = if (resultsDirectory.StartsWith("/"))
-                              then resultsDirectory + "/summary" + (Path.GetFileName(resultsDirectory).Replace("results",""))
-                              else resultsDirectory + "/summary" + (resultsDirectory.Replace("results",""))
-        File.WriteAllText (summaryFilename, String.Join("\r\n", resultLines))
-        Console.Error.WriteLine ("Wrote output to " + summaryFilename)
+        let baseResultsFilename = if (resultsDirectory.StartsWith("/"))
+                                  then "summary_" + (Path.GetFileName(resultsDirectory).Replace("results",""))
+                                  else "summary_" + (resultsDirectory.Replace("results",""))
+        let allResultsFilename = resultsDirectory + "/complete_" + baseResultsFilename
+        let mainResultsFilename = resultsDirectory + "/main_" + baseResultsFilename
+        File.WriteAllText (allResultsFilename, String.Join("\r\n", allResultsSummary))
+        Console.Error.WriteLine ("Wrote output to " + allResultsFilename)
+        File.WriteAllText (mainResultsFilename, String.Join("\r\n", mainResultsSummary))
+        Console.Error.WriteLine ("Wrote output to " + mainResultsFilename)
 
     let main(args : string list) =
         Console.Error.WriteLine ("START " + (DateTime.Now.ToString()))
@@ -273,8 +286,8 @@ module CombineResults =
         | [ "all"; directory ] -> 
             let subdirectories = (Directory.GetDirectories(directory))
             subdirectories |> Array.filter (fun d -> ((Path.GetFileName(d).StartsWith("results_")) && not (Path.GetFileName(d).StartsWith("results_coremk_c"))))
-                           |> Array.iter summariseResults
-        | [ directory ] -> summariseResults directory
+                           |> Array.iter summariseResultsDirectory
+        | [ directory ] -> summariseResultsDirectory directory
         | _ -> failwith "specify either a specific directory, or 'all <parent directory>'"
         Console.Error.WriteLine ("STOP " + (DateTime.Now.ToString()))
         1
