@@ -27,6 +27,8 @@ module ResultsToString =
         let totalBytesAOTJava = results.countersAOTTotal.size
         let totalBytesNativeC = results.countersCTotal.size
         let totalBytesOverhead = results.countersOverheadTotal.size
+        let sortedJvmMethodResults = results.jvmMethods |> List.sortBy (fun (jvmMethod) -> 0-jvmMethod.countersAOTTotal.cyclesInclSubroutine)
+        let sortedCFunctionResults = results.cFunctions |> List.sortBy (fun (cFunction) -> 0-cFunction.countersCTotal.cyclesInclSubroutine)
 
         let cyclesToSlowdown cycles1 cycles2 =
             String.Format ("{0:0.000}", float cycles1 / float cycles2)
@@ -97,7 +99,6 @@ module ResultsToString =
                                  -> String.Format("{0,-40} {1}",
                                                   category,
                                                   (countersToString totalCycles totalBytes counters)))
-
 
         let addJvmMethodCalledMethodsList (jvmMethod : JvmMethod) =
             addLn jvmMethod.name
@@ -345,6 +346,17 @@ module ResultsToString =
         opcodeResultsToString totalCyclesNativeC totalBytesNativeC results.countersPerAvrOpcodeNativeC
           |> List.iter addLn
         addLn ("")
+        addLn ("===================================================== METHOD/FUNCTION SHORT SUMMARY =========================================================")
+        addLn ("------------------------------------------------------------------ JAVA ---------------------------------------------------------------------")
+        addLn (String.Format("{0,15} {1,15}", "cycles", "size"))
+        sortedJvmMethodResults |> List.iter (fun jvmMethod ->
+            addLn (String.Format("{0,15} {1,15} {2}", jvmMethod.countersJVMTotal.cyclesInclSubroutine, jvmMethod.countersJVMTotal.size, jvmMethod.name)))
+        addLn ("")
+        addLn ("------------------------------------------------------------------- C -----------------------------------------------------------------------")
+        addLn (String.Format("{0,15} {1,15}", "cycles", "size"))
+        sortedCFunctionResults |> List.iter (fun cFunction ->
+            addLn (String.Format("{0,15} {1,15} {2}", cFunction.countersCTotal.cyclesInclSubroutine, cFunction.countersCTotal.size, cFunction.name)))
+        addLn ("")
         addLn ("============================================================= JVM LISTINGS ==================================================================")
         addLn ("")
         addLn ("------------------------------------------------------------ INVOKE OVERVIEW ----------------------------------------------------------------")
@@ -352,14 +364,12 @@ module ResultsToString =
         addLn ("       this means time spent in interrupts is added to the current method,")
         addLn ("       so the totals printed here may be slightly higher than the total sum in the header. (which should be leading)")
         addLn ("")
-        let sortedJvmMethodResults = results.jvmMethods |> List.sortBy (fun (jvmMethod) -> 0-jvmMethod.countersAOTTotal.cyclesInclSubroutine)
         sortedJvmMethodResults |> List.iter addJvmMethodCalledMethodsList
         addLn ("")
         sortedJvmMethodResults |> List.iter addJvmMethodDetails
 
         addLn ("============================================================== C LISTINGS ===================================================================")
         addLn ("")
-        let sortedCFunctionResults = results.cFunctions |> List.sortBy (fun (cFunction) -> 0-cFunction.countersCTotal.cyclesInclSubroutine)
         addLn ("------------------------------------------------------------- CALL OVERVIEW -----------------------------------------------------------------")
         sortedCFunctionResults |> List.iter addCFunctionCalledFunctionsList
         addLn ("")

@@ -193,7 +193,6 @@ module ProcessTraces =
 
         let countersPerJvmOpcodeAOTJava =
             processedJvmInstructions
-                |> List.filter (fun r -> r.jvm.text <> "Method preamble")
                 |> groupFold (fun r -> r.jvm.text.Split().First()) (fun r -> r.counters) (+) ExecCounters.Zero
                 |> List.map (fun (opc, cnt) -> (JVM.getCategoryForJvmOpcode opc, opc, cnt))
                 |> List.sortBy (fun (cat, opc, _) -> cat+opc)
@@ -219,7 +218,6 @@ module ProcessTraces =
         let codesizeAOT =
             let numberOfBranchTargets = methodImpl.BranchTargets |> Array.length
             methodImpl.AvrMethodSize - (4*numberOfBranchTargets) // We currently keep the branch table at the head of the method, but actually we don't need it anymore after code generation, so it shouldn't count for code size.
-
         {
             JvmMethod.name = (getClassAndMethodNameFromImpl methodImpl)
             instructions = processedJvmInstructions
