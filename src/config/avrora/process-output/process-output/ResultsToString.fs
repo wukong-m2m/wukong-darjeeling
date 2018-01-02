@@ -77,7 +77,7 @@ module ResultsToString =
                 | Some (x : AvrInstruction)
                     -> String.Format("0x{0,6:X6}: {1,-15}", x.address, x.text)
                 | None -> "" in
-            String.Format("        {0,-15} -> {1,-30} {2,10} {3,23}",
+            String.Format("        {0,-15} -> {1,-30} {2,12} {3,25}",
                                                           avr.unopt.text,
                                                           avrInstOption2Text avr.opt,
                                                           avr.counters.cycles,
