@@ -190,7 +190,8 @@ module Datatypes =
         member this.countersPerAvrOpcodeCategoryAOTJava = groupOpcodesInCategoriesCycles AVR.getAllOpcodeCategories    this.countersPerAvrOpcodeAOTJava
 
 
-        member this.countersJVMLoadStore                = sumCyclesCategoryCounters this.countersPerJvmOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("ld/st"))
+        member this.countersJVMLoadStore                = sumCyclesCategoryCounters this.countersPerJvmOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Loc/sta")
+                                                                                                                                           || cat.Contains("Obj/arr"))
         member this.countersJVMConstantLoad             = sumCyclesCategoryCounters this.countersPerJvmOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Constant load"))
         member this.countersJVMProcessingMath           = sumCyclesCategoryCounters this.countersPerJvmOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Math"))
         member this.countersJVMProcessingBitShift       = sumCyclesCategoryCounters this.countersPerJvmOpcodeCategoryAOTJava (fun (cat) -> cat.Contains("Bit shift"))

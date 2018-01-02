@@ -33,6 +33,8 @@ module CombineResults =
         let bytesToCPercentage = toPercentage result.countersCTotal.size
         let executedInstructionsJVM = result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> cnt.executions) |> List.reduce (+)
         let executionsToPercentage = toPercentage executedInstructionsJVM
+        let instructionCountJVM = result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> cnt.count) |> List.reduce (+)
+        let instructionCountToPercentage = toPercentage instructionCountJVM
         let cyclesToSlowdown cycles1 cycles2 =
             String.Format ("{0:0.00}", float cycles1 / float cycles2)
         let cyclesToOverhead1 cycles1 cycles2 =
@@ -169,35 +171,40 @@ module CombineResults =
                 ]) |> List.concat
         let r3 = 
             (""                     , "")
-            :: ("PERF AOT per JVM"  , "exe")
-            :: (result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (executionsToPercentage cnt.executions))))
+            :: ("JVM instr count"   , "cnt")
+            :: (result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (instructionCountToPercentage cnt.count))))
         let r4 = 
+            (""                     , "")
+            :: ("JVM instr exec"    , "exe")
+            :: (result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (executionsToPercentage cnt.executions))))
+
+        let r5 = 
             (""                     , "")
             :: ("PERF AOT per JVM"  , "cyc (%C)")
             :: (result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
-        let r5 = 
+        let r6 = 
             (""                     , "")
             :: ("PERF AOT per AVR"  , "cyc (%C)")
             :: (result.countersPerAvrOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
-        let r6 = 
+        let r7 = 
             (""                     , "")
             :: ("PERF Native C"     , "cyc (%C)")
             :: (result.countersPerAvrOpcodeCategoryNativeC |> List.map (fun (cat, cnt) -> (cat, (cyclesToCPercentage cnt.cycles))))
 
-        let r7 = 
+        let r8 = 
             (""                     , "")
             :: ("SIZE AOT per JVM"  , "byt (%C)")
             :: (result.countersPerJvmOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (bytesToCPercentage cnt.size))))
-        let r8 = 
+        let r9 = 
             (""                     , "")
             :: ("SIZE AOT per AVR"  , "byt (%C)")
             :: (result.countersPerAvrOpcodeCategoryAOTJava |> List.map (fun (cat, cnt) -> (cat, (bytesToCPercentage cnt.size))))
-        let r9 = 
+        let r10 = 
             (""                     , "")
             :: ("SIZE Native C"     , "byt (%C)")
             :: (result.countersPerAvrOpcodeCategoryNativeC |> List.map (fun (cat, cnt) -> (cat, (bytesToCPercentage cnt.size))))
 
-        List.concat [ r1; r2; r3; r4; r5; r6; r7; r8; r9 ]
+        List.concat [ r1; r2; r3; r4; r5; r6; r7; r8; r9; r10 ]
 
     let flipTupleListsToStringList (benchmarks : (string * string) list list) =
         // Initialise the accumulator as a list of lists containing only the key names
