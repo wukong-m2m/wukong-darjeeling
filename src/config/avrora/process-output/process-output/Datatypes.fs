@@ -353,8 +353,7 @@ module Datatypes =
 
         // SAFETY RELATED CODE
         member this.arrayOrObjectWriteCounters               = this.countersPerJvmOpcodeAOTJava
-                                                               |> List.filter (fun (cat, opcode, counters) -> (opcode.StartsWith("JVM_PUTFIELD")
-                                                                                                              || (List.contains opcode ["JVM_BASTORE"; "JVM_CASTORE"; "JVM_SASTORE"; "JVM_IASTORE"; "JVM_AASTORE"])))
+                                                               |> List.filter (fun (cat, opcode, counters) -> (opcode.StartsWith("JVM_PUTFIELD") || opcode.StartsWith("JVM_PUTARRAY")))
                                                                |> List.map (fun (_, _, counters) -> counters)
                                                                |> List.fold (+) ExecCounters.Zero
 
