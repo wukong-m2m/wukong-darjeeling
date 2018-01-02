@@ -102,10 +102,10 @@ module ProcessTraces =
                                      | Some(optValue) -> countersForAddressAndInst optValue.address optValue.opcode
                       { unopt = unopt; opt = opt; counters = counters }) in
                 let foldAvrCountersToJvmCounters (a : ExecCounters) (b : ExecCounters) =
-                    { (a+b) with executions = (if a.executions > 0 then a.executions else b.executions) }
+                    { (a+b) with executions = (if a.executions > 0 then a.executions else b.executions); count = 1 }
                 { jvm = jvm
                   avr = resultsWithCounters
-                  counters = resultsWithCounters |> List.map (fun r -> r.counters) |> List.fold (foldAvrCountersToJvmCounters) ExecCounters.Zero
+                  counters = resultsWithCounters |> List.map (fun r -> r.counters) |> List.fold (foldAvrCountersToJvmCounters) { ExecCounters.Zero with count = 1 } // initialise count=1 because eliminated JVM instructions should still be counted, but cycles and size are 0.
                   djDebugData = debugdata })
 
     let getTimersFromStdout (stdoutlog : string list) =

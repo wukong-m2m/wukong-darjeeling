@@ -35,15 +35,16 @@ module ResultsToString =
         let stackToString stack =
             String.Join(",", stack |> List.map (fun el -> el.datatype |> StackDatatypeToString))
 
-        let countersHeaderString = "  cycles                      exec   avg | bytes"
+        let countersHeaderString = "  cycles                      exec   avg |  cnt bytes"
         let countersToString totalCycles totalBytes (counters : ExecCounters) =
             // String.Format("cyc:{0,8} {1,5:0.0}% {2,5:0.0}%C exe:{3,8}  avg:{4,5:0.0} byt:{5,5} {6,5:0.0}% {7,5:0.0}%C",
-            String.Format("{0,10} {1,5:0.0}% {2,5:0.0}%C {3,10} {4,5:0.0} | {5,5} {6,5:0.0}% {7,5:0.0}%C",
+            String.Format("{0,10} {1,5:0.0}% {2,5:0.0}%C {3,10} {4,5:0.0} | {5,4} {6,5} {7,5:0.0}% {8,5:0.0}%C",
                           counters.cycles,
                           asPercentage counters.cycles totalCycles,
                           asPercentage counters.cycles totalCyclesNativeC,
                           counters.executions,
                           counters.average,
+                          counters.count,
                           counters.size,
                           asPercentage counters.size totalBytes,
                           asPercentage counters.size totalBytesNativeC)
