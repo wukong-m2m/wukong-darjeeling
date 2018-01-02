@@ -24,7 +24,7 @@ public class AddStartStopAOTMeasurement extends CodeBlockTransformation
 			InstructionHandle handle;
 
 			handle = instructions.get(0);
-			InstructionHandle startMeasurementHandle = handle.copyToNewHandleWithSameStateAndLiveVariables(new SimpleInstruction (Opcode.START_AOT_MEASUREMENT));
+			InstructionHandle startMeasurementHandle = handle.copyToNewHandleWithSameStateAndLiveVariables(new SimpleInstruction (Opcode.START_AOT_BM));
 			instructions.insertBefore(handle, startMeasurementHandle);
 
 			for (int i=0; i<instructions.size(); i++)
@@ -33,7 +33,7 @@ public class AddStartStopAOTMeasurement extends CodeBlockTransformation
 				Instruction instruction = handle.getInstruction();
 				
 				if (instruction.getOpcode().isReturn()) {
-					InstructionHandle stopMeasurementHandle = handle.copyToNewHandleWithSameStateAndLiveVariables(new SimpleInstruction (Opcode.STOP_AOT_MEASUREMENT));
+					InstructionHandle stopMeasurementHandle = handle.copyToNewHandleWithSameStateAndLiveVariables(new SimpleInstruction (Opcode.STOP_AOT_BM));
 					instructions.insertBefore(handle, stopMeasurementHandle);
 					i++;
 				}

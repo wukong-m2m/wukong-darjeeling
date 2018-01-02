@@ -471,8 +471,8 @@ public class InterpreterState implements Comparable<InterpreterState>
 				ret.getStack().push(handle);
 				break;
 
-			case START_AOT_MEASUREMENT:
-			case STOP_AOT_MEASUREMENT:
+			case START_AOT_BM:
+			case STOP_AOT_BM:
 				// nothing
 				break;
 

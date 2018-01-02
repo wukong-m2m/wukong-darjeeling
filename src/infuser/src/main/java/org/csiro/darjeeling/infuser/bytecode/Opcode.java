@@ -286,8 +286,8 @@ public enum Opcode
 	ISHR_CONST((short)235,"ishr_const", BaseType.Int, BaseType.Int),
 	IUSHR_CONST((short)236,"iushr_const", BaseType.Int, BaseType.Int),
 
-	START_AOT_MEASUREMENT((short)237,"start_aot_measurement", null),
-	STOP_AOT_MEASUREMENT((short)238,"stop_aot_measurement", null),
+	START_AOT_BM((short)237,"start_aot_bm", null),
+	STOP_AOT_BM((short)238,"stop_aot_bm", null),
 
 	// this is a dummy placeholder opcode, will not appear in the final output
 	S2S((short)-1,"s2s", BaseType.Short, BaseType.Short),

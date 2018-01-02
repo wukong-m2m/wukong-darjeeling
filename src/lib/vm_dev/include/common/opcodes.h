@@ -260,8 +260,8 @@
 #define JVM_ISHL_CONST 234
 #define JVM_ISHR_CONST 235
 #define JVM_IUSHR_CONST 236
-#define JVM_START_AOT_MEASUREMENT 237
-#define JVM_STOP_AOT_MEASUREMENT 238
+#define JVM_START_AOT_BM 237
+#define JVM_STOP_AOT_BM 238
 
 #endif // __opcodes__h
 
