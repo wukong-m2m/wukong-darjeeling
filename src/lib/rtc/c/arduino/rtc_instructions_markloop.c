@@ -1712,10 +1712,10 @@ void rtc_translate_single_instruction() {
 
         // Special opcodes to start AOT measurement traces
         case JVM_START_AOT_BM:
-            emit_x_CALL((uint16_t)&rtc_startBenchmarkMeasurement_AOT);
+            emit_2_CALL((uint16_t)&rtc_startBenchmarkMeasurement_AOT);
         break;
         case JVM_STOP_AOT_BM:
-            emit_x_CALL((uint16_t)&rtc_stopBenchmarkMeasurement);
+            emit_2_CALL((uint16_t)&rtc_stopBenchmarkMeasurement);
         break;
 
         // Not implemented
