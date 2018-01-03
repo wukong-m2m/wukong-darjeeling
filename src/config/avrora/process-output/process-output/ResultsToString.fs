@@ -276,7 +276,7 @@ module ResultsToString =
         addLn (String.Format ("                                                                                       AOT/C                       {0,14}", cyclesToSlowdown results.codesizeAOT results.codesizeC))
         addLn (String.Format ("                                                                                       AOT/Java                    {0,14}", cyclesToSlowdown results.codesizeAOT results.codesizeJavaForInterpreter))
         addLn ("=============================================================== MAIN COUNTERS ===============================================================")
-        addLn (String.Format ("--- NAT.C    Bytes                       {0,12} (address range {1}, ratio {2}) (off by 2 expected for methods ending in JMP)", totalBytesNativeC, results.codesizeC, (cyclesToSlowdown results.codesizeC totalBytesNativeC)))
+        addLn (String.Format ("--- NAT.C    Bytes                       {0,12} (address range {1}, ratio {2})", totalBytesNativeC, results.codesizeC, (cyclesToSlowdown results.codesizeC totalBytesNativeC)))
         addLn ("                                           " + countersHeaderString)
         addLn (String.Format ("             Total                       {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCTotal)))
         addLn (String.Format ("              push/pop int               {0}", (countersToString totalCyclesNativeC totalBytesNativeC results.countersCPushPop)))

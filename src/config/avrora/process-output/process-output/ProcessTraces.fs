@@ -240,6 +240,7 @@ module ProcessTraces =
         printfn "Processing c function %s" (name)
 
         let nativeCInstructions = getNativeInstructionsFromObjdump name disasm countersForAddressAndInst
+        let (lastInstruction, _) = nativeCInstructions |> List.last
         let countersPerAvrOpcodeNativeC =
             nativeCInstructions
                 |> List.map (fun (avr, cnt) -> (AVR.getOpcodeForInstruction avr.opcode avr.text addressesOfMathFunctions, cnt))
@@ -251,7 +252,7 @@ module ProcessTraces =
             let startAddress = (nativeCInstructions |> List.head |> fst).address
             let lastInList x = x |> List.reduce (fun _ x -> x)
             let endAddress = (nativeCInstructions |> lastInList |> fst).address
-            endAddress - startAddress + 2 // assuming the function ends in a 2 byte opcode.
+            endAddress - startAddress + (AVR.instructionSize lastInstruction.opcode) // assuming the function ends in a 2 byte opcode.
 
         {
             CFunction.name = name

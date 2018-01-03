@@ -349,7 +349,7 @@ module Datatypes =
         member this.codesizeJavaWithoutBranchMarkloopOverhead = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.codesizeJavaWithoutBranchMarkloopOverhead)
         member this.codesizeJavaForInterpreter                = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.codesizeJavaForInterpreter)
         member this.codesizeAOT                               = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.codesizeAOT)
-        member this.codesizeC                                 = this.cFunctions |> List.sumBy (fun (jvmMethod) -> jvmMethod.codesizeC)
+        member this.codesizeC                                 = this.cFunctions |> List.sumBy (fun (cFunction) -> cFunction.codesizeC)
 
         // SAFETY RELATED CODE
         member this.arrayOrObjectWriteCounters               = this.countersPerJvmOpcodeAOTJava
