@@ -314,7 +314,7 @@ public class CoreMain {
 		System.out.println("Total time (secs): " + CorePortMe.time_in_secs(total_time));
 		if (CorePortMe.time_in_secs(total_time) > 0)
 			System.out.println("Iterations/Sec   : " + CorePortMe.default_num_contexts*results[0].iterations*1000/CorePortMe.time_in_msecs(total_time));
-		if (CorePortMe.time_in_secs(total_time) < 10) {
+		if (CorePortMe.time_in_secs(total_time) < 10 && false) { // NR 20180103: added "&& false" to skip this check. The benchmarks run with interrupts disabled, so the timer doesn't work and total_time is always 0.
 			System.out.println("ERROR! Must execute for at least 10 secs for a valid result!");
 			total_errors++;
 		}

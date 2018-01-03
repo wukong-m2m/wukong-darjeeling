@@ -1,9 +1,11 @@
+#include <avr/interrupt.h>
 #include "config.h"
 #include "djtimer.h"
 #include "execution.h"
 #include "rtc_measure.h"
 
-void rtc_startBenchmarkMeasurement_Native() { 
+void rtc_startBenchmarkMeasurement_Native() {
+    cli();
     avroraSetTimerNumber(AVRORA_BENCH_NATIVE_TIMER); 
     avroraProfilerStartCounting(); 
     avroraStartTimer(); 
@@ -18,6 +20,7 @@ void rtc_startBenchmarkMeasurement_AOT() {
     asm volatile("   push XH" "\n\r"
                  "   push XL" "\n\r"
                  ::);
+    cli();
     avroraSetTimerNumber(AVRORA_BENCH_AOT_TIMER);
     avroraProfilerStartCounting();
     avroraStartTimer();
@@ -31,6 +34,7 @@ void rtc_stopBenchmarkMeasurement() {
                  ::);
     avroraStopTimer();
     avroraProfilerStopCounting();
+    sei();
     asm volatile("   pop XL" "\n\r"
                  "   pop XH" "\n\r"
                  ::);
