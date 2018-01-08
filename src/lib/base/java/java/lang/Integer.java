@@ -25,15 +25,36 @@ public final class Integer {
     /**
      * All possible chars for representing a number as a String
      */
-    final static char[] digits = {
-        '0', '1', '2', '3', '4', '5',
-        '6', '7', '8', '9', 'a', 'b',
-        'c', 'd', 'e', 'f'
-        // , 'g', 'h',
-        // 'i', 'j', 'k', 'l', 'm', 'n',
-        // 'o', 'p', 'q', 'r', 's', 't',
-        // 'u', 'v', 'w', 'x', 'y', 'z'
-    };
+    private static char digits_func(int index) {
+        switch (index) {
+            case 0: return '0';
+            case 1: return '1';
+            case 2: return '2';
+            case 3: return '3';
+            case 4: return '4';
+            case 5: return '5';
+            case 6: return '6';
+            case 7: return '7';
+            case 8: return '8';
+            case 9: return '9';
+            case 10: return 'a';
+            case 11: return 'b';
+            case 12: return 'c';
+            case 13: return 'd';
+            case 14: return 'e';
+            case 15: return 'f';
+            default: return ' ';
+        }
+    }
+    // final static char[] digits = {
+    //     '0', '1', '2', '3', '4', '5',
+    //     '6', '7', '8', '9', 'a', 'b',
+    //     'c', 'd', 'e', 'f'
+    //     // , 'g', 'h',
+    //     // 'i', 'j', 'k', 'l', 'm', 'n',
+    //     // 'o', 'p', 'q', 'r', 's', 't',
+    //     // 'u', 'v', 'w', 'x', 'y', 'z'
+    // };
 
     /**
      * Creates a string representation of the first argument in the
@@ -89,10 +110,10 @@ public final class Integer {
             i = -i;
         }
         while (i <= -radix) {
-            buf[charPos--] = digits[-(i % radix)];
+            buf[charPos--] = digits_func(-(i % radix));
             i = i / radix;
         }
-        buf[charPos] = digits[-i];
+        buf[charPos] = digits_func(-i);
         if (negative) {
             buf[--charPos] = '-';
         }
@@ -188,7 +209,7 @@ public final class Integer {
         int radix = 1 << shift;
         int mask = radix - 1;
         do {
-            buf[--charPos] = digits[i & mask];
+            buf[--charPos] = digits_func(i & mask);
             i >>>= shift;
         } while (i != 0);
         return new String(buf, charPos, (short)(32 - charPos));
