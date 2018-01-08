@@ -1,6 +1,6 @@
 djConfig {
 	platform = 'arduino.avrora'
-	libraries = ['wkreprog', 'darjeeling3', 'rtc']
+	libraries = ['wkreprog', 'base', 'rtc']
 	app = 'apprtcbench'
 	appArchiveSize = 0 // We won't reprogramme the app anyway, so just use exactly the required amount without reserving space to upload future apps.
 }

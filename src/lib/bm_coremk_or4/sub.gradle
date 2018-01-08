@@ -1,6 +1,6 @@
 djlibsource {
     bm_coremk_or4 {
-        cDependencies = [ 'darjeeling3', 'vm_dev' ]
-        javaDependencies = [ 'base', 'darjeeling3' ]
+        cDependencies = [ 'base', 'vm_dev' ]
+        javaDependencies = [ 'base' ]
     }
 }

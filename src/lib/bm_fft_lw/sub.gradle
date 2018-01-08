@@ -1,6 +1,6 @@
 djlibsource {
     bm_fft_lw {
-        cDependencies = [ 'darjeeling3' ]
-        javaDependencies = [ 'base', 'darjeeling3' ]
+        cDependencies = [ 'base' ]
+        javaDependencies = [ 'base' ]
     }
 }

@@ -1,6 +1,6 @@
 djlibsource {
     bm_badwrite {
-        cDependencies = [ 'darjeeling3' ]
-        javaDependencies = [ 'base', 'darjeeling3' ]
+        cDependencies = [ 'base' ]
+        javaDependencies = [ 'base' ]
     }
 }

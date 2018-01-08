@@ -1,6 +1,6 @@
 djConfig {
 	platform = 'arduino.wudevice'
-	libraries = ['darjeeling3', 'wkpf_virtual']
+	libraries = ['base', 'wkpf_virtual']
 	app = 'wkdeploy'
 	appArchiveSize = 4096
 }

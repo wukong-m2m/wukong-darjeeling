@@ -1,6 +1,6 @@
 djlibsource {
     lecdemo {
-        cDependencies = [ 'darjeeling3' ]
-        javaDependencies = [ 'base', 'darjeeling3' ]
+        cDependencies = [ 'base' ]
+        javaDependencies = [ 'base' ]
     }
 }

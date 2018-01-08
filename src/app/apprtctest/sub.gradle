@@ -1,5 +1,5 @@
 djappsource {
     apprtctest {
-        javaDependencies = [ 'base', 'darjeeling3', 'rtc', 'rtctest2', 'rtctest1' ]
+        javaDependencies = [ 'base', 'rtc', 'rtctest2', 'rtctest1' ]
     }
 }

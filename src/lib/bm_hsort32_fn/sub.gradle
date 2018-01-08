@@ -1,6 +1,6 @@
 djlibsource {
     bm_hsort32_fn {
-        cDependencies = [ 'darjeeling3' ]
-        javaDependencies = [ 'base', 'darjeeling3' ]
+        cDependencies = [ 'base' ]
+        javaDependencies = [ 'base' ]
     }
 }
