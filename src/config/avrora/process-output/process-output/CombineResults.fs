@@ -266,11 +266,11 @@ module CombineResults =
         let allResults =
             resultsXmlStrings
                 |> List.map (fun xml -> (SimulationResults.unPickleOfString xml))
-                |> List.sortBy (fun r -> let sortorder = ["bsort16"; "bsort32"; "hsort16"; "hsort32"; "binsrch16"; "binsrch32"; "fft"; "xxtea"; "md5"; "rc5"; "sortX"; "hsortX"; "binsrchX"; "coremk"; "coremk_cht"] in
+                |> List.sortBy (fun r -> let sortorder = ["bsort16"; "bsort32"; "hsort16"; "hsort32"; "binsrch16"; "binsrch32"; "fft16"; "xxtea"; "md5"; "rc5"; "sortX"; "hsortX"; "binsrchX"; "coremk"; "coremk_cht"] in
                                          match sortorder |> List.tryFindIndex ((=) r.benchmark) with
                                          | Some (index) -> index
                                          | None -> 100)
-        let mainBenchmarks = ["bsort32"; "hsort32"; "binsrch32"; "fft"; "xxtea"; "md5"; "rc5"; "coremk"]
+        let mainBenchmarks = ["bsort32"; "hsort32"; "binsrch32"; "fft16"; "xxtea"; "md5"; "rc5"; "coremk"]
         let mainResults =
             allResults
                 |> List.filter (fun r -> mainBenchmarks |> List.exists ((=) r.benchmark))

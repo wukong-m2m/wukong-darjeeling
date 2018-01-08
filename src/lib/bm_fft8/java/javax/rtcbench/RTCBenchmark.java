@@ -3,7 +3,7 @@ package javax.rtcbench;
 import javax.rtc.*;
 
 public class RTCBenchmark {
-    public static String name = "FIX_FFT";
+    public static String name = "FIX_FFT 8";
     public static native void test_native();
     public static boolean test_java() {
     	final int RTCTEST_FFT_ARRAYSIZE = 6;

@@ -3,7 +3,7 @@ alias gdj="gradle -b ../../build.gradle"
 
 gdj clean
 
-benchmarks=(bsort32 hsort32 binsrch32 fft xxtea rc5 md5 coremk)
+benchmarks=(bsort32 hsort32 binsrch32 fft8 fft16 xxtea rc5 md5 coremk)
 
 # BASELINE: Both baselines have GET/PUTFIELD_A_FIXED turned on, since this optimisation compensates for Darjeeling specific overhead, so we shouldn't include it in the overhead from Joshua's work.
 # UNOPTIMISED COREMARK

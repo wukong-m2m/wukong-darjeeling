@@ -1,5 +1,5 @@
 djlibsource {
-    bm_fft_lw {
+    bm_fft8_fn {
         cDependencies = [ 'base' ]
         javaDependencies = [ 'base' ]
     }
