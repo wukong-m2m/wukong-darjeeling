@@ -259,6 +259,7 @@ module CombineResults =
         resultLines
 
     let summariseResultsDirectory resultsDirectory =
+        Console.Error.WriteLine ("Reading " + resultsDirectory)
         let resultFiles = Directory.GetFiles(resultsDirectory, "*.xml") |> Array.toList
         let resultsXmlStrings = resultFiles |> List.map (fun filename ->  printfn "Reading %s" (filename)
                                                                           File.ReadAllText(filename))
