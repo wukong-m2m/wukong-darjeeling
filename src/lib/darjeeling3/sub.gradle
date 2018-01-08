@@ -1,6 +1,0 @@
-djlibsource {
-    darjeeling3 {
-        cDependencies = [ 'vm_dev', 'vm', 'base' ]
-        javaDependencies = [ 'base' ]
-    }
-}

@@ -153,6 +153,7 @@ class DjSourceSet {
                 keepclassmembers 'class * { public static short   rtcbenchmark_measure_java_performance(); }'
                 keepclassmembers 'class * { public static boolean rtcbenchmark_measure_java_performance(); }'
                 keepclassmembers 'class * { public static short   rtcbenchmark_measure_java_performance(byte[], byte[], short, boolean); }'
+                keepclassmembers 'class * { public static short   rtcbenchmark_measure_java_performance(short[], short[], short, boolean); }'
                 keepclassmembers 'class * { public static void    rtcbenchmark_measure_java_performance(byte[], byte[]); }'
                 keepclassmembers 'class * { public static int     rtcbenchmark_measure_java_performance(byte[], byte[], int, int[]); }'
                 keepclassmembers 'class * { public static void    rtcbenchmark_measure_java_performance(); }'
@@ -163,6 +164,8 @@ class DjSourceSet {
                 keepclassmembers 'class * { public static int     test_no_inlining(int); }'
                 keepclassmembers 'class * { public static int     test_pg_inlining(int); }'
                 keepclassmembers 'class * { public static int     test_manual_inlining(int); }'
+                keepclassmembers 'class * { private static short   desiredOutputData(int); }'
+                keepclassmembers 'class * { private static short   desiredOutputIm(int); }'
             } else {
                 // Don't optimise the libraries for now since it's giving some trouble and we may replace them
                 keep 'class * { public *; private *; }'
