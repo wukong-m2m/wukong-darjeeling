@@ -46,11 +46,30 @@ public class RTCBenchmark {
     public static void rtcbenchmark_measure_java_performance(short NUMNUMBERS, short[] buffer, short[] distance_matrix, short distance_threshold, boolean[] outliers) {
         short k=0; // Since we scan one line at a time, we don't need to calculate a matrix index.
                    // The first NUMNUMBERS distances correspond to measurement 1, the second NUMNUMBERS distances to measurement 2, etc.
+
         for (short i=0; i<NUMNUMBERS; i++) {
             for (short j=0; j<NUMNUMBERS; j++) {
                 distance_matrix[k++] = (short)(buffer[i] - buffer[j]);
             }
         }
+
+        // This is better for AOT, but actually WORSE for C since array access is less expensive for C.
+        //
+        // short sub_start=0;
+        // for (short i=0; i<NUMNUMBERS; i++) {
+        //     short hor = sub_start;
+        //     short ver = sub_start;
+        //     for (short j=i; j<NUMNUMBERS; j++) {
+
+        //         short diff = (short)(buffer[i] - buffer[j]);
+        //         distance_matrix[hor] = diff;
+        //         distance_matrix[ver] = diff;
+        //         hor ++;
+        //         ver += NUMNUMBERS;
+        //     }
+        //     sub_start+=NUMNUMBERS+1;
+        // }
+
         
         k=0;
         for (short i=0; i<NUMNUMBERS; i++) {
