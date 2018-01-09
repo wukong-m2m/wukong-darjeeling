@@ -57,7 +57,7 @@ public class RTCBenchmark {
             short exceed_threshold_count = 0;
             for (short j=0; j<NUMNUMBERS; j++) {
                 short diff = distance_matrix[k++];
-                if (diff > distance_threshold || -diff > distance_threshold) {
+                if (diff > distance_threshold || (short)(-diff) > distance_threshold) {
                     exceed_threshold_count++;
                 }
             }
