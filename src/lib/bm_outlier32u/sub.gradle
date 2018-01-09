@@ -1,0 +1,6 @@
+djlibsource {
+    bm_outlier32u {
+        cDependencies = [ 'base' ]
+        javaDependencies = [ 'base' ]
+    }
+}
