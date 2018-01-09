@@ -1,0 +1,6 @@
+djlibsource {
+    bm_motetrack {
+        cDependencies = [ 'base' ]
+        javaDependencies = [ 'base' ]
+    }
+}
