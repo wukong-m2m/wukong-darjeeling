@@ -56,7 +56,7 @@ typedef struct RFSignal RFSignal;
 typedef RFSignal* RFSignalPtr;
 
 // ------------------------ Signature -----------------------------------
-#define NBR_RFSIGNALS_IN_SIGNATURE 18
+#define NBR_RFSIGNALS_IN_SIGNATURE 14
 uint16_t GlobUniqSignatureID;
 struct Signature
 {

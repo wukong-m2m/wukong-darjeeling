@@ -3,7 +3,7 @@ package javax.rtcbench;
 import javax.rtc.RTC;
 
 public class Signature {
-    public static final byte NBR_RFSIGNALS_IN_SIGNATURE = 18;
+    public static final byte NBR_RFSIGNALS_IN_SIGNATURE = 14;
     private static short GlobUniqSignatureID = 0;
 
     public short id;
