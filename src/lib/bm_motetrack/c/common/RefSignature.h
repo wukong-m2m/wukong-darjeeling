@@ -37,10 +37,9 @@
  */
 #ifndef REFSIGNATURE_H
 #define REFSIGNATURE_H
+#include <stdbool.h>
 #include "Point.h"
-#include "Queue.h"
 #include "MoteTrackParams.h"
-#include "PrintfUART.h"
 
 // ------------------------ RFSignal -----------------------------------
 #define MIN_RSSI 0
@@ -58,7 +57,7 @@ typedef RFSignal* RFSignalPtr;
 
 // ------------------------ Signature -----------------------------------
 #define NBR_RFSIGNALS_IN_SIGNATURE 18
-static uint16_t GlobUniqSignatureID;
+uint16_t GlobUniqSignatureID;
 struct Signature
 {
     uint16_t id;
@@ -82,7 +81,7 @@ typedef RefSignature* RefSignaturePtr;
 /**
  *  Initializes an RFSignal struct to a consistent state.
  */
-inline void RFSignal_init(RFSignal *rfSigPtr)
+static inline void RFSignal_init(RFSignal *rfSigPtr)
 {
     uint8_t f=0, p=0;
 
@@ -93,42 +92,42 @@ inline void RFSignal_init(RFSignal *rfSigPtr)
 
 }
 
-/**
- *  Returns true if the current struct is empty, defined as <code>sourceID=0</code>!
- */
-inline bool RFSignal_isEmpty(RFSignal *rfSigPtr)
-{
-    if (rfSigPtr->sourceID == 0)
-        return TRUE;
-    else
-        return FALSE;
-}
+// /**
+//  *  Returns true if the current struct is empty, defined as <code>sourceID=0</code>!
+//  */
+// static inline bool RFSignal_isEmpty(RFSignal *rfSigPtr)
+// {
+//     if (rfSigPtr->sourceID == 0)
+//         return true;
+//     else
+//         return false;
+// }
 
 /**
  * Returns true if the two parameters have the same sourceID.
  */
-inline bool RFSignal_haveSameID(RFSignal *rfSig1Ptr, RFSignal *rfSig2Ptr)
+static inline bool RFSignal_haveSameID(RFSignal *rfSig1Ptr, RFSignal *rfSig2Ptr)
 {
     return rfSig1Ptr->sourceID == rfSig2Ptr->sourceID;
 }
 
-/**
- * Prints the current RFSignal struct.
- */
-inline void RFSignal_print(RFSignal *rfSignalPtr)
-{
-    uint8_t f=0, p=0;
-    printfUART("<srcID=%i, rssi={", rfSignalPtr->sourceID);
+// /**
+//  * Prints the current RFSignal struct.
+//  */
+// inline void RFSignal_print(RFSignal *rfSignalPtr)
+// {
+//     uint8_t f=0, p=0;
+//     printfUART("<srcID=%i, rssi={", rfSignalPtr->sourceID);
 
-    for (f = 0; f < NBR_FREQCHANNELS; ++f) {
-        for (p = 0; p < NBR_TXPOWERS; ++p) {
-            if (f == NBR_FREQCHANNELS-1 && p == NBR_TXPOWERS-1)
-                { printfUART("%i}>", rfSignalPtr->rssi[f][p]); }
-            else
-                { printfUART("%i, ", rfSignalPtr->rssi[f][p]); }
-        }
-    }
-}
+//     for (f = 0; f < NBR_FREQCHANNELS; ++f) {
+//         for (p = 0; p < NBR_TXPOWERS; ++p) {
+//             if (f == NBR_FREQCHANNELS-1 && p == NBR_TXPOWERS-1)
+//                 { printfUART("%i}>", rfSignalPtr->rssi[f][p]); }
+//             else
+//                 { printfUART("%i, ", rfSignalPtr->rssi[f][p]); }
+//         }
+//     }
+// }
 
 
 /*
@@ -137,7 +136,7 @@ inline void RFSignal_print(RFSignal *rfSignalPtr)
  *   2. neither RFSignal is NULL, and they have the same sourceID.
  * If one of these two conditions doen't hold, then a FATAL ERROR is generated!
  */
-inline void RFSignal_rfSignalDiff(uint16_t results[NBR_FREQCHANNELS][NBR_TXPOWERS], RFSignal *rfSig1Ptr, RFSignal *rfSig2Ptr)
+static inline void RFSignal_rfSignalDiff(uint16_t results[NBR_FREQCHANNELS][NBR_TXPOWERS], RFSignal *rfSig1Ptr, RFSignal *rfSig2Ptr)
 {
     uint8_t f=0, p=0;
 
@@ -158,15 +157,17 @@ inline void RFSignal_rfSignalDiff(uint16_t results[NBR_FREQCHANNELS][NBR_TXPOWER
         }
     }
     else {
-        printfUART("RefSignature - RFSignal_rfSignalDiff(): FATAL_ERROR! the rfSignals cannot be compared\n", "");
-        printfUART("rfSig1Ptr: (0x%x),  rfSig2Ptr: (0x%x)\n  ->", rfSig1Ptr, rfSig2Ptr);
-        RFSignal_print(rfSig1Ptr);
-        printfUART("\n  ->", "");
-        RFSignal_print(rfSig2Ptr);
-        EXIT_PROGRAM = 1;
-        for (f = 0; f < NBR_FREQCHANNELS; ++f)
-            for (p = 0; p < NBR_TXPOWERS; ++p)
-                results[f][p] = MAX_RSSI_DIFF;
+        avroraPrintHex32(0xBEEF0001);
+        asm volatile ("break");
+        // printfUART("RefSignature - RFSignal_rfSignalDiff(): FATAL_ERROR! the rfSignals cannot be compared\n", "");
+        // printfUART("rfSig1Ptr: (0x%x),  rfSig2Ptr: (0x%x)\n  ->", rfSig1Ptr, rfSig2Ptr);
+        // RFSignal_print(rfSig1Ptr);
+        // printfUART("\n  ->", "");
+        // RFSignal_print(rfSig2Ptr);
+        // EXIT_PROGRAM = 1;
+        // for (f = 0; f < NBR_FREQCHANNELS; ++f)
+        //     for (p = 0; p < NBR_TXPOWERS; ++p)
+        //         results[f][p] = MAX_RSSI_DIFF;
     }
 }
 
@@ -175,7 +176,7 @@ inline void RFSignal_rfSignalDiff(uint16_t results[NBR_FREQCHANNELS][NBR_TXPOWER
  * @param rssi  the original inverted RSSIvalue
  * @return a value in the range <code>[MIN_RSSI, MAX_RSSI]</code>
  */
-inline uint8_t RFSignal_convertRSSI(uint16_t rssi)
+static inline uint8_t RFSignal_convertRSSI(uint16_t rssi)
 {
 #if defined(PLATFORM_MICA2) || defined(PLATFORM_MICA2DOT)
     double adcCounts = (double) rssi;
@@ -212,10 +213,10 @@ inline uint8_t RFSignal_convertRSSI(uint16_t rssi)
  *    1 if a's sourceID is greater than b's sourceID <br>
  * Usefull primarily for <code>qsort()</code> from stdlib.h
  */
-inline int RFSignal_compare(const void *a, const void *b)
-{
-    return ( (*(RFSignal*)a).sourceID - (*(RFSignal*)b).sourceID );
-}
+// static inline int RFSignal_compare(const void *a, const void *b)
+// {
+//     return ( (*(RFSignal*)a).sourceID - (*(RFSignal*)b).sourceID );
+// }
 
 
 // ---------------- KLDEBUG - TEMP HACK because MSP430 libc doesn't have qsort!!!!! -----------
@@ -224,7 +225,7 @@ inline int RFSignal_compare(const void *a, const void *b)
  * @param rfSignals[]  the array of RFSignals to sort by source ID
  * @param size  the size of the rfSignals[] array
  */
-inline void RFSignal_sortSrcID(RFSignal rfSignals[], uint16_t size)
+static inline void RFSignal_sortSrcID(RFSignal rfSignals[], uint16_t size)
 {
     int i = 0;
     int k = 0;
@@ -249,7 +250,7 @@ inline void RFSignal_sortSrcID(RFSignal rfSignals[], uint16_t size)
 /**
  *  Initialize an Signature struct to a consistent state.
  */
-inline void Signature_init(Signature *sigPtr)
+static inline void Signature_init(Signature *sigPtr)
 {
     uint8_t i = 0;
 
@@ -259,65 +260,65 @@ inline void Signature_init(Signature *sigPtr)
     sigPtr->id = ++GlobUniqSignatureID;
 }
 
-/**
- * Prints only the signature ID (leaves out the RFSignals).
- */
-inline void Signature_printHeader(Signature *sigPtr)
-{
-    printfUART("<[Signature]: id=%i>", sigPtr->id);
-}
+// /**
+//  * Prints only the signature ID (leaves out the RFSignals).
+//  */
+// inline void Signature_printHeader(Signature *sigPtr)
+// {
+//     printfUART("<[Signature]: id=%i>", sigPtr->id);
+// }
 
-/**
- * Prints the entire Signature.
- */
-inline void Signature_print(Signature *sigPtr)
-{
-    uint16_t i = 0;
-    printfUART("    ----- Signature (0x%x, sizeof=%i) -----\n", sigPtr, sizeof(*sigPtr));
-    printfUART("      id= %i", sigPtr->id);
+// /**
+//  * Prints the entire Signature.
+//  */
+// inline void Signature_print(Signature *sigPtr)
+// {
+//     uint16_t i = 0;
+//     printfUART("    ----- Signature (0x%x, sizeof=%i) -----\n", sigPtr, sizeof(*sigPtr));
+//     printfUART("      id= %i", sigPtr->id);
 
-    for (i = 0; i < NBR_RFSIGNALS_IN_SIGNATURE; ++i) {
-        if (i % 3 == 0)
-            {printfUART("\n          ", "");}
-        else
-            {printfUART(" ", "");}
+//     for (i = 0; i < NBR_RFSIGNALS_IN_SIGNATURE; ++i) {
+//         if (i % 3 == 0)
+//             {printfUART("\n          ", "");}
+//         else
+//             {printfUART(" ", "");}
 
-        RFSignal_print( &(sigPtr->rfSignals[i]) );
-    }
-    printfUART("\n    -----------------------------\n", "");
-}
+//         RFSignal_print( &(sigPtr->rfSignals[i]) );
+//     }
+//     printfUART("\n    -----------------------------\n", "");
+// }
 
 
 // ========================== RefSignature ==========================
 /**
  * Initialize an RefSignature to a consistent state.
  */
-inline void RefSignature_init(RefSignature *refSigPtr)
-{
-    Point_init( &(refSigPtr->location) );
-    Signature_init( &(refSigPtr->sig) );
-}
+// inline void RefSignature_init(RefSignature *refSigPtr)
+// {
+//     Point_init( &(refSigPtr->location) );
+//     Signature_init( &(refSigPtr->sig) );
+// }
 
-/**
- * Prints only the signature ID and location.
- */
-inline void RefSignature_printHeader(RefSignature *refPtr)
-{
-    printfUART("<[RefSignature]: id=%i, (x=%i, y=%i, z=%i)>",
-              refPtr->sig.id, refPtr->location.x, refPtr->location.y, refPtr->location.z);
-}
+// /**
+//  * Prints only the signature ID and location.
+//  */
+// inline void RefSignature_printHeader(RefSignature *refPtr)
+// {
+//     printfUART("<[RefSignature]: id=%i, (x=%i, y=%i, z=%i)>",
+//               refPtr->sig.id, refPtr->location.x, refPtr->location.y, refPtr->location.z);
+// }
 
-/**
- * Prints the entire RefSignature structure.
- */
-inline void RefSignature_print(RefSignature *refPtr)
-{
-    printfUART("    ========== RefSignature (0x%x) ==========\n", refPtr);
-    printfUART("      (x=%i, y=%i, z=%i)\n", refPtr->location.x, refPtr->location.y, refPtr->location.z);
+// /**
+//  * Prints the entire RefSignature structure.
+//  */
+// inline void RefSignature_print(RefSignature *refPtr)
+// {
+//     printfUART("    ========== RefSignature (0x%x) ==========\n", refPtr);
+//     printfUART("      (x=%i, y=%i, z=%i)\n", refPtr->location.x, refPtr->location.y, refPtr->location.z);
 
-    Signature_print( &(refPtr->sig) );
-    printfUART("    ===========================================\n", "");
-}
+//     Signature_print( &(refPtr->sig) );
+//     printfUART("    ===========================================\n", "");
+// }
 
 
 /**
@@ -328,7 +329,7 @@ inline void RefSignature_print(RefSignature *refPtr)
  * @param refSigPtr  the reference signature to compare
  * @param sigPtr  the signature to compare
  */
-inline void RefSignature_signatureDiffBidirectional(uint16_t results[NBR_FREQCHANNELS][NBR_TXPOWERS], 
+static inline void RefSignature_signatureDiffBidirectional(uint16_t results[NBR_FREQCHANNELS][NBR_TXPOWERS], 
                                                     RefSignature *refSigPtr, Signature *sigPtr)
 {
     uint16_t s = 0, r = 0, f = 0, p = 0;
@@ -367,8 +368,10 @@ inline void RefSignature_signatureDiffBidirectional(uint16_t results[NBR_FREQCHA
             RFSignal_rfSignalDiff(currSigDiffs, &(refSigPtr->sig.rfSignals[r++]), NULL);
         }
         else {
-            printfUART("RefSignature - RefSignature_signatureDiffBidirectional): FATAL ERROR! Illegal case\n", "");
-            EXIT_PROGRAM = 1;
+            avroraPrintHex32(0xBEEF0002);
+            asm volatile ("break");
+            // printfUART("RefSignature - RefSignature_signatureDiffBidirectional): FATAL ERROR! Illegal case\n", "");
+            // EXIT_PROGRAM = 1;
         }
 
 
@@ -385,7 +388,7 @@ inline void RefSignature_signatureDiffBidirectional(uint16_t results[NBR_FREQCHA
  * @param refSigPtr  the reference signature to compare
  * @param sigPtr  the signature to compare
  */
-inline void RefSignature_signatureDiffUnidirectional(uint16_t results[NBR_FREQCHANNELS][NBR_TXPOWERS], 
+static inline void RefSignature_signatureDiffUnidirectional(uint16_t results[NBR_FREQCHANNELS][NBR_TXPOWERS], 
                                                      RefSignature *refSigPtr, Signature *sigPtr)
 {
     uint16_t s = 0, r = 0, f = 0, p = 0;
@@ -419,8 +422,10 @@ inline void RefSignature_signatureDiffUnidirectional(uint16_t results[NBR_FREQCH
             r++;  // do not add the difference in the unidirectional alg.
         }
         else {
-            printfUART("RefSignature - RefSignature_signatureDiffUnidirectional): FATAL ERROR! Illegal case\n", "");
-            EXIT_PROGRAM = 1;
+            avroraPrintHex32(0xBEEF0003);
+            asm volatile ("break");
+            // printfUART("RefSignature - RefSignature_signatureDiffUnidirectional): FATAL ERROR! Illegal case\n", "");
+            // EXIT_PROGRAM = 1;
         }
 
 

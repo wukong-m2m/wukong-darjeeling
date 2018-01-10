@@ -1,1 +1,1 @@
-void bm_bsort32_init(void) {}
+void bm_motetrack_init(void) {}

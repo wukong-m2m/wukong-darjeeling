@@ -5,11 +5,7 @@
 // ===================== signatureDB Database ===================================
 #define SIGNATUREDB_SIZE 74
 
-#if defined(PLATFORM_MICAZ) || defined(PLATFORM_MICA2) || defined(PLATFORM_MICA2DOT)
-    static const RefSignature signatureDB[] PROGMEM = {
-#else  // assume MSP430 mote (e.g. TelosA, TelosB, etc.)
-    static const RefSignature signatureDB[] = {
-#endif
+static const RefSignature signatureDB[] PROGMEM = {
     {{169, 226, 0},      {801,    {{1,  {{27}, {23}}},   {3,  {{32}, {32}}},   {11,  {{24}, {21}}},   {13,  {{28}, {25}}},   {21,  {{0}, {10}}},   {22,  {{35}, {22}}},   {23,  {{12}, {25}}},   {30,  {{7}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}}}}},
     {{169, 273, 0},      {802,    {{1,  {{11}, {24}}},   {3,  {{35}, {27}}},   {11,  {{20}, {25}}},   {13,  {{33}, {31}}},   {21,  {{7}, {10}}},   {22,  {{32}, {35}}},   {23,  {{19}, {10}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}}}}},
     {{233, 275, 0},      {803,    {{1,  {{26}, {25}}},   {3,  {{23}, {25}}},   {11,  {{29}, {34}}},   {13,  {{26}, {26}}},   {21,  {{14}, {11}}},   {22,  {{33}, {23}}},   {23,  {{26}, {26}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}},   {0,  {{0}, {0}}}}}},
@@ -87,13 +83,9 @@
 };
 
 
-inline void SignatureDB_get(RefSignature *refSigPtr, uint16_t indexDB) 
+static inline void SignatureDB_get(RefSignature *refSigPtr, uint16_t indexDB) 
 { 
-    #if defined(PLATFORM_MICAZ) || defined(PLATFORM_MICA2) || defined(PLATFORM_MICA2DOT)
         memcpy_P(refSigPtr, (RefSignature*) &signatureDB[indexDB], sizeof(RefSignature)); 
-    #else  // assume MSP430 mote (e.g. TelosA, TelosB, etc.)
-        *refSigPtr = signatureDB[indexDB];
-    #endif
 } 
 
 #endif

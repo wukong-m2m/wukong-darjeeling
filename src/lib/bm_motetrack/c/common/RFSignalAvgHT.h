@@ -43,11 +43,11 @@
  */   
 #ifndef RFSIGNALAVGHT_H
 #define RFSIGNALAVGHT_H
-//#include <stdlib.h>
-#include "MTMsgs.h"
+#include <stdbool.h>
+// #include "MTMsgs.h"
 #include "RefSignature.h"
 #include "MoteTrackParams.h"
-#include "PrintfUART.h"
+// #include "PrintfUART.h"
 
 
 
@@ -110,27 +110,27 @@ void RFSignalAvg_init(RFSignalAvg *rfSigPtr)
  *    0 if the two rssiSum[0] 's are the same <br>
  *    1 if a's rssiSum[0] is smaller than b's rssiSum[0] <br>
  */
-inline int RFSignalAvg_revCompareRSSI(const void *a, const void *b)
-{
-    return ( (*(RFSignalAvg*)b).rssiSum[0][0] - (*(RFSignalAvg*)a).rssiSum[0][0] );
-}
+// static inline int RFSignalAvg_revCompareRSSI(const void *a, const void *b)
+// {
+//     return ( (*(RFSignalAvg*)b).rssiSum[0][0] - (*(RFSignalAvg*)a).rssiSum[0][0] );
+// }
 
-/**
- * Prints the current RFSignalAvg.
- */
-inline void RFSignalAvg_print(RFSignalAvg *sigPtr)
-{
-    uint8_t f = 0, p = 0;
-    printfUART("<srcID=%i, rssiSum ={", sigPtr->sourceID);
-    for (f = 0; f < NBR_FREQCHANNELS; ++f) {
-        for (p = 0; p < NBR_TXPOWERS; ++p) {
-            if (f < NBR_FREQCHANNELS-1 && p < NBR_TXPOWERS-1)
-                {printfUART("%i/%i, ", sigPtr->rssiSum[f][p], sigPtr->nbrSamples[f][p]);}
-            else
-                {printfUART("%i/%i}>", sigPtr->rssiSum[f][p], sigPtr->nbrSamples[f][p]);}            
-        }
-    }
-}
+// /**
+//  * Prints the current RFSignalAvg.
+//  */
+// inline void RFSignalAvg_print(RFSignalAvg *sigPtr)
+// {
+//     uint8_t f = 0, p = 0;
+//     printfUART("<srcID=%i, rssiSum ={", sigPtr->sourceID);
+//     for (f = 0; f < NBR_FREQCHANNELS; ++f) {
+//         for (p = 0; p < NBR_TXPOWERS; ++p) {
+//             if (f < NBR_FREQCHANNELS-1 && p < NBR_TXPOWERS-1)
+//                 {printfUART("%i/%i, ", sigPtr->rssiSum[f][p], sigPtr->nbrSamples[f][p]);}
+//             else
+//                 {printfUART("%i/%i}>", sigPtr->rssiSum[f][p], sigPtr->nbrSamples[f][p]);}            
+//         }
+//     }
+// }
 
 
 // ========================== RFSignalAvgHT ==========================
@@ -141,7 +141,7 @@ inline void RFSignalAvg_print(RFSignalAvg *sigPtr)
  * @hashCapacity  the number of elements that can be stored.  It should be the size
  * of the htData array.
  */
-inline void RFSignalAvgHT_init(RFSignalAvgHT *HPtr, RFSignalAvg htData[], uint16_t hashCapacity)
+static inline void RFSignalAvgHT_init(RFSignalAvgHT *HPtr, RFSignalAvg htData[], uint16_t hashCapacity)
 {   
     uint16_t i = 0;
     HPtr->htData = htData;
@@ -152,24 +152,24 @@ inline void RFSignalAvgHT_init(RFSignalAvgHT *HPtr, RFSignalAvg htData[], uint16
         RFSignalAvg_init( &(HPtr->htData[i]) );        
 }               
 
-/**
- * Prints the current RFSignalAvgHT.
- */
-inline void RFSignalAvgHT_print(RFSignalAvgHT *HPtr)
-{
-    uint8_t i = 0;
-    printfUART("    ----- RFSignalAvgHT (0x%x, sizeof=%i) -----\n", HPtr, sizeof(*HPtr));
-    printfUART("      <capacity=%i (0x%x), size=%i (0x%x)>", 
-        HPtr->capacity, &(HPtr->capacity), HPtr->size, &(HPtr->size));
+// /**
+//  * Prints the current RFSignalAvgHT.
+//  */
+// inline void RFSignalAvgHT_print(RFSignalAvgHT *HPtr)
+// {
+//     uint8_t i = 0;
+//     printfUART("    ----- RFSignalAvgHT (0x%x, sizeof=%i) -----\n", HPtr, sizeof(*HPtr));
+//     printfUART("      <capacity=%i (0x%x), size=%i (0x%x)>", 
+//         HPtr->capacity, &(HPtr->capacity), HPtr->size, &(HPtr->size));
 
-    for (i = 0; i < HPtr->capacity; ++i) {
-        if (i % 3 == 0)  {printfUART("\n          ", "");}
-        else             {printfUART(" ", "");}
+//     for (i = 0; i < HPtr->capacity; ++i) {
+//         if (i % 3 == 0)  {printfUART("\n          ", "");}
+//         else             {printfUART(" ", "");}
 
-        RFSignalAvg_print(&(HPtr->htData[i]));        
-    }
-    printfUART("\n    -----------------------------------\n", "");
-}
+//         RFSignalAvg_print(&(HPtr->htData[i]));        
+//     }
+//     printfUART("\n    -----------------------------------\n", "");
+// }
 
 
 
@@ -187,7 +187,7 @@ inline void RFSignalAvgHT_print(RFSignalAvgHT *HPtr)
  * @param newRssi  the RSSI value
  * @return <code>SUCCESS</code>, if it was added; <code>FAIL</code> if it couldn't be added
  */
-inline result_t RFSignalAvgHT_put(RFSignalAvgHT *HPtr, uint16_t newSrcID, uint8_t f, uint8_t p, uint16_t newRssi)
+static inline bool RFSignalAvgHT_put(RFSignalAvgHT *HPtr, uint16_t newSrcID, uint8_t f, uint8_t p, uint16_t newRssi)
 {
     // very simple hash function, but works well because most sourceID's are below HPtr->capacity
     uint16_t hashID = (newSrcID*13) % HPtr->capacity;
@@ -203,7 +203,7 @@ inline result_t RFSignalAvgHT_put(RFSignalAvgHT *HPtr, uint16_t newSrcID, uint8_
         if (HPtr->htData[i].sourceID == newSrcID) {
             HPtr->htData[i].rssiSum[f][p] += newRssi;   // DANGER! if rssiSum is uint8_t there may be an overflow problem!
             HPtr->htData[i].nbrSamples[f][p]++;
-            return SUCCESS;                                                 
+            return true;                                                 
         }
         i = (i + 1) % HPtr->capacity;
     } while (i != hashID);
@@ -211,16 +211,21 @@ inline result_t RFSignalAvgHT_put(RFSignalAvgHT *HPtr, uint16_t newSrcID, uint8_
     // If we didn't find a cell to place our entry, then is means the hastable 
     // is full (i.e. capacity == size), otherwise somethings has gone wrong
     if (HPtr->size == HPtr->capacity) {
-        printfUART("RFSignalAvgHT - put(): WARNING! hash table is full!  Can't add new entry\n", "");
-        return FAIL;
+        // printfUART("RFSignalAvgHT - put(): WARNING! hash table is full!  Can't add new entry\n", "");
+        // return FAIL;
+        avroraPrintHex32(0xBEEF0004);
+        asm volatile ("break");
     }
     else {
-        printfUART("RFSignalAvgHT - put(): FATAL ERROR! hash table is inconsistent!  Dumping hash table and exiting program ...\n", "");
-        printfUART("              - trying to add: <srcID=%i, RSSI=%i, txPowerIndex=%i>\n", newSrcID, newRssi, p);
-        RFSignalAvgHT_print(HPtr);        
-        EXIT_PROGRAM = 1;
-        return FAIL;
+        // printfUART("RFSignalAvgHT - put(): FATAL ERROR! hash table is inconsistent!  Dumping hash table and exiting program ...\n", "");
+        // printfUART("              - trying to add: <srcID=%i, RSSI=%i, txPowerIndex=%i>\n", newSrcID, newRssi, p);
+        // RFSignalAvgHT_print(HPtr);        
+        // EXIT_PROGRAM = 1;
+        // return FAIL;
+        avroraPrintHex32(0xBEEF0005);
+        asm volatile ("break");
     }
+    return false;
 }
 
 
@@ -235,7 +240,7 @@ inline result_t RFSignalAvgHT_put(RFSignalAvgHT *HPtr, uint16_t newSrcID, uint8_
  * @param retSrcIDMaxRSSIPtr  return the sourceID of RFSignal with max RSSI through this pointer
  * @param HPtr  the RFSignalAvgHT structure.
  */
-inline void RFSignalAvgHT_makeSignature(Signature *retSigPtr, uint16_t *retSrcIDMaxRSSIPtr, RFSignalAvgHT *HPtr)
+static inline void RFSignalAvgHT_makeSignature(Signature *retSigPtr, uint16_t *retSrcIDMaxRSSIPtr, RFSignalAvgHT *HPtr)
 {
     uint16_t i = 0, k = 0, f = 0, p = 0;
     uint16_t maxRssiIndex = 0;

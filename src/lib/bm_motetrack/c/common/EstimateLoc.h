@@ -44,7 +44,6 @@
 #include "MoteTrackParams.h"
 #include "RefSignature.h"
 #include "RefSignatureDB.h"
-#include "PrintfUART.h"
 
 
 // ----- Parameters -----
@@ -79,7 +78,7 @@ uint8_t signatureDiffAlg = BIDIRECTIONAL_ALG;
      * Private helper function for data structure <code>SignalSpaceDiff</code>.
      * Initialize struct.
      */
-    inline void SignalSpaceDiff_init(SignalSpaceDiff *ssDiffPtr)
+    static inline void SignalSpaceDiff_init(SignalSpaceDiff *ssDiffPtr)
     {
         ssDiffPtr->refSigIndex = 0;
         ssDiffPtr->diff = 65535L; // (2^16-1) because it's 16 bits
@@ -95,7 +94,7 @@ uint8_t signatureDiffAlg = BIDIRECTIONAL_ALG;
      * @param diff  the new difference to add
      * @param refSigIndex  index to the new RefSignature
      */
-    inline void SignalSpaceDiff_put(SignalSpaceDiff SSDiffs[], uint16_t ssDiffsSize, uint16_t diff, uint16_t refSigIndex)
+    static inline void SignalSpaceDiff_put(SignalSpaceDiff SSDiffs[], uint16_t ssDiffsSize, uint16_t diff, uint16_t refSigIndex)
     {
         uint16_t i=0;
 
@@ -120,7 +119,7 @@ uint8_t signatureDiffAlg = BIDIRECTIONAL_ALG;
      * @param SSDiffs[]  the sorted array
      * @param nbrRefSigs  the number of RefSignatures to computer the centroid over.
      */
-    inline void SignalSpaceDiff_centroidLoc(Point *retLocPtr, SignalSpaceDiff SSDiffs[], uint16_t nbrRefSigs)
+    static inline void SignalSpaceDiff_centroidLoc(Point *retLocPtr, SignalSpaceDiff SSDiffs[], uint16_t nbrRefSigs)
     {
         uint16_t i=0;
         uint32_t x=0, y=0, z=0;  // to prevent overflow from adding multiple 16-bit points
@@ -139,44 +138,44 @@ uint8_t signatureDiffAlg = BIDIRECTIONAL_ALG;
         retLocPtr->z = z/nbrRefSigs;
     }
 
-    /**
-     * Private helper function for data structure <code>SignalSpaceDiff</code>.
-     * Computes the weighted centroid location of several RefSignatures.  The weights are
-     * inversily proportional with the <code>diff</code> (i.e. smaller diffs are assigned
-     * a higher weight.
-     * @param retLocPtr  return the location through this pointer
-     * @param SSDiffs[]  the sorted array
-     * @param nbrRefSigs  the number of RefSignatures to computer the centroid over.
-     */
-    inline void SignalSpaceDiff_centroidLocWeighted(Point *retLocPtr, SignalSpaceDiff SSDiffs[], uint16_t nbrRefSigs)
-    {
-        uint16_t i=0;
-        double x=0, y=0, z=0;  // to prevent overflow from adding multiple 16-bit points
-        double totalDiffs = 0;
-        RefSignature currRefSig;      // RefSignature read from database
-        double currWeight = 0;
+    // /**
+    //  * Private helper function for data structure <code>SignalSpaceDiff</code>.
+    //  * Computes the weighted centroid location of several RefSignatures.  The weights are
+    //  * inversily proportional with the <code>diff</code> (i.e. smaller diffs are assigned
+    //  * a higher weight.
+    //  * @param retLocPtr  return the location through this pointer
+    //  * @param SSDiffs[]  the sorted array
+    //  * @param nbrRefSigs  the number of RefSignatures to computer the centroid over.
+    //  */
+    // static inline void SignalSpaceDiff_centroidLocWeighted(Point *retLocPtr, SignalSpaceDiff SSDiffs[], uint16_t nbrRefSigs)
+    // {
+    //     uint16_t i=0;
+    //     double x=0, y=0, z=0;  // to prevent overflow from adding multiple 16-bit points
+    //     double totalDiffs = 0;
+    //     RefSignature currRefSig;      // RefSignature read from database
+    //     double currWeight = 0;
 
-        // (1) - Determine the totalDiffs to figure out the appropriate weights.
-        //       Note: We use the diffs as weights, but need to reverse them so that smaller
-        //       diffs carry a heigher weight.  For this conversion, we need the sum of the weights
-        for (i = 0; i < nbrRefSigs; ++i)
-            totalDiffs += SSDiffs[i].diff;
+    //     // (1) - Determine the totalDiffs to figure out the appropriate weights.
+    //     //       Note: We use the diffs as weights, but need to reverse them so that smaller
+    //     //       diffs carry a heigher weight.  For this conversion, we need the sum of the weights
+    //     for (i = 0; i < nbrRefSigs; ++i)
+    //         totalDiffs += SSDiffs[i].diff;
 
-        // (2) - Add each one multiplied by its weight
-        for (i = 0; i < nbrRefSigs; ++i) {
-            RefSignatureDB_get(&currRefSig, SSDiffs[i].refSigIndex);
-            currWeight =  2.0/(double)nbrRefSigs - (double)SSDiffs[i].diff/totalDiffs;
-            x += (double) currRefSig.location.x * currWeight;
-            y += (double) currRefSig.location.y * currWeight;
-            z += (double) currRefSig.location.z * currWeight;
-        }
+    //     // (2) - Add each one multiplied by its weight
+    //     for (i = 0; i < nbrRefSigs; ++i) {
+    //         RefSignatureDB_get(&currRefSig, SSDiffs[i].refSigIndex);
+    //         currWeight =  2.0/(double)nbrRefSigs - (double)SSDiffs[i].diff/totalDiffs;
+    //         x += (double) currRefSig.location.x * currWeight;
+    //         y += (double) currRefSig.location.y * currWeight;
+    //         z += (double) currRefSig.location.z * currWeight;
+    //     }
 
-        // Casting to integer, may lose precision!
-        retLocPtr->x = (uint16_t) x;
-        retLocPtr->y = (uint16_t) y;
-        retLocPtr->z = (uint16_t) z;
-    }
-    // --------------------------------------------------------------------------------------------
+    //     // Casting to integer, may lose precision!
+    //     retLocPtr->x = (uint16_t) x;
+    //     retLocPtr->y = (uint16_t) y;
+    //     retLocPtr->z = (uint16_t) z;
+    // }
+    // // --------------------------------------------------------------------------------------------
 
 
 /**
@@ -185,7 +184,7 @@ uint8_t signatureDiffAlg = BIDIRECTIONAL_ALG;
  * @param retSSDiffs[][]  return the indexes to the top RefSignature through this array
  * @param sigPtr  a pointer to the signature to which the RefSignatures should be compared
  */
-inline void EstimateLoc_nearestRefSigs(SignalSpaceDiff retSSDiffs[NBR_FREQCHANNELS][NBR_TXPOWERS][MAX_REFSIGS_CONS], Signature *sigPtr)
+static inline void EstimateLoc_nearestRefSigs(SignalSpaceDiff retSSDiffs[NBR_FREQCHANNELS][NBR_TXPOWERS][MAX_REFSIGS_CONS], Signature *sigPtr)
 {
     uint16_t i=0, f=0, p=0;
     RefSignature currRefSig;      // RefSignature read from database
@@ -210,8 +209,14 @@ inline void EstimateLoc_nearestRefSigs(SignalSpaceDiff retSSDiffs[NBR_FREQCHANNE
         else if (signatureDiffAlg == UNIDIRECTIONAL_ALG)
             RefSignature_signatureDiffUnidirectional(currSigDiffs, &currRefSig, sigPtr);
         else {
-            printfUART("BeaconMote - nearestRefSigs():  FATAL ERROR! neither BIDIRECTIONAL_ALG nor UNIDIRECTIONAL_ALG are defined\n", "");
-            EXIT_PROGRAM = 1;
+            // Keep the compiler happy
+            for (f = 0; f < NBR_FREQCHANNELS; ++f)
+                for (p = 0; p < NBR_TXPOWERS; ++p)
+                    currSigDiffs[f][p] = 0;
+            // printfUART("BeaconMote - nearestRefSigs():  FATAL ERROR! neither BIDIRECTIONAL_ALG nor UNIDIRECTIONAL_ALG are defined\n", "");
+            avroraPrintHex32(0xBEEFBEEF);
+            avroraPrintHex32(0x1);
+            asm volatile ("break");
         }
 
         // c. try to add curr RefSignatures to top candidates
@@ -226,9 +231,9 @@ inline void EstimateLoc_nearestRefSigs(SignalSpaceDiff retSSDiffs[NBR_FREQCHANNE
  * @param retLocPtr  the estimated location should be returned through this pointer
  * @param sigPtr   the signature whos location to estimate
  */
-inline void EstimateLoc_estimateLoc(Point *retLocPtr, Signature *sigPtr)
+void EstimateLoc_estimateLoc(Point *retLocPtr, Signature *sigPtr)
 {
-    uint8_t f=0, p=0, r=0;
+    uint8_t f=0, p=0; //, r=0;
     SignalSpaceDiff ssDiffs[NBR_FREQCHANNELS][NBR_TXPOWERS][MAX_REFSIGS_CONS];
     Point locEstEachFreqPower[NBR_FREQCHANNELS][NBR_TXPOWERS];       // centroid for each txPower
     Point locCombFreqPower[NBR_FREQCHANNELS*NBR_TXPOWERS];

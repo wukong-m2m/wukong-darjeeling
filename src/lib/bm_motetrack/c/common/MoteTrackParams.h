@@ -39,7 +39,7 @@
 #define MOTETRACKPARAMS_H
 
 
-#if defined(PLATFORM_MICA2) || defined(PLATFORM_MICA2DOT)
+// #if defined(PLATFORM_MICA2) || defined(PLATFORM_MICA2DOT)
                            
     // The frequency channels are ignored in CC1000!!!  However, they must match what is
     // in the RefSignatureDB.h and SignatureDB.h! 
@@ -51,19 +51,19 @@
     enum {NBR_TXPOWERS = 1};
     static const uint8_t TXPOWERS[NBR_TXPOWERS] = {255/*, 112, 15*/}; 
 
-#else // assume CC2420 radio (e.g. MicaZ, Telos)
+// #else // assume CC2420 radio (e.g. MicaZ, Telos)
 
-    // Frequency -- channels are calculated by:
-    // Freq = 2405 + 5(k-11) MHz for k = 11,12,...,26
-    enum {NBR_FREQCHANNELS = 2};
-    static const uint8_t FREQCHANNELS[NBR_FREQCHANNELS] = {11, 15/*, 19, 23*/}; 
+//     // Frequency -- channels are calculated by:
+//     // Freq = 2405 + 5(k-11) MHz for k = 11,12,...,26
+//     enum {NBR_FREQCHANNELS = 2};
+//     static const uint8_t FREQCHANNELS[NBR_FREQCHANNELS] = {11, 15/*, 19, 23*/}; 
 
-    // TXPower -- range from 0dBm to -25dBm (see the CC2420 manual for complete mapping)
-    // mapping  {31=>0dBm, 19=>-5dBm, 11=>-10dBm, 7=>-15dBm, 3=>-25dBm}
-    enum {NBR_TXPOWERS = 1};
-    static const uint8_t TXPOWERS[NBR_TXPOWERS] = {31/*, 19, 11, 7, 3*/}; 
+//     // TXPower -- range from 0dBm to -25dBm (see the CC2420 manual for complete mapping)
+//     // mapping  {31=>0dBm, 19=>-5dBm, 11=>-10dBm, 7=>-15dBm, 3=>-25dBm}
+//     enum {NBR_TXPOWERS = 1};
+//     static const uint8_t TXPOWERS[NBR_TXPOWERS] = {31/*, 19, 11, 7, 3*/}; 
 
-#endif
+// #endif
 
 
 enum {BEACON_SEND_PERIOD = 100L};  // do not set this less than 14L (roughly more than 70 Hz)!
