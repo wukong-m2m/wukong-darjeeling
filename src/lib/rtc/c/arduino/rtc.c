@@ -75,9 +75,6 @@ uint8_t offset_for_intlocal_short(uint8_t local) {
     uint32_t offset = (rtc_ts->methodimpl_header.nr_ref_vars * sizeof(ref_t))
                         + ((rtc_ts->methodimpl_header.nr_int_vars - 1) * sizeof(int16_t))
                         - (local * sizeof(int16_t));
-    if (offset > 63) {
-        dj_panic(DJ_PANIC_OFFSET_TOO_LARGE);
-    }
     return offset;
 }
 
