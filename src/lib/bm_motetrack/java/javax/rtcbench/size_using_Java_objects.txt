@@ -2,20 +2,20 @@ Each heap object costs 5 bytes for its header, an array costs an additional 3 by
 In total, each RefSignature will cost 413 of RAM at runtime. Too much. :-(
 
 
-5+13+313=331        RefSignature
+5+13+395=413        RefSignature
 2+11=13                 Point location
-2+311=313               Signature sig
+2+397=395               Signature sig
 
 5+2+2+2=11          Point
 2                       short x
 2                       short y
 2                       short z
 
-5+2+304=311         Signature
+5+2+388=395         Signature
 2                       short
-2+302=304               RFSignal[14]
+2+386=388               RFSignal[18]
 
-5+3+14*(2+19)=302   RFSignal[14]
+5+3+18*(2+19)=386   RFSignal[18]
 
 5+2+12=19           RFSignal
 2                       short sourceID
@@ -23,21 +23,10 @@ In total, each RefSignature will cost 413 of RAM at runtime. Too much. :-(
 
 5+3+2=10            byte[2]
 
-Each RefSignature only should take (in C):
+Each RefSignature should only take:
     3*2=6 bytes for the location
     2 bytes for the signature id
-    14*4=56 bytes for the signals
+    18*4=72 bytes for the signals
         2 bytes for the sourceID
         2 bytes for the rssi
-    total 64 bytes
-
-Size using NewSignature:
-    5
-    2                       short x
-    2                       short y
-    2                       short z
-    2                       short sig_id
-    2+5+3+28=36               short[14] signals_source_ID
-    2+5+3+14=22               byte[14] signals_rssi1
-    2+5+3+14=22               byte[14] signals_rssi2
-    total 99 bytes
+    total 80 bytes
