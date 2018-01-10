@@ -155,6 +155,7 @@ class DjSourceSet {
                 keepclassmembers 'class * { public static int     test_manual_inlining(int); }'
                 keepclassmembers 'class * { private static short   desiredOutputData(int); }'
                 keepclassmembers 'class * { private static short   desiredOutputIm(int); }'
+                keepclassmembers 'class javax.rtcbench.NewSignature { *; }'
             } else {
                 // Don't optimise the libraries for now since it's giving some trouble and we may replace them
                 keep 'class * { public *; private *; }'

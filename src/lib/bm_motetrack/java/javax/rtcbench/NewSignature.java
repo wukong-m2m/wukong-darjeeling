@@ -4,7 +4,7 @@ import javax.rtc.RTC;
 import javax.rtc.Lightweight;
 
 public class NewSignature {
-    public static final byte NBR_RFSIGNALS_IN_SIGNATURE = 14;
+    public static final byte NBR_RFSIGNALS_IN_SIGNATURE = 18;
     private static short GlobUniqSignatureID = 0;
 
     public short x;
@@ -16,7 +16,18 @@ public class NewSignature {
     public byte[] signals_rssi1;
     public byte[] signals_rssi2;
 
-    public static NewSignature[] Database;
+    private NewSignature() {
+        this.signals_source_ID = new short[NBR_RFSIGNALS_IN_SIGNATURE];
+        this.signals_rssi1 = new byte[NBR_RFSIGNALS_IN_SIGNATURE];
+        this.signals_rssi2 = new byte[NBR_RFSIGNALS_IN_SIGNATURE];
+    }
+
+    public static native void initNewSignature(NewSignature s, short index);
+    public static NewSignature getSignature(short index) {
+        NewSignature s = new NewSignature();
+        NewSignature.initNewSignature(s, index);
+        return s;
+    }
 
     // TOOOOO BIG :-(
     // @Lightweight
