@@ -8,6 +8,7 @@ public class RTCBenchmark {
     public static String name = "MOTETRACK";
     public static native void test_native();
     public static boolean test_java() {
+    	NewSignature.init();
 
         return true;
     }

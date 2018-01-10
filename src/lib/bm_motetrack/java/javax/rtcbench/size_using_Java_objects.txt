@@ -30,3 +30,13 @@ Each RefSignature only should take (in C):
         2 bytes for the sourceID
         2 bytes for the rssi
     total 64 bytes
+
+Size using NewSignature:
+    2                       short x
+    2                       short y
+    2                       short z
+    2                       short sig_id
+    5+3+28=36               short[14] signals_source_ID
+    5+3+14=22               byte[14] signals_rssi1
+    5+3+14=22               byte[14] signals_rssi2
+    total 88 bytes
