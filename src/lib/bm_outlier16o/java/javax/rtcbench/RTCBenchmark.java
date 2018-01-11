@@ -44,6 +44,7 @@ public class RTCBenchmark {
 
 
     public static void rtcbenchmark_measure_java_performance(short NUMNUMBERS, short[] buffer, short distance_threshold, boolean[] outliers) {
+        short half_NUMNUMBERS = (short)(NUMNUMBERS >> 1);
         for (short i=0; i<NUMNUMBERS; i++) {
             short exceed_threshold_count = 0;
             for (short j=0; j<NUMNUMBERS; j++) {
@@ -52,7 +53,7 @@ public class RTCBenchmark {
                     exceed_threshold_count++;
                 }
             }
-            if (exceed_threshold_count > (NUMNUMBERS >> 1)) {
+            if (exceed_threshold_count > half_NUMNUMBERS) {
                 outliers[i] = true;
             } else {
                 outliers[i] = false;
