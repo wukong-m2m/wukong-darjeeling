@@ -1715,6 +1715,7 @@ void rtc_translate_single_instruction() {
             emit_2_CALL((uint16_t)&rtc_startBenchmarkMeasurement_AOT);
         break;
         case JVM_STOP_AOT_BM:
+            rtc_flush_and_cleartags_ref(RTC_FILTER_ALL, RTC_FILTER_ALL); // To prevent rtc_stopBenchmarkMeasurement from corrupting the return value.
             emit_2_CALL((uint16_t)&rtc_stopBenchmarkMeasurement);
         break;
 
