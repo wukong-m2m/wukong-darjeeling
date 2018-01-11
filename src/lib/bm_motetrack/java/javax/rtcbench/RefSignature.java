@@ -6,6 +6,11 @@ public class RefSignature {
     public Point location;
     public Signature sig;
 
+    public RefSignature() {
+        this.location = new Point();
+        this.sig = new Signature();
+    }
+
     public static void RefSignature_signatureDiffBidirectional(short results[], RefSignature refSigPtr, Signature sigPtr)
     {
         short s = 0, r = 0, f = 0; //, p = 0;

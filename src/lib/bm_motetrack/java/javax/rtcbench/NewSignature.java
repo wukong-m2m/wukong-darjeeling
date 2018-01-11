@@ -23,9 +23,17 @@ public class NewSignature {
     }
 
     public static native void initNewSignature(NewSignature s, short index);
-    public static NewSignature getSignature(short index) {
+    public static native void initRefSignature(RefSignature s, short index);
+    public static native void initSignature(Signature s, short index);
+
+    public static NewSignature getNewSignature(short index) {
         NewSignature s = new NewSignature();
         NewSignature.initNewSignature(s, index);
+        return s;
+    }
+    public static RefSignature getRefSignature(short index) {
+        RefSignature s = new RefSignature();
+        NewSignature.initRefSignature(s, index);
         return s;
     }
 

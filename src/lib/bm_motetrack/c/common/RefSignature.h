@@ -37,7 +37,10 @@
  */
 #ifndef REFSIGNATURE_H
 #define REFSIGNATURE_H
+#include <stddef.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include "config.h"
 #include "Point.h"
 #include "MoteTrackParams.h"
 
