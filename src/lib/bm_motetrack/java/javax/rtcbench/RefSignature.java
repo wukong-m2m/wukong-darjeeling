@@ -11,7 +11,7 @@ public class RefSignature {
         this.sig = new Signature();
     }
 
-    public static void RefSignature_signatureDiffBidirectional(short results[], RefSignature refSigPtr, Signature sigPtr)
+    public static void signatureDiffBidirectional(short results[], RefSignature refSigPtr, Signature sigPtr)
     {
         short s = 0, r = 0, f = 0; //, p = 0;
         short[] currSigDiffs = new short[MoteTrackParams.NBR_FREQCHANNELS]; // [NBR_TXPOWERS];
@@ -65,7 +65,7 @@ public class RefSignature {
      * @param refSigPtr  the reference signature to compare
      * @param sigPtr  the signature to compare
      */
-    public static void RefSignature_signatureDiffUnidirectional(short results[], RefSignature refSigPtr, Signature sigPtr) {
+    public static void signatureDiffUnidirectional(short results[], RefSignature refSigPtr, Signature sigPtr) {
         // Not implemented
     }
 }

@@ -11,12 +11,16 @@ public class Signature {
 
     public Signature()
     {
+        init(this);
+    }
+
+    public static void init(Signature sig) {
         short i = 0;
 
         for(i = 0; i < NBR_RFSIGNALS_IN_SIGNATURE; ++i) {
-            this.rfSignals[i] = new RFSignal();
+            sig.rfSignals[i] = new RFSignal();
         }
                      
-        this.id = ++GlobUniqSignatureID;
+        sig.id = ++GlobUniqSignatureID;
     }
 }

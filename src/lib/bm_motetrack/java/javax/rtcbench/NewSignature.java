@@ -4,38 +4,27 @@ import javax.rtc.RTC;
 import javax.rtc.Lightweight;
 
 public class NewSignature {
-    public static final byte NBR_RFSIGNALS_IN_SIGNATURE = 18;
-    private static short GlobUniqSignatureID = 0;
+    // public short x;
+    // public short y;
+    // public short z;
+    // public short sig_id;
+    // // NOTE: Since NBR_TXPOWERS == 1 in the C code, I've remove the array's for different TX power settings.
+    // public short[] signals_source_ID;
+    // public byte[] signals_rssi1;
+    // public byte[] signals_rssi2;
 
-    public short x;
-    public short y;
-    public short z;
-    public short sig_id;
-    // NOTE: Since NBR_TXPOWERS == 1 in the C code, I've remove the array's for different TX power settings.
-    public short[] signals_source_ID;
-    public byte[] signals_rssi1;
-    public byte[] signals_rssi2;
+    // private NewSignature() {
+    //     this.signals_source_ID = new short[Signature.NBR_RFSIGNALS_IN_SIGNATURE];
+    //     this.signals_rssi1 = new byte[Signature.NBR_RFSIGNALS_IN_SIGNATURE];
+    //     this.signals_rssi2 = new byte[Signature.NBR_RFSIGNALS_IN_SIGNATURE];
+    // }
 
-    private NewSignature() {
-        this.signals_source_ID = new short[NBR_RFSIGNALS_IN_SIGNATURE];
-        this.signals_rssi1 = new byte[NBR_RFSIGNALS_IN_SIGNATURE];
-        this.signals_rssi2 = new byte[NBR_RFSIGNALS_IN_SIGNATURE];
-    }
-
-    public static native void initNewSignature(NewSignature s, short index);
-    public static native void initRefSignature(RefSignature s, short index);
-    public static native void initSignature(Signature s, short index);
-
-    public static NewSignature getNewSignature(short index) {
-        NewSignature s = new NewSignature();
-        NewSignature.initNewSignature(s, index);
-        return s;
-    }
-    public static RefSignature getRefSignature(short index) {
-        RefSignature s = new RefSignature();
-        NewSignature.initRefSignature(s, index);
-        return s;
-    }
+    // public static native void newSignature_get(NewSignature s, short index);
+    // public static NewSignature getNewSignature(short index) {
+    //     NewSignature s = new NewSignature();
+    //     NewSignature.newSignature_get(s, index);
+    //     return s;
+    // }
 
     // TOOOOO BIG :-(
     // @Lightweight

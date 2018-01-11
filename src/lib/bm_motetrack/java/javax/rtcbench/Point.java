@@ -6,12 +6,15 @@ public class Point {
     public short x, y, z;
 
     public Point() {
-        this.x = 0;
-        this.y = 0;
-        this.z = 0;
+        init(this);
+    }
+    public static void init(Point pointPtr) {
+        pointPtr.x = 0;
+        pointPtr.y = 0;
+        pointPtr.z = 0;
     }
 
-    static void Point_centroidLoc(Point retLocPtr, Point points[])
+    static void centroidLoc(Point retLocPtr, Point points[])
     {
         short i = 0;
         short nbrPoints = (short)points.length;

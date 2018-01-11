@@ -60,7 +60,7 @@ public class RFSignal {
      * @param rssi  the original inverted RSSIvalue
      * @return a value in the range <code>[MIN_RSSI, MAX_RSSI]</code>
      */
-    public static byte RFSignal_convertRSSI(short rssi)
+    public static byte convertRSSI(short rssi)
     {
         // assume CC2420 radio
         // See the CC2420 manual for conversion 
