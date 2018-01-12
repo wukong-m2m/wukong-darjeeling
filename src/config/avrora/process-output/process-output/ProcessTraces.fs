@@ -323,14 +323,14 @@ module ProcessTraces =
               && match data.file with
                  | "" ->
                     // Unfortunately, avr-nm doesn't add the source file for some symbols. Just hard code what to do with those for now.
-                    let knownExclude = mathFunctionNames @ ["__do_clear_bss"; "avr_millis"; "__ultoa_invert"; "asm_opcodeWithSingleRegOperand"; "dj_exec_setVM"; "fputc"; "memcpy"; "memmove"; "memset"; "strnlen"; "strnlen_P"; "vfprintf"; "vsnprintf"]
+                    let knownExclude = mathFunctionNames @ ["__do_clear_bss"; "avr_millis"; "__ultoa_invert"; "asm_opcodeWithSingleRegOperand"; "dj_exec_setVM"; "fputc"; "memcpy"; "memcpy_P"; "memmove"; "memset"; "strnlen"; "strnlen_P"; "vfprintf"; "vsnprintf"]
                     let knownInclude = ["siftDown"; "core_list_find"; "crc16"]
                     match (knownInclude |> List.contains data.name, knownExclude |> List.contains data.name) with
                     | (true, true)   -> failwith ("BUG in getBenchmarkFunctionNamesAndAddressesFromCNm. " + data.name + " can't be in both lists at the same time!")
                     | (false, false) -> failwith ("Don't know whether to include " + data.name + ". Please put it in the include or exclude list in getBenchmarkFunctionNamesAndAddressesFromCNm")
                     | (incl, _)      -> incl
                  | file ->
-                    let knownExclude = ["Sinewave"; "stab"]                                      // Some symbols defined in benchmarks that aren't code.
+                    let knownExclude = ["ecg_samples"; "Sinewave"; "stab"]                                      // Some symbols defined in benchmarks that aren't code.
                     data.file.Contains("src/lib/bm_")                                            // only select functions in the benchmark lib
                     && not ((data.name.StartsWith("bm_") && data.name.EndsWith("_init")))        // exclude the library's init function
                     && not (data.name.Equals"javax_rtcbench_RTCBenchmark_void_test_native")      // exclude javax_rtcbench_RTCBenchmark_void_test_native (which contains benchmark init code)
