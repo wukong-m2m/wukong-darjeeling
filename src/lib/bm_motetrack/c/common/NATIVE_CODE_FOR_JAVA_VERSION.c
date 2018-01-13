@@ -39,7 +39,7 @@ void javax_rtcbench_DB_void_refSignature_get_javax_rtcbench_RefSignature_short()
 	BM_MOTETRACK_STRUCT_javax_rtcbench_RefSignature * dest_refsignature = (BM_MOTETRACK_STRUCT_javax_rtcbench_RefSignature *)REF_TO_VOIDP(dj_exec_stackPopRef());
 
 	RefSignature refSig;
-	RefSignatureDB_get(&refSig, index);
+	RefSignatureDB_get_JVM(&refSig, index);
 
 	BM_MOTETRACK_STRUCT_javax_rtcbench_Point * dest_location = (BM_MOTETRACK_STRUCT_javax_rtcbench_Point *)REF_TO_VOIDP(dest_refsignature->location);
 	dest_location->x = refSig.location.x;
@@ -63,7 +63,7 @@ void javax_rtcbench_DB_void_signature_get_javax_rtcbench_RefSignature_short() {
 	BM_MOTETRACK_STRUCT_javax_rtcbench_RefSignature * dest_refsignature = (BM_MOTETRACK_STRUCT_javax_rtcbench_RefSignature *)REF_TO_VOIDP(dj_exec_stackPopRef());
 
 	RefSignature refSig;
-	SignatureDB_get(&refSig, index);
+	SignatureDB_get_JVM(&refSig, index);
 
 	BM_MOTETRACK_STRUCT_javax_rtcbench_Point * dest_location = (BM_MOTETRACK_STRUCT_javax_rtcbench_Point *)REF_TO_VOIDP(dest_refsignature->location);
 	dest_location->x = refSig.location.x;
