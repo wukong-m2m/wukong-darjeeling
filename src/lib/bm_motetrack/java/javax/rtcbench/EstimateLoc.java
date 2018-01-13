@@ -76,10 +76,18 @@ public class EstimateLoc {
         // SignalSpaceDiff[][] ssDiffs = new SignalSpaceDiff[MoteTrackParams.NBR_FREQCHANNELS][MAX_REFSIGS_CONS];
         Object[] ssDiffs = new Object[MoteTrackParams.NBR_FREQCHANNELS];
         for (f=0; f<MoteTrackParams.NBR_FREQCHANNELS; f++) {
-            ssDiffs[f] = new SignalSpaceDiff[MAX_REFSIGS_CONS];
+            SignalSpaceDiff[] ssDiffsarray = new SignalSpaceDiff[MAX_REFSIGS_CONS];
+            for (short i=0; i<MAX_REFSIGS_CONS; i++) {
+                ssDiffsarray[i] = new SignalSpaceDiff();
+            }
+            ssDiffs[f] = ssDiffsarray;
         }
         Point[] locEstEachFreqPower = new Point[MoteTrackParams.NBR_FREQCHANNELS];       // centroid for each txPower
         Point[] locCombFreqPower = new Point[MoteTrackParams.NBR_FREQCHANNELS];
+        for (f=0; f<MoteTrackParams.NBR_FREQCHANNELS; f++) {
+            locEstEachFreqPower[f] = new Point();
+            locCombFreqPower[f] = new Point();
+        }
 
         // (1) - Get the nearest RefSignatures to Signature in signal space
         EstimateLoc.nearestRefSigs(ssDiffs, sigPtr);
@@ -97,7 +105,7 @@ public class EstimateLoc {
             //     SignalSpaceDiff_centroidLocWeighted(&locEstEachFreqPower[f], ssDiffs[f], r);
             // #endif
 
-            locCombFreqPower[f + MoteTrackParams.NBR_FREQCHANNELS] = locEstEachFreqPower[f];
+            locCombFreqPower[f] = locEstEachFreqPower[f];
         }
 
         //   b) Over all txPowers

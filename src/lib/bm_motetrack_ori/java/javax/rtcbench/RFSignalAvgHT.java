@@ -128,7 +128,8 @@ public class RFSignalAvgHT {
                         maxRssiIndex = k;                       
                 }    
             }
-            
+
+            short retSrcIDMaxRSSIPtr = retSigPtr.rfSignals[maxRssiIndex].sourceID;            
             // *retSrcIDMaxRSSIPtr = retSigPtr.rfSignals[maxRssiIndex].sourceID;
 
             // (c) Sort the RFSignals in Signature by sourceID
@@ -148,7 +149,7 @@ public class RFSignalAvgHT {
             //for (i = 0; i < HPtr.size; ++i)
             //    printfUART("%i  ", retSigPtr.rfSignals[i].sourceID);
 
-            return retSigPtr.rfSignals[maxRssiIndex].sourceID;
+            return retSrcIDMaxRSSIPtr;
         }
 
         // (3) - We can't include all RFSignals, so sort them by strongest RSSIs 
@@ -188,6 +189,7 @@ public class RFSignalAvgHT {
 
             // at this point the strongest RSSI is at 1st freqChan, index 0
             // *retSrcIDMaxRSSIPtr = HPtr.htData[0].sourceID;
+            short retSrcIDMaxRSSIPtr = HPtr.htData[0].sourceID;
             
                                                               
             // (d) IMPORTANT: construct the Signature with the strongest RSSIs  
@@ -210,7 +212,7 @@ public class RFSignalAvgHT {
             //    qsort(retSigPtr.rfSignals, HPtr.size, sizeof(RFSignal), RFSignal_compare);
             // #endif
 
-            return HPtr.htData[0].sourceID;
+            return retSrcIDMaxRSSIPtr;
         }
     }
 }
