@@ -30,6 +30,11 @@ void javax_rtc_RTC_void_avroraPrintHex32_int() {
     avroraPrintHex32(value);
 }
 
+void javax_rtc_RTC_void_avroraPrintPtr_java_lang_Object() {
+    void* value = REF_TO_VOIDP(dj_exec_stackPopRef());
+    avroraPrintPtr(value);
+}
+
 void javax_rtc_RTC_void_avroraPrintSP() {
     avroraPrintSP();
 }
