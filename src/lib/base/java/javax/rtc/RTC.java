@@ -8,6 +8,7 @@ public class RTC
     public static native void avroraPrintInt(int value);
     public static native void avroraPrintHex16(short value);
     public static native void avroraPrintHex32(int value);
+    public static native void avroraPrintPtr(Object value);
     public static native void avroraPrintSP();
     public static native void avroraStartCountingCalls();
     public static native void avroraStopCountingCalls();

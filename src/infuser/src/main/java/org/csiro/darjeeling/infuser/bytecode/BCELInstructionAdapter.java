@@ -406,6 +406,9 @@ public class BCELInstructionAdapter
 		if (elementType instanceof BasicType)
 			return LocalId.numArray(BaseType.fromBCELType((BasicType)elementType));
 		
+		System.err.println("VLIEGTUIG");
+		System.err.println(elementType);
+
 		throw new IllegalStateException("Unhandled Array Type");
 		
 	}
