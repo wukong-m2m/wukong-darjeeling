@@ -89,7 +89,7 @@ inline void RFSignalAvgHT_print(RFSignalAvgHT *HPtr);
  * Initialize an RFSignalAvg struct to a consistent state.  It's considered empty if
  * sourceID = 0. 
  */
-void RFSignalAvg_init(RFSignalAvg *rfSigPtr)
+static inline void RFSignalAvg_init(RFSignalAvg *rfSigPtr)
 {
     uint8_t f = 0, p = 0;
     rfSigPtr->sourceID = 0;
@@ -368,5 +368,6 @@ static inline void RFSignalAvgHT_makeSignature(Signature *retSigPtr, uint16_t *r
     }
 }
 
+void printRFSignalAvgHT(RFSignalAvgHT *h);
 #endif
 

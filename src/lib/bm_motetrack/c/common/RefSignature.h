@@ -439,5 +439,7 @@ static inline void RefSignature_signatureDiffUnidirectional(uint16_t results[NBR
     }
 }
 
+void printSignature(Signature *s);
+void printRefSignature(RefSignature *r);
 #endif
 
