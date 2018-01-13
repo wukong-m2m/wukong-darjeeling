@@ -10,15 +10,17 @@ public class RFSignal {
     public static final byte MAX_RSSI_DIFF = (MAX_RSSI - MIN_RSSI);
 
     public short sourceID;
-    public byte[] rssi = new byte[MoteTrackParams.NBR_FREQCHANNELS];
+    public byte[] rssi;
 
     public RFSignal()
     {
-        byte f=0;
+        rssi = new byte[MoteTrackParams.NBR_FREQCHANNELS];
+    }
 
-        this.sourceID = 0;
-        for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
-            this.rssi[f] = 0;
+    public static void init(RFSignal sigPtr) {
+        sigPtr.sourceID = 0;
+        for (short f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
+            sigPtr.rssi[f] = 0;        
     }
 
     public static boolean haveSameID(RFSignal rfSig1Ptr, RFSignal rfSig2Ptr)

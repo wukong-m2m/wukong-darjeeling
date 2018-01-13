@@ -10,15 +10,17 @@ public class RFSignal {
     public static final byte MAX_RSSI_DIFF = (MAX_RSSI - MIN_RSSI);
 
     public short sourceID;
-    public byte[] rssi = new byte[MoteTrackParams.NBR_FREQCHANNELS];
+    public byte rssi_0;
+    public byte rssi_1;
 
     public RFSignal()
     {
-        byte f=0;
+    }
 
-        this.sourceID = 0;
-        for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
-            this.rssi[f] = 0;
+    public static void init(RFSignal sigPtr) {
+        sigPtr.sourceID = 0;
+        sigPtr.rssi_0 = 0;
+        sigPtr.rssi_1 = 0;
     }
 
     public static boolean haveSameID(RFSignal rfSig1Ptr, RFSignal rfSig2Ptr)
@@ -37,17 +39,22 @@ public class RFSignal {
         byte f=0;
 
         if (rfSig2Ptr == null) {
-            for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
-                results[f] = rfSig1Ptr.rssi[f];
+            // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
+                results[0] = rfSig1Ptr.rssi_0;
+                results[1] = rfSig1Ptr.rssi_1;
         }
         else if ( rfSig2Ptr != null && haveSameID(rfSig1Ptr, rfSig2Ptr) ) {
-            for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
+            // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
                 // The two rfSignals can be compared.  Return the absolute value
-                if (rfSig1Ptr.rssi[f] >= rfSig2Ptr.rssi[f])
-                    results[f] = (short) (rfSig1Ptr.rssi[f] - rfSig2Ptr.rssi[f]);
+                if (rfSig1Ptr.rssi_0 >= rfSig2Ptr.rssi_0)
+                    results[0] = (short) (rfSig1Ptr.rssi_0 - rfSig2Ptr.rssi_0);
                 else
-                    results[f] = (short) (rfSig2Ptr.rssi[f] - rfSig1Ptr.rssi[f]);
-            }
+                    results[0] = (short) (rfSig2Ptr.rssi_0 - rfSig1Ptr.rssi_0);
+                if (rfSig1Ptr.rssi_1 >= rfSig2Ptr.rssi_1)
+                    results[1] = (short) (rfSig1Ptr.rssi_1 - rfSig2Ptr.rssi_1);
+                else
+                    results[1] = (short) (rfSig2Ptr.rssi_1 - rfSig1Ptr.rssi_1);
+            // }
         }
         else {
             RTC.avroraPrintHex32(0xBEEF0001);

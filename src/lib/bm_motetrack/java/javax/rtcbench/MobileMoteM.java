@@ -30,10 +30,10 @@ public class MobileMoteM {
             for (i = 0; i < Signature.NBR_RFSIGNALS_IN_SIGNATURE; ++i)
                 if (sigPtr.rfSignals[i].sourceID != 0)
                     // add each signal at each freqChan and txPower
-                    for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
-                        RFSignalAvgHT.put(rfSignalHT[currHT], sigPtr.rfSignals[i].sourceID,
-                                          f, sigPtr.rfSignals[i].rssi[f]);
-                    }
+                    // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
+                        RFSignalAvgHT.put(rfSignalHT[currHT], sigPtr.rfSignals[i].sourceID, (byte)0, sigPtr.rfSignals[i].rssi_0);
+                        RFSignalAvgHT.put(rfSignalHT[currHT], sigPtr.rfSignals[i].sourceID, (byte)1, sigPtr.rfSignals[i].rssi_1);
+                    // }
 
         return sigPtr.id;
     }

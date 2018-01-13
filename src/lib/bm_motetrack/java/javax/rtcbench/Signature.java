@@ -7,18 +7,20 @@ public class Signature {
     private static short GlobUniqSignatureID = 0;
 
     public short id;
-    public RFSignal[] rfSignals = new RFSignal[NBR_RFSIGNALS_IN_SIGNATURE];
+    public RFSignal[] rfSignals;
 
     public Signature()
     {
+        rfSignals = new RFSignal[NBR_RFSIGNALS_IN_SIGNATURE];
+        for(short i = 0; i < NBR_RFSIGNALS_IN_SIGNATURE; ++i) {
+            this.rfSignals[i] = new RFSignal();
+        }
         init(this);
     }
 
     public static void init(Signature sig) {
-        short i = 0;
-
-        for(i = 0; i < NBR_RFSIGNALS_IN_SIGNATURE; ++i) {
-            sig.rfSignals[i] = new RFSignal();
+        for(short i = 0; i < NBR_RFSIGNALS_IN_SIGNATURE; ++i) {
+            RFSignal.init(sig.rfSignals[i]);
         }
                      
         sig.id = ++GlobUniqSignatureID;

@@ -121,21 +121,21 @@ public class RFSignalAvgHT {
                     // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
                         if (HPtr.htData[i].nbrSamples_0 > 0) {
                             // WARNING! integer division, may lose some precision!
-                            retSigPtr.rfSignals[k].rssi[0] = (byte)(HPtr.htData[i].rssiSum_0 / HPtr.htData[i].nbrSamples_0);
+                            retSigPtr.rfSignals[k].rssi_0 = (byte)(HPtr.htData[i].rssiSum_0 / HPtr.htData[i].nbrSamples_0);
                         }
                         else
-                            retSigPtr.rfSignals[k].rssi[0] = 0;
+                            retSigPtr.rfSignals[k].rssi_0 = 0;
 
                         if (HPtr.htData[i].nbrSamples_1 > 0) {
                             // WARNING! integer division, may lose some precision!
-                            retSigPtr.rfSignals[k].rssi[1] = (byte)(HPtr.htData[i].rssiSum_1 / HPtr.htData[i].nbrSamples_1);
+                            retSigPtr.rfSignals[k].rssi_1 = (byte)(HPtr.htData[i].rssiSum_1 / HPtr.htData[i].nbrSamples_1);
                         }
                         else
-                            retSigPtr.rfSignals[k].rssi[1] = 0;
+                            retSigPtr.rfSignals[k].rssi_1 = 0;
                     // }
                     
                     // base decision on the 1st freqChan and strongest TXPower (assuming it is index 0)!!!
-                    if (retSigPtr.rfSignals[k].rssi[0] > retSigPtr.rfSignals[maxRssiIndex].rssi[0])
+                    if (retSigPtr.rfSignals[k].rssi_0 > retSigPtr.rfSignals[maxRssiIndex].rssi_0)
                         maxRssiIndex = k;                       
                 }    
             }
@@ -220,8 +220,8 @@ public class RFSignalAvgHT {
              
                 retSigPtr.rfSignals[i].sourceID = HPtr.htData[i].sourceID;
                 // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
-                    retSigPtr.rfSignals[i].rssi[0] = (byte)(HPtr.htData[i].rssiSum_0);
-                    retSigPtr.rfSignals[i].rssi[1] = (byte)(HPtr.htData[i].rssiSum_1);
+                    retSigPtr.rfSignals[i].rssi_0 = (byte)(HPtr.htData[i].rssiSum_0);
+                    retSigPtr.rfSignals[i].rssi_1 = (byte)(HPtr.htData[i].rssiSum_1);
             }
 
 
