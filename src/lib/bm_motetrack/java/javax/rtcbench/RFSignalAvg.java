@@ -4,11 +4,11 @@ import javax.rtc.RTC;
 
 public class RFSignalAvg {
 	short sourceID;
-	short rssiSum[];
-	byte nbrSamples[];
+	short rssiSum_0;
+	byte nbrSamples_0;
+	short rssiSum_1;
+	byte nbrSamples_1;
 
 	public RFSignalAvg() {
-		rssiSum = new short[MoteTrackParams.NBR_FREQCHANNELS];
-		nbrSamples = new byte[MoteTrackParams.NBR_FREQCHANNELS];
 	}
 }

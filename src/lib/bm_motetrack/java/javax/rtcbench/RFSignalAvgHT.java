@@ -48,8 +48,13 @@ public class RFSignalAvgHT {
                 HPtr.size++;
             }
             if (HPtr.htData[i].sourceID == newSrcID) {
-                HPtr.htData[i].rssiSum[f] += newRssi;   // DANGER! if rssiSum is uint8_t there may be an overflow problem!
-                HPtr.htData[i].nbrSamples[f]++;
+                if (f == 0) {
+                    HPtr.htData[i].rssiSum_0 += newRssi;   // DANGER! if rssiSum is uint8_t there may be an overflow problem!
+                    HPtr.htData[i].nbrSamples_0++;
+                } else {
+                    HPtr.htData[i].rssiSum_1 += newRssi;   // DANGER! if rssiSum is uint8_t there may be an overflow problem!
+                    HPtr.htData[i].nbrSamples_1++;
+                }
                 return true;                                                 
             }
             i = (short)(((short)(i + 1)) % HPtr.capacity);
@@ -114,14 +119,21 @@ public class RFSignalAvgHT {
                 
                     retSigPtr.rfSignals[++k].sourceID = HPtr.htData[i].sourceID;
 
-                    for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
-                        if (HPtr.htData[i].nbrSamples[f] > 0) {
+                    // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
+                        if (HPtr.htData[i].nbrSamples_0 > 0) {
                             // WARNING! integer division, may lose some precision!
-                            retSigPtr.rfSignals[k].rssi[f] = (byte)(HPtr.htData[i].rssiSum[f] / HPtr.htData[i].nbrSamples[f]);
+                            retSigPtr.rfSignals[k].rssi[0] = (byte)(HPtr.htData[i].rssiSum_0 / HPtr.htData[i].nbrSamples_0);
                         }
                         else
-                            retSigPtr.rfSignals[k].rssi[f] = 0;
-                    }
+                            retSigPtr.rfSignals[k].rssi[0] = 0;
+
+                        if (HPtr.htData[i].nbrSamples_1 > 0) {
+                            // WARNING! integer division, may lose some precision!
+                            retSigPtr.rfSignals[k].rssi[1] = (byte)(HPtr.htData[i].rssiSum_1 / HPtr.htData[i].nbrSamples_1);
+                        }
+                        else
+                            retSigPtr.rfSignals[k].rssi[1] = 0;
+                    // }
                     
                     // base decision on the 1st freqChan and strongest TXPower (assuming it is index 0)!!!
                     if (retSigPtr.rfSignals[k].rssi[0] > retSigPtr.rfSignals[maxRssiIndex].rssi[0])
@@ -166,16 +178,25 @@ public class RFSignalAvgHT {
                 
                     HPtr.htData[k].sourceID = HPtr.htData[i].sourceID;
 
-                    for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
-                        if (HPtr.htData[i].nbrSamples[f] > 0) {
+                    // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
+                        if (HPtr.htData[i].nbrSamples_0 > 0) {
                             // WARNING 1: placeing result in the k-th cell of HPtr, overwriting what was there!
                             // WARNING 2: integer division, may lose some precision!
-                            HPtr.htData[k].rssiSum[f] = (short)(HPtr.htData[i].rssiSum[f] / HPtr.htData[i].nbrSamples[f]);
-                            HPtr.htData[k].nbrSamples[f] = 1;  // statement not necessary, but keeps datastructure consistent
+                            HPtr.htData[k].rssiSum_0 = (short)(HPtr.htData[i].rssiSum_0 / HPtr.htData[i].nbrSamples_0);
+                            HPtr.htData[k].nbrSamples_0 = 1;  // statement not necessary, but keeps datastructure consistent
                         }
                         else
-                            HPtr.htData[k].rssiSum[f] = 0;
-                    }
+                            HPtr.htData[k].rssiSum_0 = 0;
+
+                        if (HPtr.htData[i].nbrSamples_1 > 0) {
+                            // WARNING 1: placeing result in the k-th cell of HPtr, overwriting what was there!
+                            // WARNING 2: integer division, may lose some precision!
+                            HPtr.htData[k].rssiSum_1 = (short)(HPtr.htData[i].rssiSum_1 / HPtr.htData[i].nbrSamples_1);
+                            HPtr.htData[k].nbrSamples_1 = 1;  // statement not necessary, but keeps datastructure consistent
+                        }
+                        else
+                            HPtr.htData[k].rssiSum_1 = 0;
+                    // }
                     k++;
                 }               
             }
@@ -197,8 +218,9 @@ public class RFSignalAvgHT {
             for (i = 0; i < Signature.NBR_RFSIGNALS_IN_SIGNATURE && i < HPtr.size; ++i) {
              
                 retSigPtr.rfSignals[i].sourceID = HPtr.htData[i].sourceID;
-                for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
-                    retSigPtr.rfSignals[i].rssi[f] = (byte)(HPtr.htData[i].rssiSum[f]);
+                // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
+                    retSigPtr.rfSignals[i].rssi[0] = (byte)(HPtr.htData[i].rssiSum_0);
+                    retSigPtr.rfSignals[i].rssi[1] = (byte)(HPtr.htData[i].rssiSum_1);
             }
 
 
