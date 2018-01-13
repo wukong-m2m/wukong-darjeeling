@@ -85,9 +85,8 @@ public class RFSignal {
      * @param rfSignals[]  the array of RFSignals to sort by source ID
      * @param size  the size of the rfSignals[] array
      */
-    public static void sortSrcID(RFSignal rfSignals[])
+    public static void sortSrcID(RFSignal rfSignals[], short size)
     {
-        short size = (short)rfSignals.length;
         int i = 0;
         int k = 0;
         RFSignal temp;

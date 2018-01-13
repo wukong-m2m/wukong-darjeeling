@@ -8,7 +8,9 @@
 Point __attribute__((noinline)) rtcbenchmark_measure_native_performance() {
     rtc_startBenchmarkMeasurement_Native();
 
-    return estLocAndSend();
+    Point p = estLocAndSend();
 
     rtc_stopBenchmarkMeasurement();
+
+    return p;
 }

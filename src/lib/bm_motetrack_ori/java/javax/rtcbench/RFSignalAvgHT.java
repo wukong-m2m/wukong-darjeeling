@@ -140,7 +140,7 @@ public class RFSignalAvgHT {
 
             // KLDEBUG - should use qsort.  However MSP430 libc doesn't define qsort!!!!
             // #if defined(PLATFORM_TELOS)
-                RFSignal.sortSrcID(retSigPtr.rfSignals);
+                RFSignal.sortSrcID(retSigPtr.rfSignals, HPtr.size);
             // #else
             //    qsort(retSigPtr.rfSignals, HPtr.size, sizeof(RFSignal), RFSignal_compare);
             // #endif
@@ -207,7 +207,7 @@ public class RFSignalAvgHT {
             // (e) Sort the RFSignals in Signature by sourceID
             // KLDEBUG - should use qsort.  However MSP430 libc doesn't define qsort!!!!
             // #if defined(PLATFORM_TELOS)
-                RFSignal.sortSrcID(retSigPtr.rfSignals);
+                RFSignal.sortSrcID(retSigPtr.rfSignals, HPtr.size);
             // #else  // PLATFORM_MICAZ || PLATFORM_MICA2 || PLATFORM_MICA2DOT
             //    qsort(retSigPtr.rfSignals, HPtr.size, sizeof(RFSignal), RFSignal_compare);
             // #endif
