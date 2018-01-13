@@ -1,6 +1,7 @@
 package javax.rtcbench;
 
 import javax.rtc.RTC;
+import javax.rtc.Lightweight;
 
 // NOTE: Since NBR_TXPOWERS == 1 in the C code, I've remove the array's for different TX power settings.
 
@@ -34,6 +35,7 @@ public class RFSignal {
      *   2. neither RFSignal is null, and they have the same sourceID.
      * If one of these two conditions doen't hold, then a FATAL ERROR is generated!
      */
+    @Lightweight
     public static void rfSignalDiff(short results[], RFSignal rfSig1Ptr, RFSignal rfSig2Ptr)
     {
         byte f=0;

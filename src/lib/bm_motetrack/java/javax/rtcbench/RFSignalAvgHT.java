@@ -1,6 +1,7 @@
 package javax.rtcbench;
 
 import javax.rtc.RTC;
+import javax.rtc.Lightweight;
 
 public class RFSignalAvgHT {
     public RFSignalAvg[] htData;
@@ -34,6 +35,7 @@ public class RFSignalAvgHT {
      * @param newRssi  the RSSI value
      * @return <code>SUCCESS</code>, if it was added; <code>FAIL</code> if it couldn't be added
      */
+    @Lightweight
     public static boolean put(RFSignalAvgHT HPtr, short newSrcID, byte f, short newRssi)
     {
         // very simple hash function, but works well because most sourceID's are below HPtr.capacity
