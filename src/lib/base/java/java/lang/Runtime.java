@@ -94,6 +94,6 @@ public class Runtime
 	 * The method {@link System#gc()} is hte conventional and convenient means
 	 * of invoking this method.
 	 */
-	public native void gc();
+	public static native void gc();
 
 }

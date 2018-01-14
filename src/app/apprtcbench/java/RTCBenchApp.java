@@ -46,6 +46,7 @@ public class RTCBenchApp
 		Stopwatch.measure();
 
 		System.out.println("native:");
+		Runtime.gc();
 		RTCBenchmark.test_native();
 		System.out.println("native done.\r\n");
 
@@ -60,6 +61,7 @@ public class RTCBenchApp
 
 		System.out.println("rtc:");
 		RTC.useRTC(true);
+		Runtime.gc();
 		if (RTCBenchmark.test_java()) {
 			System.out.println("RTC OK.\r\n");
 		} else {
