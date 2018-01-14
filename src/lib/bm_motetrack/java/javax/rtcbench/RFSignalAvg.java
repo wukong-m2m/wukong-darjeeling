@@ -11,4 +11,11 @@ public class RFSignalAvg {
 
 	public RFSignalAvg() {
 	}
+	public static void init(RFSignalAvg rfSigPtr) {
+		rfSigPtr.sourceID = 0;
+		rfSigPtr.rssiSum_0 = 0;
+		rfSigPtr.nbrSamples_0 = 0;
+		rfSigPtr.rssiSum_1 = 0;
+		rfSigPtr.nbrSamples_1 = 0;		
+	}
 }

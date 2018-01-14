@@ -18,6 +18,7 @@ public class RFSignal {
     {
     }
 
+    @Lightweight
     public static void init(RFSignal sigPtr) {
         sigPtr.sourceID = 0;
         sigPtr.rssi_0 = 0;

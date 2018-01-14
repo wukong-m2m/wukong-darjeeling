@@ -11,13 +11,18 @@ public class RFSignalAvgHT {
     public RFSignalAvgHT(short hashCapacity) {
         this.htData = new RFSignalAvg[hashCapacity];
         this.capacity = hashCapacity;
+        for (short i=0; i<hashCapacity; i++) {
+            this.htData[i] = new RFSignalAvg();
+        }        
         init(this);
     }
+    @Lightweight
     public static void init(RFSignalAvgHT rfSigPtr) {
         rfSigPtr.size = 0;
 
-        for (short i=0; i<rfSigPtr.capacity; i++) {
-            rfSigPtr.htData[i] = new RFSignalAvg();
+        short capacity = rfSigPtr.capacity;
+        for (short i=0; i<capacity; i++) {
+            RFSignalAvg.init(rfSigPtr.htData[i]);
         }        
     }
 

@@ -1,6 +1,7 @@
 package javax.rtcbench;
 
 import javax.rtc.RTC;
+import javax.rtc.Lightweight;
 
 // NOTE: Since NBR_TXPOWERS == 1 in the C code, I've remove the array's for different TX power settings.
 
@@ -16,7 +17,7 @@ public class RFSignal {
     {
         rssi = new byte[MoteTrackParams.NBR_FREQCHANNELS];
     }
-
+    @Lightweight
     public static void init(RFSignal sigPtr) {
         sigPtr.sourceID = 0;
         for (short f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)

@@ -1,6 +1,7 @@
 package javax.rtcbench;
 
 import javax.rtc.RTC;
+import javax.rtc.Lightweight;
 
 public class Point {
     public short x, y, z;
@@ -8,6 +9,7 @@ public class Point {
     public Point() {
         init(this);
     }
+    @Lightweight
     public static void init(Point pointPtr) {
         pointPtr.x = 0;
         pointPtr.y = 0;
