@@ -34,39 +34,55 @@ public class RefSignature {
                 break;
             }
 
+            RFSignal rfSignalDiff_par_a;
+            RFSignal rfSignalDiff_par_b;
+
             // case 1: there are no more rfSignals in Signature
             if ( !(s < Signature.NBR_RFSIGNALS_IN_SIGNATURE && sigPtr_rfSignals_s.sourceID != 0) ) {
-                RFSignal.rfSignalDiff(currSigDiffs, refSigPtr_sig_rfSignals_r, null);
+                // RFSignal.rfSignalDiff(currSigDiffs, refSigPtr_sig_rfSignals_r, null);
+                rfSignalDiff_par_a = refSigPtr_sig_rfSignals_r;
+                rfSignalDiff_par_b = null;
                 r++;
             }
             // case 2: there are no more rfSignals in RefSignature
             else if ( !(r < Signature.NBR_RFSIGNALS_IN_SIGNATURE && refSigPtr_sig_rfSignals_r.sourceID != 0) ) {
-                RFSignal.rfSignalDiff(currSigDiffs, sigPtr_rfSignals_s, null);
+                // RFSignal.rfSignalDiff(currSigDiffs, sigPtr_rfSignals_s, null);
+                rfSignalDiff_par_a = sigPtr_rfSignals_s;
+                rfSignalDiff_par_b = null;
                 s++;
             }
 
             // If we made it this far, then there are more rfSignals in both Signature and RefSignature
             // case 3: there is a match
             else if (sigPtr_rfSignals_s.sourceID == refSigPtr_sig_rfSignals_r.sourceID) {
-                RFSignal.rfSignalDiff(currSigDiffs, sigPtr_rfSignals_s, refSigPtr_sig_rfSignals_r );
+                // RFSignal.rfSignalDiff(currSigDiffs, sigPtr_rfSignals_s, refSigPtr_sig_rfSignals_r );
+                rfSignalDiff_par_a = sigPtr_rfSignals_s;
+                rfSignalDiff_par_b = refSigPtr_sig_rfSignals_r;
                 r++;
                 s++;
             }
             // case 4: rfSignal of Signature < rfSignal of RefSignature
             else if (sigPtr_rfSignals_s.sourceID < refSigPtr_sig_rfSignals_r.sourceID) {
-                RFSignal.rfSignalDiff(currSigDiffs, sigPtr_rfSignals_s, null);
+                // RFSignal.rfSignalDiff(currSigDiffs, sigPtr_rfSignals_s, null);
+                rfSignalDiff_par_a = sigPtr_rfSignals_s;
+                rfSignalDiff_par_b = null;
                 s++;
             }
             // case 5: rfSignal of Signature > rfSignal of RefSignature
             else if (sigPtr_rfSignals_s.sourceID > refSigPtr_sig_rfSignals_r.sourceID) {
-                RFSignal.rfSignalDiff(currSigDiffs, refSigPtr_sig_rfSignals_r, null);
+                // RFSignal.rfSignalDiff(currSigDiffs, refSigPtr_sig_rfSignals_r, null);
+                rfSignalDiff_par_a = refSigPtr_sig_rfSignals_r;
+                rfSignalDiff_par_b = null;
                 r++;
             }
             else {
+                rfSignalDiff_par_a = null; // Keep compiler happy
+                rfSignalDiff_par_b = null;
                 RTC.avroraPrintHex32(0xBEEF0002);
                 RTC.avroraBreak();
             }
 
+            RFSignal.rfSignalDiff(currSigDiffs, rfSignalDiff_par_a, rfSignalDiff_par_b);
 
             // Add the differences from this iteration
             for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
