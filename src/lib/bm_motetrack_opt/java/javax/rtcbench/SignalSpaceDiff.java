@@ -51,11 +51,12 @@ public class SignalSpaceDiff {
      * @param SSDiffs[]  the sorted array
      * @param nbrRefSigs  the number of RefSignatures to computer the centroid over.
      */
-    public static void centroidLoc(Point retLocPtr, SignalSpaceDiff[] SSDiffs, short nbrRefSigs)
+    public static void centroidLoc(Point retLocPtr, SignalSpaceDiff[] SSDiffs, short nbrRefSigs, RefSignature currRefSig)
     {
         short i=0;
         int x=0, y=0, z=0;  // to prevent overflow from adding multiple 16-bit points
-        RefSignature currRefSig = new RefSignature();      // RefSignature read from database
+        // RefSignature read from database
+        // RefSignature currRefSig = new RefSignature();      --> Passed all the way from estLocAndSend to avoid having to create multiple instances.
 
         for (i = 0; i < nbrRefSigs; ++i) {
             DB.refSignature_get(currRefSig, SSDiffs[i].refSigIndex);

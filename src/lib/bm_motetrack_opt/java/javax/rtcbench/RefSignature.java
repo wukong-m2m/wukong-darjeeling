@@ -11,10 +11,10 @@ public class RefSignature {
         this.sig = new Signature();
     }
 
-    public static void signatureDiffBidirectional(short results[], RefSignature refSigPtr, Signature sigPtr)
+    public static void signatureDiffBidirectional(short results[], RefSignature refSigPtr, Signature sigPtr, short[] currSigDiffs)
     {
         short s = 0, r = 0, f = 0; //, p = 0;
-        short[] currSigDiffs = new short[MoteTrackParams.NBR_FREQCHANNELS]; // [NBR_TXPOWERS];
+        // short[] currSigDiffs = new short[MoteTrackParams.NBR_FREQCHANNELS]; // [NBR_TXPOWERS]; --> Passed from nearestRefSigs estLocAndSend to avoid having to create multiple instances.
 
         // (1) - Initialize the results
         for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)

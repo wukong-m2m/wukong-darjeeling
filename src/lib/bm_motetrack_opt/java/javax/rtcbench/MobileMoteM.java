@@ -15,12 +15,12 @@ public class MobileMoteM {
      * with beacon messages for read from a file (SignatureDB.h).
      * This is used for debugging purposes or to run it as a simulation offline.
      */
-    public static short addSignatureFromFile()
+    public static short addSignatureFromFile(RefSignature currRefSig)
     {
         // Put stuff in Hashtable
         short i = 0;
         byte f = 0, p = 0, k = 0;
-        RefSignature currRefSig  = new RefSignature();
+        // RefSignature currRefSig  = new RefSignature(); --> Passed all the way from estLocAndSend to avoid having to create multiple instances.
         Signature sigPtr = currRefSig.sig;
 
         DB.signature_get(currRefSig, indexNextSigEst);
@@ -82,12 +82,13 @@ public class MobileMoteM {
         // (1) - Construct a representative signature
         Point locEst = new Point();
         Signature sig = new Signature();
+        RefSignature refSig = new RefSignature();
         short srcAddrBcnMaxRSSI;
 
         Point.init(locEst);
         Signature.init(sig);
 
-        sig.id = addSignatureFromFile();
+        sig.id = addSignatureFromFile(refSig);
         if ((srcAddrBcnMaxRSSI = constructSignature(sig)) == 0) {
             locEst.x = locEst.y = locEst.z = 0;
             RTC.avroraPrintHex32(0xBEEF0006);
@@ -95,7 +96,7 @@ public class MobileMoteM {
         }
 
         // (2) - Estimate the Signature's location
-        EstimateLoc.estimateLoc(locEst, sig);
+        EstimateLoc.estimateLoc(locEst, sig, refSig);
 
         return locEst;
     }
