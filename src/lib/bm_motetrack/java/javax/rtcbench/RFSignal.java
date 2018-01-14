@@ -49,14 +49,19 @@ public class RFSignal {
         else if ( rfSig2Ptr != null && haveSameID(rfSig1Ptr, rfSig2Ptr) ) {
             // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
                 // The two rfSignals can be compared.  Return the absolute value
-                if (rfSig1Ptr.rssi_0 >= rfSig2Ptr.rssi_0)
-                    results[0] = (short) (rfSig1Ptr.rssi_0 - rfSig2Ptr.rssi_0);
-                else
-                    results[0] = (short) (rfSig2Ptr.rssi_0 - rfSig1Ptr.rssi_0);
-                if (rfSig1Ptr.rssi_1 >= rfSig2Ptr.rssi_1)
-                    results[1] = (short) (rfSig1Ptr.rssi_1 - rfSig2Ptr.rssi_1);
-                else
-                    results[1] = (short) (rfSig2Ptr.rssi_1 - rfSig1Ptr.rssi_1);
+                short x;
+                x = (short)(rfSig1Ptr.rssi_0 - rfSig2Ptr.rssi_0);
+                if (x > 0) {
+                    results[0] = x;
+                } else {
+                    results[0] = (short)-x;
+                }
+                x = (short)(rfSig1Ptr.rssi_1 - rfSig2Ptr.rssi_1);
+                if (x > 0) {
+                    results[1] = x;
+                } else {
+                    results[1] = (short)-x;
+                }
             // }
         }
         else {
