@@ -98,7 +98,7 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 		methodImpl.isSynchronized = method.isSynchronized();		
 
 		methodImpl.isLightweight = javaMethodIsLightweight(method);
-		methodImpl.isNative = method.isNative() && !methodImpl.isLightweight; 
+		methodImpl.isNative = method.isNative(); // && !methodImpl.isLightweight; 
 
 		for (Type type : method.getArgumentTypes())
 		{
@@ -130,9 +130,17 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 				lightweightMethod = LightweightMethod.registerJavaLightweightMethod(this.parentClass.getName(), this.methodDefinition.getName());
 				codeBlock = CodeBlock.fromCode(code, this, infusion, new ConstantPoolGen(code.getConstantPool()));
 			} else {
-				// Hardcoded JVM lightweight method: this already has the hardcoded LightweightMethod object registered.
+				// Hardcoded JVM lightweight method: this already either has
+				//         -- the hardcoded LightweightMethod object registered for handwritten Java methods
+				//         -- a native C implementation
 				lightweightMethod = LightweightMethod.getLightweightMethod(this.parentClass.getName(), this.methodDefinition.getName());
-				codeBlock = CodeBlock.fromLightweightMethod(lightweightMethod, this);
+				if (lightweightMethod != null) {
+					// Handwritten in JVM code
+					codeBlock = CodeBlock.fromLightweightMethod(lightweightMethod, this);
+				} else {
+					// Native implementation in C
+					lightweightMethod = LightweightMethod.registerJavaLightweightMethod(this.parentClass.getName(), this.methodDefinition.getName());
+				}
 			}
 
 			// If it is a lightweight method, regardless hardcoded or Java, set the implementation, so we can find it when processing INVOKELIGHT

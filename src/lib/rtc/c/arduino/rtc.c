@@ -103,18 +103,10 @@ void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t 
     uint16_t number_of_methodimpls = dj_di_parentElement_getListSize(infusion->methodImplementationList);
 
     for (uint16_t i=0; i<number_of_methodimpls; i++) {
-        dj_di_pointer methodimpl = dj_infusion_getMethodImplementation(infusion, i);
         native_method_function_t handler;
-        if (dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_NATIVE) {
-            // Copy existing pointer
-            const DJ_PROGMEM native_method_function_t *native_handlers = infusion->native_handlers;
-            handler = native_handlers[i];
-            DEBUG_LOG(DBG_RTC, "[rtc] method %d is native, copying native handler: %p\n", i, handler);
-        } else {
-            // Fill in address of RTC compiled method
-            handler = rtc_method_start_addresses[i];
-            DEBUG_LOG(DBG_RTC, "[rtc] method %d is not native, filling in address from rtc buffer: %p\n", i, handler);
-        }
+        // Fill in address of RTC compiled method or native method (native methods were copied into rtc_method_start_addresses at the start of AOT compilation)
+        handler = rtc_method_start_addresses[i];
+        DEBUG_LOG(DBG_RTC, "[rtc] method %d filling in address from rtc buffer: %p\n", i, handler);
         wkreprog_write(2, (uint8_t *)&handler);
     }
 
@@ -259,8 +251,16 @@ void rtc_compile_lib(dj_infusion *infusion) {
     native_method_function_t method_start_addresses[256];
     uint8_t call_saved_registers_used_per_method[256];
     for (uint16_t i=0; i<256; i++) {
-        method_start_addresses[i] = 0;
-        call_saved_registers_used_per_method[i] = 0;
+        dj_di_pointer methodimpl = dj_infusion_getMethodImplementation(infusion, i);
+        if (dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_NATIVE) {
+            // Copy existing pointer
+            const DJ_PROGMEM native_method_function_t *native_handlers = infusion->native_handlers;
+            method_start_addresses[i] = native_handlers[i];
+            call_saved_registers_used_per_method[i] = 0xFF; // For Lightweight methods in native code, assume they will use all registers
+        } else {
+            method_start_addresses[i] = 0;
+            call_saved_registers_used_per_method[i] = 0;
+        }
     }
     rtc_ts->call_saved_registers_used_per_method = call_saved_registers_used_per_method;
     rtc_ts->method_start_addresses = method_start_addresses;

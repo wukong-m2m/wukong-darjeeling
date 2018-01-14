@@ -235,7 +235,7 @@ public class DIWriterVisitor extends DescendingVisitor
 			out.writeUINT8(element.getReferenceLocalVariableCount() + element.getIntegerLocalVariableCount() + element.getMaxLightweightMethodLocalVariableCount()); // Total slots, including space reserved for lightweight methods
 
 			// write code block
-			if (element.getCode()==null && !element.isLightweight()) // Lightweight methods don't have code, but do have a codeblock
+			if (code==null)
 			{
 				out.writeUINT16(0);
 			} else
