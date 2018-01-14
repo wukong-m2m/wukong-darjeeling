@@ -258,7 +258,7 @@ module ResultsToString =
 
         let addCyclesForSymbols (symbolsAndCounters : (string * ExecCounters) list) =
           symbolsAndCounters |> List.filter (fun (_, cnt) -> cnt.cycles > 0)
-                             |> List.iter (fun (name, cnt) -> addLn(String.Format("{0,12} cyc, {1,12} sub, {2,12} total in {3}", cnt.cycles, cnt.cyclesInclSubroutine, (cnt.cycles + cnt.cyclesInclSubroutine), name)))
+                             |> List.iter (fun (name, cnt) -> addLn(String.Format("{0,12} exec {1,12} cyc, {2,12} sub, {3,12} total in {4}", cnt.executions, cnt.cycles, cnt.cyclesSubroutine, cnt.cyclesInclSubroutine, name)))
 
 
         let testResultAOT = if results.passedTestAOT then "PASSED" else "FAILED"

@@ -257,15 +257,15 @@ module Datatypes =
         }
         with
         member this.countersPerJvmOpcodeAOTJava         = (this.jvmMethods |> List.collect (fun (jvmMethod) -> jvmMethod.countersPerJvmOpcodeAOTJava) |> sumCountersPerOpcodeAndCategory) @
-                                                                                    [ ("13) VM", "", (this.countersAOTVM)) ]
+                                                                                    [ ("14) VM", "", (this.countersAOTVM)) ]
         member this.countersPerAvrOpcodeAOTJava         = (this.jvmMethods |> List.collect (fun (jvmMethod) -> jvmMethod.countersPerAvrOpcodeAOTJava) |> sumCountersPerOpcodeAndCategory) @
-                                                                                    [ ("13) VM", "", (this.countersAOTVM)) ]
+                                                                                    [ ("14) VM", "", (this.countersAOTVM)) ]
         member this.countersPerAvrOpcodeNativeC         = (this.cFunctions |> List.collect (fun (cFunction) -> cFunction.countersPerAvrOpcodeNativeC) |> sumCountersPerOpcodeAndCategory)
 
         member this.countersPerJvmOpcodeCategoryAOTJava = (this.jvmMethods |> List.collect (fun (jvmMethod) -> jvmMethod.countersPerJvmOpcodeCategoryAOTJava) |> sumCountersPerCategory) @
-                                                                                    [ ("13) VM", (this.countersAOTVM)) ]
+                                                                                    [ ("14) VM", (this.countersAOTVM)) ]
         member this.countersPerAvrOpcodeCategoryAOTJava = (this.jvmMethods |> List.collect (fun (jvmMethod) -> jvmMethod.countersPerAvrOpcodeCategoryAOTJava) |> sumCountersPerCategory) @
-                                                                                    [ ("13) VM", (this.countersAOTVM)) ]
+                                                                                    [ ("14) VM", (this.countersAOTVM)) ]
         member this.countersPerAvrOpcodeCategoryNativeC = (this.cFunctions |> List.collect (fun (cFunction) -> cFunction.countersPerAvrOpcodeCategoryNativeC) |> sumCountersPerCategory)
 
         member this.countersCLoadStore                  = this.cFunctions |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersCLoadStore)

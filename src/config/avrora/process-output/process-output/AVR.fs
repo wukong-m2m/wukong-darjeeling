@@ -328,7 +328,7 @@ module AVR =
              | _ -> "08) Math"             // CALLs to math functions will have the name of the called function appended to the text
         else match opcodeCategories |> List.tryFind (fun (cat, opcodes) -> opcodes |> List.exists ((=) opcode)) with
              | Some(cat, _) -> cat
-             | None -> "13) ????"
+             | None -> "15) ????"
 
     let opcodeName (opcode : AvrOpcode) =
         opcode.text

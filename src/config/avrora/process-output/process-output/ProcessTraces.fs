@@ -367,17 +367,20 @@ module ProcessTraces =
            {
               executions = profiledInstruction.Executions
               cycles = profiledInstruction.Cycles
-              cyclesSubroutine = 0
+              cyclesSubroutine = profiledInstruction.CyclesSubroutine
               count = 1
               size = 0
            }))
       nm |> List.sortBy (fun nm -> nm.address)
          |> List.filter (fun nm -> nm.size > 0)
-         |> List.map    (fun nm ->
-            (nm.name, 
-             profilerdataAsCounters |> List.filter (fun (addr,cnt) -> nm.address <= addr && addr < (nm.address + nm.size))
-                                    |> List.map (fun (_,cnt) -> cnt)
-                                    |> List.fold (+) ExecCounters.Zero))
+         |> List.map    (fun nm -> (nm, match profilerdataAsCounters |> List.tryFind (fun (addr,cnt) -> addr = nm.address) with
+                                        | Some (_, firstCounters) -> firstCounters.executions
+                                        | None -> 0))
+         |> List.map    (fun (nm, executions) ->
+             let sumCounters = profilerdataAsCounters |> List.filter (fun (addr,cnt) -> nm.address <= addr && addr < (nm.address + nm.size))
+                                                      |> List.map (fun (_,cnt) -> cnt)
+                                                      |> List.fold (+) ExecCounters.Zero
+             (nm.name, { sumCounters with executions = executions }))
 
     let getCResultsdir (jvmResultsdir : string) =
       let indexOfLastSlash = jvmResultsdir.LastIndexOf("/");
