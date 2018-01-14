@@ -36,11 +36,16 @@ public class EstimateLoc {
         short[] currSigDiffs = new short[MoteTrackParams.NBR_FREQCHANNELS];
 
         // (1) - Initialize SignalSpaceDiff data structure
-        for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
-            for (i = 0; i < MAX_REFSIGS_CONS; ++i)
-                SignalSpaceDiff.init(((SignalSpaceDiff[])retSSDiffs[f])[i]);
+        for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
+            SignalSpaceDiff[] tmp = (SignalSpaceDiff[])retSSDiffs[f]; // To avoid CHECKCAST on each iteration
+            for (i = 0; i < MAX_REFSIGS_CONS; ++i) {
+                SignalSpaceDiff.init(tmp[i]);
+            }
+        }
 
         short[] currSigDiffsForSignatureDiffBidirectional = new short[MoteTrackParams.NBR_FREQCHANNELS];
+        SignalSpaceDiff[] retSSDiffs_0 = (SignalSpaceDiff[])retSSDiffs[0]; // To avoid CHECKCAST on each iteration
+        SignalSpaceDiff[] retSSDiffs_1 = (SignalSpaceDiff[])retSSDiffs[1]; // To avoid CHECKCAST on each iteration
         // (2) - Get the nearest RefSignatures in signal space and put them in RETssDiffs
         for (i = 0; i < DB.REFSIGNATUREDB_SIZE; ++i) {        // iterate over RefSignature
             // a. get current RefSignature being considered
@@ -63,7 +68,7 @@ public class EstimateLoc {
 
             // c. try to add curr RefSignatures to top candidates
             for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
-                SignalSpaceDiff.put((SignalSpaceDiff[])retSSDiffs[f], currSigDiffs[f], i);
+                SignalSpaceDiff.put(retSSDiffs_0, retSSDiffs_1, (byte)f, currSigDiffs[f], i);
         }
     }
 

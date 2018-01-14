@@ -25,9 +25,15 @@ public class SignalSpaceDiff {
      * @param diff  the new difference to add
      * @param refSigIndex  index to the new RefSignature
      */
-    public static void put(SignalSpaceDiff[] SSDiffs, short diff, short refSigIndex)
+    public static void put(SignalSpaceDiff[] SSDiffs_0, SignalSpaceDiff[] SSDiffs_1, byte f, short diff, short refSigIndex)
     {
         short i=0;
+        SignalSpaceDiff[] SSDiffs;
+        if (f == 0) {
+            SSDiffs = SSDiffs_0;
+        } else {
+            SSDiffs = SSDiffs_1;
+        }
         short ssDiffsSize = (short)SSDiffs.length;
 
         if (diff < SSDiffs[ssDiffsSize-1].diff) {    // we can add it
