@@ -31,36 +31,38 @@ public class RefSignature {
 
             RFSignal sigPtr_rfSignals_s = sigPtr_rfSignals[s];
             RFSignal refSigPtr_sig_rfSignals_r = refSigPtr_sig_rfSignals[r];
+            short sigPtr_rfSignals_s_sourceID = sigPtr_rfSignals_s.sourceID;
+            short refSigPtr_sig_rfSignals_r_sourceID = refSigPtr_sig_rfSignals_r.sourceID;
 
-            if (!(sigPtr_rfSignals_s.sourceID != 0 || refSigPtr_sig_rfSignals_r.sourceID != 0)) {
+            if (!(sigPtr_rfSignals_s_sourceID != 0 || refSigPtr_sig_rfSignals_r_sourceID != 0)) {
                 break;
             }
 
             // case 1: there are no more rfSignals in Signature
-            if ( !(s < Signature.NBR_RFSIGNALS_IN_SIGNATURE && sigPtr_rfSignals_s.sourceID != 0) ) {
+            if ( !(s < Signature.NBR_RFSIGNALS_IN_SIGNATURE && sigPtr_rfSignals_s_sourceID != 0) ) {
                 RFSignal.rfSignalDiff(currSigDiffs, refSigPtr_sig_rfSignals_r, null);
                 r++;
             }
             // case 2: there are no more rfSignals in RefSignature
-            else if ( !(r < Signature.NBR_RFSIGNALS_IN_SIGNATURE && refSigPtr_sig_rfSignals_r.sourceID != 0) ) {
+            else if ( !(r < Signature.NBR_RFSIGNALS_IN_SIGNATURE && refSigPtr_sig_rfSignals_r_sourceID != 0) ) {
                 RFSignal.rfSignalDiff(currSigDiffs, sigPtr_rfSignals_s, null);
                 s++;
             }
 
             // If we made it this far, then there are more rfSignals in both Signature and RefSignature
             // case 3: there is a match
-            else if (sigPtr_rfSignals_s.sourceID == refSigPtr_sig_rfSignals_r.sourceID) {
+            else if (sigPtr_rfSignals_s_sourceID == refSigPtr_sig_rfSignals_r_sourceID) {
                 RFSignal.rfSignalDiff(currSigDiffs, sigPtr_rfSignals_s, refSigPtr_sig_rfSignals_r );
                 r++;
                 s++;
             }
             // case 4: rfSignal of Signature < rfSignal of RefSignature
-            else if (sigPtr_rfSignals_s.sourceID < refSigPtr_sig_rfSignals_r.sourceID) {
+            else if (sigPtr_rfSignals_s_sourceID < refSigPtr_sig_rfSignals_r_sourceID) {
                 RFSignal.rfSignalDiff(currSigDiffs, sigPtr_rfSignals_s, null);
                 s++;
             }
             // case 5: rfSignal of Signature > rfSignal of RefSignature
-            else if (sigPtr_rfSignals_s.sourceID > refSigPtr_sig_rfSignals_r.sourceID) {
+            else if (sigPtr_rfSignals_s_sourceID > refSigPtr_sig_rfSignals_r_sourceID) {
                 RFSignal.rfSignalDiff(currSigDiffs, refSigPtr_sig_rfSignals_r, null);
                 r++;
             }

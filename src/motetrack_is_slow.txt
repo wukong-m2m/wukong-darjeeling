@@ -1,16 +1,16 @@
 ============================ STOPWATCHES ============================= 
---- STOPWATCHES Native C                                  746632             
-                AOT                                      1756497             
-                Overhead = 1756497 - 746632            = 1009865
-                Average expected overhead 0.8 * 746632 =  597305
-                Difference = 1009865 - 597305          =  412560
+--- STOPWATCHES Native C                                  635833             
+                AOT                                      1712916             
+                Overhead = 1712916 - 635833            = 1077083
+                Average expected overhead 0.8 * 635833 =  508666
+                Difference = 1077083 - 508666          =  568417
 
                 get refSignatures = 439263 - 191835    =  247428
-                Difference = 412560 - 247428           =  165132
+                Difference = 568417 - 247428           =  320989
 
 
-JVM_INVOKELIGHT                                                 435615  19.4%  58.3%C        257 1695.0 |    1    12   0.1%   0.3%C 4->0:       TARGET 0.0  bm_motetrack_opt.javax.rtcbench.DB.refSignature_get+(Ljavax/rtcbench/RefSignature;S)V
-14) VM                                        81990   3.7%  11.0%C          0   0.0 |    0     0   0.0%   0.0%C
+JVM_INVOKELIGHT                                                 435615  23.3%  68.5%C        257 1695.0 |    1    12   0.1%   0.3%C 4->0:       TARGET 0.0  bm_motetrack_opt.javax.rtcbench.DB.refSignature_get+(Ljavax/rtcbench/RefSignature;S)V
+14) VM                                        84170   4.5%  13.2%C          0   0.0 |    0     0   0.0%   0.0%C
 
 
 javax_rtcbench_DB_void_refSignature_get_javax_rtcbench_RefSignature_short
@@ -21,13 +21,16 @@ javax_rtcbench_DB_void_refSignature_get_javax_rtcbench_RefSignature_short
 read_refsignature_from_flash
     426,735 100.0%       261    1635.0 |   206 100.0% : ---total---
     234,900  55.0%       261     900.0 |   202  98.1% : ----own----
-    191,835  45.0%       261     735.0 |     4   1.9% : 8 <memcpy_P>
+    191,835  45.0%       261     735.0 |     4   1.9% : 2 <memcpy_P>
 
 
-11) Invoke          JVM_INVOKELIGHT          446798  25.4%  59.8%C        312 1432.0 |    7   248   3.0%   5.3%C
-01) Loc/sta ld/st   JVM_ALOAD                250252  14.2%  33.5%C      62563   4.0 |  138   252   3.0%   5.4%C
-02) Obj/arr ld      JVM_GETFIELD_S           232150  13.2%  31.1%C      46430   5.0 |   64   384   4.6%   8.2%C
-01) Loc/sta ld/st   JVM_ASTORE               129204   7.4%  17.3%C      32298   4.0 |   47   200   2.4%   4.3%C
-02) Obj/arr ld      JVM_GETARRAY_A           102212   5.8%  13.7%C       9292  11.0 |   81  1296  15.5%  27.8%C
-14) VM                                        84206   4.8%  11.3%C          0   0.0 |    0     0   0.0%   0.0%C
-03) Obj/arr st      JVM_PUTFIELD_S            79223   4.5%  10.6%C      15844   5.0 |   46   282   3.4%   6.0%C
+
+11) Invoke          JVM_INVOKELIGHT          537086  31.4%  84.5%C       4076 131.8 |   12   352   4.4%   7.9%C
+02) Obj/arr ld      JVM_GETFIELD_S           132100   7.7%  20.8%C      26420   5.0 |   56   336   4.2%   7.6%C
+01) Loc/sta ld/st   JVM_ALOAD                107520   6.3%  16.9%C      26880   4.0 |  119   192   2.4%   4.3%C
+02) Obj/arr ld      JVM_GETARRAY_A           101332   5.9%  15.9%C       9212  11.0 |   69  1104  13.8%  24.9%C
+14) VM                                        84170   4.9%  13.2%C          0   0.0 |    0     0   0.0%   0.0%C
+03) Obj/arr st      JVM_PUTFIELD_S            79223   4.6%  12.5%C      15844   5.0 |   46   282   3.5%   6.3%C
+02) Obj/arr ld      JVM_GETFIELD_B            56940   3.3%   9.0%C       9490   6.0 |   20   200   2.5%   4.5%C
+01) Loc/sta ld/st   JVM_ASTORE                50321   2.9%   7.9%C      12603   4.0 |   33   136   1.7%   3.1%C
+
