@@ -250,7 +250,7 @@ void rtc_compile_lib(dj_infusion *infusion) {
     // Luckily we will store function pointers as word addresses, so this should still fit in 16 bit elements.
     native_method_function_t method_start_addresses[256];
     uint8_t call_saved_registers_used_per_method[256];
-    for (uint16_t i=0; i<256; i++) {
+    for (uint16_t i=0; i<dj_di_parentElement_getListSize(infusion->methodImplementationList); i++) {
         dj_di_pointer methodimpl = dj_infusion_getMethodImplementation(infusion, i);
         if (dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_NATIVE) {
             // Copy existing pointer
