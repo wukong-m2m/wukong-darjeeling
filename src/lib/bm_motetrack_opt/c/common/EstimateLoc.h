@@ -94,9 +94,18 @@ uint8_t signatureDiffAlg = BIDIRECTIONAL_ALG;
      * @param diff  the new difference to add
      * @param refSigIndex  index to the new RefSignature
      */
-    static inline void SignalSpaceDiff_put(SignalSpaceDiff SSDiffs[], uint16_t ssDiffsSize, uint16_t diff, uint16_t refSigIndex)
+    static inline void SignalSpaceDiff_put(SignalSpaceDiff SSDiffs_0[], SignalSpaceDiff SSDiffs_1[], uint16_t f, uint16_t ssDiffsSize, ShortResults *diffs, uint16_t refSigIndex)
     {
         uint16_t i=0;
+        uint16_t diff;
+        SignalSpaceDiff* SSDiffs;
+        if (f == 0) {
+            SSDiffs = SSDiffs_0;
+            diff = diffs->r0;
+        } else {
+            SSDiffs = SSDiffs_1;
+            diff = diffs->r1;
+        }
 
         if (diff < SSDiffs[ssDiffsSize-1].diff) {    // we can add it
 
@@ -119,17 +128,17 @@ uint8_t signatureDiffAlg = BIDIRECTIONAL_ALG;
      * @param SSDiffs[]  the sorted array
      * @param nbrRefSigs  the number of RefSignatures to computer the centroid over.
      */
-    static inline void SignalSpaceDiff_centroidLoc(Point *retLocPtr, SignalSpaceDiff SSDiffs[], uint16_t nbrRefSigs)
+    static inline void SignalSpaceDiff_centroidLoc(Point *retLocPtr, SignalSpaceDiff SSDiffs[], uint16_t nbrRefSigs, RefSignature *currRefSig)
     {
         uint16_t i=0;
         uint32_t x=0, y=0, z=0;  // to prevent overflow from adding multiple 16-bit points
-        RefSignature currRefSig;      // RefSignature read from database
+        // RefSignature currRefSig;      // RefSignature read from database
 
         for (i = 0; i < nbrRefSigs; ++i) {
-            RefSignatureDB_get(&currRefSig, SSDiffs[i].refSigIndex);
-            x += currRefSig.location.x;
-            y += currRefSig.location.y;
-            z += currRefSig.location.z;
+            RefSignatureDB_get(currRefSig, SSDiffs[i].refSigIndex);
+            x += currRefSig->location.x;
+            y += currRefSig->location.y;
+            z += currRefSig->location.z;
         }
 
         // Integer division, may lose precision!
@@ -184,33 +193,40 @@ uint8_t signatureDiffAlg = BIDIRECTIONAL_ALG;
  * @param retSSDiffs[][]  return the indexes to the top RefSignature through this array
  * @param sigPtr  a pointer to the signature to which the RefSignatures should be compared
  */
-static inline void EstimateLoc_nearestRefSigs(SignalSpaceDiff retSSDiffs[NBR_FREQCHANNELS][MAX_REFSIGS_CONS], Signature *sigPtr)
+static inline void EstimateLoc_nearestRefSigs(SignalSpaceDiff retSSDiffs[NBR_FREQCHANNELS][MAX_REFSIGS_CONS], Signature *sigPtr, RefSignature *currRefSig)
 {
     uint16_t i=0, f=0; //, p=0;
-    RefSignature currRefSig;      // RefSignature read from database
-    uint16_t currSigDiffs[NBR_FREQCHANNELS];
+    // RefSignature currRefSig;      // RefSignature read from database
+    ShortResults currSigDiffs;
+    currSigDiffs.r0 = 0;
+    currSigDiffs.r1 = 0;
 
     // (1) - Initialize SignalSpaceDiff data structure
-    for (f = 0; f < NBR_FREQCHANNELS; ++f)
-        for (i = 0; i < MAX_REFSIGS_CONS; ++i)
-            SignalSpaceDiff_init(&retSSDiffs[f][i]);
-
+    for (f = 0; f < NBR_FREQCHANNELS; ++f) {
+        SignalSpaceDiff *tmp = retSSDiffs[f];
+        for (i = 0; i < MAX_REFSIGS_CONS; ++i) {
+            SignalSpaceDiff_init(&tmp[i]);
+        }
+    }
 
     // (2) - Get the nearest RefSignatures in signal space and put them in RETssDiffs
+    ShortResults currSigDiffsForSignatureDiffBidirectional;
+    SignalSpaceDiff *retSSDiffs_0 = retSSDiffs[0];
+    SignalSpaceDiff *retSSDiffs_1 = retSSDiffs[1];
     for (i = 0; i < REFSIGNATUREDB_SIZE; ++i) {        // iterate over RefSignature
 
         // a. get current RefSignature being considered
-        RefSignatureDB_get(&currRefSig, i);
+        RefSignatureDB_get(currRefSig, i);
 
         // b. calculate signal space diffs at all freqChans and txPowers
         if (signatureDiffAlg == BIDIRECTIONAL_ALG)
-            RefSignature_signatureDiffBidirectional(currSigDiffs, &currRefSig, sigPtr);
-        else if (signatureDiffAlg == UNIDIRECTIONAL_ALG)
-            RefSignature_signatureDiffUnidirectional(currSigDiffs, &currRefSig, sigPtr);
+            RefSignature_signatureDiffBidirectional(&currSigDiffs, currRefSig, sigPtr, &currSigDiffsForSignatureDiffBidirectional);
+        else if (signatureDiffAlg == UNIDIRECTIONAL_ALG) {
+            // RefSignature_signatureDiffUnidirectional(currSigDiffs, currRefSig, sigPtr);
+        }
         else {
             // Keep the compiler happy
-            for (f = 0; f < NBR_FREQCHANNELS; ++f)
-                currSigDiffs[f] = 0;
+            // for (f = 0; f < NBR_FREQCHANNELS; ++f)
             // printfUART("BeaconMote - nearestRefSigs():  FATAL ERROR! neither BIDIRECTIONAL_ALG nor UNIDIRECTIONAL_ALG are defined\n", "");
             avroraPrintHex32(0xBEEFBEEF);
             avroraPrintHex32(0x1);
@@ -219,7 +235,7 @@ static inline void EstimateLoc_nearestRefSigs(SignalSpaceDiff retSSDiffs[NBR_FRE
 
         // c. try to add curr RefSignatures to top candidates
         for (f = 0; f < NBR_FREQCHANNELS; ++f)
-            SignalSpaceDiff_put(retSSDiffs[f], MAX_REFSIGS_CONS, currSigDiffs[f], i);
+            SignalSpaceDiff_put(retSSDiffs_0, retSSDiffs_1, f, MAX_REFSIGS_CONS, &currSigDiffs, i);
     }
 }
 
@@ -228,7 +244,7 @@ static inline void EstimateLoc_nearestRefSigs(SignalSpaceDiff retSSDiffs[NBR_FRE
  * @param retLocPtr  the estimated location should be returned through this pointer
  * @param sigPtr   the signature whos location to estimate
  */
-void EstimateLoc_estimateLoc(Point *retLocPtr, Signature *sigPtr)
+void EstimateLoc_estimateLoc(Point *retLocPtr, Signature *sigPtr, RefSignature *refSigPtr)
 {
     uint8_t f=0; //, p=0; //, r=0;
     SignalSpaceDiff ssDiffs[NBR_FREQCHANNELS][MAX_REFSIGS_CONS];
@@ -236,13 +252,13 @@ void EstimateLoc_estimateLoc(Point *retLocPtr, Signature *sigPtr)
     Point locCombFreqPower[NBR_FREQCHANNELS];
 
     // (1) - Get the nearest RefSignatures to Signature in signal space
-    EstimateLoc_nearestRefSigs(ssDiffs, sigPtr);
+    EstimateLoc_nearestRefSigs(ssDiffs, sigPtr, refSigPtr);
 
     // (2) - Figure out how many RefSignatures to include
     //   a) Over each freqChan and txPower
     for (f = 0; f < NBR_FREQCHANNELS; ++f) {
         #ifdef K_NEAREST_ALG
-            SignalSpaceDiff_centroidLoc(&locEstEachFreqPower[f], ssDiffs[f], KNEAREST_SIZE);
+            SignalSpaceDiff_centroidLoc(&locEstEachFreqPower[f], ssDiffs[f], KNEAREST_SIZE, refSigPtr);
         #else  // assume TH_NEAREST_ALG
             for (r = 1; r < MAX_REFSIGS_CONS; ++r) {
                 if ( ((100.0*(double)ssDiffs[f][r].diff)/(double)ssDiffs[f][0].diff) > TH_NEAREST_VAL )

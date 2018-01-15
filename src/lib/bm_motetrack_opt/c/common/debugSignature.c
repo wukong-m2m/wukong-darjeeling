@@ -5,8 +5,8 @@ void printSignature(Signature *s) {
     for (int i=0; i<NBR_RFSIGNALS_IN_SIGNATURE; i++) {
         avroraRTCRuntimeBeep(i);
         avroraPrintInt16(s->rfSignals[i].sourceID);
-        avroraPrintInt16(s->rfSignals[i].rssi[0]);
-        avroraPrintInt16(s->rfSignals[i].rssi[1]);
+        avroraPrintInt16(s->rfSignals[i].rssi_0);
+        avroraPrintInt16(s->rfSignals[i].rssi_1);
     }
     asm volatile ("break");
 }
@@ -19,8 +19,8 @@ void printRefSignature(RefSignature *r) {
     for (int i=0; i<NBR_RFSIGNALS_IN_SIGNATURE; i++) {
         avroraRTCRuntimeBeep(i);
         avroraPrintInt16(r->sig.rfSignals[i].sourceID);
-        avroraPrintInt16(r->sig.rfSignals[i].rssi[0]);
-        avroraPrintInt16(r->sig.rfSignals[i].rssi[1]);
+        avroraPrintInt16(r->sig.rfSignals[i].rssi_0);
+        avroraPrintInt16(r->sig.rfSignals[i].rssi_1);
     }
     asm volatile ("break");
 }

@@ -50,8 +50,8 @@ void read_refsignature_from_flash() {
     for (uint8_t i=0; i<NBR_RFSIGNALS_IN_SIGNATURE; i++) {
         BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_RFSignal * dest_rfsignal = (BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_RFSignal *)REF_TO_VOIDP(dest_rfsignals[i]);
         dest_rfsignal->sourceID = refSig.sig.rfSignals[i].sourceID;
-        dest_rfsignal->rssi_0 = refSig.sig.rfSignals[i].rssi[0];
-        dest_rfsignal->rssi_1 = refSig.sig.rfSignals[i].rssi[1];
+        dest_rfsignal->rssi_0 = refSig.sig.rfSignals[i].rssi_0;
+        dest_rfsignal->rssi_1 = refSig.sig.rfSignals[i].rssi_1;
     }
 }
 
@@ -97,7 +97,7 @@ void read_signature_from_flash() {
     for (uint8_t i=0; i<NBR_RFSIGNALS_IN_SIGNATURE; i++) {
         BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_RFSignal * dest_rfsignal = (BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_RFSignal *)REF_TO_VOIDP(dest_rfsignals[i]);
         dest_rfsignal->sourceID = refSig.sig.rfSignals[i].sourceID;
-        dest_rfsignal->rssi_0 = refSig.sig.rfSignals[i].rssi[0];
-        dest_rfsignal->rssi_1 = refSig.sig.rfSignals[i].rssi[1];
+        dest_rfsignal->rssi_0 = refSig.sig.rfSignals[i].rssi_0;
+        dest_rfsignal->rssi_1 = refSig.sig.rfSignals[i].rssi_1;
     }
 }

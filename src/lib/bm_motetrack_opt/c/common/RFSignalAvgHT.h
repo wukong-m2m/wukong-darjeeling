@@ -55,8 +55,12 @@
 struct RFSignalAvg 
 {  
     uint16_t sourceID;                 // moteID of the source mote
-    uint16_t rssiSum[NBR_FREQCHANNELS];    // the sum of the RSSIs added and to be averaged
-    uint8_t nbrSamples[NBR_FREQCHANNELS]; // the number of RSSIs added    
+    // uint16_t rssiSum[NBR_FREQCHANNELS];    // the sum of the RSSIs added and to be averaged
+    // uint8_t nbrSamples[NBR_FREQCHANNELS]; // the number of RSSIs added    
+    uint16_t rssiSum_0;    // the sum of the RSSIs added and to be averaged
+    uint8_t nbrSamples_0; // the number of RSSIs added    
+    uint16_t rssiSum_1;    // the sum of the RSSIs added and to be averaged
+    uint8_t nbrSamples_1; // the number of RSSIs added    
 };
 typedef struct RFSignalAvg RFSignalAvg;
 typedef RFSignalAvg* RFSignalAvgPtr;
@@ -91,12 +95,14 @@ inline void RFSignalAvgHT_print(RFSignalAvgHT *HPtr);
  */
 static inline void RFSignalAvg_init(RFSignalAvg *rfSigPtr)
 {
-    uint8_t f = 0; //, p = 0;
+    // uint8_t f = 0; //, p = 0;
     rfSigPtr->sourceID = 0;
-    for (f = 0; f < NBR_FREQCHANNELS; ++f) {
-        rfSigPtr->rssiSum[f] = 0;
-        rfSigPtr->nbrSamples[f] = 0;
-    }
+    // for (f = 0; f < NBR_FREQCHANNELS; ++f) {
+        rfSigPtr->rssiSum_0 = 0;
+        rfSigPtr->nbrSamples_0 = 0;
+        rfSigPtr->rssiSum_1 = 0;
+        rfSigPtr->nbrSamples_1 = 0;
+    // }
 }
 
 /**
@@ -199,8 +205,13 @@ static inline bool RFSignalAvgHT_put(RFSignalAvgHT *HPtr, uint16_t newSrcID, uin
             HPtr->size++;
         }
         if (HPtr->htData[i].sourceID == newSrcID) {
-            HPtr->htData[i].rssiSum[f] += newRssi;   // DANGER! if rssiSum is uint8_t there may be an overflow problem!
-            HPtr->htData[i].nbrSamples[f]++;
+            if (f == 0) {
+                HPtr->htData[i].rssiSum_0 += newRssi;   // DANGER! if rssiSum is uint8_t there may be an overflow problem!
+                HPtr->htData[i].nbrSamples_0++;
+            } else {
+                HPtr->htData[i].rssiSum_1 += newRssi;   // DANGER! if rssiSum is uint8_t there may be an overflow problem!
+                HPtr->htData[i].nbrSamples_1++;
+            }
             return true;                                                 
         }
         i = (i + 1) % HPtr->capacity;
@@ -240,7 +251,7 @@ static inline bool RFSignalAvgHT_put(RFSignalAvgHT *HPtr, uint16_t newSrcID, uin
  */
 static inline void RFSignalAvgHT_makeSignature(Signature *retSigPtr, uint16_t *retSrcIDMaxRSSIPtr, RFSignalAvgHT *HPtr)
 {
-    uint16_t i = 0, k = 0, f = 0; //, p = 0;
+    uint16_t i = 0, k = 0; //, f = 0; //, p = 0;
     uint16_t maxRssiIndex = 0;
 
     // (1) - If the hashtable is empty, then we can't construct a Signature
@@ -264,17 +275,24 @@ static inline void RFSignalAvgHT_makeSignature(Signature *retSigPtr, uint16_t *r
             
                 retSigPtr->rfSignals[++k].sourceID = HPtr->htData[i].sourceID;
 
-                for (f = 0; f < NBR_FREQCHANNELS; ++f) {
-                    if (HPtr->htData[i].nbrSamples[f] > 0) {
+                // for (f = 0; f < NBR_FREQCHANNELS; ++f) {
+                    if (HPtr->htData[i].nbrSamples_0 > 0) {
                         // WARNING! integer division, may lose some precision!
-                        retSigPtr->rfSignals[k].rssi[f] = HPtr->htData[i].rssiSum[f] / HPtr->htData[i].nbrSamples[f];
+                        retSigPtr->rfSignals[k].rssi_0 = HPtr->htData[i].rssiSum_0 / HPtr->htData[i].nbrSamples_0;
                     }
                     else
-                        retSigPtr->rfSignals[k].rssi[f] = 0;
-                }
+                        retSigPtr->rfSignals[k].rssi_0 = 0;
+
+                    if (HPtr->htData[i].nbrSamples_1 > 0) {
+                        // WARNING! integer division, may lose some precision!
+                        retSigPtr->rfSignals[k].rssi_1 = HPtr->htData[i].rssiSum_1 / HPtr->htData[i].nbrSamples_1;
+                    }
+                    else
+                        retSigPtr->rfSignals[k].rssi_1 = 0;
+                // }
                 
                 // base decision on the 1st freqChan and strongest TXPower (assuming it is index 0)!!!
-                if (retSigPtr->rfSignals[k].rssi[0] > retSigPtr->rfSignals[maxRssiIndex].rssi[0])
+                if (retSigPtr->rfSignals[k].rssi_0 > retSigPtr->rfSignals[maxRssiIndex].rssi_0)
                     maxRssiIndex = k;                       
             }    
         }
@@ -315,16 +333,25 @@ static inline void RFSignalAvgHT_makeSignature(Signature *retSigPtr, uint16_t *r
             
                 HPtr->htData[k].sourceID = HPtr->htData[i].sourceID;
 
-                for (f = 0; f < NBR_FREQCHANNELS; ++f) {
-                    if (HPtr->htData[i].nbrSamples[f] > 0) {
+                // for (f = 0; f < NBR_FREQCHANNELS; ++f) {
+                    if (HPtr->htData[i].nbrSamples_0 > 0) {
                         // WARNING 1: placeing result in the k-th cell of HPtr, overwriting what was there!
                         // WARNING 2: integer division, may lose some precision!
-                        HPtr->htData[k].rssiSum[f] = HPtr->htData[i].rssiSum[f] / HPtr->htData[i].nbrSamples[f]; 
-                        HPtr->htData[k].nbrSamples[f] = 1;  // statement not necessary, but keeps datastructure consistent
+                        HPtr->htData[k].rssiSum_0 = HPtr->htData[i].rssiSum_0 / HPtr->htData[i].nbrSamples_0; 
+                        HPtr->htData[k].nbrSamples_0 = 1;  // statement not necessary, but keeps datastructure consistent
                     }
                     else
-                        HPtr->htData[k].rssiSum[f] = 0;
-                }
+                        HPtr->htData[k].rssiSum_0 = 0;
+
+                    if (HPtr->htData[i].nbrSamples_1 > 0) {
+                        // WARNING 1: placeing result in the k-th cell of HPtr, overwriting what was there!
+                        // WARNING 2: integer division, may lose some precision!
+                        HPtr->htData[k].rssiSum_1 = HPtr->htData[i].rssiSum_1 / HPtr->htData[i].nbrSamples_1; 
+                        HPtr->htData[k].nbrSamples_1 = 1;  // statement not necessary, but keeps datastructure consistent
+                    }
+                    else
+                        HPtr->htData[k].rssiSum_1 = 0;
+                // }
                 k++;
             }               
         }
@@ -346,8 +373,10 @@ static inline void RFSignalAvgHT_makeSignature(Signature *retSigPtr, uint16_t *r
         for (i = 0; i < NBR_RFSIGNALS_IN_SIGNATURE && i < HPtr->size; ++i) {
          
             retSigPtr->rfSignals[i].sourceID = HPtr->htData[i].sourceID;
-            for (f = 0; f < NBR_FREQCHANNELS; ++f)
-                retSigPtr->rfSignals[i].rssi[f] = HPtr->htData[i].rssiSum[f];
+            // for (f = 0; f < NBR_FREQCHANNELS; ++f) {
+                retSigPtr->rfSignals[i].rssi_0 = HPtr->htData[i].rssiSum_0;
+                retSigPtr->rfSignals[i].rssi_1 = HPtr->htData[i].rssiSum_1;
+            // }
         }
 
 
