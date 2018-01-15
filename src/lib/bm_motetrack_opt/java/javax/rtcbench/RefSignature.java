@@ -11,14 +11,16 @@ public class RefSignature {
         this.sig = new Signature();
     }
 
-    public static void signatureDiffBidirectional(short results[], RefSignature refSigPtr, Signature sigPtr, short[] currSigDiffs)
+    public static void signatureDiffBidirectional(ShortResults results, RefSignature refSigPtr, Signature sigPtr, ShortResults currSigDiffs)
     {
         short s = 0, r = 0, f = 0; //, p = 0;
         // short[] currSigDiffs = new short[MoteTrackParams.NBR_FREQCHANNELS]; // [NBR_TXPOWERS]; --> Passed from nearestRefSigs estLocAndSend to avoid having to create multiple instances.
 
         // (1) - Initialize the results
-        for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
-            results[f] = 0;
+        // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
+        //     results[f] = 0;
+        results.r0 = 0;
+        results.r1 = 1;
 
         // (2) - Compute differences, while there are more RFSignals in
         //       either the Signature or the RefSignature
@@ -85,8 +87,10 @@ public class RefSignature {
             RFSignal.rfSignalDiff(currSigDiffs, rfSignalDiff_par_a, rfSignalDiff_par_b);
 
             // Add the differences from this iteration
-            for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
-                results[f] += currSigDiffs[f];
+            // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
+            //     results[f] += currSigDiffs[f];
+            results.r0 += currSigDiffs.r0;
+            results.r1 += currSigDiffs.r1;
         }
     }
 
@@ -96,7 +100,7 @@ public class RefSignature {
      * @param refSigPtr  the reference signature to compare
      * @param sigPtr  the signature to compare
      */
-    public static void signatureDiffUnidirectional(short results[], RefSignature refSigPtr, Signature sigPtr) {
+    public static void signatureDiffUnidirectional(ShortResults results, RefSignature refSigPtr, Signature sigPtr) {
         // Not implemented
     }
 }

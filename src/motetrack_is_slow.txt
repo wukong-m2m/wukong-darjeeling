@@ -1,0 +1,33 @@
+============================ STOPWATCHES ============================= 
+--- STOPWATCHES Native C                                  746632             
+                AOT                                      1756497             
+                Overhead = 1756497 - 746632            = 1009865
+                Average expected overhead 0.8 * 746632 =  597305
+                Difference = 1009865 - 597305          =  412560
+
+                get refSignatures = 439263 - 191835    =  247428
+                Difference = 412560 - 247428           =  165132
+
+
+JVM_INVOKELIGHT                                                 435615  19.4%  58.3%C        257 1695.0 |    1    12   0.1%   0.3%C 4->0:       TARGET 0.0  bm_motetrack_opt.javax.rtcbench.DB.refSignature_get+(Ljavax/rtcbench/RefSignature;S)V
+14) VM                                        81990   3.7%  11.0%C          0   0.0 |    0     0   0.0%   0.0%C
+
+
+javax_rtcbench_DB_void_refSignature_get_javax_rtcbench_RefSignature_short
+    439,263 100.0%       261    1683.0 |    62 100.0% : ---total---
+     11,484   2.6%       261      44.0 |    58  93.5% : ----own----
+    427,779  97.4%       261    1639.0 |     4   6.5% : <read_refsignature_from_flash>
+
+read_refsignature_from_flash
+    426,735 100.0%       261    1635.0 |   206 100.0% : ---total---
+    234,900  55.0%       261     900.0 |   202  98.1% : ----own----
+    191,835  45.0%       261     735.0 |     4   1.9% : 8 <memcpy_P>
+
+
+11) Invoke          JVM_INVOKELIGHT          446798  25.4%  59.8%C        312 1432.0 |    7   248   3.0%   5.3%C
+01) Loc/sta ld/st   JVM_ALOAD                250252  14.2%  33.5%C      62563   4.0 |  138   252   3.0%   5.4%C
+02) Obj/arr ld      JVM_GETFIELD_S           232150  13.2%  31.1%C      46430   5.0 |   64   384   4.6%   8.2%C
+01) Loc/sta ld/st   JVM_ASTORE               129204   7.4%  17.3%C      32298   4.0 |   47   200   2.4%   4.3%C
+02) Obj/arr ld      JVM_GETARRAY_A           102212   5.8%  13.7%C       9292  11.0 |   81  1296  15.5%  27.8%C
+14) VM                                        84206   4.8%  11.3%C          0   0.0 |    0     0   0.0%   0.0%C
+03) Obj/arr st      JVM_PUTFIELD_S            79223   4.5%  10.6%C      15844   5.0 |   46   282   3.4%   6.0%C

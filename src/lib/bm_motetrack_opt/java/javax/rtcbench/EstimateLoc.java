@@ -33,7 +33,7 @@ public class EstimateLoc {
         short i=0, f=0; //, p=0;
         // RefSignature read from database
         // RefSignature currRefSig = new RefSignature();       --> Passed all the way from estLocAndSend to avoid having to create multiple instances.
-        short[] currSigDiffs = new short[MoteTrackParams.NBR_FREQCHANNELS];
+        ShortResults currSigDiffs = new ShortResults();
 
         // (1) - Initialize SignalSpaceDiff data structure
         for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
@@ -43,7 +43,7 @@ public class EstimateLoc {
             }
         }
 
-        short[] currSigDiffsForSignatureDiffBidirectional = new short[MoteTrackParams.NBR_FREQCHANNELS];
+        ShortResults currSigDiffsForSignatureDiffBidirectional = new ShortResults();
         SignalSpaceDiff[] retSSDiffs_0 = (SignalSpaceDiff[])retSSDiffs[0]; // To avoid CHECKCAST on each iteration
         SignalSpaceDiff[] retSSDiffs_1 = (SignalSpaceDiff[])retSSDiffs[1]; // To avoid CHECKCAST on each iteration
         // (2) - Get the nearest RefSignatures in signal space and put them in RETssDiffs
@@ -58,8 +58,8 @@ public class EstimateLoc {
                 RefSignature.signatureDiffUnidirectional(currSigDiffs, currRefSig, sigPtr);
             else {
                 // Keep the compiler happy
-                for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
-                    currSigDiffs[f] = 0;
+                // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
+                    currSigDiffs.r0 = 0;
                 // printfUART("BeaconMote - nearestRefSigs():  FATAL ERROR! neither BIDIRECTIONAL_ALG nor UNIDIRECTIONAL_ALG are defined\n", "");
                 RTC.avroraPrintHex32(0xBEEFBEEF);
                 RTC.avroraPrintHex32(0x1);
@@ -68,7 +68,7 @@ public class EstimateLoc {
 
             // c. try to add curr RefSignatures to top candidates
             for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
-                SignalSpaceDiff.put(retSSDiffs_0, retSSDiffs_1, (byte)f, currSigDiffs[f], i);
+                SignalSpaceDiff.put(retSSDiffs_0, retSSDiffs_1, (byte)f, currSigDiffs, i);
         }
     }
 

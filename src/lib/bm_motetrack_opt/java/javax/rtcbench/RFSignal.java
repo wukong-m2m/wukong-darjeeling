@@ -37,14 +37,14 @@ public class RFSignal {
      * If one of these two conditions doen't hold, then a FATAL ERROR is generated!
      */
     @Lightweight
-    public static void rfSignalDiff(short results[], RFSignal rfSig1Ptr, RFSignal rfSig2Ptr)
+    public static void rfSignalDiff(ShortResults results, RFSignal rfSig1Ptr, RFSignal rfSig2Ptr)
     {
         byte f=0;
 
         if (rfSig2Ptr == null) {
             // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
-                results[0] = rfSig1Ptr.rssi_0;
-                results[1] = rfSig1Ptr.rssi_1;
+                results.r0 = rfSig1Ptr.rssi_0;
+                results.r1 = rfSig1Ptr.rssi_1;
         }
         else if ( rfSig2Ptr != null && haveSameID(rfSig1Ptr, rfSig2Ptr) ) {
             // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
@@ -52,15 +52,15 @@ public class RFSignal {
                 short x;
                 x = (short)(rfSig1Ptr.rssi_0 - rfSig2Ptr.rssi_0);
                 if (x > 0) {
-                    results[0] = x;
+                    results.r0 = x;
                 } else {
-                    results[0] = (short)-x;
+                    results.r0 = (short)-x;
                 }
                 x = (short)(rfSig1Ptr.rssi_1 - rfSig2Ptr.rssi_1);
                 if (x > 0) {
-                    results[1] = x;
+                    results.r1 = x;
                 } else {
-                    results[1] = (short)-x;
+                    results.r1 = (short)-x;
                 }
                 // if (rfSig1Ptr.rssi_0 >= rfSig2Ptr.rssi_0)
                 //     results[0] = (short) (rfSig1Ptr.rssi_0 - rfSig2Ptr.rssi_0);
