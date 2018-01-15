@@ -21,8 +21,8 @@ module ResultsToString =
 
         let asPercentage a b =
           100.0 * float a / float b
-        let totalCyclesAOTJava = results.countersAOTTotal.cycles
-        let totalCyclesNativeC = results.countersCTotal.cycles
+        let totalCyclesAOTJava = results.cyclesStopwatchAOT
+        let totalCyclesNativeC = results.cyclesStopwatchC
         let totalCyclesOverhead = results.countersOverheadTotal.cycles
         let totalBytesAOTJava = results.countersAOTTotal.size
         let totalBytesNativeC = results.countersCTotal.size
