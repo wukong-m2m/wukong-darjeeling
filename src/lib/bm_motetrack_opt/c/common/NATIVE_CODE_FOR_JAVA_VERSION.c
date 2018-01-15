@@ -24,7 +24,7 @@ void javax_rtcbench_DB_void_refSignature_get_javax_rtcbench_RefSignature_short()
                  "   sts  MoteTrack_DB_dest_refsignature, r19" "\n\r"
                  "   push r26" "\n\r"
                  "   push r27" "\n\r"
-                 "   call hallo_vliegtuig_a" "\n\r"
+                 "   call read_refsignature_from_flash" "\n\r"
                  "   pop  r27" "\n\r"
                  "   pop  r26" "\n\r"
                  "   lds  r19, MoteTrack_DB_returnaddress" "\n\r"
@@ -34,7 +34,7 @@ void javax_rtcbench_DB_void_refSignature_get_javax_rtcbench_RefSignature_short()
              :: );
 }
 
-void hallo_vliegtuig_a() {
+void read_refsignature_from_flash() {
     RefSignature refSig;
     RefSignatureDB_get_JVM(&refSig, MoteTrack_DB_index);
 
@@ -71,7 +71,7 @@ void javax_rtcbench_DB_void_signature_get_javax_rtcbench_RefSignature_short() {
                  "   sts  MoteTrack_DB_dest_refsignature, r19" "\n\r"
                  "   push r26" "\n\r"
                  "   push r27" "\n\r"
-                 "   call hallo_vliegtuig_b" "\n\r"
+                 "   call read_signature_from_flash" "\n\r"
                  "   pop  r27" "\n\r"
                  "   pop  r26" "\n\r"
                  "   lds  r19, MoteTrack_DB_returnaddress" "\n\r"
@@ -81,7 +81,7 @@ void javax_rtcbench_DB_void_signature_get_javax_rtcbench_RefSignature_short() {
              :: );
 }
 
-void hallo_vliegtuig_b() {
+void read_signature_from_flash() {
     RefSignature refSig;
     SignatureDB_get_JVM(&refSig, MoteTrack_DB_index);
 
