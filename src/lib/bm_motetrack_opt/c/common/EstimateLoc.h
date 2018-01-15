@@ -184,17 +184,16 @@ uint8_t signatureDiffAlg = BIDIRECTIONAL_ALG;
  * @param retSSDiffs[][]  return the indexes to the top RefSignature through this array
  * @param sigPtr  a pointer to the signature to which the RefSignatures should be compared
  */
-static inline void EstimateLoc_nearestRefSigs(SignalSpaceDiff retSSDiffs[NBR_FREQCHANNELS][NBR_TXPOWERS][MAX_REFSIGS_CONS], Signature *sigPtr)
+static inline void EstimateLoc_nearestRefSigs(SignalSpaceDiff retSSDiffs[NBR_FREQCHANNELS][MAX_REFSIGS_CONS], Signature *sigPtr)
 {
-    uint16_t i=0, f=0, p=0;
+    uint16_t i=0, f=0; //, p=0;
     RefSignature currRefSig;      // RefSignature read from database
-    uint16_t currSigDiffs[NBR_FREQCHANNELS][NBR_TXPOWERS];
+    uint16_t currSigDiffs[NBR_FREQCHANNELS];
 
     // (1) - Initialize SignalSpaceDiff data structure
     for (f = 0; f < NBR_FREQCHANNELS; ++f)
-        for (p = 0; p < NBR_TXPOWERS; ++p)
-            for (i = 0; i < MAX_REFSIGS_CONS; ++i)
-                SignalSpaceDiff_init(&retSSDiffs[f][p][i]);
+        for (i = 0; i < MAX_REFSIGS_CONS; ++i)
+            SignalSpaceDiff_init(&retSSDiffs[f][i]);
 
 
     // (2) - Get the nearest RefSignatures in signal space and put them in RETssDiffs
@@ -211,8 +210,7 @@ static inline void EstimateLoc_nearestRefSigs(SignalSpaceDiff retSSDiffs[NBR_FRE
         else {
             // Keep the compiler happy
             for (f = 0; f < NBR_FREQCHANNELS; ++f)
-                for (p = 0; p < NBR_TXPOWERS; ++p)
-                    currSigDiffs[f][p] = 0;
+                currSigDiffs[f] = 0;
             // printfUART("BeaconMote - nearestRefSigs():  FATAL ERROR! neither BIDIRECTIONAL_ALG nor UNIDIRECTIONAL_ALG are defined\n", "");
             avroraPrintHex32(0xBEEFBEEF);
             avroraPrintHex32(0x1);
@@ -221,8 +219,7 @@ static inline void EstimateLoc_nearestRefSigs(SignalSpaceDiff retSSDiffs[NBR_FRE
 
         // c. try to add curr RefSignatures to top candidates
         for (f = 0; f < NBR_FREQCHANNELS; ++f)
-            for (p = 0; p < NBR_TXPOWERS; ++p)
-                SignalSpaceDiff_put(retSSDiffs[f][p], MAX_REFSIGS_CONS, currSigDiffs[f][p], i);
+            SignalSpaceDiff_put(retSSDiffs[f], MAX_REFSIGS_CONS, currSigDiffs[f], i);
     }
 }
 
@@ -233,34 +230,32 @@ static inline void EstimateLoc_nearestRefSigs(SignalSpaceDiff retSSDiffs[NBR_FRE
  */
 void EstimateLoc_estimateLoc(Point *retLocPtr, Signature *sigPtr)
 {
-    uint8_t f=0, p=0; //, r=0;
-    SignalSpaceDiff ssDiffs[NBR_FREQCHANNELS][NBR_TXPOWERS][MAX_REFSIGS_CONS];
-    Point locEstEachFreqPower[NBR_FREQCHANNELS][NBR_TXPOWERS];       // centroid for each txPower
-    Point locCombFreqPower[NBR_FREQCHANNELS*NBR_TXPOWERS];
+    uint8_t f=0; //, p=0; //, r=0;
+    SignalSpaceDiff ssDiffs[NBR_FREQCHANNELS][MAX_REFSIGS_CONS];
+    Point locEstEachFreqPower[NBR_FREQCHANNELS];       // centroid for each txPower
+    Point locCombFreqPower[NBR_FREQCHANNELS];
 
     // (1) - Get the nearest RefSignatures to Signature in signal space
     EstimateLoc_nearestRefSigs(ssDiffs, sigPtr);
 
     // (2) - Figure out how many RefSignatures to include
     //   a) Over each freqChan and txPower
-    for (f = 0; f < NBR_FREQCHANNELS; ++f)
-        for (p = 0; p < NBR_TXPOWERS; ++p) {
+    for (f = 0; f < NBR_FREQCHANNELS; ++f) {
+        #ifdef K_NEAREST_ALG
+            SignalSpaceDiff_centroidLoc(&locEstEachFreqPower[f], ssDiffs[f], KNEAREST_SIZE);
+        #else  // assume TH_NEAREST_ALG
+            for (r = 1; r < MAX_REFSIGS_CONS; ++r) {
+                if ( ((100.0*(double)ssDiffs[f][r].diff)/(double)ssDiffs[f][0].diff) > TH_NEAREST_VAL )
+                    break;
+            }
+            SignalSpaceDiff_centroidLocWeighted(&locEstEachFreqPower[f], ssDiffs[f], r);
+        #endif
 
-            #ifdef K_NEAREST_ALG
-                SignalSpaceDiff_centroidLoc(&locEstEachFreqPower[f][p], ssDiffs[f][p], KNEAREST_SIZE);
-            #else  // assume TH_NEAREST_ALG
-                for (r = 1; r < MAX_REFSIGS_CONS; ++r) {
-                    if ( ((100.0*(double)ssDiffs[f][p][r].diff)/(double)ssDiffs[f][p][0].diff) > TH_NEAREST_VAL )
-                        break;
-                }
-                SignalSpaceDiff_centroidLocWeighted(&locEstEachFreqPower[f][p], ssDiffs[f][p], r);
-            #endif
-
-            locCombFreqPower[f + p*NBR_FREQCHANNELS] = locEstEachFreqPower[f][p];
-        }
+        locCombFreqPower[f] = locEstEachFreqPower[f];
+    }
 
     //   b) Over all txPowers
-    Point_centroidLoc(retLocPtr, locCombFreqPower, NBR_FREQCHANNELS*NBR_TXPOWERS);
+    Point_centroidLoc(retLocPtr, locCombFreqPower, NBR_FREQCHANNELS);
 }
 
 

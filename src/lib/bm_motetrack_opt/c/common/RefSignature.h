@@ -53,7 +53,7 @@
 struct RFSignal
 {
     uint16_t sourceID;           // moteID of the source mote
-    uint8_t rssi[NBR_FREQCHANNELS][NBR_TXPOWERS];  // received signal strength for each of the freqChan and power levels
+    uint8_t rssi[NBR_FREQCHANNELS];  // received signal strength for each of the freqChan and power levels
 };
 typedef struct RFSignal RFSignal;
 typedef RFSignal* RFSignalPtr;
@@ -86,12 +86,11 @@ typedef RefSignature* RefSignaturePtr;
  */
 static inline void RFSignal_init(RFSignal *rfSigPtr)
 {
-    uint8_t f=0, p=0;
+    uint8_t f=0; //, p=0;
 
     rfSigPtr->sourceID = 0;
     for (f = 0; f < NBR_FREQCHANNELS; ++f)
-        for (p = 0; p < NBR_TXPOWERS; ++p)
-            rfSigPtr->rssi[f][p] = 0;
+        rfSigPtr->rssi[f] = 0;
 
 }
 
@@ -139,24 +138,21 @@ static inline bool RFSignal_haveSameID(RFSignal *rfSig1Ptr, RFSignal *rfSig2Ptr)
  *   2. neither RFSignal is NULL, and they have the same sourceID.
  * If one of these two conditions doen't hold, then a FATAL ERROR is generated!
  */
-static inline void RFSignal_rfSignalDiff(uint16_t results[NBR_FREQCHANNELS][NBR_TXPOWERS], RFSignal *rfSig1Ptr, RFSignal *rfSig2Ptr)
+static inline void RFSignal_rfSignalDiff(uint16_t results[NBR_FREQCHANNELS], RFSignal *rfSig1Ptr, RFSignal *rfSig2Ptr)
 {
-    uint8_t f=0, p=0;
+    uint8_t f=0; //, p=0;
 
     if (rfSig1Ptr != NULL && rfSig2Ptr == NULL) {
         for (f = 0; f < NBR_FREQCHANNELS; ++f)
-            for (p = 0; p < NBR_TXPOWERS; ++p)
-                results[f][p] = rfSig1Ptr->rssi[f][p];
+            results[f] = rfSig1Ptr->rssi[f];
     }
     else if ( rfSig1Ptr != NULL && rfSig2Ptr != NULL && RFSignal_haveSameID(rfSig1Ptr, rfSig2Ptr) ) {
         for (f = 0; f < NBR_FREQCHANNELS; ++f) {
-            for (p = 0; p < NBR_TXPOWERS; ++p) {
-                // The two rfSignals can be compared.  Return the absolute value
-                if (rfSig1Ptr->rssi[f][p] >= rfSig2Ptr->rssi[f][p])
-                    results[f][p] = rfSig1Ptr->rssi[f][p] - rfSig2Ptr->rssi[f][p];
-                else
-                    results[f][p] = rfSig2Ptr->rssi[f][p] - rfSig1Ptr->rssi[f][p];
-            }
+            // The two rfSignals can be compared.  Return the absolute value
+            if (rfSig1Ptr->rssi[f] >= rfSig2Ptr->rssi[f])
+                results[f] = rfSig1Ptr->rssi[f] - rfSig2Ptr->rssi[f];
+            else
+                results[f] = rfSig2Ptr->rssi[f] - rfSig1Ptr->rssi[f];
         }
     }
     else {
@@ -332,16 +328,15 @@ static inline void Signature_init(Signature *sigPtr)
  * @param refSigPtr  the reference signature to compare
  * @param sigPtr  the signature to compare
  */
-static inline void RefSignature_signatureDiffBidirectional(uint16_t results[NBR_FREQCHANNELS][NBR_TXPOWERS], 
+static inline void RefSignature_signatureDiffBidirectional(uint16_t results[NBR_FREQCHANNELS], 
                                                     RefSignature *refSigPtr, Signature *sigPtr)
 {
-    uint16_t s = 0, r = 0, f = 0, p = 0;
-    uint16_t currSigDiffs[NBR_FREQCHANNELS][NBR_TXPOWERS];
+    uint16_t s = 0, r = 0, f = 0; //, p = 0;
+    uint16_t currSigDiffs[NBR_FREQCHANNELS];
 
     // (1) - Initialize the results
     for (f = 0; f < NBR_FREQCHANNELS; ++f)
-        for (p = 0; p < NBR_TXPOWERS; ++p)
-            results[f][p] = 0;
+        results[f] = 0;
 
     // (2) - Compute differences, while there are more RFSignals in
     //       either the Signature or the RefSignature
@@ -380,8 +375,7 @@ static inline void RefSignature_signatureDiffBidirectional(uint16_t results[NBR_
 
         // Add the differences from this iteration
         for (f = 0; f < NBR_FREQCHANNELS; ++f)
-            for (p = 0; p < NBR_TXPOWERS; ++p)
-                results[f][p] += currSigDiffs[f][p];
+            results[f] += currSigDiffs[f];
     }
 }
 
@@ -391,16 +385,15 @@ static inline void RefSignature_signatureDiffBidirectional(uint16_t results[NBR_
  * @param refSigPtr  the reference signature to compare
  * @param sigPtr  the signature to compare
  */
-static inline void RefSignature_signatureDiffUnidirectional(uint16_t results[NBR_FREQCHANNELS][NBR_TXPOWERS], 
+static inline void RefSignature_signatureDiffUnidirectional(uint16_t results[NBR_FREQCHANNELS], 
                                                      RefSignature *refSigPtr, Signature *sigPtr)
 {
-    uint16_t s = 0, r = 0, f = 0, p = 0;
-    uint16_t currSigDiffs[NBR_FREQCHANNELS][NBR_TXPOWERS];
+    uint16_t s = 0, r = 0, f = 0; //, p = 0;
+    uint16_t currSigDiffs[NBR_FREQCHANNELS];
 
     // (1) - Initialize the results
     for (f = 0; f < NBR_FREQCHANNELS; ++f)
-        for (p = 0; p < NBR_TXPOWERS; ++p)
-            results[f][p] = 0;
+        results[f] = 0;
 
 
     // (2) - Compute differences, while there are more RFSignals in the Signature
@@ -434,8 +427,7 @@ static inline void RefSignature_signatureDiffUnidirectional(uint16_t results[NBR
 
         // Add the differences from this iteration
         for (f = 0; f < NBR_FREQCHANNELS; ++f)
-            for (p = 0; p < NBR_TXPOWERS; ++p)
-                results[f][p] += currSigDiffs[f][p];
+            results[f] += currSigDiffs[f];
     }
 }
 

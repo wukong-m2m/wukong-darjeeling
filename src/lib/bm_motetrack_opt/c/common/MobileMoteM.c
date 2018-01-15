@@ -360,7 +360,7 @@
     {
         // Put stuff in Hashtable
         uint16_t i = 0;
-        uint8_t f = 0, p = 0, k = 0;
+        uint8_t f = 0, k = 0;
         RefSignature currRefSig;
         Signature *sigPtr = &(currRefSig.sig);
 
@@ -371,11 +371,10 @@
             for (i = 0; i < NBR_RFSIGNALS_IN_SIGNATURE; ++i)
                 if (sigPtr->rfSignals[i].sourceID != 0)
                     // add each signal at each freqChan and txPower
-                    for (f = 0; f < NBR_FREQCHANNELS; ++f)
-                        for (p = 0; p < NBR_TXPOWERS; ++p) {
-                            RFSignalAvgHT_put(&rfSignalHT[currHT], sigPtr->rfSignals[i].sourceID,
-                                              f, p, sigPtr->rfSignals[i].rssi[f][p]);
-                        }
+                    for (f = 0; f < NBR_FREQCHANNELS; ++f) {
+                        RFSignalAvgHT_put(&rfSignalHT[currHT], sigPtr->rfSignals[i].sourceID,
+                                          f, sigPtr->rfSignals[i].rssi[f]);
+                    }
 
         return sigPtr->id;
     }
