@@ -25,10 +25,11 @@ public class RFSignal {
         sigPtr.rssi_1 = 0;
     }
 
-    public static boolean haveSameID(RFSignal rfSig1Ptr, RFSignal rfSig2Ptr)
-    {
-        return rfSig1Ptr.sourceID == rfSig2Ptr.sourceID;
-    }
+    // Manually inlined
+    // public static boolean haveSameID(RFSignal rfSig1Ptr, RFSignal rfSig2Ptr)
+    // {
+    //     return rfSig1Ptr.sourceID == rfSig2Ptr.sourceID;
+    // }
 
     /*
      * The difference between 2 RFSignals can be computed ONLY if:
@@ -39,14 +40,12 @@ public class RFSignal {
     @Lightweight
     public static void rfSignalDiff(ShortResults results, RFSignal rfSig1Ptr, RFSignal rfSig2Ptr)
     {
-        byte f=0;
-
         if (rfSig2Ptr == null) {
             // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
                 results.r0 = rfSig1Ptr.rssi_0;
                 results.r1 = rfSig1Ptr.rssi_1;
         }
-        else if ( rfSig2Ptr != null && haveSameID(rfSig1Ptr, rfSig2Ptr) ) {
+        else if ( rfSig2Ptr != null && (rfSig1Ptr.sourceID == rfSig2Ptr.sourceID) ) {
             // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
                 // The two rfSignals can be compared.  Return the absolute value
                 short x;

@@ -27,15 +27,16 @@ public class MobileMoteM {
         indexNextSigEst = (short)((indexNextSigEst+1) % DB.SIGNATUREDB_SIZE);
 
         for (k = 0; k < 3; ++k)  // simulates adding multiple samples to the hashtable
-            for (i = 0; i < Signature.NBR_RFSIGNALS_IN_SIGNATURE; ++i)
-                if (sigPtr.rfSignals[i].sourceID != 0) {
+            for (i = 0; i < Signature.NBR_RFSIGNALS_IN_SIGNATURE; ++i) {
+                RFSignal sigPtr_rfSignals_i = sigPtr.rfSignals[i];
+                if (sigPtr_rfSignals_i.sourceID != 0) {
                     // add each signal at each freqChan and txPower
                     // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
-                        RFSignalAvgHT.put(rfSignalHT[currHT], sigPtr.rfSignals[i].sourceID, (byte)0, sigPtr.rfSignals[i].rssi_0);
-                        RFSignalAvgHT.put(rfSignalHT[currHT], sigPtr.rfSignals[i].sourceID, (byte)1, sigPtr.rfSignals[i].rssi_1);
+                        RFSignalAvgHT.put(rfSignalHT[currHT], sigPtr_rfSignals_i.sourceID, (byte)0, sigPtr_rfSignals_i.rssi_0);
+                        RFSignalAvgHT.put(rfSignalHT[currHT], sigPtr_rfSignals_i.sourceID, (byte)1, sigPtr_rfSignals_i.rssi_1);
                     // }
                 }
-
+            }
         return sigPtr.id;
     }
 
