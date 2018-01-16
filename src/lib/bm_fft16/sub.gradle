@@ -1,6 +1,6 @@
 djlibsource {
     bm_fft16 {
-        cDependencies = [ 'base' ]
+        cDependencies = [ 'base', 'vm_dev' ]
         javaDependencies = [ 'base' ]
     }
 }
