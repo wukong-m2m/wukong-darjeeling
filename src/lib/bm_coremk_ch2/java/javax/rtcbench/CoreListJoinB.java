@@ -122,7 +122,7 @@ public class CoreListJoinB {
 		Can be used by mergesort.
 	*/
 		@Lightweight(rank=4) // Needs to come after crc
-		static short calc_func(short pdata, CoreResults res) {
+		static short calc_func(short pdata, CoreResults res, CoreMain.TmpData tmpData) {
 			short data=ListData_GetData16(pdata);
 			short retval;
 			byte optype=(byte)((data>>7) & 1); /* bit 7 indicates if the function result has been cached */
@@ -136,7 +136,7 @@ public class CoreListJoinB {
 					case 0:
 						if (dtype<0x22) /* set min period for bit corruption */
 							dtype=0x22;
-						retval=CoreState.core_bench_state(res.size,res.statememblock3,res.seed1,res.seed2,dtype,res.crc);
+						retval=CoreState.core_bench_state(res.size,res.statememblock3,res.seed1,res.seed2,dtype,res.crc, tmpData);
 						if (res.crcstate==0)
 							res.crcstate=retval;
 						break;
@@ -156,9 +156,9 @@ public class CoreListJoinB {
 			}
 		}
 
-		public static int cmp_complex(short a, short b, CoreResults res) {
-			short val1=calc_func(a,res);
-			short val2=calc_func(b,res);
+		public static int cmp_complex(short a, short b, CoreResults res, CoreMain.TmpData tmpData) {
+			short val1=calc_func(a,res,tmpData);
+			short val2=calc_func(b,res,tmpData);
 			return val1 - val2;
 		}
 
@@ -167,7 +167,7 @@ public class CoreListJoinB {
 
 		Can be used by mergesort.
 	*/
-		public static int cmp_idx(short a, short b, CoreResults res) {
+		public static int cmp_idx(short a, short b, CoreResults res, CoreMain.TmpData tmpData) {
 			if (res==null) {
 				ListData_SetData16(a, (short)((ListData_GetData16(a) & 0xff00) | (0x00ff & (ListData_GetData16(a)>>8))));
 				ListData_SetData16(b, (short)((ListData_GetData16(b) & 0xff00) | (0x00ff & (ListData_GetData16(b)>>8))));
@@ -183,7 +183,7 @@ public class CoreListJoinB {
 		- Single remove/reinsert
 		* At the end of this function, the list is back to original state
 	*/
-	static short core_bench_list(CoreResults res, short finder_idx) {
+	static short core_bench_list(CoreResults res, short finder_idx, CoreMain.TmpData tmpData) {
 		short retval=0;
 		short found=0,missed=0;
 		short list=res.list_CoreListJoinB;
@@ -222,7 +222,7 @@ public class CoreListJoinB {
 		retval+=found*4-missed;
 		/* sort the list by data content and remove one item*/
 		if (finder_idx>0)
-			list = core_list_mergesort(list,false,res);
+			list = core_list_mergesort(list,false,res,tmpData);
 		remover=core_list_remove(ListHead_GetNext(list));
 		/* CRC data content of list from location of index N forward, and then undo remove */
 		finder=core_list_find(list,info_data16,info_idx);
@@ -234,7 +234,7 @@ public class CoreListJoinB {
 		}
 		remover=core_list_undo_remove(remover, ListHead_GetNext(list));
 		/* sort the list by index, in effect returning the list to original state */
-		list = core_list_mergesort(list,true,null);
+		list = core_list_mergesort(list,true,null,tmpData);
 		/* CRC data content of list */
 		finder=ListHead_GetNext(list);
 		while (finder!=ListNULL) {
@@ -258,7 +258,7 @@ public class CoreListJoinB {
 
 	*/
 	// list_head *core_list_init(ee_u32 blksize, list_head *memblock, ee_s16 seed) {
-	static short core_list_init(int blksize, short seed) {
+	static short core_list_init(int blksize, short seed, CoreMain.TmpData tmpData) {
 		System.out.println("Using CoreListJoinB");
 
 		/* calculated pointers for the list */
@@ -310,7 +310,7 @@ public class CoreListJoinB {
 			}
 			finder=ListHead_GetNext(finder);
 		}
-		list = core_list_mergesort(list,true,null);
+		list = core_list_mergesort(list,true,null,tmpData);
 
 		return list;
 	}
@@ -495,7 +495,7 @@ public class CoreListJoinB {
 
 	 */
 	// list_head *core_list_mergesort(list_head *list, list_cmp cmp, core_results *res) {
-	static short core_list_mergesort(short list, boolean useIdxCompare, CoreResults res) {
+	static short core_list_mergesort(short list, boolean useIdxCompare, CoreResults res, CoreMain.TmpData tmpData) {
 	    short p, q, e, tail;
 	    int insize, nmerges, psize, qsize, i;
 
@@ -532,7 +532,7 @@ public class CoreListJoinB {
 					} else if (qsize == 0 || q==ListNULL) {
 					    /* q is empty; e must come from p. */
 					    e = p; p = ListHead_GetNext(p); psize--;
-					} else if ((useIdxCompare ? cmp_idx(ListHead_GetInfo(p),ListHead_GetInfo(q),res) : cmp_complex(ListHead_GetInfo(p),ListHead_GetInfo(q),res)) <= 0) {
+					} else if ((useIdxCompare ? cmp_idx(ListHead_GetInfo(p),ListHead_GetInfo(q),res,tmpData) : cmp_complex(ListHead_GetInfo(p),ListHead_GetInfo(q),res,tmpData)) <= 0) {
 					    /* First element of p is lower (or same); e must come from p. */
 					    e = p; p = ListHead_GetNext(p); psize--;
 					} else {

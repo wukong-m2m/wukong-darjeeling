@@ -4,3 +4,7 @@ motetrack     : original C version, and Java version modified by replacing the 2
 motetrack_opt : Several 'unfair' optimisations, C version modified to match the Java optimisations.
 
 
+coremk        : default CoreMark implementation
+coremk_ch1    : avoid creating objects
+coremk_ch2    : avoid creating objects + avoid virtual calls
+

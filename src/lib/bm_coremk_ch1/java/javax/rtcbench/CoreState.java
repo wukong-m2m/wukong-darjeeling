@@ -47,20 +47,19 @@ public class CoreState {
 	public static final byte CORE_STATE_SCIENTIFIC = 7;
 	public static final byte NUM_CORE_STATES = 8;
 
-	public static int[] final_counts;
-	public static int[] track_counts;
-	public static ShortWrapper p_wrapper;
-
 	/* Function: core_bench_state
 		Benchmark function
 
 		Go over the input twice, once direct, and once after introducing some corruption. 
 	*/
 	static short core_bench_state(int blksize, byte[] memblock, 
-			short seed1, short seed2, short step, short crc) 
+			short seed1, short seed2, short step, short crc, CoreMain.TmpData tmpData) 
 	{
+		int[] final_counts = tmpData.final_counts;
+		int[] track_counts = tmpData.track_counts;
+		ShortWrapper p = tmpData.p;
 		short pValue; // Within this method we use this so the local variable can be pinned by markloop.
-		p_wrapper.value=0;    // We use this to pass to core_state_transition since it needs to be able to modify the index (it's a double pointer in C).
+		p.value=0;    // We use this to pass to core_state_transition since it needs to be able to modify the index (it's a double pointer in C).
 		int i;
 
 
@@ -68,8 +67,8 @@ public class CoreState {
 			final_counts[i]=track_counts[i]=0;
 		}
 		/* run the state machine over the input */
-		while (memblock[p_wrapper.value]!=0) {
-			byte fstate=core_state_transition(p_wrapper,memblock,track_counts);
+		while (memblock[p.value]!=0) {
+			byte fstate=core_state_transition(p,memblock,track_counts);
 			final_counts[fstate]++;
 		}
 
@@ -81,10 +80,10 @@ public class CoreState {
 			pValue+=step;
 		}
 		// p=memblock;
-		p_wrapper.value=0;
+		p.value=0;
 		/* run the state machine over the input again */
-		while (memblock[p_wrapper.value]!=0) {
-			byte fstate=core_state_transition(p_wrapper,memblock,track_counts);
+		while (memblock[p.value]!=0) {
+			byte fstate=core_state_transition(p,memblock,track_counts);
 			final_counts[fstate]++;
 		}
 
@@ -152,10 +151,6 @@ public class CoreState {
 		byte[] p=new byte[size];
 		int total=0,next=0,i;
 		byte[] buf=null;
-
-		final_counts = new int[NUM_CORE_STATES];
-		track_counts = new int[NUM_CORE_STATES];
-		p_wrapper = new ShortWrapper();
 
 		size--;
 		next=0;

@@ -85,7 +85,7 @@ public class CoreListJoinA {
 	}
 
 	private static abstract class AbstractListDataCompare {
-		abstract int compare(ListData a, ListData b, CoreResults res);
+		abstract int compare(ListData a, ListData b, CoreResults res, CoreMain.TmpData tmpData);
 	}
 
 	/* Function: cmp_complex
@@ -95,7 +95,7 @@ public class CoreListJoinA {
 	*/
 	private static class CmpComplex extends AbstractListDataCompare {
 		@Lightweight(rank=4) // Needs to come after crc
-		static short calc_func(ListData pdata, CoreResults res) {
+		static short calc_func(ListData pdata, CoreResults res, CoreMain.TmpData tmpData) {
 			short data=pdata.data16;
 			short retval;
 			byte optype=(byte)((data>>7) & 1); /* bit 7 indicates if the function result has been cached */
@@ -109,7 +109,7 @@ public class CoreListJoinA {
 					case 0:
 						if (dtype<0x22) /* set min period for bit corruption */
 							dtype=0x22;
-						retval=CoreState.core_bench_state(res.size,res.statememblock3,res.seed1,res.seed2,dtype,res.crc);
+						retval=CoreState.core_bench_state(res.size,res.statememblock3,res.seed1,res.seed2,dtype,res.crc, tmpData);
 						if (res.crcstate==0)
 							res.crcstate=retval;
 						break;
@@ -129,9 +129,9 @@ public class CoreListJoinA {
 			}
 		}
 
-		public int compare(ListData a, ListData b, CoreResults res) {
-			short val1=calc_func(a,res);
-			short val2=calc_func(b,res);
+		public int compare(ListData a, ListData b, CoreResults res, CoreMain.TmpData tmpData) {
+			short val1=calc_func(a,res,tmpData);
+			short val2=calc_func(b,res,tmpData);
 			return val1 - val2;
 		}
 	}
@@ -143,7 +143,7 @@ public class CoreListJoinA {
 		Can be used by mergesort.
 	*/
 	private static class CmpIdx extends AbstractListDataCompare {
-		public int compare(ListData a, ListData b, CoreResults res) {
+		public int compare(ListData a, ListData b, CoreResults res, CoreMain.TmpData tmpData) {
 			if (res==null) {
 				a.data16=(short)((a.data16 & 0xff00) | (0x00ff & (a.data16>>8)));
 				b.data16=(short)((b.data16 & 0xff00) | (0x00ff & (b.data16>>8)));
@@ -153,7 +153,6 @@ public class CoreListJoinA {
 	}
 	private static CmpIdx cmp_idx = new CmpIdx();
 
-	public static ListData info;
 
 	/* Benchmark for linked list:
 		- Try to find multiple data items.
@@ -162,13 +161,14 @@ public class CoreListJoinA {
 		- Single remove/reinsert
 		* At the end of this function, the list is back to original state
 	*/
-	static short core_bench_list(CoreResults res, short finder_idx) {
+	static short core_bench_list(CoreResults res, short finder_idx, CoreMain.TmpData tmpData) {
 		short retval=0;
 		short found=0,missed=0;
 		ListHead list=res.list_CoreListJoinA;
 		short find_num=res.seed3;
 		ListHead this_find;
 		ListHead finder, remover;
+		ListData info=tmpData.info;
 		short i;
 
 		info.idx=finder_idx;
@@ -199,7 +199,7 @@ public class CoreListJoinA {
 		retval+=found*4-missed;
 		/* sort the list by data content and remove one item*/
 		if (finder_idx>0)
-			list=core_list_mergesort(list,cmp_complex,res);
+			list=core_list_mergesort(list,cmp_complex,res,tmpData);
 		remover=core_list_remove(list.next);
 		/* CRC data content of list from location of index N forward, and then undo remove */
 		finder=core_list_find(list,info);
@@ -211,7 +211,7 @@ public class CoreListJoinA {
 		}
 		remover=core_list_undo_remove(remover, list.next);
 		/* sort the list by index, in effect returning the list to original state */
-		list=core_list_mergesort(list,cmp_idx,null);
+		list=core_list_mergesort(list,cmp_idx,null,tmpData);
 		/* CRC data content of list */
 		finder=list.next;
 		while (finder!=null) {
@@ -235,8 +235,9 @@ public class CoreListJoinA {
 
 	*/
 	// list_head *core_list_init(ee_u32 blksize, list_head *memblock, ee_s16 seed) {
-	static ListHead core_list_init(int blksize, short seed) {
+	static ListHead core_list_init(int blksize, short seed, CoreMain.TmpData tmpData) {
 		System.out.println("Using CoreListJoinA");
+		ListData info = tmpData.info;
 
 		/* calculated pointers for the list */
 		int per_item=16+4; //16+sizeof(struct list_data_s);
@@ -252,7 +253,6 @@ public class CoreListJoinA {
 		/* some useful variables */
 		int i;
 		ListHead finder, list=new ListHead();
-		info=new ListData();
  
  		/* create a fake items for the list head and tail */
 		list.next=null;
@@ -284,7 +284,7 @@ public class CoreListJoinA {
 			}
 			finder=finder.next;
 		}
-		list = core_list_mergesort(list,cmp_idx,null);
+		list = core_list_mergesort(list,cmp_idx,null,tmpData);
  
  		return list;
 	}
@@ -466,7 +466,7 @@ public class CoreListJoinA {
 
 	 */
 	// list_head *core_list_mergesort(list_head *list, list_cmp cmp, core_results *res) {
-	static ListHead core_list_mergesort(ListHead list, AbstractListDataCompare cmp, CoreResults res) {
+	static ListHead core_list_mergesort(ListHead list, AbstractListDataCompare cmp, CoreResults res, CoreMain.TmpData tmpData) {
 	    ListHead p, q, e, tail;
 	    int insize, nmerges, psize, qsize, i;
 
@@ -503,7 +503,7 @@ public class CoreListJoinA {
 					} else if (qsize == 0 || q==null) {
 					    /* q is empty; e must come from p. */
 					    e = p; p = p.next; psize--;
-					} else if (cmp.compare(p.info,q.info,res) <= 0) {
+					} else if (cmp.compare(p.info,q.info,res,tmpData) <= 0) {
 					    /* First element of p is lower (or same); e must come from p. */
 					    e = p; p = p.next; psize--;
 					} else {
