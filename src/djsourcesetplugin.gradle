@@ -142,6 +142,7 @@ class DjSourceSet {
             dontwarn
             dontusemixedcaseclassnames
             dontobfuscate
+            dontpreverify
             optimizations '!code/allocation/variable' // This is necessary because if two variables have non-overlapping live ranges, proguard may decide to put them in the same slot. This is fine for normal Java, but can cause errors in the infuser (probably when one variable is int and the other a short or byte)
             if(this.name.startsWith('bm_')) {
                 keep 'class javax.rtcbench.RTCBenchmark { public static native void test_native(); }'
