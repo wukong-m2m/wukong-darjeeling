@@ -15,27 +15,28 @@ public class MobileMoteM {
      * with beacon messages for read from a file (SignatureDB.h).
      * This is used for debugging purposes or to run it as a simulation offline.
      */
-    public static short addSignatureFromFile()
+    public static short addSignatureFromFile(RefSignature currRefSig)
     {
         // Put stuff in Hashtable
         short i = 0;
         byte f = 0, p = 0, k = 0;
-        RefSignature currRefSig  = new RefSignature();
+        // RefSignature currRefSig  = new RefSignature(); --> Passed all the way from estLocAndSend to avoid having to create multiple instances.
         Signature sigPtr = currRefSig.sig;
 
         DB.signature_get(currRefSig, indexNextSigEst);
         indexNextSigEst = (short)((indexNextSigEst+1) % DB.SIGNATUREDB_SIZE);
 
         for (k = 0; k < 3; ++k)  // simulates adding multiple samples to the hashtable
-            for (i = 0; i < Signature.NBR_RFSIGNALS_IN_SIGNATURE; ++i)
-                if (sigPtr.rfSignals[i].sourceID != 0) {
+            for (i = 0; i < Signature.NBR_RFSIGNALS_IN_SIGNATURE; ++i) {
+                RFSignal sigPtr_rfSignals_i = sigPtr.rfSignals[i];
+                if (sigPtr_rfSignals_i.sourceID != 0) {
                     // add each signal at each freqChan and txPower
                     // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
-                        RFSignalAvgHT.put(rfSignalHT[currHT], sigPtr.rfSignals[i].sourceID, (byte)0, sigPtr.rfSignals[i].rssi_0);
-                        RFSignalAvgHT.put(rfSignalHT[currHT], sigPtr.rfSignals[i].sourceID, (byte)1, sigPtr.rfSignals[i].rssi_1);
+                        RFSignalAvgHT.put(rfSignalHT[currHT], sigPtr_rfSignals_i.sourceID, (byte)0, sigPtr_rfSignals_i.rssi_0);
+                        RFSignalAvgHT.put(rfSignalHT[currHT], sigPtr_rfSignals_i.sourceID, (byte)1, sigPtr_rfSignals_i.rssi_1);
                     // }
                 }
-
+            }
         return sigPtr.id;
     }
 
@@ -82,20 +83,23 @@ public class MobileMoteM {
         // (1) - Construct a representative signature
         Point locEst = new Point();
         Signature sig = new Signature();
+        RefSignature refSig = new RefSignature();
         short srcAddrBcnMaxRSSI;
 
         Point.init(locEst);
         Signature.init(sig);
 
-        sig.id = addSignatureFromFile();
+        short sig_id = addSignatureFromFile(refSig);
         if ((srcAddrBcnMaxRSSI = constructSignature(sig)) == 0) {
             locEst.x = locEst.y = locEst.z = 0;
             RTC.avroraPrintHex32(0xBEEF0006);
             return locEst;
         }
 
+        sig.id = sig_id;
+
         // (2) - Estimate the Signature's location
-        EstimateLoc.estimateLoc(locEst, sig);
+        EstimateLoc.estimateLoc(locEst, sig, refSig);
 
         return locEst;
     }

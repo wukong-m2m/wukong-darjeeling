@@ -28,24 +28,17 @@ public class EstimateLoc {
      * @param sigPtr  a pointer to the signature to which the RefSignatures should be compared
      */
     // public static void nearestRefSigs(SignalSpaceDiff[][] retSSDiffs, Signature sigPtr)
-    public static void nearestRefSigs(Object[] retSSDiffs, Signature sigPtr, RefSignature currRefSig)
+    public static void nearestRefSigs(Object[] retSSDiffs, Signature sigPtr)
     {
         short i=0, f=0; //, p=0;
-        // RefSignature read from database
-        // RefSignature currRefSig = new RefSignature();       --> Passed all the way from estLocAndSend to avoid having to create multiple instances.
-        ShortResults currSigDiffs = new ShortResults();
+        RefSignature currRefSig = new RefSignature();      // RefSignature read from database
+        short[] currSigDiffs = new short[MoteTrackParams.NBR_FREQCHANNELS];
 
         // (1) - Initialize SignalSpaceDiff data structure
-        for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
-            SignalSpaceDiff[] tmp = (SignalSpaceDiff[])retSSDiffs[f]; // To avoid CHECKCAST on each iteration
-            for (i = 0; i < MAX_REFSIGS_CONS; ++i) {
-                SignalSpaceDiff.init(tmp[i]);
-            }
-        }
+        for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
+            for (i = 0; i < MAX_REFSIGS_CONS; ++i)
+                SignalSpaceDiff.init(((SignalSpaceDiff[])retSSDiffs[f])[i]);
 
-        ShortResults currSigDiffsForSignatureDiffBidirectional = new ShortResults();
-        SignalSpaceDiff[] retSSDiffs_0 = (SignalSpaceDiff[])retSSDiffs[0]; // To avoid CHECKCAST on each iteration
-        SignalSpaceDiff[] retSSDiffs_1 = (SignalSpaceDiff[])retSSDiffs[1]; // To avoid CHECKCAST on each iteration
         // (2) - Get the nearest RefSignatures in signal space and put them in RETssDiffs
         for (i = 0; i < DB.REFSIGNATUREDB_SIZE; ++i) {        // iterate over RefSignature
             // a. get current RefSignature being considered
@@ -53,13 +46,13 @@ public class EstimateLoc {
 
             // b. calculate signal space diffs at all freqChans and txPowers
             if (signatureDiffAlg == BIDIRECTIONAL_ALG)
-                RefSignature.signatureDiffBidirectional(currSigDiffs, currRefSig, sigPtr, currSigDiffsForSignatureDiffBidirectional);
+                RefSignature.signatureDiffBidirectional(currSigDiffs, currRefSig, sigPtr);
             else if (signatureDiffAlg == UNIDIRECTIONAL_ALG)
                 RefSignature.signatureDiffUnidirectional(currSigDiffs, currRefSig, sigPtr);
             else {
                 // Keep the compiler happy
-                // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
-                    currSigDiffs.r0 = 0;
+                for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
+                    currSigDiffs[f] = 0;
                 // printfUART("BeaconMote - nearestRefSigs():  FATAL ERROR! neither BIDIRECTIONAL_ALG nor UNIDIRECTIONAL_ALG are defined\n", "");
                 RTC.avroraPrintHex32(0xBEEFBEEF);
                 RTC.avroraPrintHex32(0x1);
@@ -68,7 +61,7 @@ public class EstimateLoc {
 
             // c. try to add curr RefSignatures to top candidates
             for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
-                SignalSpaceDiff.put(retSSDiffs_0, retSSDiffs_1, (byte)f, currSigDiffs, i);
+                SignalSpaceDiff.put((SignalSpaceDiff[])retSSDiffs[f], currSigDiffs[f], i);
         }
     }
 
@@ -77,7 +70,7 @@ public class EstimateLoc {
      * @param retLocPtr  the estimated location should be returned through this pointer
      * @param sigPtr   the signature whos location to estimate
      */
-    public static void estimateLoc(Point retLocPtr, Signature sigPtr, RefSignature refSigPtr)
+    public static void estimateLoc(Point retLocPtr, Signature sigPtr)
     {
         short f=0; //, p=0; //, r=0;
         // SignalSpaceDiff[][] ssDiffs = new SignalSpaceDiff[MoteTrackParams.NBR_FREQCHANNELS][MAX_REFSIGS_CONS];
@@ -97,13 +90,13 @@ public class EstimateLoc {
         }
 
         // (1) - Get the nearest RefSignatures to Signature in signal space
-        EstimateLoc.nearestRefSigs(ssDiffs, sigPtr, refSigPtr);
+        EstimateLoc.nearestRefSigs(ssDiffs, sigPtr);
 
         // (2) - Figure out how many RefSignatures to include
         //   a) Over each freqChan and txPower
         for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
             // #ifdef K_NEAREST_ALG
-                SignalSpaceDiff.centroidLoc(locEstEachFreqPower[f], (SignalSpaceDiff[])(ssDiffs[f]), KNEAREST_SIZE, refSigPtr);
+                SignalSpaceDiff.centroidLoc(locEstEachFreqPower[f], (SignalSpaceDiff[])(ssDiffs[f]), KNEAREST_SIZE);
             // #else  // assume TH_NEAREST_ALG
             //     for (r = 1; r < MAX_REFSIGS_CONS; ++r) {
             //         if ( ((100.0*(double)ssDiffs[f][r].diff)/(double)ssDiffs[f][0].diff) > TH_NEAREST_VAL )

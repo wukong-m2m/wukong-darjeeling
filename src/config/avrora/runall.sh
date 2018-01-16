@@ -3,7 +3,7 @@ alias gdj="gradle -b ../../build.gradle"
 
 gdj clean
 
-benchmarks=(bsort32 hsort32 binsrch32 fft8 fft16 xxtea rc5 md5 coremk)
+benchmarks=(bsort32 bsort16 hsort32 hsort16 binsrch32 binsrch16 outlier32 outlier16 fft8 fft16 xxtea lec rc5 md5 coremk motetrack)
 
 # BASELINE: Both baselines have GET/PUTFIELD_A_FIXED turned on, since this optimisation compensates for Darjeeling specific overhead, so we shouldn't include it in the overhead from Joshua's work.
 # UNOPTIMISED COREMARK
@@ -14,32 +14,32 @@ do
     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false -Pusegetfield_a_fixed=true
 done
 
-# MAIN GRAPHS
-# Lightweight methods and GET/PUTFIELD_A_FIXED are turned on for these.
-for benchmark in ${benchmarks}
-do
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
-
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
-
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=false -Pusesimul=false
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=false
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
-done
-
-# # SAFETY: best case only, with and without safety checks
+# # MAIN GRAPHS
+# # Lightweight methods and GET/PUTFIELD_A_FIXED are turned on for these.
 # for benchmark in ${benchmarks}
 # do
-#     # UNSAFE
-#     gdj avrora_store_trace -Paotbm=${benchmark}
-#     # SAFE
-#     gdj avrora_store_trace -Paotbm=${benchmark} -Psafe
-#     # SAFE READS
-#     gdj avrora_store_trace -Paotbm=${benchmark} -Psafer
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
+
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
+
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=false -Pusesimul=false
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=false
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
 # done
+
+# SAFETY: best case only, with and without safety checks
+for benchmark in ${benchmarks}
+do
+    # UNSAFE
+    gdj avrora_store_trace -Paotbm=${benchmark}
+    # SAFE
+    gdj avrora_store_trace -Paotbm=${benchmark} -Psafe
+    # SAFE READS
+    gdj avrora_store_trace -Paotbm=${benchmark} -Psafer
+done
 
 # # FILL ARRAY
 # for benchmark in (fillarray8 fillarray16 fillarray32)

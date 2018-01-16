@@ -360,7 +360,7 @@
     {
         // Put stuff in Hashtable
         uint16_t i = 0;
-        uint8_t k = 0;
+        uint8_t f = 0, p = 0, k = 0;
         RefSignature currRefSig;
         Signature *sigPtr = &(currRefSig.sig);
 
@@ -368,16 +368,15 @@
         indexNextSigEst = (indexNextSigEst+1) % SIGNATUREDB_SIZE;
 
         for (k = 0; k < 3; ++k)  // simulates adding multiple samples to the hashtable
-            for (i = 0; i < NBR_RFSIGNALS_IN_SIGNATURE; ++i) {
-                RFSignal *sigPtr_rfSignals_i = &sigPtr->rfSignals[i];
-                if (sigPtr_rfSignals_i->sourceID != 0) {
+            for (i = 0; i < NBR_RFSIGNALS_IN_SIGNATURE; ++i)
+                if (sigPtr->rfSignals[i].sourceID != 0)
                     // add each signal at each freqChan and txPower
-                    // for (f = 0; f < NBR_FREQCHANNELS; ++f) {
-                        RFSignalAvgHT_put(&rfSignalHT[currHT], sigPtr_rfSignals_i->sourceID, 0, sigPtr_rfSignals_i->rssi_0);
-                        RFSignalAvgHT_put(&rfSignalHT[currHT], sigPtr_rfSignals_i->sourceID, 1, sigPtr_rfSignals_i->rssi_1);
-                    // }
-                }
-            }
+                    for (f = 0; f < NBR_FREQCHANNELS; ++f)
+                        for (p = 0; p < NBR_TXPOWERS; ++p) {
+                            RFSignalAvgHT_put(&rfSignalHT[currHT], sigPtr->rfSignals[i].sourceID,
+                                              f, p, sigPtr->rfSignals[i].rssi[f][p]);
+                        }
+
         return sigPtr->id;
     }
 
@@ -421,7 +420,6 @@
         // (1) - Construct a representative signature
         Point locEst;
         Signature sig;
-        RefSignature refSig;
         uint16_t srcAddrBcnMaxRSSI;
 
         Point_init(&locEst);
@@ -435,7 +433,7 @@
         }
 
         // (2) - Estimate the Signature's location
-        EstimateLoc_estimateLoc(&locEst, &sig, &refSig);
+        EstimateLoc_estimateLoc(&locEst, &sig);
 
         return locEst;
 

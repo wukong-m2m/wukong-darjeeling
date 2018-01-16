@@ -5,7 +5,7 @@ import javax.rtc.RTC;
 public class RTCBenchmark {
     private final static short NUMNUMBERS = 256;
 
-    public static String name = "MOTETRACK OPT";
+    public static String name = "MOTETRACK UOP";
     public static native void test_native();
     public static boolean test_java() {
         MobileMoteM.motetrack_init_benchmark();

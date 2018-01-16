@@ -44,6 +44,15 @@
 #include "Point.h"
 #include "MoteTrackParams.h"
 
+
+// ------------------------ ShortResults -----------------------------------
+struct ShortResults
+{
+    int16_t r0;
+    int16_t r1;
+};
+typedef struct ShortResults ShortResults;
+
 // ------------------------ RFSignal -----------------------------------
 #define MIN_RSSI 0
 #define MAX_RSSI 100
@@ -53,7 +62,8 @@
 struct RFSignal
 {
     uint16_t sourceID;           // moteID of the source mote
-    uint8_t rssi[NBR_FREQCHANNELS][NBR_TXPOWERS];  // received signal strength for each of the freqChan and power levels
+    uint8_t rssi_0;  // received signal strength for each of the freqChan and power levels
+    uint8_t rssi_1;
 };
 typedef struct RFSignal RFSignal;
 typedef RFSignal* RFSignalPtr;
@@ -86,13 +96,11 @@ typedef RefSignature* RefSignaturePtr;
  */
 static inline void RFSignal_init(RFSignal *rfSigPtr)
 {
-    uint8_t f=0, p=0;
+    // uint8_t f=0; //, p=0;
 
     rfSigPtr->sourceID = 0;
-    for (f = 0; f < NBR_FREQCHANNELS; ++f)
-        for (p = 0; p < NBR_TXPOWERS; ++p)
-            rfSigPtr->rssi[f][p] = 0;
-
+    rfSigPtr->rssi_0 = 0;
+    rfSigPtr->rssi_1 = 0;
 }
 
 // /**
@@ -139,25 +147,30 @@ static inline bool RFSignal_haveSameID(RFSignal *rfSig1Ptr, RFSignal *rfSig2Ptr)
  *   2. neither RFSignal is NULL, and they have the same sourceID.
  * If one of these two conditions doen't hold, then a FATAL ERROR is generated!
  */
-static inline void RFSignal_rfSignalDiff(uint16_t results[NBR_FREQCHANNELS][NBR_TXPOWERS], RFSignal *rfSig1Ptr, RFSignal *rfSig2Ptr)
+static inline void RFSignal_rfSignalDiff(ShortResults *results, RFSignal *rfSig1Ptr, RFSignal *rfSig2Ptr)
 {
-    uint8_t f=0, p=0;
+    // uint8_t f=0; //, p=0;
 
     if (rfSig1Ptr != NULL && rfSig2Ptr == NULL) {
-        for (f = 0; f < NBR_FREQCHANNELS; ++f)
-            for (p = 0; p < NBR_TXPOWERS; ++p)
-                results[f][p] = rfSig1Ptr->rssi[f][p];
+        // for (f = 0; f < NBR_FREQCHANNELS; ++f)
+            results->r0 = rfSig1Ptr->rssi_0;
+            results->r1 = rfSig1Ptr->rssi_1;
     }
     else if ( rfSig1Ptr != NULL && rfSig2Ptr != NULL && RFSignal_haveSameID(rfSig1Ptr, rfSig2Ptr) ) {
-        for (f = 0; f < NBR_FREQCHANNELS; ++f) {
-            for (p = 0; p < NBR_TXPOWERS; ++p) {
-                // The two rfSignals can be compared.  Return the absolute value
-                if (rfSig1Ptr->rssi[f][p] >= rfSig2Ptr->rssi[f][p])
-                    results[f][p] = rfSig1Ptr->rssi[f][p] - rfSig2Ptr->rssi[f][p];
-                else
-                    results[f][p] = rfSig2Ptr->rssi[f][p] - rfSig1Ptr->rssi[f][p];
-            }
-        }
+        // for (f = 0; f < NBR_FREQCHANNELS; ++f) {
+            // The two rfSignals can be compared.  Return the absolute value
+            int16_t x;
+            x = rfSig1Ptr->rssi_0 - rfSig2Ptr->rssi_0;
+            if (x > 0)
+                results->r0 = x;
+            else
+                results->r0 = -x;
+            x = rfSig1Ptr->rssi_1 - rfSig2Ptr->rssi_1;
+            if (x > 0)
+                results->r1 = x;
+            else
+                results->r1 = -x;
+        // }
     }
     else {
         avroraPrintHex32(0xBEEF0001);
@@ -332,42 +345,53 @@ static inline void Signature_init(Signature *sigPtr)
  * @param refSigPtr  the reference signature to compare
  * @param sigPtr  the signature to compare
  */
-static inline void RefSignature_signatureDiffBidirectional(uint16_t results[NBR_FREQCHANNELS][NBR_TXPOWERS], 
-                                                    RefSignature *refSigPtr, Signature *sigPtr)
+static inline void RefSignature_signatureDiffBidirectional(ShortResults *results, 
+                                                    RefSignature *refSigPtr, Signature *sigPtr, ShortResults *currSigDiffs)
 {
-    uint16_t s = 0, r = 0, f = 0, p = 0;
-    uint16_t currSigDiffs[NBR_FREQCHANNELS][NBR_TXPOWERS];
+    uint16_t s = 0, r = 0; //, f = 0; //, p = 0;
+    // uint16_t currSigDiffs[NBR_FREQCHANNELS];
+        currSigDiffs->r0 = 0;
+        currSigDiffs->r1 = 0;
 
     // (1) - Initialize the results
-    for (f = 0; f < NBR_FREQCHANNELS; ++f)
-        for (p = 0; p < NBR_TXPOWERS; ++p)
-            results[f][p] = 0;
+    // for (f = 0; f < NBR_FREQCHANNELS; ++f)
+        results->r0 = 0;
+        results->r1 = 0;
 
     // (2) - Compute differences, while there are more RFSignals in
     //       either the Signature or the RefSignature
-    while( (s < NBR_RFSIGNALS_IN_SIGNATURE && sigPtr->rfSignals[s].sourceID != 0) ||
-           (r < NBR_RFSIGNALS_IN_SIGNATURE && refSigPtr->sig.rfSignals[r].sourceID != 0) ) {
+    RFSignal *sigPtr_rfSignals = sigPtr->rfSignals;
+    RFSignal *refSigPtr_sig_rfSignals = refSigPtr->sig.rfSignals;
+    while( (s < NBR_RFSIGNALS_IN_SIGNATURE) ||
+           (r < NBR_RFSIGNALS_IN_SIGNATURE) ) {
+
+        RFSignal *sigPtr_rfSignals_s = &sigPtr_rfSignals[s];
+        RFSignal *refSigPtr_sig_rfSignals_r = &refSigPtr_sig_rfSignals[r];
+
+        if (!(sigPtr_rfSignals_s->sourceID != 0 || refSigPtr_sig_rfSignals_r->sourceID != 0)) {
+            break;
+        }
 
         // case 1: there are no more rfSignals in Signature
-        if ( !(s < NBR_RFSIGNALS_IN_SIGNATURE && sigPtr->rfSignals[s].sourceID != 0) ) {
-            RFSignal_rfSignalDiff(currSigDiffs, &(refSigPtr->sig.rfSignals[r++]), NULL);
+        if ( !(s < NBR_RFSIGNALS_IN_SIGNATURE && sigPtr_rfSignals_s->sourceID != 0) ) {
+            RFSignal_rfSignalDiff(currSigDiffs, &(refSigPtr_sig_rfSignals[r++]), NULL);
         }
         // case 2: there are no more rfSignals in RefSignature
-        else if ( !(r < NBR_RFSIGNALS_IN_SIGNATURE && refSigPtr->sig.rfSignals[r].sourceID != 0) ) {
-            RFSignal_rfSignalDiff(currSigDiffs, &(sigPtr->rfSignals[s++]), NULL);
+        else if ( !(r < NBR_RFSIGNALS_IN_SIGNATURE && refSigPtr_sig_rfSignals_r->sourceID != 0) ) {
+            RFSignal_rfSignalDiff(currSigDiffs, &(sigPtr_rfSignals[s++]), NULL);
         }
 
         // If we made it this far, then there are more rfSignals in both Signature and RefSignature
         // case 3: there is a match
-        else if (sigPtr->rfSignals[s].sourceID == refSigPtr->sig.rfSignals[r].sourceID) {
-            RFSignal_rfSignalDiff(currSigDiffs, &(sigPtr->rfSignals[s++]), &(refSigPtr->sig.rfSignals[r++]) );
+        else if (sigPtr_rfSignals_s->sourceID == refSigPtr_sig_rfSignals_r->sourceID) {
+            RFSignal_rfSignalDiff(currSigDiffs, &(sigPtr_rfSignals[s++]), &(refSigPtr_sig_rfSignals[r++]) );
         }
         // case 4: rfSignal of Signature < rfSignal of RefSignature
-        else if (sigPtr->rfSignals[s].sourceID < refSigPtr->sig.rfSignals[r].sourceID) {
-            RFSignal_rfSignalDiff(currSigDiffs, &(sigPtr->rfSignals[s++]), NULL);
+        else if (sigPtr_rfSignals_s->sourceID < refSigPtr_sig_rfSignals_r->sourceID) {
+            RFSignal_rfSignalDiff(currSigDiffs, &(sigPtr_rfSignals[s++]), NULL);
         }
         // case 5: rfSignal of Signature > rfSignal of RefSignature
-        else if (sigPtr->rfSignals[s].sourceID > refSigPtr->sig.rfSignals[r].sourceID) {
+        else if (sigPtr_rfSignals_s->sourceID > refSigPtr_sig_rfSignals_r->sourceID) {
             RFSignal_rfSignalDiff(currSigDiffs, &(refSigPtr->sig.rfSignals[r++]), NULL);
         }
         else {
@@ -379,65 +403,63 @@ static inline void RefSignature_signatureDiffBidirectional(uint16_t results[NBR_
 
 
         // Add the differences from this iteration
-        for (f = 0; f < NBR_FREQCHANNELS; ++f)
-            for (p = 0; p < NBR_TXPOWERS; ++p)
-                results[f][p] += currSigDiffs[f][p];
+        // for (f = 0; f < NBR_FREQCHANNELS; ++f)
+            results->r0 += currSigDiffs->r0;
+            results->r1 += currSigDiffs->r1;
     }
 }
 
-/**
- * Implements the <b>UNIDIRECTIONAL</b> signature difference algorithm. <br>
- * @param results[]  place the results for each txPower in this array
- * @param refSigPtr  the reference signature to compare
- * @param sigPtr  the signature to compare
- */
-static inline void RefSignature_signatureDiffUnidirectional(uint16_t results[NBR_FREQCHANNELS][NBR_TXPOWERS], 
-                                                     RefSignature *refSigPtr, Signature *sigPtr)
-{
-    uint16_t s = 0, r = 0, f = 0, p = 0;
-    uint16_t currSigDiffs[NBR_FREQCHANNELS][NBR_TXPOWERS];
+// /**
+//  * Implements the <b>UNIDIRECTIONAL</b> signature difference algorithm. <br>
+//  * @param results[]  place the results for each txPower in this array
+//  * @param refSigPtr  the reference signature to compare
+//  * @param sigPtr  the signature to compare
+//  */
+// static inline void RefSignature_signatureDiffUnidirectional(uint16_t results[NBR_FREQCHANNELS], 
+//                                                      RefSignature *refSigPtr, Signature *sigPtr)
+// {
+//     uint16_t s = 0, r = 0, f = 0; //, p = 0;
+//     uint16_t currSigDiffs[NBR_FREQCHANNELS];
 
-    // (1) - Initialize the results
-    for (f = 0; f < NBR_FREQCHANNELS; ++f)
-        for (p = 0; p < NBR_TXPOWERS; ++p)
-            results[f][p] = 0;
-
-
-    // (2) - Compute differences, while there are more RFSignals in the Signature
-    while( s < NBR_RFSIGNALS_IN_SIGNATURE && sigPtr->rfSignals[s].sourceID != 0 ) {
-
-        // case 1: there are no more rfSignals in RefSignature
-        if ( !(r < NBR_RFSIGNALS_IN_SIGNATURE && refSigPtr->sig.rfSignals[r].sourceID != 0) ) {
-            RFSignal_rfSignalDiff(currSigDiffs, &(sigPtr->rfSignals[s++]), NULL);
-        }
-
-        // If we made it this far, then there are more rfSignals in both Signature and RefSignature
-        // case 2: there is a match
-        else if (sigPtr->rfSignals[s].sourceID == refSigPtr->sig.rfSignals[r].sourceID) {
-            RFSignal_rfSignalDiff(currSigDiffs, &(sigPtr->rfSignals[s++]), &(refSigPtr->sig.rfSignals[r++]) );
-        }
-        // case 3: rfSignal of Signature < rfSignal of RefSignature
-        else if (sigPtr->rfSignals[s].sourceID < refSigPtr->sig.rfSignals[r].sourceID) {
-            RFSignal_rfSignalDiff(currSigDiffs, &(sigPtr->rfSignals[s++]), NULL);
-        }
-        // case 4: rfSignal of Signature > rfSignal of RefSignature
-        else if (sigPtr->rfSignals[s].sourceID > refSigPtr->sig.rfSignals[r].sourceID) {
-            r++;  // do not add the difference in the unidirectional alg.
-        }
-        else {
-            avroraPrintHex32(0xBEEF0003);
-            asm volatile ("break");
-            // printfUART("RefSignature - RefSignature_signatureDiffUnidirectional): FATAL ERROR! Illegal case\n", "");
-            // EXIT_PROGRAM = 1;
-        }
+//     // (1) - Initialize the results
+//     for (f = 0; f < NBR_FREQCHANNELS; ++f)
+//         results[f] = 0;
 
 
-        // Add the differences from this iteration
-        for (f = 0; f < NBR_FREQCHANNELS; ++f)
-            for (p = 0; p < NBR_TXPOWERS; ++p)
-                results[f][p] += currSigDiffs[f][p];
-    }
-}
+//     // (2) - Compute differences, while there are more RFSignals in the Signature
+//     while( s < NBR_RFSIGNALS_IN_SIGNATURE && sigPtr->rfSignals[s].sourceID != 0 ) {
+
+//         // case 1: there are no more rfSignals in RefSignature
+//         if ( !(r < NBR_RFSIGNALS_IN_SIGNATURE && refSigPtr->sig.rfSignals[r].sourceID != 0) ) {
+//             RFSignal_rfSignalDiff(currSigDiffs, &(sigPtr->rfSignals[s++]), NULL);
+//         }
+
+//         // If we made it this far, then there are more rfSignals in both Signature and RefSignature
+//         // case 2: there is a match
+//         else if (sigPtr->rfSignals[s].sourceID == refSigPtr->sig.rfSignals[r].sourceID) {
+//             RFSignal_rfSignalDiff(currSigDiffs, &(sigPtr->rfSignals[s++]), &(refSigPtr->sig.rfSignals[r++]) );
+//         }
+//         // case 3: rfSignal of Signature < rfSignal of RefSignature
+//         else if (sigPtr->rfSignals[s].sourceID < refSigPtr->sig.rfSignals[r].sourceID) {
+//             RFSignal_rfSignalDiff(currSigDiffs, &(sigPtr->rfSignals[s++]), NULL);
+//         }
+//         // case 4: rfSignal of Signature > rfSignal of RefSignature
+//         else if (sigPtr->rfSignals[s].sourceID > refSigPtr->sig.rfSignals[r].sourceID) {
+//             r++;  // do not add the difference in the unidirectional alg.
+//         }
+//         else {
+//             avroraPrintHex32(0xBEEF0003);
+//             asm volatile ("break");
+//             // printfUART("RefSignature - RefSignature_signatureDiffUnidirectional): FATAL ERROR! Illegal case\n", "");
+//             // EXIT_PROGRAM = 1;
+//         }
+
+
+//         // Add the differences from this iteration
+//         for (f = 0; f < NBR_FREQCHANNELS; ++f)
+//             results[f] += currSigDiffs[f];
+//     }
+// }
 
 void printSignature(Signature *s);
 void printRefSignature(RefSignature *r);

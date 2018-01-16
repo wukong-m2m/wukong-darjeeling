@@ -25,11 +25,10 @@ public class RFSignal {
         sigPtr.rssi_1 = 0;
     }
 
-    // Manually inlined
-    // public static boolean haveSameID(RFSignal rfSig1Ptr, RFSignal rfSig2Ptr)
-    // {
-    //     return rfSig1Ptr.sourceID == rfSig2Ptr.sourceID;
-    // }
+    public static boolean haveSameID(RFSignal rfSig1Ptr, RFSignal rfSig2Ptr)
+    {
+        return rfSig1Ptr.sourceID == rfSig2Ptr.sourceID;
+    }
 
     /*
      * The difference between 2 RFSignals can be computed ONLY if:
@@ -38,37 +37,31 @@ public class RFSignal {
      * If one of these two conditions doen't hold, then a FATAL ERROR is generated!
      */
     @Lightweight
-    public static void rfSignalDiff(ShortResults results, RFSignal rfSig1Ptr, RFSignal rfSig2Ptr)
+    public static void rfSignalDiff(short results[], RFSignal rfSig1Ptr, RFSignal rfSig2Ptr)
     {
+        byte f=0;
+
         if (rfSig2Ptr == null) {
             // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f)
-                results.r0 = rfSig1Ptr.rssi_0;
-                results.r1 = rfSig1Ptr.rssi_1;
+                results[0] = rfSig1Ptr.rssi_0;
+                results[1] = rfSig1Ptr.rssi_1;
         }
-        else if ( rfSig2Ptr != null && (rfSig1Ptr.sourceID == rfSig2Ptr.sourceID) ) {
+        else if ( rfSig2Ptr != null && haveSameID(rfSig1Ptr, rfSig2Ptr) ) {
             // for (f = 0; f < MoteTrackParams.NBR_FREQCHANNELS; ++f) {
                 // The two rfSignals can be compared.  Return the absolute value
                 short x;
                 x = (short)(rfSig1Ptr.rssi_0 - rfSig2Ptr.rssi_0);
                 if (x > 0) {
-                    results.r0 = x;
+                    results[0] = x;
                 } else {
-                    results.r0 = (short)-x;
+                    results[0] = (short)-x;
                 }
                 x = (short)(rfSig1Ptr.rssi_1 - rfSig2Ptr.rssi_1);
                 if (x > 0) {
-                    results.r1 = x;
+                    results[1] = x;
                 } else {
-                    results.r1 = (short)-x;
+                    results[1] = (short)-x;
                 }
-                // if (rfSig1Ptr.rssi_0 >= rfSig2Ptr.rssi_0)
-                //     results[0] = (short) (rfSig1Ptr.rssi_0 - rfSig2Ptr.rssi_0);
-                // else
-                //     results[0] = (short) (rfSig2Ptr.rssi_0 - rfSig1Ptr.rssi_0);
-                // if (rfSig1Ptr.rssi_1 >= rfSig2Ptr.rssi_1)
-                //     results[1] = (short) (rfSig1Ptr.rssi_1 - rfSig2Ptr.rssi_1);
-                // else
-                //     results[1] = (short) (rfSig2Ptr.rssi_1 - rfSig1Ptr.rssi_1);
             // }
         }
         else {

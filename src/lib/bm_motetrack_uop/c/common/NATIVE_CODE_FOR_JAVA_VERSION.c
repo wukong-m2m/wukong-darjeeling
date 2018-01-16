@@ -1,12 +1,12 @@
 #include "execution.h"
 #include "array.h"
-#include "jlib_bm_motetrack_opt.h"
+#include "jlib_bm_motetrack_uop.h"
 #include "RefSignature.h"
 #include "SignatureDB.h"
 #include "RefSignatureDB.h"
 
 int16_t MoteTrack_DB_index;
-BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_RefSignature * MoteTrack_DB_dest_refsignature;
+BM_MOTETRACK_UOP_STRUCT_javax_rtcbench_RefSignature * MoteTrack_DB_dest_refsignature;
 uint16_t MoteTrack_DB_returnaddress;
 
 void javax_rtcbench_DB_void_refSignature_get_javax_rtcbench_RefSignature_short() {
@@ -38,20 +38,20 @@ void read_refsignature_from_flash() {
     RefSignature refSig;
     RefSignatureDB_get_JVM(&refSig, MoteTrack_DB_index);
 
-    BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_Point * dest_location = (BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_Point *)REF_TO_VOIDP(MoteTrack_DB_dest_refsignature->location);
+    BM_MOTETRACK_UOP_STRUCT_javax_rtcbench_Point * dest_location = (BM_MOTETRACK_UOP_STRUCT_javax_rtcbench_Point *)REF_TO_VOIDP(MoteTrack_DB_dest_refsignature->location);
     dest_location->x = refSig.location.x;
     dest_location->y = refSig.location.y;
     dest_location->z = refSig.location.z;
 
-    BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_Signature * dest_sig = (BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_Signature *)REF_TO_VOIDP(MoteTrack_DB_dest_refsignature->sig);
+    BM_MOTETRACK_UOP_STRUCT_javax_rtcbench_Signature * dest_sig = (BM_MOTETRACK_UOP_STRUCT_javax_rtcbench_Signature *)REF_TO_VOIDP(MoteTrack_DB_dest_refsignature->sig);
     dest_sig->id = refSig.sig.id;
 
     ref_t * dest_rfsignals = ((dj_ref_array *)REF_TO_VOIDP(dest_sig->rfSignals))->refs;
     for (uint8_t i=0; i<NBR_RFSIGNALS_IN_SIGNATURE; i++) {
-        BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_RFSignal * dest_rfsignal = (BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_RFSignal *)REF_TO_VOIDP(dest_rfsignals[i]);
+        BM_MOTETRACK_UOP_STRUCT_javax_rtcbench_RFSignal * dest_rfsignal = (BM_MOTETRACK_UOP_STRUCT_javax_rtcbench_RFSignal *)REF_TO_VOIDP(dest_rfsignals[i]);
         dest_rfsignal->sourceID = refSig.sig.rfSignals[i].sourceID;
-        dest_rfsignal->rssi_0 = refSig.sig.rfSignals[i].rssi_0;
-        dest_rfsignal->rssi_1 = refSig.sig.rfSignals[i].rssi_1;
+        dest_rfsignal->rssi_0 = refSig.sig.rfSignals[i].rssi[0][0];
+        dest_rfsignal->rssi_1 = refSig.sig.rfSignals[i].rssi[1][0];
     }
 }
 
@@ -85,19 +85,19 @@ void read_signature_from_flash() {
     RefSignature refSig;
     SignatureDB_get_JVM(&refSig, MoteTrack_DB_index);
 
-    BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_Point * dest_location = (BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_Point *)REF_TO_VOIDP(MoteTrack_DB_dest_refsignature->location);
+    BM_MOTETRACK_UOP_STRUCT_javax_rtcbench_Point * dest_location = (BM_MOTETRACK_UOP_STRUCT_javax_rtcbench_Point *)REF_TO_VOIDP(MoteTrack_DB_dest_refsignature->location);
     dest_location->x = refSig.location.x;
     dest_location->y = refSig.location.y;
     dest_location->z = refSig.location.z;
 
-    BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_Signature * dest_sig = (BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_Signature *)REF_TO_VOIDP(MoteTrack_DB_dest_refsignature->sig);
+    BM_MOTETRACK_UOP_STRUCT_javax_rtcbench_Signature * dest_sig = (BM_MOTETRACK_UOP_STRUCT_javax_rtcbench_Signature *)REF_TO_VOIDP(MoteTrack_DB_dest_refsignature->sig);
     dest_sig->id = refSig.sig.id;
 
     ref_t * dest_rfsignals = ((dj_ref_array *)REF_TO_VOIDP(dest_sig->rfSignals))->refs;
     for (uint8_t i=0; i<NBR_RFSIGNALS_IN_SIGNATURE; i++) {
-        BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_RFSignal * dest_rfsignal = (BM_MOTETRACK_OPT_STRUCT_javax_rtcbench_RFSignal *)REF_TO_VOIDP(dest_rfsignals[i]);
+        BM_MOTETRACK_UOP_STRUCT_javax_rtcbench_RFSignal * dest_rfsignal = (BM_MOTETRACK_UOP_STRUCT_javax_rtcbench_RFSignal *)REF_TO_VOIDP(dest_rfsignals[i]);
         dest_rfsignal->sourceID = refSig.sig.rfSignals[i].sourceID;
-        dest_rfsignal->rssi_0 = refSig.sig.rfSignals[i].rssi_0;
-        dest_rfsignal->rssi_1 = refSig.sig.rfSignals[i].rssi_1;
+        dest_rfsignal->rssi_0 = refSig.sig.rfSignals[i].rssi[0][0];
+        dest_rfsignal->rssi_1 = refSig.sig.rfSignals[i].rssi[1][0];
     }
 }

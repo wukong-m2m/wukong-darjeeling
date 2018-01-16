@@ -1,5 +1,5 @@
 djlibsource {
-    bm_motetrack_opt {
+    bm_motetrack_uop {
         cDependencies = [ 'base', 'vm_dev' ]
         javaDependencies = [ 'base' ]
     }
