@@ -89,12 +89,14 @@ public class MobileMoteM {
         Point.init(locEst);
         Signature.init(sig);
 
-        sig.id = addSignatureFromFile(refSig);
+        short sig_id = addSignatureFromFile(refSig);
         if ((srcAddrBcnMaxRSSI = constructSignature(sig)) == 0) {
             locEst.x = locEst.y = locEst.z = 0;
             RTC.avroraPrintHex32(0xBEEF0006);
             return locEst;
         }
+
+        sig.id = sig_id;
 
         // (2) - Estimate the Signature's location
         EstimateLoc.estimateLoc(locEst, sig, refSig);

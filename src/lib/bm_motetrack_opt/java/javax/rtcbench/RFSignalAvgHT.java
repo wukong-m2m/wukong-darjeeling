@@ -104,16 +104,14 @@ public class RFSignalAvgHT {
     {
         short i = 0, k = 0, f = 0; //, p = 0;
         short maxRssiIndex = 0;
+        short retSrcIDMaxRSSIPtr;
 
         // (1) - If the hashtable is empty, then we can't construct a Signature
         if (HPtr.size == 0) {
             // *retSrcIDMaxRSSIPtr = 0;
-            return 0;      // the hash table is empty, so can't construct Signature    
-        }    
-
-           
+            retSrcIDMaxRSSIPtr = 0;      // the hash table is empty, so can't construct Signature    
+        } else if (HPtr.size <= Signature.NBR_RFSIGNALS_IN_SIGNATURE) {
         // (2) - If we can include all RFSignals, there is no need to first sort the hashtable by strongest RSSI
-        if (HPtr.size <= Signature.NBR_RFSIGNALS_IN_SIGNATURE) {
             // (a) Initialize the signature
             //Signature_init(retSigPtr);
             k = -1;
@@ -149,7 +147,7 @@ public class RFSignalAvgHT {
                 }    
             }
             
-            short retSrcIDMaxRSSIPtr = retSigPtr.rfSignals[maxRssiIndex].sourceID;
+            retSrcIDMaxRSSIPtr = retSigPtr.rfSignals[maxRssiIndex].sourceID;
             // *retSrcIDMaxRSSIPtr = retSigPtr.rfSignals[maxRssiIndex].sourceID;
 
             // (c) Sort the RFSignals in Signature by sourceID
@@ -169,7 +167,6 @@ public class RFSignalAvgHT {
             //for (i = 0; i < HPtr.size; ++i)
             //    printfUART("%i  ", retSigPtr.rfSignals[i].sourceID);
 
-            return retSrcIDMaxRSSIPtr;
         }
 
         // (3) - We can't include all RFSignals, so sort them by strongest RSSIs 
@@ -218,7 +215,7 @@ public class RFSignalAvgHT {
 
             // at this point the strongest RSSI is at 1st freqChan, index 0
             // *retSrcIDMaxRSSIPtr = HPtr.htData[0].sourceID;
-            short retSrcIDMaxRSSIPtr = HPtr.htData[0].sourceID;
+            retSrcIDMaxRSSIPtr = HPtr.htData[0].sourceID;
             
                                                               
             // (d) IMPORTANT: construct the Signature with the strongest RSSIs  
@@ -242,7 +239,7 @@ public class RFSignalAvgHT {
             //    qsort(retSigPtr.rfSignals, HPtr.size, sizeof(RFSignal), RFSignal_compare);
             // #endif
 
-            return retSrcIDMaxRSSIPtr;
         }
+        return retSrcIDMaxRSSIPtr;
     }
 }
