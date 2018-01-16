@@ -27,10 +27,10 @@
 
 #if defined(ARRAYINDEX_32BIT)
  // Version 100: 32 bit index
-#define INFUSION_FORMAT_VERSION 124
+#define INFUSION_FORMAT_VERSION 126
 #else
  // Version 101: 16 bit index
-#define INFUSION_FORMAT_VERSION 125
+#define INFUSION_FORMAT_VERSION 127
 #endif
 
 enum ElementType
@@ -41,7 +41,8 @@ enum ElementType
 	STATICFIELDINFO = 3,
 	METHODDEFLIST = 4,
 	INFUSIONLIST = 5,
-	STRINGTABLE = 6
+	STRINGTABLE = 6,
+	METHODIMPLCODELIST = 13,
 };
 
 enum MethodImplementationFlags
@@ -155,7 +156,6 @@ void dj_di_read_methodImplHeader(dj_methodImplementation *header_data, dj_di_poi
 #define dj_di_methodImplementation_getNumberOfOwnVariableSlots(pointer) dj_di_getU8(pointer + 11)
 #define dj_di_methodImplementation_getNumberOfTotalVariableSlots(pointer) dj_di_getU8(pointer + 12)
 #define dj_di_methodImplementation_getLength(pointer) dj_di_getU16(pointer + 13)
-#define dj_di_methodImplementation_getData(pointer) (pointer + 15)
 
 #define dj_di_methodImplementation_getNrExceptionHandlers(pointer) \
 	dj_di_getU8((pointer + 16 + dj_di_getU16(pointer + 13)))

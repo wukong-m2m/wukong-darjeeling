@@ -57,6 +57,7 @@ import org.csiro.darjeeling.infuser.structure.elements.internal.InternalMethodDe
 import org.csiro.darjeeling.infuser.structure.elements.internal.InternalMethodDefinitionList;
 import org.csiro.darjeeling.infuser.structure.elements.internal.InternalMethodImplementation;
 import org.csiro.darjeeling.infuser.structure.elements.internal.InternalMethodImplementationList;
+import org.csiro.darjeeling.infuser.structure.elements.internal.InternalMethodImplementationCodeList;
 import org.csiro.darjeeling.infuser.structure.elements.internal.InternalReferencedInfusionList;
 import org.csiro.darjeeling.infuser.structure.elements.internal.InternalStaticFieldList;
 import org.csiro.darjeeling.infuser.structure.elements.internal.InternalStringTable;
@@ -233,6 +234,10 @@ public abstract class ElementVisitor
 	public void visit(AbstractMethodImplementation element)
 	{
 		visit((Element)element);
+	}
+
+	public void visit(InternalMethodImplementationCodeList element)
+	{
 	}
 
 	public void visit(InternalMethodImplementationList element)

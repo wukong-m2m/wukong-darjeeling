@@ -439,7 +439,7 @@ dj_global_id dj_global_id_lookupAnyVirtualMethod(dj_global_id resolvedMethodDefI
  */
 dj_di_pointer dj_global_id_getMethodImplementation(dj_global_id gid)
 {
-	return dj_infusion_getMethodImplementation(gid.infusion, gid.entity_id);
+	return dj_infusion_getMethodImplementation(gid.infusion, gid.entity_id, GET_METHOD_HEADER);
 }
 
 /**

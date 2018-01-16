@@ -113,7 +113,7 @@ void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t 
     wkreprog_close();
 }
 
-void rtc_compile_method(dj_di_pointer methodimpl) {
+void rtc_compile_method(dj_di_pointer methodimpl, dj_di_pointer jvmbytecode) {
 #ifdef AVRORA
     // avroraStartRTCCompileTimer();
 #endif
@@ -142,7 +142,7 @@ void rtc_compile_method(dj_di_pointer methodimpl) {
     rtc_ts->pc = 0;
     rtc_ts->methodimpl = methodimpl;
     dj_di_read_methodImplHeader(&(rtc_ts->methodimpl_header), methodimpl);
-    rtc_ts->jvm_code_start = dj_di_methodImplementation_getData(methodimpl);
+    rtc_ts->jvm_code_start = jvmbytecode;
     rtc_ts->branch_target_table_start_ptr = branch_target_table_start_ptr;
     rtc_ts->branch_target_count = 0;
     #ifdef AOT_SAFETY_CHECKS
@@ -251,7 +251,7 @@ void rtc_compile_lib(dj_infusion *infusion) {
     native_method_function_t method_start_addresses[256];
     uint8_t call_saved_registers_used_per_method[256];
     for (uint16_t i=0; i<dj_di_parentElement_getListSize(infusion->methodImplementationList); i++) {
-        dj_di_pointer methodimpl = dj_infusion_getMethodImplementation(infusion, i);
+        dj_di_pointer methodimpl = dj_infusion_getMethodImplementation(infusion, i, GET_METHOD_HEADER);
         if (dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_NATIVE) {
             // Copy existing pointer
             const DJ_PROGMEM native_method_function_t *native_handlers = infusion->native_handlers;
@@ -277,7 +277,8 @@ void rtc_compile_lib(dj_infusion *infusion) {
     for (uint16_t i=0; i<number_of_methodimpls; i++) {      
         DEBUG_LOG(DBG_RTC, "[rtc] (compile) pointer for method %i %p\n", i, infusion->native_handlers[i]);  
 
-        dj_di_pointer methodimpl = dj_infusion_getMethodImplementation(infusion, i);
+        dj_di_pointer methodimpl = dj_infusion_getMethodImplementation(infusion, i, GET_METHOD_HEADER);
+        dj_di_pointer jvmbytecode = dj_infusion_getMethodImplementation(infusion, i, GET_METHOD_CODE);
         if (dj_di_methodImplementation_getFlags(methodimpl) & FLAGS_NATIVE) {
             DEBUG_LOG(DBG_RTC, "[rtc] skipping native method %d\n", i);
             continue;
@@ -302,7 +303,7 @@ void rtc_compile_lib(dj_infusion *infusion) {
 #endif
 
         rtc_ts->current_method_index = i;
-        rtc_compile_method(methodimpl);
+        rtc_compile_method(methodimpl, jvmbytecode);
 
         emit_flush_to_flash();
         // rtc_start_of_next_method contains the address/2 so that any address < 128K will fit in a uint16_t.

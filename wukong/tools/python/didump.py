@@ -104,6 +104,44 @@ def print_method_impl_list(rawdata):
 		print "\t\t\ttotal variable slots:", methoddata.pop(0)
 		code_length = little_endian(methoddata[0:2])
 		print "\t\t\tcode length:", code_length
+		# print "\t\t\tcode:", methoddata[2:2+code_length]
+		# methoddata = methoddata[2+code_length:]
+		# number_of_exceptions = methoddata.pop(0)
+		# print "\t\t\tnumber of exceptions:", number_of_exceptions
+		# for j in range(number_of_exceptions):
+		# 	print "\t\t\t\texception", j
+		# 	print "\t\t\t\tcatch type infusion:", methoddata[0]
+		# 	print "\t\t\t\tcatch type local id:", methoddata[1]
+		# 	print "\t\t\t\texception start, end PC:", little_endian(methoddata[2:4]), ",", little_endian(methoddata[4:6])
+		# 	print "\t\t\t\thandler PC:", little_endian(methoddata[6:8])
+		# 	methoddata = methoddata[8:]
+		if i != count-1:
+			print ''
+
+def print_method_impl_code_list(rawdata):
+	count, forward_pointers, elements = \
+		parse_count_forward_pointers_and_elements(rawdata[1:], 1, 2, offset=-1)
+	print "\t\tnumber of methods:", count
+	print "\t\tforward pointers:", forward_pointers
+	for i in range(count):
+		print "\t\t\tmethod ", i, elements[i]
+		if methodimpls is not None:
+			methodimpl = methodimpls[i]
+			methoddef = methodimpl['methoddef']
+			if methoddef is not None:
+				classdef = methodimpl['parentclass']
+				if classdef is not None:
+					print "\t\t\t%s.%s: %s" % (classdef['name'], methoddef['name'], methoddef['signature'])
+				else:
+					print "\t\t\t%s: %s" % (methoddef['name'], methoddef['signature'])
+			else:
+				print "\t\t\tmethoddef %s in infusion %s" % (methodimpl['methoddef.entity_id'], methodimpl['methoddef.infusion'])
+		else:
+			print "\t\t\tNO INFUSION HEADER FOUND"
+		methoddata = elements[i]
+		print "\t\t\tlength incl header and fwd pointers:", len(methoddata) + 2
+		code_length = little_endian(methoddata[0:2])
+		print "\t\t\tcode length:", code_length
 		print "\t\t\tcode:", methoddata[2:2+code_length]
 		methoddata = methoddata[2+code_length:]
 		# number_of_exceptions = methoddata.pop(0)
@@ -165,7 +203,8 @@ element_types = {
 	9 :('INFUSION',None),
 	10 :('METHODDEF',None),
 	11 :('METHOD',None),
-	12 :('FIELDDEF',None)
+	12 :('FIELDDEF',None),
+	13 :('METHODIMPLCODELIST',print_method_impl_code_list)
 }
 
 def print_element(rawdata):

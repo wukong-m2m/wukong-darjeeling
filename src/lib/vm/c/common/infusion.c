@@ -78,6 +78,7 @@ dj_infusion *dj_infusion_create(dj_di_pointer staticFieldInfo, int nrImportedInf
     ret->classList = DJ_DI_NOT_SET;
     ret->methodImplementationList = DJ_DI_NOT_SET;
     ret->stringTable = DJ_DI_NOT_SET;
+    ret->methodImplementationCodeList = DJ_DI_NOT_SET;
 
     // allocate memory for the static fields and set the
     // pointers
@@ -187,7 +188,7 @@ void dj_infusion_getName(dj_infusion * infusion, char * str, int strLength)
 
 }
 
-dj_di_pointer dj_infusion_getMethodImplementation(dj_infusion *infusion, int entity_id)
+dj_di_pointer dj_infusion_getMethodImplementation(dj_infusion *infusion, int entity_id, uint8_t what_to_get)
 {
 #ifdef AOT_SAFETY_CHECKS
         if (entity_id >= dj_di_parentElement_getListSize(infusion->methodImplementationList)) {
@@ -195,7 +196,11 @@ dj_di_pointer dj_infusion_getMethodImplementation(dj_infusion *infusion, int ent
         }
 #endif //AOT_SAFETY_CHECKS
 
-    return dj_di_parentElement_getChild(infusion->methodImplementationList, entity_id);
+    if (what_to_get == GET_METHOD_HEADER) {
+        return dj_di_parentElement_getChild(infusion->methodImplementationList, entity_id);
+    } else {
+        return dj_di_parentElement_getChild(infusion->methodImplementationCodeList, entity_id) + 2; // +2 to skip length
+    }
 }
 
 dj_di_pointer dj_infusion_getString(dj_infusion * infusion, int entity_id)

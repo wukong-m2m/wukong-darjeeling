@@ -44,6 +44,7 @@ public class InternalInfusion extends AbstractInfusion
 		add(this.staticFieldList = new InternalStaticFieldList());
 		add(this.stringTable = new InternalStringTable(this));
 		add(this.referencedInfusionList = new InternalReferencedInfusionList());
+		add(new InternalMethodImplementationCodeList((InternalMethodImplementationList)this.methodImplementationList));
 	}
 	
 	private AbstractMethodDefinition insertMethodDefinition(AbstractMethodDefinition methodDefinition)

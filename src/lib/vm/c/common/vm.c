@@ -346,6 +346,9 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 		case METHODIMPLLIST:
 			infusion->methodImplementationList = element;
 			break;
+		case METHODIMPLCODELIST:
+			infusion->methodImplementationCodeList = element;
+			break;
 		case STRINGTABLE:
 			infusion->stringTable = element;
 			break;
@@ -354,7 +357,7 @@ dj_infusion *dj_vm_loadInfusion(dj_vm *vm, dj_di_pointer di, dj_named_native_han
 	}
 
 	// Check if each of the required elements was found
-	if (infusion->stringTable==DJ_DI_NOT_SET||infusion->classList==DJ_DI_NOT_SET||infusion->methodImplementationList==DJ_DI_NOT_SET||infusion->header==DJ_DI_NOT_SET)
+	if (infusion->stringTable==DJ_DI_NOT_SET||infusion->classList==DJ_DI_NOT_SET||infusion->methodImplementationList==DJ_DI_NOT_SET||infusion->methodImplementationCodeList==DJ_DI_NOT_SET||infusion->header==DJ_DI_NOT_SET)
 		dj_panic(DJ_PANIC_MALFORMED_INFUSION);
 
 	// Check if the infusion is of a compatible type (since different branches use different infusion formats,

@@ -193,6 +193,7 @@ struct _dj_infusion
 	dj_di_pointer classList;
 	dj_di_pointer methodImplementationList;
 	dj_di_pointer stringTable;
+	dj_di_pointer methodImplementationCodeList;
 
 	// pointer to native method handler
 	const DJ_PROGMEM native_method_function_t * native_handlers;

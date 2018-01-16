@@ -44,6 +44,7 @@ import org.csiro.darjeeling.infuser.structure.elements.AbstractStaticFieldList;
 import org.csiro.darjeeling.infuser.structure.elements.internal.InternalClassDefinition;
 import org.csiro.darjeeling.infuser.structure.elements.internal.InternalMethodImplementation;
 import org.csiro.darjeeling.infuser.structure.elements.internal.InternalStringTable;
+import org.csiro.darjeeling.infuser.structure.elements.internal.InternalMethodImplementationCodeList;
 
 /**
  * The DI Writer Visitor walks over the Infusion element tree and writes out a .di file. Each element is first written
@@ -178,95 +179,125 @@ public class DIWriterVisitor extends DescendingVisitor
 		}
 	}
 	
+	// This is a bit of an ugly hack to get the infuser to separate method headers and implementation.
+	// InternalMethodImplementationCodeList is a wrapper around the normal InternalMethodImplementationList
+	// which actually contains the methods. Normally it isn't processed, since ElementVisitor will ignore it.
+	// But DIWriterVisitor will use it to determine whether it needs to write method headers or code.
+	// Normally it will just output the method headers, but when InternalMethodImplementationCodeList
+	// is processed it will set a static variable and process the method implementation elements
+	// a second time, this time emitting the code instead of headers. Afterwards the variable is reset to
+	// emit headers for the next infusion.
+	private static final int WRITE_HEADER = 0;
+	private static final int WRITE_CODE = 1;
+	private static int writeCodeOrHeader = WRITE_HEADER;
+	@Override
+	public void visit(InternalMethodImplementationCodeList element)
+	{
+		writeCodeOrHeader = WRITE_CODE;
+		visit((ParentElement)element);
+		writeCodeOrHeader = WRITE_HEADER;
+	}
+
 	@Override
 	public void visit(InternalMethodImplementation element)
 	{
-		
 		try {
-			
-			// write method details
-			out.writeUINT8(element.getReferenceArgumentCount());
-			out.writeUINT8(element.getIntegerArgumentCount());
-			// RTC: need to change the stackframe to include parameters, in order to avoid
-			// having to check on each LOAD if it is a parameter or local variable.
-			// Originally the parameters were only kept on the stack in the caller's frame,
-			// but this requires a check on the index at xLOAD and xSTORE instructions,
-			// which is ok in the interpreter, but unacceptably slow for RTC.
-			// out.writeUINT8(element.getReferenceLocalVariableCount() - element.getReferenceArgumentCount() - (element.isStatic()?0:1));
-			// out.writeUINT8(element.getIntegerLocalVariableCount() - element.getIntegerArgumentCount());
-			// Instead we now copy them to the callee's frame's local variable arrays.
-			// This wastes some space, and adds overhead to the function start, but means we
-			// can index all locals directly.
-			out.writeUINT8(element.getReferenceLocalVariableCount());
-			out.writeUINT8(element.getIntegerLocalVariableCount());
-			
-			out.writeUINT8(element.getMaxTotalStack());
-			out.writeUINT8(element.getMaxRefStack());
-			out.writeUINT8(element.getMaxIntStack());
-
 			CodeBlock code = element.getCodeBlock();
-
-			// Write flags
-			int flags = 0;
-			if (element.isNative()) flags |= 1;
-			if (element.isStatic()) flags |= 2;
-			if (element.usesStaticFields()) flags |= 4;
-			if (element.isLightweight()) flags |= 8;
-			if (element.usesSIMUL_INVOKELIGHT_MARKLOOP()) flags |= 16;
-			out.writeUINT8(flags);
-			
-			// Write return type
-			out.writeUINT8(element.getMethodDefinition().getReturnType().getTType());
-
-			// Write the number of branch targets
-			out.writeUINT16(element.getNumberOfBranchTargets());
-			
-			// RTC: write offsets to integer variables
-			// (storing the offset to reference variable doesn't seem worth it at this point, since it starts
-			//  at element.getMaxStack() * sizeof(int16_t). So storing it here only saves one shift left, which
-			//  should only take a single cycle)
-			// See notes.txt for how dj_frame_getLocalIntegerVariables used to be calculated:
-													// dj_frame_getLocalIntegerVariables = (char*)frame + sizeof(dj_frame)
-													// + (sizeof(int16_t) * dj_di_methodImplementation_getMaxStack(methodImpl)) \
-													// + (sizeof(ref_t) * dj_di_methodImplementation_getReferenceLocalVariableCount(methodImpl)) \
-													// + (sizeof(int16_t) * (dj_di_methodImplementation_getIntegerLocalVariableCount(methodImpl)-1))
-			// (note the header now assumes 2 byte pointers, so VMs on larger architectures will need to do some extra work!)
-			out.writeUINT8(element.getReferenceLocalVariableCount() + element.getIntegerLocalVariableCount()); // Own slots
-			out.writeUINT8(element.getReferenceLocalVariableCount() + element.getIntegerLocalVariableCount() + element.getMaxLightweightMethodLocalVariableCount()); // Total slots, including space reserved for lightweight methods
-
-			// write code block
-			if (code==null)
-			{
-				out.writeUINT16(0);
-			} else
-			{
-				// write code length in bytes
-				byte[] codeArray = code.toByteArray();
-				out.writeUINT16(codeArray.length);
-
-				// write byte code
-				out.write(codeArray);
-			}
-			
-			// write exception table
-			if (code!=null)
-			{
-				ExceptionHandler exceptions[] = code.getExceptionHandlers();
-				out.writeUINT8(exceptions.length);
-				for (ExceptionHandler exception : exceptions)
-				{
-					out.writeUINT8(exception.getCatchType().getInfusionId());
-					out.writeUINT8(exception.getCatchType().getLocalId());
-					out.writeUINT16(exception.getStart().getPc());
-					out.writeUINT16(exception.getEnd().getPc());
-					out.writeUINT16(exception.getHandler().getPc());
-				}
+			if (writeCodeOrHeader == WRITE_HEADER) {			
+				// write method details
+				out.writeUINT8(element.getReferenceArgumentCount());
+				out.writeUINT8(element.getIntegerArgumentCount());
+				// RTC: need to change the stackframe to include parameters, in order to avoid
+				// having to check on each LOAD if it is a parameter or local variable.
+				// Originally the parameters were only kept on the stack in the caller's frame,
+				// but this requires a check on the index at xLOAD and xSTORE instructions,
+				// which is ok in the interpreter, but unacceptably slow for RTC.
+				// out.writeUINT8(element.getReferenceLocalVariableCount() - element.getReferenceArgumentCount() - (element.isStatic()?0:1));
+				// out.writeUINT8(element.getIntegerLocalVariableCount() - element.getIntegerArgumentCount());
+				// Instead we now copy them to the callee's frame's local variable arrays.
+				// This wastes some space, and adds overhead to the function start, but means we
+				// can index all locals directly.
+				out.writeUINT8(element.getReferenceLocalVariableCount());
+				out.writeUINT8(element.getIntegerLocalVariableCount());
 				
-			} else
-			{
-				out.writeUINT8(0);
+				out.writeUINT8(element.getMaxTotalStack());
+				out.writeUINT8(element.getMaxRefStack());
+				out.writeUINT8(element.getMaxIntStack());
+
+				// Write flags
+				int flags = 0;
+				if (element.isNative()) flags |= 1;
+				if (element.isStatic()) flags |= 2;
+				if (element.usesStaticFields()) flags |= 4;
+				if (element.isLightweight()) flags |= 8;
+				if (element.usesSIMUL_INVOKELIGHT_MARKLOOP()) flags |= 16;
+				out.writeUINT8(flags);
+				
+				// Write return type
+				out.writeUINT8(element.getMethodDefinition().getReturnType().getTType());
+
+				// Write the number of branch targets
+				out.writeUINT16(element.getNumberOfBranchTargets());
+				
+				// RTC: write offsets to integer variables
+				// (storing the offset to reference variable doesn't seem worth it at this point, since it starts
+				//  at element.getMaxStack() * sizeof(int16_t). So storing it here only saves one shift left, which
+				//  should only take a single cycle)
+				// See notes.txt for how dj_frame_getLocalIntegerVariables used to be calculated:
+														// dj_frame_getLocalIntegerVariables = (char*)frame + sizeof(dj_frame)
+														// + (sizeof(int16_t) * dj_di_methodImplementation_getMaxStack(methodImpl)) \
+														// + (sizeof(ref_t) * dj_di_methodImplementation_getReferenceLocalVariableCount(methodImpl)) \
+														// + (sizeof(int16_t) * (dj_di_methodImplementation_getIntegerLocalVariableCount(methodImpl)-1))
+				// (note the header now assumes 2 byte pointers, so VMs on larger architectures will need to do some extra work!)
+				out.writeUINT8(element.getReferenceLocalVariableCount() + element.getIntegerLocalVariableCount()); // Own slots
+				out.writeUINT8(element.getReferenceLocalVariableCount() + element.getIntegerLocalVariableCount() + element.getMaxLightweightMethodLocalVariableCount()); // Total slots, including space reserved for lightweight methods
+
+				if (code==null)
+				{
+					out.writeUINT16(0);
+				} else
+				{
+					// write code length in bytes
+					byte[] codeArray = code.toByteArray();
+					out.writeUINT16(codeArray.length);
+
+					// // write byte code
+					// out.write(codeArray);
+				}
+
+				// write exception table
+				if (code!=null)
+				{
+					ExceptionHandler exceptions[] = code.getExceptionHandlers();
+					out.writeUINT8(exceptions.length);
+					for (ExceptionHandler exception : exceptions)
+					{
+						out.writeUINT8(exception.getCatchType().getInfusionId());
+						out.writeUINT8(exception.getCatchType().getLocalId());
+						out.writeUINT16(exception.getStart().getPc());
+						out.writeUINT16(exception.getEnd().getPc());
+						out.writeUINT16(exception.getHandler().getPc());
+					}
+					
+				} else
+				{
+					out.writeUINT8(0);
+				}
+			} else {
+				// write code block
+				if (code==null)
+				{
+					out.writeUINT16(0);
+				} else
+				{
+					// write code length in bytes
+					byte[] codeArray = code.toByteArray();
+					out.writeUINT16(codeArray.length);
+
+					// write byte code
+					out.write(codeArray);
+				}
 			}
-			
 		} catch (IOException ex)
 		{
 			throw new RuntimeException(ex);

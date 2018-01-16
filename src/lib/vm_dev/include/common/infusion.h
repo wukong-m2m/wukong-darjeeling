@@ -35,7 +35,9 @@ void dj_infusion_updatePointers(dj_infusion *infusion);
 int dj_infusion_getReferencedInfusionIndex(dj_infusion *infusion, dj_infusion *searchInfusion);
 void dj_infusion_getName(dj_infusion * infusion, char * str, int strLength);
 
-dj_di_pointer dj_infusion_getMethodImplementation(dj_infusion *infusion, int entity_id);
+#define GET_METHOD_HEADER 0
+#define GET_METHOD_CODE 1
+dj_di_pointer dj_infusion_getMethodImplementation(dj_infusion *infusion, int entity_id, uint8_t what_to_get);
 dj_di_pointer dj_infusion_getString(dj_infusion * infusion, int entity_id);
 
 dj_infusion * dj_infusion_resolve(dj_infusion *infusion, int id);
