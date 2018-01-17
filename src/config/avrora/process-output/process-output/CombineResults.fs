@@ -266,11 +266,11 @@ module CombineResults =
         let allResults =
             resultsXmlStrings
                 |> List.map (fun xml -> (SimulationResults.unPickleOfString xml))
-                |> List.sortBy (fun r -> let sortorder = ["bsort16"; "bsort32"; "hsort16"; "hsort32"; "binsrch16"; "binsrch32"; "xxtea"; "md5"; "rc5"; "fft16"; "fft8"; "outlier16"; "outlier32"; "lec"; "coremk"; "coremk_or0"; "coremk_or1"; "coremk_or2"; "coremk_or3"; "coremk_or4"; "coremk_or5"; "coremk_ch1"; "coremk_ch2"; "coremk_lw"; "coremk_fn"; "motetrack"; "fillarray8"; "fillarray16"; "fillarray32"] in
+                |> List.sortBy (fun r -> let sortorder = ["bsort16"; "bsort32"; "hsort16"; "hsort32"; "binsrch16"; "binsrch32"; "xxtea"; "md5"; "rc5"; "fft8"; "fft16"; "outlier16"; "outlier32"; "lec"; "coremk"; "coremk_or0"; "coremk_or1"; "coremk_or2"; "coremk_or3"; "coremk_or4"; "coremk_or5"; "coremk_ch1"; "coremk_ch2"; "coremk_lw"; "coremk_fn"; "motetrack"; "fillarray8"; "fillarray16"; "fillarray32"] in
                                          match sortorder |> List.tryFindIndex ((=) r.benchmark) with
                                          | Some (index) -> index
                                          | None -> 100)
-        let mainBenchmarks = ["bsort32"; "hsort32"; "binsrch32"; "xxtea"; "md5"; "rc5"; "fft16"; "fft8"; "outlier32"; "lec"; "coremk"; "motetrack"]
+        let mainBenchmarks = ["bsort32"; "hsort32"; "binsrch32"; "xxtea"; "md5"; "rc5"; "fft8"; "fft16"; "outlier32"; "lec"; "coremk"; "motetrack"]
         let mainResults =
             allResults
                 |> List.filter (fun r -> mainBenchmarks |> List.exists ((=) r.benchmark))
