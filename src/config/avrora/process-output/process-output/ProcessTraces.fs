@@ -314,7 +314,7 @@ module ProcessTraces =
       then addresses
       else failwith "Not all INVOKEHelperAddresses found."
 
-    let mathFunctionNames = [ "__subsf3"; "__mulsf3x"; "__mulsf3"; "__fp_zero"; "__fp_split3"; "__fp_split"; "__fp_round"; "__fp_pscB"; "__fp_pscA"; "__fp_nan"; "__fp_inf"; "__fp_cmp"; "__divsf3x"; "__divsf3"; "__cmpsf2"; "__addsf3x"; "__mulqi3"; "__mulqihi3"; "__umulqihi3"; "__mulhi3"; "__mulhisi3"; "__umulhisi3"; "__usmulhisi3"; "__mulshisi3"; "__muluhisi3"; "__mulohisi3"; "__mulsi3"; "__divmodqi4"; "__udivmodqi4"; "__divmodhi4"; "__udivmodhi4"; "__divmodsi4"; "__udivmodsi4"; "__fmul"; "__fmuls"; "__fmulsu" ]
+    let mathFunctionNames = [ ""; "__subsf3"; "__mulsf3x"; "__mulsf3"; "__fp_zero"; "__fp_split3"; "__fp_split"; "__fp_round"; "__fp_pscB"; "__fp_pscA"; "__fp_nan"; "__fp_inf"; "__fp_cmp"; "__divsf3x"; "__divsf3"; "__cmpsf2"; "__addsf3x"; "__mulqi3"; "__mulqihi3"; "__umulqihi3"; "__mulhi3"; "__mulhisi3"; "__umulhisi3"; "__usmulhisi3"; "__mulshisi3"; "__muluhisi3"; "__mulohisi3"; "__mulsi3"; "__divmodqi4"; "__udivmodqi4"; "__divmodhi4"; "__udivmodhi4"; "__divmodsi4"; "__udivmodsi4"; "__fmul"; "__fmuls"; "__fmulsu" ]
 
     let getBenchmarkFunctionNamesAndAddressesFromCNm (cNm : NmData list) =
       cNm |> List.filter (fun data ->
@@ -331,9 +331,10 @@ module ProcessTraces =
                     | (incl, _)      -> incl
                  | file ->
                     let knownExclude = ["ecg_samples"; "Sinewave"; "stab"; "refSignatureDB"; "signatureDB"]                                      // Some symbols defined in benchmarks that aren't code.
-                    data.file.Contains("src/lib/bm_")                                            // only select functions in the benchmark lib
-                    && not ((data.name.StartsWith("bm_") && data.name.EndsWith("_init")))        // exclude the library's init function
-                    && not (data.name.Equals"javax_rtcbench_RTCBenchmark_void_test_native")      // exclude javax_rtcbench_RTCBenchmark_void_test_native (which contains benchmark init code)
+                    let knownInclude = ["__tablejump__";"__tablejump2__"] // For coremk
+                    (data.file.Contains("src/lib/bm_") || (knownInclude |> List.contains data.name) )  // only select functions in the benchmark lib
+                    && not ((data.name.StartsWith("bm_") && data.name.EndsWith("_init")))              // exclude the library's init function
+                    && not (data.name.Equals"javax_rtcbench_RTCBenchmark_void_test_native")            // exclude javax_rtcbench_RTCBenchmark_void_test_native (which contains benchmark init code)
                     && not (knownExclude |> List.contains data.name))
           |> List.map (fun data -> (data.name, data.address))
 

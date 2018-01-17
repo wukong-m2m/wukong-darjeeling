@@ -362,9 +362,6 @@ module ResultsToString =
         addLn ("============================================================= JVM LISTINGS ==================================================================")
         addLn ("")
         addLn ("------------------------------------------------------------ INVOKE OVERVIEW ----------------------------------------------------------------")
-        addLn (" NOTE: cycles counter for method calls are timed at runtime.")
-        addLn ("       this means time spent in interrupts is added to the current method,")
-        addLn ("       so the totals printed here may be slightly higher than the total sum in the header. (which should be leading)")
         addLn ("")
         sortedJvmMethodResults |> List.iter addJvmMethodCalledMethodsList
         addLn ("")
