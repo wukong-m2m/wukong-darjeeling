@@ -224,12 +224,12 @@ module Datatypes =
         }
         with
         member this.countersPerAvrOpcodeCategoryNativeC = groupOpcodesInCategoriesCycles AVR.getAllOpcodeCategories    this.countersPerAvrOpcodeNativeC
-
         member this.countersCLoadStore                  = sumCyclesCategoryCounters this.countersPerAvrOpcodeCategoryNativeC (fun (cat) -> cat.Contains("LD/ST rel to"))
         member this.countersCPushPop                    = sumCyclesCategoryCounters this.countersPerAvrOpcodeCategoryNativeC (fun (cat) -> cat.Contains("Stack push/pop"))
         member this.countersCMov                        = sumCyclesCategoryCounters this.countersPerAvrOpcodeCategoryNativeC (fun (cat) -> cat.Contains("Register moves"))
         member this.countersCOthers                     = sumCyclesCategoryCounters this.countersPerAvrOpcodeCategoryNativeC (fun (cat) -> not (cat.Contains("LD/ST rel to")) && not (cat.Contains("Stack push/pop")) && not (cat.Contains("Register moves")))
         member this.countersCTotal                      = this.countersCPushPop + this.countersCMov + this.countersCLoadStore + this.countersCOthers;
+        member this.isNativeJavaMethod                  = this.name.StartsWith("javax")
 
 
     type NmData = {
@@ -250,12 +250,15 @@ module Datatypes =
         countersCTimer : ExecCounters;
 
         jvmMethods : JvmMethod list;
-        cFunctions : CFunction list;
+        cFunctionsInclNativeJavaMethods : CFunction list;
 
         jvmAllSymbolCounters : (string * ExecCounters) list
         cAllSymbolCounters : (string * ExecCounters) list
         }
         with
+//        member this.cFunctions                          = this.cFunctionsInclNativeJavaMethods
+        member this.cFunctions                          = this.cFunctionsInclNativeJavaMethods |> List.filter (fun f -> not f.isNativeJavaMethod)
+
         member this.countersPerJvmOpcodeAOTJava         = (this.jvmMethods |> List.collect (fun (jvmMethod) -> jvmMethod.countersPerJvmOpcodeAOTJava) |> sumCountersPerOpcodeAndCategory) @
                                                                                     [ ("14) VM", "", (this.countersAOTVM)) ]
         member this.countersPerAvrOpcodeAOTJava         = (this.jvmMethods |> List.collect (fun (jvmMethod) -> jvmMethod.countersPerAvrOpcodeAOTJava) |> sumCountersPerOpcodeAndCategory) @
@@ -268,11 +271,11 @@ module Datatypes =
                                                                                     [ ("14) VM", (this.countersAOTVM)) ]
         member this.countersPerAvrOpcodeCategoryNativeC = (this.cFunctions |> List.collect (fun (cFunction) -> cFunction.countersPerAvrOpcodeCategoryNativeC) |> sumCountersPerCategory)
 
-        member this.countersCLoadStore                  = this.cFunctions |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersCLoadStore)
-        member this.countersCPushPop                    = this.cFunctions |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersCPushPop)
-        member this.countersCMov                        = this.cFunctions |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersCMov)
-        member this.countersCOthers                     = this.cFunctions |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersCOthers)
-        member this.countersCTotal                      =(this.cFunctions |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersCTotal))
+        member this.countersCLoadStore                  = this.cFunctions |> List.sumBy (fun (cFunction) -> cFunction.countersCLoadStore)
+        member this.countersCPushPop                    = this.cFunctions |> List.sumBy (fun (cFunction) -> cFunction.countersCPushPop)
+        member this.countersCMov                        = this.cFunctions |> List.sumBy (fun (cFunction) -> cFunction.countersCMov)
+        member this.countersCOthers                     = this.cFunctions |> List.sumBy (fun (cFunction) -> cFunction.countersCOthers)
+        member this.countersCTotal                      =(this.cFunctions |> List.sumBy (fun (cFunction) -> cFunction.countersCTotal))
         member this.countersCTotalPlusTimer             = this.countersCTotal + this.countersCTimer
 
         member this.countersAOTLoadStore                = this.jvmMethods |> List.sumBy (fun (jvmMethod) -> jvmMethod.countersAOTLoadStore)

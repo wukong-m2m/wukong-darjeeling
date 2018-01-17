@@ -498,7 +498,7 @@ module ProcessTraces =
             countersCTimer = countersCTimer
 
             jvmMethods = jvmMethods
-            cFunctions = cFunctions
+            cFunctionsInclNativeJavaMethods = cFunctions
 
             jvmAllSymbolCounters = getAllSymbolCounters jvmProfilerdataPerAddress jvmNm
             cAllSymbolCounters   = getAllSymbolCounters cProfilerdataPerAddress cNm

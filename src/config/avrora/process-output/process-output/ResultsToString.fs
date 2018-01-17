@@ -28,6 +28,7 @@ module ResultsToString =
         let totalBytesNativeC = results.countersCTotal.size
         let totalBytesOverhead = results.countersOverheadTotal.size
         let sortedJvmMethodResults = results.jvmMethods |> List.sortBy (fun (jvmMethod) -> 0-jvmMethod.countersAOTTotal.cyclesInclSubroutine)
+        let sortedCImplementationsOfJvmMethods = results.cFunctionsInclNativeJavaMethods |> List.filter (fun f -> f.isNativeJavaMethod) |> List.sortBy (fun (cFunction) -> 0-cFunction.countersCTotal.cyclesInclSubroutine)
         let sortedCFunctionResults = results.cFunctions |> List.sortBy (fun (cFunction) -> 0-cFunction.countersCTotal.cyclesInclSubroutine)
 
         let cyclesToSlowdown cycles1 cycles2 =
@@ -368,6 +369,10 @@ module ResultsToString =
         sortedJvmMethodResults |> List.iter addJvmMethodCalledMethodsList
         addLn ("")
         sortedJvmMethodResults |> List.iter addJvmMethodDetails
+        addLn ("------------------------------------------------ NATIVE C IMPLEMENTATIONS OF JVM METHODS ----------------------------------------------------")
+        sortedCImplementationsOfJvmMethods |> List.iter addCFunctionCalledFunctionsList
+        addLn ("")
+        sortedCImplementationsOfJvmMethods |> List.iter addCFunctionDetails
 
         addLn ("============================================================== C LISTINGS ===================================================================")
         addLn ("")

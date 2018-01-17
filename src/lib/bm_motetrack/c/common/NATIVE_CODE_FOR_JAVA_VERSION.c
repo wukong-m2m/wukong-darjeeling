@@ -9,7 +9,7 @@ int16_t MoteTrack_DB_index;
 BM_MOTETRACK_STRUCT_javax_rtcbench_RefSignature * MoteTrack_DB_dest_refsignature;
 uint16_t MoteTrack_DB_returnaddress;
 
-void read_refsignature_from_flash() {
+void javax___read_refsignature_from_flash() {
     RefSignature refSig;
     RefSignatureDB_get_JVM(&refSig, MoteTrack_DB_index);
 
@@ -30,7 +30,7 @@ void read_refsignature_from_flash() {
     }
 }
 
-void read_signature_from_flash() {
+void javax___read_signature_from_flash() {
     RefSignature refSig;
     SignatureDB_get_JVM(&refSig, MoteTrack_DB_index);
 
@@ -68,7 +68,7 @@ void javax_rtcbench_DB_void_refSignature_get_javax_rtcbench_RefSignature_short()
                  "   sts  MoteTrack_DB_dest_refsignature, r19" "\n\r"
                  "   push r26" "\n\r"
                  "   push r27" "\n\r"
-                 "   call read_refsignature_from_flash" "\n\r"
+                 "   call javax___read_refsignature_from_flash" "\n\r"
                  "   pop  r27" "\n\r"
                  "   pop  r26" "\n\r"
                  "   lds  r19, MoteTrack_DB_returnaddress" "\n\r"
@@ -92,7 +92,7 @@ void javax_rtcbench_DB_void_signature_get_javax_rtcbench_RefSignature_short() {
                  "   sts  MoteTrack_DB_dest_refsignature, r19" "\n\r"
                  "   push r26" "\n\r"
                  "   push r27" "\n\r"
-                 "   call read_signature_from_flash" "\n\r"
+                 "   call javax___read_signature_from_flash" "\n\r"
                  "   pop  r27" "\n\r"
                  "   pop  r26" "\n\r"
                  "   lds  r19, MoteTrack_DB_returnaddress" "\n\r"
@@ -105,12 +105,12 @@ void javax_rtcbench_DB_void_signature_get_javax_rtcbench_RefSignature_short() {
 void javax_rtcbench_DB_void_refSignature_get_javax_rtcbench_RefSignature_short() {
     MoteTrack_DB_index = dj_exec_stackPopShort();
     MoteTrack_DB_dest_refsignature = (BM_MOTETRACK_STRUCT_javax_rtcbench_RefSignature *)REF_TO_VOIDP(dj_exec_stackPopRef());
-    read_refsignature_from_flash();
+    javax___read_refsignature_from_flash();
 }
 void javax_rtcbench_DB_void_signature_get_javax_rtcbench_RefSignature_short() {
     MoteTrack_DB_index = dj_exec_stackPopShort();
     MoteTrack_DB_dest_refsignature = (BM_MOTETRACK_STRUCT_javax_rtcbench_RefSignature *)REF_TO_VOIDP(dj_exec_stackPopRef());
-    read_signature_from_flash();
+    javax___read_signature_from_flash();
 }
 #endif
 
