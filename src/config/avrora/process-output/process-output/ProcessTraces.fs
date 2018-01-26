@@ -330,7 +330,7 @@ module ProcessTraces =
                     | (false, false) -> failwith ("Don't know whether to include " + data.name + ". Please put it in the include or exclude list in getBenchmarkFunctionNamesAndAddressesFromCNm")
                     | (incl, _)      -> incl
                  | file ->
-                    let knownExclude = ["ecg_samples"; "Sinewave"; "stab"; "refSignatureDB"; "signatureDB"]                                      // Some symbols defined in benchmarks that aren't code.
+                    let knownExclude = ["heat_sensor_data"; "ecg_samples"; "Sinewave"; "stab"; "refSignatureDB"; "signatureDB"]                                      // Some symbols defined in benchmarks that aren't code.
                     let knownInclude = ["__tablejump__";"__tablejump2__"] // For coremk
                     (data.file.Contains("src/lib/bm_") || (knownInclude |> List.contains data.name) )  // only select functions in the benchmark lib
                     && not ((data.name.StartsWith("bm_") && data.name.EndsWith("_init")))              // exclude the library's init function
