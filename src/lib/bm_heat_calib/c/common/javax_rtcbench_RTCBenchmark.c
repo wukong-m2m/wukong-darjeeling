@@ -1,15 +1,16 @@
 #include <stdint.h>
 #include "config.h"
 #include "heap.h"
+#include "heat_calib.h"
+#include "rtc_measure.h"
 
+void __attribute__((noinline)) rtcbenchmark_measure_native_performance() {
+    rtc_startBenchmarkMeasurement_Native();
 
-extern uint16_t *ACal;
-extern uint32_t *QCal;
-extern uint16_t *stdCal;
-extern uint16_t *zscore;
-extern int16_t z_max, z_min;
+    heat_calib();
 
-void __attribute__((noinline)) rtcbenchmark_measure_native_performance();
+    rtc_stopBenchmarkMeasurement();
+}
 
 void javax_rtcbench_RTCBenchmark_void_test_native() {
     ACal = dj_mem_checked_alloc(64*sizeof(uint16_t), CHUNKID_RTCNATIVETESTDATA);

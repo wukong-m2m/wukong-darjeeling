@@ -1,6 +1,6 @@
 #include "execution.h"
 #include "array.h"
-#include "jlib_bm_heat_calib.h"
+#include "jlib_bm_heat_detect.h"
 
 extern const uint16_t heat_sensor_data[100][64] PROGMEM;
 
