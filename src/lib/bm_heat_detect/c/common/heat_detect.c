@@ -277,11 +277,12 @@ void labelPixel(int32_t largestSubset[], int32_t maxSubsetLen, uint8_t* color)
 
 void rotateColor(uint8_t* color, uint8_t* rColor)
 {
-    int16_t x_grid = (RIGHT_UP - LEFT_UP) / 7;
-    int16_t y_grid = (LEFT_DOWN - LEFT_UP) / 7;
+    // int16_t x_grid = (RIGHT_UP - LEFT_UP) / 7;
+    // int16_t y_grid = (LEFT_DOWN - LEFT_UP) / 7;
     for(uint16_t i=0; i<8; i++) {
         for (uint16_t j=0; j<8; j++) {
-            rColor[i*8+j] = color[LEFT_UP + x_grid*j + y_grid*i];
+            // rColor[i*8+j] = color[LEFT_UP + x_grid*j + y_grid*i];
+            rColor[(i<<3)+j] = color[LEFT_UP + (j<<3) - i];
         }
     }
 }

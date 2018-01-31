@@ -219,7 +219,7 @@ public class HeatDetect {
 
         for(short i=0; i<maxSubsetLen; i++) {
             int _x = largestSubset[i] % 8;
-            int _y = largestSubset[i] / 8;
+            int _y = largestSubset[i] >>> 3;
             short _zscore = HeatCalib.zscore[largestSubset[i]];
             if (_zscore > zscore_threshold_hot) {
                 xh_weight_zscore_sum += _x * _zscore / zscore_sum_h;
@@ -253,7 +253,7 @@ public class HeatDetect {
 
         for(short i=0; i<maxSubsetLen; i++) {
             int _x = largestSubset[i] % 8;
-            int _y = largestSubset[i] / 8;
+            int _y = largestSubset[i] >>> 3;
             short _zscore = HeatCalib.zscore[largestSubset[i]];
             x_weight_zscore_sum += 100 * _x * _zscore / zscore_sum;
             y_weight_zscore_sum += 100 * _y * _zscore / zscore_sum;
@@ -279,11 +279,17 @@ public class HeatDetect {
 
     private static void rotateColor(byte[] color, byte[] rColor)
     {
-        short x_grid = (RIGHT_UP - LEFT_UP) / 7;
-        short y_grid = (LEFT_DOWN - LEFT_UP) / 7;
+        // public static final byte LEFT_UP          = 7;
+        // public static final byte RIGHT_UP         = 63;
+        // public static final byte LEFT_DOWN        = 0;
+        // public static final byte RIGHT_DOWN       = 56;
+
+        // short x_grid = 8;  // (RIGHT_UP - LEFT_UP) / 7;    = (63-7)/7 =  8
+        // short y_grid = -1; // (LEFT_DOWN - LEFT_UP) / 7;   = (0-7)/7  = -1
         for(short i=0; i<8; i++) {
             for (short j=0; j<8; j++) {
-                rColor[i*8+j] = color[LEFT_UP + x_grid*j + y_grid*i];
+                // rColor[i*8+j] = color[LEFT_UP + x_grid*j + y_grid*i];
+                rColor[(i<<3)+j] = color[LEFT_UP + (j<<3) - i];
             }
         }
     }
@@ -342,23 +348,23 @@ public class HeatDetect {
         for (short i=0; i<8; i++) {
             neighbor[i] = -1;
         }        
-        if((loc / ARRAY_SIZE)==0 && (loc % ARRAY_SIZE)==0){
+        if((loc >>> 3)==0 && (loc % ARRAY_SIZE)==0){
             neighbor[0]=(short)(loc+1); neighbor[1]=(short)(loc+ARRAY_SIZE); neighbor[2]=(short)(loc+ARRAY_SIZE+1);
-        }else if((loc / ARRAY_SIZE)==0 && (loc % ARRAY_SIZE)>0 && (loc % ARRAY_SIZE)<(ARRAY_SIZE-1)){
+        }else if((loc >>> 3)==0 && (loc % ARRAY_SIZE)>0 && (loc % ARRAY_SIZE)<(ARRAY_SIZE-1)){
             neighbor[0]=(short)(loc-1); neighbor[1]=(short)(loc+1); neighbor[2]=(short)(loc+ARRAY_SIZE-1); neighbor[3]=(short)(loc+ARRAY_SIZE); neighbor[4]=(short)(loc+ARRAY_SIZE+1);
-        }else if((loc / ARRAY_SIZE)==0 && (loc % ARRAY_SIZE)==(ARRAY_SIZE-1)){
+        }else if((loc >>> 3)==0 && (loc % ARRAY_SIZE)==(ARRAY_SIZE-1)){
             neighbor[0]=(short)(loc-1); neighbor[1]=(short)(loc+ARRAY_SIZE-1); neighbor[2]=(short)(loc+ARRAY_SIZE);
-        }else if((loc / ARRAY_SIZE)> 0 && (loc / ARRAY_SIZE)<(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)==0){
+        }else if((loc >>> 3)> 0 && (loc >>> 3)<(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)==0){
             neighbor[0]=(short)(loc-ARRAY_SIZE); neighbor[1]=(short)(loc-ARRAY_SIZE+1); neighbor[2]=(short)(loc+1); neighbor[3]=(short)(loc+ARRAY_SIZE); neighbor[4]=(short)(loc+ARRAY_SIZE+1);
-        }else if((loc / ARRAY_SIZE)>0 && (loc / ARRAY_SIZE)<(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)>0 && (loc % ARRAY_SIZE)<(ARRAY_SIZE-1)){
+        }else if((loc >>> 3)>0 && (loc >>> 3)<(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)>0 && (loc % ARRAY_SIZE)<(ARRAY_SIZE-1)){
             neighbor[0]=(short)(loc-ARRAY_SIZE-1); neighbor[1]=(short)(loc-ARRAY_SIZE); neighbor[2]=(short)(loc-ARRAY_SIZE+1); neighbor[3]=(short)(loc-1); neighbor[4]=(short)(loc+1); neighbor[5]=(short)(loc+ARRAY_SIZE-1); neighbor[6]=(short)(loc+ARRAY_SIZE); neighbor[7]=(short)(loc+ARRAY_SIZE+1);
-        }else if((loc / ARRAY_SIZE)>0 && (loc / ARRAY_SIZE)<(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)==(ARRAY_SIZE-1)){
+        }else if((loc >>> 3)>0 && (loc >>> 3)<(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)==(ARRAY_SIZE-1)){
             neighbor[0]=(short)(loc-ARRAY_SIZE-1); neighbor[1]=(short)(loc-ARRAY_SIZE); neighbor[2]=(short)(loc-1); neighbor[3]=(short)(loc+ARRAY_SIZE-1); neighbor[4]=(short)(loc+ARRAY_SIZE);
-        }else if((loc / ARRAY_SIZE)==(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)==0){
+        }else if((loc >>> 3)==(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)==0){
             neighbor[0]=(short)(loc-ARRAY_SIZE); neighbor[1]=(short)(loc-ARRAY_SIZE+1); neighbor[2]=(short)(loc+1);
-        }else if((loc / ARRAY_SIZE)==(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)>0 && (loc % ARRAY_SIZE)<(ARRAY_SIZE-1)){
+        }else if((loc >>> 3)==(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)>0 && (loc % ARRAY_SIZE)<(ARRAY_SIZE-1)){
             neighbor[0]=(short)(loc-ARRAY_SIZE-1); neighbor[1]=(short)(loc-ARRAY_SIZE); neighbor[2]=(short)(loc-ARRAY_SIZE+1); neighbor[3]=(short)(loc-1); neighbor[4]=(short)(loc+1);
-        }else if((loc / ARRAY_SIZE)==(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)==(ARRAY_SIZE-1)){
+        }else if((loc >>> 3)==(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)==(ARRAY_SIZE-1)){
             neighbor[0]=(short)(loc-ARRAY_SIZE-1); neighbor[1]=(short)(loc-ARRAY_SIZE); neighbor[2]=(short)(loc-1);
         }
     }
@@ -368,23 +374,23 @@ public class HeatDetect {
         for (short i=0; i<4; i++) {
             neighbor[i] = -1;
         }
-        if((loc / ARRAY_SIZE)==0 && (loc % ARRAY_SIZE)==0){
+        if((loc >>> 3)==0 && (loc % ARRAY_SIZE)==0){
             neighbor[0]=(short)(loc+1); neighbor[1]=(short)(loc+ARRAY_SIZE);
-        }else if((loc / ARRAY_SIZE)==0 && (loc % ARRAY_SIZE)>0 && (loc % ARRAY_SIZE)<(ARRAY_SIZE-1)){
+        }else if((loc >>> 3)==0 && (loc % ARRAY_SIZE)>0 && (loc % ARRAY_SIZE)<(ARRAY_SIZE-1)){
             neighbor[0]=(short)(loc-1); neighbor[1]=(short)(loc+1); neighbor[2]=(short)(loc+ARRAY_SIZE);
-        }else if((loc / ARRAY_SIZE)==0 && (loc % ARRAY_SIZE)==(ARRAY_SIZE-1)){
+        }else if((loc >>> 3)==0 && (loc % ARRAY_SIZE)==(ARRAY_SIZE-1)){
             neighbor[0]=(short)(loc-1); neighbor[1]=(short)(loc+ARRAY_SIZE);
-        }else if((loc / ARRAY_SIZE)> 0 && (loc / ARRAY_SIZE)<(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)==0){
+        }else if((loc >>> 3)> 0 && (loc >>> 3)<(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)==0){
             neighbor[0]=(short)(loc-ARRAY_SIZE); neighbor[1]=(short)(loc+1); neighbor[2]=(short)(loc+ARRAY_SIZE);
-        }else if((loc / ARRAY_SIZE)>0 && (loc / ARRAY_SIZE)<(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)>0 && (loc % ARRAY_SIZE)<(ARRAY_SIZE-1)){
+        }else if((loc >>> 3)>0 && (loc >>> 3)<(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)>0 && (loc % ARRAY_SIZE)<(ARRAY_SIZE-1)){
             neighbor[0]=(short)(loc-ARRAY_SIZE); neighbor[1]=(short)(loc-1); neighbor[2]=(short)(loc+1); neighbor[3]=(short)(loc+ARRAY_SIZE);
-        }else if((loc / ARRAY_SIZE)>0 && (loc / ARRAY_SIZE)<(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)==(ARRAY_SIZE-1)){
+        }else if((loc >>> 3)>0 && (loc >>> 3)<(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)==(ARRAY_SIZE-1)){
             neighbor[0]=(short)(loc-ARRAY_SIZE); neighbor[1]=(short)(loc-1); neighbor[2]=(short)(loc+ARRAY_SIZE);
-        }else if((loc / ARRAY_SIZE)==(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)==0){
+        }else if((loc >>> 3)==(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)==0){
             neighbor[0]=(short)(loc-ARRAY_SIZE); neighbor[1]=(short)(loc+1);
-        }else if((loc / ARRAY_SIZE)==(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)>0 && (loc % ARRAY_SIZE)<(ARRAY_SIZE-1)){
+        }else if((loc >>> 3)==(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)>0 && (loc % ARRAY_SIZE)<(ARRAY_SIZE-1)){
             neighbor[0]=(short)(loc-ARRAY_SIZE); neighbor[1]=(short)(loc-1); neighbor[2]=(short)(loc+1);
-        }else if((loc / ARRAY_SIZE)==(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)==(ARRAY_SIZE-1)){
+        }else if((loc >>> 3)==(ARRAY_SIZE-1) && (loc % ARRAY_SIZE)==(ARRAY_SIZE-1)){
             neighbor[0]=(short)(loc-ARRAY_SIZE); neighbor[1]=(short)(loc-1);
         }
     }
