@@ -3,7 +3,7 @@ alias gdj="gradle -b ../../build.gradle"
 
 gdj clean
 
-benchmarks=(bsort16 bsort32 hsort16 hsort32 binsrch16 binsrch32 outlier16u outlier32u xxtea md5 rc5 fft8 fft16 lec coremk motetrack)
+benchmarks=(bsort16 bsort32 hsort16 hsort32 binsrch16 binsrch32 outlier16u outlier32u xxtea md5 rc5 fft8 fft16 lec coremk motetrack heat_calib heat_detect)
 
 # BASELINE: Both baselines have GET/PUTFIELD_A_FIXED turned on, since this optimisation compensates for Darjeeling specific overhead, so we shouldn't include it in the overhead from Joshua's work.
 # UNOPTIMISED COREMARK
@@ -11,30 +11,29 @@ gdj avrora_store_trace -Paotbm=coremk_or0       -Paotstrat=baseline         -Pus
 # OPTIMISED JAVA
 for benchmark in ${benchmarks}
 do
+done
+
+for benchmark in ${benchmarks}
+do
+    ##### BASELINE: optimised Java, no optimisations except getfield_a_fixed (because that's Darjeeling specific)
     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false -Pusegetfield_a_fixed=true
-done
 
-# MAIN GRAPHS
-# Lightweight methods and GET/PUTFIELD_A_FIXED are turned on for these.
-for benchmark in ${benchmarks}
-do
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
+    ##### MAIN GRAPHS
+    # Lightweight methods and GET/PUTFIELD_A_FIXED are turned on for these.
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=true  -Pusegetfield_a_fixed=true
 
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=true  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=true  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=true  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=true  -Pusegetfield_a_fixed=true
 
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=false -Pusesimul=false
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=false
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true
-done
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=true  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=false -Puselightweightmethods=true  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=true  -Pusegetfield_a_fixed=true
 
-# SAFETY: best case only, with and without safety checks
-for benchmark in ${benchmarks}
-do
+    ##### SAFETY
     # UNSAFE
-    gdj avrora_store_trace -Paotbm=${benchmark}
+    # gdj avrora_store_trace -Paotbm=${benchmark} # Already done in main graphs part.
     # SAFE
     gdj avrora_store_trace -Paotbm=${benchmark} -Psafe
     # SAFE READS
