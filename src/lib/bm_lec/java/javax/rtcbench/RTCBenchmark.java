@@ -18,11 +18,10 @@ public class RTCBenchmark {
         byte[] expected = { (byte)252, (byte)22, (byte)145, (byte)203, (byte)167, (byte)109, (byte)217, (byte)134, (byte)180, (byte)212, (byte)170, (byte)212, (byte)163, (byte)127, (byte)106, (byte)33, (byte)181, (byte)110, (byte)174, (byte)236, (byte)89, (byte)115, (byte)216, (byte)232, (byte)39, (byte)49, (byte)184, (byte)76, (byte)77, (byte)189, (byte)140, (byte)254, (byte)94, (byte)247, (byte)66, (byte)237, (byte)75, (byte)102, (byte)44, (byte)218, (byte)219, (byte)84, (byte)249, (byte)77, (byte)41, (byte)202, (byte)121, (byte)115, (byte)233, (byte)71, (byte)77, (byte)98, (byte)138, (byte)190, (byte)198, (byte)164, (byte)86, (byte)153, (byte)78, (byte)246, (byte)132, (byte)176, (byte)113, (byte)113, (byte)111, (byte)214, (byte)135, (byte)94, (byte)213, (byte)57, (byte)166, (byte)88, (byte)170, (byte)216, (byte)191, (byte)173, (byte)191, (byte)200, (byte)234, (byte)247, (byte)28, (byte)21, (byte)27, (byte)87, (byte)105, (byte)243, (byte)93, (byte)79, (byte)101, (byte)110, (byte)149, (byte)203, (byte)89, (byte)187, (byte)214, (byte)169, (byte)93, (byte)180, (byte)216, (byte)112, (byte)44, (byte)244, (byte)114, (byte)183, (byte)157, (byte)233, (byte)186, (byte)58, (byte)41, (byte)137, (byte)210, (byte)247, (byte)51, (byte)54, (byte)13, (byte)244, (byte)199, (byte)162, (byte)203, (byte)57, (byte)250, (byte)134, (byte)173, (byte)200, (byte)54, (byte)42, (byte)237, (byte)220, (byte)146, (byte)71, (byte)233, (byte)89, (byte)233, (byte)234, (byte)102, (byte)231, (byte)107, (byte)238, (byte)85, (byte)171, (byte)231, (byte)153, (byte)157, (byte)143, (byte)161, (byte)113, (byte)60, (byte)231, (byte)87, (byte)69, (byte)122, (byte)30, (byte)171, (byte)86, (byte)159, (byte)39, (byte)71, (byte)87, (byte)160, (byte)231, (byte)243, (byte)93, (byte)144, (byte)202, (byte)157, (byte)85, (byte)243, (byte)90, (byte)44, (byte)186, (byte)169, (byte)28, (byte)85, (byte)109, (byte)230, (byte)229, (byte)213, (byte)44, (byte)205, (byte)177, (byte)159, (byte)19, (byte)235, (byte)211, (byte)131, (byte)75, (byte)110, (byte)37, (byte)173, (byte)193, (byte)105, (byte)20, (byte)246, (byte)185, (byte)222, (byte)125, (byte)214, (byte)40, (byte)221, (byte)124, (byte)51, (byte)212, (byte)172, (byte)227, (byte)35, (byte)117, (byte)216, (byte)176, (byte)233, (byte)107, (byte)114, (byte)77, (byte)209, (byte)202, (byte)167, (byte)13, (byte)43, (byte)122, (byte)82, (byte)227, (byte)77, (byte)214, (byte)203, (byte)205, (byte)112, (byte)123, (byte)27, (byte)180, (byte)243, (byte)64 };
 
         Stream stream = new Stream((short)(numbers.length*4));
-        BSI bsi = new BSI();
 
         // di=0,di =+1,di =−1,di =+255and di = −255 are encoded as 00, 010|1, 010|0, 111110|11111111 and 111110|00000000
         
-        short encoded_length = rtcbenchmark_measure_java_performance(numbers, stream, bsi);
+        short encoded_length = rtcbenchmark_measure_java_performance(numbers, stream);
 
         // for (short i=0; i<encoded_length; i++) {
         //     RTC.avroraPrintInt(stream.data[i] >> 7 & 1);
@@ -56,7 +55,8 @@ public class RTCBenchmark {
         return true;
     }
 
-    public static short rtcbenchmark_measure_java_performance(short[] numbers, Stream stream, BSI bsi) {
+    public static short rtcbenchmark_measure_java_performance(short[] numbers, Stream stream) {
+        BSI bsi = new BSI();
         short ri_1 = 0;
         short NUMNUMBERS = (short)numbers.length;
         for (short i=0; i<NUMNUMBERS; i++) {
