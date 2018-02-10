@@ -270,7 +270,7 @@ module CombineResults =
                                          match sortorder |> List.tryFindIndex ((=) r.benchmark) with
                                          | Some (index) -> index
                                          | None -> 100)
-        let mainBenchmarks = ["bsort32"; "hsort32"; "binsrch32"; "xxtea"; "md5"; "rc5"; "fft8"; "fft16"; "outlier32u"; "lec"; "coremk"; "motetrack"; "heat_calib"; "heat_detect"]
+        let mainBenchmarks = ["bsort16"; "hsort16"; "binsrch16"; "xxtea"; "md5"; "rc5"; "fft8"; "fft16"; "outlier16u"; "lec"; "coremk"; "motetrack"; "heat_calib"; "heat_detect"]
         let mainResults =
             allResults
                 |> List.filter (fun r -> mainBenchmarks |> List.exists ((=) r.benchmark))
