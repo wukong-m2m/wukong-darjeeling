@@ -1,0 +1,6 @@
+djlibsource {
+    bm_hsort8 {
+        cDependencies = [ 'base' ]
+        javaDependencies = [ 'base' ]
+    }
+}

@@ -6,7 +6,7 @@ import javax.rtc.RTC;
 public class RTCBenchmark {
     private final static short NUMNUMBERS = 256;
 
-    public static String name = "HEAPSORT 16 OPTIMISED";
+    public static String name = "HEAPSORT 16 FN OPTIMISED";
     public static native void test_native();
     public static boolean test_java() {
         short numbers[] = new short[NUMNUMBERS]; // Not including this in the timing since we can't do it in C
@@ -27,7 +27,6 @@ public class RTCBenchmark {
         return true;
     }
 
-    @Lightweight
     public static void siftDown(short a[], short start, short end) {
         short root = 0;
         short child;

@@ -6,7 +6,7 @@ import javax.rtc.RTC;
 public class RTCBenchmark {
     private final static short NUMNUMBERS = 256;
 
-    public static String name = "HEAPSORT OPTIMISED";
+    public static String name = "HEAPSORT 32 OPTIMISED";
     public static native void test_native();
     public static boolean test_java() {
         int numbers[] = new int[NUMNUMBERS]; // Not including this in the timing since we can't do it in C

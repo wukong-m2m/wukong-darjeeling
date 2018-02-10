@@ -27,7 +27,7 @@ public class RTCBenchmark {
     }
 
     public static void rtcbenchmark_measure_java_performance(short[] numbers) {
-        short toFind = (short)(numbers[0] - 1);
+        short toFind = (short)(numbers[NUMNUMBERS - 1] + 1);
 
         for (short i=0; i<1000; i++) {
             short low = 0;

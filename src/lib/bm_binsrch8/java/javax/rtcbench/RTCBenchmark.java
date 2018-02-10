@@ -12,14 +12,14 @@ public class RTCBenchmark {
     private final static short NUMNUMBERS = 100;
 
     public static short dummy = 0;
-    public static String name = "BINARY SEARCH 32 OPTIMISED";
+    public static String name = "BINARY SEARCH 8 OPTIMISED";
     public static native void test_native();
     public static boolean test_java() {
-        int numbers[] = new int[NUMNUMBERS]; // Not including this in the timing since we can't do it in C
+        byte numbers[] = new byte[NUMNUMBERS]; // Not including this in the timing since we can't do it in C
 
         // Fill the array
         for (int loop = 0; loop < NUMNUMBERS; loop++) {
-            numbers[loop] = loop - 30;
+            numbers[loop] = (byte)(loop - 30);
         }
 
         rtcbenchmark_measure_java_performance(numbers);
@@ -27,8 +27,8 @@ public class RTCBenchmark {
         return true;
     }
 
-    public static void rtcbenchmark_measure_java_performance(int[] numbers) {
-        int toFind = numbers[NUMNUMBERS - 1] + 1;
+    public static void rtcbenchmark_measure_java_performance(byte[] numbers) {
+        byte toFind = (byte)(numbers[NUMNUMBERS - 1] + 1);
 
         short mid=0;
         for (int i=0; i<1000; i++) {
@@ -37,7 +37,7 @@ public class RTCBenchmark {
             while (low <= high) {
                 mid = (short)((short)(low + high) >>> 1); // This is usually much faster than / 2. Any optimising compiler should know this.
 
-                int number_mid;
+                short number_mid;
                 if ((number_mid=numbers[mid]) < toFind) {
                     low = (short)(mid + 1);
                 } else if (number_mid > toFind) {

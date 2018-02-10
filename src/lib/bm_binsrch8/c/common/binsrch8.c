@@ -2,10 +2,10 @@
 #include "config.h"
 #include "rtc_measure.h"
 
-void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t NUMNUMBERS, int16_t numbers[]) {
+void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t NUMNUMBERS, int8_t numbers[]) {
     rtc_startBenchmarkMeasurement_Native();
 
-    int16_t toFind = numbers[NUMNUMBERS-1] + 1;
+    int8_t toFind = numbers[NUMNUMBERS-1] + 1;
 
     uint16_t mid=0;
     for (uint16_t i=0; i<1000; i++) {
@@ -13,7 +13,7 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t 
         uint16_t high = NUMNUMBERS - 1;
         while (low <= high) {
             mid = ((uint16_t)(low + high)) >> 1;
-            int16_t number_mid;
+            int8_t number_mid;
             if ((number_mid=numbers[mid]) < toFind) {
                 low = mid + 1;
             } else if (numbers[mid] > toFind) {

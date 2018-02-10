@@ -6,20 +6,20 @@ import javax.rtc.RTC;
 public class RTCBenchmark {
     private final static short NUMNUMBERS = 256;
 
-    public static String name = "HEAPSORT 16 OPTIMISED";
+    public static String name = "HEAPSORT 8 OPTIMISED";
     public static native void test_native();
     public static boolean test_java() {
-        short numbers[] = new short[NUMNUMBERS]; // Not including this in the timing since we can't do it in C
+        byte numbers[] = new byte[NUMNUMBERS]; // Not including this in the timing since we can't do it in C
 
         // Fill the array
         for (int i=0; i<NUMNUMBERS; i++)
-            numbers[i] = (short)(NUMNUMBERS - 1 - i);
+            numbers[i] = (byte)(NUMNUMBERS - 128 - i);
 
         // Then sort it
         rtcbenchmark_measure_java_performance(numbers);
 
         for (int k=0; k<NUMNUMBERS; k++) {
-            if (numbers[k] != k) {
+            if (numbers[k] != (k - 128)) {
                 return false;
             }
         }
@@ -28,7 +28,7 @@ public class RTCBenchmark {
     }
 
     @Lightweight
-    public static void siftDown(short a[], short start, short end) {
+    public static void siftDown(byte a[], short start, short end) {
         short root = 0;
         short child;
         while ( (child = (short)((root << 1)+1)) < end ) {
@@ -36,8 +36,8 @@ public class RTCBenchmark {
             if ((child_plus_one < end) && (a[child] < a[child_plus_one])) {
                 child += 1;
             }
-            short a_root = a[root];
-            short a_child = a[child];
+            byte a_root = a[root];
+            byte a_child = a[child];
             if (a_root < a_child) {
                 // SWAP( a[child], a[root] );
                 a[root] = a_child;
@@ -50,7 +50,7 @@ public class RTCBenchmark {
         }        
     }
 
-    public static void rtcbenchmark_measure_java_performance(short[] a) {
+    public static void rtcbenchmark_measure_java_performance(byte[] a) {
         // Exact copy of http://rosettacode.org/wiki/Sorting_algorithms/Heapsort#C, but with SWAP and siftDown inlined to prevent expensive method calls
 
         short count = (short)a.length;
@@ -63,7 +63,7 @@ public class RTCBenchmark {
      
         for (end=(short)(count-1); end > 0; end--) {
             // SWAP(a[end],a[0]);
-            {short t=a[end]; a[end]=a[0]; a[0]=t; }
+            {byte t=a[end]; a[end]=a[0]; a[0]=t; }
             siftDown(a, (short)0, end);
         }
     }

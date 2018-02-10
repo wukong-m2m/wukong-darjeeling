@@ -11,7 +11,8 @@ import javax.rtc.RTC;
 public class RTCBenchmark {
     private final static short NUMNUMBERS = 100;
 
-    public static String name = "BINARY SEARCH OPTIMISED";
+    public static short dummy = 0;
+    public static String name = "BINARY SEARCH 16 OPTIMISED";
     public static native void test_native();
     public static boolean test_java() {
         short numbers[] = new short[NUMNUMBERS]; // Not including this in the timing since we can't do it in C
@@ -27,14 +28,13 @@ public class RTCBenchmark {
     }
 
     public static void rtcbenchmark_measure_java_performance(short[] numbers) {
-        short toFind = (short)(numbers[0] - 1);
+        short toFind = (short)(numbers[NUMNUMBERS - 1] + 1);
 
         short mid=0;
         for (short i=0; i<1000; i++) {
             short low = 0;
             short high = (short)(numbers.length - 1);
             while (low <= high) {
-                // mid = (low + high) / 2;
                 mid = (short)((short)(low + high) >>> 1); // This is usually much faster than / 2. Any optimising compiler should know this.
 
                 short number_mid;
@@ -57,6 +57,6 @@ public class RTCBenchmark {
             }
         }
 
-        numbers[0]=mid; // This is just here to prevent proguard from optimising away the whole method
+        dummy=mid; // This is just here to prevent proguard from optimising away the whole method
     }
 }

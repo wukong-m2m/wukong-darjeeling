@@ -1,0 +1,6 @@
+djlibsource {
+    bm_binsrch8 {
+        cDependencies = [ 'base' ]
+        javaDependencies = [ 'base' ]
+    }
+}

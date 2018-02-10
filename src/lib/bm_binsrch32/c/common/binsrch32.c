@@ -25,5 +25,5 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t 
     }
 
     rtc_stopBenchmarkMeasurement();
-    numbers[0]=mid; // This is just here to prevent proguard from optimising away the whole method
+    numbers[0]=mid; // This is just here to prevent the compiler from optimising away the whole method
 }

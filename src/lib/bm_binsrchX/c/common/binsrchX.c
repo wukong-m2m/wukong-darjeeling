@@ -5,7 +5,7 @@
 void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t NUMNUMBERS, int16_t numbers[]) {
     rtc_startBenchmarkMeasurement_Native();
 
-    int16_t toFind = numbers[NUMNUMBERS-1] + 1;
+    int16_t toFind = numbers[0] - 1;
 
     for (uint16_t i=0; i<1000; i++) {
         uint16_t low = 0;

@@ -5,14 +5,14 @@ import javax.rtc.RTC;
 public class RTCBenchmark {
     private final static short NUMNUMBERS = 256;
 
-    public static String name = "HEAPSORT 32 CHT OPTIMISED";
+    public static String name = "HEAPSORT 16 CHT OPTIMISED";
     public static native void test_native();
     public static boolean test_java() {
-        int numbers[] = new int[NUMNUMBERS]; // Not including this in the timing since we can't do it in C
+        short numbers[] = new short[NUMNUMBERS]; // Not including this in the timing since we can't do it in C
 
         // Fill the array
         for (int i=0; i<NUMNUMBERS; i++)
-            numbers[i] = (NUMNUMBERS - 1 - i);
+            numbers[i] = (short)(NUMNUMBERS - 1 - i);
 
         // Then sort it
         rtcbenchmark_measure_java_performance(numbers);
@@ -27,7 +27,7 @@ public class RTCBenchmark {
     }
 
 // Cheat by manually inlining siftDown. Neither avr-gcc nor Proguard will inline automatically.
-    public static void rtcbenchmark_measure_java_performance(int[] a) {
+    public static void rtcbenchmark_measure_java_performance(short[] a) {
         // Exact copy of http://rosettacode.org/wiki/Sorting_algorithms/Heapsort#C, but with SWAP and siftDown inlined to prevent expensive method calls
 
         short count = (short)a.length;
@@ -45,8 +45,8 @@ public class RTCBenchmark {
                 if ((child_plus_one < count) && (a[child] < a[child_plus_one])) {
                     child += 1;
                 }
-                int a_root = a[root];
-                int a_child = a[child];
+                short a_root = a[root];
+                short a_child = a[child];
                 if (a_root < a_child) {
                     // SWAP( a[child], a[root] );
                     a[root] = a_child;
@@ -62,7 +62,7 @@ public class RTCBenchmark {
      
         for (end=(short)(count-1); end > 0; end--) {
             // SWAP(a[end],a[0]);
-            {int t=a[end]; a[end]=a[0]; a[0]=t; }
+            {short t=a[end]; a[end]=a[0]; a[0]=t; }
 
             // siftDown(a, 0, end);
             // void siftDown( short *a, short start, short end)
@@ -74,8 +74,8 @@ public class RTCBenchmark {
                 if ((child_plus_one < end) && (a[child] < a[child_plus_one])) {
                     child += 1;
                 }
-                int a_root = a[root];
-                int a_child = a[child];
+                short a_root = a[root];
+                short a_child = a[child];
                 if (a_root < a_child) {
                     // SWAP( a[child], a[root] );
                     a[root] = a_child;

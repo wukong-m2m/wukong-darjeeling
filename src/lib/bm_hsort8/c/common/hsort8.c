@@ -4,9 +4,9 @@
 
 // Split into separate function to avoid the compiler just optimising away the whole test.
 
-#define SWAP(r,s)  do{int16_t t=r; r=s; s=t; } while(0)
+#define SWAP(r,s)  do{int8_t t=r; r=s; s=t; } while(0)
 
-void siftDown( int16_t *a, int start, int end)
+void siftDown( int8_t *a, int start, int end)
 {
     int root = start;
     int child;
@@ -15,8 +15,8 @@ void siftDown( int16_t *a, int start, int end)
         if ((child_plus_one < end) && (a[child] < a[child_plus_one])) {
             child += 1;
         }
-        int16_t a_root = a[root];
-        int16_t a_child = a[child];
+        int8_t a_root = a[root];
+        int8_t a_child = a[child];
         if (a[root] < a[child]) {
             // SWAP( a[child], a[root] );
             a[root] = a_child;
@@ -30,7 +30,7 @@ void siftDown( int16_t *a, int start, int end)
     }
 }
 
-void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t count, int16_t a[]) {
+void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t count, int8_t a[]) {
 	rtc_startBenchmarkMeasurement_Native();
 
 	// Then sort it
