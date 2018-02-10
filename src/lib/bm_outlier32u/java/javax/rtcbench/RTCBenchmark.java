@@ -14,7 +14,7 @@ public class RTCBenchmark {
 
         // Fill the array
         for (int i=0; i<NUMNUMBERS; i++) {
-            buffer[i] = (short)(NUMNUMBERS - 128 + i); // [-128, 127]
+            buffer[i] = i;
         }
         // Add some outliers
         buffer[2]   = 1000;

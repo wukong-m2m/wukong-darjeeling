@@ -12,7 +12,7 @@ void javax_rtcbench_RTCBenchmark_void_test_native() {
 
 	// Fill the array
 	for (uint16_t i=0; i<NUMNUMBERS; i++)
-		buffer[i] = (NUMNUMBERS - 128 + i); // [-128, 127]
+        buffer[i] = i;
 	// Add some outliers
 	buffer[2]   = 1000;
 	buffer[18]  = -1000;
