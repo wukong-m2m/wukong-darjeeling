@@ -151,9 +151,9 @@ if (!project.hasProperty('usegetfield_a_fixed')) {
 
 if (!project.hasProperty('aotmarkloopregs')) {
     if (project.ext.use16bitarrayindex == 'true') {
-        project.ext.aotmarkloopregs = '7'
+        project.ext.aotmarkloopregs = (project.ext.aotstackcachesize.toInteger() - 4).toString()
     } else {
-        project.ext.aotmarkloopregs = '6' // because we may need one more during array stores
+        project.ext.aotmarkloopregs = (project.ext.aotstackcachesize.toInteger() - 5).toString() // because we may need one more during array stores
     }
 }
 

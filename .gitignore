@@ -38,6 +38,7 @@ wukong/tools/testrtt/testrtt
 bin
 obj
 src/config/avrora/results_*
+src/config/avrora/resultsets_*
 src/config/avrora/old_results
 src/config/avrora/allresults
 sumsum.txt

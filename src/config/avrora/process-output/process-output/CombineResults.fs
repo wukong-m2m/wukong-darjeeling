@@ -270,23 +270,26 @@ module CombineResults =
                                          match sortorder |> List.tryFindIndex ((=) r.benchmark) with
                                          | Some (index) -> index
                                          | None -> 100)
-        let mainBenchmarks = ["bsort16"; "hsort16"; "binsrch16"; "xxtea"; "md5"; "rc5"; "fft8"; "fft16"; "outlier16u"; "lec"; "coremk"; "motetrack"; "heat_calib"; "heat_detect"]
+        let mainBenchmarks = ["bsort16"; "hsort16"; "binsrch16"; "xxtea"; "md5"; "rc5"; "coremk"; "motetrack"; "heat_calib"; "heat_detect"; "lec"; "fft16"; "outlier16u"]
         let mainResults =
             allResults
                 |> List.filter (fun r -> mainBenchmarks |> List.exists ((=) r.benchmark))
-        
-        let allResultsSummary = summariseResults allResults
-        let mainResultsSummary = summariseResults mainResults
 
         let baseResultsFilename = if (resultsDirectory.StartsWith("/"))
                                   then "summary_" + (Path.GetFileName(resultsDirectory).Replace("results",""))
                                   else "summary_" + (resultsDirectory.Replace("results",""))
-        let allResultsFilename = resultsDirectory + "/complete_" + baseResultsFilename
-        let mainResultsFilename = resultsDirectory + "/main_" + baseResultsFilename
+
+        let allResultsSummary = summariseResults allResults
+        let allResultsFilename = resultsDirectory + "/../complete_" + baseResultsFilename
         File.WriteAllText (allResultsFilename, String.Join("\r\n", allResultsSummary))
         Console.Error.WriteLine ("Wrote output to " + allResultsFilename)
-        File.WriteAllText (mainResultsFilename, String.Join("\r\n", mainResultsSummary))
-        Console.Error.WriteLine ("Wrote output to " + mainResultsFilename)
+
+        if mainResults.Any()
+        then
+            let mainResultsSummary = summariseResults mainResults
+            let mainResultsFilename = resultsDirectory + "/../main_" + baseResultsFilename
+            File.WriteAllText (mainResultsFilename, String.Join("\r\n", mainResultsSummary))
+            Console.Error.WriteLine ("Wrote output to " + mainResultsFilename)
 
     let main(args : string list) =
         Console.Error.WriteLine ("START " + (DateTime.Now.ToString()))
