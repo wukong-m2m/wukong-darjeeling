@@ -44,47 +44,65 @@ public class RTCBenchmark {
 
 
     public static void rtcbenchmark_measure_java_performance(short NUMNUMBERS, short[] buffer, short[] distance_matrix, short distance_threshold, boolean[] outliers) {
-        short k=0; // Since we scan one line at a time, we don't need to calculate a matrix index.
-                   // The first NUMNUMBERS distances correspond to measurement 1, the second NUMNUMBERS distances to measurement 2, etc.
-
+        // Calculate distance matrix
+        short sub_start=0;
         for (short i=0; i<NUMNUMBERS; i++) {
-            for (short j=0; j<NUMNUMBERS; j++) {
-                distance_matrix[k++] = (short)(buffer[i] - buffer[j]);
+            short hor = sub_start;
+            short ver = sub_start;
+            for (short j=i; j<NUMNUMBERS; j++) {
+                short buffer_i = buffer[i];
+                short buffer_j = buffer[j];
+                if (buffer_i > buffer_j) {
+                    short diff = (short)(buffer_i - buffer_j);
+                    distance_matrix[hor] = diff;
+                    distance_matrix[ver] = diff;
+                } else {
+                    short diff = (short)(buffer_j - buffer_i);
+                    distance_matrix[hor] = diff;
+                    distance_matrix[ver] = diff;
+                }
+
+                hor ++;
+                ver += NUMNUMBERS;
             }
+            sub_start+=NUMNUMBERS+1;
         }
 
-        // This is better for AOT, but actually WORSE for C since array access is less expensive for C.
-        //
-        // short sub_start=0;
-        // for (short i=0; i<NUMNUMBERS; i++) {
-        //     short hor = sub_start;
-        //     short ver = sub_start;
-        //     for (short j=i; j<NUMNUMBERS; j++) {
-
-        //         short diff = (short)(buffer[i] - buffer[j]);
-        //         distance_matrix[hor] = diff;
-        //         distance_matrix[ver] = diff;
-        //         hor ++;
-        //         ver += NUMNUMBERS;
-        //     }
-        //     sub_start+=NUMNUMBERS+1;
-        // }
-
-        
-        k=0;
+        // Determine outliers
+        short k=0; // Since we scan one line at a time, we don't need to calculate a matrix index.
+                   // The first NUMNUMBERS distances correspond to measurement 1, the second NUMNUMBERS distances to measurement 2, etc.
         short half_NUMNUMBERS = (short)(NUMNUMBERS >> 1);
-        for (short i=0; i<NUMNUMBERS; i++) {
-            short exceed_threshold_count = 0;
-            for (short j=0; j<NUMNUMBERS; j++) {
-                short diff = distance_matrix[k++];
-                if (diff > distance_threshold || (short)(-diff) > distance_threshold) {
-                    exceed_threshold_count++;
+        if (distance_threshold > 0) {
+            for (short i=0; i<NUMNUMBERS; i++) {
+                short exceed_threshold_count = 0;
+                for (short j=0; j<NUMNUMBERS; j++) {
+                    short diff = distance_matrix[k++];
+                    if (diff < 0 || diff > distance_threshold) {
+                        exceed_threshold_count++;
+                    }
+                }
+
+                if (exceed_threshold_count > half_NUMNUMBERS) {
+                    outliers[i] = true;
+                } else {
+                    outliers[i] = false;
                 }
             }
-            if (exceed_threshold_count > half_NUMNUMBERS) {
-                outliers[i] = true;
-            } else {
-                outliers[i] = false;
+        } else {
+            for (short i=0; i<NUMNUMBERS; i++) {
+                short exceed_threshold_count = 0;
+                for (short j=0; j<NUMNUMBERS; j++) {
+                    short diff = distance_matrix[k++];
+                    if (diff < 0 && diff > distance_threshold) {
+                        exceed_threshold_count++;
+                    }
+                }
+
+                if (exceed_threshold_count > half_NUMNUMBERS) {
+                    outliers[i] = true;
+                } else {
+                    outliers[i] = false;
+                }
             }
         }
     }

@@ -11,41 +11,40 @@
 // threshold. If the majority of the distance measurements for a sensor readings are marked, then the sensor reading
 // is classified as an outlier."
 
-void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t NUMNUMBERS, int16_t buffer[], int16_t distance_matrix[], int16_t distance_threshold, bool outliers[]) {
+void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t NUMNUMBERS, int16_t buffer[], uint16_t distance_matrix[], uint16_t distance_threshold, bool outliers[]) {
 	rtc_startBenchmarkMeasurement_Native();
 
+    // Calculate distance matrix
+    uint16_t sub_start=0;
+    for (uint16_t i=0; i<NUMNUMBERS; i++) {
+        uint16_t hor = sub_start;
+        uint16_t ver = sub_start;
+        for (uint16_t j=i; j<NUMNUMBERS; j++) {
+            int16_t buffer_i = buffer[i];
+            int16_t buffer_j = buffer[j];
+            if (buffer_i > buffer_j) {
+                uint16_t diff = (uint16_t)(buffer_i - buffer_j);
+                distance_matrix[hor] = diff;
+                distance_matrix[ver] = diff;
+            } else {
+                uint16_t diff = (uint16_t)(buffer_j - buffer_i);
+                distance_matrix[hor] = diff;
+                distance_matrix[ver] = diff;
+            }
+
+            hor ++;
+            ver += NUMNUMBERS;
+        }
+        sub_start+=NUMNUMBERS+1;
+    }
+    
+    // Determine outliers
     uint16_t k=0; // Since we scan one line at a time, we don't need to calculate a matrix index.
                   // The first NUMNUMBERS distances correspond to measurement 1, the second NUMNUMBERS distances to measurement 2, etc.
-
-    for (uint16_t i=0; i<NUMNUMBERS; i++) {
-        for (uint16_t j=0; j<NUMNUMBERS; j++) {
-            distance_matrix[k++] = buffer[i] - buffer[j];
-        }
-    }
-
-    // This is better for AOT, but actually WORSE for C since array access is less expensive for C.
-
-    // uint16_t sub_start=0;
-    // for (uint16_t i=0; i<NUMNUMBERS; i++) {
-    //     uint16_t hor = sub_start;
-    //     uint16_t ver = sub_start;
-    //     for (uint16_t j=i; j<NUMNUMBERS; j++) {
-
-    //         int16_t diff = (buffer[i] - buffer[j]);
-    //         distance_matrix[hor] = diff;
-    //         distance_matrix[ver] = diff;
-    //         hor ++;
-    //         ver += NUMNUMBERS;
-    //     }
-    //     sub_start+=NUMNUMBERS+1;
-    // }
-    
-    k=0;
     for (uint16_t i=0; i<NUMNUMBERS; i++) {
         uint16_t exceed_threshold_count = 0;
         for (uint16_t j=0; j<NUMNUMBERS; j++) {
-            int16_t diff = distance_matrix[k++];
-            if (diff > distance_threshold || -diff > distance_threshold) {
+            if (distance_matrix[k++] > distance_threshold) {
                 exceed_threshold_count++;
             }
         }
@@ -55,7 +54,6 @@ void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t 
             outliers[i] = false;
         }
     }
-
 
 	rtc_stopBenchmarkMeasurement();
 }

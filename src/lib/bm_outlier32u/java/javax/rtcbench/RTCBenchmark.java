@@ -13,7 +13,7 @@ public class RTCBenchmark {
         boolean outliers[] = new boolean[NUMNUMBERS];
 
         // Fill the array
-        for (int i=0; i<NUMNUMBERS; i++) {
+        for (short i=0; i<NUMNUMBERS; i++) {
             buffer[i] = i;
         }
         // Add some outliers
@@ -44,28 +44,65 @@ public class RTCBenchmark {
 
 
     public static void rtcbenchmark_measure_java_performance(short NUMNUMBERS, int[] buffer, int[] distance_matrix, int distance_threshold, boolean[] outliers) {
+        // Calculate distance matrix
+        short sub_start=0;
+        for (short i=0; i<NUMNUMBERS; i++) {
+            short hor = sub_start;
+            short ver = sub_start;
+            for (short j=i; j<NUMNUMBERS; j++) {
+                int buffer_i = buffer[i];
+                int buffer_j = buffer[j];
+                if (buffer_i > buffer_j) {
+                    int diff = buffer_i - buffer_j;
+                    distance_matrix[hor] = diff;
+                    distance_matrix[ver] = diff;
+                } else {
+                    int diff = buffer_j - buffer_i;
+                    distance_matrix[hor] = diff;
+                    distance_matrix[ver] = diff;
+                }
+
+                hor ++;
+                ver += NUMNUMBERS;
+            }
+            sub_start+=NUMNUMBERS+1;
+        }
+
+        // Determine outliers
         short k=0; // Since we scan one line at a time, we don't need to calculate a matrix index.
                    // The first NUMNUMBERS distances correspond to measurement 1, the second NUMNUMBERS distances to measurement 2, etc.
-        for (short i=0; i<NUMNUMBERS; i++) {
-            for (short j=0; j<NUMNUMBERS; j++) {
-                distance_matrix[k++] = buffer[i] - buffer[j];
-            }
-        }
-        
-        k=0;
         short half_NUMNUMBERS = (short)(NUMNUMBERS >> 1);
-        for (short i=0; i<NUMNUMBERS; i++) {
-            short exceed_threshold_count = 0;
-            for (short j=0; j<NUMNUMBERS; j++) {
-                int diff = distance_matrix[k++];
-                if (diff > distance_threshold || -diff > distance_threshold) {
-                    exceed_threshold_count++;
+        if (distance_threshold > 0) {
+            for (short i=0; i<NUMNUMBERS; i++) {
+                short exceed_threshold_count = 0;
+                for (short j=0; j<NUMNUMBERS; j++) {
+                    int diff = distance_matrix[k++];
+                    if (diff < 0 || diff > distance_threshold) {
+                        exceed_threshold_count++;
+                    }
+                }
+
+                if (exceed_threshold_count > half_NUMNUMBERS) {
+                    outliers[i] = true;
+                } else {
+                    outliers[i] = false;
                 }
             }
-            if (exceed_threshold_count > half_NUMNUMBERS) {
-                outliers[i] = true;
-            } else {
-                outliers[i] = false;
+        } else {
+            for (short i=0; i<NUMNUMBERS; i++) {
+                short exceed_threshold_count = 0;
+                for (short j=0; j<NUMNUMBERS; j++) {
+                    int diff = distance_matrix[k++];
+                    if (diff < 0 && diff > distance_threshold) {
+                        exceed_threshold_count++;
+                    }
+                }
+
+                if (exceed_threshold_count > half_NUMNUMBERS) {
+                    outliers[i] = true;
+                } else {
+                    outliers[i] = false;
+                }
             }
         }
     }

@@ -3,12 +3,12 @@
 #include "config.h"
 #include "heap.h"
 
-void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t NUMNUMBERS, int16_t buffer[], int16_t distance_matrix[], int16_t distance_threshold, bool outliers[]);
+void __attribute__((noinline)) rtcbenchmark_measure_native_performance(uint16_t NUMNUMBERS, int16_t buffer[], uint16_t distance_matrix[], uint16_t distance_threshold, bool outliers[]);
 
 void javax_rtcbench_RTCBenchmark_void_test_native() {
 	uint16_t NUMNUMBERS = 20;
 	int16_t *buffer = dj_mem_checked_alloc(NUMNUMBERS*sizeof(int16_t), CHUNKID_RTCNATIVETESTDATA);
-	int16_t *distrance_matrix = dj_mem_checked_alloc(NUMNUMBERS*NUMNUMBERS*sizeof(int16_t), CHUNKID_RTCNATIVETESTDATA);
+	uint16_t *distrance_matrix = dj_mem_checked_alloc(NUMNUMBERS*NUMNUMBERS*sizeof(uint16_t), CHUNKID_RTCNATIVETESTDATA);
 	bool *outliers = dj_mem_checked_alloc(NUMNUMBERS*sizeof(bool), CHUNKID_RTCNATIVETESTDATA);
 
 	// Fill the array
