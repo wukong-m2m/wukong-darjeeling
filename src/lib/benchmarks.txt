@@ -4,6 +4,12 @@ motetrack_uop : original C version, and Java version modified by replacing the 2
 motetrack     : Several more 'unfair' optimisations, C version modified to match the Java optimisations.
 
 
+coremk_or0    : original, directly translated version
+coremk_or1    : manually inline small methods
+coremk_or2    : use short array index variables
+coremk_or3    : avoid recalculating expressions in a loop
+coremk_or4    : reduce array and object access
+coremk_or5    : reduce branch cost in crcu8: result is now the same as coremk, except for small rewrite to avoid stack values at BRTARGET
 coremk        : default CoreMark implementation
 coremk_ch1    : avoid creating objects
 coremk_ch2    : avoid creating objects + avoid virtual calls

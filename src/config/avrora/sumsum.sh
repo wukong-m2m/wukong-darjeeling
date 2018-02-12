@@ -3,7 +3,7 @@ rm -f sumsum.txt
 
 touch sumsum.txt
 
-summaries="$summaries "`ls results_*/summary*`
+summaries="$summaries "`ls main_summary*`
 
 for summary in `echo $summaries`
 do
