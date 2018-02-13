@@ -71,28 +71,39 @@ uint16_t rtc_offset_for_referenced_infusion(dj_infusion *infusion_ptr, uint8_t r
                              // |1             ref1         | getLocalRefVariables, stackEndOffset
                              // +---------------------------+
 
-uint8_t offset_for_intlocal_short(uint8_t local) {
+uint8_t rtc_offset_for_intlocal_short(uint8_t local) {
     uint32_t offset = (rtc_ts->methodimpl_header.nr_ref_vars * sizeof(ref_t))
                         + ((rtc_ts->methodimpl_header.nr_int_vars - 1) * sizeof(int16_t))
                         - (local * sizeof(int16_t));
     return offset;
 }
 
-uint8_t offset_for_intlocal_int(uint8_t local) {
+uint8_t rtc_offset_for_intlocal_int(uint8_t local) {
     // Local integer slots grow down, but the bytecode will point at the slot with the lowest index, which is the top one.
     // For example, look at the 32bit short "int2" in the drawing above. The bytecode will indicate slot 2 as the start,
     // since the 32 bit int is stored in slots 3 and 2. However, slot 3's address is the start of the int in memory,
     // so we need to substract one slot from the pointer.
-    return offset_for_intlocal_short(local) - 1*sizeof(int16_t);
+    return rtc_offset_for_intlocal_short(local) - 1*sizeof(int16_t);
 }
 
-uint8_t offset_for_intlocal_long(uint8_t local) {
+uint8_t rtc_offset_for_intlocal_long(uint8_t local) {
     // Same as for ints, only need to substract 3 slots since a long occupies 4.
-    return offset_for_intlocal_short(local) - 3*sizeof(int16_t);
+    return rtc_offset_for_intlocal_short(local) - 3*sizeof(int16_t);
 }
 
-uint8_t offset_for_reflocal(uint8_t local) {
+uint8_t rtc_offset_for_reflocal(uint8_t local) {
     return (local * sizeof(ref_t));
+}
+
+uint16_t rtc_offset_for_FIELD_A_FIXED(uint8_t infusion_id, uint8_t entity_id, uint16_t ref_index) {
+    dj_local_id local_id;
+    local_id.infusion_id = infusion_id;
+    local_id.entity_id = entity_id;
+    dj_global_id global_id = dj_global_id_resolve(rtc_ts->infusion, local_id);
+    dj_di_pointer classDef = dj_infusion_getClassDefinition(global_id.infusion, global_id.entity_id);
+    uint16_t baseRefOffset = dj_di_classDefinition_getOffsetOfFirstReference(classDef);
+    uint16_t targetRefOffset = baseRefOffset + ref_index*2;
+    return targetRefOffset;
 }
 
 void rtc_update_method_pointers(dj_infusion *infusion, native_method_function_t *rtc_method_start_addresses) {

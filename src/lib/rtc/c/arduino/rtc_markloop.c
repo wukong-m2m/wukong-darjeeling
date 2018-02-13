@@ -1227,10 +1227,10 @@ void rtc_markloop_emit_prologue(bool called_from_invokelight, uint8_t lightweigh
                                                          || ( called_from_invokelight && rtc_method_get_uses_reg(lightweightmethod_id, ARRAY_INDEX_TO_REG(idx))))) {
                 uint8_t local_index = RTC_VALUETAG_GET_LOCAL_INDEX(valuetag);
                 uint8_t offset = 0;
-                if      (RTC_VALUETAG_IS_INT_H(valuetag)) offset = offset_for_intlocal_int(local_index) + 2;
-                else if (RTC_VALUETAG_IS_INT_L(valuetag)) offset = offset_for_intlocal_int(local_index);
-                else if (RTC_VALUETAG_IS_SHORT(valuetag)) offset = offset_for_intlocal_short(local_index);
-                else if (RTC_VALUETAG_IS_REF(valuetag))   offset = offset_for_reflocal(local_index);
+                if      (RTC_VALUETAG_IS_INT_H(valuetag)) offset = rtc_offset_for_intlocal_int(local_index) + 2;
+                else if (RTC_VALUETAG_IS_INT_L(valuetag)) offset = rtc_offset_for_intlocal_int(local_index);
+                else if (RTC_VALUETAG_IS_SHORT(valuetag)) offset = rtc_offset_for_intlocal_short(local_index);
+                else if (RTC_VALUETAG_IS_REF(valuetag))   offset = rtc_offset_for_reflocal(local_index);
 
                 uint8_t operand_regs[2];
                 operand_regs[0] = ARRAY_INDEX_TO_REG(idx);
@@ -1259,10 +1259,10 @@ void rtc_markloop_emit_epilogue(bool called_from_invokelight, uint8_t lightweigh
                 //   - from INVOKELIGHT  (called_from_invokelight == true) : we should write all pinned values that are used by the lightweight method (they will be reloaded after the method returns)
                 uint8_t local_index = RTC_VALUETAG_GET_LOCAL_INDEX(valuetag);
                 uint8_t offset = 0;
-                if      (RTC_VALUETAG_IS_INT_H(valuetag)) offset = offset_for_intlocal_int(local_index) + 2;
-                else if (RTC_VALUETAG_IS_INT_L(valuetag)) offset = offset_for_intlocal_int(local_index);
-                else if (RTC_VALUETAG_IS_SHORT(valuetag)) offset = offset_for_intlocal_short(local_index);
-                else if (RTC_VALUETAG_IS_REF(valuetag))   offset = offset_for_reflocal(local_index);
+                if      (RTC_VALUETAG_IS_INT_H(valuetag)) offset = rtc_offset_for_intlocal_int(local_index) + 2;
+                else if (RTC_VALUETAG_IS_INT_L(valuetag)) offset = rtc_offset_for_intlocal_int(local_index);
+                else if (RTC_VALUETAG_IS_SHORT(valuetag)) offset = rtc_offset_for_intlocal_short(local_index);
+                else if (RTC_VALUETAG_IS_REF(valuetag))   offset = rtc_offset_for_reflocal(local_index);
 
                 uint8_t operand_regs[2];
                 operand_regs[0] = ARRAY_INDEX_TO_REG(idx);

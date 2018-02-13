@@ -193,7 +193,7 @@ void rtc_translate_single_instruction() {
                 ts->pc += 1; // Skip operand (already read into jvm_operand_byte0)
             else
                 jvm_operand_byte0 = opcode - JVM_SLOAD_0;
-            emit_load_local_16bit_baseline_wrapper(R24, offset_for_intlocal_short(jvm_operand_byte0));
+            emit_load_local_16bit_baseline_wrapper(R24, rtc_offset_for_intlocal_short(jvm_operand_byte0));
             emit_x_PUSH_16bit(R24);
         break;
         case JVM_ILOAD:
@@ -205,7 +205,7 @@ void rtc_translate_single_instruction() {
                 ts->pc += 1; // Skip operand (already read into jvm_operand_byte0)
             else
                 jvm_operand_byte0 = opcode - JVM_ILOAD_0;
-            emit_load_local_32bit_baseline_wrapper(R22, offset_for_intlocal_int(jvm_operand_byte0));
+            emit_load_local_32bit_baseline_wrapper(R22, rtc_offset_for_intlocal_int(jvm_operand_byte0));
             emit_x_PUSH_32bit(R22);
         break;
         case JVM_ALOAD:
@@ -217,7 +217,7 @@ void rtc_translate_single_instruction() {
                 ts->pc += 1; // Skip operand (already read into jvm_operand_byte0)
             else
                 jvm_operand_byte0 = opcode - JVM_ALOAD_0;
-            emit_load_local_ref_baseline_wrapper(R24, offset_for_reflocal(jvm_operand_byte0));
+            emit_load_local_ref_baseline_wrapper(R24, rtc_offset_for_reflocal(jvm_operand_byte0));
             emit_x_PUSH_REF(R24);
         break;
         case JVM_SSTORE:
@@ -230,7 +230,7 @@ void rtc_translate_single_instruction() {
             else
                 jvm_operand_byte0 = opcode - JVM_SSTORE_0;
             emit_x_POP_16bit(R24);
-            emit_store_local_16bit_baseline_wrapper(R24, offset_for_intlocal_short(jvm_operand_byte0));
+            emit_store_local_16bit_baseline_wrapper(R24, rtc_offset_for_intlocal_short(jvm_operand_byte0));
         break;
         case JVM_ISTORE:
         case JVM_ISTORE_0:
@@ -242,7 +242,7 @@ void rtc_translate_single_instruction() {
             else
                 jvm_operand_byte0 = opcode - JVM_ISTORE_0;
             emit_x_POP_32bit(R22);
-            emit_store_local_32bit_baseline_wrapper(R22, offset_for_intlocal_int(jvm_operand_byte0));
+            emit_store_local_32bit_baseline_wrapper(R22, rtc_offset_for_intlocal_int(jvm_operand_byte0));
         break;
         case JVM_ASTORE:
         case JVM_ASTORE_0:
@@ -254,7 +254,7 @@ void rtc_translate_single_instruction() {
             else
                 jvm_operand_byte0 = opcode - JVM_ASTORE_0;
             emit_x_POP_REF(R24);
-            emit_store_local_ref_baseline_wrapper(R24, offset_for_reflocal(jvm_operand_byte0));
+            emit_store_local_ref_baseline_wrapper(R24, rtc_offset_for_reflocal(jvm_operand_byte0));
         break;
         case JVM_GETARRAY_B:
         case JVM_GETARRAY_C:
@@ -534,7 +534,7 @@ void rtc_translate_single_instruction() {
 #ifndef NO_GETFIELD_A_FIXED
         case JVM_GETFIELD_A_FIXED: {
             ts->pc += 4; // Skip operands (already read into jvm_operand_byte0)
-            uint16_t targetRefOffset = get_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
+            uint16_t targetRefOffset = rtc_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
 
             emit_x_POP_REF(RZ); // POP the reference into Z
 
@@ -590,7 +590,7 @@ void rtc_translate_single_instruction() {
 #ifndef NO_GETFIELD_A_FIXED
         case JVM_PUTFIELD_A_FIXED: {
             ts->pc += 4; // Skip operands (already read into jvm_operand_byte0)
-            uint16_t targetRefOffset = get_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
+            uint16_t targetRefOffset = rtc_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
 
             rtc_current_method_set_uses_reg(R16); // This is a call saved register
             emit_x_POP_REF(R16); // POP the value to store (store in in call-saved R16-R17)

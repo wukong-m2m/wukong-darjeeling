@@ -204,13 +204,13 @@ void rtc_common_translate_inc(uint8_t opcode, uint8_t jvm_operand_byte0, uint8_t
     bool is_iinc;
     if (opcode == JVM_IINC || opcode == JVM_IINC_W) {
         is_iinc = true;
-        offset = offset_for_intlocal_int(jvm_operand_byte0);
+        offset = rtc_offset_for_intlocal_int(jvm_operand_byte0);
 #ifdef AOT_SAFETY_CHECKS
         rtc_safety_check_offset_valid_for_local_variable(offset + 3); // +3 because we will write four bytes at this offset and both need to fit in the space reserved for local variables.
 #endif //AOT_SAFETY_CHECKS
     } else {
         is_iinc = false;
-        offset = offset_for_intlocal_short(jvm_operand_byte0);
+        offset = rtc_offset_for_intlocal_short(jvm_operand_byte0);
 #ifdef AOT_SAFETY_CHECKS
         rtc_safety_check_offset_valid_for_local_variable(offset + 1); // +1 because we will write four bytes at this offset and both need to fit in the space reserved for local variables.
 #endif //AOT_SAFETY_CHECKS
@@ -326,15 +326,4 @@ void rtc_common_push_returnvalue_from_R22_if_necessary(uint8_t rettype) {
             break;
     }
 #endif    
-}
-
-uint16_t get_offset_for_FIELD_A_FIXED(uint8_t infusion_id, uint8_t entity_id, uint16_t ref_index) {
-    dj_local_id local_id;
-    local_id.infusion_id = infusion_id;
-    local_id.entity_id = entity_id;
-    dj_global_id global_id = dj_global_id_resolve(rtc_ts->infusion, local_id);
-    dj_di_pointer classDef = dj_infusion_getClassDefinition(global_id.infusion, global_id.entity_id);
-    uint16_t baseRefOffset = dj_di_classDefinition_getOffsetOfFirstReference(classDef);
-    uint16_t targetRefOffset = baseRefOffset + ref_index*2;
-    return targetRefOffset;
 }

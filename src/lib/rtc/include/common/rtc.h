@@ -30,10 +30,11 @@ uint16_t rtc_offset_for_static_short(dj_infusion *infusion_ptr, uint8_t variable
 uint16_t rtc_offset_for_static_int(dj_infusion *infusion_ptr, uint8_t variable_index);
 uint16_t rtc_offset_for_static_long(dj_infusion *infusion_ptr, uint8_t variable_index);
 uint16_t rtc_offset_for_referenced_infusion(dj_infusion *infusion_ptr, uint8_t ref_inf);
-uint8_t offset_for_intlocal_short(uint8_t local);
-uint8_t offset_for_intlocal_int(uint8_t local);
-uint8_t offset_for_intlocal_long(uint8_t local);
-uint8_t offset_for_reflocal(uint8_t local);
+uint8_t rtc_offset_for_intlocal_short(uint8_t local);
+uint8_t rtc_offset_for_intlocal_int(uint8_t local);
+uint8_t rtc_offset_for_intlocal_long(uint8_t local);
+uint8_t rtc_offset_for_reflocal(uint8_t local);
+uint16_t rtc_offset_for_FIELD_A_FIXED(uint8_t infusion_id, uint8_t entity_id, uint16_t ref_index);
 uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode);
 void rtc_current_method_set_uses_reg(uint8_t reg);
 void rtc_current_method_set_uses_reg_used_in_lightweight_invoke(uint8_t lightweightmethod_id);

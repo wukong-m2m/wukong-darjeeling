@@ -24,7 +24,8 @@ let categories = [
     ("Native C benchmark",
         [   ((=) "rtcbenchmark_measure_native_performance") ])
     ("Flash reprogramming",
-        [   (fun name -> name.StartsWith("wkreprog_")) ])
+        [   (fun name -> name.StartsWith("wkreprog_"))
+            ((=) "avr_flash_program_page") ])
     ("Darjeeling interpreter",
         [   ((=) "dj_exec_run")
             ((=) "BASTORE"); ((=) "BALOAD"); ((=) "CASTORE"); ((=) "CALOAD"); ((=) "SASTORE"); ((=) "SALOAD"); ((=) "IASTORE"); ((=) "IALOAD"); ((=) "LASTORE"); ((=) "LALOAD"); ((=) "AASTORE"); ((=) "AALOAD"); 

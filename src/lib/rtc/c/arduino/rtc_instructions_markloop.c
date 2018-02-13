@@ -261,7 +261,7 @@ void rtc_translate_single_instruction() {
             if (opcode != JVM_SLOAD)
                 jvm_operand_byte0 = opcode - JVM_SLOAD_0;
             rtc_stackcache_getfree_16bit(operand_regs1);
-            emit_load_local_16bit(operand_regs1, offset_for_intlocal_short(jvm_operand_byte0));
+            emit_load_local_16bit(operand_regs1, rtc_offset_for_intlocal_short(jvm_operand_byte0));
             rtc_stackcache_push_16bit(operand_regs1);
         break;
         case JVM_ILOAD:
@@ -272,7 +272,7 @@ void rtc_translate_single_instruction() {
             if (opcode != JVM_ILOAD)
                 jvm_operand_byte0 = opcode - JVM_ILOAD_0;
             rtc_stackcache_getfree_32bit(operand_regs1);
-            emit_load_local_32bit(operand_regs1, offset_for_intlocal_int(jvm_operand_byte0));
+            emit_load_local_32bit(operand_regs1, rtc_offset_for_intlocal_int(jvm_operand_byte0));
             rtc_stackcache_push_32bit(operand_regs1);
         break;
         case JVM_ALOAD:
@@ -283,7 +283,7 @@ void rtc_translate_single_instruction() {
             if (opcode != JVM_ALOAD)
                 jvm_operand_byte0 = opcode - JVM_ALOAD_0;
             rtc_stackcache_getfree_ref(operand_regs1);
-            emit_load_local_ref(operand_regs1, offset_for_reflocal(jvm_operand_byte0));
+            emit_load_local_ref(operand_regs1, rtc_offset_for_reflocal(jvm_operand_byte0));
             rtc_stackcache_push_ref(operand_regs1);
         break;
         case JVM_SSTORE:
@@ -294,7 +294,7 @@ void rtc_translate_single_instruction() {
             if (opcode != JVM_SSTORE)
                 jvm_operand_byte0 = opcode - JVM_SSTORE_0;
             rtc_stackcache_pop_to_store_16bit(operand_regs1);
-            emit_store_local_16bit(operand_regs1, offset_for_intlocal_short(jvm_operand_byte0));
+            emit_store_local_16bit(operand_regs1, rtc_offset_for_intlocal_short(jvm_operand_byte0));
         break;
         case JVM_ISTORE:
         case JVM_ISTORE_0:
@@ -304,7 +304,7 @@ void rtc_translate_single_instruction() {
             if (opcode != JVM_ISTORE)
                 jvm_operand_byte0 = opcode - JVM_ISTORE_0;
             rtc_stackcache_pop_to_store_32bit(operand_regs1);
-            emit_store_local_32bit(operand_regs1, offset_for_intlocal_int(jvm_operand_byte0));
+            emit_store_local_32bit(operand_regs1, rtc_offset_for_intlocal_int(jvm_operand_byte0));
         break;
         case JVM_ASTORE:
         case JVM_ASTORE_0:
@@ -314,7 +314,7 @@ void rtc_translate_single_instruction() {
             if (opcode != JVM_ASTORE)
                 jvm_operand_byte0 = opcode - JVM_ASTORE_0;
             rtc_stackcache_pop_to_store_ref(operand_regs1);
-            emit_store_local_ref(operand_regs1, offset_for_reflocal(jvm_operand_byte0));
+            emit_store_local_ref(operand_regs1, rtc_offset_for_reflocal(jvm_operand_byte0));
         break;
         case JVM_GETARRAY_B:
         case JVM_GETARRAY_C:
@@ -622,7 +622,7 @@ void rtc_translate_single_instruction() {
         break;
 #ifndef NO_GETFIELD_A_FIXED
         case JVM_GETFIELD_A_FIXED: {
-            uint16_t targetRefOffset = get_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
+            uint16_t targetRefOffset = rtc_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
 
             rtc_stackcache_getfree_ref(operand_regs1);
             rtc_stackcache_pop_destructive_ref_into_Z(); // POP the reference into Z
@@ -695,7 +695,7 @@ void rtc_translate_single_instruction() {
         break;
 #ifndef NO_GETFIELD_A_FIXED
         case JVM_PUTFIELD_A_FIXED: {
-            uint16_t targetRefOffset = get_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
+            uint16_t targetRefOffset = rtc_offset_for_FIELD_A_FIXED(jvm_operand_byte0, jvm_operand_byte1, jvm_operand_word1);
 
             rtc_stackcache_pop_nondestructive_ref(operand_regs1); // POP the value to store
             rtc_stackcache_pop_destructive_ref_into_Z(); // POP the reference into Z
