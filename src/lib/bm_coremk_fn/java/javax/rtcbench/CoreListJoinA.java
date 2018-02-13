@@ -73,12 +73,12 @@ public class CoreListJoinA {
 	// 	struct list_data_s *info;
 	// } list_head;
 
-	public static final class ListData {
+	public static class ListData {
 		public short data16;
 		public short idx;
 	}
 
-	public static final class ListHead {
+	public static class ListHead {
 		ListHead next;
 		ListData info;
 	}
@@ -93,7 +93,7 @@ public class CoreListJoinA {
 		Can be used by mergesort.
 	*/
 	private static class CmpComplex extends AbstractListDataCompare {
-		short calc_func(ListData pdata, CoreResults res) {
+		static short calc_func(ListData pdata, CoreResults res) {
 			short data=pdata.data16;
 			short retval;
 			byte optype=(byte)((data>>7) & 1); /* bit 7 indicates if the function result has been cached */
@@ -241,7 +241,7 @@ public class CoreListJoinA {
 		int size=(blksize/per_item)-2; /* to accomodate systems with 64b pointers, and make sure same code is executed, set max list elements */
  
  		ShortWrapper memblock = new ShortWrapper();
- 		memblock.value=(short)0;
+ 		memblock.value = (short)0;
 		short memblock_end=(short)(size*2); // *2 because in the C version we count in pointers to list_head structs, which are 4 bytes, but in Java we count 2 byte shorts. So we need to reserve *2 as much memory.
 		ShortWrapper datablock = new ShortWrapper();
 		datablock.value = memblock_end;
@@ -257,8 +257,8 @@ public class CoreListJoinA {
 		list.info=new ListData();
 		list.info.idx=(short)0x0000;
 		list.info.data16=(short)0x8080;
-		memblock.value=((short)(memblock.value+2)); // +2 because we're counting shorts instead of structs
-		datablock.value=((short)(datablock.value+2)); // +2 because we're counting shorts instead of structs
+		memblock.value=(short)(memblock.value+2); // +2 because we're counting shorts instead of structs
+		datablock.value=(short)(datablock.value+2); // +2 because we're counting shorts instead of structs
 		info.idx=(short)0x7fff;
 		info.data16=(short)0xffff;
 		core_list_insert_new(list,info,memblock,datablock,memblock_end,datablock_end);
@@ -320,13 +320,13 @@ public class CoreListJoinA {
 			
 		newitem=new ListHead();
 		// (*memblock)++;
-		memblock.value=((short)(memblock_val+2)); // +2, see above
+		memblock.value=(short)(memblock_val+2); // +2, see above
 		newitem.next=insert_point.next;
 		insert_point.next=newitem;
 		
 		newitem.info=new ListData();
 		// (*datablock)++;
-		datablock.value=((short)(datablock_val+2)); // +2, see above
+		datablock.value=(short)(datablock_val+2); // +2, see above
 		// copy_info(newitem->info,info);
 		newitem.info.idx=info.idx;
 		newitem.info.data16=info.data16;

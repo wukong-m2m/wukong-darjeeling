@@ -89,7 +89,7 @@ public class CoreUtil {
 			data >>>= 1;
 	    }
 		return crc;
-	} 
+	}
 	static short crcu16(short newval, short crc) {
 		crc=crcu8((byte) (newval), crc);
 		crc=crcu8((byte) ((newval)>>>8), crc);

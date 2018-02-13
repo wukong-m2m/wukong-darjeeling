@@ -137,6 +137,7 @@ public class InternalMethodImplementation extends AbstractMethodImplementation
 				if (lightweightMethod != null) {
 					// Handwritten in JVM code
 					codeBlock = CodeBlock.fromLightweightMethod(lightweightMethod, this);
+					isNative = false;
 				} else {
 					// Native implementation in C
 					lightweightMethod = LightweightMethod.registerJavaLightweightMethod(this.parentClass.getName(), this.methodDefinition.getName());

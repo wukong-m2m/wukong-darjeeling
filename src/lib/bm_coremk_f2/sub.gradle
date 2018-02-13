@@ -1,6 +1,0 @@
-djlibsource {
-    bm_coremk_f2 {
-        cDependencies = [ 'base', 'vm_dev' ]
-        javaDependencies = [ 'base' ]
-    }
-}

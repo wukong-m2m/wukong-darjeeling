@@ -14,3 +14,5 @@ coremk        : default CoreMark implementation
 coremk_ch1    : avoid creating objects
 coremk_ch2    : avoid creating objects + avoid virtual calls
 
+coremk_fn     : like coremk but without lightweight methods
+coremk_lw     : like coremk but with ee_isdigit a lightweight method instead of manually inlined function
