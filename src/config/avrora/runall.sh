@@ -80,11 +80,14 @@ store_as_resultset resultsets_safety
 
 ##### MARKLOOP + XXTEA FOR DIFF NUMBERS OF PINNED REGISTERS
 markloopregs=(1 2 3 4 5 6 7)
-for aotmarkloopregs in ${markloopregs}
+for benchmark in ${benchmarks}
 do
-    gdj avrora_store_trace -Paotbm=xxtea -Paotmarkloopregs=${aotmarkloopregs}
+    for aotmarkloopregs in ${markloopregs}
+    do
+        gdj avrora_store_trace -Paotbm=${benchmark} -Paotmarkloopregs=${aotmarkloopregs}
+    done
 done
-store_as_resultset resultsets_markloop_xxtea
+store_as_resultset resultsets_markloop_pinnedregs
 
 
 
