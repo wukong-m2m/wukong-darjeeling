@@ -142,12 +142,16 @@ gdj avrora_store_trace -Paotbm=coremk_lw     # Coremk with ee_isdigit as a light
 gdj avrora_store_trace -Paotbm=coremk_fn     # Coremk with only methods (but ee_isdigit still inlined, coremk_fn has ee_isdigit as a normal method as well)
 # FFT
 gdj avrora_store_trace -Paotbm=fft16
-gdj avrora_store_trace -Paotbm=fft16_lw        # FFT with FIX__MPY as a hardcoded Lightweight method, and SIN8/COS8 inlined by ProGuard
-gdj avrora_store_trace -Paotbm=fft16_fn        # FFT with FIX__MPY as a normal method, and SIN8/COS8 inlined by ProGuard
+gdj avrora_store_trace -Paotbm=fft16_lw      # FFT with FIX__MPY as a hardcoded Lightweight method, and SIN8/COS8 inlined by ProGuard
+gdj avrora_store_trace -Paotbm=fft16_fn      # FFT with FIX__MPY as a normal method, and SIN8/COS8 inlined by ProGuard
 # Heap sort
 gdj avrora_store_trace -Paotbm=hsort16
 gdj avrora_store_trace -Paotbm=hsort16_fn    # Heap sort with siftDown as a normal method
 gdj avrora_store_trace -Paotbm=hsort16_cht   # Heap sort with siftDown manually inlined
+# Heap sort
+gdj avrora_store_trace -Paotbm=hsort32
+gdj avrora_store_trace -Paotbm=hsort32_fn    # Heap sort with siftDown as a normal method
+gdj avrora_store_trace -Paotbm=hsort32_cht   # Heap sort with siftDown manually inlined
 store_as_resultset resultsets_lightweight_methods
 
 
