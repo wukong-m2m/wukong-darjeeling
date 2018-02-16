@@ -12,8 +12,8 @@ public class LightweightMethodImplementations extends LightweightMethod {
 		super(className, methodName);
 	}
 
-    public static LightweightMethod fft_FIX_MPY_lightweight() {
-        return new LightweightMethod("javax.rtcbench.RTCBenchmark", "FIX_MPY_lightweight") {
+    public static LightweightMethod fft_FIX_MPY_lightweight8() {
+        return new LightweightMethod("javax.rtcbench.RTCBenchmark", "FIX_MPY_lightweight8") {
             @Override
             public void setupLightweightMethod() {
 
@@ -68,6 +68,35 @@ public class LightweightMethodImplementations extends LightweightMethod {
                 addInstruction(new ArithmeticInstruction(Opcode.SAND));
                 addInstruction(new ArithmeticInstruction(Opcode.SADD));
                 addInstruction(new ExplicitCastInstruction(Opcode.S2B));
+                addInstruction(new SimpleInstruction(Opcode.SRETURN));
+            }
+        };      
+    }
+
+    public static LightweightMethod fft_FIX_MPY_lightweight16() {
+        return new LightweightMethod("javax.rtcbench.RTCBenchmark", "FIX_MPY_lightweight16") {
+            @Override
+            public void setupLightweightMethod() {
+            	// Lightweight method made using @Lightweight attribute
+				// --- LISTING: JVM LOOPS RTCBenchmark.fix_mpy (SS)S
+
+				// --- LISTING: ONLY JVM                                         RTCBenchmark.fix_mpy (SS)S
+				//                                                                 cycles                      exec   avg |  cnt bytes
+				// MethodPreamble                                                    6144   2.8%   4.0%C        768   8.0 |    1     8   0.6%   0.6%C 0->0: 
+				// JVM_SSTORE_1                                                      6144   2.8%   4.0%C        768   8.0 |    1     8   0.6%   0.6%C 4->2:Short 
+				// JVM_SSTORE_0                                                      6144   2.8%   4.0%C        768   8.0 |    1     8   0.6%   0.6%C 2->0: 
+				// JVM_SLOAD_0                                                          0   0.0%   0.0%C          0   0.0 |    1     0   0.0%   0.0%C 0->2:Short 
+				// JVM_SLOAD_1                                                          0   0.0%   0.0%C          0   0.0 |    1     0   0.0%   0.0%C 2->4:Short,Short 
+				// JVM_SIMUL                                                        36752  16.5%  24.1%C        768  47.9 |    1    14   1.0%   1.1%C 4->4:Int 
+				// JVM_BSPUSH         15                                             1536   0.7%   1.0%C        768   2.0 |    1     4   0.3%   0.3%C 4->6:Int,Short 
+				// JVM_ISHR                                                         83712  37.6%  54.8%C        768 109.0 |    1    14   1.0%   1.1%C 6->4:Int 
+				// JVM_I2S                                                              0   0.0%   0.0%C          0   0.0 |    1     0   0.0%   0.0%C 4->2:Short 
+				// JVM_SRETURN                                                      12288   5.5%   8.0%C        768  16.0 |    1    16   1.2%   1.2%C 2->0: 
+
+                addInstruction(new ArithmeticInstruction(Opcode.SIMUL));
+                addInstruction(new ImmediateBytePushInstruction(Opcode.BSPUSH, 15));
+                addInstruction(new ArithmeticInstruction(Opcode.ISHR));
+                addInstruction(new ArithmeticInstruction(Opcode.I2S));
                 addInstruction(new SimpleInstruction(Opcode.SRETURN));
             }
         };      

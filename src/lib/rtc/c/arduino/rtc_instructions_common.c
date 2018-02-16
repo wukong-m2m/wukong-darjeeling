@@ -144,11 +144,11 @@ void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_ope
     uint8_t spaceForLocalVariables = rtc_ts->methodimpl_header.nr_total_var_slots - rtc_ts->methodimpl_header.nr_own_var_slots;
 
     uint8_t calleeLocalVariables = callee_methodimpl_header.nr_total_var_slots;
-    uint8_t calleeReservedSpaceForReturnValue = (callee_methodimpl_header.flags & FLAGS_USES_SIMUL_INVOKESTATIC_MARKLOOP) ? 1 : 0;
+    uint8_t calleeReservedSpaceForReturnAddress = (callee_methodimpl_header.flags & FLAGS_USES_SIMUL_INVOKESTATIC_MARKLOOP) ? 1 : 0;
 
     if ((callee_methodimpl_header.max_ref_stack > spaceOnRefStack)
             || (callee_methodimpl_header.max_int_stack > spaceOnIntStack)
-            || ((calleeLocalVariables + calleeReservedSpaceForReturnValue) > spaceForLocalVariables)) {
+            || ((calleeLocalVariables + calleeReservedSpaceForReturnAddress) > spaceForLocalVariables)) {
         rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_NOT_ENOUGH_SPACE_IN_FRAME_FOR_LW_CALL);
     }
 #endif // AOT_SAFETY_CHECKS
@@ -157,7 +157,7 @@ void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_ope
 
     uint16_t bytesForCurrentMethodsOwnLocals = 2*(rtc_ts->methodimpl_header.nr_own_var_slots);
 
-    if (lightweightMethodUsesLocalVariables) {
+    if (lightweightMethodUsesLocalVariables || (callee_methodimpl_header.flags & FLAGS_USES_SIMUL_INVOKESTATIC_MARKLOOP)) {
         // Target lightweight method uses local variables. It will use the extra space
         // reserved in the current method's frame for such lightweight methods.
         // We need to move the Y pointer, which points to the current method's locals
@@ -170,7 +170,7 @@ void rtc_common_translate_invokelight(uint8_t jvm_operand_byte0, uint8_t jvm_ope
 
     emit_2_CALL((uint16_t)handler);
 
-    if (lightweightMethodUsesLocalVariables) {
+    if (lightweightMethodUsesLocalVariables || (callee_methodimpl_header.flags & FLAGS_USES_SIMUL_INVOKESTATIC_MARKLOOP)) {
         // If we moved Y forward before, move it back now. (we can't push/pop here, since there may be operands on the stack)
         bytesForCurrentMethodsOwnLocals = emit_SBIW_if_necessary_to_bring_offset_in_range(RY, bytesForCurrentMethodsOwnLocals);
         emit_SBIW(RY, bytesForCurrentMethodsOwnLocals);

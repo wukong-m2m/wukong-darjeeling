@@ -4,7 +4,7 @@ import javax.rtc.*;
 
 public class RTCBenchmark {
 	@Lightweight
-	private native static byte FIX_MPY_lightweight(byte a, byte b);
+	private native static byte FIX_MPY_lightweight8(byte a, byte b);
     public static String name = "FIX_FFT 8 LW";
     public static native void test_native();
     public static boolean test_java() {
@@ -211,8 +211,8 @@ public class RTCBenchmark {
 				}
 				for (i=m; i<n; i+=istep) {
 					j = (short)(i + l);
-					tr = (byte)(FIX_MPY_lightweight(wr,fr[j]) - FIX_MPY_lightweight(wi,fi[j]));
-					ti = (byte)(FIX_MPY_lightweight(wr,fi[j]) + FIX_MPY_lightweight(wi,fr[j]));
+					tr = (byte)(FIX_MPY_lightweight8(wr,fr[j]) - FIX_MPY_lightweight8(wi,fi[j]));
+					ti = (byte)(FIX_MPY_lightweight8(wr,fi[j]) + FIX_MPY_lightweight8(wi,fr[j]));
 					// // Inlined FIX_MPY
 
 					// short c3 = fr[j];

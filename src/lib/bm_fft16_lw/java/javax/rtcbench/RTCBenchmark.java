@@ -330,10 +330,14 @@ public class RTCBenchmark {
     //   -1607,  -1406,  -1206,  -1005,   -804,   -603,   -402,   -201,
     // };
 
+
     @Lightweight
-    public static short fix_mpy(short a, short b) {
-        return (short)(((int)(a) * (int)(b))>>15);
-    }
+    private native static short FIX_MPY_lightweight16(short a, short b);
+
+    // @Lightweight
+    // public static short fix_mpy(short a, short b) {
+    //     return (short)(((int)(a) * (int)(b))>>15);
+    // }
 
     public static short rtcbenchmark_measure_java_performance(short[] fr, short[] fi, short m, boolean inverse) {
         short mr,nn,i,j,l,k,istep, n, scale;
@@ -422,8 +426,8 @@ public class RTCBenchmark {
                     short fij = fi[j];
                     // tr =  (short)(   ((short) ((wr*frj)>>15)) - ((short) ((wi*fij)>>15))      );
                     // ti =  (short)(   ((short) ((wr*fij)>>15)) + ((short) ((wi*frj)>>15))      );
-                    tr = (short)(fix_mpy(wr,frj) - fix_mpy(wi,fij));
-                    ti = (short)(fix_mpy(wr,fij) + fix_mpy(wi,frj));
+                    tr = (short)(FIX_MPY_lightweight16(wr,frj) - FIX_MPY_lightweight16(wi,fij));
+                    ti = (short)(FIX_MPY_lightweight16(wr,fij) + FIX_MPY_lightweight16(wi,frj));
 
                     qr = fr[i];
                     qi = fi[i];

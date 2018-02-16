@@ -148,7 +148,8 @@ public class LightweightMethod {
 	static {
 		lightweightMethods = new ArrayList<LightweightMethod>();
 
-        registerHardcodedLightweightMethod(LightweightMethodImplementations.fft_FIX_MPY_lightweight());
+        registerHardcodedLightweightMethod(LightweightMethodImplementations.fft_FIX_MPY_lightweight8());
+        registerHardcodedLightweightMethod(LightweightMethodImplementations.fft_FIX_MPY_lightweight16());
         registerHardcodedLightweightMethod(LightweightMethodImplementations.coremark_ee_isdigit_lightweight());
         registerHardcodedLightweightMethod(LightweightMethodImplementations.testISWAP());
         registerHardcodedLightweightMethod(LightweightMethodImplementations.testLOAD_STORE());
