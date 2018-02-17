@@ -93,7 +93,7 @@ store_as_resultset resultsets_markloop_pinnedregs
 
 
 ##### 8/16/32 bit comparison
-bitcomparisonbenchmarks=(bsort8 hsort8 binsrch8 outlier8u fft8 bsort16 hsort16 binsrch16 outlier16u fft16 bsort32 hsort32 binsrch32 outlier32u)
+bitcomparisonbenchmarks=(bsort8 hsort8 binsrch8 outlier8u fft8 bsort16 hsort16 binsrch16 outlier16u fft16 bsort32 hsort32 binsrch32 outlier32u fillarray8 fillarray16 fillarray32)
 for benchmark in $bitcomparisonbenchmarks
 do
     gdj avrora_store_trace -Paotbm=${benchmark}
