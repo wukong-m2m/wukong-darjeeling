@@ -45,6 +45,11 @@ public class NewArrayInstruction extends Instruction
 		out.write(atype);
 	}
 
+	public int getType()
+	{
+		return this.atype;
+	}
+
 	@Override
 	public int getLength()
 	{

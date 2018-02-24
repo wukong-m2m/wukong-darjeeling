@@ -47,6 +47,10 @@ public class LocalIdInstruction extends Instruction
 		out.writeByte(localId.getLocalId());
 	}
 
+	public LocalId getLocalId() {
+		return this.localId;
+	}
+
 	@Override
 	public int getLength()
 	{

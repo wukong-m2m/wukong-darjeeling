@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Collections;
 import org.apache.bcel.classfile.JavaClass;
+import org.csiro.darjeeling.infuser.structure.ConstArrayHandler;
 import org.csiro.darjeeling.infuser.structure.ElementVisitor;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractField;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractInfusion;
@@ -74,22 +75,26 @@ public class InternalInfusion extends AbstractInfusion
 		InternalClassDefinition classDef = InternalClassDefinition.fromJavaClass(javaClass, this);
 		classList.add(classDef);
 
-		// extract methods
-		for (org.apache.bcel.classfile.Method classMethod : javaClass.getMethods())
-		{
-			// create a method definition for this method
-			AbstractMethodDefinition methodDef = 
-				insertMethodDefinition(InternalMethodDefinition.fromMethod(classMethod));
-
-			// if the class is not an interface, add its method implementations
-			if (!javaClass.isInterface())
+		if (ConstArrayHandler.isConstArrayClass(javaClass)) {
+			// FlashArrayClasses should only have a static initialiser, which will be processed by processConstArrayClass
+		} else {
+			// extract methods
+			for (org.apache.bcel.classfile.Method classMethod : javaClass.getMethods())
 			{
-				MethodToAddData data = new MethodToAddData();
-				data.classDef = classDef;
-				data.methodDef = methodDef;
-				data.classMethod = classMethod;
-				data.sourceFileName = javaClass.getSourceFileName();
-				methodsToAdd.add(data);
+				// create a method definition for this method
+				AbstractMethodDefinition methodDef = 
+					insertMethodDefinition(InternalMethodDefinition.fromMethod(classMethod));
+
+				// if the class is not an interface, add its method implementations
+				if (!javaClass.isInterface())
+				{
+					MethodToAddData data = new MethodToAddData();
+					data.classDef = classDef;
+					data.methodDef = methodDef;
+					data.classMethod = classMethod;
+					data.sourceFileName = javaClass.getSourceFileName();
+					methodsToAdd.add(data);
+				}
 			}
 		}
 
@@ -103,6 +108,9 @@ public class InternalInfusion extends AbstractInfusion
 			}
 		}
 
+		if (ConstArrayHandler.isConstArrayClass(javaClass)) {
+			ConstArrayHandler.processConstArrayClass(this, classDef, javaClass);
+		}
 	}
 
 	// We need to delay processing methods because they need to be put in the right order (lightweights first)
