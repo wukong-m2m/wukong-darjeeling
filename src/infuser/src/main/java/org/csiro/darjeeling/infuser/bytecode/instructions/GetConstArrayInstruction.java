@@ -1,5 +1,5 @@
 /*
- * LocalIdInstruction.java
+ * GetConstArrayInstruction.java
  * 
  * Copyright (c) 2008-2010 CSIRO, Delft University of Technology.
  * 
@@ -26,53 +26,28 @@ import java.io.IOException;
 
 import org.csiro.darjeeling.infuser.bytecode.Instruction;
 import org.csiro.darjeeling.infuser.bytecode.Opcode;
-import org.csiro.darjeeling.infuser.structure.LocalId;
-import org.csiro.darjeeling.infuser.structure.elements.AbstractField;
 
-public class LocalIdInstruction extends Instruction
+public class GetConstArrayInstruction extends Instruction
 {
 	
-	private LocalId localId = null;
-	private AbstractField field = null;
-
-	public LocalIdInstruction(Opcode opcode, LocalId localId)
+	private byte fieldId = (byte)255;
+	
+	public GetConstArrayInstruction(Opcode opcode, byte fieldId)
 	{
 		super(opcode);
-		this.localId = localId;
+		this.fieldId = fieldId;
 	}
-	public LocalIdInstruction(Opcode opcode, LocalId localId, AbstractField field)
-	{
-		super(opcode);
-		this.localId = localId;
-		this.field = field;
-	}
-
 
 	@Override
 	public void dump(DataOutputStream out) throws IOException
 	{
 		out.write(opcode.getOpcode());
-		out.writeByte(localId.getInfusionId());
-		out.writeByte(localId.getLocalId());
-	}
-
-	public LocalId getLocalId() {
-		return this.localId;
-	}
-
-	public AbstractField getField() {
-		return this.field;
+		out.writeByte(fieldId);
 	}
 
 	@Override
 	public int getLength()
 	{
-		return 3;
-	}
-	
-	@Override
-	public String toString()
-	{
-		return opcode.getName() + "(" + localId.getInfusionId() + "," + localId.getLocalId() + ")";
+		return 2;
 	}
 }

@@ -289,6 +289,11 @@ public enum Opcode
 	START_AOT_BM((short)237,"start_aot_bm", null),
 	STOP_AOT_BM((short)238,"stop_aot_bm", null),
 
+	GETCONSTARRAY_B((short)239,"getconstarray_b", BaseType.Byte, BaseType.ArrayIndex),
+	GETCONSTARRAY_C((short)240,"getconstarray_c", BaseType.Char, BaseType.ArrayIndex),
+	GETCONSTARRAY_S((short)241,"getconstarray_s", BaseType.Short, BaseType.ArrayIndex),
+	GETCONSTARRAY_I((short)242,"getconstarray_i", BaseType.Int, BaseType.ArrayIndex),
+
 	// this is a dummy placeholder opcode, will not appear in the final output
 	S2S((short)-1,"s2s", BaseType.Short, BaseType.Short),
 	;

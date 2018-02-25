@@ -23,6 +23,7 @@ package org.csiro.darjeeling.infuser.bytecode.analysis;
 
 import java.util.TreeSet;
 
+import org.apache.tools.ant.BuildException;
 import org.csiro.darjeeling.infuser.structure.BaseType;
 
 @SuppressWarnings("serial")
@@ -120,10 +121,35 @@ public class GeneratedValueSet extends TreeSet<GeneratedValue> implements Compar
 			if (handleIndexPair.getOutputType() != handleIndexPair.getLogicalOutputType()) {
 				ret += "(" + handleIndexPair.getLogicalOutputType() + ")";
 			}
+			if (handleIndexPair.isConstArrayGETSTATICValue()) {
+				ret += "(ConstArray " + handleIndexPair.getConstArrayFieldId() + ")"; // Only for debugging. This should never actually appear since the GETSTATIC_A that loads such a GeneratedValue should be removed by the infuser.
+			}
 		}
 		
 		return ret.replaceFirst(":", "");
 	}
+
+	public boolean isConstArrayGETSTATICValue()
+	{
+		for (GeneratedValue handleIndexPair : this) {
+			if (handleIndexPair.isConstArrayGETSTATICValue()) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	public int getConstArrayFieldId() {
+		for (GeneratedValue handleIndexPair : this) {
+			if (handleIndexPair.isConstArrayGETSTATICValue()) {
+				return handleIndexPair.getConstArrayFieldId();
+			}
+		}
+
+		throw new BuildException("No const array generatedvalue found.");
+	}
+
 
 	public int compareTo(GeneratedValueSet other)
 	{

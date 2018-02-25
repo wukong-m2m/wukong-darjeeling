@@ -22,7 +22,11 @@
 package org.csiro.darjeeling.infuser.bytecode.analysis;
 
 import org.csiro.darjeeling.infuser.bytecode.InstructionHandle;
+import org.csiro.darjeeling.infuser.bytecode.Opcode;
+import org.csiro.darjeeling.infuser.bytecode.instructions.LocalIdInstruction;
 import org.csiro.darjeeling.infuser.structure.BaseType;
+import org.csiro.darjeeling.infuser.structure.ConstArrayHandler;
+import org.csiro.darjeeling.infuser.structure.LocalId;
 
 public class GeneratedValue implements Comparable<GeneratedValue>
 {
@@ -84,4 +88,19 @@ public class GeneratedValue implements Comparable<GeneratedValue>
 		return 0;
 	}
 
+	public boolean isConstArrayGETSTATICValue() {
+		if (this.handle.getInstruction().getOpcode() == Opcode.GETSTATIC_A) {
+			LocalId localId = ((LocalIdInstruction)handle.getInstruction()).getLocalId();
+			if (localId.getInfusionId() == 0
+					&& ConstArrayHandler.isStaticFieldIdConstArray(localId.getLocalId())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public int getConstArrayFieldId() {
+		LocalId localId = ((LocalIdInstruction)handle.getInstruction()).getLocalId();
+		return ConstArrayHandler.getConstArrayStringTableId(localId.getLocalId());
+	}
 }

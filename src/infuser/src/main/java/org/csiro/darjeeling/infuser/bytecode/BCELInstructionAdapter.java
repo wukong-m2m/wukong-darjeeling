@@ -670,6 +670,7 @@ public class BCELInstructionAdapter
 			case PUTSTATIC:
 				field = lookupStaticField((org.apache.bcel.generic.FieldInstruction)instruction);
 				localId = field.getGlobalId().resolve(infusion);
+System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$ PUTSTATIC " + localId.getInfusionId() + "." + localId.getLocalId() + " " + field.getName());
 				type = AbstractField.classify(field.getDescriptor());
 				
 				if (field.getConstantValue()!=null)
@@ -677,13 +678,16 @@ public class BCELInstructionAdapter
 				
 				switch (type)
 				{
+					// We need to store the field here as well, so that ConstArrayHandler can store it.
+					// When ConstArrayHandler runs it parses the JVM bytecode for the class initialiser, but at this point the entityId for the field isn't known yet
+					// The AbstractField is already allocated, so we store it first and then lookup the id during the transformation phase.
 					case Boolean:
-					case Byte: ret = new LocalIdInstruction(Opcode.PUTSTATIC_B, localId); break;
-					case Char: ret = new LocalIdInstruction(Opcode.PUTSTATIC_C, localId); break;
-					case Short: ret = new LocalIdInstruction(Opcode.PUTSTATIC_S, localId); break;
-					case Int: ret = new LocalIdInstruction(Opcode.PUTSTATIC_I, localId); break;
-					case Long: ret = new LocalIdInstruction(Opcode.PUTSTATIC_L, localId); break;
-					case Ref: ret = new LocalIdInstruction(Opcode.PUTSTATIC_A, localId); break;
+					case Byte: ret = new LocalIdInstruction(Opcode.PUTSTATIC_B, localId, field); break;
+					case Char: ret = new LocalIdInstruction(Opcode.PUTSTATIC_C, localId, field); break;
+					case Short: ret = new LocalIdInstruction(Opcode.PUTSTATIC_S, localId, field); break;
+					case Int: ret = new LocalIdInstruction(Opcode.PUTSTATIC_I, localId, field); break;
+					case Long: ret = new LocalIdInstruction(Opcode.PUTSTATIC_L, localId, field); break;
+					case Ref: ret = new LocalIdInstruction(Opcode.PUTSTATIC_A, localId, field); break;
 					default:
 						throw new IllegalStateException("Unsupported type for putstatic");
 				}
@@ -692,6 +696,7 @@ public class BCELInstructionAdapter
 				
 				field = lookupStaticField((org.apache.bcel.generic.FieldInstruction)instruction);
 				localId = field.getGlobalId().resolve(infusion);
+System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$ GETSTATIC " + localId.getInfusionId() + "." + localId.getLocalId() + " " + field.getName());
 				type = AbstractField.classify(field.getDescriptor());
 
 				// If the field is final, we should convert the instruction to a constant push instruction.
