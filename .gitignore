@@ -40,6 +40,7 @@ obj
 src/config/avrora/results_*
 src/config/avrora/resultsets_*
 src/config/avrora/old_results
+src/config/avrora/oldresults
 src/config/avrora/allresults
 src/config/avrora/thesis_results
 sumsum.txt

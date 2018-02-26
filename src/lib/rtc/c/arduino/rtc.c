@@ -362,7 +362,11 @@ uint8_t rtc_number_of_operandbytes_for_opcode(uint8_t opcode) {
         || opcode == JVM_SUSHR_CONST
         || opcode == JVM_ISHL_CONST
         || opcode == JVM_ISHR_CONST
-        || opcode == JVM_IUSHR_CONST) {
+        || opcode == JVM_IUSHR_CONST
+        || opcode == JVM_GETCONSTARRAY_B
+        || opcode == JVM_GETCONSTARRAY_C
+        || opcode == JVM_GETCONSTARRAY_S
+        || opcode == JVM_GETCONSTARRAY_I) {
         return 1;
     }
 

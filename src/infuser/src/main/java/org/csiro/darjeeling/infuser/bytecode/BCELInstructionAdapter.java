@@ -670,7 +670,6 @@ public class BCELInstructionAdapter
 			case PUTSTATIC:
 				field = lookupStaticField((org.apache.bcel.generic.FieldInstruction)instruction);
 				localId = field.getGlobalId().resolve(infusion);
-System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$ PUTSTATIC " + localId.getInfusionId() + "." + localId.getLocalId() + " " + field.getName());
 				type = AbstractField.classify(field.getDescriptor());
 				
 				if (field.getConstantValue()!=null)
@@ -696,7 +695,6 @@ System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$ PUTSTATIC " + localId.getInfusionId
 				
 				field = lookupStaticField((org.apache.bcel.generic.FieldInstruction)instruction);
 				localId = field.getGlobalId().resolve(infusion);
-System.err.println("$$$$$$$$$$$$$$$$$$$$$$$$ GETSTATIC " + localId.getInfusionId() + "." + localId.getLocalId() + " " + field.getName());
 				type = AbstractField.classify(field.getDescriptor());
 
 				// If the field is final, we should convert the instruction to a constant push instruction.

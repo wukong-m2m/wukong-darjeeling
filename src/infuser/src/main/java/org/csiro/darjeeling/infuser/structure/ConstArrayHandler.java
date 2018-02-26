@@ -74,7 +74,6 @@ public class ConstArrayHandler extends CodeBlockTransformation {
 	}
 
 	public static void processConstArrayClass(InternalInfusion infusion, InternalClassDefinition classDef, JavaClass javaClass) {
-		System.err.println("########################################ConstArray class: " + javaClass.getClassName());
 
 		for (org.apache.bcel.classfile.Method classMethod : javaClass.getMethods())
 		{
@@ -82,7 +81,6 @@ public class ConstArrayHandler extends CodeBlockTransformation {
 			InternalMethodImplementation methodImpl = InternalMethodImplementation.fromMethod(classDef, methodDef, classMethod, javaClass.getSourceFileName());
 			methodImpl.processCode(infusion);
 
-			System.err.println("######################################## method: " + methodDef.getName());
 			if (!methodDef.getName().equals("<clinit>")) {
 				throw new BuildException("ConstArrayClasses can only have a single static byte/short/int array and no methods.");
 			}
@@ -93,25 +91,20 @@ public class ConstArrayHandler extends CodeBlockTransformation {
 			for (int i=0; i<handles.size(); i++) {
 				InstructionHandle handle = methodImpl.getCodeBlock().getInstructions().get(i);
 				Instruction instruction = handle.getInstruction();
-				System.err.println("######################################## instruction: " + instruction);
 
 				if (i == 0) {
 					array.length = (int)((PushInstruction)instruction).getValue();
 					array.data = new int[array.length];
-					System.err.println("######################################## array length: " + array.length);
 				} else if (i == 1) {
 					array.type = (int)((NewArrayInstruction)instruction).getType();
-					System.err.println("######################################## array type: " + array.type);
 				} else if ((i-2) % 4 == 0) {
 					if (instruction.getOpcode() == Opcode.ADUP) {
 						// skip ADUP
-						System.err.println("######################################## skip adup");
 					} else if (instruction.getOpcode() == Opcode.PUTSTATIC_A) {
 						// Record the static field corresponding to this array
 						AbstractField field = ((LocalIdInstruction)instruction).getField();
 						array.field = field;
 						constArrays.add(array);
-						System.err.println("######################################## array field: " + array.field.getName());
 					} else {
 						throw new BuildException("ConstArray: expecting ADUP or PUTSTATIC_A");
 					}
@@ -128,22 +121,21 @@ public class ConstArrayHandler extends CodeBlockTransformation {
 							bytearray = new byte[array.length];
 						}
 						for (int j=0; j<array.length; j++) {
-							// Big endian
 							if (array.type == T_INT) {
-								bytearray[4*j+0] = (byte)(array.data[j] >>> 24 & 0xFF);
-								bytearray[4*j+1] = (byte)(array.data[j] >>> 16 & 0xFF);
-								bytearray[4*j+2] = (byte)(array.data[j] >>>  8 & 0xFF);
-								bytearray[4*j+3] = (byte)(array.data[j] >>>  0 & 0xFF);
+								bytearray[4*j+0] = (byte)(array.data[j] >>>  0 & 0xFF);
+								bytearray[4*j+1] = (byte)(array.data[j] >>>  8 & 0xFF);
+								bytearray[4*j+2] = (byte)(array.data[j] >>> 16 & 0xFF);
+								bytearray[4*j+3] = (byte)(array.data[j] >>> 24 & 0xFF);
 							} else if (array.type == T_SHORT) {
-								bytearray[2*j+0] = (byte)(array.data[j] >>>  8 & 0xFF);
-								bytearray[2*j+1] = (byte)(array.data[j] >>>  0 & 0xFF);
+								bytearray[2*j+0] = (byte)(array.data[j] >>>  0 & 0xFF);
+								bytearray[2*j+1] = (byte)(array.data[j] >>>  8 & 0xFF);
 							} else {
 								bytearray[j]     = (byte)(array.data[j]);
 							}
 						}
 						array.stringTableId = infusion.getStringTable().addByteArray(bytearray).getEntityId();
 
-						System.err.println("######################################## Const array: ");
+						System.err.println("Const array: ");
 						System.err.println("   length: " + array.length);
 						System.err.println("     type: " + array.type);
 						System.err.println("    field: " + array.field);
@@ -195,18 +187,7 @@ public class ConstArrayHandler extends CodeBlockTransformation {
 				GeneratedValueSet valueSet = handle.getPreState().getStack().peek(1);
 				if (valueSet.isConstArrayGETSTATICValue()) {
 					// This is an array load from a constant array. Replace it with a constant array load instruction.
-
 					handle.setInstruction(new GetConstArrayInstruction(getConstArrayOpcode(instruction.getOpcode()), (byte)valueSet.getConstArrayFieldId()));
-
-System.err.println("######################################## REPLACING GETARRAY " + getConstArrayOpcode(instruction.getOpcode()) + " " + valueSet.getConstArrayFieldId());
-
-
-					// InstructionHandle handleGETCONSTARRAY = new InstructionHandle(new GetConstArrayInstruction(getConstArrayOpcode(instruction.getOpcode()), valueSet.getConstArrayFieldId());
-					// handleGETCONSTARRAY.setPreState(handle.getPreState());
-					// handleGETCONSTARRAY.setPostState(handle.getPostState());
-					// handleGETCONSTARRAY.getLiveVariables().merge(handle.getLiveVariables());
-					// instructions.insertBefore(handle, handleGETCONSTARRAY);
-					// instructions.remove(handle);
 				}
 			}
 		}

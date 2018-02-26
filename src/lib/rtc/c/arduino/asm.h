@@ -212,6 +212,10 @@
 #define OPCODE_LDS                      0x9000
 #define emit_2_LDS(reg, address)        emit2( asm_opcodeWithSingleRegOperand(OPCODE_LDS, reg), address )
 
+// LPM Rd, Z+                           1001 000d dddd 0101
+#define OPCODE_LPM_ZINC                 0x9005
+#define emit_LPM_ZINC(reg)              emit_opcodeWithSingleRegOperand(OPCODE_LPM_ZINC, reg)
+
 // LSL
 #define emit_LSL(destreg)               emit_ADD(destreg, destreg)
 

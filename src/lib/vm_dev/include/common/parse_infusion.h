@@ -27,10 +27,10 @@
 
 #if defined(ARRAYINDEX_32BIT)
  // Version 100: 32 bit index
-#define INFUSION_FORMAT_VERSION 126
+#define INFUSION_FORMAT_VERSION 128
 #else
  // Version 101: 16 bit index
-#define INFUSION_FORMAT_VERSION 127
+#define INFUSION_FORMAT_VERSION 129
 #endif
 
 enum ElementType
