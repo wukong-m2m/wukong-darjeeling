@@ -138,7 +138,7 @@ public class ConstArrayHandler extends CodeBlockTransformation {
 						System.err.println("Const array: ");
 						System.err.println("   length: " + array.length);
 						System.err.println("     type: " + array.type);
-						System.err.println("    field: " + array.field);
+						System.err.println("    field: " + array.field.getName());
 						System.err.println(" stringId: " + array.stringTableId);
 						System.err.print("       data:");
 						for (int j=0; j<array.length; j++) {
