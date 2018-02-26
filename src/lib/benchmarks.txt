@@ -1,7 +1,8 @@
 motetrack_ori : most direct translation from original C version to Java, except for the powerlevel arrays which are already eliminated.
-                doesn't run because it runs out of memory very quickly.
-motetrack_uop : original C version, and Java version modified by replacing the 2-element arrays in RFSignal and RFSignalAvg with 2 separate variables.
-motetrack     : Several more 'unfair' optimisations, C version modified to match the Java optimisations.
+                doesn't run because it runs out of memory very quickly, NO CONSTARRAY
+motetrack_uop : original C version, and Java version modified by replacing the 2-element arrays in RFSignal and RFSignalAvg with 2 separate variables, NO CONSTARRAY
+motetrack_nca : Several more 'unfair' optimisations, C version modified to match the Java optimisations, NO CONSTARRAY
+motetrack     : Several more 'unfair' optimisations, C version modified to match the Java optimisations, USES CONSTARRAY
 
 
 coremk_or0    : original, directly translated version
