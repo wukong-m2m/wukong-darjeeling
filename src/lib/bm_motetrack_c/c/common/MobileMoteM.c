@@ -538,7 +538,6 @@
 
 void motetrack_init_benchmark() {
     rfSignalHTData = dj_mem_checked_alloc(sizeof(RFSignalAvg)*NBR_HT*RFSIGNALAVG_HT_SIZE, CHUNKID_RTCNATIVETESTDATA);
-
     uint8_t i = 0;
 
     currHT = 0;

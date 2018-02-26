@@ -301,6 +301,7 @@ static inline void RFSignalAvgHT_makeSignature(Signature *retSigPtr, uint16_t *r
         
         *retSrcIDMaxRSSIPtr = retSigPtr->rfSignals[maxRssiIndex].sourceID;
 
+
         // (c) Sort the RFSignals in Signature by sourceID
 
         //printfUART("\nBefore sort:\n", "");
