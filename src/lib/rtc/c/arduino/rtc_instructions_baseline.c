@@ -77,6 +77,12 @@ void rtc_translate_single_instruction() {
     uint16_t jvm_operand_word0 = (jvm_operand_byte0 << 8) | jvm_operand_byte1;
     uint16_t jvm_operand_word1 = (jvm_operand_byte2 << 8) | jvm_operand_byte3;
 
+    // Used for GETCONSTARRAY
+    dj_di_pointer constArrayPtr;
+    uint16_t ld_opcode;
+    uint8_t array_header_size;
+    uint8_t array_get_opcode;
+
     switch (opcode) {
         case JVM_NOP:
         break;
@@ -256,91 +262,183 @@ void rtc_translate_single_instruction() {
             emit_x_POP_REF(R24);
             emit_store_local_ref_baseline_wrapper(R24, rtc_offset_for_reflocal(jvm_operand_byte0));
         break;
+
         case JVM_GETARRAY_B:
         case JVM_GETARRAY_C:
         case JVM_GETARRAY_S:
         case JVM_GETARRAY_I:
         case JVM_GETARRAY_A:
+        case JVM_GETCONSTARRAY_B:
+        case JVM_GETCONSTARRAY_C:
+        case JVM_GETCONSTARRAY_S:
+        case JVM_GETCONSTARRAY_I:
+            // Setup array_header_size, ld_opcode, load array base into R20
+            if (opcode == JVM_GETCONSTARRAY_B
+                    || opcode == JVM_GETCONSTARRAY_C
+                    || opcode == JVM_GETCONSTARRAY_S
+                    || opcode == JVM_GETCONSTARRAY_I) {
+                // CONSTANT ARRAY LOAD
+                array_header_size = 0;
+                ld_opcode = OPCODE_LPM_ZINC;
+
+                // Load the address of the constant array
+                constArrayPtr = dj_di_stringtable_getElementBytes(rtc_ts->infusion->stringTable, jvm_operand_byte0);
+                emit_LDI(R20,constArrayPtr&0xFF);
+                emit_LDI(R21,(constArrayPtr>>8)&0xFF);
+                // Adjust opcode so we can share the code below this if for both constant and normal array reads.
+                array_get_opcode = opcode - (JVM_GETCONSTARRAY_B - JVM_GETARRAY_B);
+                ts->pc += 1;
+            } else {
+                // NORMAL ARRAY LOAD
+                array_header_size = (opcode == JVM_GETARRAY_A) ? 4 : 3;
+                ld_opcode = OPCODE_LD_ZINC;
+                array_get_opcode = opcode;
+                emit_x_POP_REF(R20);
+            }
+
+            // Load index into RZ
 #ifdef ARRAYINDEX_32BIT
             emit_x_POP_32bit(R22);
-
-            // POP the array reference into Z.
-            emit_x_POP_REF(RZ); // Z now pointer to the base of the array object.
-
-            if (opcode==JVM_GETARRAY_S || opcode==JVM_GETARRAY_A) {
-                // Multiply the index by 2, since we're indexing 16 bit shorts.
-                emit_LSL(R22);
-                emit_ROL(R23);
-            } else if (opcode==JVM_GETARRAY_I) {
-                // Multiply the index by 4, since we're indexing 16 bit shorts.
-                emit_LSL(R22);
-                emit_ROL(R23);
-                emit_LSL(R22);
-                emit_ROL(R23);
-            }
-
-            // Add (1/2/4)*the index to Z
-            emit_ADD(RZL, R22);
-            emit_ADC(RZH, R23);
+            emit_MOVW(RZ, R22);
 #else
-            emit_x_POP_16bit(R24);
-
-            // POP the array reference into Z.
-            emit_x_POP_REF(RZ); // Z now pointer to the base of the array object.
-
-            if (opcode==JVM_GETARRAY_S || opcode==JVM_GETARRAY_A) {
-                // Multiply the index by 2, since we're indexing 16 bit shorts.
-                emit_LSL(R24);
-                emit_ROL(R25);
-            } else if (opcode==JVM_GETARRAY_I) {
-                // Multiply the index by 4, since we're indexing 16 bit shorts.
-                emit_LSL(R24);
-                emit_ROL(R25);
-                emit_LSL(R24);
-                emit_ROL(R25);
-            }
-
-            // Add (1/2/4)*the index to Z
-            emit_ADD(RZL, R24);
-            emit_ADC(RZH, R25);
+            emit_x_POP_16bit(RZ);
 #endif
 
-            if (opcode == JVM_GETARRAY_A) {
-                // Add 4 to skip 2 bytes for array length and 2 bytes for array type.
-                emit_ADIW(RZ, 4); 
-            } else { // all types of int array
-                // Add 3 to skip 2 bytes for array length and 1 byte for array type.
-                emit_ADIW(RZ, 3); 
+            if (array_get_opcode==JVM_GETARRAY_S || array_get_opcode==JVM_GETARRAY_A) {
+                // Multiply the index by 2, since we're indexing 16 bit shorts.
+                emit_LSL(RZL);
+                emit_ROL(RZH);
+            } else if (array_get_opcode==JVM_GETARRAY_I) {
+                // Multiply the index by 4, since we're indexing 32 bit ints.
+                emit_LSL(RZL);
+                emit_ROL(RZH);
+                emit_LSL(RZL);
+                emit_ROL(RZH);
+            }
+
+            // Add the array base address to the offset in Z
+            emit_ADD(RZL, R20);
+            emit_ADC(RZH, R21);
+
+            if (array_header_size > 0) { // if array_header_size > 0 we are reading from a normal array
+                emit_ADIW(RZ, array_header_size);
             }
 
             // Now Z points to the target element
-            switch (opcode) {
+            switch (array_get_opcode) {
                 case JVM_GETARRAY_B:
                 case JVM_GETARRAY_C:
-                    emit_LD_Z(R24);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, R24);
                     emit_CLR(R25);
                     emit_SBRC(R24, 7); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
                     emit_COM(R25); // otherwise: flip R24 to 0xFF to extend the sign
                     emit_x_PUSH_16bit(R24);
                 break;
                 case JVM_GETARRAY_S:
-                    emit_LD_ZINC(R24);
-                    emit_LD_Z(R25);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, R24);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, R25);
                     emit_x_PUSH_16bit(R24);
                 break;
                 case JVM_GETARRAY_I:
-                    emit_LD_ZINC(R22);
-                    emit_LD_ZINC(R23);
-                    emit_LD_ZINC(R24);
-                    emit_LD_Z(R25);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, R22);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, R23);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, R24);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, R25);
                     emit_x_PUSH_32bit(R22);
                 break;
                 case JVM_GETARRAY_A:
-                    emit_LD_ZINC(R24);
-                    emit_LD_Z(R25);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, R24);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, R25);
                     emit_x_PUSH_REF(R24);
                 break;
             }
+        break;
+
+//         case JVM_GETARRAY_B:
+//         case JVM_GETARRAY_C:
+//         case JVM_GETARRAY_S:
+//         case JVM_GETARRAY_I:
+//         case JVM_GETARRAY_A:
+// #ifdef ARRAYINDEX_32BIT
+//             emit_x_POP_32bit(R22);
+
+//             // POP the array reference into Z.
+//             emit_x_POP_REF(RZ); // Z now pointer to the base of the array object.
+
+//             if (opcode==JVM_GETARRAY_S || opcode==JVM_GETARRAY_A) {
+//                 // Multiply the index by 2, since we're indexing 16 bit shorts.
+//                 emit_LSL(R22);
+//                 emit_ROL(R23);
+//             } else if (opcode==JVM_GETARRAY_I) {
+//                 // Multiply the index by 4, since we're indexing 16 bit shorts.
+//                 emit_LSL(R22);
+//                 emit_ROL(R23);
+//                 emit_LSL(R22);
+//                 emit_ROL(R23);
+//             }
+
+//             // Add (1/2/4)*the index to Z
+//             emit_ADD(RZL, R22);
+//             emit_ADC(RZH, R23);
+// #else
+//             emit_x_POP_16bit(R24);
+
+//             // POP the array reference into Z.
+//             emit_x_POP_REF(RZ); // Z now pointer to the base of the array object.
+
+//             if (opcode==JVM_GETARRAY_S || opcode==JVM_GETARRAY_A) {
+//                 // Multiply the index by 2, since we're indexing 16 bit shorts.
+//                 emit_LSL(R24);
+//                 emit_ROL(R25);
+//             } else if (opcode==JVM_GETARRAY_I) {
+//                 // Multiply the index by 4, since we're indexing 16 bit shorts.
+//                 emit_LSL(R24);
+//                 emit_ROL(R25);
+//                 emit_LSL(R24);
+//                 emit_ROL(R25);
+//             }
+
+//             // Add (1/2/4)*the index to Z
+//             emit_ADD(RZL, R24);
+//             emit_ADC(RZH, R25);
+// #endif
+
+            // if (opcode == JVM_GETARRAY_A) {
+            //     // Add 4 to skip 2 bytes for array length and 2 bytes for array type.
+            //     emit_ADIW(RZ, 4); 
+            // } else { // all types of int array
+            //     // Add 3 to skip 2 bytes for array length and 1 byte for array type.
+            //     emit_ADIW(RZ, 3); 
+            // }
+
+            // // Now Z points to the target element
+            // switch (opcode) {
+            //     case JVM_GETARRAY_B:
+            //     case JVM_GETARRAY_C:
+            //         emit_LD_Z(R24);
+            //         emit_CLR(R25);
+            //         emit_SBRC(R24, 7); // highest bit of the byte value cleared -> S value is positive, so R24 can stay 0 (skip next instruction)
+            //         emit_COM(R25); // otherwise: flip R24 to 0xFF to extend the sign
+            //         emit_x_PUSH_16bit(R24);
+            //     break;
+            //     case JVM_GETARRAY_S:
+            //         emit_LD_ZINC(R24);
+            //         emit_LD_Z(R25);
+            //         emit_x_PUSH_16bit(R24);
+            //     break;
+            //     case JVM_GETARRAY_I:
+            //         emit_LD_ZINC(R22);
+            //         emit_LD_ZINC(R23);
+            //         emit_LD_ZINC(R24);
+            //         emit_LD_Z(R25);
+            //         emit_x_PUSH_32bit(R22);
+            //     break;
+            //     case JVM_GETARRAY_A:
+            //         emit_LD_ZINC(R24);
+            //         emit_LD_Z(R25);
+            //         emit_x_PUSH_REF(R24);
+            //     break;
+            // }
         break;
         case JVM_PUTARRAY_B:
         case JVM_PUTARRAY_C:

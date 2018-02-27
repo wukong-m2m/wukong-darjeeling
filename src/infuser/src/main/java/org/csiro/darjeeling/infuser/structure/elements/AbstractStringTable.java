@@ -32,12 +32,14 @@ public abstract class AbstractStringTable extends Element
 {
 
 	protected ArrayList<String> strings;
+	protected ArrayList<byte[]> bytearrays;
 	protected AbstractInfusion infusion;
 
 	public AbstractStringTable(AbstractInfusion infusion)
 	{
 		super(ElementId.STRINGTABLE);
 		strings = new ArrayList<String>();
+		bytearrays = new ArrayList<byte[]>();
 		this.infusion = infusion;
 	}
 
@@ -56,7 +58,24 @@ public abstract class AbstractStringTable extends Element
 	{
 		GlobalId ret = new GlobalId(infusion.getHeader().getInfusionName(), strings.size());
 		strings.add(str);
+		bytearrays.add(str.getBytes());
 		return ret;
+	}
+
+	public GlobalId addByteArray(byte[] array)
+	{
+		GlobalId ret = new GlobalId(infusion.getHeader().getInfusionName(), strings.size());
+		bytearrays.add(array);
+		String str = "CONSTARRAY:";
+		for(int i=0; i<array.length; i++) {
+			str += (" " + array[i]);
+		}
+		strings.add(str);
+		return ret;
+	}
+
+	public ArrayList<byte[]> getStringsAsByteArrays() {
+		return this.bytearrays;
 	}
 	
 	public String[] elements()

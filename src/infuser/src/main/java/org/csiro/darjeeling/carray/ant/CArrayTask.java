@@ -127,52 +127,75 @@ public class CArrayTask extends Task
 	{
 		// If the array name is not set, use the source file name instead.
 		String name = arrayName;
+		boolean targetIsAvr = false, pageAlign = false;
 		if (name==null) name = src;
-		
+
 		// If the avr-specific PROGMEM keyword is used, include the required pgmspace header file.
-		for (String keyword : keywords)
-			if ("PROGMEM".equals(keyword)) {
-				out.println("#include <avr/pgmspace.h>");
-				out.println("#include <avr/boot.h>");
-		}
-		// Create the keywords string.
-		String keywordString = "";
-		for (String keyword : keywords)
-			keywordString += keyword + " ";
-
-		// Print standard headers.
-		out.println("#include <stddef.h>");
-		
-		// Print the Array declaration.
-		int length = bytes.length+4; // Add four bytes for archive size
-		out.printf(
-				"%sunsigned char %s%s_data[%d] = {\n", 
-				constKeyword ? "const ":"", 
-				keywordString,
-				name,
-				Math.max(arraysize, length)
-		);
-
-		// Print the actual data.
-		int left = bytes.length;
-		int pos = 0;
-		out.printf("\t/* archive data */\n");
-		while (left>0)
-		{
-			int lineLength = Math.min(left, LINESIZE);
-			out.print("\t");
-			for (int i=0; i<lineLength; i++)
-			{
-				out.printf("0x%02x, ", bytes[pos]);
-				pos++;
+		for (String keyword : keywords) {
+			if ("AVR".equals(keyword)) {
+				targetIsAvr = true;
 			}
-			out.print("\n");
-			left-=lineLength;
+			if ("PAGEALIGN".equals(keyword)) {
+				pageAlign = true;
+			}
 		}
 
-		// Close array.
-		out.printf("};\n\n");
-		
+		if (targetIsAvr) {
+			// avr-gcc arrays are limited to 32KB, so use inline assembly instead
+			out.printf("#include <avr/pgmspace.h>\n");
+			out.printf("\n");
+			out.printf("__asm__(\n");
+			out.printf("\".global %s_data \\n\\r\"\n", name);
+			out.printf("\"        .section        .progmem.data,\\\"a\\\",@progbits \\n\\r\"\n");
+			if (pageAlign) {
+				out.printf("\"        .p2align        8 \\n\\r\"\n");
+			}
+			out.printf("\"        .type   %s_data, @object \\n\\r\"\n", name);
+			out.printf("\"        .size   %s_data, %d \\n\\r\"\n", name, Math.max(arraysize, bytes.length));
+			out.printf("\"%s_data: \\n\\r\"\n", name);
+			for (int i=0; i<bytes.length; i++) {
+				out.printf("\"        .byte   %d \\n\\r\"\n", bytes[i]);
+			}
+			out.printf(");\n");
+		} else {
+			// Create the keywords string.
+			String keywordString = "";
+			for (String keyword : keywords)
+				keywordString += keyword + " ";
+
+			// Print standard headers.
+			out.printf("#include <stddef.h>\n");
+			
+			// Print the Array declaration.
+			int length = bytes.length+4; // Add four bytes for archive size
+			out.printf(
+					"%sunsigned char %s%s_data[%d] = {\n", 
+					constKeyword ? "const ":"", 
+					keywordString,
+					name,
+					Math.max(arraysize, length)
+			);
+
+			// Print the actual data.
+			int left = bytes.length;
+			int pos = 0;
+			out.printf("\t/* archive data */\n");
+			while (left>0)
+			{
+				int lineLength = Math.min(left, LINESIZE);
+				out.print("\t");
+				for (int i=0; i<lineLength; i++)
+				{
+					out.printf("0x%02x, ", bytes[pos]);
+					pos++;
+				}
+				out.print("\n");
+				left-=lineLength;
+			}
+
+			// Close array.
+			out.printf("};\n\n");			
+		}		
 	}
 	
 	/**

@@ -111,7 +111,7 @@ public class Infuser
 
 	// Version of the infusion format. VM should check if it matches the VM's format
 	public static int getInfusionFormatVersion() {
-		return (!infuserArguments.getUse16BitArrayIndex()) ? 126 : 127;
+		return (!infuserArguments.getUse16BitArrayIndex()) ? 128 : 129;
 	}
 
 	/** 

@@ -339,25 +339,25 @@ public class DIWriterVisitor extends DescendingVisitor
 			out.writeUINT8(element.getId().getId());
 			
 			// string count
-			String[] strings = element.elements();
-			out.writeUINT16(strings.length);
+			ArrayList<byte[]> strings = element.getStringsAsByteArrays();
+			out.writeUINT16(strings.size());
 			
 			// forward table (from beginning of element)
-			int offset = strings.length*2 + 3;
-			for (int i=0; i<strings.length; i++)
+			int offset = strings.size()*2 + 3;
+			for (int i=0; i<strings.size(); i++)
 			{
 				out.writeUINT16(offset);
-				offset+=strings[i].length()+2;
+				offset+=strings.get(i).length+2;
 			}
 			
 			// strings (excluding trailing 0!)
-			for (int i=0; i<strings.length; i++)
+			for (int i=0; i<strings.size(); i++)
 			{
 				// string length
-				out.writeUINT16(strings[i].length());
+				out.writeUINT16(strings.get(i).length);
 				
 				// string bytes
-				out.write(strings[i].getBytes());
+				out.write(strings.get(i));
 			}
 			
 		} catch (IOException ex)

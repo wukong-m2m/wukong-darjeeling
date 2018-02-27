@@ -60,6 +60,12 @@ void rtc_translate_single_instruction() {
     uint8_t *operand_regs2 = operand_regs1 + 4;
     uint8_t *operand_regs3 = operand_regs1 + 8;
 
+    // Used for GETCONSTARRAY
+    dj_di_pointer constArrayPtr;
+    uint16_t ld_opcode;
+    uint8_t array_header_size;
+    uint8_t array_get_opcode;
+
 #ifdef AOT_SAFETY_CHECKS
     rtc_ts->current_opcode = opcode;
 #endif
@@ -321,20 +327,54 @@ void rtc_translate_single_instruction() {
         case JVM_GETARRAY_S:
         case JVM_GETARRAY_I:
         case JVM_GETARRAY_A:
+        case JVM_GETCONSTARRAY_B:
+        case JVM_GETCONSTARRAY_C:
+        case JVM_GETCONSTARRAY_S:
+        case JVM_GETCONSTARRAY_I:
+            // Setup array_header_size, ld_opcode, load array base into operand_regs1
+            if (opcode == JVM_GETCONSTARRAY_B
+                    || opcode == JVM_GETCONSTARRAY_C
+                    || opcode == JVM_GETCONSTARRAY_S
+                    || opcode == JVM_GETCONSTARRAY_I) {
+                // CONSTANT ARRAY LOAD
+                array_header_size = 0;
+                ld_opcode = OPCODE_LPM_ZINC;
+
+                // Load the address of the constant array
+                constArrayPtr = dj_di_stringtable_getElementBytes(rtc_ts->infusion->stringTable, jvm_operand_byte0);
+                if(rtc_stackcache_getfree_16bit_prefer_ge_R16(operand_regs1)) {
+                    emit_LDI(operand_regs1[0],constArrayPtr&0xFF);
+                    emit_LDI(operand_regs1[1],(constArrayPtr>>8)&0xFF);
+                } else {
+                    emit_LDI(RZL,constArrayPtr&0xFF);
+                    emit_LDI(RZH,(constArrayPtr>>8)&0xFF);
+                    emit_MOVW(operand_regs1[0], RZ);
+                }
+
+                // Adjust opcode so we can share the code below this if for both constant and normal array reads.
+                array_get_opcode = opcode - (JVM_GETCONSTARRAY_B - JVM_GETARRAY_B);
+            } else {
+                // NORMAL ARRAY LOAD
+                array_header_size = (opcode == JVM_GETARRAY_A) ? 4 : 3;
+                ld_opcode = OPCODE_LD_ZINC;
+                array_get_opcode = opcode;
+                rtc_stackcache_pop_nondestructive_ref(operand_regs1);
+            }
+
+            // Load index into RZ
 #ifdef ARRAYINDEX_32BIT
             rtc_stackcache_pop_nondestructive_32bit(operand_regs2);
             emit_MOVW(RZ, operand_regs2[0]);
 #else
             rtc_stackcache_pop_destructive_16bit_into_fixed_reg(RZ);
 #endif
-            rtc_stackcache_pop_nondestructive_ref(operand_regs1);
 
-            if (opcode==JVM_GETARRAY_S || opcode==JVM_GETARRAY_A) {
+            if (array_get_opcode==JVM_GETARRAY_S || array_get_opcode==JVM_GETARRAY_A) {
                 // Multiply the index by 2, since we're indexing 16 bit shorts.
                 emit_LSL(RZL);
                 emit_ROL(RZH);
-            } else if (opcode==JVM_GETARRAY_I) {
-                // Multiply the index by 4, since we're indexing 16 bit shorts.
+            } else if (array_get_opcode==JVM_GETARRAY_I) {
+                // Multiply the index by 4, since we're indexing 32 bit ints.
                 emit_LSL(RZL);
                 emit_ROL(RZH);
                 emit_LSL(RZL);
@@ -345,47 +385,43 @@ void rtc_translate_single_instruction() {
             emit_ADD(RZL, operand_regs1[0]);
             emit_ADC(RZH, operand_regs1[1]);
 
-            if (opcode == JVM_GETARRAY_A) {
-                // Add 4 to skip 2 bytes for array length and 2 bytes for array type.
-                emit_ADIW(RZ, 4); 
-            } else { // all types of int array
-                // Add 3 to skip 2 bytes for array length and 1 byte for array type.
-                emit_ADIW(RZ, 3); 
+            if (array_header_size > 0) { // if array_header_size > 0 we are reading from a normal array
+                emit_ADIW(RZ, array_header_size);    
+                // We could load into operand_regs1, but this contains the array reference, which we may want to preserve.
+                // Ask the stack cache for another available register pair, but it shouldn't spill to memory if nothing is available.
+                rtc_stackcache_getfree_16bit_for_array_load(operand_regs1);
+#ifdef AOT_SAFETY_CHECKS_READS
+                emit_2_CALL((uint16_t)&rtc_safety_mem_check);
+#endif            
             }
 
             // Now Z points to the target element
-#ifdef AOT_SAFETY_CHECKS_READS
-            emit_2_CALL((uint16_t)&rtc_safety_mem_check);
-#endif            
-            // We could load into operand_regs1, but this contains the array reference, which we may want to preserve.
-            // Ask the stack cache for an available register pair, but it shouldn't spill to memory if nothing is available.
-            rtc_stackcache_getfree_16bit_for_array_load(operand_regs1);
-            switch (opcode) {
+            switch (array_get_opcode) {
                 case JVM_GETARRAY_B:
                 case JVM_GETARRAY_C:
-                    emit_LD_Z(operand_regs1[0]);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, operand_regs1[0]);
                     emit_CLR(operand_regs1[1]);
                     emit_SBRC(operand_regs1[0], 7); // highest bit of the byte value cleared -> S value is positive, so operand_regs1[0] can stay 0 (skip next instruction)
                     emit_COM(operand_regs1[1]); // otherwise: flip operand_regs1[0] to 0xFF to extend the sign
                     rtc_stackcache_push_16bit(operand_regs1);
                 break;
                 case JVM_GETARRAY_S:
-                    emit_LD_ZINC(operand_regs1[0]);
-                    emit_LD_Z(operand_regs1[1]);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, operand_regs1[0]);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, operand_regs1[1]);
                     rtc_stackcache_push_16bit(operand_regs1);
                 break;
                 case JVM_GETARRAY_I:
-                    emit_LD_ZINC(operand_regs1[0]);
-                    emit_LD_ZINC(operand_regs1[1]);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, operand_regs1[0]);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, operand_regs1[1]);
                     // If we're using 16 bit index, we now need 2 more registers to store the result
                     rtc_stackcache_getfree_16bit(operand_regs1+2);
-                    emit_LD_ZINC(operand_regs1[2]);
-                    emit_LD_Z(operand_regs1[3]);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, operand_regs1[2]);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, operand_regs1[3]);
                     rtc_stackcache_push_32bit(operand_regs1);
                 break;
                 case JVM_GETARRAY_A:
-                    emit_LD_ZINC(operand_regs1[0]);
-                    emit_LD_Z(operand_regs1[1]);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, operand_regs1[0]);
+                    emit_opcodeWithSingleRegOperand(ld_opcode, operand_regs1[1]);
                     rtc_stackcache_push_ref(operand_regs1);
                 break;
             }
@@ -423,7 +459,7 @@ void rtc_translate_single_instruction() {
                 emit_LSL(RZL);
                 emit_ROL(RZH);
             } else if (opcode==JVM_PUTARRAY_I) {
-                // Multiply the index by 4, since we're indexing 16 bit shorts.
+                // Multiply the index by 4, since we're indexing 32 bit ints.
                 emit_LSL(RZL);
                 emit_ROL(RZH);
                 emit_LSL(RZL);

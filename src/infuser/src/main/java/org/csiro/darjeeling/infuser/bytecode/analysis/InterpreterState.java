@@ -162,7 +162,15 @@ public class InterpreterState implements Comparable<InterpreterState>
 				ret.getStack().pop();
 				ret.getStack().push(handle);
 				break;
-			
+
+			case GETCONSTARRAY_B:
+			case GETCONSTARRAY_C:
+			case GETCONSTARRAY_S:
+			case GETCONSTARRAY_I:
+				ret.getStack().pop();
+				ret.getStack().push(handle);
+				break;
+
 			case INVOKESPECIAL:
 			case INVOKEINTERFACE:
 			case INVOKEVIRTUAL:

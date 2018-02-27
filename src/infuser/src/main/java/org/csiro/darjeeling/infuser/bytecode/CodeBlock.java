@@ -47,6 +47,7 @@ import org.csiro.darjeeling.infuser.bytecode.transformations.UseSINC;
 import org.csiro.darjeeling.infuser.bytecode.transformations.AddStartStopAOTMeasurement;
 import org.csiro.darjeeling.infuser.structure.BaseType;
 import org.csiro.darjeeling.infuser.structure.LocalId;
+import org.csiro.darjeeling.infuser.structure.ConstArrayHandler;
 import org.csiro.darjeeling.infuser.structure.elements.AbstractClassDefinition;
 import org.csiro.darjeeling.infuser.structure.elements.internal.InternalInfusion;
 import org.csiro.darjeeling.infuser.structure.elements.internal.InternalMethodImplementation;
@@ -460,6 +461,9 @@ public class CodeBlock
 		
 		// perform type analysis
 		new AnalyseTypes(ret).transform();
+
+		// replace array loads from const arrays with GETCONSTARRAY instructions, and remove corresponding GETSTATICS.
+		new ConstArrayHandler(ret).transform();
 
 		new OptimizeByteCode(ret).transform();
 		ret.instructions.reThreadStates();

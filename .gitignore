@@ -40,8 +40,10 @@ obj
 src/config/avrora/results_*
 src/config/avrora/resultsets_*
 src/config/avrora/old_results
+src/config/avrora/oldresults
 src/config/avrora/allresults
 src/config/avrora/thesis_results
 sumsum.txt
 src/config/coremk_c/results_*
+src/config/motetrack_c/results_*
 process-output.userprefs

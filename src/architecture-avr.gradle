@@ -47,12 +47,12 @@ task createCArrays {
                              src: libArchiveFile,
                              arrayname: 'di_lib_infusions_archive',
                              arraysize: 0,
-                             keywords: 'PROGMEM')
+                             keywords: 'AVR')
         ant.carray(dest: appArchiveCFile,
                              src: appArchiveFile,
                              arrayname: 'di_app_infusion_archive',
                              arraysize: djConfig.appArchiveSize,
-                             keywords: 'PROGMEM __attribute__ ((aligned (SPM_PAGESIZE)))')
+                             keywords: 'AVR PAGEALIGN')
     }
 }
 
@@ -249,6 +249,8 @@ task avrora_store_trace(type:Copy, dependsOn: [avrora_if_necessary, disassemble,
     from file(avr_nm.nmFile)
     if (djConfigname == "coremk_c")
         into file("${project.rootDir}/config/${djConfigname}/results_coremk_c")
+    else if (djConfigname == "motetrack_c")
+        into file("${project.rootDir}/config/${djConfigname}/results_motetrack_c")
     else
         into file("${project.rootDir}/config/${djConfigname}/${project.ext.aotTraceResultsDirName}/${project.ext.aotbm}")
 }
