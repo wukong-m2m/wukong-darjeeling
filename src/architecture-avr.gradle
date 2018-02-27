@@ -47,12 +47,12 @@ task createCArrays {
                              src: libArchiveFile,
                              arrayname: 'di_lib_infusions_archive',
                              arraysize: 0,
-                             keywords: 'PROGMEM')
+                             keywords: 'AVR')
         ant.carray(dest: appArchiveCFile,
                              src: appArchiveFile,
                              arrayname: 'di_app_infusion_archive',
                              arraysize: djConfig.appArchiveSize,
-                             keywords: 'PROGMEM __attribute__ ((aligned (SPM_PAGESIZE)))')
+                             keywords: 'AVR PAGEALIGN')
     }
 }
 
