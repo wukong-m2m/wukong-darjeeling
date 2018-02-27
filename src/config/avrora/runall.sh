@@ -6,6 +6,7 @@ function store_as_resultset() {
     mkdir -p $1
     mv results_* $1
     cp -r $1/results_coremk_c . # Copy this back for the next set, which may or may not include CoreMark
+    cp -r $1/results_motetrack_c . # Copy this back for the next set, which may or may not include CoreMark
 }
 
 ##### Preparation

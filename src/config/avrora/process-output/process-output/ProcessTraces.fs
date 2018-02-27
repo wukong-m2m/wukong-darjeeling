@@ -386,7 +386,7 @@ module ProcessTraces =
     let getCResultsdir (jvmResultsdir : string) =
       let indexOfLastSlash = jvmResultsdir.LastIndexOf("/");
       let indexOfSecondLastSlash = jvmResultsdir.LastIndexOf("/", indexOfLastSlash-1);
-      let benchmarkFirstSixChars = jvmResultsdir.Substring(indexOfLastSlash+1, 6)
+      let benchmarkFirstSixChars = (jvmResultsdir+"      ").Substring(indexOfLastSlash+1, 6) // Add some padding to make sure we can take 6 characters
       match benchmarkFirstSixChars with
       | "coremk" -> jvmResultsdir.Substring(0, indexOfSecondLastSlash) + "/results_coremk_c"
       | "motetr" -> jvmResultsdir.Substring(0, indexOfSecondLastSlash) + "/results_motetrack_c"
@@ -538,7 +538,7 @@ module ProcessTraces =
         match args with
         | [ "all"; directory ] -> 
             let subdirectories = (Directory.GetDirectories(directory))
-            subdirectories |> Array.filter (fun d -> ((Path.GetFileName(d).StartsWith("results_")) && not (Path.GetFileName(d).StartsWith("results_coremk_c"))))
+            subdirectories |> Array.filter (fun d -> ((Path.GetFileName(d).StartsWith("results_")) && not (Path.GetFileName(d).StartsWith("results_coremk_c")) && not (Path.GetFileName(d).StartsWith("results_motetrack_c"))))
                            |> Array.iter processConfigOrSingleBenchmarkResultsDir
         | [ directory ] ->
             processConfigOrSingleBenchmarkResultsDir directory
