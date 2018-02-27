@@ -248,9 +248,6 @@ module CombineResults =
                                 String.Join(" ", tail |> List.map (fun x -> String.Format("{0,10}", x))))
         | [] -> ""
 
-
-
-
     let summariseResults results =
         let resultsSummaryAsTupleLists = results |> List.map resultToStringList
         let resultsSummary = resultsSummaryAsTupleLists |> flipTupleListsToStringList

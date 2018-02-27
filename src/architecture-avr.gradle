@@ -249,6 +249,8 @@ task avrora_store_trace(type:Copy, dependsOn: [avrora_if_necessary, disassemble,
     from file(avr_nm.nmFile)
     if (djConfigname == "coremk_c")
         into file("${project.rootDir}/config/${djConfigname}/results_coremk_c")
+    else if (djConfigname == "motetrack_c")
+        into file("${project.rootDir}/config/${djConfigname}/results_motetrack_c")
     else
         into file("${project.rootDir}/config/${djConfigname}/${project.ext.aotTraceResultsDirName}/${project.ext.aotbm}")
 }

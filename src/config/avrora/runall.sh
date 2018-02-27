@@ -13,7 +13,7 @@ function store_as_resultset() {
 gdj clean
 mkdir -p oldresults
 mv results_* oldresults
-# CoreMark is too big to fit both Java and C versions in memory at the same time. Run the coremk_c config for the native CoreMark results, and then copy the result here.
+# CoreMark and MoteTrack are too big to fit both Java and C versions in memory at the same time. Run the coremk_c and motetrack_c configs for the native results, and then copy the result here.
 cd ../coremk_c
 rm -rf results_coremk_c
 gdj avrora_store_trace
@@ -21,6 +21,12 @@ cd -
 rm -rf results_coremk_c
 cp -r ../coremk_c/results_coremk_c .
 
+cd ../motetrack_c
+rm -rf results_motetrack_c
+gdj avrora_store_trace
+cd -
+rm -rf results_motetrack_c
+cp -r ../motetrack_c/results_motetrack_c .
 
 
 ##### Main benchmarks

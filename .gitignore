@@ -45,4 +45,5 @@ src/config/avrora/allresults
 src/config/avrora/thesis_results
 sumsum.txt
 src/config/coremk_c/results_*
+src/config/motetrack_c/results_*
 process-output.userprefs

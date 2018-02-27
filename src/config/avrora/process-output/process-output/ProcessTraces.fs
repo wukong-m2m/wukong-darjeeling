@@ -323,7 +323,7 @@ module ProcessTraces =
               && match data.file with
                  | "" ->
                     // Unfortunately, avr-nm doesn't add the source file for some symbols. Just hard code what to do with those for now.
-                    let knownExclude = mathFunctionNames @ ["__do_clear_bss"; "avr_millis"; "__ultoa_invert"; "asm_opcodeWithSingleRegOperand"; "dj_exec_setVM"; "fputc"; "memcpy"; "memcpy_P"; "memmove"; "memset"; "strnlen"; "strnlen_P"; "vfprintf"; "vsnprintf"]
+                    let knownExclude = mathFunctionNames @ ["__do_clear_bss"; "avr_millis"; "__ultoa_invert"; "asm_opcodeWithSingleRegOperand"; "dj_exec_setVM"; "fputc"; "memcpy"; "memcpy_P"; "memmove"; "memset"; "strnlen"; "strnlen_P"; "vfprintf"; "vsnprintf"; "di_app_infusion_archive_data"; "di_lib_infusions_archive_data"]
                     let knownInclude = ["siftDown"; "core_list_find"; "crc16"; "RFSignal_rfSignalDiff"]
                     match (knownInclude |> List.contains data.name, knownExclude |> List.contains data.name) with
                     | (true, true)   -> failwith ("BUG in getBenchmarkFunctionNamesAndAddressesFromCNm. " + data.name + " can't be in both lists at the same time!")
@@ -385,12 +385,12 @@ module ProcessTraces =
 
     let getCResultsdir (jvmResultsdir : string) =
       let indexOfLastSlash = jvmResultsdir.LastIndexOf("/");
-      match (jvmResultsdir.Substring(indexOfLastSlash).StartsWith("/coremk")) with
-      | false -> jvmResultsdir
-      | true ->
-        let indexOfSecondLastSlash = jvmResultsdir.LastIndexOf("/", indexOfLastSlash-1);
-        let directoryForCoreMarkCResults = jvmResultsdir.Substring(0, indexOfSecondLastSlash) + "/results_coremk_c"
-        directoryForCoreMarkCResults
+      let indexOfSecondLastSlash = jvmResultsdir.LastIndexOf("/", indexOfLastSlash-1);
+      let benchmarkFirstSixChars = jvmResultsdir.Substring(indexOfLastSlash+1, 6)
+      match benchmarkFirstSixChars with
+      | "coremk" -> jvmResultsdir.Substring(0, indexOfSecondLastSlash) + "/results_coremk_c"
+      | "motetr" -> jvmResultsdir.Substring(0, indexOfSecondLastSlash) + "/results_motetrack_c"
+      | _ -> jvmResultsdir
 
     let processSingleBenchmarkResultsDir (resultsdir : string) =
         let benchmark = (Path.GetFileName(resultsdir))
