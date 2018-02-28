@@ -293,7 +293,7 @@ module CombineResults =
         match args with
         | [ "all"; directory ] -> 
             let subdirectories = (Directory.GetDirectories(directory))
-            subdirectories |> Array.filter (fun d -> ((Path.GetFileName(d).StartsWith("results_")) && not (Path.GetFileName(d).StartsWith("results_coremk_c"))))
+            subdirectories |> Array.filter (fun d -> ((Path.GetFileName(d).StartsWith("results_")) && not (Path.GetFileName(d).StartsWith("results_coremk_c")) && not (Path.GetFileName(d).StartsWith("results_motetrack_c"))))
                            |> Array.iter summariseResultsDirectory
         | [ directory ] -> summariseResultsDirectory directory
         | _ -> failwith "specify either a specific directory, or 'all <parent directory>'"
