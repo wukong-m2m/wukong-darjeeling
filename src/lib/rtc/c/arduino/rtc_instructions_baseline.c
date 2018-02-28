@@ -272,6 +272,14 @@ void rtc_translate_single_instruction() {
         case JVM_GETCONSTARRAY_C:
         case JVM_GETCONSTARRAY_S:
         case JVM_GETCONSTARRAY_I:
+            // Load index into RZ
+#ifdef ARRAYINDEX_32BIT
+            emit_x_POP_32bit(R22);
+            emit_MOVW(RZ, R22);
+#else
+            emit_x_POP_16bit(RZ);
+#endif
+
             // Setup array_header_size, ld_opcode, load array base into R20
             if (opcode == JVM_GETCONSTARRAY_B
                     || opcode == JVM_GETCONSTARRAY_C
@@ -295,14 +303,6 @@ void rtc_translate_single_instruction() {
                 array_get_opcode = opcode;
                 emit_x_POP_REF(R20);
             }
-
-            // Load index into RZ
-#ifdef ARRAYINDEX_32BIT
-            emit_x_POP_32bit(R22);
-            emit_MOVW(RZ, R22);
-#else
-            emit_x_POP_16bit(RZ);
-#endif
 
             if (array_get_opcode==JVM_GETARRAY_S || array_get_opcode==JVM_GETARRAY_A) {
                 // Multiply the index by 2, since we're indexing 16 bit shorts.
