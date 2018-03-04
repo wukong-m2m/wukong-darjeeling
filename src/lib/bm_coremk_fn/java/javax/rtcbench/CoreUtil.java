@@ -1,5 +1,6 @@
 package javax.rtcbench;
 import javax.rtc.RTC;
+import javax.rtc.Lightweight;
 
 /*
 Author : Shay Gal-On, EEMBC
@@ -70,9 +71,29 @@ public class CoreUtil {
 		Service functions to calculate 16b CRC code.
 
 	*/
-	static short crcu8(short data, short crc )
-	{
-		// for (short i = 0; i < 8; i++)
+	// static short crcu8(short data, short crc )
+	// {
+	// 	// for (short i = 0; i < 8; i++)
+	// 	for (short i = (short)-8; i != 0; i++) // This is faster because a !=0 check is faster than <8.
+	//     {
+	// 		if (((data ^ crc) & 1) == 0)
+	// 		{
+	// 			crc >>>= 1;
+	// 			crc &= (short)0x7fff;
+	// 		}
+	// 		else
+	// 		{
+	// 			crc ^= (short)0x4002;
+	// 			crc >>>= 1;
+	// 			crc |= (short)-0x8000;
+	// 		}
+	// 		data >>>= 1;
+	//     }
+	// 	return crc;
+	// }
+	static short crcu16(short newval, short crc) {
+		// crc=crcu8((byte) (newval), crc);
+		byte data = (byte)newval;
 		for (short i = (short)-8; i != 0; i++) // This is faster because a !=0 check is faster than <8.
 	    {
 			if (((data ^ crc) & 1) == 0)
@@ -88,11 +109,23 @@ public class CoreUtil {
 			}
 			data >>>= 1;
 	    }
-		return crc;
-	}
-	static short crcu16(short newval, short crc) {
-		crc=crcu8((byte) (newval), crc);
-		crc=crcu8((byte) ((newval)>>>8), crc);
+		// crc=crcu8((byte) ((newval)>>>8), crc);
+		data = (byte)(newval>>>8);
+		for (short i = (short)-8; i != 0; i++) // This is faster because a !=0 check is faster than <8.
+	    {
+			if (((data ^ crc) & 1) == 0)
+			{
+				crc >>>= 1;
+				crc &= (short)0x7fff;
+			}
+			else
+			{
+				crc ^= (short)0x4002;
+				crc >>>= 1;
+				crc |= (short)-0x8000;
+			}
+			data >>>= 1;
+	    }
 		return crc;
 	}
 	static short crcu32(int newval, short crc) {

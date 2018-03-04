@@ -71,11 +71,36 @@ public class CoreUtil {
 		Service functions to calculate 16b CRC code.
 
 	*/
-	@Lightweight(rank=1)
-	static short crcu8(byte data, short crc )
-	{
-		byte i=0,x16=0,carry=0;
+	// @Lightweight(rank=1)
+	// static short crcu8(byte data, short crc )
+	// {
+	// 	byte i=0,x16=0,carry=0;
 
+	// 	for (i = 0; i < 8; i++)
+	//     {
+	// 		x16 = (byte)((data & 1) ^ ((byte)crc & 1));
+	// 		data >>>= 1;
+
+	// 		if (x16 == 1)
+	// 		{
+	// 		   crc ^= 0x4002;
+	// 		   carry = 1;
+	// 		}
+	// 		else 
+	// 			carry = 0;
+	// 		crc >>>= 1;
+	// 		if (carry != 0)
+	// 		   crc |= 0x8000;
+	// 		else
+	// 		   crc &= 0x7fff;
+	//     }
+	// 	return crc;
+	// } 
+	@Lightweight(rank=2)
+	static short crcu16(short newval, short crc) {
+		// crc=crcu8((byte) (newval), crc);
+		byte data = (byte)newval;
+		byte i=0,x16=0,carry=0;
 		for (i = 0; i < 8; i++)
 	    {
 			x16 = (byte)((data & 1) ^ ((byte)crc & 1));
@@ -94,13 +119,30 @@ public class CoreUtil {
 			else
 			   crc &= 0x7fff;
 	    }
-		return crc;
-	} 
-	@Lightweight(rank=2)
-	static short crcu16(short newval, short crc) {
-		crc=crcu8((byte) (newval), crc);
-		crc=crcu8((byte) ((newval)>>>8), crc);
-		return crc;
+
+		// crc=crcu8((byte) ((newval)>>>8), crc);
+		data = (byte)(newval>>>8);
+		i=0; x16=0; carry=0;
+		for (i = 0; i < 8; i++)
+	    {
+			x16 = (byte)((data & 1) ^ ((byte)crc & 1));
+			data >>>= 1;
+
+			if (x16 == 1)
+			{
+			   crc ^= 0x4002;
+			   carry = 1;
+			}
+			else 
+				carry = 0;
+			crc >>>= 1;
+			if (carry != 0)
+			   crc |= 0x8000;
+			else
+			   crc &= 0x7fff;
+	    }
+
+	    return crc;
 	}
 	@Lightweight(rank=4)
 	static short crcu32(int newval, short crc) {
