@@ -179,6 +179,16 @@ store_as_resultset resultsets_stackcachesize
 
 
 
+##### Constant arrays
+gdj avrora_store_trace -Paotbm=fft16
+gdj avrora_store_trace -Paotbm=fft16_nca
+gdj avrora_store_trace -Paotbm=lec
+gdj avrora_store_trace -Paotbm=lec_nca
+store_as_resultset resultsets_constarray
+
+
+
+
 ./analyseall.sh
 
 
