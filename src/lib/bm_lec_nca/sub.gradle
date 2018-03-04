@@ -1,0 +1,6 @@
+djlibsource {
+    bm_lec_nca {
+        cDependencies = [ 'base' ]
+        javaDependencies = [ 'base' ]
+    }
+}

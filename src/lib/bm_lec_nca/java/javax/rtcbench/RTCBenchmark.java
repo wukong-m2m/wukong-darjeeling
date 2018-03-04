@@ -1,7 +1,6 @@
 package javax.rtcbench;
 
 import javax.rtc.RTC;
-import javax.rtc.ConstArray;
 
 public class RTCBenchmark {
     private final static short NUMNUMBERS = 5;
@@ -70,51 +69,45 @@ public class RTCBenchmark {
         return (short)(stream.current_byte_index+1); // The number of bytes in the output array
     }
 
-    @ConstArray
-    public static class si_tbl {
-        public final static short data[] = {
-            0b00,
-            0b010,
-            0b011,
-            0b100,
-            0b101,
-            0b110,
-            0b1110,
-            0b11110,
-            0b111110,
-            0b1111110,
-            0b11111110,
-            0b111111110,
-            0b1111111110,
-            0b11111111110,
-            0b111111111110,
-            0b1111111111110,
-            0b11111111111110,
-        };
-    }
+    private static short si_tbl[] = {
+        0b00,
+        0b010,
+        0b011,
+        0b100,
+        0b101,
+        0b110,
+        0b1110,
+        0b11110,
+        0b111110,
+        0b1111110,
+        0b11111110,
+        0b111111110,
+        0b1111111110,
+        0b11111111110,
+        0b111111111110,
+        0b1111111111110,
+        0b11111111111110,
+    };
 
-    @ConstArray
-    public static class si_length_tbl {
-        public static byte data[] = {
-            2,
-            3,
-            3,
-            3,
-            3,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,    
-        };
-    }
+    private static byte si_length_tbl[] = {
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,    
+    };
 
     // // pseudo code from the paper:
 
@@ -207,8 +200,8 @@ public class RTCBenchmark {
         }
         byte ni = computeBinaryLog(di_abs);
         // extract si from Table
-        short si = si_tbl.data[ni];
-        byte si_length = si_length_tbl.data[ni];
+        short si = si_tbl[ni];
+        byte si_length = si_length_tbl[ni];
         short ai = 0;
         byte ai_length = 0;
         // build bsi
