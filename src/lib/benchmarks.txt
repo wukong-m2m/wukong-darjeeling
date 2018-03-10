@@ -17,3 +17,9 @@ coremk_ch2    : avoid creating objects + avoid virtual calls
 
 coremk_fn     : like coremk but without lightweight methods
 coremk_lw     : like coremk but with ee_isdigit a lightweight method instead of manually inlined function
+
+_nca          : version without constant array optimisation
+
+lec           : normal LEC compression
+lec_alloc     : LEC compression without optimisation to avoid allocating BSI
+
