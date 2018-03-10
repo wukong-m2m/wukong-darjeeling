@@ -1,0 +1,6 @@
+djlibsource {
+    bm_xxtea_nopt {
+        cDependencies = [ 'base' ]
+        javaDependencies = [ 'base' ]
+    }
+}

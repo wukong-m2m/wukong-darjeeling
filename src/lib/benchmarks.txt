@@ -1,26 +1,29 @@
-motetrack_ori : most direct translation from original C version to Java, except for the powerlevel arrays which are already eliminated.
+motetrack_ori  : most direct translation from original C version to Java, except for the powerlevel arrays which are already eliminated.
                 doesn't run because it runs out of memory very quickly, NO CONSTARRAY
-motetrack_uop : original C version, and Java version modified by replacing the 2-element arrays in RFSignal and RFSignalAvg with 2 separate variables, NO CONSTARRAY
-motetrack_nca : Several more 'unfair' optimisations, C version modified to match the Java optimisations, NO CONSTARRAY
-motetrack     : Several more 'unfair' optimisations, C version modified to match the Java optimisations, USES CONSTARRAY
+motetrack_uop  : original C version, and Java version modified by replacing the 2-element arrays in RFSignal and RFSignalAvg with 2 separate variables, NO CONSTARRAY
+motetrack_nca  : Several more 'unfair' optimisations, C version modified to match the Java optimisations, NO CONSTARRAY
+motetrack      : Several more 'unfair' optimisations, C version modified to match the Java optimisations, USES CONSTARRAY
 
 
-coremk_or0    : original, directly translated version
-coremk_or1    : manually inline small methods
-coremk_or2    : use short array index variables
-coremk_or3    : avoid recalculating expressions in a loop
-coremk_or4    : reduce array and object access
-coremk_or5    : reduce branch cost in crcu8: result is now the same as coremk, except for small rewrite to avoid stack values at BRTARGET
-coremk        : default CoreMark implementation
-coremk_ch1    : avoid creating objects
-coremk_ch2    : avoid creating objects + avoid virtual calls
+coremk_or0     : original, directly translated version
+coremk_or1     : manually inline small methods
+coremk_or2     : use short array index variables
+coremk_or3     : avoid recalculating expressions in a loop
+coremk_or4     : reduce array and object access
+coremk_or5     : reduce branch cost in crcu8: result is now the same as coremk, except for small rewrite to avoid stack values at BRTARGET
+coremk         : default CoreMark implementation
+coremk_ch1     : avoid creating objects
+coremk_ch2     : avoid creating objects + avoid virtual calls
 
-coremk_fn     : like coremk but without lightweight methods
-coremk_lw     : like coremk but with ee_isdigit a lightweight method instead of manually inlined function
+coremk_fn      : like coremk but without lightweight methods
+coremk_lw      : like coremk but with ee_isdigit a lightweight method instead of manually inlined function
 
-_nca          : version without constant array optimisation
+_nca           : version without constant array optimisation
 
-lec           : normal LEC compression
-lec_alloc     : LEC compression without optimisation to avoid allocating BSI
+lec            : normal LEC compression
+lec_alloc      : LEC compression without optimisation to avoid allocating BSI
 
-fft16_nopt    : 16-bit FFT without manual optimisations to the Java source (but including inlining)
+fft16_nopt     : 16-bit FFT without manual optimisations to the Java source (but including inlining)
+
+outlier16u_nopt: 16-bit outlier detection without manual optimisations to the Java source
+xxtea_nopt     : XXTEA without manual optimisations to the Java source
