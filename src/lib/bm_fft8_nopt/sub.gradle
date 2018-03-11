@@ -1,0 +1,6 @@
+djlibsource {
+    bm_fft8_nopt {
+        cDependencies = [ 'base' ]
+        javaDependencies = [ 'base' ]
+    }
+}
