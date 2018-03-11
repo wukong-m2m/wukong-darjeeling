@@ -22,8 +22,13 @@ _nca           : version without constant array optimisation
 
 lec            : normal LEC compression
 lec_alloc      : LEC compression without optimisation to avoid allocating BSI
+motetrack_alloc: MoteTrack without optimisation to avoid allocating BSI
 
 fft16_nopt     : 16-bit FFT without manual optimisations to the Java source (but including inlining)
 fft8_nopt      : 8-bit FFT without manual optimisations to the Java source (but including inlining)
 outlier16u_nopt: 16-bit outlier detection without manual optimisations to the Java source
 xxtea_nopt     : XXTEA without manual optimisations to the Java source
+motetrack_nopt : MoteTrack without manual optimisations to the Java source
+
+coremk_noinl   : CoreMark without manual inlining
+motetrack_noinl: MoteTrack without manual inlining
