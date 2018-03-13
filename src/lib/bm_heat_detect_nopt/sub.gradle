@@ -1,0 +1,6 @@
+djlibsource {
+    bm_heat_detect_nopt {
+        cDependencies = [ 'base', 'vm_dev' ]
+        javaDependencies = [ 'base' ]
+    }
+}

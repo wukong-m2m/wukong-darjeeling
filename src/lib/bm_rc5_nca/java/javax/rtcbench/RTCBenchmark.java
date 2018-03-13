@@ -1,10 +1,9 @@
 package javax.rtcbench;
 
 import javax.rtc.RTC;
-import javax.rtc.ConstArray;
 
 public class RTCBenchmark {
-    public static String name = "RC5";
+    public static String name = "RC5 NCA";
     public static native void test_native();
     public static boolean test_java() {
         byte NUMNUMBERS = 8;
@@ -59,7 +58,6 @@ public class RTCBenchmark {
     private final static int CRYPT_INVALID_KEYSIZE = 2;
     private final static int CRYPT_FAIL_TESTVECTOR = 3;
 
-    @ConstArray
     private static class stab {
         public final static int data[] = new int[] {
             0xb7e15163, 0x5618cb1c, 0xf45044d5, 0x9287be8e, 0x30bf3847, 0xcef6b200, 0x6d2e2bb9, 0x0b65a572,
