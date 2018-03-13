@@ -1,0 +1,6 @@
+djlibsource {
+    bm_md5_noinl {
+        cDependencies = [ 'base' ]
+        javaDependencies = [ 'base' ]
+    }
+}
