@@ -252,12 +252,12 @@ RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 1 , 0 , 1 , 0 ), // opcode 233 sushr_const   
 RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 2 , 0 , 2 , 0 ), // opcode 234 ishl_const                   : consumes( 2 , 0 ) produces ( 2 , 0 )
 RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 2 , 0 , 2 , 0 ), // opcode 235 ishr_const                   : consumes( 2 , 0 ) produces ( 2 , 0 )
 RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 2 , 0 , 2 , 0 ), // opcode 236 iushr_const                  : consumes( 2 , 0 ) produces ( 2 , 0 )
-                                                 0, // opcode 237                              : not used
-                                                 0, // opcode 238                              : not used
-                                                 0, // opcode 239                              : not used
-                                                 0, // opcode 240                              : not used
-                                                 0, // opcode 241                              : not used
-                                                 0, // opcode 242                              : not used
+RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 0 , 0 , 0 , 0 ), // opcode 237 start_aot_bm                 : consumes( 0 , 0 ) produces ( 0 , 0 )
+RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 0 , 0 , 0 , 0 ), // opcode 238 stop_aot_bm                  : consumes( 0 , 0 ) produces ( 0 , 0 )
+RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 1 , 0 , 1 , 0 ), // opcode 239 getconstarray_b              : consumes( 1 , 0 ) produces ( 1 , 0 )
+RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 1 , 0 , 1 , 0 ), // opcode 240 getconstarray_c              : consumes( 1 , 0 ) produces ( 1 , 0 )
+RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 1 , 0 , 1 , 0 ), // opcode 241 getconstarray_s              : consumes( 1 , 0 ) produces ( 1 , 0 )
+RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 1 , 0 , 2 , 0 ), // opcode 242 getconstarray_i              : consumes( 1 , 0 ) produces ( 2 , 0 )
                                                  0, // opcode 243                              : not used
                                                  0, // opcode 244                              : not used
                                                  0, // opcode 245                              : not used
@@ -272,6 +272,9 @@ RTC_CONSUMES_I_R_AND_PRODUCES_I_R( 2 , 0 , 2 , 0 ), // opcode 236 iushr_const   
                                                  0, // opcode 254                              : not used
                                                  0, // opcode 255                              : not used
 };
+
+
+
 
 const DJ_PROGMEM uint8_t rtc_safety_stack_decode_i[] = {
 	0,
