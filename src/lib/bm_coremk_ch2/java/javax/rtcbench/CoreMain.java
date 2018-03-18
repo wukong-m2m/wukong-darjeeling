@@ -226,7 +226,7 @@ public class CoreMain {
 				results[i].statememblock3 = CoreState.core_init_state(results[0].size,results[i].seed1);
 			}
 		}
-		
+
 		/* automatically determine number of iterations if not set */
 		if (results[0].iterations==0) { 
 			int secs_passed=0;

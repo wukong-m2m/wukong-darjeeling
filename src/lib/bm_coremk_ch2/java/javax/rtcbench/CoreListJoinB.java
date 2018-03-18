@@ -532,12 +532,20 @@ public class CoreListJoinB {
 					} else if (qsize == 0 || q==ListNULL) {
 					    /* q is empty; e must come from p. */
 					    e = p; p = ListHead_GetNext(p); psize--;
-					} else if ((useIdxCompare ? cmp_idx(ListHead_GetInfo(p),ListHead_GetInfo(q),res,tmpData) : cmp_complex(ListHead_GetInfo(p),ListHead_GetInfo(q),res,tmpData)) <= 0) {
-					    /* First element of p is lower (or same); e must come from p. */
-					    e = p; p = ListHead_GetNext(p); psize--;
 					} else {
-					    /* First element of q is lower; e must come from q. */
-					    e = q; q = ListHead_GetNext(q); qsize--;
+						int rv;
+						if (useIdxCompare) {
+							rv = cmp_idx(ListHead_GetInfo(p),ListHead_GetInfo(q),res,tmpData);
+						} else {
+							rv = cmp_complex(ListHead_GetInfo(p),ListHead_GetInfo(q),res,tmpData);
+						}
+						if (rv <= 0) {
+						    /* First element of p is lower (or same); e must come from p. */
+						    e = p; p = ListHead_GetNext(p); psize--;
+						} else {
+						    /* First element of q is lower; e must come from q. */
+						    e = q; q = ListHead_GetNext(q); qsize--;
+						}
 					}
 
 			        /* add the next element to the merged list */

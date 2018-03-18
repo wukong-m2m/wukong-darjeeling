@@ -149,6 +149,8 @@ class DjSourceSet {
                 keepclassmembers 'class * { public static boolean test_java(); }'
                 keepclassmembers 'class * { public static <fields>; }'
                 keepclassmembers 'class *** { public static ***    rtcbenchmark_measure_java_performance(...); }'
+                keepclassmembers 'class *** { static ***    core_list_init(...); }'
+                keepclassmembers 'class javax.rtcbench.CoreListJoinB { static ***    core_list_mergesort(...); }'
                 keepclassmembers 'class * { public static int      test_loop(int, int, int); }'
                 keepclassmembers 'class * { public static boolean  isEvenDontInline(int); }'
                 keepclassmembers 'class * { public static short    fix_mpy(short, short); }'

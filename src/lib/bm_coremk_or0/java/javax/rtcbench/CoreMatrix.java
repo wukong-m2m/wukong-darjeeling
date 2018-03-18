@@ -195,7 +195,10 @@ public class CoreMatrix {
 					ret+=10;
 					tmp=0;
 				} else {
-					ret += (cur>prev) ? 1 : 0;
+					if (cur>prev) {
+						ret++;
+					}
+					// ret += (cur>prev) ? 1 : 0;
 				}
 				prev=cur;
 			}

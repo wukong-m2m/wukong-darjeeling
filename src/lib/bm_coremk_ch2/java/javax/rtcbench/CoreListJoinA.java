@@ -243,7 +243,6 @@ public class CoreListJoinA {
 		/* some useful variables */
 		int i;
 		ListHead finder, list=new ListHead();
- 
  		/* create a fake items for the list head and tail */
 		list.next=null;
 		list.info=new ListData();
@@ -493,12 +492,20 @@ public class CoreListJoinA {
 					} else if (qsize == 0 || q==null) {
 					    /* q is empty; e must come from p. */
 					    e = p; p = p.next; psize--;
-					} else if ((useIdxCompare ? cmp_idx(p.info,q.info,res,tmpData) : cmp_complex(p.info,q.info,res,tmpData)) <= 0) {
-					    /* First element of p is lower (or same); e must come from p. */
-					    e = p; p = p.next; psize--;
 					} else {
-					    /* First element of q is lower; e must come from q. */
-					    e = q; q = q.next; qsize--;
+						int rv;
+						if (useIdxCompare) {
+							rv = cmp_idx(p.info,q.info,res,tmpData);
+						} else {
+							rv = cmp_complex(p.info,q.info,res,tmpData);
+						}
+						if (rv <= 0) {
+						    /* First element of p is lower (or same); e must come from p. */
+						    e = p; p = p.next; psize--;
+						} else {
+						    /* First element of q is lower; e must come from q. */
+						    e = q; q = q.next; qsize--;
+						}
 					}
 
 			        /* add the next element to the merged list */
