@@ -31,7 +31,7 @@ cp -r ../motetrack_c/results_motetrack_c .
 
 
 ##### Main benchmarks
-benchmarks=(bsort16 hsort16 binsrch16 xxtea md5 rc5 coremk motetrack heat_calib heat_detect lec fft16 outlier16u)
+benchmarks=(bsort16 hsort16 binsrch16 xxtea md5 rc5 coremk_ch2 motetrack heat_calib heat_detect lec fft16 outlier16u)
 
 
 
@@ -188,7 +188,6 @@ store_as_resultset resultsets_constarray
 
 
 ##### SENSYS paper
-benchmarks=(bsort16 hsort16 binsrch16 xxtea md5 rc5 coremk_ch2 motetrack heat_calib heat_detect lec fft16 outlier16u)
 for benchmark in ${benchmarks}
 do
     # # GET/PUTFIELD_A_FIXED are turned on for these.
