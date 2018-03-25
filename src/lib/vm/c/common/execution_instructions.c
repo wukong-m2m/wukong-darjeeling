@@ -7,7 +7,7 @@
 // generated at infusion time
 #include "jlib_base.h"
 
-#include "rtc_safetychecks_vm_part.h"
+#include "rtc_safetychecks_core_part.h"
 
 ref_t DO_LDS(dj_local_id localStringId) {
 	// resolve the string id

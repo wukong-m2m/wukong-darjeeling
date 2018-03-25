@@ -75,7 +75,7 @@
 #include "opcodes.h"
 #include "opcodes.c"
 
-#include "rtc_safetychecks_vm_part.h"
+#include "rtc_safetychecks_core_part.h"
 
 // currently selected Virtual Machine context
 dj_vm *currentVm;

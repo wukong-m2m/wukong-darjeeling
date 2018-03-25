@@ -2,7 +2,7 @@
 
 #include "panic.h"
 #include "heap.h"
-#include "rtc_safetychecks_vm_part.h"
+#include "rtc_safetychecks_core_part.h"
 
 uint16_t rtc_safety_heap_lowbound = 0;
 // Initially the whole heap is safe to write.

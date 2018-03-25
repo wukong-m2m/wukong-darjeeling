@@ -32,7 +32,7 @@
 #include "config.h"
 
 #ifdef AOT_SAFETY_CHECKS
-#include "rtc_safetychecks_vm_part.h"
+#include "rtc_safetychecks_core_part.h"
 #endif
 
 /**

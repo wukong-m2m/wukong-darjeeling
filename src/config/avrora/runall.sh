@@ -187,24 +187,24 @@ gdj avrora_store_trace -Paotbm=lec_nca
 store_as_resultset resultsets_constarray
 
 
-##### SENSYS paper
-for benchmark in ${benchmarks}
-do
-    # # GET/PUTFIELD_A_FIXED are turned on for these.
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+# ##### SENSYS paper
+# for benchmark in ${benchmarks}
+# do
+#     # # GET/PUTFIELD_A_FIXED are turned on for these.
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
 
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
 
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=true   -Pusegetfield_a_fixed=true
-    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=true   -Pusegetfield_a_fixed=true -Psafe
-done
-store_as_resultset resultsets_sensys
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=true   -Pusegetfield_a_fixed=true
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=true   -Pusegetfield_a_fixed=true -Psafe
+# done
+# store_as_resultset resultsets_sensys
 
 
 ./analyseall.sh

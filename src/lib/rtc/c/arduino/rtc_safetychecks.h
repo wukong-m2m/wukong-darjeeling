@@ -2,7 +2,7 @@
 #define RTC_SAFETYCHECKS_H
 
 #include <stdint.h>
-#include "rtc_safetychecks_vm_part.h"
+#include "rtc_safetychecks_core_part.h"
 
 // Compile time
 void rtc_safety_method_starts();

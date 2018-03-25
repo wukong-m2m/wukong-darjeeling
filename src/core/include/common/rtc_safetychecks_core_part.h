@@ -1,5 +1,5 @@
-#ifndef RTC_SAFETYCHECKS_VM_PART_H
-#define RTC_SAFETYCHECKS_VM_PART_H
+#ifndef RTC_SAFETYCHECKS_CORE_PART_H
+#define RTC_SAFETYCHECKS_CORE_PART_H
 
 #include <stdint.h>
 
@@ -29,5 +29,6 @@ void rtc_safety_abort_with_error(uint8_t error);
 #define RTC_SAFETY_RUNTIMECHECK_VIRTUAL_IMPLEMENTATION_SIGNATURE_MISMATCH          16
 #define RTC_SAFETY_RUNTIMECHECK_ILLEGAL_MEMORY_ACCESS                              17
 #define RTC_SAFETY_RUNTIMECHECK_NATIVE_STACK_OVERFLOW                              18
+#define RTC_SAFETY_RUNTIMECHECK_HEAP_CORRUPTED                                     19
 
-#endif // RTC_SAFETYCHECKS_VM_PART_H
+#endif // RTC_SAFETYCHECKS_CORE_PART_H

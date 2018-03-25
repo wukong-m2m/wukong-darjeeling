@@ -76,6 +76,7 @@
 #include "debug.h"
 #include "panic.h"
 #include "hooks.h"
+#include "rtc_safetychecks_core_part.h"
 
 static char *heap_base;
 static uint16_t heap_size;
@@ -310,6 +311,13 @@ static inline void dj_mem_mark()
 	{
 		chunk = (heap_chunk*)loc;
 		chunk->color = chunk->id<CHUNKID_MANAGED_START?TCM_BLACK:TCM_WHITE;
+
+#ifdef AOT_SAFETY_CHECKS
+		if (chunk->size > left_pointer-loc) {
+			rtc_safety_abort_with_error(RTC_SAFETY_TRANSLATIONCHECK_BRANCH_TO_NONEXISTANT_BRTARGET);
+		}
+#endif // AOT_SAFETY_CHECKS
+
 		loc += chunk->size;
 	}
 

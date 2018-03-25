@@ -32,7 +32,7 @@
 #include "core.h"
 #include "vm_gc.h"
 #include "jlib_base.h"
-#include "rtc_safetychecks_vm_part.h"
+#include "rtc_safetychecks_core_part.h"
 
 /**
  *
