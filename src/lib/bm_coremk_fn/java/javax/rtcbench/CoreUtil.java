@@ -1,6 +1,5 @@
 package javax.rtcbench;
 import javax.rtc.RTC;
-import javax.rtc.Lightweight;
 
 /*
 Author : Shay Gal-On, EEMBC

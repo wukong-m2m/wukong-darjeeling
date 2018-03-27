@@ -37,6 +37,20 @@ El Dorado Hills, CA, 95762
 */
 
 public class CoreMain {
+	public static class TmpData {
+		public CoreListJoinA.ListData info;
+		public int[] final_counts;
+		public int[] track_counts;
+		public ShortWrapper p;
+
+		public TmpData(short arraySize) {
+			this.info = new CoreListJoinA.ListData();
+			this.final_counts = new int[arraySize];
+			this.track_counts = new int[arraySize];
+			this.p = new ShortWrapper();
+		}		
+	}
+
 	// NOT STANDARD COREMARK CODE: switch to select an implementation of CoreListJoin
 	private static final boolean useCoreListJoinA = true;
 
@@ -59,7 +73,7 @@ public class CoreMain {
 		public static short[] data = {(short)0x5e47,(short)0x39bf,(short)0xe5a4,(short)0x8e3a,(short)0x8d84};
 	}
 
-	private static void iterate(CoreResults pres) {
+	private static void iterate(CoreResults pres, TmpData tmpData) {
 		int i;
 		short crc;
 		CoreResults res=pres;
@@ -72,17 +86,17 @@ public class CoreMain {
 		// NOT STANDARD COREMARK CODE: switch to select an implementation of CoreListJoin
 		if (useCoreListJoinA) {
 			for (i=0; i<iterations; i++) {
-				crc=CoreListJoinA.core_bench_list(res,(short)1);
+				crc=CoreListJoinA.core_bench_list(res,(short)1, tmpData);
 				res.crc=CoreUtil.crcu16(crc,res.crc);
-				crc=CoreListJoinA.core_bench_list(res,(short)-1);
+				crc=CoreListJoinA.core_bench_list(res,(short)-1, tmpData);
 				res.crc=CoreUtil.crcu16(crc,res.crc);
 				if (i==0) res.crclist=res.crc;
 			}
 		} else {
 			for (i=0; i<iterations; i++) {
-				crc=CoreListJoinB.core_bench_list(res,(short)1);
+				crc=CoreListJoinB.core_bench_list(res,(short)1, tmpData);
 				res.crc=CoreUtil.crcu16(crc,res.crc);
-				crc=CoreListJoinB.core_bench_list(res,(short)-1);
+				crc=CoreListJoinB.core_bench_list(res,(short)-1, tmpData);
 				res.crc=CoreUtil.crcu16(crc,res.crc);
 				if (i==0) res.crclist=res.crc;
 			}
@@ -115,8 +129,8 @@ public class CoreMain {
 		return (short)CoreUtil.get_seed_32(x);
 	}
 
-	public static void rtcbenchmark_measure_java_performance(CoreResults pres) {
-		iterate(pres);
+	public static void rtcbenchmark_measure_java_performance(CoreResults pres, CoreMain.TmpData tmpData) {
+		iterate(pres, tmpData);
 	}
 
 	public static boolean core_mark_main() {
@@ -127,6 +141,7 @@ public class CoreMain {
 		short seedcrc=0;
 		int total_time;
 		CoreResults[] results = new CoreResults[MULTITHREAD];
+		TmpData tmpData = new TmpData(CoreState.NUM_CORE_STATES);
 
 		for (i=0 ; i<MULTITHREAD; i++) {
 			results[i] = new CoreResults();
@@ -189,9 +204,9 @@ public class CoreMain {
 			if ((results[i].execs & CoreMarkH.ID_LIST) != 0) {
 				// NOT STANDARD COREMARK CODE: switch to select an implementation of CoreListJoin
 				if (useCoreListJoinA) {
-					results[i].list_CoreListJoinA=CoreListJoinA.core_list_init(results[0].size,results[i].seed1);
+					results[i].list_CoreListJoinA=CoreListJoinA.core_list_init(results[0].size,results[i].seed1,tmpData);
 				} else {
-					results[i].list_CoreListJoinB=CoreListJoinB.core_list_init(results[0].size,results[i].seed1);
+					results[i].list_CoreListJoinB=CoreListJoinB.core_list_init(results[0].size,results[i].seed1,tmpData);
 				}
 			}
 			if ((results[i].execs & CoreMarkH.ID_MATRIX) != 0) {
@@ -202,7 +217,7 @@ public class CoreMain {
 				results[i].statememblock3 = CoreState.core_init_state(results[0].size,results[i].seed1);
 			}
 		}
-		
+
 		/* automatically determine number of iterations if not set */
 		if (results[0].iterations==0) { 
 			int secs_passed=0;
@@ -211,7 +226,7 @@ public class CoreMain {
 			while (secs_passed < 1) {
 				results[0].iterations*=10;
 				RTC.coremark_start_time();
-				iterate(results[0]);
+				iterate(results[0], tmpData);
 				RTC.coremark_stop_time();
 				secs_passed=CorePortMe.time_in_secs(RTC.coremark_get_time());
 			}
@@ -225,7 +240,7 @@ public class CoreMain {
 		// /* perform actual benchmark */
 		RTC.avroraStartCountingCalls();
 		RTC.coremark_start_time();
-		rtcbenchmark_measure_java_performance(results[0]);
+		rtcbenchmark_measure_java_performance(results[0], tmpData);
 		RTC.coremark_stop_time();
 		total_time=RTC.coremark_get_time();
 		RTC.avroraStopCountingCalls();
@@ -239,6 +254,7 @@ public class CoreMain {
 		results[0].statememblock3 = null;
 		results[0].list_CoreListJoinA = null;
 		CoreListJoinB.data = null;
+		tmpData = null;
 
 		/* get a function of the input to report */
 		seedcrc=CoreUtil.crc16((short)results[0].seed1,seedcrc);

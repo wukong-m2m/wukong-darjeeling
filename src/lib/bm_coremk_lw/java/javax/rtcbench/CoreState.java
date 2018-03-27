@@ -53,11 +53,11 @@ public class CoreState {
 		Go over the input twice, once direct, and once after introducing some corruption. 
 	*/
 	static short core_bench_state(int blksize, byte[] memblock, 
-			short seed1, short seed2, short step, short crc) 
+			short seed1, short seed2, short step, short crc, CoreMain.TmpData tmpData) 
 	{
-		int[] final_counts = new int[NUM_CORE_STATES];
-		int[] track_counts = new int[NUM_CORE_STATES];
-		ShortWrapper p = new ShortWrapper();
+		int[] final_counts = tmpData.final_counts;
+		int[] track_counts = tmpData.track_counts;
+		ShortWrapper p = tmpData.p;
 		short pValue; // Within this method we use this so the local variable can be pinned by markloop.
 		p.value=0;    // We use this to pass to core_state_transition since it needs to be able to modify the index (it's a double pointer in C).
 		int i;
