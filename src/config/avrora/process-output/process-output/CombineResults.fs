@@ -54,10 +54,15 @@ module CombineResults =
             ("mcn",       22,  4)
             ("mca",       16,  4)
             ]
+        
+        let outputBenchmarkName (name : string) =
+            if (name.EndsWith("_base"))
+            then (name + "         ").Substring(0, 8) + " B"
+            else name
 
         let r1 =
             [
-            ("BENCHMARK x"          , result.benchmark);
+            ("BENCHMARK x"          , outputBenchmarkName result.benchmark);
             ("Test"                 , if result.passedTestAOT then "PASSED" else "FAILED");
             (""                     , "");        
             ("PERF OVERHEAD"        , "cyc (%C)");

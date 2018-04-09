@@ -1,0 +1,6 @@
+djlibsource {
+    bm_hsort16_base {
+        cDependencies = [ 'base' ]
+        javaDependencies = [ 'base' ]
+    }
+}

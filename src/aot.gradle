@@ -149,6 +149,21 @@ if (!project.hasProperty('usegetfield_a_fixed')) {
     }
 }
 
+if (!project.hasProperty('usebasebenchmark')) {
+    project.ext.usebasebenchmark = 'false'
+} else {
+    if (project.ext.usebasebenchmark == '') {
+        project.ext.usebasebenchmark = 'true'        
+    }
+    if (project.ext.usebasebenchmark != 'true'
+            && project.ext.usebasebenchmark != 'false') {
+        throw new InvalidUserDataException("Invalid value for usebasebenchmark" + project.ext.usebasebenchmark)        
+    }
+    if (project.ext.usebasebenchmark == 'true') {
+        project.ext.aotbm = project.ext.aotbm + '_base'
+    }
+}
+
 if (!project.hasProperty('aotmarkloopregs')) {
     if (project.ext.use16bitarrayindex == 'true') {
         project.ext.aotmarkloopregs = (project.ext.aotstackcachesize.toInteger() - 4).toString()
@@ -237,6 +252,10 @@ def getOutputDirName() {
     if (project.ext.uselightweightmethods == 'false')
         opt_lightweight='_NOLW'
 
+    def opt_basebenchmark=''
+    if (project.ext.usebasebenchmark == 'true')
+        opt_basebenchmark='_BASE'
+
     def opt_safety=''
     if (project.ext.safe == 'true')
         opt_safety='_SAFE'
@@ -245,11 +264,11 @@ def getOutputDirName() {
 
 
     if (project.ext.aotstrat == 'baseline' || project.ext.aotstrat == 'improvedpeephole') {
-        return "results_${outdirSTRAT}_R___P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_lightweight}${opt_safety}"
+        return "results_${outdirSTRAT}_R___P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_lightweight}${opt_safety}${opt_basebenchmark}"
     } else if (project.ext.aotstrat == 'simplestackcache' || project.ext.aotstrat == 'poppedstackcache') {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_lightweight}${opt_safety}"
+        return "results_${outdirSTRAT}_R${outdirREGS}_P_${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_lightweight}${opt_safety}${opt_basebenchmark}"
     } else {
-        return "results_${outdirSTRAT}_R${outdirREGS}_P${outdirPINNED}${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_lightweight}${opt_safety}"
+        return "results_${outdirSTRAT}_R${outdirREGS}_P${outdirPINNED}${opt_constshift}${opt_16bitindex}${opt_simul}${opt_getfield_a_fixed}${opt_lightweight}${opt_safety}${opt_basebenchmark}"
     }
 }
 

@@ -53,6 +53,7 @@ benchmarks=(bsort16 hsort16 binsrch16 xxtea md5 rc5 coremk_ch2 motetrack heat_ca
 # for benchmark in ${benchmarks}
 # do
 #     # Lightweight methods and GET/PUTFIELD_A_FIXED are turned on for these.
+#     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=true  -Pusegetfield_a_fixed=true -Pusebasebenchmark=true
 #     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=true  -Pusegetfield_a_fixed=true
 
 #     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=true  -Pusegetfield_a_fixed=true
@@ -142,24 +143,24 @@ benchmarks=(bsort16 hsort16 binsrch16 xxtea md5 rc5 coremk_ch2 motetrack heat_ca
 
 
 
-##### Lightweight methods
-# CoreMark
-gdj avrora_store_trace -Paotbm=coremk 
-gdj avrora_store_trace -Paotbm=coremk_lw     # Coremk with ee_isdigit as a lightweight instead of inlined
-gdj avrora_store_trace -Paotbm=coremk_fn     # Coremk with only methods (but ee_isdigit still inlined, coremk_fn has ee_isdigit as a normal method as well)
-# FFT
-gdj avrora_store_trace -Paotbm=fft16
-gdj avrora_store_trace -Paotbm=fft16_lw      # FFT with FIX__MPY as a hardcoded Lightweight method, and SIN8/COS8 inlined by ProGuard
-gdj avrora_store_trace -Paotbm=fft16_fn      # FFT with FIX__MPY as a normal method, and SIN8/COS8 inlined by ProGuard
-# Heap sort
-gdj avrora_store_trace -Paotbm=hsort16
-gdj avrora_store_trace -Paotbm=hsort16_fn    # Heap sort with siftDown as a normal method
-gdj avrora_store_trace -Paotbm=hsort16_cht   # Heap sort with siftDown manually inlined
-# Heap sort
-gdj avrora_store_trace -Paotbm=hsort32
-gdj avrora_store_trace -Paotbm=hsort32_fn    # Heap sort with siftDown as a normal method
-gdj avrora_store_trace -Paotbm=hsort32_cht   # Heap sort with siftDown manually inlined
-store_as_resultset resultsets_lightweight_methods
+# ##### Lightweight methods
+# # CoreMark
+# gdj avrora_store_trace -Paotbm=coremk 
+# gdj avrora_store_trace -Paotbm=coremk_lw     # Coremk with ee_isdigit as a lightweight instead of inlined
+# gdj avrora_store_trace -Paotbm=coremk_fn     # Coremk with only methods (but ee_isdigit still inlined, coremk_fn has ee_isdigit as a normal method as well)
+# # FFT
+# gdj avrora_store_trace -Paotbm=fft16
+# gdj avrora_store_trace -Paotbm=fft16_lw      # FFT with FIX__MPY as a hardcoded Lightweight method, and SIN8/COS8 inlined by ProGuard
+# gdj avrora_store_trace -Paotbm=fft16_fn      # FFT with FIX__MPY as a normal method, and SIN8/COS8 inlined by ProGuard
+# # Heap sort
+# gdj avrora_store_trace -Paotbm=hsort16
+# gdj avrora_store_trace -Paotbm=hsort16_fn    # Heap sort with siftDown as a normal method
+# gdj avrora_store_trace -Paotbm=hsort16_cht   # Heap sort with siftDown manually inlined
+# # Heap sort
+# gdj avrora_store_trace -Paotbm=hsort32
+# gdj avrora_store_trace -Paotbm=hsort32_fn    # Heap sort with siftDown as a normal method
+# gdj avrora_store_trace -Paotbm=hsort32_cht   # Heap sort with siftDown manually inlined
+# store_as_resultset resultsets_lightweight_methods
 
 
 
@@ -184,6 +185,8 @@ store_as_resultset resultsets_lightweight_methods
 # gdj avrora_store_trace -Paotbm=fft16_nca
 # gdj avrora_store_trace -Paotbm=lec
 # gdj avrora_store_trace -Paotbm=lec_nca
+# gdj avrora_store_trace -Paotbm=rc5
+# gdj avrora_store_trace -Paotbm=rc5_nca
 # store_as_resultset resultsets_constarray
 
 
@@ -205,6 +208,27 @@ store_as_resultset resultsets_lightweight_methods
 #     gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=true   -Pusegetfield_a_fixed=true -Psafe
 # done
 # store_as_resultset resultsets_sensys
+
+##### Main graphs with unoptimised source and lightweight methods
+for benchmark in ${benchmarks}
+do
+    # # GET/PUTFIELD_A_FIXED are turned on for these.
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true -Pusebasebenchmark=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=baseline         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=improvedpeephole -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=simplestackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=poppedstackcache -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=false -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=false -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=false -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=false  -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=true   -Pusegetfield_a_fixed=true
+    gdj avrora_store_trace -Paotbm=${benchmark} -Paotstrat=markloop         -Puseconstantshiftoptimisation=true  -Puse16bitarrayindex=true  -Pusesimul=true  -Puselightweightmethods=true   -Pusegetfield_a_fixed=true -Psafe
+done
+store_as_resultset resultsets_maingraphs_unoptimised_source_lw
+
 
 
 ./analyseall.sh

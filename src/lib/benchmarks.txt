@@ -32,3 +32,5 @@ motetrack_nopt : MoteTrack without manual optimisations to the Java source
 
 coremk_noinl   : CoreMark without manual inlining
 motetrack_noinl: MoteTrack without manual inlining
+
+*_base         : versions without manual inlining or manual optimisation

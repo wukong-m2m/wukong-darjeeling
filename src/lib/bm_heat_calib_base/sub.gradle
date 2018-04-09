@@ -1,0 +1,6 @@
+djlibsource {
+    bm_heat_calib_base {
+        cDependencies = [ 'base', 'vm_dev' ]
+        javaDependencies = [ 'base' ]
+    }
+}
